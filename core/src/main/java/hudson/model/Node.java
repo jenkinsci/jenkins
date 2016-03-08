@@ -128,7 +128,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
         // for all other cases we do not know where to persist the node record and hence we follow the default
         // no-op of a Saveable.NOOP
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             jenkins.updateNode(this);
         }
@@ -141,7 +141,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      "" if this is master
      */
     @Exported(visibility=999)
-    public abstract @Nonnull String getNodeName();
+    @Nonnull
+    public abstract String getNodeName();
 
     /**
      * When the user clones a {@link Node}, Hudson uses this method to change the node name right after
@@ -194,7 +195,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      this method can return null if there's no {@link Computer} object for this node,
      *      such as when this node has no executors at all.
      */
-    public final @CheckForNull Computer toComputer() {
+    @CheckForNull
+    public final Computer toComputer() {
         AbstractCIBase ciBase = Jenkins.getInstance();
         return ciBase.getComputer(this);
     }
@@ -204,7 +206,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * This is just a convenience method for {@link Computer#getChannel()} with null check.
      */
-    public final @CheckForNull VirtualChannel getChannel() {
+    @CheckForNull
+    public final VirtualChannel getChannel() {
         Computer c = toComputer();
         return c==null ? null : c.getChannel();
     }

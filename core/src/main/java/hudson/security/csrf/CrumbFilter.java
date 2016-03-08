@@ -35,7 +35,7 @@ public class CrumbFilter implements Filter {
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         if(h==null)     return null;    // before Jenkins is initialized?
         return h.getCrumbIssuer();
     }

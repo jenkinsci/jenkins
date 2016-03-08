@@ -215,7 +215,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
+        Jenkins h = Jenkins.getInstanceOrNull(); // this code might run on slaves
         ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
@@ -241,7 +241,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
     
     public static InputStream getInputStream(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
+        Jenkins h = Jenkins.getInstanceOrNull(); // this code might run on slaves
         final ProxyConfiguration p = (h != null) ? h.proxy : null;
         if (p == null) 
             return new RetryableHttpStream(url);

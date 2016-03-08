@@ -228,7 +228,7 @@ public class Functions {
      * @since 1.607
      */
     public static boolean isExtensionsAvailable() {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
         return jenkins != null && jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0
                 && !jenkins.isTerminating();
     }
@@ -1659,7 +1659,7 @@ public class Functions {
      */
     public static List<PageDecorator> getPageDecorators() {
         // this method may be called to render start up errors, at which point Hudson doesn't exist yet. see HUDSON-3608 
-        if(Jenkins.getInstance()==null)  return Collections.emptyList();
+        if(Jenkins.getInstanceOrNull()==null)  return Collections.emptyList();
         return PageDecorator.all();
     }
     
@@ -1681,13 +1681,13 @@ public class Functions {
     }
 
     public static String getCrumb(StaplerRequest req) {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getCrumb(req) : "";
     }
 
     public static String getCrumbRequestField() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         CrumbIssuer issuer = h != null ? h.getCrumbIssuer() : null;
         return issuer != null ? issuer.getDescriptor().getCrumbRequestField() : "";
     }
@@ -1917,7 +1917,7 @@ public class Functions {
      * discovery of Jenkins.
      */
     public static void advertiseHeaders(HttpServletResponse rsp) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j!=null) {
             rsp.setHeader("X-Hudson","1.395");
             rsp.setHeader("X-Jenkins", Jenkins.VERSION);

@@ -116,8 +116,8 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
      */
     private Object lookUp(Class<?> type) {
         if (type==Jenkins.class || type==Hudson.class)
-            return Jenkins.getInstance();
-        Jenkins j = Jenkins.getInstance();
+            return Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j!=null) {
             Injector i = j.getInjector();
             if (i!=null)

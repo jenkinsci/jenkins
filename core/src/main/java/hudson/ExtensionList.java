@@ -390,14 +390,14 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Gets the extension list for a given type.
      * Normally calls {@link Jenkins#getExtensionList(Class)} but falls back to an empty list
-     * in case {@link Jenkins#getInstance} is null.
+     * in case {@link Jenkins#getInstanceOrNull()} is null.
      * Thus it is useful to call from {@code all()} methods which need to behave gracefully during startup or shutdown.
      * @param type the extension point type
      * @return some list
      * @since 1.572
      */
     public static @Nonnull <T> ExtensionList<T> lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j == null ? create((Jenkins) null, type) : j.getExtensionList(type);
     }
 

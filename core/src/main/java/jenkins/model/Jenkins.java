@@ -688,12 +688,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getInstance()} provides the unchecked versions of the method.
+     * {@link #getInstanceOrNull()} provides the unchecked versions of the method.
      * @return {@link Jenkins} instance
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      * @since 1.590
+     * @deprecated use {@link #getInstance()}
      */
-    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+    @Deprecated
+    @Nonnull
+    public static Jenkins getActiveInstance() throws IllegalStateException {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
             throw new IllegalStateException("Jenkins has not been started, or was already shut down");
@@ -706,10 +709,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #getActiveInstance()} provides the checked versions of the method.
      * @return The instance. Null if the {@link Jenkins} instance has not been started,
      * or was already shut down
+     * @since 1.653
+     */
+    @CheckForNull
+    public static Jenkins getInstanceOrNull() {
+        return HOLDER.getInstance();
+    }
+
+    /**
+     * Gets the {@link Jenkins} singleton. In certain rare cases you may have code that is intended to run before
+     * Jenkins starts or while Jenkins is being shut-down. For those rare cases use {@link #getInstanceOrNull()}.
+     * In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master,
+     * for those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting
+     * channel it uses a {@code writeReplace} method or similar to ensure that the {@link Jenkins} class is not being
+     * loaded into the remote class loader
+     * @return The instance.
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
     @CLIResolver
-    @CheckForNull
+    @Nullable // TODO replace with non-null once Jenkins 2.0+
     public static Jenkins getInstance() {
+        // TODO throw an IllegalStateException in Jenkins 2.0+
         return HOLDER.getInstance();
     }
 
@@ -4115,7 +4135,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
      */
     public static @CheckForNull <T> T lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j != null ? j.lookup.get(type) : null;
     }
 

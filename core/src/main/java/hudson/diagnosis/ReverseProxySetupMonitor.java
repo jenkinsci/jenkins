@@ -62,7 +62,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     public HttpResponse doTest() {
         String referer = Stapler.getCurrentRequest().getReferer();
         Jenkins j = Jenkins.getInstance();
-        assert j != null;
         // May need to send an absolute URL, since handling of HttpRedirect with a relative URL does not currently honor X-Forwarded-Proto/Port at all.
         String redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup/" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
         LOGGER.log(Level.FINE, "coming from {0} and redirecting to {1}", new Object[] {referer, redirect});
@@ -71,7 +70,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
 
     public void getTestForReverseProxySetup(String rest) {
         Jenkins j = Jenkins.getInstance();
-        assert j != null;
         String inferred = j.getRootUrlFromRequest() + "manage";
         // TODO this could also verify that j.getRootUrl() has been properly configured, and send a different message if not
         if (rest.startsWith(inferred)) { // not using equals due to JENKINS-24014
