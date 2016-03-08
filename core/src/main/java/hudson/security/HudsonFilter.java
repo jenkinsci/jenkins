@@ -104,7 +104,7 @@ public class HudsonFilter implements Filter {
         // this is how we make us available to the rest of Hudson.
         filterConfig.getServletContext().setAttribute(HudsonFilter.class.getName(),this);
         try {
-            Jenkins hudson = Jenkins.getInstanceOrNull();
+            Jenkins hudson = Jenkins.getInstance();
             if (hudson != null) {
                 // looks like we are initialized after Hudson came into being. initialize it now. See #3069
                 LOGGER.fine("Security wasn't initialized; Initializing it...");

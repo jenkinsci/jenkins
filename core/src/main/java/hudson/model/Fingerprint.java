@@ -128,7 +128,7 @@ public class Fingerprint implements ModelObject, Saveable {
         private boolean hasPermissionToDiscoverBuild() {
             // We expose the data to Jenkins administrators in order to
             // let them manage the data for deleted jobs (also works for SYSTEM)
-            final Jenkins instance = Jenkins.getInstanceOrNull();
+            final Jenkins instance = Jenkins.getInstance();
             if (instance != null && instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
             }
@@ -941,7 +941,7 @@ public class Fingerprint implements ModelObject, Saveable {
     @Exported(name="usage")
     public @Nonnull List<RangeItem> _getUsages() {
         List<RangeItem> r = new ArrayList<RangeItem>();
-        final Jenkins instance = Jenkins.getInstanceOrNull();
+        final Jenkins instance = Jenkins.getInstance();
         if (instance == null) {
             return r;
         }
@@ -1368,7 +1368,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * @return {@code true} if the user can discover the item
      */
     private static boolean canDiscoverItem(@Nonnull final String fullName) {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        final Jenkins jenkins = Jenkins.getInstance();
         if (jenkins == null) {
             return false;
         }

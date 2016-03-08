@@ -34,7 +34,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
@@ -72,8 +71,7 @@ public class Hudson extends Jenkins {
     /** @deprecated Here only for compatibility. Use {@link Jenkins#getInstance} instead. */
     @Deprecated
     @CLIResolver
-    @Nonnull
-    public static Hudson getInstance() {
+    public static @CheckForNull Hudson getInstance() {
         return (Hudson)Jenkins.getInstance();
     }
 
