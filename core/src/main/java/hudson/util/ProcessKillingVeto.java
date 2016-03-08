@@ -74,9 +74,10 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      *         list if Jenkins is not available, never null.
      */
     public static List<ProcessKillingVeto> all() {
+        // check if we are a thread running on the master JVM or a thread running in a remote JVM
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins == null)
-            return Collections.emptyList();
+            return Collections.emptyList(); // we are remote, no body gets to veto
         return jenkins.getExtensionList(ProcessKillingVeto.class);
     }
 
