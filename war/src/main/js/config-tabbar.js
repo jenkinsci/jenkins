@@ -78,7 +78,6 @@ function addFinderToggle(configTableMetadata) {
     var findToggle = $('<div class="find-toggle" title="Find"></div>');
     var finderShowPreferenceKey = 'config:showfinder';
     
-    //$('.tabBar', configTableMetadata.configWidgets).append(findToggle);
     findToggle.click(function() {
         var findContainer = $('.find-container', configTableMetadata.configWidgets);
         if (findContainer.hasClass('visible')) {
