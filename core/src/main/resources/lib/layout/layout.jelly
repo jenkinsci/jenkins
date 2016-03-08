@@ -52,7 +52,7 @@ THE SOFTWARE.
       If given, this page is only made available to users that has the specified permission.
       (The permission will be checked against the "it" object.)
     </st:attribute>
-    <st:attribute name="layout" use="optional">
+    <st:attribute name="type" use="optional">
       Available values: two-column (by default) or one-column (full-width size).
     </st:attribute>
 
@@ -70,8 +70,8 @@ ${h.initPageVariables(context)}
   this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
-<j:if test="${attrs.layout==null}">
-  <j:set var="layout" value="two-column"/>
+<j:if test="${attrs.type==null}">
+  <j:set var="layoutType" value="two-column"/>
 </j:if>
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
@@ -166,12 +166,8 @@ ${h.initPageVariables(context)}
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
 
-    <j:if test="${empty(attrs.sidepanel) or attrs.sidepanel}">
-      <link type="text/css" rel="stylesheet" href="${resURL}/css/layout-left-side.css" />
-    </j:if>
-
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${layout}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${layoutType}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
@@ -239,7 +235,7 @@ ${h.initPageVariables(context)}
     </div>
 
     <div id="page-body" class="clear">
-      <j:if test="${layout=='two-column'}">
+      <j:if test="${layoutType=='two-column'}">
         <div id="side-panel">
           <j:set var="mode" value="side-panel" />
           <d:invokeBody />
