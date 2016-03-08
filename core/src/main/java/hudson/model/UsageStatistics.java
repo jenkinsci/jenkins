@@ -96,7 +96,7 @@ public class UsageStatistics extends PageDecorator {
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        final Jenkins j = Jenkins.getInstanceOrNull();
+        final Jenkins j = Jenkins.getInstanceOrNull(); // TODO getInsance once JENKINS-33377 is merged
         // user opted out or Jenkins not fully initialized. no data collection.
         if (j == null || j.isUsageStatisticsCollected() || DISABLED || COMPLETED.compareTo(j.getInitLevel()) > 0) {
             return false;
