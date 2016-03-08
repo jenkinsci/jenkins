@@ -40,6 +40,7 @@ import hudson.util.IncompatibleAntVersionDetected;
 import hudson.util.HudsonFailedToLoad;
 import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
+import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
@@ -89,6 +90,7 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
+        JenkinsJVMAccess._setJenkinsJVM(true);
         final ServletContext context = event.getServletContext();
         File home=null;
         try {
@@ -391,23 +393,32 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        terminated = true;
-        Jenkins instance = Jenkins.getInstance();
-        if(instance!=null)
-            instance.cleanUp();
-        Thread t = initThread;
-        if (t != null && t.isAlive()) {
-            LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
-            t.interrupt();
-        }
+        try {
+            terminated = true;
+            Jenkins instance = Jenkins.getInstance();
+            if(instance!=null)
+                instance.cleanUp();
+            Thread t = initThread;
+            if (t != null && t.isAlive()) {
+                LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
+                t.interrupt();
+            }
 
-        // Logger is in the system classloader, so if we don't do this
-        // the whole web app will never be undepoyed.
-        Logger.getLogger("").removeHandler(handler);
+            // Logger is in the system classloader, so if we don't do this
+            // the whole web app will never be undepoyed.
+            Logger.getLogger("").removeHandler(handler);
+        } finally {
+            JenkinsJVMAccess._setJenkinsJVM(false);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
 
+    private static final class JenkinsJVMAccess extends JenkinsJVM {
+        private static void _setJenkinsJVM(boolean jenkinsJVM) {
+            JenkinsJVM.setJenkinsJVM(jenkinsJVM);
+        }
+    }
 
     private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }
