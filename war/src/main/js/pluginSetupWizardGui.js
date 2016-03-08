@@ -193,6 +193,12 @@ var createPluginSetupWizard = function(appendTarget) {
 				currentPanel = panel;
 				$container.append(html);
 				decorate($container);
+				
+				var $modalHeader = $container.find('.modal-header');
+				if($modalHeader.length > 0) {
+					$modalHeader.prepend(
+						'<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
+				}
 
 				if(oncomplete) {
 					oncomplete();
@@ -396,7 +402,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// Called to complete the installation
 	var finishInstallation = function() {
-		jenkins.goTo('/');
+		closeInstaller();
 	};
 
 	// load the plugin data, callback
@@ -667,6 +673,11 @@ var createPluginSetupWizard = function(appendTarget) {
 		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleSubmit, handleSubmit);
 	};
 	
+	var skipFirstUser = function() {
+		$('button').prop({disabled:true});
+		setPanel(setupCompletePanel, {message: translations.installWizard_firstUserSkippedMessage});
+	};
+	
 	// call to setup the proxy
 	var setupProxy = function() {
 		setPanel(proxyConfigPanel, {}, enableButtonsAfterFrameLoad);
@@ -749,6 +760,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.resume-installation': resumeInstallation,
 		'.install-done-restart': restartJenkins,
 		'.save-first-user:not([disabled])': saveFirstUser,
+		'.skip-first-user': skipFirstUser,
 		'.show-proxy-config': setupProxy,
 		'.save-proxy-config': saveProxyConfig,
 		'.skip-plugin-installs': function() { installPlugins([]); }

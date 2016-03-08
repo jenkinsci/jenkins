@@ -43,10 +43,10 @@ import java.util.List;
  */
 public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationStrategy {
     /**
-     * Whether to allow read access, default behavior
-     * previously was true
+     * Whether to allow anonymouos read access, default behavior
+     * previously was to do so
      */
-    private boolean allowAnonymousRead = true;
+    private boolean authenticatedReadOnly = false;
     
     @DataBoundConstructor
     public FullControlOnceLoggedInAuthorizationStrategy() {
@@ -54,7 +54,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
 
     @Override
     public ACL getRootACL() {
-        return allowAnonymousRead ? ANONYMOUS_READ : AUTHENTICATED_READ;
+        return !authenticatedReadOnly ? ANONYMOUS_READ : AUTHENTICATED_READ;
     }
 
     public List<String> getGroups() {
@@ -65,12 +65,12 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
      * If true, anonymous read access will be allowed
      */
     public boolean isAllowAnonymousRead() {
-        return allowAnonymousRead;
+        return !authenticatedReadOnly;
     }
     
     @DataBoundSetter
     public void setAllowAnonymousRead(boolean allowAnonymousRead) {
-        this.allowAnonymousRead = allowAnonymousRead;
+        this.authenticatedReadOnly = !allowAnonymousRead;
     }
 
     private static final SparseACL AUTHENTICATED_READ = new SparseACL(null);
@@ -83,7 +83,6 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
         
         AUTHENTICATED_READ.add(ACL.EVERYONE, Jenkins.ADMINISTER, true);
         AUTHENTICATED_READ.add(ACL.ANONYMOUS, Jenkins.ADMINISTER, false);
-        AUTHENTICATED_READ.add(ACL.ANONYMOUS, Permission.READ, false);
     }
 
     /**

@@ -14,16 +14,20 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 import hudson.BulkChange;
 import hudson.ExtensionList;
 import hudson.model.User;
 import hudson.model.UserProperty;
-import hudson.security.AuthorizationStrategy;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.PermissionAdder;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
+import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
@@ -36,7 +40,7 @@ public class SetupWizard {
     /**
      * The security token parameter name
      */
-    public static String initialSetupAdminUserName = "initial-setup-admin-user";
+    public static String initialSetupAdminUserName = "admin";
 
     private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
@@ -52,18 +56,16 @@ public class SetupWizard {
             String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
             admin = securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
             admin.addProperty(new SetupWizard.AuthenticationKey(randomUUID));
-
-            AuthorizationStrategy as = Jenkins.getInstance().getAuthorizationStrategy();
-            for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
-                if (adder.add(as, admin, Jenkins.ADMINISTER)) {
-                    return;
-                }
-            }
             
             // Lock Jenkins down:
             FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
             authStrategy.setAllowAnonymousRead(false);
             j.setAuthorizationStrategy(authStrategy);
+
+            // there probably aren't any implementors yet, but just in case
+            for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
+                adder.add(authStrategy, admin, Jenkins.ADMINISTER);
+            }
             
             // Shut down all the ports we can by default:
             j.setSlaveAgentPort(-1); // -1 to disable
@@ -114,13 +116,14 @@ public class SetupWizard {
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
-    public void doCompleteSetupWizard() {
+    public HttpResponse doCompleteInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins j = Jenkins.getActiveInstance();
+        j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
-        try {
-            PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
-        } catch (ServletException e) {
-            throw new AssertionError(e); // never happen because our Filter.init is no-op
-        }
+        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
+        // Also, clean up the setup wizard if it's completed
+        j.setSetupWizard(null);
+        return HttpResponses.okJSON();
     }
 
     // Stores a user property for the authentication key, which is really the auto-generated user's password

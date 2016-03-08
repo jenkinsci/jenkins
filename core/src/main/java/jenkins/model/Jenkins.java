@@ -936,12 +936,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public void setInstallState(@Nonnull InstallState newState) {
-        InstallState prior = installState;
         installState = newState;
-        if(setupWizard != null && !newState.equals(prior) && newState.isSetupComplete()) {
-            setupWizard.doCompleteSetupWizard();
-            setupWizard = null;
-        }
     }
 
     /**
@@ -3915,6 +3910,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public SetupWizard getSetupWizard() {
         return setupWizard;
+    }
+    
+    /**
+     * Sets the setup wizard
+     */
+    public void setSetupWizard(SetupWizard setupWizard) {
+        this.setupWizard = setupWizard;
     }
 
     /**

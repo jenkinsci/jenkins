@@ -286,20 +286,31 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             rsp.sendError(SC_UNAUTHORIZED,"First user was already created");
             return;
         }
-        String view = "firstUser.jelly";
+        
         User admin = null;
-        if(inSetup) {
-            admin = getUser(SetupWizard.initialSetupAdminUserName);
-            view = "setupWizardFirstUser.jelly";
-        }
-        User u = createAccount(req, rsp, false, view);
-        if (u!=null) {
-            tryToMakeAdmin(u);
-            if(admin != null) {
-                admin.delete();
+        try {
+            String view = "firstUser.jelly";
+            if(inSetup) {
+                admin = getUser(SetupWizard.initialSetupAdminUserName);
+                if(admin != null) {
+                    admin.delete(); // assume the new user may well be 'admin'
+                }
+                view = "setupWizardFirstUser.jelly";
             }
-            Jenkins.getInstance().setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
-            loginAndTakeBack(req, rsp, u);
+            
+            User u = createAccount(req, rsp, false, view);
+            if (u!=null) {
+                tryToMakeAdmin(u);
+                if(admin != null) {
+                    admin = null;
+                }
+                Jenkins.getInstance().setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
+                loginAndTakeBack(req, rsp, u);
+            }
+        } finally {
+            if(admin != null) {
+                admin.save(); // recreate this initial user if something failed
+            }
         }
     }
 
