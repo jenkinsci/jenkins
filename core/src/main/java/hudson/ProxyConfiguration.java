@@ -216,7 +216,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     public static URLConnection open(URL url) throws IOException {
         Jenkins h = Jenkins.getInstanceOrNull(); // this code might run on slaves
-        ProxyConfiguration p = h!=null ? h.proxy : null;
+        final ProxyConfiguration p = h!=null ? h.proxy : null;
         if(p==null)
             return url.openConnection();
 
@@ -227,9 +227,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Jenkins.getInstance().proxy;
-                    return new PasswordAuthentication(p.getUserName(),
-                            p.getPassword().toCharArray());
+                    return new PasswordAuthentication(p.getUserName(), p.getPassword().toCharArray());
                 }
             });
         }
