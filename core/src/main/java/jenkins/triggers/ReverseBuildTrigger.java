@@ -106,8 +106,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null || job == null) {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (job == null) {
             return false;
         }
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
