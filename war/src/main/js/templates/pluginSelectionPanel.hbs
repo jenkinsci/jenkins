@@ -31,13 +31,13 @@
 			<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
 			<div class="plugins-for-category">
 				{{#each this}}
-				<span class="deps {{#ifVisibleDependency ../plugin.name}}show{{/ifVisibleDependency}}">
+				<div class="plugin {{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}} {{#ifVisibleDependency plugin.name}}show-dependencies{{/ifVisibleDependency}}" id="row-{{plugin.name}}">
 					{{#hasDependencies plugin.name}}
 						<div class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}">
 							{{../../../translations.installWizard_installIncomplete_dependenciesLabel}}<span class="badge">{{dependencyCount ../plugin.name}}</span>
 						</div>
 					{{/hasDependencies}}
-					<label class="{{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}}" id="row-{{plugin.name}}">
+					<label>
 						<span class="title">
 							<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
 							{{plugin.title}}
@@ -55,8 +55,8 @@
 							</div>
 						{{/hasDependencies}}
 					</label>
+				</div>
 				{{/each}}
-				</span>
 			</div>
 			{{/each}}
 		</div>

@@ -282,7 +282,7 @@ var createPluginSetupWizard = function() {
 	// toggles visibility of dependency listing for a plugin
 	var toggleDependencyList = function() {
 		var $btn = $(this);
-		var $toggle = $btn.parents('.deps:first');
+		var $toggle = $btn.parents('.plugin:first');
 		var plugName = $btn.attr('data-plugin-name');
 		if(!visibleDependencies[plugName]) {
 			visibleDependencies[plugName] = true;
@@ -291,10 +291,10 @@ var createPluginSetupWizard = function() {
 			visibleDependencies[plugName] = false;
 		}
 		if(!visibleDependencies[plugName]) {
-			$toggle.removeClass('show');
+			$toggle.removeClass('show-dependencies');
 		}
 		else {
-			$toggle.addClass('show');
+			$toggle.addClass('show-dependencies');
 		}
 	};
 
@@ -552,7 +552,7 @@ var createPluginSetupWizard = function() {
 				findIndex = (findIndex+1) % matches.length;
 			}
 			var $el = $(matches[findIndex]);
-			$el = $el.parents('label:first'); // scroll to the block
+			$el = $el.parents('.plugin:first'); // scroll to the block
 			if($el && $el.length > 0) {
 				var pos = $pl.scrollTop() + $el.position().top;
 				$pl.stop(true).animate({
@@ -571,7 +571,7 @@ var createPluginSetupWizard = function() {
 	// search for given text, optionally scroll to the next match, set classes on appropriate elements from the search match
 	var searchForPlugins = function(text, scroll) {
 		var $pl = $('.plugin-list');
-		var $containers = $pl.find('label');
+		var $containers = $pl.find('.plugin');
 
 		// must always do this, as it's called after refreshing the panel (e.g. check/uncheck plugs)
 		$containers.removeClass('match');
@@ -583,7 +583,7 @@ var createPluginSetupWizard = function() {
 			}
 			else {
 				var matches = findElementsWithText($pl[0], text.toLowerCase(), function(d) { return d.toLowerCase(); });
-				$(matches).parents('label').addClass('match');
+				$(matches).parents('.plugin').addClass('match');
 				if(lastSearch !== text && scroll) {
 					scrollPlugin($pl, matches, text);
 				}
