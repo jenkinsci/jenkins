@@ -566,7 +566,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CheckForNull
     public Node getNode() {
-        Jenkins j = Jenkins.getInstanceOrNull();
+        Jenkins j = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (j == null) {
             return null;
         }
@@ -1013,7 +1013,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
-                        if (ciBase != null) {
+                        if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
                             ciBase.removeComputer(Computer.this);
                         }
                     }
