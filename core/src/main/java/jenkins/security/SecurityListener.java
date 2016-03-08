@@ -113,8 +113,7 @@ public abstract class SecurityListener implements ExtensionPoint {
 
     /** @since 1.569 */
     public static void fireFailedToLogIn(@Nonnull String username, @Nonnull String ip) {
-    	String output = username + ", ip: " + ip;
-        LOGGER.log(Level.FINE, "failed to log in: {0}", output);
+        LOGGER.log(Level.WARNING, "failed to log in: {0}, from: {1}", new Object[] {username, ip});
         for (SecurityListener l : all()) {
             l.failedToLogIn(username, ip);
         }
