@@ -1,0 +1,100 @@
+/*
+ * Tab bar specific rules.
+ */
+
+.jenkins-config-widgets {
+  position: relative;
+
+  .showTabs {
+    float: right;
+    margin-bottom: 5px;
+    margin-right: 20px;
+    cursor: pointer;
+    opacity: 0.4;
+  }
+  .showTabs:hover {
+    opacity: 0.8;
+  }
+
+  @find-container-height: 40px;
+  @find-container-width: 200px;
+  .find-container {
+    .border-radius(@find-container-height/2);
+    .find-container(@height: @find-container-height, @width: @find-container-width);
+    display: none;
+    background-color: @light-backgrond;
+    margin-bottom: 15px;
+
+    .find {
+      left: 50%;
+      margin-left: -100px;
+    }
+  }
+  .find-container.visible {
+    display: block;
+  }
+
+  .form-config.tabBarFrame {
+    position: relative;
+
+    .noTabs {
+      display: none;
+      position: absolute;
+      margin: 3px;
+      right: 0px;
+      top: 7px;
+      cursor: pointer;
+      opacity: 0.4;
+    }
+
+    .config-section-activators {
+      margin-right: 80px;
+    }
+
+    .tabBar {
+      .tab {
+        border: solid 1px @light-border;
+        border-bottom: none;
+        color: #999;
+        padding: 7px 10px;
+        .border-radius-top(5px);
+        cursor: pointer;
+      }
+      .tab.active {
+        background: #eee;
+        color: #000;
+        font-weight: bold;
+        z-index: 2;
+      }
+
+      .find-toggle {
+        background-image: url("../images/16x16/search.png");
+        background-repeat: no-repeat;
+        width: 16px;
+        height: 16px;
+        margin: 8px;
+        float: left;
+        cursor: pointer;
+      }
+    }
+
+    border-bottom: solid 1px @light-border;
+    margin-bottom: 10px;
+  }
+
+  .form-config.tabBarFrame.mouse-over {
+    .noTabs {
+      display: inline;
+    }
+    .noTabs:hover {
+      opacity: 0.8;
+    }
+  }
+
+}
+
+.jenkins-config {
+  span.highlight {
+    background-color: #ffff00;
+  }
+}

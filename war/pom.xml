@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.0-alpha-1-SNAPSHOT</version>
+    <version>2.0-alpha-3-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.30</version>
+      <version>1.33</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -79,7 +79,7 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
       <!-- specified in the parent -->
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
@@ -93,13 +93,13 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>2.9</version>
+      <version>3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>1.4</version>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -139,19 +139,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
       <artifactId>jquery-detached</artifactId>
-      <version>1.2</version>
+      <version>1.2.1</version>
       <classifier>core-assets</classifier>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
       <artifactId>bootstrap</artifactId>
-      <version>1.3.1</version>
+      <version>1.3.2</version>
       <classifier>core-assets</classifier>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
       <artifactId>handlebars</artifactId>
-      <version>1.1</version>
+      <version>1.1.1</version>
       <classifier>core-assets</classifier>
     </dependency>
     <dependency>
@@ -475,7 +475,7 @@ THE SOFTWARE.
           <additionalClassesDirectories>
             <!-- load resoures straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
-            
+
             <!--
               read directly from core module's output directory,
               so that changes are picked up right away without running mvn.
@@ -540,6 +540,7 @@ THE SOFTWARE.
           <webApp>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
+            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
           </webApp>
         </configuration>
       </plugin>
@@ -588,7 +589,7 @@ THE SOFTWARE.
         <activation><os><family>Linux</family><arch>amd64</arch></os></activation>
 		<properties>
 			<node.download.file>node-v${node.version}-linux-x64.tar.gz</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
@@ -596,7 +597,7 @@ THE SOFTWARE.
         <activation><os><family>mac</family></os></activation>
         <properties>
 			<node.download.file>node-v${node.version}-darwin-x64.tar.gz</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
@@ -620,7 +621,7 @@ THE SOFTWARE.
         <activation><os><family>windows</family><arch>x86</arch></os></activation>
 		<properties>
 			<node.download.file>win-x86/node.exe</node.download.file>
-			<node.download.classifier></node.download.classifier>
+			<node.download.classifier />
 		</properties>
     </profile>
     <profile>
@@ -742,7 +743,10 @@ THE SOFTWARE.
                             <goals>
                                 <goal>gulp</goal>
                             </goals>
-                            <configuration><arguments>bundle test</arguments></configuration>
+                            <configuration>
+                              <arguments>bundle test</arguments>
+                              <skip>${skipTests}</skip>
+                            </configuration>
                         </execution>
 
                     </executions>

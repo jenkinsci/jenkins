@@ -31,8 +31,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <f:breadcrumb-config-outline />
     <l:main-panel>
+      <l:js src="jsbundles/config-tabbar.js" />
+      <l:css src="jsbundles/jenkins-widgets.css" />
+
       <div class="behavior-loading">${%LOADING}</div>
-      <f:form method="post" action="configSubmit" name="config">
+      <f:form method="post" action="configSubmit" name="config" tableClass="job-config tabbed">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
@@ -54,7 +57,7 @@ THE SOFTWARE.
           <f:bottomButtonBar>
             <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
             <f:submit value="${%Save}"/>
-            <f:apply />
+            <f:apply value="${%Apply}"/>
           </f:bottomButtonBar>
         </j:if>
       </f:form>

@@ -10,12 +10,15 @@
 exports.recommendedPlugins = [
     "antisamy-markup-formatter",
     "credentials",
+    "github-branch-source",
     "junit",
     "mailer",
     "matrix-auth",
     "script-security",
     "subversion",
-    "translation"
+    "translation",
+    "workflow-aggregator",
+    "workflow-multibranch"
 ];
 
 //
@@ -49,6 +52,14 @@ exports.availablePlugins = [
         "plugins": [
             { "name": "javadoc" },
             { "name": "junit" }
+        ]
+    },
+    {
+        "category":"Pipelines and Continuous Delivery",
+        "plugins": [
+            { "name": "workflow-aggregator" },
+            { "name": "github-branch-source" },
+            { "name": "workflow-multibranch" }
         ]
     },
     {

@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Palette of objects to talk to the incoming JNLP slave connection.
+ * Palette of objects to talk to the incoming JNLP agent connection.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561
@@ -29,7 +29,7 @@ public class JnlpSlaveHandshake {
     /*package*/  final NioChannelHub hub;
 
     /**
-     * Socket connection to the slave.
+     * Socket connection to the agent.
      */
     /*package*/  final Socket socket;
 

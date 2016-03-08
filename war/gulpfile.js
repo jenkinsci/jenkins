@@ -4,6 +4,14 @@
 var builder = require('jenkins-js-builder');
 
 //
+// Bundle the page init script.
+// See https://github.com/jenkinsci/js-builder#bundling
+//
+builder.bundle('src/main/js/page-init.js')
+    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+    .inDir('src/main/webapp/jsbundles');
+
+//
 // Bundle the Install Wizard.
 // See https://github.com/jenkinsci/js-builder#bundling
 //
@@ -12,4 +20,13 @@ builder.bundle('src/main/js/pluginSetupWizard.js')
     .withExternalModuleMapping('bootstrap', 'core-assets/bootstrap:bootstrap3', {addDefaultCSS: true})
     .withExternalModuleMapping('handlebars', 'core-assets/handlebars:handlebars3')
     .less('src/main/less/pluginSetupWizard.less')
+    .inDir('src/main/webapp/jsbundles');
+
+//
+// Bundle the Config Tab Bar.
+// See https://github.com/jenkinsci/js-builder#bundling
+//
+builder.bundle('src/main/js/config-tabbar.js')
+    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+    .less('src/main/js/widgets/jenkins-widgets.less')
     .inDir('src/main/webapp/jsbundles');

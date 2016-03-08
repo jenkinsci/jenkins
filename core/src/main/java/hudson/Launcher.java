@@ -297,7 +297,7 @@ public abstract class Launcher {
          *
          * <p>
          * In adition to what the current process
-         * is inherited (if this is going to be launched from a slave agent, that
+         * is inherited (if this is going to be launched from a agent agent, that
          * becomes the "current" process), these variables will be also set.
          */
         public ProcStarter envs(Map<String, String> overrides) {
@@ -611,7 +611,7 @@ public abstract class Launcher {
      *      from the current process
      * @param envVars
      *      Environment variable overrides. In addition to what the current process
-     *      is inherited (if this is going to be launched from a slave agent, that
+     *      is inherited (if this is going to be launched from an agent, that
      *      becomes the "current" process), these variables will be also set.
      */
     public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException, InterruptedException;

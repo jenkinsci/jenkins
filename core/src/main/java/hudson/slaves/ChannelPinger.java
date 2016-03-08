@@ -74,7 +74,7 @@ public class ChannelPinger extends ComputerListener {
 
     public void install(Channel channel) {
         if (pingInterval < 1) {
-            LOGGER.fine("Slave ping is disabled");
+            LOGGER.fine("Agent ping is disabled");
             return;
         }
 

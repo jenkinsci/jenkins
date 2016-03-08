@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.0-alpha-1-SNAPSHOT</version>
+  <version>2.0-alpha-3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -179,7 +179,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.53.2</version>
+        <version>2.53.3</version>
       </dependency>
 
       <dependency>
@@ -500,7 +500,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>8.1.4.v20120524-jenkins-1</version>
+          <version>9.2.15.v20160210-jenkins-1</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -510,7 +510,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.114</version>
+          <version>1.116</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
