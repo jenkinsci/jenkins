@@ -43,6 +43,9 @@ function updateListBox(listBox,url,config) {
 Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
+            // seems like a race condition allows this to fire before the 'selectEl' is defined. If that happens, exit..
+            if(!selectEl || !selectEl.options || !selectEl[0]) 
+              return false;
             var firstValue = selectEl.options[0].value;
             var selectedValue = selectEl.value;
             if (originalValue == "" && selectedValue == firstValue) {
