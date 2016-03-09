@@ -55,11 +55,24 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class="rfe">
-    Move periodic task log files from <code>JENKINS_HOME/*.log</code> to <code>JENKINS_HOME/logs/tasks/*.log</code> and rotate them periodically rather than overwrite every execution
-    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-33068">issue 33068</a>)
+  <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v1.652>What's new in 1.652</a> (2016/03/06)</h3>
+<ul class=image>
+  <li class="bug">
+    Under some conditions Jenkins startup could fail because of incorrectly linked extensions; now recovering more gracefully.
+    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
+</ul>
+<h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
+<ul class=image>
+  <li class="rfe">
+    Move periodic task log files from <code>JENKINS_HOME/*.log</code> to <code>JENKINS_HOME/logs/tasks/*.log</code> and rotate them periodically rather than overwrite every execution.
+    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-33068">issue 33068</a>)
+  <li class="bug">
+    Fix documentation of proxy configuration.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2060">pull 2060</a>)
+</ul>
 <h3><a name=v1.650>What's new in 1.650</a> (2016/02/24)</h3>
 <ul class=image>
    <li class="major bug">

@@ -65,6 +65,12 @@ THE SOFTWARE.
       <artifactId>jenkins-test-harness</artifactId>
       <version>2.5</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-war</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
