@@ -237,7 +237,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if(!section) return;
 
     var $ = this.$;
-    var $header = $(section.headerRow);
+    var $header = $(section.headerRow).show();
     var scrollTop = $header.offset().top - ($('#main-panel .jenkins-config-widgets').outerHeight() + 15);
 
     $('html,body').animate({
@@ -248,11 +248,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
       section.activator.addClass('active');
     },510);
     if (section) {
-      /*
         var topRows = this.getTopRows();
-
-        // Deactivate currently active section ...
-        this.deactivateActiveSection();
 
         // Active the specified section
         section.activator.addClass('active');
@@ -265,7 +261,6 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         section.highlightText(this.findInput.val());
 
         fireListeners(this.showListeners, section);
-      */
     }
 };
 
