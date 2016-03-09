@@ -17,6 +17,7 @@ exports.recommendedPlugins = [
     "script-security",
     "subversion",
     "translation",
+    "pipeline-stage-view",
     "workflow-aggregator",
     "workflow-multibranch"
 ];
@@ -59,7 +60,8 @@ exports.availablePlugins = [
         "plugins": [
             { "name": "workflow-aggregator" },
             { "name": "github-branch-source" },
-            { "name": "workflow-multibranch" }
+            { "name": "workflow-multibranch" },
+            { "name": "pipeline-stage-view" }
         ]
     },
     {
