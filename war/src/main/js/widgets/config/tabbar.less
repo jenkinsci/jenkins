@@ -102,6 +102,19 @@ body#jenkins.add-item .jenkins-config {
   nav:before,
   nav:after {display:none;}
   
+  h2.title{
+    margin: 15px;
+    color: #999;
+    font-weight: normal;
+    font-size: 1.5em;
+    padding: 5px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    min-width: 200px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.5);
+  }
+  
   :hover .noTabs{
     color:#bbb;
   }
@@ -116,6 +129,9 @@ body#jenkins.add-item .jenkins-config {
   @find-container-width: 200px;
   .find-container {
     margin:0;
+    position: absolute;
+    right:0;
+    top:3px;
     .find-container(@width: @find-container-width);
   }
 
