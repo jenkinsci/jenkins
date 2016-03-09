@@ -85,8 +85,10 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
-            // Edge case: used jenkins 1 but not saved the system config page, the version is not persisted, returns 1.0
-            if(!Jenkins.getInstance().getJobNames().isEmpty()) { // some jobs configured
+            // Edge case: used Jenkins 1 but did not save the system config page,
+            // the version is not persisted and returns 1.0, so try to check if
+            // they actually did anything
+            if (!Jenkins.getInstance().getItemMap().isEmpty()) {
                 return InstallState.UPGRADE;
             }
             return InstallState.NEW;
