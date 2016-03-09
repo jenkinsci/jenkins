@@ -1,4 +1,28 @@
 <div>
-    These key-value pairs apply for every build on this node and override any global values. They can be used in Jenkins'
-    configuration (as $key or ${key}) and be will added to the environment for processes launched from the build.
+  Environment variables defined here will be made available to every build
+  executed by this agent, and will override any environment variables that have
+  the same <i>Name</i> as those defined on the
+  <a href="../../configure" target="_blank">Configure System</a> page.
+  <p>
+  Using the syntax <code>$NAME</code> or <code>${NAME}</code>
+  (<code>%NAME%</code> on Windows), these variables can be used in job
+  configurations, or from process launched by a build.
+  <p>
+  Jenkins also supports a special syntax, <code>BASE+EXTRA</code>, which allows
+  you to add multiple key-value pairs here, which will be prepended to an
+  existing environment variable.
+  <p>
+  For example, if you have a machine which has <code>PATH=/usr/bin</code>, you
+  could add to the standard path by defining an environment variable here, with
+  the name <code>PATH+LOCAL_BIN</code> and value <code>/usr/local/bin</code>.
+  <br>
+  This would result in <code>PATH=/usr/local/bin:/usr/bin</code> being exported
+  during builds executed on this machine.
+  <code>PATH+LOCAL_BIN=/usr/local/bin</code> will also be exported.
+  <br>
+  Multiple entries are prepended to the "base" variable according to the
+  alphabetical order of the "extra" part  of the name.
+  <p>
+  If the <i>Value</i> is empty or whitespace-only, it will not be added to the
+  environment.
 </div>

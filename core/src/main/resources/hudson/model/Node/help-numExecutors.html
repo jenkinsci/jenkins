@@ -1,15 +1,12 @@
 <div>
-  This controls the number of concurrent builds that Jenkins can perform. So the value
-  affects the overall system load Jenkins may incur.
-  A good value to start with would be the number of processors on your system.
-
+  This controls the number of concurrent builds that Jenkins may perform on the
+  master agent. So the value affects the overall system load Jenkins may incur.
+  A good value to start with would be the number of CPU cores on the machine.
   <p>
-  Increasing this value beyond that would cause each build to take longer, but it could increase
-  the overall throughput, because it allows CPU to build one project while another build is waiting
-  for I/O.
-
+  Increasing this value beyond that would cause each build to take longer, but
+  it could increase the overall throughput. For example, one build may be
+  CPU-bound, and in the meantime another build, which is I/O-bound, can take
+  advantage of the spare I/O capacity at that moment.
   <p>
-  When using Jenkins in the master/agent mode, setting this value to 0 would prevent the master
-  from doing any building on its own.  Agents may not have zero executors, but may be
-  temporarily disabled using the button on the agent's status page.
+  Setting this value to 0 will prevent the master from executing any builds.
 </div>
