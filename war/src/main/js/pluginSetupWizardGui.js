@@ -719,7 +719,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	// Save the proxy config
 	var saveProxyConfig = function() {
 		securityConfig.saveProxy($('iframe[src]').contents().find('form:not(.no-json)'), function() {
-			setPanel(welcomePanel);
+			jenkins.goTo('/'); // this will re-run connectivity test
 		});
 	};
 	

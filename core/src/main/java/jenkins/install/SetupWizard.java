@@ -62,11 +62,6 @@ public class SetupWizard {
             authStrategy.setAllowAnonymousRead(false);
             j.setAuthorizationStrategy(authStrategy);
 
-            // there probably aren't any implementors yet, but just in case
-            for (PermissionAdder adder : ExtensionList.lookup(PermissionAdder.class)) {
-                adder.add(authStrategy, admin, Jenkins.ADMINISTER);
-            }
-            
             // Shut down all the ports we can by default:
             j.setSlaveAgentPort(-1); // -1 to disable
             

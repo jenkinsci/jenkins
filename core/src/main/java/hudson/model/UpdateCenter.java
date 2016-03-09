@@ -302,6 +302,27 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             }
             if (checkJob != null) {
+                boolean isOffline = false;
+                for (ConnectionStatus status : checkJob.connectionStates.values()) {
+                    if(ConnectionStatus.FAILED.equals(status)) {
+                        isOffline = true;
+                        break;
+                    }
+                }
+                if (isOffline) {
+                    // retry connection states if determined to be offline
+                    checkJob.run();
+                    isOffline = false;
+                    for (ConnectionStatus status : checkJob.connectionStates.values()) {
+                        if(ConnectionStatus.FAILED.equals(status)) {
+                            isOffline = true;
+                            break;
+                        }
+                    }
+                    if(!isOffline) { // also need to download the metadata
+                        updateAllSites();
+                    }
+                }
                 return HttpResponses.okJSON(checkJob.connectionStates);
             } else {
                 return HttpResponses.errorJSON(String.format("Unknown site '%s'.", siteId));

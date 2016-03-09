@@ -43,10 +43,10 @@ import java.util.List;
  */
 public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationStrategy {
     /**
-     * Whether to allow anonymouos read access, default behavior
-     * previously was to do so
+     * Whether to allow anonymous read access, for backward compatibility
+     * default is to allow it
      */
-    private boolean authenticatedReadOnly = false;
+    private boolean denyAnonymousReadAccess = false;
     
     @DataBoundConstructor
     public FullControlOnceLoggedInAuthorizationStrategy() {
@@ -54,7 +54,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
 
     @Override
     public ACL getRootACL() {
-        return !authenticatedReadOnly ? ANONYMOUS_READ : AUTHENTICATED_READ;
+        return denyAnonymousReadAccess ? AUTHENTICATED_READ : ANONYMOUS_READ;
     }
 
     public List<String> getGroups() {
@@ -65,12 +65,12 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
      * If true, anonymous read access will be allowed
      */
     public boolean isAllowAnonymousRead() {
-        return !authenticatedReadOnly;
+        return !denyAnonymousReadAccess;
     }
     
     @DataBoundSetter
     public void setAllowAnonymousRead(boolean allowAnonymousRead) {
-        this.authenticatedReadOnly = !allowAnonymousRead;
+        this.denyAnonymousReadAccess = !allowAnonymousRead;
     }
 
     private static final SparseACL AUTHENTICATED_READ = new SparseACL(null);

@@ -24,7 +24,7 @@ exports.saveFirstUser = function($form, success, error) {
  */
 exports.saveProxy = function($form, success, error) {
 	jenkins.staplerPost(
-			'/proxyConfigure',
+			'/pluginManager/proxyConfigure',
 		$form,
 		success, {
 			dataType: 'html',

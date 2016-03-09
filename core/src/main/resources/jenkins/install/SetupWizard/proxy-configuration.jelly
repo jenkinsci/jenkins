@@ -2,10 +2,10 @@
 <l:html norefresh="true" title="${it.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:main-panel>
       <h1>${%HTTP Proxy Configuration}</h1>
-      <f:form method="post" action="proxyConfigure" name="proxyConfigure">
+      <f:form method="post" action="/pluginManager/proxyConfigure" name="proxyConfigure">
         <j:scope>
           <j:set var="instance" value="${app.proxy}"/>
-          <j:set var="descriptor" value="${it.pluginManager.proxyDescriptor}"/>
+          <j:set var="descriptor" value="${app.pluginManager.proxyDescriptor}"/>
           <st:include from="${descriptor}" page="${descriptor.configPage}" />
         </j:scope>
       </f:form>
