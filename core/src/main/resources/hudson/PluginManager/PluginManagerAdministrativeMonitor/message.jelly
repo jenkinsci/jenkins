@@ -4,7 +4,6 @@
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <div style="float:right">
                 <f:submit name="correct" value="${%Correct}"/>
-                <f:submit name="dismiss" value="${%Dismiss}"/>
             </div>
         </form>
             <ul>

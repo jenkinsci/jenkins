@@ -371,7 +371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     for (PluginWrapper plugin: getPlugins()) {
                                         String core = plugin.getManifest().getMainAttributes().getValue("Jenkins-Version");
                                         if (core != null && Jenkins.getVersion().compareTo(new VersionNumber(core)) < 0) {
-                                            String pluginError = "Plugin " + plugin.getLongName() + " requires Jenkins " + core + " or later.";
+                                            String pluginError = Messages.PluginManager_dependency_NotInstalled(new Object[] {plugin.getLongName(), core});
                                             LOGGER.severe(pluginError);
                                             NOTICE.addErrorMessage(pluginError);
                                         }
@@ -499,11 +499,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Depending on whether the user said "dismiss" or "correct", send him to the right place.
          */
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if(req.hasParameter("dismiss")) {
-                disable(true);
-                rsp.sendRedirect(req.getContextPath()+"/manage");
-            } else {
+            if(req.hasParameter("correct")) {
                 rsp.sendRedirect(req.getContextPath()+"/pluginManager");
+
             }
         }
 
