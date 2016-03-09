@@ -106,7 +106,7 @@ function watchScroll(tabControl){
   var $table= tabControl.configTable;
   var $jenkTools = $('#breadcrumbBar');
   var winScoll = $window.scrollTop();
-  var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
+  var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 100;
   
   $tabs.find('.active').removeClass('active');
   
@@ -116,7 +116,7 @@ function watchScroll(tabControl){
         $cat.offset().top - (jenkToolOffset):
           0;
     if(winScoll < catHeight){
-      var $thisTab = $($tabs.get(i));
+      var $thisTab = $($tabs.get(Math.max(i-1,0)));
       var $nav = $thisTab.closest('.tabBar');
       $nav.find('.active').removeClass('active');
       $thisTab.addClass('active');
