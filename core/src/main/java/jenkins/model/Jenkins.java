@@ -191,6 +191,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
@@ -3013,7 +3015,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpCloseDNSMulticast(List<Throwable> errors) {
         if(dnsMultiCast!=null) {
-            LOGGER.log(Level.FINE, "Closing DNS multi-cast service-discovery");
+            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
             try {
                 dnsMultiCast.close();
             } catch (OutOfMemoryError e) {
@@ -3053,11 +3055,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private void _cleanUpShutdownTriggers(List<Throwable> errors) {
         LOGGER.log(Level.FINE, "Shutting down triggers");
         try {
-            java.util.Timer timer = Trigger.timer;
+            final java.util.Timer timer = Trigger.timer;
             if (timer != null) {
-                timer.cancel();
+                final CountDownLatch latch = new CountDownLatch(1);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        timer.cancel();
+                        latch.countDown();
+                    }
+                }, 0);
+                if (latch.await(10, TimeUnit.SECONDS)) {
+                    LOGGER.log(Level.FINE, "Triggers shut down successfully");
+                } else {
+                    timer.cancel();
+                    LOGGER.log(Level.INFO, "Gave up waiting for triggers to finish running");
+                }
             }
-            // TODO: how to wait for the completion of the last job?
             Trigger.timer = null;
         } catch (OutOfMemoryError e) {
             // we should just propagate this, no point trying to log
