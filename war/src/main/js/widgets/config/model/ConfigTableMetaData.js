@@ -234,7 +234,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if (typeof section === 'string') {
         section = this.getSection(section);
     }
-    if(!section) return;
+    if(!section) {return;}
 
     var $ = this.$;
     var $header = $(section.headerRow).show();
@@ -250,6 +250,9 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if (section) {
         var topRows = this.getTopRows();
 
+        // Deactivate currently active section ...
+        this.deactivateActiveSection();
+
         // Active the specified section
         section.activator.addClass('active');
         section.markRowsAsActive();
@@ -264,13 +267,14 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     }
 };
 
-ConfigTableMetaData.prototype.deactivateActiveSection = function() {
+ConfigTableMetaData.prototype.deactivateActiveSection = function(hideRows) {
     var topRows = this.getTopRows();
     var $ = jQD.getJQuery();
 
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     topRows.filter('.active').removeClass('active');
-    topRows.hide();
+    if(hideRows) 
+    	{topRows.hide();}
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
@@ -287,6 +291,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             if (!activeSection) {
                 this.showSection(this.sections[0]);
             } else {
+        	this.deactivateActiveSection(true);
                 activeSection.highlightText(this.findInput.val());
             }
         }

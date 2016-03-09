@@ -35,7 +35,7 @@ $(function() {
                     if (generalSection) {
                         generalSection.adoptSection('config_advanced_project_options');
                     }
-                    console.log('??????');
+
                     addFinderToggle(tabBar);
                     tabBar.onShowSection(function() {
                         // Hook back into hudson-behavior.js
@@ -58,7 +58,7 @@ $(function() {
                         tabBar.showSection(tabBarLastSection);
                     }
                     watchScroll(tabBar);
-                    $(window).on('scroll',function(){watchScroll(tabBar)});
+                    $(window).on('scroll',function(){watchScroll(tabBar);});
                 });
                 
             } else {
@@ -104,8 +104,7 @@ function watchScroll(tabControl){
   var $tabBox= tabControl.configWidgets;
   var $tabs = $tabBox.find('.tab');
   var $table= tabControl.configTable;
-  var toolbarFromTop = $tabs.offset().top;
-  var $jenkTools = $('#breadcrumbBar')
+  var $jenkTools = $('#breadcrumbBar');
   var winScoll = $window.scrollTop();
   var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
   
