@@ -47,7 +47,9 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -215,8 +217,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstanceOrNull(); // this code might run on slaves
-        ProxyConfiguration p = h!=null ? h.proxy : null;
+        final ProxyConfiguration p = get();
         if(p==null)
             return url.openConnection();
 
@@ -227,22 +228,21 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 @Override
                 public PasswordAuthentication getPasswordAuthentication() {
                     if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Jenkins.getInstance().proxy;
                     return new PasswordAuthentication(p.getUserName(),
                             p.getPassword().toCharArray());
                 }
             });
         }
 
-        for (URLConnectionDecorator d : URLConnectionDecorator.all())
-            d.decorate(con);
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+            decorate(con);
+        }
 
         return con;
     }
-    
+
     public static InputStream getInputStream(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstanceOrNull(); // this code might run on slaves
-        final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        final ProxyConfiguration p = get();
         if (p == null) 
             return new RetryableHttpStream(url);
 
@@ -262,6 +262,25 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         return is;
+    }
+
+    @CheckForNull
+    private static ProxyConfiguration get() {
+        if (JenkinsJVM.isJenkinsJVM()) {
+            return _get();
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static ProxyConfiguration _get() {
+        JenkinsJVM.checkJenkinsJVM();
+        return Jenkins.getInstance().proxy;
+    }
+
+    private static void decorate(URLConnection con) throws IOException {
+        for (URLConnectionDecorator d : URLConnectionDecorator.all())
+            d.decorate(con);
     }
 
     private static final XStream XSTREAM = new XStream2();

@@ -178,6 +178,7 @@ import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
+import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
@@ -198,6 +199,7 @@ import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
 import net.sf.json.JSONObject;
@@ -770,6 +772,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+        JenkinsJVMAccess._setJenkinsJVM(true); // set it for unit tests as they will not have gone through WebAppMain
         long start = System.currentTimeMillis();
 
     	// As Jenkins is starting, grant this process full control
@@ -2902,6 +2905,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
             }
 
+        PluginServletFilter.cleanUp();
+
         LogFactory.releaseAll();
 
         theInstance = null;
@@ -4351,6 +4356,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         } catch (Error e) {
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
+        }
+    }
+
+    private static final class JenkinsJVMAccess extends JenkinsJVM {
+        private static void _setJenkinsJVM(boolean jenkinsJVM) {
+            JenkinsJVM.setJenkinsJVM(jenkinsJVM);
         }
     }
 
