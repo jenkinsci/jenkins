@@ -739,6 +739,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
+    private transient final boolean oldJenkinsJVM;
+
     protected Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root,context,null);
     }
@@ -752,6 +754,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+        oldJenkinsJVM = JenkinsJVM.isJenkinsJVM(); // capture to restore in cleanUp()
         JenkinsJVMAccess._setJenkinsJVM(true); // set it for unit tests as they will not have gone through WebAppMain
         long start = System.currentTimeMillis();
 
@@ -2890,6 +2893,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         LogFactory.releaseAll();
 
         theInstance = null;
+        if (JenkinsJVM.isJenkinsJVM()) {
+            JenkinsJVMAccess._setJenkinsJVM(oldJenkinsJVM);
+        }
     }
 
     public Object getDynamic(String token) {
