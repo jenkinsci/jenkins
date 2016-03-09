@@ -2870,16 +2870,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
-                boolean first = true;
-                for (Throwable e : errors) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        message.append("; ");
-                    }
-                    message.append(e.getMessage());
+                Iterator<Throwable> iterator = errors.iterator();
+                message.append(iterator.next().getMessage());
+                while (iterator.hasNext()) {
+                    message.append("; ");
+                    message.append(iterator.next().getMessage());
                 }
-                throw new RuntimeException(message.toString(), errors.get(0));
+                iterator = errors.iterator();
+                RuntimeException exception = new RuntimeException(message.toString(), iterator.next());
+                while (iterator.hasNext()) {
+                    exception.addSuppressed(iterator.next());
+                }
+                throw exception;
             }
         } finally {
             theInstance = null;
