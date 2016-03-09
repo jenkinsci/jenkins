@@ -31,6 +31,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.List;
 
@@ -47,11 +48,15 @@ public class ManagementLinkTest {
      */
     @Test
     public void links() throws Exception {
-        HtmlPage page = j.createWebClient().goTo("manage");
-        List<?> anchors = DomNodeUtil.selectNodes(page, "id('management-links')//*[@class='link']/a[not(@onclick)]");
-        assertTrue(anchors.size()>=8);
-        for(HtmlAnchor e : (List<HtmlAnchor>) anchors) {
-            e.click();
+        WebClient wc = j.createWebClient();
+
+        for (int i=0; ; i++) {
+            HtmlPage page = wc.goTo("manage");
+            List<?> anchors = DomNodeUtil.selectNodes(page, "id('management-links')//*[@class='link']/a[not(@onclick)]");
+            assertTrue(anchors.size()>=8);
+            if (i==anchors.size())  return; // done
+
+            ((HtmlAnchor)anchors.get(i)).click();
         }
     }
 }
