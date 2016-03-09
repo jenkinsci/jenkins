@@ -46,10 +46,10 @@ exports.addTabs = function(configTable) {
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');
-    var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">untab</div>');
+    var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">Remove tabs</div>');
 
     configTableMetadata.configWidgets.append(tabs);
-    tabs.append(noTabs);
+    configTableMetadata.configWidgets.prepend(noTabs);
     tabs.append(tabBar);
 
     tabs.mouseenter(function() {
@@ -60,7 +60,7 @@ exports.addTabs = function(configTable) {
     });
     configTableMetadata.deactivator = noTabs;
 
-    // Always activate the first section by default.
+    // Always activate the first section by default. 
     configTableMetadata.activateFirstSection();
 
     return configTableMetadata;
@@ -68,7 +68,7 @@ exports.addTabs = function(configTable) {
 
 exports.addTabsActivator = function(configTable) {
     var $ = jQD.getJQuery();
-    var configWidgets = $('<div class="jenkins-config-widgets"><span class="showTabs" title="Add configuration section tabs">tab</span></div>');
-    configWidgets.insertBefore(configTable);
+    var configWidgets = $('<div class="jenkins-config-widgets"><div class="showTabs" title="Add configuration section tabs">Add tabs</div></div>');
+    configWidgets.insertBefore(configTable.parent());
     return configWidgets;
 };
