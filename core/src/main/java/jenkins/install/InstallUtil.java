@@ -61,10 +61,8 @@ public class InstallUtil {
 
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
-    // must use something less than 1.0, as Jenkins may
-    // report back 1.0 if the system config page has never been saved,
-    // which erroneously leads to installer running
-    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("0.0.0");
+    // tests need this to be 1.0
+    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
 
     /**
      * Get the current installation state.
@@ -87,6 +85,10 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+            // Edge case: used jenkins 1 but not saved the system config page, the version is not persisted, returns 1.0
+            if(!Jenkins.getInstance().getJobNames().isEmpty()) { // some jobs configured
+                return InstallState.UPGRADE;
+            }
             return InstallState.NEW;
         }
 
