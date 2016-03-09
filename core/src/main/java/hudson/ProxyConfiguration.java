@@ -275,7 +275,9 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     @CheckForNull
     private static ProxyConfiguration _get() {
         JenkinsJVM.checkJenkinsJVM();
-        return Jenkins.getInstance().proxy;
+        // this code could be called between the JVM flag being set and theInstance initialized
+        Jenkins jenkins = Jenkins.getInstance();
+        return jenkins == null ? null : jenkins.proxy;
     }
 
     private static void decorate(URLConnection con) throws IOException {
