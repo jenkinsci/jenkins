@@ -61,6 +61,7 @@ public class InstallUtil {
 
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
+    // tests need this to be 1.0
     private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
 
     /**
@@ -68,8 +69,15 @@ public class InstallUtil {
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static InstallState getInstallState() {
-        if (Functions.getIsUnitTest()) {
-            return InstallState.TEST;
+        // install wizard will always run if environment specified
+        if (!Boolean.getBoolean("jenkins.install.runSetupWizard")) {
+            if (Functions.getIsUnitTest()) {
+                return InstallState.TEST;
+            }
+            
+            if (Boolean.getBoolean("hudson.Main.development")) {
+                return InstallState.DEVELOPMENT;
+            }
         }
 
         VersionNumber lastRunVersion = new VersionNumber(getLastExecVersion());
@@ -77,6 +85,12 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+            // Edge case: used Jenkins 1 but did not save the system config page,
+            // the version is not persisted and returns 1.0, so try to check if
+            // they actually did anything
+            if (!Jenkins.getInstance().getItemMap().isEmpty()) {
+                return InstallState.UPGRADE;
+            }
             return InstallState.NEW;
         }
 

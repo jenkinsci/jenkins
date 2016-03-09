@@ -28,15 +28,15 @@ exports.stringify = function(o) {
 			h: Hash.prototype.toJSON,
 			s: String.prototype.toJSON
 		};
-	    try {
-	        delete Array.prototype.toJSON;
+		try {
+			delete Array.prototype.toJSON;
 		delete Object.prototype.toJSON;
-	        delete Hash.prototype.toJSON;
-	        delete String.prototype.toJSON;
+			delete Hash.prototype.toJSON;
+			delete String.prototype.toJSON;
 
 		return JSON.stringify(o);
-	    }
-	    finally {
+		}
+		finally {
 		if(protoJSON.a) {
 			Array.prototype.toJSON = protoJSON.a;
 		}
@@ -49,7 +49,7 @@ exports.stringify = function(o) {
 		if(protoJSON.s) {
 			String.prototype.toJSON = protoJSON.s;
 		}
-	    }
+		}
 	}
 	else {
 		return JSON.stringify(o);
@@ -67,7 +67,7 @@ exports.idIfy = function(str) {
  * redirect
  */
 exports.goTo = function(url) {
-    wh.getWindow().location.replace(exports.baseUrl() + url);
+	wh.getWindow().location.replace(exports.baseUrl() + url);
 };
 
 /**
@@ -76,13 +76,13 @@ exports.goTo = function(url) {
  */
 exports.get = function(url, success, options) {
 	if(debug) {
-        console.log('get: ' + url);
-    }
+		console.log('get: ' + url);
+	}
 	var $ = jquery.getJQuery();
 	var args = {
 		url: exports.baseUrl() + url,
 		type: 'GET',
-	    cache: false,
+		cache: false,
 		dataType: 'json',
 		success: success
 	};
@@ -98,22 +98,49 @@ exports.get = function(url, success, options) {
  */
 exports.post = function(url, data, success, options) {
 	if(debug) {
-        console.log('post: ' + url);
-    }
+		console.log('post: ' + url);
+	}
+	
 	var $ = jquery.getJQuery();
+	
+	// handle crumbs
+	var headers = {};
+	var wnd = wh.getWindow();
+	var crumb;
+	if('crumb' in options) {
+		crumb = options.crumb;
+	}
+	else if('crumb' in wnd) {
+		crumb = wnd.crumb;
+	}
+	
+	if(crumb) {
+		headers[crumb.fieldName] = crumb.value;
+	}
+	
+	var formBody = data;
+	if(formBody instanceof Object) {
+		if(crumb) {
+			formBody = $.extend({}, formBody);
+			formBody[crumb.fieldName] = crumb.value;
+		}
+		formBody = exports.stringify(formBody);
+	}
+	
 	var args = {
 		url: exports.baseUrl() + url,
 		type: 'POST',
-	    cache: false,
+		cache: false,
 		dataType: 'json',
-	    data: exports.stringify(data),
-	    contentType: "application/json",
-		success: success
+		data: formBody,
+		contentType: "application/json",
+		success: success,
+		headers: headers
 	};
 	if(options instanceof Object) {
 		$.extend(args, options);
 	}
-    $.ajax(args);
+	$.ajax(args);
 };
 
 /**
@@ -124,20 +151,20 @@ exports.initHandlebars = function() {
 
 	Handlebars.registerHelper('ifeq', function(o1, o2, options) {
 		if(o1 === o2) {
-            return options.fn();
-        }
+			return options.fn();
+		}
 	});
 
 	Handlebars.registerHelper('ifneq', function(o1, o2, options) {
 		if(o1 !== o2) {
-            return options.fn();
-        }
+			return options.fn();
+		}
 	});
 
 	Handlebars.registerHelper('in-array', function(arr, val, options) {
 		if(arr.indexOf(val) >= 0) {
-            return options.fn();
-        }
+			return options.fn();
+		}
 	});
 
 	Handlebars.registerHelper('id', exports.idIfy);
@@ -185,4 +212,65 @@ exports.testConnectivity = function(handler) {
 		});
 	};
 	testConnectivity();
+};
+
+/**
+ * gets the window containing a form, taking in to account top-level iframes
+ */
+exports.getWindow = function($form) {
+	var $ = jquery.getJQuery();
+	$form = $($form);
+	var wnd = wh.getWindow();
+	$(top.document).find('iframe').each(function() {
+		var windowFrame = this.contentWindow;
+		var $f = $(this).contents().find('form');
+		if($f.length > 0 && $form[0] === $f[0]) {
+			wnd = windowFrame;
+		}
+	});
+	return wnd;
+};
+
+/**
+ * Builds a stapler form post
+ */
+exports.buildFormPost = function($form) {
+	var $ = jquery.getJQuery();
+	$form = $($form);
+	var wnd = exports.getWindow($form);
+	var form = $form[0];
+	if(wnd.buildFormTree(form)) {
+		return $form.serialize() +
+			'&core:apply=&Submit=Save&json=' + $form.find('input[name=json]').val();
+	}
+	return '';
+};
+
+/**
+ * Gets the crumb, if crumbs are enabled
+ */
+exports.getFormCrumb = function($form) {
+	var $ = jquery.getJQuery();
+	$form = $($form);
+	var wnd = exports.getWindow($form);
+	return wnd.crumb;
+};
+
+/**
+ * Jenkins Stapler JSON POST callback
+ * If last parameter is an object, will be extended to jQuery options (e.g. pass { error: function() ... } to handle errors)
+ */
+exports.staplerPost = function(url, $form, success, options) {
+	var $ = jquery.getJQuery();
+	$form = $($form);
+	var postBody = exports.buildFormPost($form);
+	var crumb = exports.getFormCrumb($form);
+	exports.post(
+		url,
+		postBody,
+		success, $.extend({
+			processData: false,
+			contentType: 'application/x-www-form-urlencoded',
+			crumb: crumb
+		}, options));
 };
