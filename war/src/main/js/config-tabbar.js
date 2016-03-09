@@ -35,7 +35,6 @@ $(function() {
                     if (generalSection) {
                         generalSection.adoptSection('config_advanced_project_options');
                     }
-                    console.log('??????');
                     addFinderToggle(tabBar);
                     tabBar.onShowSection(function() {
                         // Hook back into hudson-behavior.js

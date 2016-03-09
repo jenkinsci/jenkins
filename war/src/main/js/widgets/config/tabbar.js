@@ -47,9 +47,12 @@ exports.addTabs = function(configTable) {
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');
     var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">Remove tabs</div>');
-
+    var title = $('#main-panel input[name="name"]').val();
+    var h2 = $('<h2 class="title" />').text(title);
+    
+    configTableMetadata.configWidgets.append(h2);
     configTableMetadata.configWidgets.append(tabs);
-    configTableMetadata.configWidgets.prepend(noTabs);
+    //configTableMetadata.configWidgets.prepend(noTabs);
     tabs.append(tabBar);
 
     tabs.mouseenter(function() {
