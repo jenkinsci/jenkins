@@ -115,14 +115,13 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
      * Determines the parameter injection of the initialization method.
      */
     private Object lookUp(Class<?> type) {
-        if (type==Jenkins.class || type==Hudson.class)
-            return Jenkins.getInstance();
         Jenkins j = Jenkins.getInstance();
-        if (j!=null) {
-            Injector i = j.getInjector();
-            if (i!=null)
-                return i.getInstance(type);
-        }
+        assert j != null : "This method is only invoked after the Jenkins singleton instance has been set";
+        if (type==Jenkins.class || type==Hudson.class)
+            return j;
+        Injector i = j.getInjector();
+        if (i!=null)
+            return i.getInstance(type);
         throw new IllegalArgumentException("Unable to inject "+type);
     }
 
