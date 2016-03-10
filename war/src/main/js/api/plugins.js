@@ -127,7 +127,7 @@ exports.availablePlugins = [
             // { "name": "matrix-auth" },
             { "name": "pam-auth" },
             { "name": "ldap" },
-            { "name": "role-strategy" },
+            // { "name": "role-strategy" },
             { "name": "active-directory" }
         ]
     },
