@@ -127,26 +127,24 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
     });
 
     var findTimeout;
-    thisTMD.findInput.keydown(function() {
+    thisTMD.findInput.keyup(function() {
+
+      var val = thisTMD.findInput.val();
       
-      //keydown needs to wait a pulse for the value to be applied to the input.
-      setTimeout(function(){
-        var val = thisTMD.findInput.val();
-        
-        //if the keydown does not set a value, this filtering should exit.
-        if(val === ''){
-          return false;
-        }
-      
-        if (findTimeout) {
-            clearTimeout(findTimeout);
-            findTimeout = undefined;
-        }
-        findTimeout = setTimeout(function() {
-            findTimeout = undefined;
-            thisTMD.showSections(thisTMD.findInput.val());
-        }, 300);
-      },1);
+      //if the keydown does not set a value, this filtering should exit.
+      if(val === ''){
+        return false;
+      }
+    
+      if (findTimeout) {
+          clearTimeout(findTimeout);
+          findTimeout = undefined;
+      }
+      findTimeout = setTimeout(function() {
+          findTimeout = undefined;
+          thisTMD.showSections(thisTMD.findInput.val());
+      }, 300);
+
     });
 
     this.configWidgets.append(findWidget);
@@ -285,7 +283,7 @@ ConfigTableMetaData.prototype.deactivateActiveSection = function(hideRows) {
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     topRows.filter('.active').removeClass('active');
     if(hideRows) 
-    	{topRows.hide();}
+      {topRows.hide();}
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
@@ -302,7 +300,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             if (!activeSection) {
                 this.showSection(this.sections[0]);
             } else {
-        	this.deactivateActiveSection(true);
+          this.deactivateActiveSection(true);
                 activeSection.highlightText(this.findInput.val());
             }
         }
