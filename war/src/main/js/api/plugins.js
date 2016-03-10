@@ -50,15 +50,15 @@ exports.availablePlugins = [
         "description":"Add general purpose features to your jobs",
         "plugins": [
             { "name": "ansicolor" },
-            { "name": "build-name-setter" },
+            // { "name": "build-name-setter" },
             { "name": "build-timeout" },
             { "name": "config-file-provider" },
             { "name": "credentials-binding" },
             { "name": "rebuild" },
             { "name": "ssh-agent" },
-            { "name": "throttle-concurrents" },
-            { "name": "timestamper" },
-            { "name": "ws-cleanup" }
+            // { "name": "throttle-concurrents" },
+            { "name": "timestamper" }
+            // { "name": "ws-cleanup" }
         ]
     },
     {
