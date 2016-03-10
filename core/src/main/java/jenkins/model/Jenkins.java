@@ -1001,9 +1001,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         }
                     }
                 } catch (BindException e) {
+                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming slave connections through JNLP port %s. Change the JNLP port number", slaveAgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
-                            "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
+                            "Failed to listen to incoming slave connections through JNLP",
+                            "Failed to listen to incoming slave connections through JNLP. <a href='configureSecurity'>Change the JNLP port number</a> to solve the problem.", e);
                 }
             }
         }
