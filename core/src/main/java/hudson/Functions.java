@@ -74,6 +74,8 @@ import hudson.tasks.Publisher;
 import hudson.tasks.UserAvatarResolver;
 import hudson.util.Area;
 import hudson.util.FormValidation.CheckMethod;
+import hudson.util.HudsonIsLoading;
+import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.jna.GNUCLibrary;
 import hudson.util.Secret;
@@ -207,20 +209,28 @@ public class Functions {
 
     /**
      * During Jenkins start-up, before {@link InitMilestone#PLUGINS_STARTED} the extensions lists will be empty
-     * and they are not guaranteed to be fully populated until after {@link InitMilestone#EXTENSIONS_AUGMENTED}.
+     * and they are not guaranteed to be fully populated until after {@link InitMilestone#EXTENSIONS_AUGMENTED},
+     * similarly, during termination after {@link Jenkins#isTerminating()} is set, it is no longer safe to access
+     * the extensions lists.
      * If you attempt to access the extensions list from a UI thread while the extensions are being loaded you will
      * hit a big honking great monitor lock that will block until the effective extension list has been determined
      * (as if a plugin fails to start, all of the failed plugin's extensions and any dependent plugins' extensions
      * will have to be evicted from the list of extensions. In practical terms this only affects the
      * "Jenkins is loading" screen, but as that screen uses the generic layouts we provide this utility method
      * so that the generic layouts can avoid iterating extension lists while Jenkins is starting up.
+     * If you attempt to access the extensions list from a UI thread while Jenkins is being shut down, the extensions
+     * themselves may no longer be in a valid state and could attempt to revive themselves and block termination.
+     * In actual terms the termination only affects those views required to render {@link HudsonIsRestarting}'s
+     * {@code index.jelly} which is the same set as the {@link HudsonIsLoading} pages so it makes sense to
+     * use both checks here.
      *
      * @return {@code true} if the extensions lists have been populated.
      * @since 1.607
      */
     public static boolean isExtensionsAvailable() {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        return jenkins != null && jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0;
+        return jenkins != null && jenkins.getInitLevel().compareTo(InitMilestone.EXTENSIONS_AUGMENTED) >= 0
+                && !jenkins.isTerminating();
     }
 
     public static void initPageVariables(JellyContext context) {
