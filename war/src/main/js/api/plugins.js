@@ -100,12 +100,17 @@ exports.availablePlugins = [
         "category":"Source Code Management",
         "plugins": [
             { "name": "bitbucket" },
+            { "name": "clearcase" },
             { "name": "cvs" },
             { "name": "git" },
             { "name": "git-parameter" },
             { "name": "github" },
             { "name": "gitlab-plugin" },
-            { "name": "subversion" }
+            { "name": "p4" },
+            { "name": "repo" },
+            { "name": "subversion" },
+            { "name": "teamconcert" },
+            { "name": "tfs" }
         ]
     },
     {
