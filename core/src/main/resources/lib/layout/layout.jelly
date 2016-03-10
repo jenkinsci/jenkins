@@ -37,7 +37,7 @@ THE SOFTWARE.
       If non-null and not "false", auto refresh is disabled on this page.
       This is necessary for pages that include forms.
     </st:attribute>
-    <st:attribute name="cssclass" deprecated="true">
+    <st:attribute name="cssclass">
       specify a css class name to include in the top level of this layout dom.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
