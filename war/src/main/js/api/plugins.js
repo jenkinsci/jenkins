@@ -10,6 +10,7 @@
 exports.recommendedPlugins = [
     "antisamy-markup-formatter",
     "credentials",
+    "git",
     "github-branch-source",
     "junit",
     "mailer",
@@ -63,10 +64,21 @@ exports.availablePlugins = [
         ]
     },
     {
-        "category":"SCM",
+        "category":"Source Code Management",
         "plugins": [
+            { "name": "git" },
+            { "name": "subversion" },
+            { "name": "clearcase" },
             { "name": "cvs" },
-            { "name": "subversion" }
+            { "name": "gitbucket" },
+            { "name": "github" },
+            { "name": "gitlab-merge-request-jenkins" },
+            { "name": "gitlab-plugin" },
+            { "name": "mercurial" },
+            { "name": "p4" },
+            { "name": "repo" },
+            { "name": "teamconcert" },
+            { "name": "tfs" }
         ]
     },
     {
