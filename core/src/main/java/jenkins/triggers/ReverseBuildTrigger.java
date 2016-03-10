@@ -106,7 +106,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins == null || job == null) {
             return false;
         }
@@ -202,7 +202,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Jenkins jenkins = Jenkins.getInstance();
+                    Jenkins jenkins = Jenkins.getInstanceOrNull();
                     if (jenkins == null) {
                         return FormValidation.ok();
                     }
@@ -253,7 +253,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     @Extension public static class ItemListenerImpl extends ItemListener {
         @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins == null) {
                 return;
             }

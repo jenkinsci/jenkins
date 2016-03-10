@@ -223,7 +223,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
-        if (Jenkins.getInstance() == null) {
+        if (Jenkins.getInstanceOrNull() == null) {
             return;
         }
         for (RunListener l : all()) {

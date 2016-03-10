@@ -238,7 +238,7 @@ public class WebAppMain implements ServletContextListener {
                     } catch (Exception e) {
                         new HudsonFailedToLoad(e).publish(context,_home);
                     } finally {
-                        Jenkins instance = Jenkins.getInstance();
+                        Jenkins instance = Jenkins.getInstanceOrNull();
                         if(!success && instance!=null)
                             instance.cleanUp();
                     }
@@ -395,7 +395,7 @@ public class WebAppMain implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent event) {
         try {
             terminated = true;
-            Jenkins instance = Jenkins.getInstance();
+            Jenkins instance = Jenkins.getInstanceOrNull();
             if(instance!=null)
                 instance.cleanUp();
             Thread t = initThread;

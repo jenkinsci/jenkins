@@ -105,7 +105,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     }
 
     private static void remove(Saveable obj, boolean isDelete) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
             OldDataMonitor odm = get(j);
             SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
@@ -206,7 +206,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
             }
         }
         if (buf.length() == 0) return;
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             // Startup failed, something is very broken, so report what we can.
             for (Throwable t : errors) {

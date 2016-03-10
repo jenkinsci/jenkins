@@ -564,8 +564,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      null if the configuration has changed and the node is removed, yet the corresponding {@link Computer}
      *      is not yet gone.
      */
-    public @CheckForNull Node getNode() {
-        Jenkins j = Jenkins.getInstance();
+    @CheckForNull
+    public Node getNode() {
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return null;
         }
@@ -1011,7 +1012,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     executors.remove(e);
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
-                        AbstractCIBase ciBase = Jenkins.getInstance();
+                        AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
                         if (ciBase != null) {
                             ciBase.removeComputer(Computer.this);
                         }
