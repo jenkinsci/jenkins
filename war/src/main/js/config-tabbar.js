@@ -105,8 +105,7 @@ function watchScroll(tabControl){
   var $tabs = $tabBox.find('.tab');
   var $table= tabControl.configTable;
   var $jenkTools = $('#breadcrumbBar');
-  var winScoll = $window.scrollTop();
-  var floorSwitch = 200;   
+  var winScoll = $window.scrollTop(); 
   var categories = tabControl.sections;
   var jenkToolOffset = ($jenkTools.height() + $jenkTools.offset().top);
 
@@ -131,9 +130,8 @@ function watchScroll(tabControl){
     var catHeight = getCatTop($nextCat) - catTop;
 
 		// the trigger point to change the tab happens when the scroll position passes below the height of the category...
-		// ...but we want to wait to advance the tab until the existing category is 85% off the top...
-    if(winScoll < (catTop + (.85 * catHeight))){
-    	var $tabOffset = $($tabs.get(Math.max(i-1,0)));
+		// ...but we want to wait to advance the tab until the existing category is 75% off the top...
+    if(winScoll < (catTop + (0.75 * catHeight))){
       var $thisTab = $($tabs.get(i));
       var $nav = $thisTab.closest('.tabBar');
       $nav.find('.active').removeClass('active');
