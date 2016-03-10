@@ -118,11 +118,8 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     private boolean hasPermissionToSeeToken() {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return false; // Should not happen - we don't display UIs in this stage
-        }
-        
+        final Jenkins jenkins = Jenkins.getInstance();
+
         // Administrators can do whatever they want
         if (SHOW_TOKEN_TO_ADMINS && jenkins.hasPermission(Jenkins.ADMINISTER)) {
             return true;

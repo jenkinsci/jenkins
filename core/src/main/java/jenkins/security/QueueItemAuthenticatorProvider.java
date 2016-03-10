@@ -2,6 +2,7 @@ package jenkins.security;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 
@@ -32,10 +33,7 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
         private Iterator<QueueItemAuthenticator> delegate = null;
 
         private IteratorImpl() {
-            final Jenkins jenkins = Jenkins.getInstanceOrNull();
-            providers = new ArrayList<QueueItemAuthenticatorProvider>(jenkins == null
-                    ? Collections.<QueueItemAuthenticatorProvider>emptyList()
-                    : jenkins.getExtensionList(QueueItemAuthenticatorProvider.class)).iterator();
+            providers = ExtensionList.lookup(QueueItemAuthenticatorProvider.class).iterator();
         }
 
         @Override

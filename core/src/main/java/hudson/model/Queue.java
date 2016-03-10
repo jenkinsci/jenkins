@@ -1182,6 +1182,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static void withLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             runnable.run();
@@ -1203,6 +1204,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static <V, T extends Throwable> V withLock(hudson.remoting.Callable<V, T> callable) throws T {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             return callable.call();
@@ -1223,6 +1225,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static <V> V withLock(java.util.concurrent.Callable<V> callable) throws Exception {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             return callable.call();
@@ -1240,6 +1243,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static boolean tryWithLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             runnable.run();
@@ -1256,6 +1260,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static Runnable wrapWithLock(Runnable runnable) {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? runnable : new LockedRunnable(runnable);
     }
@@ -1268,6 +1273,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static <V, T extends Throwable> hudson.remoting.Callable<V, T> wrapWithLock(hudson.remoting.Callable<V, T> callable) {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? callable : new LockedHRCallable<>(callable);
     }
@@ -1280,6 +1286,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     public static <V> java.util.concurrent.Callable<V> wrapWithLock(java.util.concurrent.Callable<V> callable) {
         final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? callable : new LockedJUCCallable<V>(callable);
     }

@@ -106,8 +106,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null || job == null) {
+        Jenkins jenkins = Jenkins.getInstance();
+        if (job == null) {
             return false;
         }
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
@@ -202,11 +202,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Jenkins jenkins = Jenkins.getInstanceOrNull();
-                    if (jenkins == null) {
-                        return FormValidation.ok();
-                    }
-                    Job item = jenkins.getItem(projectName, project, Job.class);
+                    Job item = Jenkins.getInstance().getItem(projectName, project, Job.class);
                     if (item == null) {
                         Job nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
@@ -253,11 +249,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     @Extension public static class ItemListenerImpl extends ItemListener {
         @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins == null) {
-                return;
-            }
-            for (Job<?,?> p : jenkins.getAllItems(Job.class)) {
+            for (Job<?,?> p : Jenkins.getInstance().getAllItems(Job.class)) {
                 ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                 if (t != null) {
                     String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p.getParent());
