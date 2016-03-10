@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Copyright (c) 2004-2016, Sun Microsystems, Inc., Kohsuke Kawaguchi,
 Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
 Michelin, Romain Seguy
 
@@ -36,9 +36,6 @@ THE SOFTWARE.
     <st:attribute name="norefresh">
       If non-null and not "false", auto refresh is disabled on this page.
       This is necessary for pages that include forms.
-    </st:attribute>
-    <st:attribute name="cssclass">
-      specify a css class name to include in the top level of this layout dom.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
@@ -99,13 +96,7 @@ ${h.initPageVariables(context)}
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
     <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
-    
-    <!-- should the sidebar be hidden on load? -->
-    <style>
-      body.j-hide-left #side-panel{width:0; padding:0; overflow:hidden;}
-      body.j-hide-left #main-panel{margin:0 auto; max-width:900px;}
-    </style>
-    
+
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
@@ -164,125 +155,23 @@ ${h.initPageVariables(context)}
       </j:forEach>
     </j:if>
 
-	<j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getActiveInstance" />
+  <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getActiveInstance" />
     <j:set var="installState" value="${j.installState.name()}" />
+    <j:if test="${installState == 'NEW' || installState == 'INITIAL_PLUGINS_INSTALLING'}">
+      <script src="${resURL}/${j.installWizardPath}.js" type="text/javascript"/>
+      <link rel="stylesheet" href="${resURL}/${j.installWizardPath}.css" type="text/css" />
+    </j:if>
 
     <j:if test="${isMSIE}">
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
 
-    <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
-
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${attrs.cssClass}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
-    <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
-    <a href="#skip2content" class="skiplink">Skip to content</a>
-
-    <div id="page-head">
-      <div id="header">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="title" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" />
-          </a>
-        </div>
-        <div class="login">
-          <!-- login field -->
-          <j:if test="${app.useSecurity}">
-            <st:nbsp/>
-            <j:choose>
-              <j:when test="${!h.isAnonymous()}">
-                <j:invokeStatic var="user" className="hudson.model.User" method="current" />
-                <j:choose>
-                  <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-                    <j:set var="userName" value="${user.id}"/>
-                  </j:when>
-                  <j:otherwise>
-                    <j:set var="userName" value="${user.fullName}"/>
-                  </j:otherwise>
-                </j:choose>
-                <span style="white-space:nowrap">
-                  <a href="${rootURL}/user/${user.id}" class="model-link inside inverse"><b>${userName}</b></a>
-                  <j:if test="${app.securityRealm.canLogOut()}">
-                    |
-                    <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                  </j:if>
-                </span>
-              </j:when>
-              <j:otherwise>
-                <st:include it="${app.securityRealm}" page="loginLink.jelly" />
-              </j:otherwise>
-            </j:choose>
-          </j:if>
-        </div>
-        <div class="searchbox hidden-xs">
-          <!-- search box -->
-          <j:set var="searchURL" value="${h.searchURL}"/>
-          <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search">
-            <!-- this div determines the minimum width -->
-            <div id="search-box-minWidth"/>
-            <!-- this div is used to calculate the width of the text box -->
-            <div id="search-box-sizer"/>
-            <div id="searchform">
-              <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
-              <st:nbsp />
-              <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
-              <div id="search-box-completion" />
-              <script>createSearchBox("${searchURL}");</script>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div id="breadcrumbBar">
-        <l:breadcrumbBar>
-          <j:set var="mode" value="breadcrumbs" />
-          <d:invokeBody/>
-        </l:breadcrumbBar>
-      </div>
-    </div>
-
-    <div id="page-body" class="clear">
-      <div id="side-panel">
-        <j:set var="mode" value="side-panel" />
-        <d:invokeBody />
-  
-        <!-- add YUI logger if debugging YUI -->
-        <j:if test="${h.yuiSuffix=='debug'}">
-        <div id="yui-logreader" style="margin-top:1em"/>
-          <script>
-            Behaviour.addLoadEvent(function(){
-              var logReader = new YAHOO.widget.LogReader("yui-logreader");
-              logReader.collapse();
-            });
-          </script>
-        </j:if>
-      </div>
-      <div id="main-panel">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+      <div id="main-panel" style="margin-left: 0;">
          <j:set var="mode" value="main-panel" />
-         <d:invokeBody/>
+         <d:invokeBody />
       </div>
-    </div>
-
-    <footer>
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6" id="footer"></div>
-          <div class="col-md-18">
-            <span class="page_generated">${%Page generated}: <i:formatDate value="${h.getCurrentTime()}" type="both" dateStyle="medium" timeStyle="long"/></span>
-            <j:if test="${!empty(it.api)}">
-               <span class="rest_api"><a href="api/">REST API</a></span>
-            </j:if>
-            <span class="jenkins_ver"><a href="${h.getFooterURL()}">Jenkins ver. ${h.version}</a></span>
-            <j:if test="${extensionsAvailable}">
-            <j:forEach var="pd" items="${h.pageDecorators}">
-              <st:include it="${pd}" page="footer.jelly" optional="true" />
-            </j:forEach>
-            </j:if>
-          </div>
-        </div>
-      </div>
-    </footer>
-
   </body>
 </html>
 </j:jelly>

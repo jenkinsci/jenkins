@@ -44,7 +44,11 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
             // seems like a race condition allows this to fire before the 'selectEl' is defined. If that happens, exit..
+<<<<<<< HEAD
             if(!selectEl || !selectEl.options || !selectEl.options[0]) 
+=======
+            if(!selectEl || !selectEl.options || !selectEl[0]) 
+>>>>>>> 219481a2926a6a6e2d86753f250449ba73f198ba
               return false;
             var firstValue = selectEl.options[0].value;
             var selectedValue = selectEl.value;

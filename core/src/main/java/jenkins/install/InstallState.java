@@ -34,32 +34,63 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public enum InstallState {
     /**
-     * New Jenkins install.
+     * The initial set up has been completed
      */
-    NEW,
+    INITIAL_SETUP_COMPLETED(true, null),
+    /**
+     * Creating an admin user for an initial Jenkins install.
+     */
+    CREATE_ADMIN_USER(false, INITIAL_SETUP_COMPLETED),
     /**
      * New Jenkins install. The user has kicked off the process of installing an
      * initial set of plugins (via the install wizard).
      */
-    INITIAL_PLUGINS_INSTALLING,
+    INITIAL_PLUGINS_INSTALLING(false, CREATE_ADMIN_USER),
     /**
-     * New Jenkins install. The initial set of plugins are now installed.
+     * New Jenkins install.
      */
-    INITIAL_PLUGINS_INSTALLED,
+    NEW(false, INITIAL_PLUGINS_INSTALLING),
     /**
      * Restart of an existing Jenkins install.
      */
-    RESTART,
+    RESTART(true, INITIAL_SETUP_COMPLETED),
     /**
      * Upgrade of an existing Jenkins install.
      */
-    UPGRADE,
+    UPGRADE(true, INITIAL_SETUP_COMPLETED),
     /**
      * Downgrade of an existing Jenkins install.
      */
-    DOWNGRADE,
+    DOWNGRADE(true, INITIAL_SETUP_COMPLETED),
     /**
      * Jenkins started in test mode (JenkinsRule).
      */
-    TEST
+    TEST(true, INITIAL_SETUP_COMPLETED),
+    /**
+     * Jenkins started in development mode: Bolean.getBoolean("hudson.Main.development").
+     * Can be run normally with the -Djenkins.install.runSetupWizard=true
+     */
+    DEVELOPMENT(true, INITIAL_SETUP_COMPLETED);
+
+    private final boolean isSetupComplete;
+    private final InstallState nextState;
+
+    private InstallState(boolean isSetupComplete, InstallState nextState) {
+        this.isSetupComplete = isSetupComplete;
+        this.nextState = nextState;
+    }
+
+    /**
+     * Indicates the initial setup is complete
+     */
+    public boolean isSetupComplete() {
+        return isSetupComplete;
+    }
+    
+    /**
+     * Gets the next state
+     */
+    public InstallState getNextState() {
+        return nextState;
+    }
 }

@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2004-2016, Sun Microsystems, Inc., CloudBees, Inc., Kohsuke Kawaguchi, Seiji Sogabe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  This is used to create the first user.
--->
+<!-- tag file used by both signup.jelly and addUser.jelly -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <local:_entryFormPage host="${it}" title="${%Create First Admin User}" action="createFirstAccount" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+  <l:layout norefresh="true" title="${title}">
+    <l:header>
+      <style>
+        <!-- match width with captcha image -->
+        INPUT {
+          width:200px;
+        }
+      </style>
+    </l:header>
+    <l:hasPermission permission="${app.READ}" it="${host}">
+      <st:include page="sidepanel.jelly" it="${host}" />
+    </l:hasPermission>
+    <l:main-panel>
+      <form action="${rootURL}/securityRealm/${action}" method="post" style="text-size:smaller">
+        <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+        <f:submit value="${title}" />
+        <script>
+          $('username').focus();
+        </script>
+      </form>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
