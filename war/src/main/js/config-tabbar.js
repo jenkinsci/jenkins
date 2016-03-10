@@ -106,17 +106,26 @@ function watchScroll(tabControl){
   var $table= tabControl.configTable;
   var $jenkTools = $('#breadcrumbBar');
   var winScoll = $window.scrollTop();
-  var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 100;
-  
+  var floorSwitch = 200;   
+  var jenkToolOffset = ($jenkTools.height() + $jenkTools.offset().top);
+
+	// reset tabs to start...  
   $tabs.find('.active').removeClass('active');
-  
+
+	// calculate the height of each section to know where to switch the tabs...
   $.each(tabControl.sections,function(i,cat){
     var $cat = $(cat.headerRow);
+    // each category enters the viewport at its distance down the page, less the height of the toolbar, which hangs down the page...
+    // or it is zero if the category doesn't match or was removed...
     var catHeight = ($cat.length > 0)?
-        $cat.offset().top - (jenkToolOffset):
-          0;
-    if(winScoll < catHeight){
-      var $thisTab = $($tabs.get(Math.max(i-1,0)));
+        $cat.offset().top - jenkToolOffset
+        	:0;
+
+		// the trigger point to change the tab happens when the scroll possition passess below the height of the category...
+		// ...but we want to wait to advance the tab until the existing category is 3/4 off the top...
+    if(winScoll < (catHeight + (.75 * catHeight)){
+    	var $tabOffset = $($tabs.get(Math.max(i-1,0)));
+      var $thisTab = $($tabs.get(i));
       var $nav = $thisTab.closest('.tabBar');
       $nav.find('.active').removeClass('active');
       $thisTab.addClass('active');
