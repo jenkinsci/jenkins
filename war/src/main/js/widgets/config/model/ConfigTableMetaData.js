@@ -128,6 +128,16 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
 
     var findTimeout;
     thisTMD.findInput.keydown(function() {
+      
+      //keydown needs to wait a pulse for the value to be applied to the input.
+      setTimeout(function(){
+        var val = thisTMD.findInput.val();
+        
+        //if the keydown does not set a value, this filtering should exit.
+        if(val === ''){
+          return false;
+        }
+      
         if (findTimeout) {
             clearTimeout(findTimeout);
             findTimeout = undefined;
@@ -136,6 +146,7 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
             findTimeout = undefined;
             thisTMD.showSections(thisTMD.findInput.val());
         }, 300);
+      },1);
     });
 
     this.configWidgets.append(findWidget);
