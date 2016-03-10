@@ -205,7 +205,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
         if (buf.length() == 0) return;
         Jenkins j = Jenkins.getInstanceOrNull();
-        if (j == null) { // TODO confirm this can never be true
+        if (j == null) { // Need this path, at least for unit tests, but also in case of very broken startup
             // Startup failed, something is very broken, so report what we can.
             for (Throwable t : errors) {
                 LOGGER.log(Level.WARNING, "could not read " + obj + " (and Jenkins did not start up)", t);
