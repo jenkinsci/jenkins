@@ -348,7 +348,7 @@ public abstract class ItemGroupMixIn {
             int i = 0;
             boolean found = false;
             while (i < categories.getItems().size() && !found) {
-                if (categories.getItems().get(i).getId() == ic.getId()) {
+                if (categories.getItems().get(i).getId().equals(ic.getId())) {
                     Map<String, Object> metadata = new HashMap<String, Object>();
                     metadata.put("class", descriptor.clazz.getName());
                     metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
