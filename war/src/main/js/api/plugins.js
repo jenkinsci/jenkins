@@ -16,7 +16,6 @@ exports.recommendedPlugins = [
     "credentials-binding",
     "email-ext",
     "git",
-    "github-branch-source",
     "gradle",
     "ldap",
     "mailer",
@@ -27,7 +26,7 @@ exports.recommendedPlugins = [
     "subversion",
     "timestamper",
     "workflow-aggregator",
-    "workflow-multibranch",
+    "github-organization-folder",
     "ws-cleanup"
 ];
 
@@ -86,8 +85,7 @@ exports.availablePlugins = [
         "category":"Pipelines and Continuous Delivery",
         "plugins": [
             { "name": "workflow-aggregator" },
-            { "name": "workflow-multibranch" },
-            { "name": "github-branch-source" },
+            { "name": "github-organization-folder" },
             { "name": "pipeline-stage-view" },
             { "name": "build-pipeline-plugin" },
             // { "name": "conditional-buildstep" },
