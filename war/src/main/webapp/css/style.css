@@ -704,7 +704,10 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 div.behavior-loading {
-    position: absolute; width: 80%; height:100%;
+    position: absolute; 
+    left:0; right:0;
+    width:100%;
+    height:100%;
     background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
@@ -713,8 +716,9 @@ div.behavior-loading {
 
 .config div.behavior-loading{
     background: rgba(255,255,255,.85);
-    left: 15px;
-    right: 15px;
+    left: 0;
+    width:100%;
+    right: 0;
     top: 15px;
     bottom: 0px;
     height: 100%;
