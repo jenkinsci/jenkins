@@ -127,15 +127,24 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
     });
 
     var findTimeout;
-    thisTMD.findInput.keydown(function() {
-        if (findTimeout) {
-            clearTimeout(findTimeout);
-            findTimeout = undefined;
-        }
-        findTimeout = setTimeout(function() {
-            findTimeout = undefined;
-            thisTMD.showSections(thisTMD.findInput.val());
-        }, 300);
+    thisTMD.findInput.keyup(function() {
+
+      var val = thisTMD.findInput.val();
+      
+      //if the keydown does not set a value, this filtering should exit.
+      if(val === ''){
+        return false;
+      }
+    
+      if (findTimeout) {
+          clearTimeout(findTimeout);
+          findTimeout = undefined;
+      }
+      findTimeout = setTimeout(function() {
+          findTimeout = undefined;
+          thisTMD.showSections(thisTMD.findInput.val());
+      }, 300);
+
     });
 
     this.configWidgets.append(findWidget);
@@ -234,7 +243,19 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if (typeof section === 'string') {
         section = this.getSection(section);
     }
+    if(!section) {return;}
 
+    var $ = this.$;
+    var $header = $(section.headerRow).show();
+    var scrollTop = $header.offset().top - ($('#main-panel .jenkins-config-widgets').outerHeight() + 15);
+
+    $('html,body').animate({
+      scrollTop: scrollTop
+    }, 500);
+    setTimeout(function(){
+      section.activator.closest('.tabBar').find('.active').removeClass('active');
+      section.activator.addClass('active');
+    },510);
     if (section) {
         var topRows = this.getTopRows();
 
@@ -255,13 +276,14 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     }
 };
 
-ConfigTableMetaData.prototype.deactivateActiveSection = function() {
+ConfigTableMetaData.prototype.deactivateActiveSection = function(hideRows) {
     var topRows = this.getTopRows();
     var $ = jQD.getJQuery();
 
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     topRows.filter('.active').removeClass('active');
-    topRows.hide();
+    if(hideRows) 
+      {topRows.hide();}
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {
@@ -278,6 +300,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             if (!activeSection) {
                 this.showSection(this.sections[0]);
             } else {
+          this.deactivateActiveSection(true);
                 activeSection.highlightText(this.findInput.val());
             }
         }
