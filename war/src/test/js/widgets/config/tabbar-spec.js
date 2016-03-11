@@ -93,6 +93,7 @@ describe("tabbar-spec tests", function () {
             // Need to wait for the change to happen ... there's nearly a full second delay.
             // We could just call configTabBar.showSections(), but ...
             setTimeout(function() {
+
                 expect($('.tab.hidden', tabBar).size()).toBe(3);
                 expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
 
@@ -102,7 +103,7 @@ describe("tabbar-spec tests", function () {
                 expect($('.highlight-split .highlight').text()).toBe('Trigger');
 
                 done();
-            }, 900);
+            }, 850);
         }, 'widgets/config/freestyle-config.html');
     });
 
@@ -190,7 +191,7 @@ describe("tabbar-spec tests", function () {
         onInput.val(text);
 
         // Now fire a keydown event to trigger the handler
-        var e = $.Event("keydown");
+        var e = $.Event("keyup");
         e.which = 116;
         onInput.trigger(e);
     }
