@@ -349,19 +349,21 @@ public abstract class ItemGroupMixIn {
             boolean found = false;
             while (i < categories.getItems().size() && !found) {
                 if (categories.getItems().get(i).getId() == ic.getId()) {
-                    Map<String, String> metadata = new HashMap<String, String>();
+                    Map<String, Object> metadata = new HashMap<String, Object>();
                     metadata.put("class", descriptor.clazz.getName());
                     metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
+                    metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
                     categories.getItems().get(i).getItems().add(metadata);
                     found = true;
                 }
                 i++;
             }
             if (!found) {
-                Map<String, String> metadata = new HashMap<String, String>();
+                Map<String, Object> metadata = new HashMap<String, Object>();
                 metadata.put("class", descriptor.clazz.getName());
                 metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
-                List<Map<String, String>> temp = new ArrayList<Map<String, String>>();
+                metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
+                List<Map<String, Object>> temp = new ArrayList<Map<String, Object>>();
                 temp.add(metadata);
                 categories.getItems().add(new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(),
                         ic.getIconClassName(), ic.getWeight(), temp));
