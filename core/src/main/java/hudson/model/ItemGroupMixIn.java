@@ -50,6 +50,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -348,15 +349,22 @@ public abstract class ItemGroupMixIn {
             boolean found = false;
             while (i < categories.getItems().size() && !found) {
                 if (categories.getItems().get(i).getId() == ic.getId()) {
-                    categories.getItems().get(i).getItems().add(descriptor.clazz.getName());
+                    Map<String, String> metadata = new HashMap<String, String>();
+                    metadata.put("class", descriptor.clazz.getName());
+                    metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
+                    categories.getItems().get(i).getItems().add(metadata);
                     found = true;
                 }
                 i++;
             }
             if (!found) {
-                List<String> descriptors = new ArrayList<String>();
-                descriptors.add(descriptor.clazz.getName());
-                categories.getItems().add(new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getIconClassName(), descriptors));
+                Map<String, String> metadata = new HashMap<String, String>();
+                metadata.put("class", descriptor.clazz.getName());
+                metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
+                List<Map<String, String>> temp = new ArrayList<Map<String, String>>();
+                temp.add(metadata);
+                categories.getItems().add(new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(),
+                        ic.getIconClassName(), ic.getWeight(), temp));
             }
         }
         return categories;

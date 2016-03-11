@@ -32,6 +32,13 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
     public abstract String getDescription();
 
     /**
+     * Helpful to set the order.
+     *
+     * @return the weight
+     */
+    public abstract int getWeight();
+
+    /**
      * The default category, if an item doesn't belong anywhere else, this is where it goes by default.
      */
     @Extension
@@ -56,6 +63,12 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
         public String getDisplayName() {
             return Messages.ItemCategory_Default_DisplayName();
         }
+
+        @Override
+        public int getWeight() {
+            return Integer.MIN_VALUE;
+        }
+
     }
 
 }
