@@ -64,7 +64,7 @@ public class InstallUncaughtExceptionHandler {
             // if this was an OutOfMemoryError then all bets about logging are off - but in the absence of anything else...
             LOGGER.log(Level.SEVERE,
                        "A thread (" + t.getName() + '/' + t.getId()
-                                     + ") died unexepectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicitive of a bug in the code.",
+                                     + ") died unexpectedly due to an uncaught exception, this may leave your Jenkins in a bad way and is usually indicative of a bug in the code.",
                        ex);
         }
 
