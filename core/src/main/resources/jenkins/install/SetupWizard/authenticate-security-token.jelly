@@ -8,19 +8,26 @@
               <div class="modal-content">
                 
                 <div class="modal-header">
-                  <h4 class="modal-title">${%Security Token}</h4>
+                  <h4 class="modal-title">${%Getting Started}</h4>
                 </div>
                 <div class="modal-body">
                   <i class="water-mark icon-service"></i>
                   <div class="jumbotron welcome-panel offline">
                   
-                    <h1>${%Security Token}</h1>
-                    <p>${%As an extra measure of security, please enter the setup security token to proceed.}</p>
-                    <p>${%It can be found in the logs for this Jenkins instance.}</p>
+                    <h1>${%Unlock Jenkins}</h1>
+                    <p>
+                        ${%To ensure Jenkins is securely set up by the administrator, a setup security token has been printed to the logs.}
+                        <small>
+                            <a href="https://jenkins-ci.org/redirect/find-jenkins-logs" target="_blank">
+                                ${%Not sure where to find the logs?}
+                            </a>
+                        </small>
+                    </p>
+                    <p>${%Please copy the token and paste it below.}</p>
                     <j:if test="${error}">
                         <div class="alert alert-danger">
                           <strong>${%ERROR:} </strong>
-                          ${%There is a problem with your security token, please check the server logs for the correct token}
+                          ${%There is a problem with the security token, please check the logs for the correct token}
                         </div>
                     </j:if>
                     <div class="form-group ${error ? 'has-error' : ''}">
