@@ -24,9 +24,9 @@ public class Category implements Serializable {
 
     private int weight;
 
-    private List<Map<String, String>> items;
+    private List<Map<String, Object>> items;
 
-    public Category(String id, String name, String description, String iconClassName, int weight, List<Map<String, String>> items) {
+    public Category(String id, String name, String description, String iconClassName, int weight, List<Map<String, Object>> items) {
         this.id= id;
         this.name = name;
         this.description = description;
@@ -61,7 +61,7 @@ public class Category implements Serializable {
     }
 
     @Exported
-    public List<Map<String, String>> getItems() {
+    public List<Map<String, Object>> getItems() {
         return items;
     }
 
