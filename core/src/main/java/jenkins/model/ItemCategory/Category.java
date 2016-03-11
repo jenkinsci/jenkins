@@ -6,6 +6,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an {$link ItemCategory} and its {@link TopLevelItem}s.
@@ -21,13 +22,16 @@ public class Category implements Serializable {
 
     private String iconClassName;
 
-    private List<String> items;
+    private int weight;
 
-    public Category(String id, String name, String description, String iconClassName, List<String> items) {
+    private List<Map<String, String>> items;
+
+    public Category(String id, String name, String description, String iconClassName, int weight, List<Map<String, String>> items) {
         this.id= id;
         this.name = name;
         this.description = description;
         this.iconClassName = iconClassName;
+        this.weight = weight;
         this.items = items;
     }
 
@@ -52,7 +56,12 @@ public class Category implements Serializable {
     }
 
     @Exported
-    public List<String> getItems() {
+    public int getWeight() {
+        return weight;
+    }
+
+    @Exported
+    public List<Map<String, String>> getItems() {
         return items;
     }
 
