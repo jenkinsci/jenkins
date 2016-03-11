@@ -29,8 +29,13 @@ import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
+import jenkins.model.ItemCategory.Categories;
+import jenkins.model.ItemCategory.Category;
+import jenkins.model.ItemCategory.ItemCategory;
+import jenkins.model.ItemCategory.ItemCategoryConfigurator;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
+import org.acegisecurity.Authentication;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -44,6 +49,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -326,6 +333,33 @@ public abstract class ItemGroupMixIn {
             ItemListener.fireOnCreated(item);
 
         return item;
+    }
+
+    /**
+     * Populate a {$link Categories} from a specific {$link ItemGroup}.
+     *
+     * @return
+     */
+    public static Categories getCategories(Authentication a, ItemGroup c) {
+        Categories categories = new Categories();
+        for (TopLevelItemDescriptor descriptor : Items.all(a, c)) {
+            ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
+            int i = 0;
+            boolean found = false;
+            while (i < categories.getItems().size() && !found) {
+                if (categories.getItems().get(i).getId() == ic.getId()) {
+                    categories.getItems().get(i).getItems().add(descriptor.clazz.getName());
+                    found = true;
+                }
+                i++;
+            }
+            if (!found) {
+                List<String> descriptors = new ArrayList<String>();
+                descriptors.add(descriptor.clazz.getName());
+                categories.getItems().add(new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getIconClassName(), descriptors));
+            }
+        }
+        return categories;
     }
 
     /**

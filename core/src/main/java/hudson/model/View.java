@@ -54,6 +54,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import jenkins.model.ItemCategory.Categories;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.util.ProgressiveRendering;
@@ -917,7 +918,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         SearchIndexBuilder sib = super.makeSearchIndex();
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }                
+                protected Collection<TopLevelItem> all() { return getItems(); }
                 @Override
                 protected String getName(TopLevelItem o) {
                     // return the name instead of the display for suggestion searching
@@ -999,6 +1000,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *      null if fails.
      */
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+
+    /**
+     * A new API method to get the allowed {$link TopLevelItem}s and its categories.
+     *
+     * @return A {$Categories} entity that is shown as  JSON file.
+     */
+    public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), Jenkins.getInstance());
+    }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " all builds", getBuilds());
