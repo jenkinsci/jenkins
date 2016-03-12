@@ -142,14 +142,17 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
       var $jenkTools = $('#breadcrumbBar');
       var winScoll = $window.scrollTop();
       var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
-   
+      console.log(winScoll + ' --------------------');
+      console.log(data);
       $tabs.find('.active').removeClass('active');
-      $.each(data,function(i,cat){
-        var domId = '#'+cat.id;
+      $.each(data.categories,function(i,cat){
+        var domId = '#j-add-item-type-'+cat.id;
+        console.log(cat);
         var $cat = $(domId);
         var catHeight = ($cat.length > 0)?
             $cat.offset().top + $cat.outerHeight() - (jenkToolOffset + 100):
               0;
+         console.log(winScoll +' ' + catHeight);   
         if(winScoll < catHeight){
           var $thisTab = $tabs.find(['[href="',cleanHref(domId),'"]'].join(''));
           resetActiveTab($thisTab);
@@ -221,6 +224,12 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
       $categories.find('a').attr('tabindex',1);
     }
     
+    function resetActiveTab($this){
+      var $nav = $this.closest('.nav');
+      $nav.find('.active').removeClass('active');
+      $this.addClass('active');
+    } 
+    
     function drawName() {
       var $name = $('<div class="j-add-item-name" />');
 
@@ -248,11 +257,12 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
         else if (elem.minToShow !== 0) {sectionsToShow.push(elem.id);}
         
         var $tab = drawTab(elem);
-        var $cat = drawCategory(elem);
-        
+        var $items = drawCategory(elem);
+        var $cat = $items.parent();
+
         $.each(elem.items,function(i,elem){
           var $item = drawItem(elem);
-          $cat.append($item);
+          $items.append($item);
         });
         
         $nav.append($tab);
@@ -288,7 +298,7 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
 
     function drawCategory(i,elem){
       if (!elem) elem = i;
-      var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', elem.id);
+      var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', 'j-add-item-type-'+elem.id);
       var $items = $('<ul/>').addClass('j-item-options').appendTo($category);
       var $newTarget;
       
@@ -306,8 +316,8 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
       else if(elem.remainders){
         $newTarget = $('#'+cleanHref(elem.remainders,true)).find('.j-item-options');
       }
-      
-      return $category;
+
+      return $items;
     }
     
     function drawItem(elem){
@@ -463,11 +473,7 @@ return false;
   
 
   
-  function resetActiveTab($this){
-    var $nav = $this.closest('.nav');
-    $nav.find('.active').removeClass('active');
-    $this.addClass('active');
-  }  
+ 
   
 
   
