@@ -120,8 +120,11 @@ var getItems = function(root){
 
 var root = $jq('#jenkins').attr('data-root');
 
-$jq.when(getItems(root)).done(function(data,a,b,c){
+$jq.when(getItems(root)).done(function(data){
   $jq(function($) {
+    
+    //////////////////////////////
+    // helpful reference DOM
     
     var jRoot = $('head').attr('data-rooturl');
     var defaultMinToShow = 2;
@@ -136,6 +139,8 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
     var sectionsToShow = [];    
 
     
+    ////////////////////////////////
+    // scroll action......
     
     function watchScroll(){
       var $window = $(window);
@@ -176,8 +181,8 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
     
     
     
-    
-    
+    //////////////////////////
+    // helper functions...
     
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
@@ -188,7 +193,13 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
 
       return itemTypes.sort(sortByOrder);
     }   
-    
+    function hideAllTabsIfUnnecesary(sectionsToShow){
+      if(sectionsToShow.length < 2){
+        $tabs.find('.tab').hide();
+        $categories.find('.category-header').hide();
+      }
+        
+    }    
     function checkCatCount(elem){
       var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : 9999999;
       return ($.isArray(elem.items) && elem.items.length >= Math.min(minToShow,defaultMinToShow));
@@ -229,6 +240,9 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
       $nav.find('.active').removeClass('active');
       $this.addClass('active');
     } 
+    
+    //////////////////////////////////
+    // Draw functions
     
     function drawName() {
       var $name = $('<div class="j-add-item-name" />');
@@ -344,10 +358,16 @@ $jq.when(getItems(root)).done(function(data,a,b,c){
         },50);
         
       }
-
+      
+      $item.click(setSelectState);
+      
       return $item;
     }
     
+    
+    
+    
+    // initialize
     
     var sortedDCategories = sortItemsByOrder(data.categories);
     drawTabs(sortedDCategories);
@@ -372,103 +392,9 @@ $jq(function() {
 return false;
 
   
+
   
-  $jq('form').on('submit',function(e,a,b,c,d){
-    e.preventDefault();
-    console.log([e,a,b,c,d]);
-  });
-  var $ = $jq;
-  var jRoot = $('head').attr('data-rooturl');
-  var defaultMinToShow = 2;
-  var $root = $jq('#main-panel');
-  var $form = $root.find('form[name="createItem"]').addClass('jenkins-config');
-  var $newView = $jq('<div class="new-view" />').insertBefore($form);
-  var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
-  var $categories = $('<div class="categories" />').appendTo($newView);
-  var sectionsToShow = [];
 
-  function sortItemsByOrder(itemTypes) {
-    function sortByOrder(a, b) {
-      var aOrder = a.order;
-      var bOrder = b.order;
-      return ( (aOrder < bOrder) ? -1 : ( (aOrder > bOrder) ? 1 : 0));
-    }
-
-    return itemTypes.sort(sortByOrder);
-  }
-
-  function getCategory(i, elem) {
-    var category = {
-      id : 'j-add-item-type-' + elem.id,
-      display : elem.display,
-      description : elem.description,
-      minToShow : elem.minToShow,
-      remainders : elem.remainders,
-      items : []
-    };
-    if (typeof i === 'string'){
-      elem = i;
-    }
-    var $ = $jq;
-    if (!elem.instances){
-      return;
-    }
-    if ($.isFunction(elem.instances)){
-      elem.instances();
-    }
-    else{
-      $.each(elem.instances, function(i, elem) {
-        category.items.push(getInstancesOfCategory(i, elem));
-      });
-    }
-    return category;
-  }
-
-  function getInstancesOfCategory(i, elem) {
-    if (typeof i === 'string'){
-      elem = i;
-    }
-    var $r = $form.find('input[type="radio"][value="' + elem + '"]');
-    var $tr = $r.closest('tr');
-    var $desc = $tr.next();
-    var $error = $tr.nextUntil('.validation-error-area');
-    var inputObj = {
-      display : $tr.find('label').text(),
-      description : $desc.find('.setting-main').html(),
-      $r : $r,
-      $error : $error,
-      icon : jRoot + '/images/' + itemIcons[elem] //elem + '.png'
-    };
-    if ($tr.length === 1){
-      return inputObj;
-    }
-    else{
-      return null;
-    }
-
-  }
-
-  function makeModel(itemTypes) {
-    var categories = [];
-    sortItemsByOrder(itemTypes);
-    $jq.each(itemTypes, function(i, elem) {
-      categories.push(getCategory(i, elem));
-    });
-    return categories;
-  }
-
-
-  function checkCatCount(elem){
-    var minToShow = (typeof elem.minToShow === 'number')?elem.minToShow: 9999999;
-    return ($.isArray(elem.items) && elem.items.length >= Math.min(minToShow,defaultMinToShow));
-  }
-  var data = makeModel(itemTypes);
-  
-  
-  
-  
-  
-  
   
   
 
@@ -477,50 +403,8 @@ return false;
   
 
   
-  function hideAllTabsIfUnnecesary(sectionsToShow){
-    if(sectionsToShow.length < 2){
-      $tabs.find('.tab').hide();
-      $categories.find('.category-header').hide();
-    }
-      
-  }
-  
-  function setTabIndex(){
-    $('footer a').attr('tabindex',10);
-    $('#page-head a').attr('tabindex',5);
-    $tabs.find('input, a').attr('tabindex',0);
-    $categories.find('input[type="radio"]').attr('tabindex',0);
-    $('#bottom-sticker').find('button').attr('tabindex',0);  
-    $categories.find('input[type="text"]').attr('tabindex',1);
-    $categories.find('a').attr('tabindex',1);
-  }
-  
 
 
-  
-
-  
-  function drawTabs(data){
-    $('body').addClass('add-item');
-    setTimeout(function(){$('body').addClass('hide-side');},200);
-    $('#main-panel').addClass('container');
-    var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
-    var $nav = $('<ul class="nav navbar-nav tabBar config-section-activators" />');
-    
-    $.each(data,function(i,elem){
-      if(!checkCatCount(elem)) {return;}
-      // little bit hacky here... need to keep track if I have tabs to show, so if there is just 1, I can hide it later....
-      else if (elem.minToShow !== 0) {sectionsToShow.push(elem.id);}
-      
-      $nav.append(drawTab(elem));
-    });
-    $(window).on('scroll',watchScroll);
-    $navBox.append($nav);
-    $tabs.prepend($navBox);
-    
-    cleanLayout();
-  }
-  
 
   
   function drawItems(data) {
