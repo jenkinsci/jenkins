@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -337,15 +338,15 @@ public abstract class ItemGroupMixIn {
     }
 
     /**
-     * Populate a {$link Categories} from a specific {$link ItemGroup}.
+     * Populate a {@link Categories} object from a specific {@link ItemGroup}.
      *
-     * @return
+     * @return A object that represents a set of {@link Category}
      */
     public static Categories getCategories(Authentication a, ItemGroup c) {
         Categories categories = new Categories();
         for (TopLevelItemDescriptor descriptor : Items.all(a, c)) {
             ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
-            Map<String, Object> metadata = new HashMap<String, Object>();
+            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
             metadata.put("class", descriptor.clazz.getName());
             metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
@@ -356,7 +357,7 @@ public abstract class ItemGroupMixIn {
             if (category != null) {
                 category.getItems().add(metadata);
             } else {
-                List<Map<String, Object>> temp = new ArrayList<Map<String, Object>>();
+                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
                 temp.add(metadata);
                 category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getIconClassName(),
                         ic.getWeight(), ic.getMinToShow(), temp);

@@ -26,10 +26,10 @@ public class Category implements Serializable {
 
     private int minToShow;
 
-    private List<Map<String, Object>> items;
+    private List<Map<String, Serializable>> items;
 
     public Category(String id, String name, String description, String iconClassName, int weight, int minToShow,
-                    List<Map<String, Object>> items) {
+                    List<Map<String, Serializable>> items) {
         this.id= id;
         this.name = name;
         this.description = description;
@@ -70,7 +70,7 @@ public class Category implements Serializable {
     }
 
     @Exported
-    public List<Map<String, Object>> getItems() {
+    public List<Map<String, Serializable>> getItems() {
         return items;
     }
 
