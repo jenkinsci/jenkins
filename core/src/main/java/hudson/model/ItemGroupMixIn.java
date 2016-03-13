@@ -350,6 +350,7 @@ public abstract class ItemGroupMixIn {
             metadata.put("class", descriptor.clazz.getName());
             metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
             metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
+            metadata.put("name", descriptor.getDisplayName());
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
@@ -358,7 +359,7 @@ public abstract class ItemGroupMixIn {
                 List<Map<String, Object>> temp = new ArrayList<Map<String, Object>>();
                 temp.add(metadata);
                 category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getIconClassName(),
-                        ic.getWeight(), temp);
+                        ic.getWeight(), ic.getMinToShow(), temp);
                 categories.getItems().add(category);
             }
         }

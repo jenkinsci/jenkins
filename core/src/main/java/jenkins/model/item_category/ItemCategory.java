@@ -10,6 +10,10 @@ import jenkins.model.Messages;
  */
 public abstract class ItemCategory implements ModelObject, ExtensionPoint {
 
+    public static int MIN_WEIGHT = Integer.MIN_VALUE;
+
+    public static int MIN_TOSHOW = 1;
+
     /**
      * Identifier, e.g. "category-id-default", etc.
      *
@@ -37,6 +41,13 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
      * @return the weight
      */
     public abstract int getWeight();
+
+    /**
+     * Minimum number required to show the category.
+     *
+     * @return the minimum items required
+     */
+    public abstract int getMinToShow();
 
     /**
      * The default category, if an item doesn't belong anywhere else, this is where it goes by default.
@@ -67,6 +78,11 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
         @Override
         public int getWeight() {
             return Integer.MIN_VALUE;
+        }
+
+        @Override
+        public int getMinToShow() {
+            return 1;
         }
 
     }

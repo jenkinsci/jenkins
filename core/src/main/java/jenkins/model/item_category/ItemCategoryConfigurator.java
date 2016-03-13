@@ -40,7 +40,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return category;
             }
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.Default.class);
     }
 
     /**
@@ -69,7 +69,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return weight;
             }
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.Default.class);
     }
 
     public static Collection<ItemCategoryConfigurator> all() {
