@@ -1,4 +1,4 @@
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;

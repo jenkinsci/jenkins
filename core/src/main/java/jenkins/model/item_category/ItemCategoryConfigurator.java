@@ -1,4 +1,4 @@
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -8,7 +8,6 @@ import hudson.model.TopLevelItemDescriptor;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.logging.Logger;
 
 /**
  * A mapper of {@link ItemCategory}s to {@link hudson.model.Item}s.

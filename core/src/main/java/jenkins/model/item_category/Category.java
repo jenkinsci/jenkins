@@ -1,4 +1,4 @@
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
 import hudson.model.TopLevelItem;
 import org.kohsuke.stapler.export.Exported;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents an {$link ItemCategory} and its {@link TopLevelItem}s.
+ * Represents an {$link item_category} and its {@link TopLevelItem}s.
  */
 @ExportedBean
 public class Category implements Serializable {
