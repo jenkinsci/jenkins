@@ -7,6 +7,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -34,4 +36,15 @@ public class Categories implements HttpResponse, Serializable {
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
         rsp.serveExposedBean(req, this, Flavor.JSON);
     }
+
+    @CheckForNull
+    public Category getItem(@Nonnull String id) {
+        for (Category category : items) {
+            if (category.getId().equals(id)) {
+                return category;
+            }
+        }
+        return null;
+    }
+
 }
