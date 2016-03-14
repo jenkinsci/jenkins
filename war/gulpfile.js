@@ -30,3 +30,12 @@ builder.bundle('src/main/js/config-tabbar.js')
     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
     .less('src/main/js/widgets/jenkins-widgets.less')
     .inDir('src/main/webapp/jsbundles');
+
+//
+// Bundle the Config Scrollspy.
+// See https://github.com/jenkinsci/js-builder#bundling
+//
+builder.bundle('src/main/js/config-scrollspy.js')
+    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+    .less('src/main/js/widgets/jenkins-widgets.less')
+    .inDir('src/main/webapp/jsbundles');
