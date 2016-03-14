@@ -28,7 +28,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
 
     /**
      * Finds the category specified by the first configurator.
-     * If none can be found {@link ItemCategory.Default} is returned.
+     * If none can be found {@link ItemCategory.BasicProjects} is returned.
      *
      * @param descriptor the item to categorize.
      *
@@ -42,7 +42,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return category;
             }
         }
-        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.Default.class);
+        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.BasicProjects.class);
     }
 
     /**
@@ -71,7 +71,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return weight;
             }
         }
-        throw new IllegalStateException("At least, a default value must exist");
+        throw new IllegalStateException("At least, a default value must exist for weight field");
     }
 
     /**
@@ -100,7 +100,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return description;
             }
         }
-        throw new IllegalStateException("At least, a default value must exist");
+        throw new IllegalStateException("At least, a default value must exist for description field");
     }
 
     public static Collection<ItemCategoryConfigurator> all() {
@@ -108,7 +108,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     }
 
     /**
-     * Default configurator with the lowest ordinal that simply returns {@link ItemCategory.Default}.
+     * Default configurator with the lowest ordinal that simply returns {@link ItemCategory.BasicProjects}.
      */
     @Extension(ordinal = Integer.MIN_VALUE)
     public static final class DefaultConfigurator extends ItemCategoryConfigurator {
@@ -116,7 +116,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
         @Nonnull
         @Override
         public ItemCategory getCategoryFor(@Nonnull TopLevelItemDescriptor descriptor) {
-            return ExtensionList.lookup(ItemCategory.Default.class).iterator().next();
+            return ExtensionList.lookup(ItemCategory.BasicProjects.class).iterator().next();
         }
 
         @Nonnull

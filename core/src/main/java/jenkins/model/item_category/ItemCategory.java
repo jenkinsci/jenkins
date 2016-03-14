@@ -17,14 +17,14 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
     public static int MIN_TOSHOW = 1;
 
     /**
-     * Identifier, e.g. "category-id-default", etc.
+     * Identifier, e.g. "category-id-basicprojects", etc.
      *
      * @return the identifier
      */
     public abstract String getId();
 
     /**
-     * The icon class specification e.g. 'category-icon-folder', 'category-icon-default', etc.
+     * The icon class specification e.g. 'category-icon-folder', 'category-icon-basicprojects', etc.
      *
      * @return the icon class specification
      */
@@ -55,26 +55,26 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
      * The default {@link ItemCategory}, if an item doesn't belong anywhere else, this is where it goes by default.
      */
     @Extension
-    public static final class Default extends ItemCategory {
+    public static final class BasicProjects extends ItemCategory {
 
         @Override
         public String getId() {
-            return "category-id-default";
+            return "category-id-basicprojects";
         }
 
         @Override
         public String getIconClassName() {
-            return "category-icon-default";
+            return "category-icon-basicprojects";
         }
 
         @Override
         public String getDescription() {
-            return Messages.ItemCategory_Default_Description();
+            return Messages.ItemCategory_BasicProjects_Description();
         }
 
         @Override
         public String getDisplayName() {
-            return Messages.ItemCategory_Default_DisplayName();
+            return Messages.ItemCategory_BasicProjects_DisplayName();
         }
 
         @Override
