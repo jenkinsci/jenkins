@@ -14,9 +14,6 @@ $(function() {
         }
 
         tabBarWidget.addFinderToggle(tabBar);
-        $('.jenkins-config-widgets .find-container input').focus(function() {
-            page.fireBottomStickerAdjustEvent();
-        });
         tabBar.onShowSection(function() {
             // Hook back into hudson-behavior.js
             page.fireBottomStickerAdjustEvent();

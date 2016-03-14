@@ -4,6 +4,7 @@
 
 var jQD = require('../../../util/jquery-ext.js');
 var ConfigSection = require('./ConfigSection.js');
+var page = require('../../../util/page.js');
 var util = require('./util.js');
 
 exports.markConfigTableParentForm = function(configTable) {
@@ -136,6 +137,10 @@ ConfigTableMetaData.prototype.addFindWidget = function() {
             findTimeout = undefined;
             thisTMD.showSections(thisTMD.findInput.val());
         }, 300);
+    });
+
+    $('.jenkins-config-widgets .find-container input').focus(function() {
+        page.fireBottomStickerAdjustEvent();
     });
 
     this.configWidgets.append(findWidget);
