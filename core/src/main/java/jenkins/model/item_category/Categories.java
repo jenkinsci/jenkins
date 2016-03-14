@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * It is a logic representation of a set of {$Category}.
+ * It is a logic representation of a set of {@link Category}.
+ *
+ * This class is not thread-safe.
  */
 @ExportedBean
 public class Categories implements HttpResponse, Serializable {

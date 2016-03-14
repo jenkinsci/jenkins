@@ -7,6 +7,8 @@ import jenkins.model.Messages;
 
 /**
  * A category for {@link hudson.model.Item}s.
+ *
+ * @since TODO
  */
 public abstract class ItemCategory implements ModelObject, ExtensionPoint {
 
@@ -50,7 +52,7 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
     public abstract int getMinToShow();
 
     /**
-     * The default category, if an item doesn't belong anywhere else, this is where it goes by default.
+     * The default {@link ItemCategory}, if an item doesn't belong anywhere else, this is where it goes by default.
      */
     @Extension
     public static final class Default extends ItemCategory {

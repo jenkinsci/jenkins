@@ -11,6 +11,8 @@ import java.util.Collection;
 
 /**
  * A mapper of {@link ItemCategory}s to {@link hudson.model.Item}s.
+ *
+ * @since TODO
  */
 public abstract class ItemCategoryConfigurator implements ExtensionPoint {
 
@@ -19,7 +21,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      *
      * @param descriptor the item to categorize
      *
-     * @return the category or null
+     * @return A {@link ItemCategory} or null
      */
     @CheckForNull
     protected abstract ItemCategory getCategoryFor(@Nonnull TopLevelItemDescriptor descriptor);
@@ -30,7 +32,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      *
      * @param descriptor the item to categorize.
      *
-     * @return the category
+     * @return A {@link ItemCategory}
      */
     @Nonnull
     public static ItemCategory getCategory(@Nonnull TopLevelItemDescriptor descriptor) {

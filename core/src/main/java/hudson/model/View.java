@@ -1002,9 +1002,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
-     * A new API method to get the allowed {$link TopLevelItem}s and its categories.
+     * An API method to get the allowed {$link TopLevelItem}s and its categories.
      *
-     * @return A {$Categories} entity that is shown as  JSON file.
+     * @return A {@link Categories} entity that is shown as  JSON file.
+     *
+     * @since TODO
      */
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), Jenkins.getInstance());

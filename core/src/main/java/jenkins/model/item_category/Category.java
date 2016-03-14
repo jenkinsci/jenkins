@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents an {$link item_category} and its {@link TopLevelItem}s.
+ * Represents an {@link ItemCategory} and its {@link TopLevelItem}s.
+ *
+ * This class is not thread-safe.
  */
 @ExportedBean
 public class Category implements Serializable {
