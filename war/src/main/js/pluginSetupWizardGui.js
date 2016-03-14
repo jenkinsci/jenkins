@@ -8,6 +8,7 @@ var bootstrap = require('bootstrap-detached');
 var jenkins = require('./util/jenkins');
 var pluginManager = require('./api/pluginManager');
 var securityConfig = require('./api/securityConfig');
+var wh = require('window-handle');
 
 window.zq = jquery.getJQuery();
 
@@ -111,6 +112,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	var welcomePanel = require('./templates/welcomePanel.hbs');
 	var progressPanel = require('./templates/progressPanel.hbs');
 	var pluginSelectionPanel = require('./templates/pluginSelectionPanel.hbs');
+	var successPanel = require('./templates/successPanel.hbs');
 	var setupCompletePanel = require('./templates/setupCompletePanel.hbs');
 	var proxyConfigPanel = require('./templates/proxyConfigPanel.hbs');
 	var firstUserPanel = require('./templates/firstUserPanel.hbs');
@@ -666,6 +668,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	
 	var enableButtonsAfterFrameLoad = function() {
 		$('iframe[src]').load(function() {
+			var location = $(this).contents().get(0).location.href;
 			$('button').prop({disabled:false});
 		});
 	};

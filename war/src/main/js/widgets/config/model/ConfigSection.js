@@ -173,6 +173,7 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
 
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+
             if (row.hasClass('row-group-start')) {
                 var newRowGroup = new ConfigRowGrouping(row, rowGroupContainer);
                 if (rowGroupContainer) {
@@ -181,11 +182,6 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
                 rowGroupContainer = newRowGroup;
                 newRowGroup.findToggleWidget(row);
             } else {
-                //FIXME: I am not sure how rowGroupContainer can be undefined, but I am seeing the error, so somethings not right
-                if(!rowGroupContainer){
-                    console.log('missing rowGroupContainer');
-                    return false;      
-                }
                 if (row.hasClass('row-group-end')) {
                     rowGroupContainer.endRow = row;
                     rowGroupContainer = rowGroupContainer.parentRowGroupContainer; // pop back off the "stack"

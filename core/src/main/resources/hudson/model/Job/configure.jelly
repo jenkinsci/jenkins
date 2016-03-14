@@ -27,13 +27,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Config" cssClass="config j-hide-left" norefresh="true" permission="${it.EXTENDED_READ}">
+  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
     <st:include page="sidepanel.jelly" />
     <f:breadcrumb-config-outline />
     <l:main-panel>
       <l:js src="jsbundles/config-tabbar.js" />
       <l:css src="jsbundles/jenkins-widgets.css" />
-      <div class="behavior-loading">${%loading}</div>
+
+      <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config" tableClass="job-config tabbed">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />

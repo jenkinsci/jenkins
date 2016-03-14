@@ -3,6 +3,8 @@
  */
 
 var jenkins = require('../util/jenkins');
+var jquery = require('jquery-detached');
+var wh = require('window-handle');
 
 /**
  * Calls a stapler post method to save the first user settings

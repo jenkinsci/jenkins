@@ -33,7 +33,6 @@ exports.addTabs = function(configTable) {
 
         tab.text(section.title);
         tab.addClass(section.id);
-        tab.attr('data-section-id',section.id);
 
         return tab;
     }
