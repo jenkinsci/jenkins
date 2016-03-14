@@ -64,6 +64,7 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -1008,6 +1009,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *
      * @since TODO
      */
+    @Restricted(DoNotUse.class)
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), Jenkins.getInstance());
     }
