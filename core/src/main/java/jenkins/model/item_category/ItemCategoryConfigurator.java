@@ -56,12 +56,12 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     protected abstract Integer getWeightFor(@Nonnull TopLevelItemDescriptor descriptor);
 
     /**
-     * Finds the category specified by the first mapper.
-     * If none can be found {@link ItemCategory.Default} is returned.
+     * Finds the weight specified by the first configurator.
+     * If none can be found {@link Integer#MIN_VALUE} is returned. {@see DefaultConfigurator#getWeightFor}.
      *
      * @param descriptor the item to categorize.
      *
-     * @return the category
+     * @return the weight
      */
     @Nonnull
     public static Integer getWeight(@Nonnull TopLevelItemDescriptor descriptor) {
@@ -71,7 +71,36 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return weight;
             }
         }
-        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.Default.class);
+        throw new IllegalStateException("At least, a default value must exist");
+    }
+
+    /**
+     * Provides the description for the requested item or null if this configurator doesn't have one.
+     *
+     * @param descriptor the item to categorize
+     *
+     * @return A {@link ItemCategory} or null
+     */
+    @CheckForNull
+    protected abstract String getDescriptionFor(@Nonnull TopLevelItemDescriptor descriptor);
+
+    /**
+     * Finds the weight specified by the first configurator.
+     * If none can be found a empty string is returned. {@see DefaultConfigurator#getDescriptionFor}.
+     *
+     * @param descriptor the item to categorize.
+     *
+     * @return A {@link ItemCategory}
+     */
+    @Nonnull
+    public static String getDescription(@Nonnull TopLevelItemDescriptor descriptor) {
+        for (ItemCategoryConfigurator m : all()) {
+            String description = m.getDescriptionFor(descriptor);
+            if (description != null) {
+                return description;
+            }
+        }
+        throw new IllegalStateException("At least, a default value must exist");
     }
 
     public static Collection<ItemCategoryConfigurator> all() {
@@ -79,7 +108,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     }
 
     /**
-     * Mapper implementation with the lowest ordinal that simply returns {@link ItemCategory.Default}.
+     * Default configurator with the lowest ordinal that simply returns {@link ItemCategory.Default}.
      */
     @Extension(ordinal = Integer.MIN_VALUE)
     public static final class DefaultConfigurator extends ItemCategoryConfigurator {
@@ -94,6 +123,12 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
         @Override
         public Integer getWeightFor(@Nonnull TopLevelItemDescriptor descriptor) {
             return Integer.MIN_VALUE;
+        }
+
+        @Nonnull
+        @Override
+        public String getDescriptionFor(@Nonnull TopLevelItemDescriptor descriptor) {
+            return "";
         }
 
     }

@@ -348,10 +348,12 @@ public abstract class ItemGroupMixIn {
             ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
+            // Information about Item.
             metadata.put("class", descriptor.clazz.getName());
             metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
             metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
             metadata.put("name", descriptor.getDisplayName());
+            metadata.put("description", ItemCategoryConfigurator.getDescription(descriptor));
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
