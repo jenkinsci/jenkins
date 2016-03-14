@@ -53,6 +53,10 @@ THE SOFTWARE.
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
 
   <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
+    <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
+
+    <l:js src="jsbundles/add-item.js" />
+    <l:css src="jsbundles/jenkins-widgets.css" />  
     <s:entry title="${attrs.nameTitle}">
       <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
