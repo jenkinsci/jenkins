@@ -634,10 +634,8 @@ public class UpdateSite {
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
-                // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
-                // and that the optional value isn't true.
-                if (get(depObj,"name")!=null
-                    && !get(depObj,"name").equals("maven-plugin")) {
+                // Make sure there's a name attribute and that the optional value isn't true.
+                if (get(depObj,"name")!=null) {
                     if (get(depObj, "optional").equals("false")) {
                         dependencies.put(get(depObj, "name"), get(depObj, "version"));
                     } else {

@@ -599,7 +599,13 @@ var createPluginSetupWizard = function(appendTarget) {
 				$('.plugin-list .selected').addClass('match');
 			}
 			else {
-				var matches = findElementsWithText($pl[0], text.toLowerCase(), function(d) { return d.toLowerCase(); });
+				var matches = [];
+				$containers.find('.title,.description').each(function() {
+					var localMatches = findElementsWithText(this, text.toLowerCase(), function(d) { return d.toLowerCase(); });
+					if(localMatches.length > 0) {
+						matches = matches.concat(localMatches);
+					}
+				});
 				$(matches).parents('.plugin').addClass('match');
 				if(lastSearch !== text && scroll) {
 					scrollPlugin($pl, matches, text);
