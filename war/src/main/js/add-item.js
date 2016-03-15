@@ -197,7 +197,7 @@ $jq.when(getItems(root)).done(function(data){
       });
       $(window).on('scroll',watchScroll);
       
-      if(sectionsToShow.length > 2){
+      if(sectionsToShow.length > 1){
         $navBox.append($nav);
         $tabs.prepend($navBox);
       }else{
