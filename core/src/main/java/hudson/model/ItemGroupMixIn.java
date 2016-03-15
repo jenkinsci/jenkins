@@ -365,19 +365,6 @@ public abstract class ItemGroupMixIn {
                 categories.getItems().add(category);
             }
         }
-        if (Jenkins.getInstance().getAllItems().size() > 0) {
-            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
-
-            // Information about Item.
-            metadata.put("class", "copy");
-            metadata.put("weight", Integer.MIN_VALUE);
-            metadata.put("displayName", "");
-            metadata.put("description", "");
-
-            Category copy = new Category("category-id-copy", "Copy existing Item", "Use an existing item as a starting point for creating a new item configuration.",
-                    ItemCategory.MIN_WEIGHT, ItemCategory.MIN_TOSHOW, new ArrayList<Map<String, Serializable>>());
-            categories.getItems().add(copy);
-        }
         return categories;
     }
 
