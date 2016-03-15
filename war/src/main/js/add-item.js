@@ -41,17 +41,15 @@ $jq.when(getItems(root)).done(function(data){
       var $jenkTools = $('#breadcrumbBar');
       var winScoll = $window.scrollTop();
       var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
-      console.log(winScoll + ' --------------------');
-      console.log(data);
+
       $tabs.find('.active').removeClass('active');
       $.each(data.categories,function(i,cat){
         var domId = '#j-add-item-type-'+cat.id;
-        console.log(cat);
         var $cat = $(domId);
         var catHeight = ($cat.length > 0)?
             $cat.offset().top + $cat.outerHeight() - (jenkToolOffset + 100):
               0;
-         console.log(winScoll +' ' + catHeight);   
+
         if(winScoll < catHeight){
           var $thisTab = $tabs.find(['[href="',cleanHref(domId),'"]'].join(''));
           resetActiveTab($thisTab);
@@ -63,17 +61,45 @@ $jq.when(getItems(root)).done(function(data){
         $tabs.width($tabs.width()).css({
           'position':'fixed',
           'top':($jenkTools.height() - 5 )+'px'});
-        $categories.css({'margin-top':$tabs.outerHeight()+'px'});
-        
+        $categories.css({'margin-top':$tabs.outerHeight()+'px'});   
       }
       else{
         $tabs.add($categories).removeAttr('style');
       }
     }
 
-
     //////////////////////////
     // helper functions...
+    
+    function addCopyOption(data){
+      var $copy = $('#copy').closest('tr');
+      var copyTitle = $copy.find('label').text();
+      var copyDom = $copy.next().find('.setting-main').html();
+      var copy = {
+          name:'Copy',
+          id:'copy',
+          minToShow:0,
+          weight:-999999999999, ///some really big number so it can be last...
+          items:[
+            {
+              class:"copy",
+              description:copyDom,
+              name:copyTitle,
+            }
+          ]
+      };
+      var newData = [];
+      
+      $.each(data,function(i,elem){
+        if(elem.id !== "category-id-copy")
+          { newData.push(elem); }
+      });
+      
+      newData.push(copy);
+
+      
+      return newData;
+    }
     
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
@@ -132,7 +158,7 @@ $jq.when(getItems(root)).done(function(data){
     function drawName() {
       var $name = $('<div class="j-add-item-name" />');
 
-      var $input = $('<input type="text" placeholder="New item name..." />')
+      var $input = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
         .change(function(){
           $form.find('input[name="name"]').val($(this).val());
           window.updateOk($form[0]);
@@ -159,7 +185,7 @@ $jq.when(getItems(root)).done(function(data){
         var $tab = drawTab(elem);
         var $items = drawCategory(elem);
         var $cat = $items.parent();
-
+        
         $.each(elem.items,function(i,elem){
           var $item = drawItem(elem);
           $items.append($item);
@@ -170,9 +196,13 @@ $jq.when(getItems(root)).done(function(data){
 
       });
       $(window).on('scroll',watchScroll);
-      $navBox.append($nav);
-      $tabs.prepend($navBox);
       
+      if(sectionsToShow.length > 2){
+        $navBox.append($nav);
+        $tabs.prepend($navBox);
+      }else{
+        $categories.find('.category-header').hide();
+      }
       drawName();
       cleanLayout();
     }
@@ -204,12 +234,11 @@ $jq.when(getItems(root)).done(function(data){
       
       if(checkCatCount(elem)){
         var $catHeader = $('<div class="category-header" />').prependTo($category);
-        $([
-            '<h2>', elem.name, '</h2>'
-        ].join('')).appendTo($catHeader);
-        $([
-            '<p>', elem.description, '</p>'
-        ].join('')).appendTo($catHeader);
+        var catDom = (elem.minToShow > 0)?
+            ['<h2>', elem.name, '</h2>'].join(''):
+              '';
+        $(catDom).appendTo($catHeader);
+        $(['<p>', elem.description, '</p>'].join('')).appendTo($catHeader);
         
         $category.removeClass('hide-cat');
       }
@@ -228,7 +257,7 @@ $jq.when(getItems(root)).done(function(data){
       ].join('')).append([
           '<div class="icn"><span class="img" style="background:url(',jRoot,'/images/items/',cleanClassName(elem.class),'.png)"></span></div>'
       ].join(''));
-      console.log(elem)
+
       function setSelectState(){
         var $this = $(this).closest('li');
         //if this is a hyperlink, don't move the selection.
@@ -252,7 +281,8 @@ $jq.when(getItems(root)).done(function(data){
     // initialize
     
     var sortedDCategories = sortItemsByOrder(data.categories);
-    drawTabs(sortedDCategories);
+    var sortedDCategoriesWithCopy = addCopyOption(sortedDCategories);
+    drawTabs(sortedDCategoriesWithCopy);
     
   });
 });
