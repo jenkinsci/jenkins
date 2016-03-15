@@ -24,3 +24,13 @@ exports.fixDragEvent = function(handle) {
 	    $chunk.removeClass('dragging');
 	});
 };
+
+exports.removeTextHighlighting = function(selector) {
+    var $ = jQD.getJQuery();
+    $('span.highlight-split', selector).each(function() {
+        console.log('remove');
+        var highlightSplit = $(this);
+        highlightSplit.before(highlightSplit.text());
+        highlightSplit.remove();
+    });
+};

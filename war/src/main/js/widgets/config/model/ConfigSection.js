@@ -1,5 +1,6 @@
 var jQD = require('../../../util/jquery-ext.js');
 var util = require('./util.js');
+var page = require('../../../util/page.js');
 var ConfigRowGrouping = require('./ConfigRowGrouping.js');
 
 module.exports = ConfigSection;
@@ -218,12 +219,7 @@ ConfigSection.prototype.highlightText = function(text) {
     for (var i1 = 0; i1 < rows.length; i1++) {
         var row = rows[i1];
 
-        /*jshint loopfunc: true */
-        $('span.highlight-split', row).each(function() { // jshint ignore:line
-            var highlightSplit = $(this);
-            highlightSplit.before(highlightSplit.text());
-            highlightSplit.remove();
-        });
+        page.removeTextHighlighting(row);
 
         if (text !== '') {
             var regex = new RegExp('(' + text + ')',"gi");

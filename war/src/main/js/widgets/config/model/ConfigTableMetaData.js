@@ -275,6 +275,8 @@ ConfigTableMetaData.prototype.onShowSection = function(listener) {
 };
 
 ConfigTableMetaData.prototype.showSections = function(withText) {
+    this.removeTextHighlighting();
+
     if (withText === '') {
         if (this.hasSections()) {
             for (var i1 = 0; i1 < this.sections.length; i1++) {
@@ -310,6 +312,10 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             }
         }
     }
+};
+
+ConfigTableMetaData.prototype.removeTextHighlighting = function() {
+    page.removeTextHighlighting(this.configForm);
 };
 
 function fireListeners(listeners, contextObject) {
