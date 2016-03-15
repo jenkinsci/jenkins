@@ -19,17 +19,15 @@
  * ----------------------------------------------------------------------------------------
  */
 
-#jenkins {
-  .jenkins-config {
+.jenkins-config {
 
-    // For a tabbar, the default is to hide all of the table rows.
-    .config-table.tabbed > tbody > tr {
-      display: none;
-    }
-    // ... and then show them when given the "active" class.
-    .config-table.tabbed > tbody > tr.active {
-      display: table-row;
-    }
-
+  // For a tabbar, the default is to hide all of the table rows.
+  tr.config-table-top-row {
+    display: none;
   }
+  // ... and then show them when given the "active" class.
+  tr.config-table-top-row.active {
+    display: table-row;
+  }
+
 }
