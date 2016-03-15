@@ -126,6 +126,7 @@ public class SetupWizard {
                     entries.remove();
                 }
             }
+            u.save();
         }
         j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
