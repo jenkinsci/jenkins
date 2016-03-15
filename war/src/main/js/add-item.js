@@ -1,112 +1,6 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $jq = require('jquery-detached').getJQuery();
 
-var itemIcons = {
-    'hudson.model.FreeStyleProject':'freestyle-48.png',
-    'hudson.maven.MavenModuleSet':'maven-48.png',
-    'org.jenkinsci.plugins.workflow.job.WorkflowJob':'pipeline-48.png',
-    'com.infradna.hudson.plugins.backup.BackupProject':'backup-48.png',
-    'hudson.model.ExternalJob':'remote-job-48.png',
-    'com.cloudbees.jenkins.plugins.longrunning.LongRunningProject':'long-running-48.png',
-    'hudson.matrix.MatrixProject':'multi-config-48.png',
-    'com.cloudbees.hudson.plugins.folder.Folder':'folder-48.png',
-    'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject':'branch-project-48.png',
-    'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator':'gitHub-project-48.png',
-    'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator':'bitBucket-project-48.png',
-    'copy':'copy-48.png',
-    'com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobTemplate':'job-template-48.png',
-    'com.cloudbees.hudson.plugins.modeling.impl.folder.FolderTemplate':'folder-template-48.png',
-    'com.cloudbees.hudson.plugins.modeling.impl.auxiliary.AuxModel':'aux-template-48.png', 
-    'com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderTemplate':'builder-template-48.png',
-    'com.cloudbees.hudson.plugins.modeling.impl.publisher.PublisherTemplate':'publish-template-48.png'
-};
-    
-    
-    
-   
-var itemTypes = [
-    {
-      order : 0,
-      id : 'basic',
-      display : 'Basic items',
-      description : 'Traditional Jenkins items, typically job like entities for Jenkins to process in accordance with its configuration settings.',
-      instances : [
-          'hudson.model.FreeStyleProject', 'hudson.maven.MavenModuleSet', 'org.jenkinsci.plugins.workflow.job.WorkflowJob',
-          'com.infradna.hudson.plugins.backup.BackupProject', 'hudson.model.ExternalJob', 'com.cloudbees.jenkins.plugins.longrunning.LongRunningProject',
-          'hudson.matrix.MatrixProject'
-      ]
-    },
-    {
-      order : 1,
-      id : 'folders',
-      display : 'Folders and containers',
-      description : 'Folders and other item types that themselves contain child items.',
-      remainders:'basic',
-      instances : [
-          'com.cloudbees.hudson.plugins.folder.Folder', 
-          'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject',
-          'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator',
-          'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator'
-      ]
-    },/*
-       * { id:'pipelines', display:'Pipelines and processes',
-       * description:'Complex pipelines and jobs that run through multiple
-       * stages beyond the steps fascilitated by simple jobs.', instances:[
-       * 'org.jenkinsci.plugins.workflow.job.WorkflowJob',
-       * 'com.cloudbees.plugins.flow.BuildFlow',
-       * 'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject',
-       * 'jenkins.branch.OrganizationFolder.com.cloudbees.jenkins.plugins.bitbucket.BitbucketSCMNavigator',
-       * 'jenkins.branch.OrganizationFolder.org.jenkinsci.plugins.github_branch_source.GitHubSCMNavigator' ] },
-       */
-    {
-      order : 7,
-      id : 'copy',
-      display : 'Copy existing item',
-      placement:'special-single',
-      minToShow:0,
-      description : 'Use an existing item as a starting point for creating a new item configuration.',
-      instances : [
-        'copy'
-      ]
-    },
-    {
-      order : 3,
-      id : 'templates',
-      display : 'Template creators',
-      description : 'Items that allow for the parameerized creation of reusable core system items or components of those items.',
-      remainders:'basic',
-      instances : [
-          'com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobTemplate', 
-          'com.cloudbees.hudson.plugins.modeling.impl.folder.FolderTemplate',
-          'com.cloudbees.hudson.plugins.modeling.impl.auxiliary.AuxModel', 
-          'com.cloudbees.hudson.plugins.modeling.impl.builder.BuilderTemplate',
-          'com.cloudbees.hudson.plugins.modeling.impl.publisher.PublisherTemplate'
-
-      ]
-    }, {
-      order : -4,
-      id : 'user-templates',
-      display : 'Custom templates',
-      placement:'special-group',
-      minToShow:1,
-      parents : [
-          {
-            id : 'folderTemplate',
-            display : 'Folder template',
-            description : 'A template for creating parameterized folders',
-            parent : 'com.cloudbees.hudson.plugins.modeling.impl.jobTemplate.JobTemplate'
-          }, {
-            id : 'jobTemplate',
-            display : 'Job template',
-            description : 'A template for creating parameterized jobs',
-            parent : 'com.cloudbees.hudson.plugins.modeling.impl.folder.FolderTemplate'
-          }
-      ],
-      instances : function() {
-      }
-    }
-];
-
 var getItems = function(root){
   var $ = $jq;
   var d = $.Deferred();
@@ -176,11 +70,8 @@ $jq.when(getItems(root)).done(function(data){
         $tabs.add($categories).removeAttr('style');
       }
     }
-    
-    
-    
-    
-    
+
+
     //////////////////////////
     // helper functions...
     
@@ -190,19 +81,23 @@ $jq.when(getItems(root)).done(function(data){
         var bOrder = b.weight;
         return ( (aOrder < bOrder) ? -1 : ( (aOrder > bOrder) ? 1 : 0));
       }
-
       return itemTypes.sort(sortByOrder);
-    }   
+    }
+    
     function hideAllTabsIfUnnecesary(sectionsToShow){
       if(sectionsToShow.length < 2){
         $tabs.find('.tab').hide();
         $categories.find('.category-header').hide();
-      }
-        
-    }    
+      }        
+    }
+    
     function checkCatCount(elem){
       var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : 9999999;
       return ($.isArray(elem.items) && elem.items.length >= Math.min(minToShow,defaultMinToShow));
+    }
+    
+    function cleanClassName(className){
+      return className.replace(/\./g,'_');
     }
     
     function cleanHref(id,reverse){
@@ -223,16 +118,6 @@ $jq.when(getItems(root)).done(function(data){
       $('html,body').animate({scrollTop: 0}, 10);
 
       setTimeout(fireBottomStickerAdjustEvent,410);
-      setTimeout(setTabIndex,100);
-    }
-    function setTabIndex(){
-      $('footer a').attr('tabindex',10);
-      $('#page-head a').attr('tabindex',5);
-      $tabs.find('input, a').attr('tabindex',0);
-      $categories.find('input[type="radio"]').attr('tabindex',0);
-      $('#bottom-sticker').find('button').attr('tabindex',0);  
-      $categories.find('input[type="text"]').attr('tabindex',1);
-      $categories.find('a').attr('tabindex',1);
     }
     
     function resetActiveTab($this){
@@ -255,6 +140,7 @@ $jq.when(getItems(root)).done(function(data){
         .appendTo($name);
       
       $tabs.prepend($name);
+      $input.focus();
       setTimeout(function(){$input.focus();},100);
     }    
     
@@ -319,7 +205,7 @@ $jq.when(getItems(root)).done(function(data){
       if(checkCatCount(elem)){
         var $catHeader = $('<div class="category-header" />').prependTo($category);
         $([
-            '<h2>', elem.display, '</h2>'
+            '<h2>', elem.name, '</h2>'
         ].join('')).appendTo($catHeader);
         $([
             '<p>', elem.description, '</p>'
@@ -336,20 +222,19 @@ $jq.when(getItems(root)).done(function(data){
     
     function drawItem(elem){
       var $item = $([
-          '<li class="',elem.iconClassName,'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.name, '</span></label></li>'
+          '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.name, '</span></label></li>'
       ].join('')).append([
           '<div class="desc">', elem.description, '</div>'
       ].join('')).append([
-          '<div class="icn"><img src="', elem.icon, '" /></div>'
+          '<div class="icn"><span class="img" style="background:url(',jRoot,'/images/items/',cleanClassName(elem.class),'.png)"></span></div>'
       ].join(''));
-      
+      console.log(elem)
       function setSelectState(){
         var $this = $(this).closest('li');
         //if this is a hyperlink, don't move the selection.
         if($this.find('a:focus').length === 1) {return false;}
         $this.closest('.categories').find('.active').removeClass('active');
         $this.addClass('active');
-        elem.$r.attr('checked', 'checked');
         $this.find('input[type="radio"]').attr('checked', 'checked');
         window.updateOk($form[0]);
         
@@ -364,127 +249,12 @@ $jq.when(getItems(root)).done(function(data){
       return $item;
     }
     
-    
-    
-    
     // initialize
     
     var sortedDCategories = sortItemsByOrder(data.categories);
     drawTabs(sortedDCategories);
     
-    
-    return false;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
   });
-});
-
-$jq(function() {
-
-return false;
-
-  
-
-  
-
-  
-  
-
-  
- 
-  
-
-  
-
-
-
-  
-  function drawItems(data) {
-    var $ = $jq;
-
-    $.each(data, function(i, elem) {
-      var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', elem.id);
-      var $items = $('<ul/>').addClass('j-item-options').appendTo($category);
-      var $newTarget;
-      
-      if(checkCatCount(elem)){
-        var $catHeader = $('<div class="category-header" />').prependTo($category);
-        $([
-            '<h2>', elem.display, '</h2>'
-        ].join('')).appendTo($catHeader);
-        $([
-            '<p>', elem.description, '</p>'
-        ].join('')).appendTo($catHeader);
-        
-        $category.removeClass('hide-cat');
-      }
-      else if(elem.remainders){
-        $newTarget = $('#'+cleanHref(elem.remainders,true)).find('.j-item-options');
-      }
-
-      $.each(elem.items, function(i, elem) {
-        if (!elem){
-          return;
-        }
-        var $item = $([
-            '<li><label><input name="add-item-display-radio" type="radio" /> <span class="label">', elem.display, '</span></label></li>'
-        ].join('')).append([
-            '<div class="desc">', elem.description, '</div>'
-        ].join('')).append([
-            '<div class="icn"><img src="', elem.icon, '" /></div>'
-        ].join(''));
-        
-        function setSelectState(){
-          var $this = $(this).closest('li');
-          //if this is a hyperlink, don't move the selection.
-          if($this.find('a:focus').length === 1) {return false;}
-          $this.closest('.categories').find('.active').removeClass('active');
-          $this.addClass('active');
-          elem.$r.attr('checked', 'checked');
-          $this.find('input[type="radio"]').attr('checked', 'checked');
-          window.updateOk($form[0]);
-          
-          $('html, body').animate({
-            scrollTop:$this.offset().top - 200
-          },50);
-          
-        }
-        
-        $item.click(setSelectState);
-        // so keyboard tabs will work...
-        $item.find('input[type="radio"]').focus(setSelectState);
-        
-        
-        if($newTarget && $newTarget.length === 1){
-          $newTarget.append($item);
-        }else{
-          $items.append($item);
-        }
-      });
-      
-      $categories.append($category);
-
-    });
-    
-    hideAllTabsIfUnnecesary(sectionsToShow);
-    
-    $root.prepend($newView);
-    
-    
-    
-  }
-  drawTabs(data);
-  drawName();
-  drawItems(data);
-
 });
 
 function fireBottomStickerAdjustEvent() {
