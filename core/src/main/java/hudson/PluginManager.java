@@ -1158,7 +1158,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
             
             // JENKINS-33308 - automatically install implied/previously bundled dependencies for older plugins that may need them
-            for(PluginWrapper.Dependency previouslyBundledDependency : ClassicPluginStrategy.getPreviouslyBundledDependencies(p.requiredCore)) {
+            for(PluginWrapper.Dependency previouslyBundledDependency : ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore)) {
                 // if they aren't already installed, note the dependencies show 'need restart' messages if installed multiple times
                 // but it can't be prevented here
                 if(getPlugin(previouslyBundledDependency.shortName) == null) {

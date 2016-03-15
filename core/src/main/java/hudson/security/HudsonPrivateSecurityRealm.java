@@ -81,7 +81,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -385,9 +384,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
                 Constructor<?> c = up.getDeclaredConstructor(String.class);
                 user.addProperty((UserProperty)c.newInstance(si.email));
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -395,6 +392,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         return user;
     }
     
+    @Restricted(NoExternalUse.class)
     public boolean isMailerPluginPresent() {
         try {
             // mail support has moved to a separate plugin

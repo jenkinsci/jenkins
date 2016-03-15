@@ -241,8 +241,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
         }
-        for (DetachedPlugin detached : DETACHED_LIST)
-            detached.fix(atts,optionalDependencies);
+        
+        fix(atts,optionalDependencies);
 
         // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
         // such as database plugin for JPA support. The Mask-Classes attribute is insufficient because those classes
@@ -259,15 +259,35 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
     }
+
+    private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+        // don't fix the dependency for yourself, or else we'll have a cycle
+        String pluginName = atts.getValue("Short-Name");
+        
+        // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
+        String jenkinsVersion = atts.getValue("Jenkins-Version");
+        if (jenkinsVersion==null)
+            jenkinsVersion = atts.getValue("Hudson-Version");
+        
+        optionalDependencies.addAll(getImpliedDependencies(pluginName, jenkinsVersion));
+    }
     
     /**
-     * Returns all the bundled plugin dependencies for a particular Jenkins version
+     * Returns all the plugin dependencies that are implicit based on a particular Jenkins version
      */
-    public static List<PluginWrapper.Dependency> getPreviouslyBundledDependencies(String jenkinsVersion) {
+    public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         List<PluginWrapper.Dependency> out = new ArrayList<>();
         for (DetachedPlugin detached : DETACHED_LIST) {
+            if (detached.shortName.equals(pluginName)) {
+                continue;
+            }
+            if (BREAK_CYCLES.contains(pluginName + '/' + detached.shortName)) {
+                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {pluginName, detached.shortName});
+                continue;
+            }
             if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
                 out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requireVersion));
+                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {pluginName, detached.shortName, jenkinsVersion});
             }
         }
         return out;
@@ -389,25 +409,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
          */
         public VersionNumber getSplitWhen() {
             return splitWhen;
-        }
-
-        private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
-            // don't fix the dependency for yourself, or else we'll have a cycle
-            String yourName = atts.getValue("Short-Name");
-            if (shortName.equals(yourName))   return;
-            if (BREAK_CYCLES.contains(yourName + '/' + shortName)) {
-                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {yourName, shortName});
-                return;
-            }
-
-            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
-            String jenkinsVersion = atts.getValue("Jenkins-Version");
-            if (jenkinsVersion==null)
-                jenkinsVersion = atts.getValue("Hudson-Version");
-            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0) {
-                optionalDependencies.add(new PluginWrapper.Dependency(shortName + ':' + requireVersion));
-                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {yourName, shortName, jenkinsVersion});
-            }
         }
     }
 
