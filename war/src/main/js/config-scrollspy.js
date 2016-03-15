@@ -8,6 +8,8 @@ $(function() {
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
+            // Scroll to the section.
+            scrollTo(this);
             // Hook back into hudson-behavior.js
             page.fireBottomStickerAdjustEvent();
         });
@@ -16,6 +18,19 @@ $(function() {
         $(windowHandle.getWindow()).on('scroll',function(){watchScroll(tabBar);});
     });
 });
+
+function scrollTo(section) {
+    var $header = section.headerRow;
+    var scrollTop = $header.offset().top - ($('#main-panel .jenkins-config-widgets').outerHeight() + 15);
+
+    $('html,body').animate({
+      scrollTop: scrollTop
+    }, 500);
+    setTimeout(function(){
+      section.activator.closest('.tabBar').find('.active').removeClass('active');
+      section.activator.addClass('active');
+    }, 510);
+}
 
 function watchScroll(tabControl) {
     var $window = $(windowHandle.getWindow());
