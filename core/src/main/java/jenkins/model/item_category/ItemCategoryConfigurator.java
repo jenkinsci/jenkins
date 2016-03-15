@@ -85,7 +85,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     protected abstract String getDescriptionFor(@Nonnull TopLevelItemDescriptor descriptor);
 
     /**
-     * Finds the description specified by the first configurator.
+     * Finds the weight specified by the first configurator.
      * If none can be found a empty string is returned. {@see DefaultConfigurator#getDescriptionFor}.
      *
      * @param descriptor the item to categorize.

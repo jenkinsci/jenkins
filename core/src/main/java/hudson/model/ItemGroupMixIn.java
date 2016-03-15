@@ -367,6 +367,11 @@ public abstract class ItemGroupMixIn {
                 categories.getItems().add(category);
             }
         }
+        if (Jenkins.getInstance().getAllItems().size() > 0) {
+            Category copy = new Category("category-id-copy", "Copy existing Item", "", "category-icon-copy",
+                    ItemCategory.MIN_WEIGHT, ItemCategory.MIN_TOSHOW, new ArrayList<Map<String, Serializable>>());
+            categories.getItems().add(copy);
+        }
         return categories;
     }
 
