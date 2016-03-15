@@ -261,10 +261,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
-        // don't fix the dependency for yourself, or else we'll have a cycle
         String pluginName = atts.getValue("Short-Name");
         
-        // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
         String jenkinsVersion = atts.getValue("Jenkins-Version");
         if (jenkinsVersion==null)
             jenkinsVersion = atts.getValue("Hudson-Version");
@@ -274,11 +272,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
     
     /**
      * Returns all the plugin dependencies that are implicit based on a particular Jenkins version
+     * @since 2.0
      */
     @Nonnull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         List<PluginWrapper.Dependency> out = new ArrayList<>();
         for (DetachedPlugin detached : DETACHED_LIST) {
+            // don't fix the dependency for itself, or else we'll have a cycle
             if (detached.shortName.equals(pluginName)) {
                 continue;
             }
@@ -286,6 +286,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {pluginName, detached.shortName});
                 continue;
             }
+            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
                 out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requireVersion));
                 LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {pluginName, detached.shortName, jenkinsVersion});
