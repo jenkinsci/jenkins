@@ -32,7 +32,7 @@ THE SOFTWARE.
     <f:breadcrumb-config-outline />
     <l:main-panel>
       <l:js src="jsbundles/config-scrollspy.js" />
-      <l:css src="jsbundles/jenkins-widgets.css" />
+      <l:css src="jsbundles/config-scrollspy.css" />
 
       <div class="behavior-loading">${%LOADING}</div>
       <f:form method="post" action="configSubmit" name="config" tableClass="job-config scrollspy">

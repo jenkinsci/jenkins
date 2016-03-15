@@ -28,7 +28,7 @@ builder.bundle('src/main/js/pluginSetupWizard.js')
 //
 builder.bundle('src/main/js/config-tabbar.js')
     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
-    .less('src/main/js/widgets/jenkins-widgets.less')
+    .less('src/main/js/config-tabbar.less')
     .inDir('src/main/webapp/jsbundles');
 
 //
@@ -37,5 +37,5 @@ builder.bundle('src/main/js/config-tabbar.js')
 //
 builder.bundle('src/main/js/config-scrollspy.js')
     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
-    .less('src/main/js/widgets/jenkins-widgets.less')
+    .less('src/main/js/config-scrollspy.less')
     .inDir('src/main/webapp/jsbundles');
