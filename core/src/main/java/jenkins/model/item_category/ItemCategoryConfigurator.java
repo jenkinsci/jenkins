@@ -114,7 +114,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     protected abstract String getEffectiveClazzFor(@Nonnull TopLevelItemDescriptor descriptor);
 
     /**
-     * Finds the weight specified by the first configurator.
+     * Finds the effective clazz specified by the first configurator.
      * If none can be found a empty string with {@code descriptor.clazz.getName();} is returned. {@see DefaultConfigurator#getEffectiveClazzFor}.
      *
      * @param descriptor the item to categorize.
