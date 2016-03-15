@@ -25,6 +25,7 @@
 
 package hudson.model;
 
+import hudson.ClassicPluginStrategy;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -467,7 +468,17 @@ public class UpdateSite {
                 core = null;
             }
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
-                plugins.put(e.getKey(),new Plugin(sourceId, e.getValue()));
+                Plugin p = new Plugin(sourceId, e.getValue());
+                // JENKINS-33308 - include implied dependencies for older plugins that may need them
+                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                if(!implicitDeps.isEmpty()) {
+                    for(PluginWrapper.Dependency dep : implicitDeps) {
+                        if(!p.dependencies.containsKey(dep.shortName)) {
+                            p.dependencies.put(dep.shortName, dep.version);
+                        }
+                    }
+                }
+                plugins.put(e.getKey(), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -612,7 +623,7 @@ public class UpdateSite {
         public final String[] categories;
 
         /**
-         * Dependencies of this plugin.
+         * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();

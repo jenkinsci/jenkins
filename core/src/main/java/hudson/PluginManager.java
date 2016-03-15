@@ -1156,19 +1156,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }
-            
-            // JENKINS-33308 - automatically install implied/previously bundled dependencies for older plugins that may need them
-            for(PluginWrapper.Dependency previouslyBundledDependency : ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore)) {
-                // if they aren't already installed, note the dependencies show 'need restart' messages if installed multiple times
-                // but it can't be prevented here
-                if(getPlugin(previouslyBundledDependency.shortName) == null) {
-                    // as these are basically jenkins core, these should always be installed from the default update center
-                    UpdateSite.Plugin previouslyBundledPlugin = getPlugin(previouslyBundledDependency.shortName, UpdateCenter.ID_DEFAULT);
-                    Future<UpdateCenter.UpdateCenterJob> jobFuture = previouslyBundledPlugin.deploy(dynamicLoad, correlationId);
-                    installJobs.add(jobFuture);
-                }
-            }
-            
             Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
             installJobs.add(jobFuture);
         }

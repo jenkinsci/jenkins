@@ -275,6 +275,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * Returns all the plugin dependencies that are implicit based on a particular Jenkins version
      */
+    @Nonnull
     public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
         List<PluginWrapper.Dependency> out = new ArrayList<>();
         for (DetachedPlugin detached : DETACHED_LIST) {
