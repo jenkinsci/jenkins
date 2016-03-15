@@ -266,7 +266,6 @@ ConfigTableMetaData.prototype.hideSection = function() {
 
     $('.config-section-activator.active', this.activatorContainer).removeClass('active');
     topRows.filter('.active').removeClass('active');
-    topRows.hide();
 };
 
 ConfigTableMetaData.prototype.onShowSection = function(listener) {

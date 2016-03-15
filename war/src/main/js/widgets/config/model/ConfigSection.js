@@ -94,7 +94,7 @@ ConfigSection.prototype.activate = function() {
 ConfigSection.prototype.markRowsAsActive = function() {
     var rows = this.getRows();
     for (var i = 0; i < rows.length; i++) {
-        rows[i].addClass('active').show();
+        rows[i].addClass('active');
     }
     for (var ii = 0; ii < this.subSections.length; ii++) {
         this.subSections[ii].markRowsAsActive();
