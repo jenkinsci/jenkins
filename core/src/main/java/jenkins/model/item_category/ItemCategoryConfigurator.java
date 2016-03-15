@@ -28,7 +28,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
 
     /**
      * Finds the category specified by the first configurator.
-     * If none can be found {@link ItemCategory.BasicProjects} is returned.
+     * If none can be found {@link ItemCategory.UncategorizedCategory} is returned.
      *
      * @param descriptor the item to categorize.
      *
@@ -42,7 +42,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
                 return category;
             }
         }
-        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.BasicProjects.class);
+        throw new IllegalStateException("At least, must exist the category: " + ItemCategory.UncategorizedCategory.class);
     }
 
     /**
@@ -145,7 +145,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
         @Nonnull
         @Override
         public ItemCategory getCategoryFor(@Nonnull TopLevelItemDescriptor descriptor) {
-            return ExtensionList.lookup(ItemCategory.BasicProjects.class).iterator().next();
+            return ExtensionList.lookup(ItemCategory.UncategorizedCategory.class).iterator().next();
         }
 
         @Nonnull

@@ -48,21 +48,21 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
      * The default {@link ItemCategory}, if an item doesn't belong anywhere else, this is where it goes by default.
      */
     @Extension
-    public static final class BasicProjects extends ItemCategory {
+    public static final class UncategorizedCategory extends ItemCategory {
 
         @Override
         public String getId() {
-            return "category-id-basicprojects";
+            return "category-id-uncategorized";
         }
 
         @Override
         public String getDescription() {
-            return Messages.ItemCategory_BasicProjects_Description();
+            return Messages.ItemCategory_Uncategorized_Description();
         }
 
         @Override
         public String getDisplayName() {
-            return Messages.ItemCategory_BasicProjects_DisplayName();
+            return Messages.ItemCategory_Uncategorized_DisplayName();
         }
 
         @Override
