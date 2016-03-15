@@ -244,7 +244,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
         var topRows = this.getTopRows();
 
         // Deactivate currently active section ...
-        this.deactivateActiveSection();
+        this.hideSection();
 
         // Active the specified section
         section.activator.addClass('active');
@@ -260,7 +260,7 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     }
 };
 
-ConfigTableMetaData.prototype.deactivateActiveSection = function() {
+ConfigTableMetaData.prototype.hideSection = function() {
     var topRows = this.getTopRows();
     var $ = jQD.getJQuery();
 
@@ -305,7 +305,7 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
             if (sectionsWithText.length > 0) {
                 this.showSection(sectionsWithText[0]);
             } else {
-                this.deactivateActiveSection();
+                this.hideSection();
             }
         }
     }
