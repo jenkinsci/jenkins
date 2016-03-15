@@ -18,7 +18,7 @@ describe("tabbar-spec tests", function () {
                 .toBe('config_general,config__advanced_project_options,config__build_triggers,config__build');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test section activation", function (done) {
@@ -47,7 +47,7 @@ describe("tabbar-spec tests", function () {
             firstTableMetadata.activateSection('config__build');
             // above 'firstTableMetadata.onShowSection' handler should get called now
 
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test row-group modeling", function (done) {
@@ -69,7 +69,7 @@ describe("tabbar-spec tests", function () {
             expect(generalSection.getRowGroupLabels().toString()).toBe('Discard Old Builds');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via handler triggering", function (done) {
@@ -105,7 +105,7 @@ describe("tabbar-spec tests", function () {
 
                 done();
             }, 600);
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via showSections()", function (done) {
@@ -126,7 +126,7 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via showSections() - in inner row-group", function (done) {
@@ -147,7 +147,7 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test adopt sections ", function (done) {
@@ -180,7 +180,7 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     function keydowns(text, onInput) {
@@ -201,5 +201,3 @@ describe("tabbar-spec tests", function () {
         return text.trim().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, "|");
     }
 });
-
-// TODO: lots more tests !!!
