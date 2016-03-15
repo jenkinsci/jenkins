@@ -2,22 +2,20 @@ var windowHandle = require('window-handle');
 var win = windowHandle.getWindow();
 var storage = win.localStorage;
 
-if (typeof storage === "undefined") {
-    console.warn('HTML5 localStorage not supported by this browser.');
-    // mock it...
+exports.setMock = function() {
     storage = {
         storage: {},
-        setItem: function(name, value) {
+        setItem: function (name, value) {
             this.storage[name] = value;
         },
-        getItem: function(name) {
+        getItem: function (name) {
             return this.storage[name];
         },
-        removeItem: function(name) {
+        removeItem: function (name) {
             delete this.storage[name];
         }
     };
-}
+};
 
 exports.setItem = function(name, value) {
     storage.setItem(name, value);
@@ -34,3 +32,9 @@ exports.getItem = function(name, defaultVal) {
 exports.removeItem = function(name) {
     return storage.removeItem(name);
 };
+
+if (typeof storage === "undefined") {
+    console.warn('HTML5 localStorage not supported by this browser.');
+    // mock it...
+    exports.setMock();
+}

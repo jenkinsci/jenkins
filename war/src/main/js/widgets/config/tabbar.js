@@ -2,6 +2,7 @@ var jQD = require('jquery-detached');
 var page = require('../../util/page.js');
 var jenkinsLocalStorage = require('../../util/jenkinsLocalStorage.js');
 var tableMetadata = require('./model/ConfigTableMetaData.js');
+var behaviorShim = require('../../util/behavior-shim');
 
 exports.tabBarShowPreferenceKey = 'config:usetabs';
 
@@ -14,11 +15,11 @@ exports.addPageTabs = function(selector, forEachConfigTable) {
         // have been applied, otherwise row-set rows become visible across sections.
         var done = false;
 
-        Behaviour.specify(".dd-handle", 'config-drag-start', 1000, function() { // jshint ignore:line
+        behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function() {
             page.fixDragEvent();
         });
 
-        Behaviour.specify(".block-control", 'row-set-block-control', 1000, function() { // jshint ignore:line
+        behaviorShim.specify(".block-control", 'row-set-block-control', 1000, function() {
             if (done) {
                 return;
             }

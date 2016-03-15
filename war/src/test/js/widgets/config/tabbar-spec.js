@@ -1,11 +1,13 @@
 var jsTest = require("jenkins-js-test");
 
+require('./mocks');
+
 describe("tabbar-spec tests", function () {
 
     it("- test section count", function (done) {
         jsTest.onPage(function() {
-            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
-            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            var firstTableMetadata = tabbars.tabs[0];
 
             var jQD = require('jquery-detached');
             var $ = jQD.getJQuery();
@@ -23,8 +25,8 @@ describe("tabbar-spec tests", function () {
 
     it("- test section activation", function (done) {
         jsTest.onPage(function() {
-            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
-            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            var firstTableMetadata = tabbars.tabs[0];
 
             // The first section ("General") should be active by default
             expect(firstTableMetadata.activeSection().id).toBe('config_general');
