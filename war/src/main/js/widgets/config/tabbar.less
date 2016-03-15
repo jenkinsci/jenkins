@@ -7,13 +7,29 @@ body.add-item .jenkins-config table tr {display:none;}
 body.add-item .jenkins-config table tr:last-of-type {display:table-row}
 body.add-item .jenkins-config-widgets .form-config.tabBarFrame .tabBar .tab.active {background:@bright; border-bottom-color:@bright}
 body.add-item .category.jenkins-config.hide-cat {display:none;}
+.icn .img{
+  display:block; top:-1px; left:-1px; height:48px; width:48px; position:absolute;
+}
+body#jenkins.add-item .jenkins-config table #bottom-sticker {margin:30px 30px -16px -6px}
+body#jenkins.add-item .jenkins-config table td {
+  border-left:1px solid @solid-border;
+  border-right:1px solid @solid-border;
+}
 body#jenkins.add-item .jenkins-config {
-  padding:10px; 
+  padding:0px; 
+  border-radius:0;
   background:@bright;
-  box-shadow:inset;
+  border:none;
+  border-bottom:1px solid @solid-border;
+  
+  .categories {
+    border-left:1px solid @solid-border;
+    border-right:1px solid @solid-border;
+  }
   
   h2 {
-    margin-bottom:5px;
+    margin:0;
+    padding:15px 0 5px;
   }
   
   .category-header > p {
@@ -24,7 +40,7 @@ body#jenkins.add-item .jenkins-config {
 .jenkins-config > .category-header {padding:0 20px}
 .j-item-options > li.active {background:#fff;}
 .j-item-options li,
-.j-item-options {display:block; margin:0; list-style:none; position:relative; padding:0 10px}
+.j-item-options {display:block; margin:0; list-style:none; position:relative; padding:0 10px 10px}
 .j-item-options li{
   .no-select;
   cursor:pointer;
@@ -60,11 +76,12 @@ body#jenkins.add-item .jenkins-config {
     font-weight:bold;
     color:#000;
     padding-bottom:5px;
+    cursor:pointer;
     
     input{
-      position:absolute;
-      top:20px;
-      left:20px;
+      position: absolute;
+      top: 24px;
+      left: 25px;
     }
   }
 }
@@ -80,6 +97,10 @@ body#jenkins.add-item .jenkins-config {
   border-color:@line-blue;
   box-shadow:inset 999rem 0 @brightest;
   .text-select;
+  
+  label{
+    cursor:text;
+  }
 }
 
 .add-item .jenkins-config-widgets {
@@ -87,6 +108,7 @@ body#jenkins.add-item .jenkins-config {
   border-top-right-radius:5px;
   position:relative;
   z-index:5;
+  
 }
 
 .jenkins-config-widgets {
