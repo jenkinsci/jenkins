@@ -17,6 +17,8 @@ function ConfigSection(headerRow, parentCMD) {
     this.rowGroups = undefined;
     this.activator = undefined;
     this.subSections = [];
+
+    this.headerRow.addClass(this.id);
 }
 
 ConfigSection.prototype.isTopLevelSection = function() {

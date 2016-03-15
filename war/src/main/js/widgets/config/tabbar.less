@@ -8,8 +8,12 @@
   border-bottom:none;
   background:@light-backgrond;
   min-height:2.5em;
-  border-top-left-radius:@radius;
-  border-top-right-radius:@radius;
+  .border-radius-top(@radius);
+  z-index:2;
+
+  nav:before, nav:after {
+    display: none;
+  }
   
   :hover .noTabs{
     color:#bbb;
@@ -46,7 +50,8 @@
     border-bottom: solid 1px @solid-border;
 
     .config-section-activators {
-      margin-right: 80px;
+      margin: 0;
+      padding: 0;
     }
 
     .tabBar {
@@ -56,7 +61,8 @@
         padding: 7px 10px;
         .border-radius-top(5px);
         cursor: pointer;
-        margin-top:1px;
+        margin: 1px 0 0 10px;
+        text-decoration: none;
       }
       .tab:hover {
         background:#bbb; color:@brightest;
@@ -88,13 +94,22 @@
     border:1px solid @solid-border;
     padding:10px;
     border-top:none;
-    border-bottom-left-radius:@radius;
-    border-bottom-right-radius:@radius;
-    
+    .border-radius-bottom(@radius);
+
     .showTabs{
       display:block;
       text-align:right;
 
+    }
+
+    table.config-table {
+      .section-header-row {
+        background: none;
+        border-color: transparent
+      }
+      .section-header {
+        margin-top: 10px;
+      }
     }
 
     table {
@@ -120,12 +135,26 @@
         margin: 30px 30px -25px -15px;
         z-index:9;
 
+        .yui-button.primary{
+          button{
+            background:@middle-blue;
+            border-color:@dark-blue;
+          }
+        }
+        .yui-button-disabled{
+          button{
+            background:@light-backgrond;
+            border-color:@solid-border;
+          }
+        }
+
         .yui-button{
           margin-right:10px;
           
           button{
             padding:5px 20px;
-            border-radius:@radius;
+            background:@pale-blue;
+            border-color:@line-blue;
           }
         }
       }
@@ -172,6 +201,7 @@
           height:@input-line-height;
           line-height:@input-line-height;
           padding:0 5px;
+          .border-radius(@radius);
         }
         .yui-button button{
           padding:0 10px;
@@ -262,8 +292,7 @@
         right:35px;
         height:18px;
         width:32px;
-        border-bottom-left-radius:@radius;
-        border-bottom-right-radius:@radius;
+        .border-radius-bottom(3px);
         overflow:hidden;
         
         button{
@@ -306,4 +335,11 @@
   border:1px solid @line-blue !important;
   opacity:.5;
 }
-.yui-skin-sam .yuimenu {z-index:9999 !important}
+
+.yui-skin-sam .yuimenu {
+  z-index: 9999 !important
+}
+
+.yui-skin-sam .yui-button-disabled {
+  opacity: .75
+}
