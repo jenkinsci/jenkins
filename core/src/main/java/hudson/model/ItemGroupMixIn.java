@@ -344,13 +344,14 @@ public abstract class ItemGroupMixIn {
      */
     public static Categories getCategories(Authentication a, ItemGroup c) {
         Categories categories = new Categories();
-        for (TopLevelItemDescriptor descriptor : Items.all(a, c)) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(c, Items.all(a, c))) {
+            String effectiveClazz = ItemCategoryConfigurator.getEffectiveClazz(descriptor);
             ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
             // Information about Item.
-            metadata.put("class", descriptor.clazz.getName());
-            metadata.put("iconClassName", "item-icon-" + descriptor.clazz.getName().substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
+            metadata.put("class", effectiveClazz);
+            metadata.put("iconClassName", "item-icon-" + effectiveClazz.substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
             metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
             metadata.put("name", descriptor.getDisplayName());
             metadata.put("description", ItemCategoryConfigurator.getDescription(descriptor));
@@ -365,6 +366,11 @@ public abstract class ItemGroupMixIn {
                         ic.getWeight(), ic.getMinToShow(), temp);
                 categories.getItems().add(category);
             }
+        }
+        if (Jenkins.getInstance().getAllItems().size() > 0) {
+            Category copy = new Category("category-id-copy", "Copy existing Item", "", "category-icon-copy",
+                    ItemCategory.MIN_WEIGHT, ItemCategory.MIN_TOSHOW, new ArrayList<Map<String, Serializable>>());
+            categories.getItems().add(copy);
         }
         return categories;
     }
