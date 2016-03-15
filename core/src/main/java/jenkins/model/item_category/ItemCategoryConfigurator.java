@@ -85,7 +85,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     protected abstract String getDescriptionFor(@Nonnull TopLevelItemDescriptor descriptor);
 
     /**
-     * Finds the weight specified by the first configurator.
+     * Finds the description specified by the first configurator.
      * If none can be found a empty string is returned. {@see DefaultConfigurator#getDescriptionFor}.
      *
      * @param descriptor the item to categorize.
@@ -103,12 +103,41 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
         throw new IllegalStateException("At least, a default value must exist for description field");
     }
 
+    /**
+     * Provides the effective clazz for the requested item or null if this configurator doesn't have one.
+     *
+     * @param descriptor the item to categorize
+     *
+     * @return A string or null
+     */
+    @CheckForNull
+    protected abstract String getEffectiveClazzFor(@Nonnull TopLevelItemDescriptor descriptor);
+
+    /**
+     * Finds the weight specified by the first configurator.
+     * If none can be found a empty string with {@code descriptor.clazz.getName();} is returned. {@see DefaultConfigurator#getEffectiveClazzFor}.
+     *
+     * @param descriptor the item to categorize.
+     *
+     * @return A {@link ItemCategory}
+     */
+    @Nonnull
+    public static String getEffectiveClazz(@Nonnull TopLevelItemDescriptor descriptor) {
+        for (ItemCategoryConfigurator m : all()) {
+            String clazz = m.getEffectiveClazzFor(descriptor);
+            if (clazz != null) {
+                return clazz;
+            }
+        }
+        throw new IllegalStateException("At least, a default value must exist for clazz field");
+    }
+
     public static Collection<ItemCategoryConfigurator> all() {
         return ExtensionList.lookup(ItemCategoryConfigurator.class);
     }
 
     /**
-     * Default configurator with the lowest ordinal that simply returns {@link ItemCategory.BasicProjects}.
+     * Default configurator with the lowest ordinal that simply returns default values.
      */
     @Extension(ordinal = Integer.MIN_VALUE)
     public static final class DefaultConfigurator extends ItemCategoryConfigurator {
@@ -131,5 +160,10 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
             return "";
         }
 
+        @Nonnull
+        @Override
+        public String getEffectiveClazzFor(@Nonnull TopLevelItemDescriptor descriptor) {
+            return descriptor.clazz.getName();
+        }
     }
 }
