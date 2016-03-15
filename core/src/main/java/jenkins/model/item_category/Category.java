@@ -22,20 +22,16 @@ public class Category implements Serializable {
 
     private String description;
 
-    private String iconClassName;
-
     private int weight;
 
     private int minToShow;
 
     private List<Map<String, Serializable>> items;
 
-    public Category(String id, String name, String description, String iconClassName, int weight, int minToShow,
-                    List<Map<String, Serializable>> items) {
+    public Category(String id, String name, String description, int weight, int minToShow, List<Map<String, Serializable>> items) {
         this.id= id;
         this.name = name;
         this.description = description;
-        this.iconClassName = iconClassName;
         this.weight = weight;
         this.minToShow = minToShow;
         this.items = items;
@@ -54,11 +50,6 @@ public class Category implements Serializable {
     @Exported
     public String getDescription() {
         return description;
-    }
-
-    @Exported
-    public String getIconClassName() {
-        return iconClassName;
     }
 
     @Exported

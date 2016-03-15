@@ -351,9 +351,8 @@ public abstract class ItemGroupMixIn {
 
             // Information about Item.
             metadata.put("class", effectiveClazz);
-            metadata.put("iconClassName", "item-icon-" + effectiveClazz.substring(descriptor.clazz.getName().lastIndexOf(".") + 1).toLowerCase());
             metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
-            metadata.put("name", descriptor.getDisplayName());
+            metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", ItemCategoryConfigurator.getDescription(descriptor));
 
             Category category = categories.getItem(ic.getId());
@@ -362,15 +361,9 @@ public abstract class ItemGroupMixIn {
             } else {
                 List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
                 temp.add(metadata);
-                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getIconClassName(),
-                        ic.getWeight(), ic.getMinToShow(), temp);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight(), ic.getMinToShow(), temp);
                 categories.getItems().add(category);
             }
-        }
-        if (Jenkins.getInstance().getAllItems().size() > 0) {
-            Category copy = new Category("category-id-copy", "Copy existing Item", "", "category-icon-copy",
-                    ItemCategory.MIN_WEIGHT, ItemCategory.MIN_TOSHOW, new ArrayList<Map<String, Serializable>>());
-            categories.getItems().add(copy);
         }
         return categories;
     }
