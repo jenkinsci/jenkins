@@ -1932,3 +1932,13 @@ table#legend-table td {
     background-color: #fcf8e3;
     border-color: #faebcc;
 }
+
+body.main-panel-only #side-panel {
+    width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+body.main-panel-only #main-panel {
+    margin: 0 auto !important;
+    max-width: 75em !important;
+}
