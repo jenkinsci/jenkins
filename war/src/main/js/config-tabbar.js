@@ -5,7 +5,7 @@ var jenkinsLocalStorage = require('./util/jenkinsLocalStorage.js');
 $(function() {
     var tabBarWidget = require('./widgets/config/tabbar.js');
 
-    tabBarWidget.addPageTabs('.job-config.tabbed', function(tabBar) {
+    tabBarWidget.addPageTabs('.config-table.tabbed', function(tabBar) {
         // We want to merge some sections together.
         // Merge the "Advanced" section into the "General" section.
         var generalSection = tabBar.getSection('config_general');

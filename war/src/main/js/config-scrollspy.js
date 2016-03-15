@@ -5,7 +5,7 @@ var windowHandle = require('window-handle');
 $(function() {
     var tabBarWidget = require('./widgets/config/tabbar.js');
 
-    tabBarWidget.addPageTabs('.job-config.scrollspy', function(tabBar) {
+    tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
             // Hook back into hudson-behavior.js

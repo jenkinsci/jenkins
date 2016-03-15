@@ -23,11 +23,11 @@
   .jenkins-config {
 
     // For a tabbar, the default is to hide all of the table rows.
-    table.job-config > tbody > tr {
+    .config-table.tabbed > tbody > tr {
       display: none;
     }
     // ... and then show them when given the "active" class.
-    table.job-config > tbody > tr.active {
+    .config-table.tabbed > tbody > tr.active {
       display: table-row;
     }
 
