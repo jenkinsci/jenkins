@@ -24,13 +24,6 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
     public abstract String getId();
 
     /**
-     * The icon class specification e.g. 'category-icon-folder', 'category-icon-basicprojects', etc.
-     *
-     * @return the icon class specification
-     */
-    public abstract String getIconClassName();
-
-    /**
      * The description in plain text
      *
      * @return the description
@@ -60,11 +53,6 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
         @Override
         public String getId() {
             return "category-id-basicprojects";
-        }
-
-        @Override
-        public String getIconClassName() {
-            return "category-icon-basicprojects";
         }
 
         @Override
