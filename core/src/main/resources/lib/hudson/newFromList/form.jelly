@@ -62,7 +62,7 @@ THE SOFTWARE.
     <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
 
     <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/jenkins-widgets.css" />  
+    <l:css src="jsbundles/config-scrollspy.css" /> 
 
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>

@@ -33,13 +33,8 @@ $.when(getItems(jRoot)).done(function(data){
 
     ////////////////////////////////
     // mark page for layout
-    if($('#j-welcome-box').length === 0){
-      $('body').addClass('add-item');
-      setTimeout(drawShowHide,200);
-    }
-    else{
-      $('body').addClass('welcome');
-    }
+    $('body').addClass('add-item ide-side j-hide-left');
+
 
     ////////////////////////////////
     // submit button click
@@ -316,20 +311,6 @@ $.when(getItems(jRoot)).done(function(data){
         .appendTo($icn);
 
       return $icn;
-    }
-    
-    function drawShowHide(){
-      var $body = $('body').addClass('hide-side j-hide-left');
-      var $toggle = $('<div class="toggle slide-in" />')
-        .prependTo('#main-panel')
-          .click(function(){
-            $body.toggleClass('j-hide-left');
-            fireBottomStickerAdjustEvent();
-          });
-      setTimeout(function(){
-        $toggle.removeClass('slide-in'); 
-      },10);
-      
     }
 
     // initialize
