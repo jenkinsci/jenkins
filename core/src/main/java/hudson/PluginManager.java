@@ -1140,7 +1140,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     String pluginName = n.substring(0, index);
                     String siteName = n.substring(index + 1);
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
-                    // TODO: Someone that understands what the following logic is about, please add a comment.
+                    // There could be cases like:
+                    // 'plugin.ambiguous.updatesite' where both
+                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);
@@ -1150,9 +1152,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     index = n.indexOf('.', index + 1);
                 }
             }
+            
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }
+            
+            // JENKINS-33308 - automatically install implied/previously bundled dependencies for older plugins that may need them
+            for(PluginWrapper.Dependency previouslyBundledDependency : ClassicPluginStrategy.getPreviouslyBundledDependencies(p.requiredCore)) {
+                // if they aren't already installed, note the dependencies show 'need restart' messages if installed multiple times
+                // but it can't be prevented here
+                if(getPlugin(previouslyBundledDependency.shortName) == null) {
+                    // as these are basically jenkins core, these should always be installed from the default update center
+                    UpdateSite.Plugin previouslyBundledPlugin = getPlugin(previouslyBundledDependency.shortName, UpdateCenter.ID_DEFAULT);
+                    Future<UpdateCenter.UpdateCenterJob> jobFuture = previouslyBundledPlugin.deploy(dynamicLoad, correlationId);
+                    installJobs.add(jobFuture);
+                }
+            }
+            
             Future<UpdateCenter.UpdateCenterJob> jobFuture = p.deploy(dynamicLoad, correlationId);
             installJobs.add(jobFuture);
         }

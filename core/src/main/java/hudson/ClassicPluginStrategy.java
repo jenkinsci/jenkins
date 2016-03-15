@@ -259,6 +259,19 @@ public class ClassicPluginStrategy implements PluginStrategy {
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
     }
+    
+    /**
+     * Returns all the bundled plugin dependencies for a particular Jenkins version
+     */
+    public static List<PluginWrapper.Dependency> getPreviouslyBundledDependencies(String jenkinsVersion) {
+        List<PluginWrapper.Dependency> out = new ArrayList<>();
+        for (DetachedPlugin detached : DETACHED_LIST) {
+            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
+                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requireVersion));
+            }
+        }
+        return out;
+    }
 
     @Deprecated
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
