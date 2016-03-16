@@ -89,6 +89,11 @@ body {
   position:relative;
 }
 
+body#jenkins.j-hide-left #main-panel {
+  max-width:70em;
+  margin:0 auto;
+}
+
 @media (max-width: 750px) {
   #side-panel {
     width: 100%;

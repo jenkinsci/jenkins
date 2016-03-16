@@ -103,7 +103,6 @@ ${h.initPageVariables(context)}
     <!-- should the sidebar be hidden on load? -->
     <style>
       body.j-hide-left #side-panel{width:0; padding:0; overflow:hidden;}
-      body.j-hide-left #main-panel{margin:0 auto; max-width:75em;}
     </style>
     
     <!-- are we running as an unit test? -->
