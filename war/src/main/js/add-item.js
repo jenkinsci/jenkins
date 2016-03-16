@@ -73,7 +73,7 @@ $jq.when(getItems(root)).done(function(data){
     
     function addCopyOption(data){
       var $copy = $('#copy').closest('tr');
-      if($copy.length === 0) return data; // exit if copy should not be added to page. Jelly page holds that logic.
+      if($copy.length === 0) {return data;} // exit if copy should not be added to page. Jelly page holds that logic.
       var copyTitle = $copy.find('label').text();
       var copyDom = $copy.next().find('.setting-main').html();
       var copy = {
@@ -85,7 +85,7 @@ $jq.when(getItems(root)).done(function(data){
             {
               class:"copy",
               description:copyDom,
-              name:copyTitle,
+              displayName:copyTitle,
             }
           ]
       };
