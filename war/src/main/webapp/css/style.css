@@ -168,24 +168,19 @@ body, table, form, input, td, th, p, textarea, select
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
   line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-@media (min-width:1250px){
+
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
     {font-size:14px;}  
 }
-@media (min-width:1430px){
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:15px;}
-  
-}
-@media (min-width:1600px){
-  body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:17px;}  
-  body#jenkins.j-hide-left #main-panel{max-width:75%}
-}
-@media (min-width:1900px){
-  body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:20px;}  
+    {font-size:15px;}  
 }
 body, table, form, td, th, p
 {

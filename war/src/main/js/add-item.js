@@ -179,7 +179,7 @@ $.when(getItems(jRoot)).done(function(data){
         // little bit hacky here... need to keep track if I have tabs to show, so if there is just 1, I can hide it later....
         else if (elem.minToShow !== 0) {sectionsToShow.push(elem.id);}
         
-        var $tab = drawTab(elem);
+        var $tab = drawTab(i,elem);
         var $items = drawCategory(elem);
         var $cat = $items.parent();
         
@@ -206,7 +206,7 @@ $.when(getItems(jRoot)).done(function(data){
 
     function drawTab(i,elem){
       if(!elem) {elem = i;}
-      var $tab = $(['<li><a class="tab" href="#',cleanHref(elem.id),'">',elem.name,'</a></li>'].join(''))
+      var $tab = $(['<li><a class="tab ',((i===0)?'active':''),'" href="#',cleanHref(elem.id),'">',elem.name,'</a></li>'].join(''))
         .click(function(){
           //e.preventDefault(e);
           var $this = $(this).children('a');
