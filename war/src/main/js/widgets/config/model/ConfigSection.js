@@ -223,7 +223,7 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
                 }
                 rowGroupContainer = newRowGroup;
                 newRowGroup.findToggleWidget(row);
-            } else {
+            } else if (rowGroupContainer) {
                 if (row.hasClass('row-group-end')) {
                     rowGroupContainer.endRow = row;
                     rowGroupContainer = rowGroupContainer.parentRowGroupContainer; // pop back off the "stack"
