@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- tag file sed by both signup.jelly and addUser.jelly -->
+<!-- tag file used by both signup.jelly and addUser.jelly -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <h1>${title}</h1>
@@ -49,10 +49,12 @@ THE SOFTWARE.
           <td>${%Full name}:</td>
           <td><input type="text" name="fullname" value="${data.fullname}" /></td>
         </tr>
+        <j:if test="${it.mailerPluginPresent}">
         <tr>
           <td>${%E-mail address}:</td>
           <td><input type="text" name="email" value="${data.email}" /></td>
         </tr>
+        </j:if>
         <j:if test="${captcha}">
           <tr>
             <td>${%Enter text as shown}:</td>
