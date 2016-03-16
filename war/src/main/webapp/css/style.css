@@ -22,6 +22,10 @@
  * THE SOFTWARE.
  */
 
+.item-icon-freestyleproject .icn {
+  background: url('../images/items/freestyle-48.png') center center no-repeat !important;
+}
+
 /* General page layout */
 
 html {
@@ -163,8 +167,21 @@ body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
@@ -361,7 +378,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;  
 }
 
 pre.console {
@@ -573,7 +590,7 @@ div.pane-header {
 }
 
 div.pane-header .collapse {
-	float: right;
+  float: right;
   margin-left: 3px;
 }
 
@@ -1505,7 +1522,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-	color: inherit;
+  color: inherit;
 }
 
 DIV.yahooTree td {
@@ -1766,34 +1783,34 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
-	border-collapse: collapse;
+  border: 1px #BBBBBB solid;
+  border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
-	font-weight: bold;
+  background: #f0f0f0;
+  font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  padding: 3px;
 }
 td#matrix-title {
-	padding: 3px;
+  padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
-	font-weight: bold;
-	background: #f0f0f0;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  font-weight: bold;
+  background: #f0f0f0;
+  padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
-	text-align: center;
+  border: 1px #BBBBBB solid;
+  text-align: center;
 }
 
 /* ========================= legend.jelly ================== */
 table#legend-table td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 /* ========================= Button styles ================= */
