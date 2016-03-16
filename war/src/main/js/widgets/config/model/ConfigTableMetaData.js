@@ -190,12 +190,20 @@ ConfigTableMetaData.prototype.activeSection = function() {
     }
 };
 
-ConfigTableMetaData.prototype.getSection = function(sectionId) {
+ConfigTableMetaData.prototype.getSection = function(ref) {
     if (this.hasSections()) {
-        for (var i = 0; i < this.sections.length; i++) {
-            var section = this.sections[i];
-            if (section.id === sectionId) {
-                return section;
+        if (typeof ref === 'number') {
+            // It's a section index...
+            if (ref >= 0 && ref <= this.sections.length - 1) {
+                return this.sections[ref];
+            }
+        } else {
+            // It's a section ID...
+            for (var i = 0; i < this.sections.length; i++) {
+                var section = this.sections[i];
+                if (section.id === ref) {
+                    return section;
+                }
             }
         }
     }
@@ -245,12 +253,8 @@ ConfigTableMetaData.prototype.showSection = function(section) {
     if (section) {
         var topRows = this.getTopRows();
 
-        // Deactivate currently active section ...
-        this.hideSection();
-
         // Active the specified section
-        section.activator.addClass('active');
-        section.markRowsAsActive();
+        section.markAsActive();
 
         // and always show the buttons
         topRows.filter('.config_buttons').show();

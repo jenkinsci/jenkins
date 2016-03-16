@@ -1,4 +1,24 @@
 var jQD = require('jquery-detached');
+var windowHandle = require('window-handle');
+
+exports.winScrollTop = function() {
+    var $ = jQD.getJQuery();
+    var win = $(windowHandle.getWindow());
+    return win.scrollTop();
+};
+
+exports.onWinScroll = function(callback) {
+    var $ = jQD.getJQuery();
+    $(windowHandle.getWindow()).on('scroll', callback);
+};
+
+exports.pageHeaderHeight = function() {
+    return elementHeight('#page-head');
+};
+
+exports.breadcrumbBarHeight = function() {
+    return elementHeight('#breadcrumbBar');
+};
 
 exports.fireBottomStickerAdjustEvent = function() {
     Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
@@ -28,9 +48,13 @@ exports.fixDragEvent = function(handle) {
 exports.removeTextHighlighting = function(selector) {
     var $ = jQD.getJQuery();
     $('span.highlight-split', selector).each(function() {
-        console.log('remove');
         var highlightSplit = $(this);
         highlightSplit.before(highlightSplit.text());
         highlightSplit.remove();
     });
 };
+
+function elementHeight(selector) {
+    var $ = jQD.getJQuery();
+    return $(selector).height();
+}

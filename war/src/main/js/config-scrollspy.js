@@ -1,87 +1,143 @@
 var $ = require('jquery-detached').getJQuery();
 var page = require('./util/page.js');
 var windowHandle = require('window-handle');
+var isScrolling = false;
+var ignoreNextScrollEvent = false;
+var pageHeaderHeight = page.pageHeaderHeight();
+var breadcrumbBarHeight = page.breadcrumbBarHeight();
+
+// Some stuff useful for testing.
+exports.tabbars = [];
+exports.scrollspeed = 500;
+var eventListeners = [];
+exports.on = function(listener) {
+    eventListeners.push(listener);
+};
+function notify(event) {
+    for (var i = 0; i < eventListeners.length; i++) {
+        eventListeners[i](event);
+    }
+}
 
 $(function() {
     var tabBarWidget = require('./widgets/config/tabbar.js');
 
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
+        exports.tabbars.push(tabBar);
+
         tabBarWidget.addFinderToggle(tabBar);
         tabBar.onShowSection(function() {
             // Scroll to the section.
-            scrollTo(this);
+            scrollTo(this, tabBar);
             // Hook back into hudson-behavior.js
             page.fireBottomStickerAdjustEvent();
         });
 
         watchScroll(tabBar);
-        $(windowHandle.getWindow()).on('scroll',function(){watchScroll(tabBar);});
+        page.onWinScroll(function () {
+            watchScroll(tabBar);
+        });
     });
 });
 
-function scrollTo(section) {
+function scrollTo(section, tabBar) {
     var $header = section.headerRow;
     var scrollTop = $header.offset().top - ($('#main-panel .jenkins-config-widgets').outerHeight() + 15);
 
+    isScrolling = true;
     $('html,body').animate({
-      scrollTop: scrollTop
-    }, 500);
-    setTimeout(function(){
-      section.activator.closest('.tabBar').find('.active').removeClass('active');
-      section.activator.addClass('active');
-    }, 510);
+        scrollTop: scrollTop
+    }, exports.scrollspeed, function() {
+        if (isScrolling) {
+            notify({
+                type: 'click_scrollto',
+                section: section
+            });
+            isScrolling = false;
+            ignoreNextScrollEvent = stickTabbar(tabBar);
+        }
+    });
 }
 
-function watchScroll(tabControl) {
-    var $window = $(windowHandle.getWindow());
-    var $tabBox = tabControl.configWidgets;
-    var $tabs = $tabBox.find('.tab');
-    var $table = tabControl.configTable;
-    var $jenkTools = $('#breadcrumbBar');
-    var winScoll = $window.scrollTop();
-    var categories = tabControl.sections;
-    var jenkToolOffset = ($jenkTools.height() + $jenkTools.offset().top);
-
-    // reset tabs to start...
-    $tabs.find('.active').removeClass('active');
-
-    function getCatTop($cat) {
-        return ($cat.length > 0) ?
-        $cat.offset().top - jenkToolOffset
-            : 0;
+/**
+ * Watch page scrolling, changing the active tab as needed + moving the
+ * tabbar to stick it to the top of the visible area.
+ * @param tabBar The tabbar.
+ */
+function watchScroll(tabBar) {
+    if (isScrolling === true) {
+        // Ignore window scroll events while we are doing a scroll.
+        // See scrollTo function.
+        return;
+    }
+    if (ignoreNextScrollEvent === true) {
+        // Things like repositioning of the tabbar (see stickTabbar)
+        // can trigger scroll events that we want to ignore.
+        ignoreNextScrollEvent = false;
+        return;
     }
 
-    // calculate the top and height of each section to know where to switch the tabs...
-    $.each(categories, function (i, cat) {
-        var $cat = $(cat.headerRow);
-        var $nextCat = (i + 1 < categories.length) ?
-            $(categories[i + 1].headerRow) :
-            $cat;
-        // each category enters the viewport at its distance down the page, less the height of the toolbar, which hangs down the page...
-        // or it is zero if the category doesn't match or was removed...
-        var catTop = getCatTop($cat);
-        // height of this one is the top of the next, less the top of this one.
-        var catHeight = getCatTop($nextCat) - catTop;
+    var winScrollTop = page.winScrollTop();
+    var sections = tabBar.sections;
 
-        // the trigger point to change the tab happens when the scroll position passes below the height of the category...
-        // ...but we want to wait to advance the tab until the existing category is 75% off the top...
-        if (winScoll < (catTop + (0.75 * catHeight))) {
-            var $thisTab = $($tabs.get(i));
-            var $nav = $thisTab.closest('.tabBar');
-            $nav.find('.active').removeClass('active');
-            $thisTab.addClass('active');
+    // calculate the top and height of each section to know where to switch the tabs...
+    $.each(sections, function (i, section) {
+        // each section enters the viewport at its distance down the page, less the height of
+        // the toolbar, which hangs down the page. Or it is zero if the section doesn't
+        // match or was removed...
+        var viewportEntryOffset = section.getViewportEntryOffset();
+        // height of this one is the top of the next, less the top of this one.
+        var sectionHeight = 0;
+        var nextSection = section.getSibling(+1);
+        if (nextSection) {
+            sectionHeight = nextSection.getViewportEntryOffset() - viewportEntryOffset;
+        }
+
+        // the trigger point to change the tab happens when the scroll position passes below the height of the section...
+        // ...but we want to wait to advance the tab until the existing section is 75% off the top...
+        // ### < 75% ADVANCED
+        if (winScrollTop < (viewportEntryOffset + (0.75 * sectionHeight))) {
+            section.markAsActive();
+            notify({
+                type: 'manual_scrollto',
+                section: section
+            });
             return false;
         }
     });
 
-    if (winScoll > $('#page-head').height() - 5) {
-        $tabBox.width($tabBox.width()).css({
-            'position': 'fixed',
-            'top': ($jenkTools.height() - 5 ) + 'px'
-        });
-        $table.css({'margin-top': $tabBox.outerHeight() + 'px'});
+    stickTabbar(tabBar);
+}
 
+/**
+ * Stick the scrollspy tabbar to the top of the visible area as the user
+ * scrolls down the page.
+ * @param tabBar The tabbar.
+ */
+function stickTabbar(tabBar) {
+    var win = $(windowHandle.getWindow());
+    var winScrollTop = page.winScrollTop();
+    var widgetBox = tabBar.configWidgets;
+    var configTable = tabBar.configTable;
+    var configForm = tabBar.configForm;
+    var setWidth = function() {
+        widgetBox.width(configForm.outerWidth() - 2);
+    };
+
+    if (winScrollTop > pageHeaderHeight - 5) {
+        setWidth();
+        widgetBox.css({
+            'position': 'fixed',
+            'top': (breadcrumbBarHeight - 5 ) + 'px',
+            'margin': '0 auto !important'
+        });
+        configTable.css({'margin-top': widgetBox.outerHeight() + 'px'});
+        win.resize(setWidth);
+        return true;
     } else {
-        $tabBox.add($table).removeAttr('style');
+        widgetBox.removeAttr('style');
+        configTable.removeAttr('style');
+        win.unbind('resize', setWidth);
+        return false;
     }
 }

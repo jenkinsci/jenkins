@@ -2,6 +2,7 @@ var jQD = require('../../../util/jquery-ext.js');
 var util = require('./util.js');
 var page = require('../../../util/page.js');
 var ConfigRowGrouping = require('./ConfigRowGrouping.js');
+var pageHeaderHeight = page.pageHeaderHeight();
 
 module.exports = ConfigSection;
 
@@ -24,6 +25,38 @@ function ConfigSection(headerRow, parentCMD) {
 
 ConfigSection.prototype.isTopLevelSection = function() {
     return (this.parentCMD.getSection(this.id) !== undefined);
+};
+
+/**
+ * Get the page offset (height) at which this section comes
+ * into view.
+ * @returns {number}
+ */
+ConfigSection.prototype.getViewportEntryOffset = function() {
+    return this.headerRow.offset().top - pageHeaderHeight;
+};
+
+/**
+ * Get the sibling section at the relative offset.
+ * @param relOffset
+ */
+ConfigSection.prototype.getSibling = function(relOffset) {
+    var sections = this.parentCMD.sections;
+    var endIndex = sections.length - 1;
+
+    for (var i = 0; i < endIndex; i++) {
+        var testIndex = i + relOffset;
+        if (testIndex < 0) {
+            continue;
+        } else if (testIndex > endIndex) {
+            return undefined;
+        }
+        if (sections[i] === this) {
+            return sections[testIndex];
+        }
+    }
+
+    return undefined;
 };
 
 /**
@@ -92,6 +125,12 @@ ConfigSection.prototype.activate = function() {
     } else {
         console.warn('No activator attached to config section object.');
     }
+};
+
+ConfigSection.prototype.markAsActive = function() {
+    this.parentCMD.hideSection();
+    this.activator.addClass('active');
+    this.markRowsAsActive();
 };
 
 ConfigSection.prototype.markRowsAsActive = function() {

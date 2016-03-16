@@ -185,6 +185,37 @@ describe("tabbar-spec tests", function () {
         }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
+    it("- test getSibling ", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+
+            // console.log('**** ' + configTabBar.sectionIds());
+            // config_general,config__advanced_project_options,config__build_triggers,config__build
+
+            var config_general = configTabBar.getSection('config_general');
+            var config__advanced_project_options = configTabBar.getSection('config__advanced_project_options');
+            var config__build_triggers = configTabBar.getSection('config__build_triggers');
+            var config__build = configTabBar.getSection('config__build');
+
+            expect(config_general.getSibling(-1)).toBeUndefined();
+            expect(config_general.getSibling(0)).toBe(config_general);
+            expect(config_general.getSibling(+1)).toBe(config__advanced_project_options);
+            expect(config_general.getSibling(+2)).toBe(config__build_triggers);
+            expect(config_general.getSibling(+3)).toBe(config__build);
+            expect(config_general.getSibling(+4)).toBeUndefined();
+
+            expect(config__advanced_project_options.getSibling(-2)).toBeUndefined();
+            expect(config__advanced_project_options.getSibling(-1)).toBe(config_general);
+            expect(config__advanced_project_options.getSibling(0)).toBe(config__advanced_project_options);
+            expect(config__advanced_project_options.getSibling(+1)).toBe(config__build_triggers);
+            expect(config__advanced_project_options.getSibling(+2)).toBe(config__build);
+            expect(config__advanced_project_options.getSibling(+3)).toBeUndefined();
+
+            done();
+        }, 'widgets/config/freestyle-config-tabbed.html');
+    });
+
     function keydowns(text, onInput) {
         var jQD = require('jquery-detached');
         var $ = jQD.getJQuery();
