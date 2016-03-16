@@ -1,5 +1,36 @@
 var jQD = require('jquery-detached');
 var windowHandle = require('window-handle');
+var timestamp = (new Date().getTime());
+var loadedClass = 'jenkins-loaded-' + timestamp;
+
+/**
+ * Wait for the specified element to be added to the DOM.
+ * <p>
+ * A jQuery based alternative to Behaviour.specify. Grrrr.
+ * @param selector The jQuery selector.
+ * @param callback The callback to call after finding new elements. This
+ * callback must return a boolean value of true if scanning is to continue. 
+ * @param contextEl The jQuery selector context (optional).
+ */
+exports.onload = function(selector, callback, contextEl) {
+    var $ = jQD.getJQuery();
+
+    function registerRescan() {
+        setTimeout(scan, 50);
+    }
+    function scan() {
+        var elements = $(selector, contextEl).not(loadedClass);
+        if (elements.size() > 0) {
+            elements.addClass(loadedClass);
+            if (callback(elements) === true) {
+                registerRescan();
+            }
+        } else {
+            registerRescan();
+        }
+    }
+    scan();
+};
 
 exports.winScrollTop = function() {
     var $ = jQD.getJQuery();

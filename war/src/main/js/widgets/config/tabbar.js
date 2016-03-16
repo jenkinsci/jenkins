@@ -6,27 +6,19 @@ var behaviorShim = require('../../util/behavior-shim');
 
 exports.tabBarShowPreferenceKey = 'config:usetabs';
 
-exports.addPageTabs = function(selector, forEachConfigTable) {
+exports.addPageTabs = function(configSelector, forEachConfigTable) {
     var $ = jQD.getJQuery();
 
     $(function() {
-        // Horrible ugly hack...
-        // We need to use Behaviour.js to wait until after radioBlock.js Behaviour.js rules
-        // have been applied, otherwise row-set rows become visible across sections.
-        var done = false;
-
         behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function() {
             page.fixDragEvent();
         });
 
-        behaviorShim.specify(".block-control", 'row-set-block-control', 1000, function() {
-            if (done) {
-                return;
-            }
-            done = true;
-
+        // We need to wait until after radioBlock.js Behaviour.js rules
+        // have been applied, otherwise row-set rows become visible across sections.
+        page.onload('.block-control', function() {
             // Only do job configs for now.
-            var configTables = $(selector);
+            var configTables = $(configSelector);
             if (configTables.size() > 0) {
                 var tabBarShowPreference = jenkinsLocalStorage.getGlobalItem(exports.tabBarShowPreferenceKey, "yes");
 
@@ -56,7 +48,7 @@ exports.addPageTabs = function(selector, forEachConfigTable) {
                     });
                 }
             }
-        });
+        }, configSelector);
     });
 };
 
