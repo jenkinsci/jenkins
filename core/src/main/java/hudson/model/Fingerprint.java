@@ -50,6 +50,7 @@ import java.io.EOFException;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -129,7 +130,7 @@ public class Fingerprint implements ModelObject, Saveable {
             // We expose the data to Jenkins administrators in order to
             // let them manage the data for deleted jobs (also works for SYSTEM)
             final Jenkins instance = Jenkins.getInstance();
-            if (instance != null && instance.hasPermission(Jenkins.ADMINISTER)) {
+            if (instance.hasPermission(Jenkins.ADMINISTER)) {
                 return true;
             }
             
@@ -687,21 +688,77 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public static RangeSet fromString(String list, boolean skipError) {
             RangeSet rs = new RangeSet();
-            for (String s : Util.tokenize(list,",")) {
+
+            // Reject malformed ranges like "1---10", "1,,,,3" etc.
+            if (list.contains("--") || list.contains(",,")) {
+                if (!skipError) {
+                    throw new IllegalArgumentException(
+                            String.format("Unable to parse '%s', expected correct notation M,N or M-N", list));
+                }
+                // ignore malformed notation
+                return rs;
+            }
+
+            String[] items = Util.tokenize(list,",");
+            if(items.length > 1 && items.length <= StringUtils.countMatches(list, ",")) {
+                if (!skipError) {
+                    throw new IllegalArgumentException(
+                            String.format("Unable to parse '%s', expected correct notation M,N or M-N", list));
+                }
+                // ignore malformed notation like ",1,2" or "1,2,"
+                return rs;
+            }
+
+            for (String s : items) {
                 s = s.trim();
                 // s is either single number or range "x-y".
                 // note that the end range is inclusive in this notation, but not in the Range class
                 try {
+                    if (s.isEmpty()) {
+                        if (!skipError) {
+                            throw new IllegalArgumentException(
+                                    String.format("Unable to parse '%s', expected number", list));                        }
+                        // ignore "" element
+                        continue;
+                    }
+
                     if(s.contains("-")) {
+                        if(StringUtils.countMatches(s, "-") > 1) {
+                            if (!skipError) {
+                                throw new IllegalArgumentException(String.format(
+                                        "Unable to parse '%s', expected correct notation M,N or M-N", list));
+                            }
+                            // ignore malformed ranges like "-5-2" or "2-5-"
+                            continue;
+                        }
                         String[] tokens = Util.tokenize(s,"-");
                         if (tokens.length == 2) {
-                            rs.ranges.add(new Range(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]) + 1));
+                            int left = Integer.parseInt(tokens[0]);
+                            int right = Integer.parseInt(tokens[1]);
+                            if(left < 0 || right < 0) {
+                                if (!skipError) {
+                                    throw new IllegalArgumentException(
+                                            String.format("Unable to parse '%s', expected number above zero", list));
+                                }
+                                // ignore a range which starts or ends under zero like "-5-3"
+                                continue;
+                            }
+                            if(left > right) {
+                                if (!skipError) {
+                                    throw new IllegalArgumentException(String.format(
+                                            "Unable to parse '%s', expected string with a range M-N where M<N", list));
+                                }
+                                // ignore inverse range like "10-5"
+                                continue;
+                            }
+                            rs.ranges.add(new Range(left, right+1));
                         } else {
                             if (!skipError) {
                                 throw new IllegalArgumentException(
-                                        String.format("Unable to parse %s, expected string with a range M-N", list));
+                                        String.format("Unable to parse '%s', expected string with a range M-N", list));
                             }
                             // ignore malformed text like "1-10-50"
+                            continue;
                         }
                     } else {
                         int n = Integer.parseInt(s);
@@ -710,7 +767,7 @@ public class Fingerprint implements ModelObject, Saveable {
                 } catch (NumberFormatException e) {
                     if (!skipError)
                         throw new IllegalArgumentException(
-                                String.format("Unable to parse %s, expected number", list));
+                                String.format("Unable to parse '%s', expected number", list));
                     // ignore malformed text
                 }
             }
@@ -942,10 +999,6 @@ public class Fingerprint implements ModelObject, Saveable {
     public @Nonnull List<RangeItem> _getUsages() {
         List<RangeItem> r = new ArrayList<RangeItem>();
         final Jenkins instance = Jenkins.getInstance();
-        if (instance == null) {
-            return r;
-        }
-        
         for (Entry<String, RangeSet> e : usages.entrySet()) {
             final String itemName = e.getKey();
             if (instance.hasPermission(Jenkins.ADMINISTER) || canDiscoverItem(itemName)) {
@@ -1369,10 +1422,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     private static boolean canDiscoverItem(@Nonnull final String fullName) {
         final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-            return false;
-        }
-        
+
         // Fast check to avoid security context switches
         Item item = null;
         try {

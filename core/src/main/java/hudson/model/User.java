@@ -151,9 +151,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Nonnull
     public static IdStrategy idStrategy() {
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return IdStrategy.CASE_INSENSITIVE;
-        }
         SecurityRealm realm = j.getSecurityRealm();
         if (realm == null) {
             return IdStrategy.CASE_INSENSITIVE;

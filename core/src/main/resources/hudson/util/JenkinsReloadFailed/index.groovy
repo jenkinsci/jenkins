@@ -1,6 +1,9 @@
 import hudson.Functions
 
 def l = namespace(lib.LayoutTagLib)
+def st = namespace("jelly:stapler")
+
+st.statusCode(value: 500)
 
 l.layout {
     l.header(title:"Jenkins")
