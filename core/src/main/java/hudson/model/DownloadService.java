@@ -395,10 +395,12 @@ public class DownloadService extends PageDecorator {
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
             List<JSONObject> jsonList = new ArrayList<>();
+            boolean toolInstallerMetadataExists = false;
             for (String site : getUrls()) {
                 String jsonString;
                 try {
                     jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
+                    toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Could not load json from " + site, e );
                     continue;
@@ -407,13 +409,17 @@ public class DownloadService extends PageDecorator {
                 if (signatureCheck) {
                     FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
                     if (e.kind!= Kind.OK) {
+                        LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
                         continue;
                     }
                 }
                 jsonList.add(o);
             }
-            if (jsonList.size() == 0) {
-                return FormValidation.warning("None of the Update Sites passed the signature check");
+            if (jsonList.size() == 0 && toolInstallerMetadataExists) {
+                return FormValidation.warning("None of the tool installer metadata passed the signature check");
+            } else if (!toolInstallerMetadataExists) {
+                LOGGER.log(Level.WARNING, "No tool installer metadata found for " + id);
+                return FormValidation.ok();
             }
             JSONObject reducedJson = reduce(jsonList);
             return load(reducedJson.toString(), System.currentTimeMillis());
