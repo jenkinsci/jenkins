@@ -134,8 +134,8 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
 
     /**
      * Provides the icon path pattern for the requested item or null if this configurator doesn't have one.
-     * For example: /plugin/shortnme-of-myplugin/icons/item/:size:/myitem.pngm where :size should be replaced by the consumer using
-     * the standard sizes in Jenkins: 16x16, 24x24, etc...
+     * For example: /plugin/shortname-of-myplugin/icons/item/:size:/myitem.pngm where :size should be replaced by the
+     * consumer using the standard sizes in Jenkins: 16x16, 24x24, etc...
      *
      * @param descriptor the item it is asking about.
      *

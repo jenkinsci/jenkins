@@ -24,7 +24,7 @@ $.when(getItems(jRoot)).done(function(data){
     var $form = $root.find('form[name="createItem"]').addClass('jenkins-config new-view');
     var $newView = $('<div class="new-view" />')
       .attr('name','createItem')
-      .attr('action','craetItem')
+      .attr('action','createItem')
       .prependTo($form);
     var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
@@ -247,12 +247,13 @@ $.when(getItems(jRoot)).done(function(data){
     }
     
     function drawItem(elem){
+      var $iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
       var $item = $([
           '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
       ].join('')).append([
           '<div class="desc">', elem.description, '</div>'
       ].join('')).append([
-          '<div class="icn"><span class="img" style="background:url(',jRoot,'/images/items/',cleanClassName(elem.class),'.png)"></span></div>'
+          '<div class="icn"><span class="img" style="background:url(', $iconFilePath, ')"></span></div>'
       ].join(''));
 
       function setSelectState(){
