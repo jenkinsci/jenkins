@@ -19,7 +19,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     /**
      * Provides the category for the requested item or null if this mapper doesn't have one.
      *
-     * @param descriptor the item to categorize
+     * @param descriptor the item it is asking about.
      *
      * @return A {@link ItemCategory} or null
      */
@@ -30,7 +30,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      * Finds the category specified by the first configurator.
      * If none can be found {@link ItemCategory.UncategorizedCategory} is returned.
      *
-     * @param descriptor the item to categorize.
+     * @param descriptor the item it is asking about.
      *
      * @return A {@link ItemCategory}
      */
@@ -48,7 +48,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     /**
      * Provides the weight for the requested item. Helpful to order a list.
      *
-     * @param descriptor the item to categorize
+     * @param descriptor the item it is asking about.
      *
      * @return the weight or null
      */
@@ -59,7 +59,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      * Finds the weight specified by the first configurator.
      * If none can be found {@link Integer#MIN_VALUE} is returned. {@see DefaultConfigurator#getWeightFor}.
      *
-     * @param descriptor the item to categorize.
+     * @param descriptor the item it is asking about.
      *
      * @return the weight
      */
@@ -77,7 +77,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     /**
      * Provides the description for the requested item or null if this configurator doesn't have one.
      *
-     * @param descriptor the item to categorize
+     * @param descriptor the item it is asking about.
      *
      * @return A {@link ItemCategory} or null
      */
@@ -88,7 +88,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      * Finds the weight specified by the first configurator.
      * If none can be found a empty string is returned. {@see DefaultConfigurator#getDescriptionFor}.
      *
-     * @param descriptor the item to categorize.
+     * @param descriptor the item it is asking about.
      *
      * @return A {@link ItemCategory}
      */
@@ -106,7 +106,7 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
     /**
      * Provides the effective clazz for the requested item or null if this configurator doesn't have one.
      *
-     * @param descriptor the item to categorize
+     * @param descriptor the item it is asking about.
      *
      * @return A string or null
      */
@@ -117,9 +117,9 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
      * Finds the effective clazz specified by the first configurator.
      * If none can be found a empty string with {@code descriptor.clazz.getName();} is returned. {@see DefaultConfigurator#getEffectiveClazzFor}.
      *
-     * @param descriptor the item to categorize.
+     * @param descriptor the item it is asking about.
      *
-     * @return A {@link ItemCategory}
+     * @return A string
      */
     @Nonnull
     public static String getEffectiveClazz(@Nonnull TopLevelItemDescriptor descriptor) {
@@ -130,6 +130,37 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
             }
         }
         throw new IllegalStateException("At least, a default value must exist for clazz field");
+    }
+
+    /**
+     * Provides the icon path pattern for the requested item or null if this configurator doesn't have one.
+     * For example: /plugin/shortnme-of-myplugin/icons/item/:size:/myitem.pngm where :size should be replaced by the consumer using
+     * the standard sizes in Jenkins: 16x16, 24x24, etc...
+     *
+     * @param descriptor the item it is asking about.
+     *
+     * @return A string or null
+     */
+    @CheckForNull
+    protected abstract String getIconFilePathPatternFor(@Nonnull TopLevelItemDescriptor descriptor);
+
+    /**
+     * Finds the icon path pattern specified by the first configurator.
+     * If none can be found a empty string is returned. {@see DefaultConfigurator#getIconFilePathFor}.
+     *
+     * @param descriptor the item it is asking about.
+     *
+     * @return A string
+     */
+    @Nonnull
+    public static String getIconFilePathPattern(@Nonnull TopLevelItemDescriptor descriptor) {
+        for (ItemCategoryConfigurator m : all()) {
+            String path = m.getIconFilePathPatternFor(descriptor);
+            if (path != null) {
+                return path;
+            }
+        }
+        throw new IllegalStateException("At least, a default value must exist for icon path pattern");
     }
 
     public static Collection<ItemCategoryConfigurator> all() {
@@ -165,5 +196,12 @@ public abstract class ItemCategoryConfigurator implements ExtensionPoint {
         public String getEffectiveClazzFor(@Nonnull TopLevelItemDescriptor descriptor) {
             return descriptor.clazz.getName();
         }
+
+        @Nonnull
+        @Override
+        public String getIconFilePathPatternFor(@Nonnull TopLevelItemDescriptor descriptor) {
+            return "";
+        }
+
     }
 }

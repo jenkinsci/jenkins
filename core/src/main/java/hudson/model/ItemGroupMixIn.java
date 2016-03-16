@@ -354,6 +354,7 @@ public abstract class ItemGroupMixIn {
             metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
             metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", ItemCategoryConfigurator.getDescription(descriptor));
+            metadata.put("iconFilePathPattern", ItemCategoryConfigurator.getIconFilePathPattern(descriptor));
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
