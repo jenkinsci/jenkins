@@ -723,7 +723,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         for (Range r : rs.getRanges()) {
             for (RunT b = getNearestBuild(r.start); b!=null && b.getNumber()<r.end; b=b.getNextBuild()) {
-                builds.add(b);
+                if (!builds.contains(b)) {
+                    builds.add(b);
+                }
             }
         }
 
