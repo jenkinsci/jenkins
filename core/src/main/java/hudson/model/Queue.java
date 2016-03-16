@@ -451,7 +451,6 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
      */
-    @CLIMethod(name="clear-queue")
     public void clear() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         lock.lock();
