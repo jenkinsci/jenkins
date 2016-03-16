@@ -1,6 +1,93 @@
 /*
  * Tab bar specific rules.
  */
+body.add-item.hide-side  #side-panel{width:0; padding:0; overflow:hidden; transition: all 0.5s ease;}
+body.add-item.hide-side  #main-panel{margin:0 auto; max-width:75em; transition: all 0.5s ease;}
+body.add-item .jenkins-config table tr {display:none;}
+body.add-item .jenkins-config table tr:last-of-type {display:table-row}
+body.add-item .jenkins-config-widgets .form-config.tabBarFrame .tabBar .tab.active {background:@bright; border-bottom-color:@bright}
+body.add-item .category.jenkins-config.hide-cat {display:none;}
+body#jenkins.add-item .jenkins-config {
+  padding:10px; 
+  background:@bright;
+  box-shadow:inset;
+  
+  h2 {
+    margin-bottom:5px;
+  }
+  
+  .category-header > p {
+    margin-top:5px;
+  }
+  
+}
+.jenkins-config > .category-header {padding:0 20px}
+.j-item-options > li.active {background:#fff;}
+.j-item-options li,
+.j-item-options {display:block; margin:0; list-style:none; position:relative; padding:0 10px}
+.j-item-options li{
+  .no-select;
+  cursor:pointer;
+  border:1px solid transparent;
+  border-radius:@radius;
+  padding:10px 10px 10px 68px;
+  min-height:68px;
+  
+  .icn:before {
+    content:' ';
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:24px;
+    border-top-left-radius:24px;
+    border-top-right-radius:24px;
+    background:#C0D8E2;
+  }
+  
+  .icn {
+    position:absolute; left:10px; top:10px; height:48px; 
+    width:48px; background:@brightest; border:1px solid @line-blue;  
+    border-radius:50%; text-align:center; line-height:48px;
+  
+    img {width:100%; position:relative; z-index:2}
+  }
+  
+  label{
+    display:block;
+    font-size:1.1em;
+    font-weight:bold;
+    color:#000;
+    padding-bottom:5px;
+    
+    input{
+      position:absolute;
+      top:20px;
+      left:20px;
+    }
+  }
+}
+.j-item-options li.focus,
+.j-item-options li:focus,
+.j-item-options li:hover{
+  border-color:@solid-border;
+  background:@medium-translucent;
+}
+.j-item-options li.active{
+  cursor:text;
+  background-color:@brightest;
+  border-color:@line-blue;
+  box-shadow:inset 999rem 0 @brightest;
+  .text-select;
+}
+
+.add-item .jenkins-config-widgets {
+  border-top-left-radius:5px;
+  border-top-right-radius:5px;
+  position:relative;
+  z-index:5;
+}
 
 .jenkins-config-widgets {
   position: relative;
@@ -8,8 +95,12 @@
   border-bottom:none;
   background:@light-backgrond;
   min-height:2.5em;
-  border-top-left-radius:@radius;
-  border-top-right-radius:@radius;
+  border-top-left-radius: @radius;
+  border-top-right-radius: @radius;
+  z-index:2;
+  
+  nav:before,
+  nav:after {display:none;}
   
   :hover .noTabs{
     color:#bbb;
@@ -26,6 +117,20 @@
   .find-container {
     margin:0;
     .find-container(@width: @find-container-width);
+  }
+
+  .j-add-item-name {
+    padding:20px 20px 10px;
+    
+    input {
+      font-size:1.5em;
+      background-color:#fff;
+      border-radius:0;
+      padding:5px;
+      border:none;
+      box-shadow:none;
+      border-bottom:1px solid #ccc;
+    }
   }
   
   .showTabs,
@@ -46,17 +151,20 @@
     border-bottom: solid 1px @solid-border;
 
     .config-section-activators {
-      margin-right: 80px;
+      margin:0  ;
+      padding:0;
     }
 
     .tabBar {
+      li {padding:0; margin:0; list-style:none; display:block}
       .tab {
         border: solid 1px transparent;
         color: #999;
         padding: 7px 10px;
         .border-radius-top(5px);
         cursor: pointer;
-        margin-top:1px;
+        margin:1px 0 0 10px;
+        text-decoration:none;
       }
       .tab:hover {
         background:#bbb; color:@brightest;
@@ -86,19 +194,26 @@
 #jenkins{
   .jenkins-config {
     border:1px solid @solid-border;
-    padding:10px;
-    border-top:none;
     border-bottom-left-radius:@radius;
     border-bottom-right-radius:@radius;
+    padding:10px;
+    border-top:none;
     
     .showTabs{
       display:block;
       text-align:right;
       
     }
-    
+    table.job-config.tabbed{
+      .section-header-row {background:none; border-color:transparent}
+      .section-header {margin-top:10px; }
+    }
     table{
       border-collapse:collapse;
+      
+      .section-header-row.general .section-header{
+        display:none;
+      }
       
       .bottom-sticker-edge {
         display:none;
@@ -106,26 +221,37 @@
       .bottom-sticker-inner{
         padding: 20px 10px 25px 20px;
         border-top-right-radius: 10px;
-        border-top: 1px solid @brightest;
-        border-right: 1px solid @brightest;
-        background: @medium-translucent;    
+        border: 1px solid @line-green;
+        background: @pale-green-trans;    
       }
          
       .bottom-sticker, 
       #bottom-sticker{ 
         width: auto;
-        margin-left: -10px;
         overflow: hidden;
         padding-bottom: 10px;
-        margin: 30px 30px -25px -15px;
+        margin: 30px 30px -26px -16px;
         z-index:9;
-
+        .yui-button.primary{
+          button{
+            background:@middle-blue;
+            border-color:@dark-blue;
+          }
+        }
         .yui-button{
           margin-right:10px;
           
           button{
             padding:5px 20px;
-            border-radius:@radius;
+            background:@pale-blue;
+            border-color:@line-blue;
+          }
+          
+        }
+        .yui-button-disabled{
+          button{
+            background:@light-backgrond;
+            border-color:@solid-border;
           }
         }
       }
@@ -172,6 +298,7 @@
           height:@input-line-height;
           line-height:@input-line-height;
           padding:0 5px;
+          border-radius:@radius;
         }
         .yui-button button{
           padding:0 10px;
@@ -262,8 +389,8 @@
         right:35px;
         height:18px;
         width:32px;
-        border-bottom-left-radius:@radius;
-        border-bottom-right-radius:@radius;
+        border-bottom-left-radius:3px;
+        border-bottom-right-radius:3px;
         overflow:hidden;
         
         button{
@@ -306,3 +433,5 @@
   opacity:.5;
 }
 .yui-skin-sam .yuimenu {z-index:9999 !important}
+
+.yui-skin-sam .yui-button-disabled {opacity:.75}
