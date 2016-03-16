@@ -1,7 +1,9 @@
 package jenkins.install;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -19,12 +21,12 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
-import hudson.ExtensionList;
+import hudson.model.Descriptor;
 import hudson.model.User;
 import hudson.model.UserProperty;
+import hudson.model.UserPropertyDescriptor;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.PermissionAdder;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
@@ -113,6 +115,19 @@ public class SetupWizard {
      */
     public HttpResponse doCompleteInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins j = Jenkins.getActiveInstance();
+        User u = j.getUser("admin");
+        // JENKINS-33572 - without creating a new 'admin' user, auth key erroneously remained
+        if(u != null && u.getProperty(AuthenticationKey.class) != null) {
+            // There must be a better way of removing things...
+            Iterator<Map.Entry<Descriptor<UserProperty>,UserProperty>> entries = u.getProperties().entrySet().iterator();
+            while(entries.hasNext()) {
+                Map.Entry<?, ?> entry = entries.next();
+                if(entry.getValue() instanceof AuthenticationKey) {
+                    entries.remove();
+                }
+            }
+            u.save();
+        }
         j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
@@ -138,6 +153,11 @@ public class SetupWizard {
         
         public void setKey(String key) {
             this.key = key;
+        }
+        
+        @Override
+        public UserPropertyDescriptor getDescriptor() {
+            return null;
         }
     }
     
