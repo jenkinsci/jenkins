@@ -4,7 +4,7 @@ var $jq = require('jquery-detached').getJQuery();
 var getItems = function(root){
   var $ = $jq;
   var d = $.Deferred();
-  $.get(root+'categories?depth=3').done(
+  $.get(root+'/categories?depth=3').done(
       function(data){
         d.resolve(data);
       }
@@ -12,15 +12,14 @@ var getItems = function(root){
   return d.promise();
 }; 
 
-var root = $jq('#jenkins').attr('data-root');
+var jRoot = $jq('head').attr('data-rooturl');
 
-$jq.when(getItems(root)).done(function(data){
+$jq.when(getItems(jRoot)).done(function(data){
   $jq(function($) {
     
     //////////////////////////////
     // helpful reference DOM
-    
-    var jRoot = $('head').attr('data-rooturl');
+
     var defaultMinToShow = 2;
     var $root = $jq('#main-panel');
     var $form = $root.find('form[name="createItem"]').addClass('jenkins-config new-view');
@@ -166,13 +165,12 @@ $jq.when(getItems(root)).done(function(data){
         .appendTo($name);
       
       $tabs.prepend($name);
-      $input.focus();
       setTimeout(function(){$input.focus();},100);
     }    
     
     function drawTabs(data){
       $('body').addClass('add-item');
-      setTimeout(function(){$('body').addClass('hide-side');},200);
+      setTimeout(function(){$('body').addClass('hide-side j-hide-left');},200);
       $('#main-panel').addClass('container');
       var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
       var $nav = $('<ul class="nav navbar-nav tabBar config-section-activators" />');

@@ -1,8 +1,8 @@
 /*
  * Tab bar specific rules.
  */
-body.add-item.hide-side  #side-panel{width:0; padding:0; overflow:hidden; transition: all 0.5s ease;}
-body.add-item.hide-side  #main-panel{margin:0 auto; max-width:75em; transition: all 0.5s ease;}
+body.hide-side  #side-panel{width:0; padding:0; overflow:hidden; transition: all 0.5s ease;}
+body.hide-side  #main-panel{margin:0 auto; max-width:75em; transition: all 0.2s ease;}
 body.add-item .jenkins-config table tr {display:none;}
 body.add-item .jenkins-config table tr:last-of-type {display:table-row}
 body.add-item .jenkins-config-widgets .form-config.tabBarFrame .tabBar .tab.active {background:@bright; border-bottom-color:@bright}
@@ -36,6 +36,9 @@ body#jenkins.add-item .jenkins-config {
     margin-top:5px;
   }
   
+}
+@media (max-width: 750px){
+  body.j-hide-left #side-panel {height:0;}
 }
 .jenkins-config > .category-header {padding:0 20px}
 .j-item-options > li.active {background:#fff;}
