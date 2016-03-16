@@ -102,6 +102,9 @@ exports.addTabs = function(configTable) {
         var tab = newTab(section);
         tabBar.append(tab);
         section.setActivator(tab);
+        if (!section.isVisible()) {
+            tab.hide();
+        }
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');

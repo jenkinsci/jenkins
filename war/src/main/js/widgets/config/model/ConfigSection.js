@@ -27,6 +27,11 @@ ConfigSection.prototype.isTopLevelSection = function() {
     return (this.parentCMD.getSection(this.id) !== undefined);
 };
 
+ConfigSection.prototype.isVisible = function() {
+    var $ = jQD.getJQuery();
+    return $(this.headerRow).is(':visible');
+};
+
 /**
  * Get the page offset (height) at which this section comes
  * into view.
