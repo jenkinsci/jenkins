@@ -80,7 +80,6 @@ $jq.when(getItems(root)).done(function(data){
           name:'Copy',
           id:'copy',
           minToShow:0,
-          weight:-999999999999, ///some really big number so it can be last...
           items:[
             {
               class:"copy",
@@ -106,7 +105,7 @@ $jq.when(getItems(root)).done(function(data){
       function sortByOrder(a, b) {
         var aOrder = a.weight;
         var bOrder = b.weight;
-        return ( (aOrder < bOrder) ? -1 : ( (aOrder > bOrder) ? 1 : 0));
+        return ( (aOrder < bOrder) ? -1 : ( (aOrder === bOrder) ? 0 : 1));
       }
       return itemTypes.sort(sortByOrder);
     }
