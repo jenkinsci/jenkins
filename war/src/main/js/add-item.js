@@ -1,8 +1,7 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
-var $jq = require('jquery-detached').getJQuery();
+var $ = require('jquery-detached').getJQuery();
 
 var getItems = function(root){
-  var $ = $jq;
   var d = $.Deferred();
   $.get(root+'/categories?depth=3').done(
       function(data){
@@ -12,18 +11,18 @@ var getItems = function(root){
   return d.promise();
 }; 
 
-var jRoot = $jq('head').attr('data-rooturl');
+var jRoot = $('head').attr('data-rooturl');
 
-$jq.when(getItems(jRoot)).done(function(data){
-  $jq(function($) {
+$.when(getItems(jRoot)).done(function(data){
+  $(function() {
     
     //////////////////////////////
     // helpful reference DOM
 
     var defaultMinToShow = 2;
-    var $root = $jq('#main-panel');
+    var $root = $('#main-panel');
     var $form = $root.find('form[name="createItem"]').addClass('jenkins-config new-view');
-    var $newView = $jq('<div class="new-view" />')
+    var $newView = $('<div class="new-view" />')
       .attr('name','createItem')
       .attr('action','craetItem')
       .prependTo($form);
