@@ -371,8 +371,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                     for (PluginWrapper plugin: getPlugins()) {
                                         String core = plugin.getManifest().getMainAttributes().getValue("Jenkins-Version");
                                         if (core != null && Jenkins.getVersion().compareTo(new VersionNumber(core)) < 0) {
-                                            String pluginError = Messages.PluginManager_dependency_NotInstalled(new Object[] {plugin.getLongName(), core});
-                                            LOGGER.severe(pluginError);
+                                            String pluginError = Messages.PluginManager_admonitor_OutdatedCoreVersion(plugin.getLongName(), core);
+                                            LOGGER.log(Level.SEVERE, "Plugin {0} requires Jenkins {1} or later", new Object[] {plugin.getLongName(), core});
                                             NOTICE.addErrorMessage(pluginError);
                                         }
 
@@ -380,15 +380,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             if (dep.optional) continue;
                                             PluginWrapper pluginDependency = getPlugin(dep.shortName);
                                             if (pluginDependency == null) {
-                                                String pluginError = "Plugin " + plugin.getLongName() + " doesn't have installed the required dependency " + pluginDependency.getLongName();
+                                                String pluginError = Messages.PluginManager_admonitor_DependencyNotInstalled(plugin.getLongName(), pluginDependency.getLongName());
                                                 LOGGER.log(Level.SEVERE, "Plugin {0} doesn't have installed the required dependency {1}", new Object[] {plugin.getLongName(), pluginDependency.getLongName()});
                                                 NOTICE.addErrorMessage(pluginError);
                                             } else if (!pluginDependency.isActive()) {
-                                                String pluginError = "Plugin " + plugin.getLongName() + " has disabled the required dependency " + pluginDependency.getLongName();
+                                                String pluginError = Messages.PluginManager_admonitor_DependencyDisabled(plugin.getLongName(), pluginDependency.getLongName());
                                                 LOGGER.log(Level.SEVERE, "Plugin {0} has disabled the required dependency {1}", new Object[] {plugin.getLongName(), pluginDependency.getLongName()});
                                                 NOTICE.addErrorMessage(pluginError);
                                             } else if (pluginDependency.getVersionNumber().compareTo(new VersionNumber(dep.version)) < 0) {
-                                                String pluginError = "Plugin " + plugin.getLongName() + " requires " + pluginDependency.getLongName() + " " + dep.version + " or later";
+                                                String pluginError = Messages.PluginManager_admonitor_DependencyOutdatedVersion(plugin.getLongName(), pluginDependency.getLongName(), dep.version);
                                                 LOGGER.log(Level.SEVERE, "Plugin {0} requires {1} {2} or later", new Object[] {plugin.getLongName(), pluginDependency.getLongName(), dep.version});
                                                 NOTICE.addErrorMessage(pluginError);
                                             }
