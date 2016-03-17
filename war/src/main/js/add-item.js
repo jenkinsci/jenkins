@@ -28,8 +28,18 @@ $.when(getItems(jRoot)).done(function(data){
       .prependTo($form);
     var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
+    var $subBtn = $('#bottom-sticker .yui-submit-button');
     var sectionsToShow = [];    
 
+    ////////////////////////////////
+    // submit button click
+    
+    $subBtn.on('click',function(e){
+      var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
+        .find('button')
+          .attr('disabled','disabled')
+          .text('. . .')   
+    });
     
     ////////////////////////////////
     // scroll action......
@@ -83,6 +93,7 @@ $.when(getItems(jRoot)).done(function(data){
               class:"copy",
               description:copyDom,
               displayName:copyTitle,
+              iconFilePathPattern:'images/items/copy.png'
             }
           ]
       };
@@ -247,14 +258,11 @@ $.when(getItems(jRoot)).done(function(data){
     }
     
     function drawItem(elem){
-      var $iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
       var $item = $([
           '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
       ].join('')).append([
           '<div class="desc">', elem.description, '</div>'
-      ].join('')).append([
-          '<div class="icn"><span class="img" style="background:url(', $iconFilePath, ')"></span></div>'
-      ].join(''));
+      ].join('')).append(drawIcon(elem));
 
       function setSelectState(){
         var $this = $(this).closest('li');
@@ -274,6 +282,29 @@ $.when(getItems(jRoot)).done(function(data){
       $item.click(setSelectState);
       
       return $item;
+    }
+    
+    function drawIcon(elem){
+      var $icn = $('<div class="icn">');
+      if (!elem.iconFilePathPattern) {
+        var name = elem.displayName;
+        var aName = name.split(' ');
+        var a = name.substring(0,1);
+        var b = ((aName.length === 1)?
+            name.substring(1,2):
+              aName[1].substring(0,1));
+        var $defIcon = $([
+          '<span class="dfIcn"><span class="a">',a,'</span><span class="b">',b,'</span></span>'
+         ].join(''))
+          .appendTo($icn);
+        return $icn.addClass('df');
+      }
+      
+      var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
+      var iconDom = $(['<span class="img" style="background:url(', iconFilePath, ')"></span>'].join(''))
+        .appendTo($icn);
+
+      return $icn;
     }
     
     // initialize

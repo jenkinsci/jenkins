@@ -49,25 +49,19 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-
+  <!-- hide form initially to avoid jerky display (class add-item set by add-item.js) -->
+  <style>
+    form{display:none;} 
+    body.add-item form{display:block;} 
+  </style>
+  
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
-
   <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
     <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/jenkins-widgets.css" />  
 
-    <j:forEach var="descriptor" items="${descriptors}">
-      <s:block>
-        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
-      </s:block>
-      <s:entry>
-        <st:set var="instance" value="${descriptor}" />
-        <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
-      </s:entry>
-    </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>
         <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
