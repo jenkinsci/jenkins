@@ -22,6 +22,10 @@
  * THE SOFTWARE.
  */
 
+.item-icon-freestyleproject .icn {
+  background: url('../images/items/freestyle-48.png') center center no-repeat !important;
+}
+
 /* General page layout */
 
 html {
@@ -87,6 +91,11 @@ body {
   padding: 15px 15px 40px 15px;
   margin-left: 320px;
   position:relative;
+}
+
+body#jenkins.j-hide-left #main-panel {
+  max-width:70em;
+  margin:0 auto;
 }
 
 @media (max-width: 750px) {
@@ -158,8 +167,21 @@ body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
