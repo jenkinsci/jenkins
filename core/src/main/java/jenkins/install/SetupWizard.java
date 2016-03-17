@@ -1,9 +1,8 @@
 package jenkins.install;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -16,15 +15,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
-import hudson.model.Descriptor;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
@@ -47,7 +43,6 @@ public class SetupWizard {
     private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
     public SetupWizard(Jenkins j) throws IOException {
-        User admin;
         // Create an admin user by default with a 
         // difficult password
         if(j.getSecurityRealm() == null || j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
@@ -56,8 +51,12 @@ public class SetupWizard {
             HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
             j.setSecurityRealm(securityRealm);
             String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
-            admin = securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
-            admin.addProperty(new SetupWizard.AuthenticationKey(randomUUID));
+            
+            // create an admin user
+            securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
+            
+            // JENKINS-33599 - write to a file in the jenkins home directory
+            FileUtils.write(getInitialAdminPasswordFile(), randomUUID);
             
             // Lock Jenkins down:
             FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
@@ -80,28 +79,24 @@ public class SetupWizard {
                 bc.commit();
             }
         }
-        else {
-            admin = j.getUser(SetupWizard.initialSetupAdminUserName);
-        }
         
-        String setupKey = null;
-        if(admin != null && admin.getProperty(SetupWizard.AuthenticationKey.class) != null) {
-            setupKey = admin.getProperty(SetupWizard.AuthenticationKey.class).getKey();
-        }
-        if(setupKey != null) {
-            LOGGER.info("\n\n*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "\n"
-                    + "Jenkins initial setup is required. A security token is required to proceed. \n"
-                    + "Please use the following security token to proceed to installation: \n"
-                    + "\n"
-                    + "" + setupKey + "\n"
-                    + "\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n");
-        }
+        String setupKey = FileUtils.readFileToString(getInitialAdminPasswordFile());
+        
+        LOGGER.info("\n\n*************************************************************\n"
+                + "*************************************************************\n"
+                + "*************************************************************\n"
+                + "\n"
+                + "Jenkins initial setup is required. An admin user has been created and"
+                + "a password generated. \n"
+                + "Please use the following password to proceed to installation: \n"
+                + "\n"
+                + "" + setupKey + "\n"
+                + "\n"
+                + "This may also be found at: " + getInitialAdminPasswordFile().getCanonicalPath() + "\n"
+                + "\n"
+                + "*************************************************************\n"
+                + "*************************************************************\n"
+                + "*************************************************************\n");
         
         try {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
@@ -111,54 +106,23 @@ public class SetupWizard {
     }
 
     /**
+     * Gets the file used to store the initial admin password
+     */
+    public File getInitialAdminPasswordFile() {
+        return new File(Jenkins.getInstance().root, "initialAdminPassword");
+    }
+
+    /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
     public HttpResponse doCompleteInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins j = Jenkins.getActiveInstance();
-        User u = j.getUser("admin");
-        // JENKINS-33572 - without creating a new 'admin' user, auth key erroneously remained
-        if(u != null && u.getProperty(AuthenticationKey.class) != null) {
-            // There must be a better way of removing things...
-            Iterator<Map.Entry<Descriptor<UserProperty>,UserProperty>> entries = u.getProperties().entrySet().iterator();
-            while(entries.hasNext()) {
-                Map.Entry<?, ?> entry = entries.next();
-                if(entry.getValue() instanceof AuthenticationKey) {
-                    entries.remove();
-                }
-            }
-            u.save();
-        }
+        Jenkins j = Jenkins.getInstance();
         j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         j.setSetupWizard(null);
         return HttpResponses.okJSON();
-    }
-
-    // Stores a user property for the authentication key, which is really the auto-generated user's password
-    public static class AuthenticationKey extends UserProperty {
-        String key;
-        
-        public AuthenticationKey() {
-        }
-        
-        public AuthenticationKey(String key) {
-            this.key = key;
-        }
-        
-        public String getKey() {
-            return key;
-        }
-        
-        public void setKey(String key) {
-            this.key = key;
-        }
-        
-        @Override
-        public UserPropertyDescriptor getDescriptor() {
-            return null;
-        }
     }
     
     /**
