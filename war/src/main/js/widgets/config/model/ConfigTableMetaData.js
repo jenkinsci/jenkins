@@ -332,7 +332,9 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     try {
         for (var i = 0; i < this.sections.length; i++) {
             var section = this.sections[i];
-            if (!section.isVisible()) {
+            if (section.isVisible()) {
+                section.activator.show();
+            } else {
                 section.activator.hide();
             }
         }
