@@ -1690,7 +1690,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    // TODO does not work: font-size: 70%;
+    font-size: 70%;
 }
 
 .logrecord-metadata-new {
