@@ -92,7 +92,7 @@ function watchScroll(tabBar) {
         var viewportEntryOffset = section.getViewportEntryOffset();
         // height of this one is the top of the next, less the top of this one.
         var sectionHeight = 0;
-        var nextSection = section.getSibling(+1);
+        var nextSection = nextVisibleSection(section);
         if (nextSection) {
             sectionHeight = nextSection.getViewportEntryOffset() - viewportEntryOffset;
         }
@@ -144,4 +144,12 @@ function stickTabbar(tabBar) {
         win.unbind('resize', setWidth);
         return false;
     }
+}
+
+function nextVisibleSection(section) {
+    var next = section.getSibling(+1);
+    while (next && !next.isVisible()) {
+        next = next.getSibling(+1);
+    }
+    return next;
 }
