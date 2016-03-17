@@ -28,8 +28,18 @@ $.when(getItems(jRoot)).done(function(data){
       .prependTo($form);
     var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
+    var $subBtn = $('#bottom-sticker .yui-submit-button');
     var sectionsToShow = [];    
 
+    ////////////////////////////////
+    // submit button click
+    
+    $subBtn.on('click',function(e){
+      var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
+        .find('button')
+          .attr('disabled','disabled')
+          .text('. . .')   
+    });
     
     ////////////////////////////////
     // scroll action......
