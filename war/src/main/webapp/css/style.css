@@ -1814,7 +1814,10 @@ table#legend-table td {
 }
 
 /* ========================= Button styles ================= */
-
+.btn-box {
+  display:block; 
+  margin-top:2em
+}
 #disable-project {
     margin-top: 6px;
 }
@@ -1838,7 +1841,7 @@ table#legend-table td {
     border-style: none;
     border-color: transparent;
 }
-
+#jenkins .yui-button .btn,
 #jenkins .yui-button button {
   font-size: 12px;
   padding: 3px 20px;
@@ -1857,6 +1860,7 @@ table#legend-table td {
     padding-right: 35px;
 }
 
+#jenkins .yui-button .btn:hover,
 #jenkins .yui-button button:hover,
 #jenkins .yui-button .hover
 {
@@ -1864,6 +1868,7 @@ table#legend-table td {
     border: 1px solid #c0c0c0;
 }
 
+#jenkins .yui-button .btn:active,
 #jenkins .yui-button button:active,
 #jenkins .yui-button .active {
     background-color: #bbb;
@@ -1871,6 +1876,7 @@ table#legend-table td {
     border: 1px solid #bbb;
 }
 
+#jenkins .yui-button .btn.disabled,
 #jenkins .yui-button button[disabled],
 #jenkins .yui-button button[disabled]:hover,
 #jenkins .yui-button button[disabled]:active,
@@ -1881,19 +1887,20 @@ table#legend-table td {
 }
 
 /* Color overrides */
+#jenkins .yui-button.primary .btn,
 #jenkins .yui-button.primary button {
     background-color: #4b758b;
     color: #eee;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:hover,
 #jenkins .yui-button.primary button:hover,
 #jenkins .yui-button.primary .hover
 {
     background-color: #3f6275;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:active,
 #jenkins .yui-button.primary button:active,
 #jenkins .yui-button.primary .active
 {
@@ -1954,4 +1961,46 @@ table#legend-table td {
     color: #8a6d3b;
     background-color: #fcf8e3;
     border-color: #faebcc;
+}
+
+/* ========================= welcome page styles ================= */
+#jenkins .welcome-message .yui-button{
+    margin:0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+#jenkins .welcome-message a.plus {
+    white-space:nowrap;
+}
+#jenkins .welcome-message a.plus:before{
+    content:' ';
+    background:url('../images/24x24/new-package.png') no-repeat center;
+    display:inline-block;
+    margin-right:.25em;
+    width:24px;
+    min-height:24px;
+    height:1.5em;
+    vertical-align:bottom;
+}
+#main-panel .read p{
+    font-size: 110%;
+    line-height: 1.5em;
+}
+.welcome-message {
+    padding:3em 20% 3em 3em;
+    position:relative;
+    min-height:40em;
+    border:1px solid #ddd;
+    border-radius:3px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.15);
+}
+.max-read-width {
+    max-width: 60em;
+}
+.watermark {
+    font-size: 320px;
+    position: absolute;
+    bottom: 50px;
+    right: 50px;
+    color: rgba(100,150,200,.2);
 }
