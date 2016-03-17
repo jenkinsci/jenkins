@@ -97,8 +97,6 @@ function ConfigTableMetaData(configForm, configTable) {
     this.configWidgets = undefined;
     this.addWidgetsContainer();
     this.addFindWidget();
-    
-    trackSectionVisibility(this);
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
@@ -320,6 +318,38 @@ ConfigTableMetaData.prototype.showSections = function(withText) {
     }
 };
 
+/**
+ * We need this because sections can mysteriously change visibility,
+ * which looks strange for scroolspy.
+ */
+ConfigTableMetaData.prototype.trackSectionVisibility = function() {
+    if (isTestEnv()) {
+        return;
+    }
+
+    var thisConfig = this;
+    
+    try {
+        for (var i = 0; i < this.sections.length; i++) {
+            var section = this.sections[i];
+            if (!section.isVisible()) {
+                section.activator.hide();
+            }
+        }
+    } finally {
+        var interval = (thisConfig.trackSectionVisibilityTO || 0);
+        
+        // The rescan interval will drop off over time, starting out very fast.
+        interval += 10;
+        interval =  Math.min(interval, 500);
+        thisConfig.trackSectionVisibilityTO = interval;
+
+        setTimeout(function() {
+            thisConfig.trackSectionVisibility();
+        }, interval);
+    }
+};
+
 ConfigTableMetaData.prototype.removeTextHighlighting = function() {
     page.removeTextHighlighting(this.configForm);
 };
@@ -332,30 +362,6 @@ function fireListeners(listeners, contextObject) {
         setTimeout(function() {
             listener.call(contextObject);
         }, 1);
-    }
-}
-
-/**
- * 
- * We need this because sections can mysteriously change visibility.
- * @param configTableMeta The config table metadata.
- */
-function trackSectionVisibility(configTableMeta) {
-    if (isTestEnv()) {
-        return;
-    }
-    
-    try {
-        for (var i = 0; i < configTableMeta.sections.length; i++) {
-            var section = configTableMeta.sections[i];
-            if (!section.isVisible()) {
-                section.activator.hide();
-            }
-        }
-    } finally {
-        setTimeout(function() {
-            trackSectionVisibility(configTableMeta);
-        }, 100);
     }
 }
 

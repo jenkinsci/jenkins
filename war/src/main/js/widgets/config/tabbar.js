@@ -6,7 +6,7 @@ var behaviorShim = require('../../util/behavior-shim');
 
 exports.tabBarShowPreferenceKey = 'config:usetabs';
 
-exports.addPageTabs = function(configSelector, forEachConfigTable) {
+exports.addPageTabs = function(configSelector, onEachConfigTable, options) {
     var $ = jQD.getJQuery();
 
     $(function() {
@@ -27,9 +27,9 @@ exports.addPageTabs = function(configSelector, forEachConfigTable) {
                 if (tabBarShowPreference === "yes") {
                     configTables.each(function() {
                         var configTable = $(this);
-                        var tabBar = exports.addTabs(configTable);
+                        var tabBar = exports.addTabs(configTable, options);
 
-                        forEachConfigTable.call(configTable, tabBar);
+                        onEachConfigTable.call(configTable, tabBar);
 
                         tabBar.deactivator.click(function() {
                             jenkinsLocalStorage.setGlobalItem(exports.tabBarShowPreferenceKey, "no");
@@ -56,9 +56,11 @@ exports.addTabsOnFirst = function() {
     return exports.addTabs(tableMetadata.findConfigTables().first());
 };
 
-exports.addTabs = function(configTable) {
+exports.addTabs = function(configTable, options) {
     var $ = jQD.getJQuery();
     var configTableMetadata;
+    var tabOptions = (options || {});
+    var trackSectionVisibility = (tabOptions.trackSectionVisibility || false);
 
     if ($.isArray(configTable)) {
         // It's a config <table> metadata block
@@ -94,9 +96,6 @@ exports.addTabs = function(configTable) {
         var tab = newTab(section);
         tabBar.append(tab);
         section.setActivator(tab);
-        if (!section.isVisible()) {
-            tab.hide();
-        }
     }
 
     var tabs = $('<div class="form-config tabBarFrame"></div>');
@@ -116,6 +115,10 @@ exports.addTabs = function(configTable) {
 
     // Always activate the first section by default. 
     configTableMetadata.activateFirstSection();
+    
+    if (trackSectionVisibility === true) {
+        configTableMetadata.trackSectionVisibility();
+    }
 
     return configTableMetadata;
 };

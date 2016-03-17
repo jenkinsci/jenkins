@@ -37,7 +37,7 @@ $(function() {
         page.onWinScroll(function () {
             watchScroll(tabBar);
         });
-    });
+    }, {trackSectionVisibility: true});
 });
 
 function scrollTo(section, tabBar) {
