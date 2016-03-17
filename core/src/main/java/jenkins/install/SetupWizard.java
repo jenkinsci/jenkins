@@ -33,6 +33,8 @@ import jenkins.security.s2m.AdminWhitelistRule;
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
  * initial installation is in progress
+ * 
+ * @since 2.0
  */
 public class SetupWizard {
     /**
