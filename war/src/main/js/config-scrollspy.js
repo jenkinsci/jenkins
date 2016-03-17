@@ -82,6 +82,10 @@ function watchScroll(tabBar) {
 
     // calculate the top and height of each section to know where to switch the tabs...
     $.each(sections, function (i, section) {
+        if (!section.isVisible()) {
+            return;
+        }
+        
         // each section enters the viewport at its distance down the page, less the height of
         // the toolbar, which hangs down the page. Or it is zero if the section doesn't
         // match or was removed...

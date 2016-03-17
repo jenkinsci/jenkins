@@ -28,8 +28,7 @@ ConfigSection.prototype.isTopLevelSection = function() {
 };
 
 ConfigSection.prototype.isVisible = function() {
-    var $ = jQD.getJQuery();
-    return $(this.headerRow).is(':visible');
+    return this.headerRow.is(':visible');
 };
 
 /**

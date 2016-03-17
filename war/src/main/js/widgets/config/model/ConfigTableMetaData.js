@@ -97,6 +97,8 @@ function ConfigTableMetaData(configForm, configTable) {
     this.configWidgets = undefined;
     this.addWidgetsContainer();
     this.addFindWidget();
+    
+    trackSectionVisibility(this);
 }
 
 ConfigTableMetaData.prototype.getTopRows = function() {
@@ -331,4 +333,46 @@ function fireListeners(listeners, contextObject) {
             listener.call(contextObject);
         }, 1);
     }
+}
+
+/**
+ * 
+ * We need this because sections can mysteriously change visibility.
+ * @param configTableMeta The config table metadata.
+ */
+function trackSectionVisibility(configTableMeta) {
+    if (isTestEnv()) {
+        return;
+    }
+    
+    try {
+        for (var i = 0; i < configTableMeta.sections.length; i++) {
+            var section = configTableMeta.sections[i];
+            if (!section.isVisible()) {
+                section.activator.hide();
+            }
+        }
+    } finally {
+        setTimeout(function() {
+            trackSectionVisibility(configTableMeta);
+        }, 100);
+    }
+}
+
+function isTestEnv() {
+    if (window === undefined) {
+        return true;
+    } else if (window.navigator === undefined) {
+        return true;
+    } else if (window.navigator.userAgent === undefined) {
+        return true;
+    } else if (window.navigator.userAgent === 'JasmineTest') {
+        return true;
+    } else if (window.navigator.userAgent === 'JenkinsTest') {
+        return true;
+    } else if (window.navigator.userAgent.toLowerCase().indexOf("node.js") !== -1) {
+        return true;
+    }
+    
+    return false;
 }
