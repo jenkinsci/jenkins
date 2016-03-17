@@ -58,6 +58,9 @@ Upcoming changes</a>
   <li class="bug">
     Improve logging and error message when JNLP is already in use.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33453">issue 33453</a>)
+  <li class="bug">
+    <code>NullPointerException</code> from <code>BuildTrigger$DescriptorImpl.doCheck</code> when using <em>Build other projects</em> in <em>Promotion process</em> of a CloudBees template, and perhaps other circumstances.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32525">issue 32525</a>)
   <li class="rfe">
     Improved the Build Other Projects help message.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32134">issue 32134</a>)
@@ -65,7 +68,7 @@ Upcoming changes</a>
     FutureImpl.cancel() doesn't cancel the linked job.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33038">issue 33038</a>)
   <li class="bug">
-    Reject marformed range syntax.
+    Reject malformed range syntax.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33037">issue 33037</a>)
 </ul>
 </div><!--=TRUNK-END=-->
