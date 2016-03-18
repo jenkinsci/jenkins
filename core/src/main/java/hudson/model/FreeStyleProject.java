@@ -65,6 +65,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
+
         public String getDisplayName() {
             return Messages.FreeStyleProject_DisplayName();
         }
@@ -72,5 +73,21 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         public FreeStyleProject newInstance(ItemGroup parent, String name) {
             return new FreeStyleProject(parent,name);
         }
+
+        @Override
+        public String getDescription() {
+            return Messages.FreeStyleProject_Description();
+        }
+
+        @Override
+        public String getCategoryId() {
+            return "itemcategory-standaloneprojects";
+        }
+
+        @Override
+        public String getIconFilePathPattern() {
+            return Jenkins.RESOURCE_PATH + "images/:size/freestyleproject.png";
+        }
+
     }
 }

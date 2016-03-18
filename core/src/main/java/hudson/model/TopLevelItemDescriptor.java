@@ -25,8 +25,20 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.model.item_category.ItemCategory;
 import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.StringWriter;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -34,6 +46,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
+
     protected TopLevelItemDescriptor(Class<? extends TopLevelItem> clazz) {
         super(clazz);
     }
@@ -111,6 +124,64 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     @Override
     public String getDisplayName() {
         return super.getDisplayName();
+    }
+
+    /**
+     * A description of this kind of item type. This description can contain HTML code but it is recommend to use text plain
+     * in order to avoid how it should be represented.
+     *
+     * @return A string, an empty string by default.
+     *
+     * @since TODO
+     */
+    @Nonnull
+    public String getDescription() {
+        try {
+            WebApp webapp = WebApp.getCurrent();
+            MetaClass meta = webapp.getMetaClass(this);
+            Script s = meta.loadTearOff(JellyClassTearOff.class).findScript("newInstanceDetail");
+            if (s == null) {
+                return "";
+            }
+            DefaultScriptInvoker dsi = new DefaultScriptInvoker();
+            StringWriter sw = new StringWriter();
+            XMLOutput xml = dsi.createXMLOutput(sw, true);
+            dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
+            return sw.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Used to categorize this kind of item type. @see {@link ItemCategory}
+     *
+     * @return A string with the category identifier, {@link ItemCategory.UncategorizedCategory#getId()} by default.
+     *
+     * @since TODO
+     */
+    @Nonnull
+    public String getCategoryId() {
+        return new ItemCategory.UncategorizedCategory().getId();
+    }
+
+    /**
+     * @since TODO
+     */
+    @CheckForNull
+    public String getIconFilePathPattern() {
+        return null;
+    }
+
+    /**
+     * @since TODO
+     */
+    @CheckForNull
+    public String getIconFilePath(String size) {
+        if (getIconFilePathPattern().isEmpty()) {
+            return getIconFilePathPattern().replace(":size", size);
+        }
+        return null;
     }
 
     /**

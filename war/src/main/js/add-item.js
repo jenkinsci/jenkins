@@ -15,7 +15,6 @@ var jRoot = $('head').attr('data-rooturl');
 
 $.when(getItems(jRoot)).done(function(data){
   $(function() {
-    
     //////////////////////////////
     // helpful reference DOM
 
@@ -41,7 +40,7 @@ $.when(getItems(jRoot)).done(function(data){
     else{
       $('body').addClass('welcome');
     }
-    
+
     ////////////////////////////////
     // submit button click
     
@@ -49,12 +48,12 @@ $.when(getItems(jRoot)).done(function(data){
       var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
         .find('button')
           .attr('disabled','disabled')
-          .text('. . .')   
+          .text('. . .')
     });
-    
+
     ////////////////////////////////
     // scroll action......
-    
+
     function watchScroll(){
       var $window = $(window);
       var $jenkTools = $('#breadcrumbBar');
@@ -76,11 +75,11 @@ $.when(getItems(jRoot)).done(function(data){
         }
       });
       
-      if(winScoll > $('#page-head').height() - 5 ){  
+      if(winScoll > $('#page-head').height() - 5 ){
         $tabs.width($tabs.width()).css({
           'position':'fixed',
           'top':($jenkTools.height() - 5 )+'px'});
-        $categories.css({'margin-top':$tabs.outerHeight()+'px'});   
+        $categories.css({'margin-top':$tabs.outerHeight()+'px'});
       }
       else{
         $tabs.add($categories).removeAttr('style');
@@ -89,7 +88,7 @@ $.when(getItems(jRoot)).done(function(data){
 
     //////////////////////////
     // helper functions...
-    
+
     function addCopyOption(data){
       var $copy = $('#copy').closest('tr');
       if($copy.length === 0) {return data;} // exit if copy should not be added to page. Jelly page holds that logic.
@@ -104,12 +103,12 @@ $.when(getItems(jRoot)).done(function(data){
               class:"copy",
               description:copyDom,
               displayName:copyTitle,
-              iconFilePathPattern:'images/items/copy.png'
+              iconFilePathPattern:'images/48x48/copy.png'
             }
           ]
       };
       var newData = [];
-      
+
       $.each(data,function(i,elem){
         if(elem.id !== "category-id-copy")
           { newData.push(elem); }
@@ -117,10 +116,9 @@ $.when(getItems(jRoot)).done(function(data){
       
       newData.push(copy);
 
-      
       return newData;
     }
-    
+
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
         var aOrder = a.weight;
@@ -129,24 +127,24 @@ $.when(getItems(jRoot)).done(function(data){
       }
       return itemTypes.sort(sortByOrder);
     }
-    
+
     function hideAllTabsIfUnnecesary(sectionsToShow){
       if(sectionsToShow.length < 2){
         $tabs.find('.tab').hide();
         $categories.find('.category-header').hide();
-      }        
+      }
     }
-    
+
     function checkCatCount(elem){
       var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : defaultMinToShow;
       var showIt = ($.isArray(elem.items) && elem.items.length >= minToShow);
       return showIt;
     }
-    
+
     function cleanClassName(className){
       return className.replace(/\./g,'_');
     }
-    
+
     function cleanHref(id,reverse){
       if(reverse){
         var gotHash = (id.indexOf('#') === 0)? 
@@ -158,25 +156,24 @@ $.when(getItems(jRoot)).done(function(data){
         return id.replace('j-add-item-type-','');
       }
     }
-    
+
     function cleanLayout(){
-      console.log('????????????????');
       // Do a little shimmy-hack to force legacy code to resize correctly and set tab state.
       $('html,body').animate({scrollTop: 1}, 1);
       $('html,body').animate({scrollTop: 0}, 10);
 
       setTimeout(fireBottomStickerAdjustEvent,410);
     }
-    
+
     function resetActiveTab($this){
       var $nav = $this.closest('.nav');
       $nav.find('.active').removeClass('active');
       $this.addClass('active');
     } 
-    
+
     //////////////////////////////////
     // Draw functions
-    
+
     function drawName() {
       var $name = $('<div class="j-add-item-name" />');
 
@@ -186,11 +183,11 @@ $.when(getItems(jRoot)).done(function(data){
           window.updateOk($form[0]);
         })
         .appendTo($name);
-      
+
       $tabs.prepend($name);
       setTimeout(function(){$input.focus();},100);
-    }    
-    
+    }
+
     function drawTabs(data){
       $('#main-panel').addClass('container');
       var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
@@ -232,12 +229,12 @@ $.when(getItems(jRoot)).done(function(data){
         .click(function(){
           //e.preventDefault(e);
           var $this = $(this).children('a');
-          
+
           var tab = $this.attr('href');
           var scrollTop = $(cleanHref(tab,true)).offset().top - ($newView.children('.jenkins-config-widgets').height() + 15);
-          
+
           setTimeout(function(){resetActiveTab($this);},510);
-          
+
           $('html,body').animate({
             scrollTop: scrollTop
           }, 500);
@@ -250,13 +247,13 @@ $.when(getItems(jRoot)).done(function(data){
       if (!elem) elem = i;
       var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', 'j-add-item-type-'+cleanClassName(elem.id));
       var $items = $('<ul/>').addClass('j-item-options').appendTo($category);
-      
+
       // if there are enough items for a category, attach the category and its header...
       if(checkCatCount(elem)){
         var $catHeader = $('<div class="category-header" />').prependTo($category);
         var catheader = ['<h2>', elem.name, '</h2>'].join('');
         var catDesc = ['<p>', elem.description, '</p>'].join('');
-        
+
         if((elem.minToShow > 0)){
           $(catheader).appendTo($catHeader);
           $(catDesc).appendTo($catHeader);
@@ -270,7 +267,7 @@ $.when(getItems(jRoot)).done(function(data){
 
       return $items;
     }
-    
+
     function drawItem(elem){
       var $item = $([
           '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
@@ -292,12 +289,12 @@ $.when(getItems(jRoot)).done(function(data){
         },50);
         
       }
-      
+
       $item.click(setSelectState);
-      
+
       return $item;
     }
-    
+
     function drawIcon(elem){
       var $icn = $('<div class="icn">');
       if (!elem.iconFilePathPattern) {
@@ -313,7 +310,7 @@ $.when(getItems(jRoot)).done(function(data){
           .appendTo($icn);
         return $icn.addClass('df');
       }
-      
+
       var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
       var iconDom = $(['<span class="img" style="background:url(', iconFilePath, ')"></span>'].join(''))
         .appendTo($icn);
@@ -334,9 +331,8 @@ $.when(getItems(jRoot)).done(function(data){
       },10);
       
     }
-    
+
     // initialize
-    
     var sortedDCategories = sortItemsByOrder(data.categories);
     var sortedDCategoriesWithCopy = addCopyOption(sortedDCategories);
     drawTabs(sortedDCategoriesWithCopy);

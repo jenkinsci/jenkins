@@ -12,12 +12,12 @@ import jenkins.model.Messages;
  */
 public abstract class ItemCategory implements ModelObject, ExtensionPoint {
 
-    public static int MIN_WEIGHT = Integer.MIN_VALUE;
+    public static int MIN_WEIGHT = 0;
 
     public static int MIN_TOSHOW = 1;
 
     /**
-     * Identifier, e.g. "category-id-basicprojects", etc.
+     * Identifier, e.g. "category-id-standaloneprojects", etc.
      *
      * @return the identifier
      */
@@ -52,7 +52,7 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
 
         @Override
         public String getId() {
-            return "category-id-uncategorized";
+            return "itemcategory-uncategorized";
         }
 
         @Override
@@ -67,14 +67,46 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
 
         @Override
         public int getWeight() {
-            return Integer.MIN_VALUE;
+            return ItemCategory.MIN_WEIGHT;
         }
 
         @Override
         public int getMinToShow() {
-            return 1;
+            return ItemCategory.MIN_TOSHOW;
         }
 
     }
 
+    /**
+     * A generic {@link ItemCategory}
+     */
+    @Extension
+    public static final class StandaloneProjectCategory extends ItemCategory {
+
+        @Override
+        public String getId() {
+            return "itemcategory-standaloneprojects";
+        }
+
+        @Override
+        public String getDescription() {
+            return Messages.ItemCategory_StandaloneProjects_Description();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.ItemCategory_StandaloneProjects_DisplayName();
+        }
+
+        @Override
+        public int getWeight() {
+            return ItemCategory.MIN_WEIGHT;
+        }
+
+        @Override
+        public int getMinToShow() {
+            return ItemCategory.MIN_TOSHOW;
+        }
+
+    }
 }

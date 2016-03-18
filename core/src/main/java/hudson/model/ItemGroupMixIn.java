@@ -344,17 +344,17 @@ public abstract class ItemGroupMixIn {
      */
     public static Categories getCategories(Authentication a, ItemGroup c) {
         Categories categories = new Categories();
+        int weight = ItemCategory.MIN_WEIGHT;
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(c, Items.all(a, c))) {
-            String effectiveClazz = ItemCategoryConfigurator.getEffectiveClazz(descriptor);
             ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
             // Information about Item.
-            metadata.put("class", effectiveClazz);
-            metadata.put("weight", ItemCategoryConfigurator.getWeight(descriptor));
+            metadata.put("class", descriptor.getId());
+            metadata.put("weight", ++weight);
             metadata.put("displayName", descriptor.getDisplayName());
-            metadata.put("description", ItemCategoryConfigurator.getDescription(descriptor));
-            metadata.put("iconFilePathPattern", ItemCategoryConfigurator.getIconFilePathPattern(descriptor));
+            metadata.put("description", descriptor.getDescription());
+            metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
