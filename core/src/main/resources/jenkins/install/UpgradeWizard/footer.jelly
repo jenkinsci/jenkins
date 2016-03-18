@@ -31,9 +31,9 @@
         </a>
         <div id="upgrade-notice">
           <div>
-            <j:whitespace>Welcome to Jenkins v2! </j:whitespace>
-            <f:link href="${rootURL}/${it.url}/upgrade" post="true">Click here to install the rest of v2 functionalities</f:link>
-            <j:whitespace> and finish the upgrade process</j:whitespace>
+            <j:whitespace>${%msg.before}</j:whitespace>
+            <f:link href="${rootURL}/${it.url}/upgrade" post="true">${%msg.link}</f:link>
+            <j:whitespace>${%msg.after}</j:whitespace>
           </div>
         </div>
       </div>
