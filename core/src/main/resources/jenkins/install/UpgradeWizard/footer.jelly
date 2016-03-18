@@ -1,5 +1,5 @@
 <?jelly escape-by-default='true'?>
-<l:html norefresh="true" title="${it.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <j:if test="${it.due}">
     <style>
       #upgrade-fragment {
@@ -46,4 +46,4 @@
       })();
     </script>
   </j:if>
-</l:html>
+</j:jelly>
