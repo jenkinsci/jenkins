@@ -1,6 +1,8 @@
 var jQD = require('../../../util/jquery-ext.js');
 var util = require('./util.js');
+var page = require('../../../util/page.js');
 var ConfigRowGrouping = require('./ConfigRowGrouping.js');
+var pageHeaderHeight = page.pageHeaderHeight();
 
 module.exports = ConfigSection;
 
@@ -17,10 +19,48 @@ function ConfigSection(headerRow, parentCMD) {
     this.rowGroups = undefined;
     this.activator = undefined;
     this.subSections = [];
+
+    this.headerRow.addClass(this.id);
 }
 
 ConfigSection.prototype.isTopLevelSection = function() {
     return (this.parentCMD.getSection(this.id) !== undefined);
+};
+
+ConfigSection.prototype.isVisible = function() {
+    return this.headerRow.is(':visible');
+};
+
+/**
+ * Get the page offset (height) at which this section comes
+ * into view.
+ * @returns {number}
+ */
+ConfigSection.prototype.getViewportEntryOffset = function() {
+    return this.headerRow.offset().top - pageHeaderHeight;
+};
+
+/**
+ * Get the sibling section at the relative offset.
+ * @param relOffset
+ */
+ConfigSection.prototype.getSibling = function(relOffset) {
+    var sections = this.parentCMD.sections;
+    var endIndex = sections.length - 1;
+
+    for (var i = 0; i < endIndex; i++) {
+        var testIndex = i + relOffset;
+        if (testIndex < 0) {
+            continue;
+        } else if (testIndex > endIndex) {
+            return undefined;
+        }
+        if (sections[i] === this) {
+            return sections[testIndex];
+        }
+    }
+
+    return undefined;
 };
 
 /**
@@ -91,10 +131,16 @@ ConfigSection.prototype.activate = function() {
     }
 };
 
+ConfigSection.prototype.markAsActive = function() {
+    this.parentCMD.hideSection();
+    this.activator.addClass('active');
+    this.markRowsAsActive();
+};
+
 ConfigSection.prototype.markRowsAsActive = function() {
     var rows = this.getRows();
     for (var i = 0; i < rows.length; i++) {
-        rows[i].addClass('active').show();
+        rows[i].addClass('active');
     }
     for (var ii = 0; ii < this.subSections.length; ii++) {
         this.subSections[ii].markRowsAsActive();
@@ -173,6 +219,7 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
 
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
+
             if (row.hasClass('row-group-start')) {
                 var newRowGroup = new ConfigRowGrouping(row, rowGroupContainer);
                 if (rowGroupContainer) {
@@ -180,12 +227,7 @@ ConfigSection.prototype.gatherRowGroups = function(rows) {
                 }
                 rowGroupContainer = newRowGroup;
                 newRowGroup.findToggleWidget(row);
-            } else {
-                //FIXME: I am not sure how rowGroupContainer can be undefined, but I am seeing the error, so somethings not right
-                if(!rowGroupContainer){
-                    console.log('missing rowGroupContainer');
-                    return false;      
-                }
+            } else if (rowGroupContainer) {
                 if (row.hasClass('row-group-end')) {
                     rowGroupContainer.endRow = row;
                     rowGroupContainer = rowGroupContainer.parentRowGroupContainer; // pop back off the "stack"
@@ -220,12 +262,7 @@ ConfigSection.prototype.highlightText = function(text) {
     for (var i1 = 0; i1 < rows.length; i1++) {
         var row = rows[i1];
 
-        /*jshint loopfunc: true */
-        $('span.highlight-split', row).each(function() { // jshint ignore:line
-            var highlightSplit = $(this);
-            highlightSplit.before(highlightSplit.text());
-            highlightSplit.remove();
-        });
+        page.removeTextHighlighting(row);
 
         if (text !== '') {
             var regex = new RegExp('(' + text + ')',"gi");
