@@ -966,11 +966,13 @@ public class Functions {
             if (d.getGlobalConfigPage()==null)  continue;
 
             if (d instanceof GlobalConfiguration) {
-                if (predicate.apply(((GlobalConfiguration)d).getCategory()))
+                if (predicate.apply((d.getCategory()))) {
                     r.add(new Tag(c.ordinal(), d));
+                }
             } else {
-                if (predicate.apply(GlobalConfigurationCategory.get(Unclassified.class)))
+                if (predicate.apply(d.getCategory())) {
                     r.add(new Tag(0, d));
+                }
             }
         }
         Collections.sort(r);
