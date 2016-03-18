@@ -10,8 +10,8 @@ exports.addPageTabs = function(configSelector, onEachConfigTable, options) {
     var $ = jQD.getJQuery();
 
     $(function() {
-        behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function() {
-            page.fixDragEvent();
+        behaviorShim.specify(".dd-handle", 'config-drag-start', 1000, function(el) {
+            page.fixDragEvent(el);
         });
 
         // We need to wait until after radioBlock.js Behaviour.js rules
