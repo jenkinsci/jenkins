@@ -20,6 +20,7 @@ $.when(getItems(jRoot)).done(function(data){
     // helpful reference DOM
 
     var defaultMinToShow = 2;
+    var defaultLooseItems = 'jenkins.category.uncategorized';
     var $root = $('#main-panel');
     var $form = $root.find('form[name="createItem"]').addClass('jenkins-config new-view');
     var $newView = $('<div class="new-view" />')
@@ -31,6 +32,16 @@ $.when(getItems(jRoot)).done(function(data){
     var $subBtn = $('#bottom-sticker .yui-submit-button');
     var sectionsToShow = [];    
 
+    ////////////////////////////////
+    // mark page for layout
+    if($('#j-welcome-box').length === 0){
+      $('body').addClass('add-item');
+      setTimeout(drawShowHide,200);
+    }
+    else{
+      $('body').addClass('welcome');
+    }
+    
     ////////////////////////////////
     // submit button click
     
@@ -127,8 +138,9 @@ $.when(getItems(jRoot)).done(function(data){
     }
     
     function checkCatCount(elem){
-      var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : 9999999;
-      return ($.isArray(elem.items) && elem.items.length >= Math.min(minToShow,defaultMinToShow));
+      var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : defaultMinToShow;
+      var showIt = ($.isArray(elem.items) && elem.items.length >= minToShow);
+      return showIt;
     }
     
     function cleanClassName(className){
@@ -138,8 +150,8 @@ $.when(getItems(jRoot)).done(function(data){
     function cleanHref(id,reverse){
       if(reverse){
         var gotHash = (id.indexOf('#') === 0)? 
-           '#j-add-item-type-'+ id.substring(1):
-             'j-add-item-type-'+ id;
+           '#j-add-item-type-'+ id.substring(1).replace(/\./g,'_'):
+             'j-add-item-type-'+ id.replace(/\./g,'_');
         return gotHash;
       }
       else{
@@ -148,6 +160,7 @@ $.when(getItems(jRoot)).done(function(data){
     }
     
     function cleanLayout(){
+      console.log('????????????????');
       // Do a little shimmy-hack to force legacy code to resize correctly and set tab state.
       $('html,body').animate({scrollTop: 1}, 1);
       $('html,body').animate({scrollTop: 0}, 10);
@@ -179,16 +192,14 @@ $.when(getItems(jRoot)).done(function(data){
     }    
     
     function drawTabs(data){
-      $('body').addClass('add-item');
-      setTimeout(function(){$('body').addClass('hide-side j-hide-left');},200);
       $('#main-panel').addClass('container');
       var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
       var $nav = $('<ul class="nav navbar-nav tabBar config-section-activators" />');
       
       $.each(data,function(i,elem){
-        if(!checkCatCount(elem)) {return;}
+
         // little bit hacky here... need to keep track if I have tabs to show, so if there is just 1, I can hide it later....
-        else if (elem.minToShow !== 0) {sectionsToShow.push(elem.id);}
+        if (elem.minToShow !== 0 && checkCatCount(elem)) {sectionsToShow.push(elem.id);}
         
         var $tab = drawTab(i,elem);
         var $items = drawCategory(elem);
@@ -199,12 +210,12 @@ $.when(getItems(jRoot)).done(function(data){
           $items.append($item);
         });
         
-        $nav.append($tab);
+        if(checkCatCount(elem)) {$nav.append($tab);}
         $categories.append($cat);
 
       });
       $(window).on('scroll',watchScroll);
-      
+   
       if(sectionsToShow.length > 1){
         $navBox.append($nav);
         $tabs.prepend($navBox);
@@ -235,23 +246,26 @@ $.when(getItems(jRoot)).done(function(data){
     }
 
     function drawCategory(i,elem){
+      // categories are smart, so this is a little tricky....
       if (!elem) elem = i;
-      var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', 'j-add-item-type-'+elem.id);
+      var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', 'j-add-item-type-'+cleanClassName(elem.id));
       var $items = $('<ul/>').addClass('j-item-options').appendTo($category);
-      var $newTarget;
       
+      // if there are enough items for a category, attach the category and its header...
       if(checkCatCount(elem)){
         var $catHeader = $('<div class="category-header" />').prependTo($category);
-        var catDom = (elem.minToShow > 0)?
-            ['<h2>', elem.name, '</h2>'].join(''):
-              '';
-        $(catDom).appendTo($catHeader);
-        $(['<p>', elem.description, '</p>'].join('')).appendTo($catHeader);
+        var catheader = ['<h2>', elem.name, '</h2>'].join('');
+        var catDesc = ['<p>', elem.description, '</p>'].join('');
         
+        if((elem.minToShow > 0)){
+          $(catheader).appendTo($catHeader);
+          $(catDesc).appendTo($catHeader);
+        }
         $category.removeClass('hide-cat');
       }
-      else if(elem.remainders){
-        $newTarget = $('#'+cleanHref(elem.remainders,true)).find('.j-item-options');
+      else{
+        var targ = elem.remainders || defaultLooseItems;
+        $items = $('#'+cleanHref(targ,true)).find('.j-item-options');
       }
 
       return $items;
@@ -305,6 +319,20 @@ $.when(getItems(jRoot)).done(function(data){
         .appendTo($icn);
 
       return $icn;
+    }
+    
+    function drawShowHide(){
+      var $body = $('body').addClass('hide-side j-hide-left');
+      var $toggle = $('<div class="toggle slide-in" />')
+        .prependTo('#main-panel')
+          .click(function(){
+            $body.toggleClass('j-hide-left');
+            fireBottomStickerAdjustEvent();
+          });
+      setTimeout(function(){
+        $toggle.removeClass('slide-in'); 
+      },10);
+      
     }
     
     // initialize

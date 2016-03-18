@@ -51,8 +51,10 @@ THE SOFTWARE.
 
   <!-- hide form initially to avoid jerky display (class add-item set by add-item.js) -->
   <style>
-    form{display:none;} 
-    body.add-item form{display:block;} 
+    #main-panel form {min-height:40em; background:#fcfcfc; max-width: 60em; border-radius:3px; border:1px solid #eee;}
+    form table{display:none;} 
+    body.add-item #main-panel form{background:none; min-height:0; border:none;}
+    body.add-item form table{display:table;} 
   </style>
   
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
