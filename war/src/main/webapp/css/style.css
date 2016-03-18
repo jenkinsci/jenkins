@@ -1987,6 +1987,7 @@ table#legend-table td {
     line-height: 1.5em;
 }
 .welcome-message {
+    background:#fff;
     padding:3em 20% 3em 3em;
     position:relative;
     min-height:40em;

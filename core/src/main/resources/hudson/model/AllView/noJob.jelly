@@ -28,7 +28,33 @@ THE SOFTWARE.
   <l:css src="jsbundles/jenkins-widgets.css" />  
   <l:css src="css/icons/icomoon.css" />  
   
-  <div class="welcome-message max-read-width read">
+  <style>
+    zbody.welcome #tasks {
+ -webkit-transition: all .5s ease-in-out;
+  -moz-transition: all .5s ease-in-out;
+  -o-transition: all .5s ease-in-out;
+  transition: all .5s ease-in-out;      
+    width: 14em;}
+    #view-message,
+    z#buildQueue,
+    z#executors {display:none;}
+    z#side-panel {position:relative;}
+    z#tasks {
+      padding: 10px 30px 10px 10px;
+      position: absolute;
+      right: -30px;
+      top: 60px;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      box-sizing: border-box;
+      overflow: hidden;
+      width: 59px;
+      box-shadow:0 1px 2px rgba(0,0,0,.1)
+    }
+  </style>
+  
+  <div id="j-welcome-box" class="welcome-message max-read-width read">
     <i class="icon-service-o watermark"></i>
     <!--
       This is a good place to add "welcome" materials, like pointers to the website and etc
