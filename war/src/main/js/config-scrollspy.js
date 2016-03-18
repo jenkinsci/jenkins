@@ -33,9 +33,12 @@ $(function() {
             page.fireBottomStickerAdjustEvent();
         });
 
-        watchScroll(tabBar);
+        autoActivateTabs(tabBar);
         page.onWinScroll(function () {
-            watchScroll(tabBar);
+            autoActivateTabs(tabBar);
+        });
+        page.onWinScroll(function () {
+            stickTabbar(tabBar);
         });
     }, {trackSectionVisibility: true});
 });
@@ -60,11 +63,10 @@ function scrollTo(section, tabBar) {
 }
 
 /**
- * Watch page scrolling, changing the active tab as needed + moving the
- * tabbar to stick it to the top of the visible area.
+ * Watch page scrolling, changing the active tab as needed.
  * @param tabBar The tabbar.
  */
-function watchScroll(tabBar) {
+function autoActivateTabs(tabBar) {
     if (isScrolling === true) {
         // Ignore window scroll events while we are doing a scroll.
         // See scrollTo function.
@@ -109,8 +111,6 @@ function watchScroll(tabBar) {
             return false;
         }
     });
-
-    stickTabbar(tabBar);
 }
 
 /**
