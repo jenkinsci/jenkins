@@ -1,5 +1,6 @@
 package jenkins.install;
 
+import hudson.util.VersionNumber;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,6 +66,13 @@ public class UpgradeWizardTest {
         FileUtils.writeStringToFile(uw.getStateFile(), "3.0");
         assertFalse(newInstance().isDue());
         assertSame(UpgradeWizard.NOOP, uw.doUpgrade());
+    }
+
+    @Test
+    public void freshInstallation() throws Exception {
+        assertTrue(uw.isDue());
+        uw.setCurrentLevel(new VersionNumber("2.0"));
+        assertFalse(uw.isDue());
     }
 
     /**

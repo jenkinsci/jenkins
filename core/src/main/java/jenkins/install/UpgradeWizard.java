@@ -72,6 +72,7 @@ public class UpgradeWizard extends PageDecorator {
     /*package*/
     public void setCurrentLevel(VersionNumber v) throws IOException {
         FileUtils.writeStringToFile(getStateFile(), v.toString());
+        updateUpToDate();
     }
 
     /**
