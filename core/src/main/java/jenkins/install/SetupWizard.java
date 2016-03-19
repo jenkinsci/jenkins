@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import hudson.FilePath;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -115,6 +117,7 @@ public class SetupWizard {
     /**
      * Gets the file used to store the initial admin password
      */
+    @Restricted(NoExternalUse.class) // use by Jelly
     public FilePath getInitialAdminPasswordFile() {
         return Jenkins.getInstance().getRootPath().child("initialAdminPassword");
     }
