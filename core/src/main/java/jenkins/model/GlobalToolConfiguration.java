@@ -73,7 +73,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
-    private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+    private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
 
@@ -81,6 +81,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
             result &= configureDescriptor(req, json, d);
         }
+        Jenkins.getInstance().save();
 
         return result;
     }
