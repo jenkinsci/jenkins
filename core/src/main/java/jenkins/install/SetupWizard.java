@@ -16,6 +16,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import hudson.util.VersionNumber;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -133,6 +134,11 @@ public class SetupWizard {
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         j.setSetupWizard(null);
+
+        UpgradeWizard uw = j.getInjector().getInstance(UpgradeWizard.class);
+        if (uw!=null)
+            uw.setCurrentLevel(new VersionNumber("2.0"));
+
         return HttpResponses.okJSON();
     }
 

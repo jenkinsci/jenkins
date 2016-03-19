@@ -69,6 +69,11 @@ public class UpgradeWizard extends PageDecorator {
         return from;
     }
 
+    /*package*/
+    public void setCurrentLevel(VersionNumber v) throws IOException {
+        FileUtils.writeStringToFile(getStateFile(), v.toString());
+    }
+
     /**
      * Do we need to show the upgrade wizard prompt?
      */
