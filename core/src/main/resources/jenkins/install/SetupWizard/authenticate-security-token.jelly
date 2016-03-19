@@ -16,7 +16,7 @@
                   
                     <h1>${%Unlock Jenkins}</h1>
                     <p>
-                        ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile.canonicalPath)}
+                        ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}
                     </p>
                     <p>${%Please copy the password and paste it below.}</p>
                     <j:if test="${error}">

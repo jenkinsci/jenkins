@@ -15,6 +15,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import hudson.FilePath;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,9 +45,10 @@ public class SetupWizard {
 
     private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
-    public SetupWizard(Jenkins j) throws IOException {
+    public SetupWizard(Jenkins j) throws IOException, InterruptedException {
         // Create an admin user by default with a 
         // difficult password
+        FilePath iapf = getInitialAdminPasswordFile();
         if(j.getSecurityRealm() == null || j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
             BulkChange bc = new BulkChange(j);
             
@@ -58,7 +60,10 @@ public class SetupWizard {
             securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
             
             // JENKINS-33599 - write to a file in the jenkins home directory
-            FileUtils.write(getInitialAdminPasswordFile(), randomUUID);
+            // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+            // and use group 'jenkins' for admins. So we allo groups to read this file
+            iapf.write(randomUUID, "UTF-8");
+            iapf.chmod(0640);
             
             // Lock Jenkins down:
             FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
@@ -82,7 +87,7 @@ public class SetupWizard {
             }
         }
         
-        String setupKey = FileUtils.readFileToString(getInitialAdminPasswordFile());
+        String setupKey = iapf.readToString().trim();
         
         LOGGER.info("\n\n*************************************************************\n"
                 + "*************************************************************\n"
@@ -94,7 +99,7 @@ public class SetupWizard {
                 + "\n"
                 + "" + setupKey + "\n"
                 + "\n"
-                + "This may also be found at: " + getInitialAdminPasswordFile().getCanonicalPath() + "\n"
+                + "This may also be found at: " + iapf.getRemote() + "\n"
                 + "\n"
                 + "*************************************************************\n"
                 + "*************************************************************\n"
@@ -110,8 +115,8 @@ public class SetupWizard {
     /**
      * Gets the file used to store the initial admin password
      */
-    public File getInitialAdminPasswordFile() {
-        return new File(Jenkins.getInstance().root, "initialAdminPassword");
+    public FilePath getInitialAdminPasswordFile() {
+        return Jenkins.getInstance().getRootPath().child("initialAdminPassword");
     }
 
     /**
