@@ -53,39 +53,39 @@ public class SetupWizard {
         FilePath iapf = getInitialAdminPasswordFile();
         if(j.getSecurityRealm() == null || j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
             BulkChange bc = new BulkChange(j);
-            
-            HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-            j.setSecurityRealm(securityRealm);
-            String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
-            
-            // create an admin user
-            securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
-            
-            // JENKINS-33599 - write to a file in the jenkins home directory
-            // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
-            // and use group 'jenkins' for admins. So we allo groups to read this file
-            iapf.write(randomUUID, "UTF-8");
-            iapf.chmod(0640);
-            
-            // Lock Jenkins down:
-            FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
-            authStrategy.setAllowAnonymousRead(false);
-            j.setAuthorizationStrategy(authStrategy);
-
-            // Shut down all the ports we can by default:
-            j.setSlaveAgentPort(-1); // -1 to disable
-            
-            // require a crumb issuer
-            j.setCrumbIssuer(new DefaultCrumbIssuer(false));
-            
-            // set master -> slave security:
-            j.getInjector().getInstance(AdminWhitelistRule.class)
-                .setMasterKillSwitch(false);
-            
             try{
+                HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+                j.setSecurityRealm(securityRealm);
+                String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
+
+                // create an admin user
+                securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
+
+                // JENKINS-33599 - write to a file in the jenkins home directory
+                // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+                // and use group 'jenkins' for admins. So we allo groups to read this file
+                iapf.write(randomUUID, "UTF-8");
+                iapf.chmod(0640);
+
+                // Lock Jenkins down:
+                FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
+                authStrategy.setAllowAnonymousRead(false);
+                j.setAuthorizationStrategy(authStrategy);
+
+                // Shut down all the ports we can by default:
+                j.setSlaveAgentPort(-1); // -1 to disable
+
+                // require a crumb issuer
+                j.setCrumbIssuer(new DefaultCrumbIssuer(false));
+
+                // set master -> slave security:
+                j.getInjector().getInstance(AdminWhitelistRule.class)
+                    .setMasterKillSwitch(false);
+            
                 j.save(); // !!
-            } finally {
                 bc.commit();
+            } finally {
+                bc.abort();
             }
         }
         
