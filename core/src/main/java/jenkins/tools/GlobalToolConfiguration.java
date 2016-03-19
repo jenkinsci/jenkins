@@ -83,7 +83,7 @@ public class GlobalToolConfiguration extends ManagementLink {
         for(Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfig(FILTER)){
             result &= configureDescriptor(req, json, d);
         }
-        Jenkins.getInstance().save();
+        j.save();
 
         return result;
     }
