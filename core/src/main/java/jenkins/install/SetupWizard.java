@@ -41,7 +41,10 @@ public class SetupWizard {
 
     private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
+    private final Jenkins jenkins;
+
     public SetupWizard(Jenkins j) throws IOException, InterruptedException {
+        this.jenkins = j;
         // Create an admin user by default with a 
         // difficult password
         FilePath iapf = getInitialAdminPasswordFile();
@@ -113,19 +116,18 @@ public class SetupWizard {
      */
     @Restricted(NoExternalUse.class) // use by Jelly
     public FilePath getInitialAdminPasswordFile() {
-        return Jenkins.getInstance().getRootPath().child("initialAdminPassword");
+        return jenkins.getRootPath().child("initialAdminPassword");
     }
 
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
     public HttpResponse doCompleteInstall() throws IOException, ServletException {
-        Jenkins j = Jenkins.getInstance();
-        j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
+        jenkins.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
-        j.setSetupWizard(null);
+        jenkins.setSetupWizard(null);
         return HttpResponses.okJSON();
     }
     
