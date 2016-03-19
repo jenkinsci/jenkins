@@ -61,7 +61,18 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
-    public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
+    /**
+     * @deprecated as of 2.0
+     *      Use injection
+     */
+    public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
+
+    @Extension
+    public static class DescriptorImpl extends DiskSpaceMonitorDescriptor {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         public String getDisplayName() {
             return Messages.TemporarySpaceMonitor_DisplayName();
         }
@@ -76,9 +87,11 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
 
             return p.asCallableWith(new GetTempSpace());
         }
-    };
+    }
 
-    @Extension
+    /**
+     * @deprecated as of 2.0
+     */
     public static DiskSpaceMonitorDescriptor install() {
         return DESCRIPTOR;
     }
