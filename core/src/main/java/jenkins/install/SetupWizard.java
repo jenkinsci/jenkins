@@ -1,10 +1,18 @@
 package jenkins.install;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.logging.Logger;
+import hudson.BulkChange;
+import hudson.FilePath;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.SecurityRealm;
+import hudson.security.csrf.DefaultCrumbIssuer;
+import hudson.util.HttpResponses;
+import hudson.util.PluginServletFilter;
+import jenkins.model.Jenkins;
+import jenkins.security.s2m.AdminWhitelistRule;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -14,24 +22,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-
-import hudson.FilePath;
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import hudson.BulkChange;
-import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.SecurityRealm;
-import hudson.security.csrf.DefaultCrumbIssuer;
-import hudson.util.HttpResponses;
-import hudson.util.PluginServletFilter;
-import jenkins.model.Jenkins;
-import jenkins.security.s2m.AdminWhitelistRule;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -125,7 +119,7 @@ public class SetupWizard {
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
-    public HttpResponse doCompleteInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public HttpResponse doCompleteInstall() throws IOException, ServletException {
         Jenkins j = Jenkins.getInstance();
         j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
