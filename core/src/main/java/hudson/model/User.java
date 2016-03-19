@@ -51,6 +51,7 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jenkinsci.Symbol;
 import org.springframework.dao.DataAccessException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -980,7 +981,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Resolve user ID from full name
      */
-    @Extension
+    @Extension @Symbol("fullName")
     public static class FullNameIdResolver extends CanonicalIdResolver {
 
         @Override

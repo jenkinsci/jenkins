@@ -64,6 +64,7 @@ import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.jenkinsci.Symbol;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -887,7 +888,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * {@link AdministrativeMonitor} that checks if there's Jenkins update.
      */
-    @Extension
+    @Extension @Symbol("coreUpdate")
     public static final class CoreUpdateMonitor extends AdministrativeMonitor {
         public boolean isActivated() {
             Data data = getData();

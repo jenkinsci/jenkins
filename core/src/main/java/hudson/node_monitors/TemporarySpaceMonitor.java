@@ -32,6 +32,7 @@ import hudson.remoting.Callable;
 import jenkins.model.Jenkins;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -67,7 +68,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
      */
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("tmpSpace")
     public static class DescriptorImpl extends DiskSpaceMonitorDescriptor {
         public DescriptorImpl() {
             DESCRIPTOR = this;
