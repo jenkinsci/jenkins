@@ -28,6 +28,7 @@ import hudson.model.Node;
 import hudson.remoting.Callable;
 import hudson.util.ClockDifference;
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -55,7 +56,7 @@ public class ClockMonitor extends NodeMonitor {
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ AbstractNodeMonitorDescriptor<ClockDifference> DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("clock")
     public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<ClockDifference> {
         public DescriptorImpl() {
             DESCRIPTOR = this;

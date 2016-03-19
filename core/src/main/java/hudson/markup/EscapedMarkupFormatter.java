@@ -29,10 +29,12 @@ import hudson.markup.MarkupFormatter;
 import hudson.markup.MarkupFormatterDescriptor;
 import java.io.IOException;
 import java.io.Writer;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * @link MarkupFormatter} that treats the input as the escaped html.
+ * {@link MarkupFormatter} that treats the input as the escaped html.
  *
  * @author Seiji Sogabe
  * @since 1.553
@@ -48,7 +50,7 @@ public class EscapedMarkupFormatter extends MarkupFormatter {
         output.write(Util.escape(markup));
     }
 
-    @Extension
+    @Extension @Symbol("plainText")
     public static class DescriptorImpl extends MarkupFormatterDescriptor {
 
         @Override

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
@@ -56,7 +57,7 @@ public class FileParameterDefinition extends ParameterDefinition {
         return p;
     }
 
-    @Extension
+    @Extension @Symbol({"file","fileParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

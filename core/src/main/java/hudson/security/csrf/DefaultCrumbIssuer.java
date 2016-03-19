@@ -23,6 +23,7 @@ import jenkins.security.HexStringConfidentialKey;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -118,7 +119,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return defaultAddress;
     }
     
-    @Extension
+    @Extension @Symbol("default")
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);

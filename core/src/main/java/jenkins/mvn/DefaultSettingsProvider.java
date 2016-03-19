@@ -5,6 +5,7 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -23,7 +24,7 @@ public class DefaultSettingsProvider extends SettingsProvider {
         return null;
     }
 
-    @Extension(ordinal = 99)
+    @Extension(ordinal = 99) @Symbol("default")
     public static class DescriptorImpl extends SettingsProviderDescriptor {
 
         @Override
