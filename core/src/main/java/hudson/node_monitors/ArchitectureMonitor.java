@@ -28,6 +28,7 @@ import hudson.remoting.Callable;
 import hudson.Extension;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi
  */
 public class ArchitectureMonitor extends NodeMonitor {
-    @Extension
+    @Extension @Symbol("architecture")
     public static final class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<String> {
         @Override
         protected Callable<String, IOException> createCallable(Computer c) {

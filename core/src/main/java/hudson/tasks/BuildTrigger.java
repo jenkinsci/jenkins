@@ -68,6 +68,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -331,7 +332,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return this;
     }
 
-    @Extension
+    @Extension @Symbol("downstream")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.BuildTrigger_DisplayName();

@@ -34,6 +34,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -161,7 +162,7 @@ public class ApiTokenProperty extends UserProperty {
         return this;
     }
 
-    @Extension
+    @Extension @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
