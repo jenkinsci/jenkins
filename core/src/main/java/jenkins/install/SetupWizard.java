@@ -116,7 +116,7 @@ public class SetupWizard {
      */
     @Restricted(NoExternalUse.class) // use by Jelly
     public FilePath getInitialAdminPasswordFile() {
-        return jenkins.getRootPath().child("initialAdminPassword");
+        return jenkins.getRootPath().child("secrets/initialAdminPassword");
     }
 
     /**
