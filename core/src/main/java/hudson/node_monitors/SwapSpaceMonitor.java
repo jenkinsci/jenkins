@@ -80,8 +80,18 @@ public class SwapSpaceMonitor extends NodeMonitor {
         return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
+    /**
+     * @deprecated as of 2.0
+     *      use injection
+     */
+    public static /*almost final*/ AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR;
+
     @Extension
-    public static final AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<MemoryUsage>() {
+    public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<MemoryUsage> {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         @Override
         protected MonitorTask createCallable(Computer c) {
             return new MonitorTask();
