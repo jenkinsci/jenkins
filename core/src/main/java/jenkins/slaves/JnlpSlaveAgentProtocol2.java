@@ -1,6 +1,7 @@
 package jenkins.slaves;
 
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ import java.net.Socket;
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
-@Extension
+@Extension @Symbol("jnlp2")
 public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
     @Override
     public String getName() {

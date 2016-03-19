@@ -55,6 +55,7 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
@@ -70,7 +71,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Alan.Harder@Sun.Com
  */
-@Extension
+@Extension @Symbol("oldData")
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
@@ -432,7 +433,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
     }
 
-    @Extension
+    @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
         @Override
         public String getIconFileName() {

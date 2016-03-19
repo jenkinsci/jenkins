@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -66,7 +67,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ DescriptorImpl DESCRIPTOR;
 
-    @Extension(ordinal=1000)
+    @Extension(ordinal=1000) @Symbol({"freeStyle","freeStyleJob"})
     public static class DescriptorImpl extends AbstractProjectDescriptor {
         public DescriptorImpl() {
             DESCRIPTOR = this;

@@ -26,6 +26,7 @@ package hudson.security;
 import org.acegisecurity.AuthenticationManager;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.web.context.WebApplicationContext;
@@ -97,7 +98,7 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ Descriptor<SecurityRealm> DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("legacy")
     public static class DescriptorImpl extends  Descriptor<SecurityRealm> {
         public DescriptorImpl() {
             DESCRIPTOR = this;

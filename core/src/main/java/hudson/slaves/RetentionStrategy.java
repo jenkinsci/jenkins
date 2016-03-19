@@ -32,6 +32,7 @@ import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -164,7 +165,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension(ordinal=100)
+        @Extension(ordinal=100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();

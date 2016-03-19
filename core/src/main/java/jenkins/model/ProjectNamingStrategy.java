@@ -40,6 +40,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -108,7 +109,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return DEFAULT_NAMING_STRATEGY;
         }
 
-        @Extension
+        @Extension @Symbol("default")
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
             @Override
             public String getDisplayName() {
@@ -174,7 +175,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return forceExistingJobs;
         }
 
-        @Extension
+        @Extension @Symbol("pattern")
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
 
             public static final String DEFAULT_PATTERN = ".*";
