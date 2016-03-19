@@ -79,20 +79,4 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
         }
     }
 
-    /**
-     * Global configuration of tool locations and installers.
-     *
-     * @since TODO
-     */
-    @Extension
-    public static class Tools extends GlobalConfigurationCategory {
-        @Override
-        public String getShortDescription() {
-            return jenkins.management.Messages.ConfigureTools_Description();
-        }
-
-        public String getDisplayName() {
-            return jenkins.management.Messages.ConfigureTools_DisplayName();
-        }
-    }
 }

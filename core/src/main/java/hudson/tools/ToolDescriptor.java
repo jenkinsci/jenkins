@@ -37,6 +37,7 @@ import java.util.List;
 
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.tools.ToolConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
@@ -94,7 +95,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     @Override
     public GlobalConfigurationCategory getCategory() {
-        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Tools.class);
+        return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
     /**

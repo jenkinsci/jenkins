@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model;
+package jenkins.tools;
 
 import com.google.common.base.Predicate;
 import hudson.Extension;
@@ -30,6 +30,8 @@ import hudson.model.Descriptor;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import hudson.util.FormApply;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -95,7 +97,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {
         public boolean apply(GlobalConfigurationCategory input) {
-            return input instanceof GlobalConfigurationCategory.Tools;
+            return input instanceof ToolConfigurationCategory;
         }
     };
 
