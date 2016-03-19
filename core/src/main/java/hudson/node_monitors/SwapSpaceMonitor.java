@@ -30,6 +30,7 @@ import hudson.model.Computer;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
 import org.kohsuke.stapler.StaplerRequest;
@@ -86,7 +87,7 @@ public class SwapSpaceMonitor extends NodeMonitor {
      */
     public static /*almost final*/ AbstractNodeMonitorDescriptor<MemoryUsage> DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("swapSpace")
     public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<MemoryUsage> {
         public DescriptorImpl() {
             DESCRIPTOR = this;
