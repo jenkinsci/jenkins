@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.FreeStyleProject;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -38,7 +37,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
-@SuppressWarnings("DM_DEFAULT_ENCODING")
 public class GetJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();

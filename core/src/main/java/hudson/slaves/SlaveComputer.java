@@ -23,8 +23,6 @@
  */
 package hudson.slaves;
 
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Util;
@@ -67,6 +65,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -160,7 +159,7 @@ public class SlaveComputer extends Computer {
      * {@inheritDoc}
      */
     @Override
-    @OverrideMustInvoke(When.ANYTIME)
+    @OverridingMethodsMustInvokeSuper
     public boolean isAcceptingTasks() {
         // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.
