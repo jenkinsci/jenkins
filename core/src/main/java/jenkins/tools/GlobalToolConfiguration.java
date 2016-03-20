@@ -33,6 +33,9 @@ import hudson.util.FormApply;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -42,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Extension(ordinal = Integer.MAX_VALUE - 220)
+@Restricted(NoExternalUse.class)
 public class GlobalToolConfiguration extends ManagementLink {
 
     @Override

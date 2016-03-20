@@ -6,7 +6,7 @@ import jenkins.model.GlobalConfigurationCategory;
 /**
  * Global configuration of tool locations and installers.
  *
- * @since TODO
+ * @since 2.0
  */
 @Extension
 public class ToolConfigurationCategory extends GlobalConfigurationCategory {
