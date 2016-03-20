@@ -1,4 +1,4 @@
-package hudson.security.GlobalToolConfiguration
+package jenkins.tools.GlobalToolConfiguration
 
 import hudson.Functions
 import hudson.model.Descriptor
