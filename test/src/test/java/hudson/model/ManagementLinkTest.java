@@ -68,7 +68,7 @@ public class ManagementLinkTest {
         assertEquals(null, j.jenkins.getDynamic("and_fail_trying"));
     }
 
-    @TestExtension("invisibleLinks")
+    @TestExtension // Intentionally hooked in all tests
     public static final class InvisibleManagementLink extends ManagementLink {
 
         @Override
