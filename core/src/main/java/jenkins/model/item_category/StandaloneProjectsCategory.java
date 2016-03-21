@@ -9,9 +9,11 @@ import jenkins.model.Messages;
 @Extension(ordinal = Integer.MIN_VALUE + 1)
 public class StandaloneProjectsCategory extends ItemCategory {
 
+    public static final String ID = "standaloneprojects";
+
     @Override
     public String getId() {
-        return "standaloneprojects";
+        return ID;
     }
 
     @Override

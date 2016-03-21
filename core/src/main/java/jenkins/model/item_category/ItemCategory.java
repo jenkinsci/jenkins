@@ -82,9 +82,11 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
     @Extension(ordinal = Integer.MIN_VALUE)
     public static final class UncategorizedCategory extends ItemCategory {
 
+        public static final String ID = "uncategorized";
+
         @Override
         public String getId() {
-            return "uncategorized";
+            return ID;
         }
 
         @Override

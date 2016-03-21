@@ -174,7 +174,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      */
     @Nonnull
     public String getCategoryId() {
-        return new ItemCategory.UncategorizedCategory().getId();
+        return ItemCategory.UncategorizedCategory.ID;
     }
 
     /**
