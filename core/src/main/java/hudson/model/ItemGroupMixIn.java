@@ -35,6 +35,8 @@ import jenkins.model.item_category.ItemCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
 import org.acegisecurity.Authentication;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -341,6 +343,7 @@ public abstract class ItemGroupMixIn {
      *
      * @return A object that represents a set of {@link Category}
      */
+    @Restricted(NoExternalUse.class)
     public static Categories getCategories(Authentication a, ItemGroup c) {
         Categories categories = new Categories();
         int weight = 0;

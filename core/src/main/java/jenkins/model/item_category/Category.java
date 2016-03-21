@@ -1,6 +1,8 @@
 package jenkins.model.item_category;
 
 import hudson.model.TopLevelItem;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -14,6 +16,7 @@ import java.util.Map;
  * This class is not thread-safe.
  */
 @ExportedBean
+@Restricted(NoExternalUse.class)
 public class Category implements Serializable {
 
     private String id;

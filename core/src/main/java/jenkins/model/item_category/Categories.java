@@ -1,5 +1,7 @@
 package jenkins.model.item_category;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -21,6 +23,7 @@ import java.util.List;
  * This class is not thread-safe.
  */
 @ExportedBean
+@Restricted(NoExternalUse.class)
 public class Categories implements HttpResponse, Serializable {
 
     private List<Category> items;
