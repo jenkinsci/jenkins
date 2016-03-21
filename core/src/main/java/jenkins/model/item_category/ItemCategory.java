@@ -16,7 +16,7 @@ import java.util.Collection;
  *
  * @since TODO
  */
-public abstract class ItemCategory implements ModelObject, ExtensionPoint {
+public abstract class ItemCategory implements ExtensionPoint {
 
     public static int MIN_TOSHOW = 1;
 
@@ -38,6 +38,13 @@ public abstract class ItemCategory implements ModelObject, ExtensionPoint {
      * @return the description
      */
     public abstract String getDescription();
+
+    /**
+     * A human readable name.
+     *
+     * @return the display name
+     */
+    public abstract String getDisplayName();
 
     /**
      * Minimum number required to show the category.
