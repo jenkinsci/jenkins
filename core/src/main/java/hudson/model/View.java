@@ -544,7 +544,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for (Action a : getActions()) {
             String url = a.getUrlName();
             if (url==null)  continue;
-            if(a.getUrlName().equals(token))
+            if (url.equals(token))
                 return a;
         }
         return null;

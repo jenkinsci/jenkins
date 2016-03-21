@@ -1540,7 +1540,7 @@ public class Functions {
      */
     public static String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
-        if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
+        if(urlName==null)   return null;    // Should not be displayed
         try {
             if (new URI(urlName).isAbsolute()) {
                 return urlName;

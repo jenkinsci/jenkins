@@ -35,9 +35,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
