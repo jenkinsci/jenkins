@@ -50,17 +50,17 @@ public class SetupWizard {
         FilePath iapf = getInitialAdminPasswordFile();
         if(j.getSecurityRealm() == null || j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
             BulkChange bc = new BulkChange(j);
-            try{
+            try {
                 HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                 j.setSecurityRealm(securityRealm);
-                String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
+                String randomUUID = System.getProperty("jenkins.install.initialAdminPassword", UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH));
 
                 // create an admin user
                 securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
 
                 // JENKINS-33599 - write to a file in the jenkins home directory
                 // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
-                // and use group 'jenkins' for admins. So we allo groups to read this file
+                // and use group 'jenkins' for admins. So we allow groups to read this file
                 iapf.write(randomUUID, "UTF-8");
                 iapf.chmod(0640);
 

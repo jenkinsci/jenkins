@@ -208,6 +208,7 @@ import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
+import jenkins.util.xml.XMLUtils;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
@@ -4608,6 +4609,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver = UNCOMPUTED_VERSION;
+        if("${build.version}".equals(ver)) {
+            // in dev mode?
+            try {
+                File pom = new File("../pom.xml");
+                if(pom.exists()) {
+                    pom =  pom.getCanonicalFile();
+                    LOGGER.info("Reading version from: " + pom.getAbsolutePath());
+                    ver = XMLUtils.getValue("/project/version", pom);
+                }
+                LOGGER.info("Jenkins is in dev mode, using version: " + ver);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to read Jenkins version: " + e.getMessage(), e);
+            }
+        }
         VERSION = ver;
         context.setAttribute("version",ver);
 
