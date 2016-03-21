@@ -250,8 +250,6 @@ public class Maven extends Builder {
                 seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
             }
 
-            if(Functions.isWindows())
-                seed += ".bat";
             return seed;
         }
     }
