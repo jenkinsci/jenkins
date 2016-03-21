@@ -106,7 +106,7 @@ public class XStream2 extends XStream {
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
@@ -151,7 +151,6 @@ public class XStream2 extends XStream {
         registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
@@ -422,7 +421,7 @@ public class XStream2 extends XStream {
                 return classOwnership.ownerOf(clazz);
             }
             if (pm == null) {
-                Jenkins j = Jenkins.getInstance();
+                Jenkins j = Jenkins.getInstanceOrNull();
                 if (j != null) {
                     pm = j.getPluginManager();
                 }

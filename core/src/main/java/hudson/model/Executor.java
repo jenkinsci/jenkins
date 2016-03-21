@@ -958,8 +958,9 @@ public class Executor extends Thread implements ModelObject {
      *          or null if it could not be found (for example because the execution has already completed)
      * @since 1.607
      */
-    public static @CheckForNull Executor of(Executable executable) {
-        Jenkins jenkins = Jenkins.getInstance();
+    @CheckForNull
+    public static Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (jenkins == null) {
             return null;
         }

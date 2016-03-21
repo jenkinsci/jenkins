@@ -2078,9 +2078,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                         Messages.AbstractProject_AssignedLabelString_InvalidBooleanExpression(e.getMessage()));
             }
             Jenkins j = Jenkins.getInstance();
-            if (j == null) {
-                return FormValidation.ok(); // ?
-            }
             Label l = j.getLabel(value);
             if (l.isEmpty()) {
                 for (LabelAtom a : l.listAtoms()) {
