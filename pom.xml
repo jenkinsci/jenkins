@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.35</version>
+    <version>1.36</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
@@ -66,10 +66,6 @@ THE SOFTWARE.
       <id>github-pages</id>
       <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
     </site>
-    <snapshotRepository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <issueManagement>
@@ -107,6 +103,9 @@ THE SOFTWARE.
     <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
+  <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
+       from the Jenkins org pom. This is on purpose to keep jenkins core buildable even if one has
+       *not* defined the specific details in the settings.xml file. -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
