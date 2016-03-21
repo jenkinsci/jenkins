@@ -65,7 +65,7 @@ THE SOFTWARE.
 ${h.initPageVariables(context)}
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
-  but it's too late because the headers are already committed. so ensure we always have a session.
+  but it s too late because the headers are already committed. so ensure we always have a session.
   this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
@@ -168,7 +168,7 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${attrs.cssclass}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${attrs.cssClass}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 

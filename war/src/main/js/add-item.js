@@ -33,7 +33,7 @@ $.when(getItems(jRoot)).done(function(data){
 
     ////////////////////////////////
     // mark page for layout
-    $('body').addClass('add-item ide-side j-hide-left');
+    $('body').addClass('add-item main-panel-only');
 
 
     ////////////////////////////////
