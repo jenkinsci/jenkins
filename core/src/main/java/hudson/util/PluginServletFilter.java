@@ -25,6 +25,7 @@ package hudson.util;
 
 import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
+import java.util.ArrayList;
 import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
@@ -148,18 +149,26 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     public static void cleanUp() {
         PluginServletFilter instance = getInstance(Jenkins.getInstance().servletContext);
         if (instance != null) {
-            for (Iterator<Filter> iterator = instance.list.iterator(); iterator.hasNext(); ) {
-                Filter f = iterator.next();
+            // While we could rely on the current implementation of list being a CopyOnWriteArrayList
+            // safer to just take an explicit copy of the list and operate on the copy
+            for (Filter f: new ArrayList<>(instance.list)) {
+                instance.list.remove(f);
+                // remove from the list even if destroy() fails as a failed destroy is still a destroy
                 try {
                     f.destroy();
                 } catch (RuntimeException e) {
-                    LOGGER.log(Level.WARNING, "Filter " + f + " propagated an exception from its destroy method", e);
+                    LOGGER.log(Level.WARNING, "Filter " + f + " propagated an exception from its destroy method",
+                            e);
                 } catch (Error e) {
                     throw e; // we are not supposed to catch errors, don't log as could be an OOM
                 } catch (Throwable e) {
                     LOGGER.log(Level.SEVERE, "Filter " + f + " propagated an exception from its destroy method", e);
                 }
-                iterator.remove();
+            }
+            // if some fool adds a filter while we are terminating, we should just log the fact
+            if (!instance.list.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "The following filters appear to have been added during clean up: {0}",
+                        instance.list);
             }
         }
     }
