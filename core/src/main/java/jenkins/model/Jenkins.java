@@ -257,9 +257,12 @@ import javax.crypto.SecretKey;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -3475,6 +3478,43 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public synchronized TopLevelItem doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         return itemGroupMixIn.createTopLevelItem(req, rsp);
     }
+
+	@RequirePOST
+	public synchronized void doCreateFile(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+		String destFile = req.getParameter("name");
+
+		File configXml = new File(destFile);
+		final File dir = configXml.getParentFile();
+		if (dir != null) {
+			dir.mkdirs();
+		}
+
+		try {
+			FileOutputStream out = new FileOutputStream(configXml);
+			ServletInputStream in = req.getInputStream();
+			try {
+				byte buffer[] = new byte[1024];
+				int cnt = in.read(buffer);
+				while (cnt != -1) {
+					out.write(buffer, 0, cnt);
+					cnt = in.read(buffer);
+				}
+				LOGGER.info(destFile + " file created successfully.");
+			} catch (IOException ioe) {
+				LOGGER.log(SEVERE, "Failed to read/write a file ", ioe);
+				throw new IOException("Failed to read/write a file ", ioe);
+			} finally {
+				out.close();
+				in.close();
+			}
+		} catch (FileNotFoundException fe) {
+			LOGGER.log(SEVERE, "Failed to create file ", fe);
+			throw new IOException("Failed to create file ", fe);
+		} catch (IOException ioe) {
+			LOGGER.log(SEVERE, "Failed to read from inputstream ", ioe);
+			throw new IOException("Failed to read from inputstream ", ioe);
+		}
+	}
 
     /**
      * @since 1.319
