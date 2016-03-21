@@ -29,6 +29,7 @@ import jenkins.model.item_category.ItemCategory;
 import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -130,25 +131,32 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * A description of this kind of item type. This description can contain HTML code but it is recommend to use text plain
      * in order to avoid how it should be represented.
      *
-     * @return A string, an empty string by default.
+     * This method should be called in a thread where Stapler is associated, but it will return an empty string.
+     *
+     * @return A string, by default the value from newInstanceDetail view is taken.
      *
      * @since TODO
      */
     @Nonnull
     public String getDescription() {
-        try {
-            WebApp webapp = WebApp.getCurrent();
-            MetaClass meta = webapp.getMetaClass(this);
-            Script s = meta.loadTearOff(JellyClassTearOff.class).findScript("newInstanceDetail");
-            if (s == null) {
+        Stapler stapler = Stapler.getCurrent();
+        if (stapler != null) {
+            try {
+                WebApp webapp = WebApp.getCurrent();
+                MetaClass meta = webapp.getMetaClass(this);
+                Script s = meta.loadTearOff(JellyClassTearOff.class).findScript("newInstanceDetail");
+                if (s == null) {
+                    return "";
+                }
+                DefaultScriptInvoker dsi = new DefaultScriptInvoker();
+                StringWriter sw = new StringWriter();
+                XMLOutput xml = dsi.createXMLOutput(sw, true);
+                dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
+                return sw.toString();
+            } catch (Exception e) {
                 return "";
             }
-            DefaultScriptInvoker dsi = new DefaultScriptInvoker();
-            StringWriter sw = new StringWriter();
-            XMLOutput xml = dsi.createXMLOutput(sw, true);
-            dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
-            return sw.toString();
-        } catch (Exception e) {
+        } else {
             return "";
         }
     }
@@ -166,6 +174,10 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * Represents a file path pattern to get the Item icon in different sizes.
+     *
+     * @return A string or null if it is not defined.
+     *
      * @since TODO
      */
     @CheckForNull
@@ -174,11 +186,17 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
     }
 
     /**
+     * An icon file path associated to a specific size.
+     *
+     * @param size A string with values that represent the common sizes: 16x16, 24x24, 32x32 or 48x48
+     *
+     * @return A string or null if it is not defined.
+     *
      * @since TODO
      */
     @CheckForNull
     public String getIconFilePath(String size) {
-        if (getIconFilePathPattern().isEmpty()) {
+        if (!StringUtils.isBlank(getIconFilePathPattern())) {
             return getIconFilePathPattern().replace(":size", size);
         }
         return null;

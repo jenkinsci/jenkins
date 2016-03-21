@@ -32,7 +32,6 @@ import hudson.util.Function1;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
-import jenkins.model.item_category.ItemCategoryConfigurator;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
 import org.acegisecurity.Authentication;
@@ -344,9 +343,9 @@ public abstract class ItemGroupMixIn {
      */
     public static Categories getCategories(Authentication a, ItemGroup c) {
         Categories categories = new Categories();
-        int weight = ItemCategory.MIN_WEIGHT;
+        int weight = 0;
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(c, Items.all(a, c))) {
-            ItemCategory ic = ItemCategoryConfigurator.getCategory(descriptor);
+            ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
             // Information about Item.
@@ -362,7 +361,7 @@ public abstract class ItemGroupMixIn {
             } else {
                 List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
                 temp.add(metadata);
-                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight(), ic.getMinToShow(), temp);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight() , ic.getMinToShow(), temp);
                 categories.getItems().add(category);
             }
         }

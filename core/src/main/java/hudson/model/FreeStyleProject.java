@@ -81,7 +81,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
 
         @Override
         public String getCategoryId() {
-            return "itemcategory-standaloneprojects";
+            return "standaloneprojects";
         }
 
         @Override
