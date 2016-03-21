@@ -107,6 +107,7 @@ public class UpgradeWizard extends PageDecorator {
      */
     @RequirePOST
     public HttpResponse doUpgrade() throws IOException {
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         try {
             if (new VersionNumber("2.0").compareTo(getCurrentLevel())>0) {
                 // 1.0 -> 2.0 upgrade
