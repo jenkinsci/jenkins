@@ -53,7 +53,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      */
     public abstract int getMinToShow();
 
-    protected void setWeight(int weight) {
+    private void setWeight(int weight) {
         this.weight = weight;
     }
 
