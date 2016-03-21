@@ -40,6 +40,7 @@ import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.StringWriter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -157,7 +158,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
                 dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
                 return sw.toString();
             } catch (Exception e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, null, e);
                 return "";
             }
         } else {
