@@ -136,7 +136,7 @@ exports.availablePlugins = [
             { "name": "emailext-template" },
             { "name": "mailer" },
             { "name": "publish-over-ssh" },
-            // { "name": "slack" }, // JENKINS-33571
+            { "name": "slack" },
             { "name": "ssh" }
         ]
     }
