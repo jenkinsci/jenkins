@@ -53,6 +53,7 @@ exports.availablePlugins = [
             { "name": "build-timeout" },
             { "name": "config-file-provider" },
             { "name": "credentials-binding" },
+            { "name": "embeddable-build-status" },
             { "name": "rebuild" },
             { "name": "ssh-agent" },
             { "name": "throttle-concurrents" },
@@ -76,7 +77,6 @@ exports.availablePlugins = [
             { "name": "cobertura" },
             { "name": "htmlpublisher" },
             { "name": "junit" },
-            { "name": "sonar" },
             { "name": "warnings" },
             { "name": "xunit" }
         ]
