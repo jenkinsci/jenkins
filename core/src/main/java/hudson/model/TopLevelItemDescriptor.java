@@ -40,6 +40,7 @@ import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.StringWriter;
+import java.util.logging.Logger;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -47,6 +48,8 @@ import java.io.StringWriter;
  * @author Kohsuke Kawaguchi
  */
 public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
+
+    static final Logger LOGGER = Logger.getLogger(TopLevelItemDescriptor.class.getName());
 
     protected TopLevelItemDescriptor(Class<? extends TopLevelItem> clazz) {
         super(clazz);
@@ -154,6 +157,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
                 dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
                 return sw.toString();
             } catch (Exception e) {
+                LOGGER.warning(e.getMessage());
                 return "";
             }
         } else {
