@@ -148,16 +148,12 @@ public class SetupWizard {
         InstallUtil.saveLastExecVersion();
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
-<<<<<<< HEAD
-        j.setSetupWizard(null);
+        jenkins.setSetupWizard(null);
 
-        UpgradeWizard uw = j.getInjector().getInstance(UpgradeWizard.class);
+        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
         if (uw!=null)
             uw.setCurrentLevel(new VersionNumber("2.0"));
 
-=======
-        jenkins.setSetupWizard(null);
->>>>>>> origin/2.0
         return HttpResponses.okJSON();
     }
     
