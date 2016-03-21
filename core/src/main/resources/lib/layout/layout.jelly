@@ -38,7 +38,7 @@ THE SOFTWARE.
       This is necessary for pages that include forms.
     </st:attribute>
     <st:attribute name="cssclass">
-      specify a css class name to include in the top level of this layout dom.
+      A css class name to include in the body element.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
@@ -99,13 +99,7 @@ ${h.initPageVariables(context)}
     </j:if>
     <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
     <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
-    
-    <!-- should the sidebar be hidden on load? -->
-    <style>
-      body.j-hide-left #side-panel{width:0; padding:0; overflow:hidden;}
-      body.j-hide-left #main-panel{margin:0 auto; max-width:75em;}
-    </style>
-    
+
     <!-- are we running as an unit test? -->
     <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
 
@@ -174,7 +168,7 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${attrs.cssClass}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${attrs.cssclass}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
