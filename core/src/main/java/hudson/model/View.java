@@ -1011,7 +1011,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), Jenkins.getInstance());
+        return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), getOwnerItemGroup());
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
