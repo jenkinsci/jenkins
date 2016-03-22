@@ -36,11 +36,8 @@ THE SOFTWARE.
 
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all">
-        <j:arg type="hudson.model.ItemGroup" value="${it.ownerItemGroup}"/>
-      </j:invokeStatic>
 
-      <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
+      <s:form method="post" action="createItem" name="createItem">
 
         <j:if test="${!empty(app.itemMap)}">
           <s:block>
