@@ -1,5 +1,26 @@
 package jenkins.install;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
+import hudson.util.VersionNumber;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 import hudson.BulkChange;
 import hudson.FilePath;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
@@ -128,6 +149,11 @@ public class SetupWizard {
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
+
+        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
+        if (uw!=null)
+            uw.setCurrentLevel(new VersionNumber("2.0"));
+
         return HttpResponses.okJSON();
     }
     
