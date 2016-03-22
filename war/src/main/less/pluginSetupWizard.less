@@ -521,9 +521,17 @@
     z-index: 5;
     top: 33.3%;
     width: 25%;
-    padding: 6px 0;
-    overflow:auto;
-
+    
+    .install-console-scroll {
+        position: absolute;
+        top: 6px;
+        right: 0;
+        bottom: 2em;
+        left: 0;
+        overflow:auto;
+        font: 12px monospace;
+    }
+    
      @media screen and (max-width: 992px) {
        width: 100%;
        position:static;
@@ -544,11 +552,23 @@
 
         .dependent {
             color: #aaa;
-            padding-left: .4em;
+            padding-left: 10px;
 
             &:before {
                 content: ' ** ';
             }
+        }
+        
+        .dependency-legend {
+            color: #aaa;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top: 1px solid #ccc;
+            background: #f8f8f8;
+            padding: 4px 10px;
+            font: 12px monospace;
         }
     }
 
