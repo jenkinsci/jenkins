@@ -44,7 +44,7 @@ public abstract class ItemCategory implements ExtensionPoint {
     public abstract String getDisplayName();
 
     /**
-     * Minimum number required to show the category.
+     * Minimum number of items required to show the category.
      *
      * @return the minimum items required
      */
@@ -54,9 +54,6 @@ public abstract class ItemCategory implements ExtensionPoint {
         this.weight = weight;
     }
 
-    /**
-     * @return A integer with the weight.
-     */
     public int getWeight() {
         return weight;
     }
