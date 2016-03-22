@@ -348,7 +348,11 @@ $.when(getItems(jRoot)).done(function(data){
     function drawIcon(elem){
       var $icn = $('<div class="icn">');
       if (!elem.iconFilePathPattern) {
+        var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D','c-DCD9D8','other'];
+        var id = elem.class;
+        var desc = elem.description || '';
         var name = elem.displayName;
+        var colorClass= colors[(desc.length) % 6];
         var aName = name.split(' ');
         var a = name.substring(0,1);
         var b = ((aName.length === 1)?
@@ -358,7 +362,7 @@ $.when(getItems(jRoot)).done(function(data){
           '<span class="dfIcn"><span class="a">',a,'</span><span class="b">',b,'</span></span>'
          ].join(''))
           .appendTo($icn);
-        return $icn.addClass('df');
+        return $icn.addClass('df').addClass(colorClass);
       }
 
       var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
