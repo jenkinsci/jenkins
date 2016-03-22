@@ -327,6 +327,7 @@ $.when(getItems(jRoot)).done(function(data){
         }
         
         var $this = $(this).closest('li');
+        var $radios = $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
         //if this is a hyperlink, don't move the selection.
         if($this.find('a:focus').length === 1) {return false;}
         $this.closest('.categories').find('.active').removeClass('active');
