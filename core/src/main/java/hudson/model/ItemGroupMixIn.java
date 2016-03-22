@@ -29,14 +29,8 @@ import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
-import jenkins.model.item_category.Categories;
-import jenkins.model.item_category.Category;
-import jenkins.model.item_category.ItemCategory;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
-import org.acegisecurity.Authentication;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -50,10 +44,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -336,39 +326,6 @@ public abstract class ItemGroupMixIn {
             ItemListener.fireOnCreated(item);
 
         return item;
-    }
-
-    /**
-     * Populate a {@link Categories} object from a specific {@link ItemGroup}.
-     *
-     * @return A object that represents a set of {@link Category}
-     */
-    @Restricted(NoExternalUse.class)
-    public static Categories getCategories(Authentication a, ItemGroup c) {
-        Categories categories = new Categories();
-        int weight = 0;
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(c, Items.all(a, c))) {
-            ItemCategory ic = ItemCategory.getCategory(descriptor);
-            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
-
-            // Information about Item.
-            metadata.put("class", descriptor.getId());
-            metadata.put("weight", ++weight);
-            metadata.put("displayName", descriptor.getDisplayName());
-            metadata.put("description", descriptor.getDescription());
-            metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
-
-            Category category = categories.getItem(ic.getId());
-            if (category != null) {
-                category.getItems().add(metadata);
-            } else {
-                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
-                temp.add(metadata);
-                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight() , ic.getMinToShow(), temp);
-                categories.getItems().add(category);
-            }
-        }
-        return categories;
     }
 
     /**

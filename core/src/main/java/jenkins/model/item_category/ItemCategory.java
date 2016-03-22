@@ -3,13 +3,10 @@ package jenkins.model.item_category;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.ModelObject;
 import hudson.model.TopLevelItemDescriptor;
 import jenkins.model.Messages;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.Collection;
 
 /**
  * A category for {@link hudson.model.Item}s.

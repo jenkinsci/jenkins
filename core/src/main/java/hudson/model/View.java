@@ -57,6 +57,8 @@ import hudson.widgets.Widget;
 import jenkins.model.item_category.Categories;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.item_category.Category;
+import jenkins.model.item_category.ItemCategory;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 
@@ -86,6 +88,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1011,7 +1014,30 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        return ItemGroupMixIn.getCategories(Jenkins.getAuthentication(), getOwnerItemGroup());
+        Categories categories = new Categories();
+        int weight = 0;
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
+            ItemCategory ic = ItemCategory.getCategory(descriptor);
+            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
+
+            // Information about Item.
+            metadata.put("class", descriptor.getId());
+            metadata.put("weight", ++weight);
+            metadata.put("displayName", descriptor.getDisplayName());
+            metadata.put("description", descriptor.getDescription());
+            metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+
+            Category category = categories.getItem(ic.getId());
+            if (category != null) {
+                category.getItems().add(metadata);
+            } else {
+                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
+                temp.add(metadata);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight() , ic.getMinToShow(), temp);
+                categories.getItems().add(category);
+            }
+        }
+        return categories;
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
