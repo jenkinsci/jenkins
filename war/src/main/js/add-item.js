@@ -3,7 +3,7 @@ var $ = require('jquery-detached').getJQuery();
 
 var getItems = function(root){
   var d = $.Deferred();
-  $.get(root+'/categories?depth=3').done(
+  $.get('categories?depth=3').done(
       function(data){
         d.resolve(data);
       }
@@ -45,8 +45,6 @@ $.when(getItems(jRoot)).done(function(data){
       var okButton = window.makeButton(btn, null); // jshint ignore:line 
 
       $subBtn = $('#bottom-sticker .yui-submit-button');
-      
-      checkFormReady();
       
       $subBtn.on('click',function(e){         
         var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
@@ -106,24 +104,11 @@ $.when(getItems(jRoot)).done(function(data){
           return {selected:selected,named:named};
         }
         if(checkItems().selected && checkItems().named){
-          $($subBtn.next('.cover')).remove();
           $subBtn.removeClass('yui-button-disabled').find('button').removeAttr('disabled');
         }
         else{
           $subBtn.addClass('yui-button-disabled').find('button').attr('disabled','disabled');
-          $('<div class="cover" />').insertAfter($subBtn)
-            .click(function(){
-              var missingText = [];
-              if(!checkItems().named){
-                $name.addClass('no-val').focus();
-                missingText.push('item name');
-              }
-              if(!checkItems().selected){
-                $form.addClass('no-select');
-                missingText.push('item type selection');
-              }
-              alert('Required selections are missing: '+ (missingText.join(', ')));
-            });
+          $('<div class="coverz" />').insertAfter($subBtn);
         }
       },10);
     }
@@ -166,7 +151,7 @@ $.when(getItems(jRoot)).done(function(data){
       function sortByOrder(a, b) {
         var aOrder = a.weight;
         var bOrder = b.weight;
-        return ( (aOrder < bOrder) ? -1 : ( (aOrder === bOrder) ? 0 : 1));
+        return ( (aOrder < bOrder) ? -1 : ( (aOrder === bOrder) ? 1 : 0));
       }
       return itemTypes.sort(sortByOrder);
     }
