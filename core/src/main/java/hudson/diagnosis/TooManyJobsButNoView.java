@@ -40,7 +40,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension @Symbol("tooManyJobsNoView")
+@Extension @Symbol("tooManyJobsButNoView")
 public class TooManyJobsButNoView extends AdministrativeMonitor {
     public boolean isActivated() {
         Jenkins h = Jenkins.getInstance();
