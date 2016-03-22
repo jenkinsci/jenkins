@@ -65,7 +65,7 @@ THE SOFTWARE.
 ${h.initPageVariables(context)}
 <!--
   depending on what tags are used, we can later end up discovering that we needed a session,
-  but it s too late because the headers are already committed. so ensure we always have a session.
+  but it's too late because the headers are already committed. so ensure we always have a session.
   this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
