@@ -318,7 +318,7 @@ $.when(getItems()).done(function(data){
         if($this.find('a:focus').length === 1) {return false;}
         $this.closest('.categories').find('.active').removeClass('active');
         $this.addClass('active');
-        $this.find('input[type="radio"]').attr('checked', 'checked');
+        $this.find('input[type="radio"]').prop('checked', true);
         checkFormReady();
         
         $('html, body').animate({
