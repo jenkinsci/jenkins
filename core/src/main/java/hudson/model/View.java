@@ -1006,7 +1006,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
     /**
-     * An API method to get the allowed {$link TopLevelItem}s and its categories.
+     * An API REST method to get the allowed {$link TopLevelItem}s and its categories.
      *
      * @return A {@link Categories} entity that is shown as  JSON file.
      */
