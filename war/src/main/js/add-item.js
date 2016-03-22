@@ -110,7 +110,6 @@ $.when(getItems()).done(function(data){
         }
         else{
           $subBtn.addClass('yui-button-disabled').find('button').attr('disabled','disabled');
-          $('<div class="coverz" />').insertAfter($subBtn);
         }
       },10);
     }
