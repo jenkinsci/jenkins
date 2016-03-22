@@ -33,7 +33,7 @@ THE SOFTWARE.
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/config-scrollspy.css" />
-        
+
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:invokeStatic var="jobs" className="hudson.model.Items" method="all">
@@ -41,7 +41,6 @@ THE SOFTWARE.
       </j:invokeStatic>
 
       <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
-        <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
 
         <j:if test="${!empty(app.itemMap)}">
           <s:block>
@@ -66,7 +65,7 @@ THE SOFTWARE.
         </s:bottomButtonBar>  
         
       </s:form>
-    
+
     </l:main-panel>
   </l:layout>
 </j:jelly>
