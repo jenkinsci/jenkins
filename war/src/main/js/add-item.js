@@ -46,6 +46,8 @@ $.when(getItems(jRoot)).done(function(data){
 
       $subBtn = $('#bottom-sticker .yui-submit-button');
       
+      checkFormReady();
+      
       $subBtn.on('click',function(e){         
         var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
           .find('button')
