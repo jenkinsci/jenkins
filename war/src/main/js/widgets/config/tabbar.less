@@ -9,7 +9,7 @@
   background:@light-backgrond;
   min-height:2.5em;
   .border-radius-top(@radius);
-  z-index:3;
+  z-index:5;
 
   nav:before, nav:after {
     display: none;
@@ -29,7 +29,7 @@
   @find-container-width: 200px;
   .find-container {
     margin:0;
-    .find-container(@width: @find-container-width);
+    display:none;
   }
   
   .showTabs,
@@ -43,6 +43,7 @@
     text-shadow: @brightest 0 1px 2px;
     font-size: 0.85em;
     padding: 3px 7px;
+    display:none;
   }
 
   .form-config.tabBarFrame {
@@ -51,7 +52,7 @@
 
     .config-section-activators {
       margin: 0;
-      padding: 0;
+      padding: 5px 0 0;
       display: block;
       list-style: none;
     }
@@ -70,12 +71,12 @@
         background:#bbb; color:@brightest;
       }
       .tab.active {
-        background: @brightest;
+        background: @bright;
         color: #000;
         font-weight: bold;
         z-index: 2;
         border:1px solid @solid-border;
-        border-bottom:1px solid #fff
+        border-bottom:1px solid @bright
       }
     }
 
@@ -96,6 +97,7 @@
     border:1px solid @solid-border;
     padding:10px;
     border-top:none;
+    background:@bright;
     .border-radius-bottom(@radius);
 
     .showTabs{
