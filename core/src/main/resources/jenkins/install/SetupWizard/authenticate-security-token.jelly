@@ -28,7 +28,7 @@
                     <div class="form-group ${error ? 'has-error' : ''}">
                     <label class="control-label" for="security-token">${%Administrator password}</label>
                     <input name="j_username" value="${j.setupWizard.initialSetupAdminUserName}" type="hidden"/>
-                    <input id="security-token" class="form-control" name="j_password"/>
+                    <input id="security-token" class="form-control" type="password" name="j_password"/>
                     <link rel="stylesheet" href="${j.installWizardPath}.css" type="text/css" />
                     </div>
                     
