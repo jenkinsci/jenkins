@@ -4,6 +4,24 @@ body.add-item {
   }
 
   #main-panel {
+    .jenkins-config.no-select .j-item-options li {
+      .icn {
+        border-color: #900;
+      }
+
+      .icn:after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        box-shadow: #900 0 0 4px 2px;
+        border-radius: 50%;
+      }
+    }
+
     .jenkins-config {
       padding: 0px;
       border-radius: 0;
@@ -60,6 +78,9 @@ body.add-item {
   li:hover {
     border-color: #cccccc;
     background: rgba(255, 255, 255, 0.75);
+    .icn {
+      opacity:.9;
+    }    
   }
 
   li.active {
@@ -73,6 +94,9 @@ body.add-item {
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
+    .icn {
+      opacity: 1
+    }
   }
 
   li {
@@ -87,6 +111,7 @@ body.add-item {
     border-radius: 3px;
     padding: 10px 10px 10px 68px;
     min-height: 68px;
+    margin: 2px 0;
     label {
       display: block;
       font-size: 1.1em;
@@ -98,6 +123,7 @@ body.add-item {
         position: absolute;
         top: 24px;
         left: 25px;
+        display: none;
       }
     }
 
@@ -120,6 +146,7 @@ body.add-item {
       border-radius: 50%;
       text-align: center;
       line-height: 48px;
+      opacity: .75;
       .img {
         display: block;
         top: -1px;
@@ -171,6 +198,13 @@ body.add-item {
       border: none;
       box-shadow: none;
       border-bottom: 1px solid #ccc;
+    }
+
+    input.no-val {
+      border-color: #900;
+      color: #900;
+      background: #fee;
+      box-shadow: inset #900 0 0 1px;
     }
   }
 }

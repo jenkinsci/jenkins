@@ -65,26 +65,6 @@ THE SOFTWARE.
           <input type="radio" name="mode" value="dummy2" style="display:none" />
           <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
         </s:bottomButtonBar>  
-
-      <script><![CDATA[
-        //TODO: This should make its way to the add-item.js file
-        var okButton = makeButton($('ok'),null);
-    
-        function updateOk(form) {
-          function state() {
-            if($('name') && $('name').value.length==0)   return true;
-            var radio = form.elements['mode'];
-            if (radio.length==2)  return false; // this means we only have dummy checkboxes
-            for(i=0;i<radio.length;i++)
-              if(radio[i].checked)
-                return false;
-            return true;
-          }
-    
-          okButton.set('disabled',state(),false);
-        }
-        updateOk(okButton.getForm());
-      ]]></script>
         
       </s:form>
     
