@@ -49,21 +49,26 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <!-- hide form initially to avoid jerky display (class add-item set by add-item.js) -->
-  <style>
-    #main-panel form {min-height:40em; background:#fcfcfc; max-width: 60em; border-radius:3px; border:1px solid #eee;}
-    form table{display:none;} 
-    body.add-item #main-panel form{background:none; min-height:0; border:none;}
-    body.add-item form table{display:table;} 
-  </style>
-  
+
   <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+
   <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
-    <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
+    <s:entry title="${attrs.nameTitle}">
+      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
+                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
+      <script>$('name').focus();</script>
+    </s:entry>
 
-    <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/jenkins-widgets.css" />  
-
+    <j:forEach var="descriptor" items="${descriptors}">
+      <s:block>
+        <input type="radio" name="mode" value="${descriptor.id}" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+        <label class="attach-previous"><b>${descriptor.displayName}</b></label>
+      </s:block>
+      <s:entry>
+        <st:set var="instance" value="${descriptor}" />
+        <st:include page="newInstanceDetail.jelly" it="${descriptor}" />
+      </s:entry>
+    </j:forEach>
     <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
       <s:block>
         <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
@@ -99,7 +104,7 @@ THE SOFTWARE.
 
     function updateOk(form) {
       function state() {
-        if($('name') && $('name').value.length==0)   return true;
+        if($('name').value.length==0)   return true;
         var radio = form.elements['mode'];
         if (radio.length==2)  return false; // this means we only have dummy checkboxes
         for(i=0;i<radio.length;i++)

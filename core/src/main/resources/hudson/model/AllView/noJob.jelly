@@ -23,73 +23,30 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:js src="jsbundles/add-item.js" />
-  <l:css src="jsbundles/jenkins-widgets.css" />  
-  <l:css src="css/icons/icomoon.css" />  
-  
-  <style>
-    zbody.welcome #tasks {
- -webkit-transition: all .5s ease-in-out;
-  -moz-transition: all .5s ease-in-out;
-  -o-transition: all .5s ease-in-out;
-  transition: all .5s ease-in-out;      
-    width: 14em;}
-    #view-message,
-    z#buildQueue,
-    z#executors {display:none;}
-    z#side-panel {position:relative;}
-    z#tasks {
-      padding: 10px 30px 10px 10px;
-      position: absolute;
-      right: -30px;
-      top: 60px;
-      background: #f9f9f9;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      box-sizing: border-box;
-      overflow: hidden;
-      width: 59px;
-      box-shadow:0 1px 2px rgba(0,0,0,.1)
-    }
-  </style>
-  
-  <div id="j-welcome-box" class="welcome-message max-read-width read">
-    <i class="icon-service-o watermark"></i>
-    <!--
-      This is a good place to add "welcome" materials, like pointers to the website and etc
-    -->
-    <h1>${%Welcome to Jenkins!}</h1>
-    <p>This is a Jenkins automation and build job server. You currently have no jobs or tasks configured to run on this server. 
-    
-    <j:choose xmlns:j="jelly:core">
-      <!-- Only show the create new jobs link to those users that have permission to use it. -->
-      <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-      <j:when test="${h.hasPermission(permission)}">
-        <span class="text">${%newJob}</span>
-        <span class="btn-box"><span class="yui-button yui-submit-button submit-button primary"><a class="btn btn-primary btn-lg" href="newJob">${%newJobBtn}</a></span></span>
-      </j:when>
-      <j:otherwise>
-        <!-- Offer anonymous users the chance to login, then they can create jobs. -->
-        <j:if test="${h.isAnonymous()}">
-          <span class="text">${%login}</span>
-          <span class="btn-box">
-            <span class="yui-button yui-submit-button submit-button primary">
-              <a class="btn btn-primary btn-lg" href="${rootURL}/${app.securityRealm.loginUrl}?from=${request.requestURI}">${%loginBtn}</a>
-            </span>
-          </span>
-          <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
-          <j:if test="${app.securityRealm.allowsSignup()}">
-            <span class="text">${%signup}</span>
-            <span class="btn-box">
-              <span class="yui-button yui-submit-button submit-button primary">
-              <a class="btn btn-primary btn-lg" href="signup">${%signupBtn}</a>
-              </span>
-            </span>
-          </j:if>
+<div>
+  <!--
+    This is a good place to add "welcome" materials, like pointers to the website and etc
+  -->
+  <h1>${%Welcome to Jenkins!}</h1>
+
+  <j:choose xmlns:j="jelly:core">
+    <!-- Only show the create new jobs link to those users that have permission to use it. -->
+    <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
+    <j:when test="${h.hasPermission(permission)}">
+      <div class="call-to-action">${%newJob}</div>
+    </j:when>
+    <j:otherwise>
+      <!-- Offer anonymous users the chance to login, then they can create jobs. -->
+      <j:if test="${h.isAnonymous()}">
+        <div class="call-to-action">
+        ${%login(rootURL, app.securityRealm.loginUrl, request.requestURI)}
+        <!-- Also offer them the opportunity to sign-up for an account, if this facility is available. -->
+        <j:if test="${app.securityRealm.allowsSignup()}">
+          ${%signup}
         </j:if>
-      </j:otherwise>
-    </j:choose>
-  </p>
-  </div>
-</j:jelly>
+        </div>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
+
+</div>

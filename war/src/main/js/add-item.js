@@ -33,23 +33,29 @@ $.when(getItems(jRoot)).done(function(data){
 
     ////////////////////////////////
     // mark page for layout
-    if($('#j-welcome-box').length === 0){
-      $('body').addClass('add-item');
-      setTimeout(drawShowHide,200);
-    }
-    else{
-      $('body').addClass('welcome');
-    }
+    $('body').addClass('add-item main-panel-only');
+
 
     ////////////////////////////////
     // submit button click
     
-    $subBtn.on('click',function(e){
-      var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
-        .find('button')
-          .attr('disabled','disabled')
-          .text('. . .')
-    });
+    function makeButtonWrapper(){
+      var $p = window.$; // jshint ignore:line
+      var btn = $p('ok'); 
+      var okButton = window.makeButton(btn, null); // jshint ignore:line 
+
+      $subBtn = $('#bottom-sticker .yui-submit-button');
+      
+      checkFormReady();
+      
+      $subBtn.on('click',function(e){         
+        var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
+          .find('button')
+            .attr('disabled','disabled')
+            .text('. . .')
+      });
+          
+    }
 
     ////////////////////////////////
     // scroll action......
@@ -89,6 +95,39 @@ $.when(getItems(jRoot)).done(function(data){
     //////////////////////////
     // helper functions...
 
+    function checkFormReady(){
+      //make sure everyone has changed and gotten attached...
+      setTimeout(function(){
+        var $name = $form.removeClass('no-select').find('input[name="name"]').removeClass('no-val');
+        
+        function checkItems(){
+          var selected = $form.find('input[type="radio"]:checked').length > 0;
+          var named = $.trim($name.val()).length > 0;
+          return {selected:selected,named:named};
+        }
+        if(checkItems().selected && checkItems().named){
+          $($subBtn.next('.cover')).remove();
+          $subBtn.removeClass('yui-button-disabled').find('button').removeAttr('disabled');
+        }
+        else{
+          $subBtn.addClass('yui-button-disabled').find('button').attr('disabled','disabled');
+          $('<div class="cover" />').insertAfter($subBtn)
+            .click(function(){
+              var missingText = [];
+              if(!checkItems().named){
+                $name.addClass('no-val').focus();
+                missingText.push('item name');
+              }
+              if(!checkItems().selected){
+                $form.addClass('no-select');
+                missingText.push('item type selection');
+              }
+              alert('Required selections are missing: '+ (missingText.join(', ')));
+            });
+        }
+      },10);
+    }
+    
     function addCopyOption(data){
       var $copy = $('#copy').closest('tr');
       if($copy.length === 0) {return data;} // exit if copy should not be added to page. Jelly page holds that logic.
@@ -118,7 +157,11 @@ $.when(getItems(jRoot)).done(function(data){
 
       return newData;
     }
-
+    function checkForLink(desc){
+      if(desc.indexOf('&lt;a href="') === -1) return false;
+      var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
+      return newDesc;
+    }
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
         var aOrder = a.weight;
@@ -180,7 +223,7 @@ $.when(getItems(jRoot)).done(function(data){
       var $input = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
         .change(function(){
           $form.find('input[name="name"]').val($(this).val());
-          window.updateOk($form[0]);
+          checkFormReady();
         })
         .appendTo($name);
 
@@ -269,20 +312,27 @@ $.when(getItems(jRoot)).done(function(data){
     }
 
     function drawItem(elem){
+      var desc = (checkForLink(elem.description))? checkForLink(elem.description):elem.description;
       var $item = $([
           '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
       ].join('')).append([
-          '<div class="desc">', elem.description, '</div>'
+          '<div class="desc">', desc, '</div>'
       ].join('')).append(drawIcon(elem));
 
-      function setSelectState(){
+      function setSelectState(e){
+        e.preventDefault();
+        var href = $(e.target).attr('href');
+        if(href) {
+          window.open(href);
+        }
+        
         var $this = $(this).closest('li');
         //if this is a hyperlink, don't move the selection.
         if($this.find('a:focus').length === 1) {return false;}
         $this.closest('.categories').find('.active').removeClass('active');
         $this.addClass('active');
         $this.find('input[type="radio"]').attr('checked', 'checked');
-        window.updateOk($form[0]);
+        checkFormReady();
         
         $('html, body').animate({
           scrollTop:$this.offset().top - 200
@@ -298,7 +348,11 @@ $.when(getItems(jRoot)).done(function(data){
     function drawIcon(elem){
       var $icn = $('<div class="icn">');
       if (!elem.iconFilePathPattern) {
+        var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D','c-DCD9D8','other'];
+        var id = elem.class;
+        var desc = elem.description || '';
         var name = elem.displayName;
+        var colorClass= colors[(desc.length) % 6];
         var aName = name.split(' ');
         var a = name.substring(0,1);
         var b = ((aName.length === 1)?
@@ -308,7 +362,7 @@ $.when(getItems(jRoot)).done(function(data){
           '<span class="dfIcn"><span class="a">',a,'</span><span class="b">',b,'</span></span>'
          ].join(''))
           .appendTo($icn);
-        return $icn.addClass('df');
+        return $icn.addClass('df').addClass(colorClass);
       }
 
       var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
@@ -317,24 +371,11 @@ $.when(getItems(jRoot)).done(function(data){
 
       return $icn;
     }
-    
-    function drawShowHide(){
-      var $body = $('body').addClass('hide-side j-hide-left');
-      var $toggle = $('<div class="toggle slide-in" />')
-        .prependTo('#main-panel')
-          .click(function(){
-            $body.toggleClass('j-hide-left');
-            fireBottomStickerAdjustEvent();
-          });
-      setTimeout(function(){
-        $toggle.removeClass('slide-in'); 
-      },10);
-      
-    }
 
     // initialize
     var sortedDCategories = sortItemsByOrder(data.categories);
     var sortedDCategoriesWithCopy = addCopyOption(sortedDCategories);
+    makeButtonWrapper();
     drawTabs(sortedDCategoriesWithCopy);
     
   });
