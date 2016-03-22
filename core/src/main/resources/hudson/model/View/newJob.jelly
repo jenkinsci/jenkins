@@ -44,23 +44,15 @@ THE SOFTWARE.
       <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
         <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
 
-        <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
+        <j:if test="${!empty(app.itemMap)}">
           <s:block>
             <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
             <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
           </s:block>
           <s:entry>
             ${%Copy from}
-            <j:choose>
-              <j:when test="${attrs.copyNames}">
-                <!-- deprecated as of 1.402. -->
-                <s:editableComboBox id="from" name="from" items="${attrs.copyNames}" />
-              </j:when>
-              <j:otherwise>
-                <j:set var="descriptor" value="${it.descriptor}" />
-                <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
-              </j:otherwise>
-            </j:choose>
+            <j:set var="descriptor" value="${it.descriptor}" />
+            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
           </s:entry>
         </j:if>
 
