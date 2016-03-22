@@ -78,6 +78,12 @@ Upcoming changes</a>
 </ul>
 <h3><a name=v1.653>What's new in 1.653</a> (2016/03/13)</h3>
 <ul class=image>
+  <li class="major rfe">
+    Support encrypted communication between master and JNLP slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26580">issue 26580</a>)
+  <li class="bug">
+    Fix argument masking for sensitive build variables on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28790">issue 28790</a>)
   <li class="bug">
     More compact representation of redundant build causes.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
@@ -87,6 +93,9 @@ Upcoming changes</a>
   <li class="bug">
     Under some conditions Jenkins startup could fail because of incorrectly linked extensions; now recovering more gracefully.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
+  <li class="rfe">
+    Developer API: Add <tt>WorkspaceList.tempDir(…)</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27152">issue 27152</a>)
 </ul>
 <h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
 <ul class=image>
