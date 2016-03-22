@@ -1009,8 +1009,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * An API method to get the allowed {$link TopLevelItem}s and its categories.
      *
      * @return A {@link Categories} entity that is shown as  JSON file.
-     *
-     * @since TODO
      */
     @Restricted(DoNotUse.class)
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
