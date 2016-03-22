@@ -54,6 +54,7 @@ import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -573,7 +574,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
         }
 
-        @Extension
+        @Extension @Symbol("password")
         public static final class DescriptorImpl extends UserPropertyDescriptor {
             @Override
             public String getDisplayName() {
@@ -613,7 +614,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Displays "manage users" link in the system config if {@link HudsonPrivateSecurityRealm}
      * is in effect.
      */
-    @Extension
+    @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
             if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
@@ -724,7 +725,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final String JBCRYPT_HEADER = "#jbcrypt:";
     };
 
-    @Extension
+    @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();

@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
@@ -51,7 +52,7 @@ import hudson.remoting.Channel;
  *
  * @author ogondza
  */
-@Extension
+@Extension @Symbol("cli")
 @Restricted(NoExternalUse.class)
 public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 

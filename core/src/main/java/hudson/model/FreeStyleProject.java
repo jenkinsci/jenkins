@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -59,12 +60,19 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
     /**
      * Descriptor is instantiated as a field purely for backward compatibility.
      * Do not do this in your code. Put @Extension on your DescriptorImpl class instead.
+     *
+     * @deprecated as of 2.0
+     *      Use injection
      */
     @Restricted(NoExternalUse.class)
-    @Extension(ordinal=1000)
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+    public static /*almost final*/ DescriptorImpl DESCRIPTOR;
 
-    public static final class DescriptorImpl extends AbstractProjectDescriptor {
+    @Extension(ordinal=1000) @Symbol({"freeStyle","freeStyleJob"})
+    public static class DescriptorImpl extends AbstractProjectDescriptor {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         public String getDisplayName() {
             return Messages.FreeStyleProject_DisplayName();
         }

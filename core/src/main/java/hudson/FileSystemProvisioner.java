@@ -34,6 +34,7 @@ import hudson.util.io.ArchiverFactory;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
+import org.jenkinsci.Symbol;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -235,7 +236,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             }
         }
 
-        @Extension
+        @Extension @Symbol("default")
         public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
             public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
                 // the default provisioner does not do anything special,

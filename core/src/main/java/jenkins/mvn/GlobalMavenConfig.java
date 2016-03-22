@@ -4,10 +4,11 @@ import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 //as close as it gets to the global Maven Project configuration
-@Extension(ordinal = 50)
+@Extension(ordinal = 50) @Symbol("maven")
 public class GlobalMavenConfig extends GlobalConfiguration {
     private SettingsProvider settingsProvider;
     private GlobalSettingsProvider globalSettingsProvider;

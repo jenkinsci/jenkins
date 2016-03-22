@@ -32,6 +32,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
 import jenkins.security.SlaveToMasterCallable;
+import org.jenkinsci.Symbol;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.325
  */
-@Extension
+@Extension @Symbol("connectionActivityMonitor")
 public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     public ConnectionActivityMonitor() {
         super("Connection Activity monitoring to agents");

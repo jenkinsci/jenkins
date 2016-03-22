@@ -26,6 +26,7 @@ package hudson.security;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -92,7 +93,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     @Restricted(NoExternalUse.class)
     public static Descriptor<AuthorizationStrategy> DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("loggedInUsersCanDoAnything")
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         public DescriptorImpl() {
             DESCRIPTOR = this;

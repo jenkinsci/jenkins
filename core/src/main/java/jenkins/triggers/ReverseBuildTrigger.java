@@ -68,6 +68,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -179,7 +180,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
     }
 
-    @Extension public static final class DescriptorImpl extends TriggerDescriptor {
+    @Extension @Symbol("upstream")
+    public static final class DescriptorImpl extends TriggerDescriptor {
 
         @Override public String getDisplayName() {
             return Messages.ReverseBuildTrigger_build_after_other_projects_are_built();

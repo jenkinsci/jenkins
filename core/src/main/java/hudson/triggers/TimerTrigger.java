@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -65,7 +66,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         job.scheduleBuild(0, new TimerTriggerCause());
     }
 
-    @Extension
+    @Extension @Symbol("cron")
     public static class DescriptorImpl extends TriggerDescriptor {
         public boolean isApplicable(Item item) {
             return item instanceof BuildableItem;
