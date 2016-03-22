@@ -1597,7 +1597,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Completely replaces views
      */
-    @DataBoundSetter
     public void setViews(Collection<View> views) throws IOException {
         BulkChange bc = new BulkChange(this);
         try {
