@@ -6,7 +6,7 @@ import jenkins.model.Messages;
 /**
  * A generic {@link ItemCategory}
  */
-@Extension(ordinal = Integer.MIN_VALUE + 1)
+@Extension(ordinal = -100)
 public class StandaloneProjectsCategory extends ItemCategory {
 
     public static final String ID = "standaloneprojects";
