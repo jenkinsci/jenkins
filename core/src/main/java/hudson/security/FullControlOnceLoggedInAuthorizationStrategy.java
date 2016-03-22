@@ -93,7 +93,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
     @Restricted(NoExternalUse.class)
     public static Descriptor<AuthorizationStrategy> DESCRIPTOR;
 
-    @Extension @Symbol("fullControlOnceLoggedIn")
+    @Extension @Symbol("loggedInUsersCanDoAnything")
     public static class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         public DescriptorImpl() {
             DESCRIPTOR = this;
