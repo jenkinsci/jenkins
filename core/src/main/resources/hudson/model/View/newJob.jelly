@@ -39,8 +39,7 @@ THE SOFTWARE.
       <j:invokeStatic var="jobs" className="hudson.model.Items" method="all">
         <j:arg type="hudson.model.ItemGroup" value="${it.ownerItemGroup}"/>
       </j:invokeStatic>
-      
-      <j:set var="descriptors" value="${h.filterDescriptors(it,attrs.descriptors)}" />
+
       <s:form method="post" action="${attrs.action?:'createItem'}" name="createItem">
         <div id="j-add-item-form-data" data-root="${rootURL}/"></div>
 
