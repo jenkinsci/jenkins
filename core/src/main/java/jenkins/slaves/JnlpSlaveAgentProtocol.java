@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.ChannelBuilder;
@@ -12,6 +13,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.inject.Inject;
@@ -68,7 +70,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         new Handler(hub.getHub(),socket).run();
     }
 
-    protected static class Handler extends JnlpSlaveHandshake {
+    protected static class Handler extends JnlpServerHandshake {
 
         /**
          * @deprecated as of 1.559
@@ -80,9 +82,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         }
 
         public Handler(NioChannelHub hub, Socket socket) throws IOException {
-            super(hub,socket,
-                    new DataInputStream(socket.getInputStream()),
-                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true));
+            super(hub, Computer.threadPoolForRemoting, socket);
         }
 
         protected void run() throws IOException, InterruptedException {

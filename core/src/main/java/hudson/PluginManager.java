@@ -1141,7 +1141,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     String pluginName = n.substring(0, index);
                     String siteName = n.substring(index + 1);
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
-                    // TODO: Someone that understands what the following logic is about, please add a comment.
+                    // There could be cases like:
+                    // 'plugin.ambiguous.updatesite' where both
+                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);
@@ -1151,6 +1153,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     index = n.indexOf('.', index + 1);
                 }
             }
+            
             if (p == null) {
                 throw new Failure("No such plugin: " + n);
             }

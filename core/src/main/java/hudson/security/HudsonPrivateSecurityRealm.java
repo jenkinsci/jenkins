@@ -82,7 +82,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -359,7 +358,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.fullname==null || si.fullname.length()==0)
             si.fullname = si.username;
 
-        if(si.email==null || !si.email.contains("@"))
+        if(isMailerPluginPresent() && (si.email==null || !si.email.contains("@")))
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
 
         if (! User.isIdOrFullnameAllowed(si.username)) {
@@ -380,18 +379,29 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         // register the user
         User user = createAccount(si.username,si.password1);
         user.setFullName(si.fullname);
-        try {
-            // legacy hack. mail support has moved out to a separate plugin
-            Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
-            Constructor<?> c = up.getDeclaredConstructor(String.class);
-            user.addProperty((UserProperty)c.newInstance(si.email));
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to set the e-mail address",e);
+        if(isMailerPluginPresent()) {
+            try {
+                // legacy hack. mail support has moved out to a separate plugin
+                Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+                Constructor<?> c = up.getDeclaredConstructor(String.class);
+                user.addProperty((UserProperty)c.newInstance(si.email));
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException(e);
+            }
         }
         user.save();
         return user;
+    }
+    
+    @Restricted(NoExternalUse.class)
+    public boolean isMailerPluginPresent() {
+        try {
+            // mail support has moved to a separate plugin
+            return null != Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
+        } catch (ClassNotFoundException e) {
+            LOGGER.finer("Mailer plugin not present");
+        }
+        return false;
     }
 
     /**

@@ -42,6 +42,8 @@ import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
@@ -93,7 +95,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     public static void addFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         
         PluginServletFilter container = null;
         if(j != null) {
@@ -111,7 +113,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     public static void removeFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j==null || getInstance(j.servletContext) == null) {
             LEGACY.remove(filter);
         } else {
@@ -140,6 +142,26 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
             f.destroy();
         }
         list.clear();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void cleanUp() {
+        PluginServletFilter instance = getInstance(Jenkins.getInstance().servletContext);
+        if (instance != null) {
+            for (Iterator<Filter> iterator = instance.list.iterator(); iterator.hasNext(); ) {
+                Filter f = iterator.next();
+                try {
+                    f.destroy();
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.WARNING, "Filter " + f + " propagated an exception from its destroy method", e);
+                } catch (Error e) {
+                    throw e; // we are not supposed to catch errors, don't log as could be an OOM
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE, "Filter " + f + " propagated an exception from its destroy method", e);
+                }
+                iterator.remove();
+            }
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginServletFilter.class.getName());

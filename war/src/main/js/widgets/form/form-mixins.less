@@ -4,23 +4,22 @@
 
 .find-container(@width: 200px) {
   padding: 5px;
-  
-  
-  .find:after{
-    content:' ';
-    display:block;
-    position:absolute;
-    top:0;
-    left:0;
-    bottom:0;
-    width:25px;
-     background:url(../images/16x16/search.png) no-repeat 4px;
+
+  .find:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 25px;
+    background: url(../images/16x16/search.png) no-repeat 4px;
     -webkit-filter: grayscale(85%);
     filter: grayscale(85%);
     filter: gray;
-    opacity:.5;     
+    opacity: .5;
   }
-  
+
   .find {
     position: relative;
     width: @width;
@@ -32,8 +31,7 @@
       line-height:@input-line-height;
       padding:0 5px 0 25px;
       border: 1px solid #DDD;
-      border-radius:@radius;
-
+      .border-radius(@radius);
     }
     .clear {
       position: absolute;
