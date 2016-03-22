@@ -10,7 +10,6 @@
 exports.recommendedPlugins = [
     "ant",
     "antisamy-markup-formatter",
-    "build-monitor-plugin",
     "build-timeout",
     "cloudbees-folder",
     "credentials-binding",
@@ -39,7 +38,6 @@ exports.availablePlugins = [
         "category":"Organization and Administration",
         "plugins": [
             { "name": "dashboard-view" },
-            { "name": "build-monitor-plugin" },
             { "name": "cloudbees-folder" },
             { "name": "antisamy-markup-formatter" }
         ]
