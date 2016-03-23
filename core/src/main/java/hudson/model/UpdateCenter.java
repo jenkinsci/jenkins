@@ -1135,13 +1135,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         private void testConnection(URL url) throws IOException {
             try {
                 URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
-                connection.setConnectTimeout(20000); // JENKINS-33557 lower connection test timeout (20 sec)
-                connection.connect();
 
                 if(connection instanceof HttpURLConnection) {
                     int responseCode = ((HttpURLConnection)connection).getResponseCode();
                     if(HttpURLConnection.HTTP_OK != responseCode) {
-                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url.toString(), responseCode);
+                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
                     }
                 } else {
                     Util.copyStreamAndClose(connection.getInputStream(),new NullOutputStream());
