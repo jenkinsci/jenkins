@@ -29,12 +29,7 @@ $.when(getItems()).done(function(data){
     var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
     var $subBtn = $('#bottom-sticker .yui-submit-button');
-    var sectionsToShow = [];    
-
-    ////////////////////////////////
-    // mark page for layout
-    $('body').addClass('add-item main-panel-only');
-
+    var sectionsToShow = [];
 
     ////////////////////////////////
     // submit button click
