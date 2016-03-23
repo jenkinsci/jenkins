@@ -1469,7 +1469,7 @@ public class Fingerprint implements ModelObject, Saveable {
         return res[0];
     }
 
-    private static final XStream XSTREAM = new XStream2();
+    public static final XStream XSTREAM = new XStream2();
     static {
         XSTREAM.alias("fingerprint",Fingerprint.class);
         XSTREAM.alias("range",Range.class);
