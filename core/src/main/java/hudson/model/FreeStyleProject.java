@@ -26,7 +26,6 @@ package hudson.model;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import jenkins.model.item_category.StandaloneProjectsCategory;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
