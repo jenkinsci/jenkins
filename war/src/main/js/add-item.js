@@ -31,11 +31,14 @@ $.when(getItems()).done(function(data){
       .attr('name','createItem')
       .attr('action','createItem')
       .prependTo($form);
+    var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
     var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
     var $subBtn = $('#bottom-sticker .yui-submit-button');
     var sectionsToShow = [];
 
+    $tabs.prepend($navBox);
+    
     ////////////////////////////////
     // submit button click
     
@@ -202,7 +205,7 @@ $.when(getItems()).done(function(data){
       var $name = $('<div class="j-add-item-name" />');
 
       var $input = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
-        .change(function(){
+        .keyup(function(){
           $form.find('input[name="name"]').val($(this).val());
           checkFormReady();
         })
@@ -214,7 +217,6 @@ $.when(getItems()).done(function(data){
 
     function drawTabs(data){
       $('#main-panel').addClass('container');
-      var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
       var $nav = $('<ul class="nav navbar-nav tabBar config-section-activators" />');
       
       $.each(data,function(i,elem){
@@ -239,7 +241,6 @@ $.when(getItems()).done(function(data){
    
       if(sectionsToShow.length > 1){
         $navBox.append($nav);
-        $tabs.prepend($navBox);
       }else{
         $categories.find('.category-header').hide();
       }
