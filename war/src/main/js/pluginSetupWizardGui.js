@@ -415,7 +415,7 @@ var createPluginSetupWizard = function(appendTarget) {
 					}
 				}
 
-				$c = $('.install-console');
+				$c = $('.install-console-scroll');
 				if($c.is(':visible')) {
 					$c.scrollTop($c[0].scrollHeight);
 				}
