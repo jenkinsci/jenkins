@@ -342,11 +342,6 @@ $.when(getItems()).done(function(data){
         $this.addClass('active');
         $this.find('input[type="radio"]').prop('checked', true);
         checkFormReady();
-        
-        $('html, body').animate({
-          scrollTop:$this.offset().top - 200
-        },50);
-        
       }
 
       $item.click(setSelectState);
