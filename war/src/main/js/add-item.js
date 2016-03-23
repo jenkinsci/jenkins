@@ -64,12 +64,19 @@ $.when(getItems()).done(function(data){
     // scroll action......
 
     var isManualScrolling = false;
+    var ignoreNextScrollEvent = false;
     function watchScroll(){
-      if (isManualScrolling) {
+      if (isManualScrolling === true) {
         // We ignore scroll events when a manual scroll is in
         // operation e.g. when the user clicks on a category tab.
         return;
       }      
+      if (ignoreNextScrollEvent === true) {
+        // Things like repositioning of the tabbar (see stickTabbar)
+        // can trigger scroll events that we want to ignore.
+        ignoreNextScrollEvent = false;
+        return;
+      }
       
       var $window = $(window);
       var $jenkTools = $('#breadcrumbBar');
@@ -96,6 +103,7 @@ $.when(getItems()).done(function(data){
           'position':'fixed',
           'top':($jenkTools.height() - 5 )+'px'});
         $categories.css({'margin-top':$tabs.outerHeight()+'px'});
+        ignoreNextScrollEvent = true;
       }
       else{
         $tabs.add($categories).removeAttr('style');
