@@ -29,14 +29,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout norefresh="true" cssclass="add-item" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout norefresh="true" cssclass="add-item main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
 
-    <st:include page="sidepanel.jelly" />
     <l:main-panel>
-
+      <div id="create-item-panel" style="display: none;">
       <s:form method="post" action="createItem" name="createItem">
 
         <j:if test="${!empty(app.itemMap)}">
@@ -62,6 +61,7 @@ THE SOFTWARE.
         </s:bottomButtonBar>  
         
       </s:form>
+      </div>
 
     </l:main-panel>
   </l:layout>
