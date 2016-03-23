@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import jenkins.model.item_category.StandaloneProjectsCategory;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -87,7 +88,11 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
 
         @Override
         public String getIconFilePathPattern() {
-            return Jenkins.RESOURCE_PATH + "images/:size/freestyleproject.png";
+            if (Jenkins.RESOURCE_PATH.isEmpty()) {
+                return "images/:size/freestyleproject.png";
+            } else {
+                return Jenkins.RESOURCE_PATH.substring(1) + "/images/:size/freestyleproject.png";
+            }
         }
 
     }
