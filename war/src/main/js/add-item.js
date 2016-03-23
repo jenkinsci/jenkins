@@ -105,7 +105,7 @@ $.when(getItems()).done(function(data){
       if(winScoll > createPanelOffset - $breadcrumbBar.height()){
         $tabs.width($tabs.width()).css({
           'position':'fixed',
-          'top':($breadcrumbBar.height() - 5 )+'px'});
+          'top':($breadcrumbBar.height())+'px'});
         $categories.css({'margin-top':$tabs.outerHeight()+'px'});
         return true;
       } else{
