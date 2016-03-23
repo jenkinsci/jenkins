@@ -63,7 +63,21 @@ $.when(getItems()).done(function(data){
     ////////////////////////////////
     // scroll action......
 
+    var isManualScrolling = false;
+    var ignoreNextScrollEvent = false;
     function watchScroll(){
+      if (isManualScrolling === true) {
+        // We ignore scroll events when a manual scroll is in
+        // operation e.g. when the user clicks on a category tab.
+        return;
+      }      
+      if (ignoreNextScrollEvent === true) {
+        // Things like repositioning of the tabbar can trigger scroll
+        // events that we want to ignore.
+        ignoreNextScrollEvent = false;
+        return;
+      }
+      
       var $window = $(window);
       var $jenkTools = $('#breadcrumbBar');
       var winScoll = $window.scrollTop();
@@ -89,6 +103,7 @@ $.when(getItems()).done(function(data){
           'position':'fixed',
           'top':($jenkTools.height() - 5 )+'px'});
         $categories.css({'margin-top':$tabs.outerHeight()+'px'});
+        ignoreNextScrollEvent = true;
       }
       else{
         $tabs.add($categories).removeAttr('style');
@@ -253,7 +268,6 @@ $.when(getItems()).done(function(data){
       if(!elem) {elem = i;}
       var $tab = $(['<li><a class="tab ',((i===0)?'active':''),'" href="#',cleanHref(elem.id),'">',elem.name,'</a></li>'].join(''))
         .click(function(){
-          //e.preventDefault(e);
           var $this = $(this).children('a');
 
           var tab = $this.attr('href');
@@ -261,9 +275,12 @@ $.when(getItems()).done(function(data){
 
           setTimeout(function(){resetActiveTab($this);},510);
 
+          isManualScrolling = true;
           $('html,body').animate({
             scrollTop: scrollTop
-          }, 500);
+          }, 500, function() {
+            isManualScrolling = false;
+          });
         });
       return $tab;
     }
