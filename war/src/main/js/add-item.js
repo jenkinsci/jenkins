@@ -205,7 +205,7 @@ $.when(getItems()).done(function(data){
       var $name = $('<div class="j-add-item-name" />');
 
       var $input = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
-        .change(function(){
+        .keyup(function(){
           $form.find('input[name="name"]').val($(this).val());
           checkFormReady();
         })
