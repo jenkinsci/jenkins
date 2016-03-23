@@ -158,9 +158,6 @@ ${h.initPageVariables(context)}
       </j:forEach>
     </j:if>
 
-	<j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getActiveInstance" />
-    <j:set var="installState" value="${j.installState.name()}" />
-
     <j:if test="${isMSIE}">
       <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
     </j:if>
