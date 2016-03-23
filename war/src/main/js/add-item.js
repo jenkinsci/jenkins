@@ -32,12 +32,12 @@ $.when(getItems()).done(function(data){
       .attr('action','createItem')
       .prependTo($form);
     var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
-    var $tabs = $('<div class="jenkins-config-widgets" />').appendTo($newView);
+    var $widgetBox = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
     var $subBtn = $('#bottom-sticker .yui-submit-button');
     var sectionsToShow = [];
 
-    $tabs.prepend($navBox);
+    $widgetBox.prepend($navBox);
     
     ////////////////////////////////
     // submit button click
@@ -65,7 +65,12 @@ $.when(getItems()).done(function(data){
 
     var isManualScrolling = false;
     var ignoreNextScrollEvent = false;
-    function watchScroll(){
+    var $window = $(window);
+    var $breadcrumbBar = $('#breadcrumbBar');
+    var $createItemPanel = $('#create-item-panel');
+    var createPanelOffset = $createItemPanel.offset().top;
+
+    function autoActivateTabs(){
       if (isManualScrolling === true) {
         // We ignore scroll events when a manual scroll is in
         // operation e.g. when the user clicks on a category tab.
@@ -77,36 +82,42 @@ $.when(getItems()).done(function(data){
         ignoreNextScrollEvent = false;
         return;
       }
-      
-      var $window = $(window);
-      var $jenkTools = $('#breadcrumbBar');
-      var winScoll = $window.scrollTop();
-      var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
 
-      $tabs.find('.active').removeClass('active');
+      var winScoll = $window.scrollTop();
+
+      $widgetBox.find('.active').removeClass('active');
       $.each(data.categories,function(i,cat){
         var domId = '#j-add-item-type-'+cat.id;
         var $cat = $(domId);
         var catHeight = ($cat.length > 0)?
-            $cat.offset().top + $cat.outerHeight() - (jenkToolOffset + 100):
-              0;
+        $cat.offset().top + $cat.outerHeight() - createPanelOffset: 0;
 
         if(winScoll < catHeight){
-          var $thisTab = $tabs.find(['[href="',cleanHref(domId),'"]'].join(''));
+          var $thisTab = $widgetBox.find(['[href="',cleanHref(domId),'"]'].join(''));
           resetActiveTab($thisTab);
           return false;
         }
       });
-      
-      if(winScoll > $('#page-head').height() - 5 ){
-        $tabs.width($tabs.width()).css({
+    }
+
+    function stickTabbar() {
+      var winScoll = $window.scrollTop();
+      var setWidth = function() {
+          $widgetBox.width($form.outerWidth() - 2);
+      };
+
+      if(winScoll > createPanelOffset - $breadcrumbBar.height()){
+        setWidth();
+        $widgetBox.css({
           'position':'fixed',
-          'top':($jenkTools.height() - 5 )+'px'});
-        $categories.css({'margin-top':$tabs.outerHeight()+'px'});
-        ignoreNextScrollEvent = true;
-      }
-      else{
-        $tabs.add($categories).removeAttr('style');
+          'top':($breadcrumbBar.height())+'px'});
+        $categories.css({'margin-top':$widgetBox.outerHeight()+'px'});
+        $window.resize(setWidth);
+        return true;
+      } else{
+        $widgetBox.add($categories).removeAttr('style');
+        $window.unbind('resize', setWidth);
+        return false;
       }
     }
 
@@ -225,7 +236,7 @@ $.when(getItems()).done(function(data){
         })
         .appendTo($name);
 
-      $tabs.prepend($name);
+      $widgetBox.prepend($name);
       setTimeout(function(){$input.focus();},100);
     }
 
@@ -251,7 +262,8 @@ $.when(getItems()).done(function(data){
         $categories.append($cat);
 
       });
-      $(window).on('scroll',watchScroll);
+      $(window).on('scroll', autoActivateTabs);
+      $(window).on('scroll', stickTabbar);
    
       if(sectionsToShow.length > 3){
         $navBox.append($nav);
@@ -278,6 +290,7 @@ $.when(getItems()).done(function(data){
             scrollTop: scrollTop
           }, 500, function() {
             isManualScrolling = false;
+            ignoreNextScrollEvent = stickTabbar();
           });
         });
       return $tab;
