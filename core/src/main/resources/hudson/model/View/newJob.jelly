@@ -32,7 +32,7 @@ THE SOFTWARE.
   <l:layout norefresh="true" cssclass="add-item" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/config-scrollspy.css" />
+    <l:css src="jsbundles/add-item.css" />
 
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
