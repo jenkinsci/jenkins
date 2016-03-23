@@ -155,9 +155,10 @@ $.when(getItems()).done(function(data){
     }
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
-        var aOrder = a.weight;
-        var bOrder = b.weight;
-        return ( (aOrder < bOrder) ? -1 : ( (aOrder === bOrder) ? 1 : 0));
+        var result = (a.weight - b.weight);
+        result = Math.max(result, -1); // If lt than -1, make it -1
+        result = Math.min(result, +1); // If gt than +1, make it +1
+        return result;
       }
       return itemTypes.sort(sortByOrder);
     }
