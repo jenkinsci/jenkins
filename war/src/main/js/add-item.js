@@ -255,7 +255,7 @@ $.when(getItems()).done(function(data){
       });
       $(window).on('scroll',watchScroll);
    
-      if(sectionsToShow.length > 1){
+      if(sectionsToShow.length > 3){
         $navBox.append($nav);
       }else{
         $categories.find('.category-header').hide();
