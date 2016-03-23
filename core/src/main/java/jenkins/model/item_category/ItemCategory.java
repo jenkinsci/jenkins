@@ -65,7 +65,7 @@ public abstract class ItemCategory implements ExtensionPoint {
      */
     @Nonnull
     public static ItemCategory getCategory(TopLevelItemDescriptor descriptor) {
-        int weight = 1;
+        int weight = 0;
         ExtensionList<ItemCategory> categories = ExtensionList.lookup(ItemCategory.class);
         for (ItemCategory category : categories) {
             if (category.getId().equals(descriptor.getCategoryId())) {

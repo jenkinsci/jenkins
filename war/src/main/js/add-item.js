@@ -170,9 +170,7 @@ $.when(getItems()).done(function(data){
     }
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
-        var result = (a.weight - b.weight);
-        result = Math.max(result, -1); // If lt than -1, make it -1
-        result = Math.min(result, +1); // If gt than +1, make it +1
+        var result = (b.weight - a.weight);
         return result;
       }
       return itemTypes.sort(sortByOrder);
