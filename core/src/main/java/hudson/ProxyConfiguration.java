@@ -78,7 +78,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("jenkins.proxy.default_connect_timeout_millis", 20 * 1000);
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
     
     public final String name;
     public final int port;
