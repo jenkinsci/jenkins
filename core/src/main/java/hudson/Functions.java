@@ -130,7 +130,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
-import jenkins.model.GlobalConfigurationCategory.Unclassified;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -965,12 +964,8 @@ public class Functions {
             Descriptor d = c.getInstance();
             if (d.getGlobalConfigPage()==null)  continue;
 
-            if (d instanceof GlobalConfiguration) {
-                if (predicate.apply(((GlobalConfiguration)d).getCategory()))
-                    r.add(new Tag(c.ordinal(), d));
-            } else {
-                if (predicate.apply(GlobalConfigurationCategory.get(Unclassified.class)))
-                    r.add(new Tag(0, d));
+            if (predicate.apply(d.getCategory())) {
+                r.add(new Tag(c.ordinal(), d));
             }
         }
         Collections.sort(r);

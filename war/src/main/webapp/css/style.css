@@ -1965,5 +1965,13 @@ body.main-panel-only #side-panel {
 }
 body.main-panel-only #main-panel {
     margin: 0 auto !important;
-    max-width: 75em !important;
+    min-width: 100%;
+    padding: 2em 2em;
+    display: inline-block;
+    width: auto;
+}
+@media screen and (min-width: 1024px) {
+    body.main-panel-only #main-panel {
+        padding: 2em 10%;
+    }
 }

@@ -159,7 +159,7 @@ public class MavenTest {
      * Simulates the addition of the new Maven via UI and makes sure it works.
      */
     @Test public void globalConfigAjax() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("configure");
+        HtmlPage p = j.createWebClient().goTo("configureTools");
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
         b.click();

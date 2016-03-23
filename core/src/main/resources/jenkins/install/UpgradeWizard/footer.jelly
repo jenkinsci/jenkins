@@ -1,0 +1,49 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <j:if test="${it.due}">
+    <style>
+      #upgrade-fragment {
+        background-color: #fce94f;
+      }
+
+      #upgrade-notice {
+        font-weight: bold;
+        text-align: center;
+        font-size: 20px;
+        height: 60px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #upgrade-snooze {
+        float:right;
+        margin: 3px;
+        text-decoration: none;
+        display: block;
+      }
+    </style>
+    <div style="display:none">
+      <div id="upgrade-fragment">
+        <a id="upgrade-snooze" class="post" href="${rootURL}/${it.url}/snooze">
+          x
+        </a>
+        <div id="upgrade-notice">
+          <div>
+            <j:whitespace>${%msg.before}</j:whitespace>
+            <f:link href="${rootURL}/${it.url}/upgrade" post="true">${%msg.link}</f:link>
+            <j:whitespace>${%msg.after}</j:whitespace>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        var e = $('upgrade-fragment');
+        e.remove();
+        $('page-body').insert({ top: e });
+      })();
+    </script>
+  </j:if>
+</j:jelly>
