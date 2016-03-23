@@ -72,8 +72,8 @@ $.when(getItems()).done(function(data){
         return;
       }      
       if (ignoreNextScrollEvent === true) {
-        // Things like repositioning of the tabbar (see stickTabbar)
-        // can trigger scroll events that we want to ignore.
+        // Things like repositioning of the tabbar can trigger scroll
+        // events that we want to ignore.
         ignoreNextScrollEvent = false;
         return;
       }
