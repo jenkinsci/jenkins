@@ -65,7 +65,12 @@ $.when(getItems()).done(function(data){
 
     var isManualScrolling = false;
     var ignoreNextScrollEvent = false;
-    function watchScroll(){
+    var $window = $(window);
+    var $breadcrumbBar = $('#breadcrumbBar');
+    var $createItemPanel = $('#create-item-panel');
+    var createPanelOffset = $createItemPanel.offset().top;
+
+    function autoActivateTabs(){
       if (isManualScrolling === true) {
         // We ignore scroll events when a manual scroll is in
         // operation e.g. when the user clicks on a category tab.
@@ -77,19 +82,15 @@ $.when(getItems()).done(function(data){
         ignoreNextScrollEvent = false;
         return;
       }
-      
-      var $window = $(window);
-      var $jenkTools = $('#breadcrumbBar');
+
       var winScoll = $window.scrollTop();
-      var jenkToolOffset = $jenkTools.height() + $jenkTools.offset().top + 15;
 
       $tabs.find('.active').removeClass('active');
       $.each(data.categories,function(i,cat){
         var domId = '#j-add-item-type-'+cat.id;
         var $cat = $(domId);
         var catHeight = ($cat.length > 0)?
-            $cat.offset().top + $cat.outerHeight() - (jenkToolOffset + 100):
-              0;
+        $cat.offset().top + $cat.outerHeight() - createPanelOffset: 0;
 
         if(winScoll < catHeight){
           var $thisTab = $tabs.find(['[href="',cleanHref(domId),'"]'].join(''));
@@ -97,16 +98,19 @@ $.when(getItems()).done(function(data){
           return false;
         }
       });
-      
-      if(winScoll > $('#page-head').height() - 5 ){
+    }
+
+    function stickTabbar() {
+      var winScoll = $window.scrollTop();
+      if(winScoll > createPanelOffset - $breadcrumbBar.height()){
         $tabs.width($tabs.width()).css({
           'position':'fixed',
-          'top':($jenkTools.height() - 5 )+'px'});
+          'top':($breadcrumbBar.height() - 5 )+'px'});
         $categories.css({'margin-top':$tabs.outerHeight()+'px'});
-        ignoreNextScrollEvent = true;
-      }
-      else{
+        return true;
+      } else{
         $tabs.add($categories).removeAttr('style');
+        return false;
       }
     }
 
@@ -253,7 +257,8 @@ $.when(getItems()).done(function(data){
         $categories.append($cat);
 
       });
-      $(window).on('scroll',watchScroll);
+      $(window).on('scroll', autoActivateTabs);
+      $(window).on('scroll', stickTabbar);
    
       if(sectionsToShow.length > 3){
         $navBox.append($nav);
@@ -280,6 +285,7 @@ $.when(getItems()).done(function(data){
             scrollTop: scrollTop
           }, 500, function() {
             isManualScrolling = false;
+            ignoreNextScrollEvent = stickTabbar();
           });
         });
       return $tab;
