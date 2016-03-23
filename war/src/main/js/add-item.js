@@ -48,11 +48,11 @@ $.when(getItems()).done(function(data){
       
       checkFormReady();
       
-      $subBtn.on('click',function(e){         
-        var $this = $(this).addClass('yui-button-disabled yui-submit-button-disabled')
+      $subBtn.on('click',function() {
+        $(this).addClass('yui-button-disabled yui-submit-button-disabled')
           .find('button')
             .attr('disabled','disabled')
-            .text('. . .')
+            .text('. . .');
       });
           
     }
@@ -144,7 +144,9 @@ $.when(getItems()).done(function(data){
       return newData;
     }
     function checkForLink(desc){
-      if(desc.indexOf('&lt;a href="') === -1) return false;
+      if(desc.indexOf('&lt;a href="') === -1) {
+        return false;
+      }
       var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
       return newDesc;
     }
@@ -155,13 +157,6 @@ $.when(getItems()).done(function(data){
         return ( (aOrder < bOrder) ? -1 : ( (aOrder === bOrder) ? 1 : 0));
       }
       return itemTypes.sort(sortByOrder);
-    }
-
-    function hideAllTabsIfUnnecesary(sectionsToShow){
-      if(sectionsToShow.length < 2){
-        $tabs.find('.tab').hide();
-        $categories.find('.category-header').hide();
-      }
     }
 
     function checkCatCount(elem){
@@ -273,7 +268,9 @@ $.when(getItems()).done(function(data){
 
     function drawCategory(i,elem){
       // categories are smart, so this is a little tricky....
-      if (!elem) elem = i;
+      if (!elem) {
+        elem = i;
+      }
       var $category = $('<div/>').addClass('category jenkins-config hide-cat').attr('id', 'j-add-item-type-'+cleanClassName(elem.id));
       var $items = $('<ul/>').addClass('j-item-options').appendTo($category);
 
@@ -313,7 +310,7 @@ $.when(getItems()).done(function(data){
         }
         
         var $this = $(this).closest('li');
-        var $radios = $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
+        $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
         //if this is a hyperlink, don't move the selection.
         if($this.find('a:focus').length === 1) {return false;}
         $this.closest('.categories').find('.active').removeClass('active');
@@ -336,7 +333,6 @@ $.when(getItems()).done(function(data){
       var $icn = $('<div class="icn">');
       if (!elem.iconFilePathPattern) {
         var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D','c-DCD9D8','other'];
-        var id = elem.class;
         var desc = elem.description || '';
         var name = elem.displayName;
         var colorClass= colors[(desc.length) % 6];
@@ -345,7 +341,7 @@ $.when(getItems()).done(function(data){
         var b = ((aName.length === 1)?
             name.substring(1,2):
               aName[1].substring(0,1));
-        var $defIcon = $([
+        $([
           '<span class="dfIcn"><span class="a">',a,'</span><span class="b">',b,'</span></span>'
          ].join(''))
           .appendTo($icn);
@@ -353,7 +349,7 @@ $.when(getItems()).done(function(data){
       }
 
       var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
-      var iconDom = $(['<span class="img" style="background:url(', iconFilePath, ')"></span>'].join(''))
+      $(['<span class="img" style="background:url(', iconFilePath, ')"></span>'].join(''))
         .appendTo($icn);
 
       return $icn;
