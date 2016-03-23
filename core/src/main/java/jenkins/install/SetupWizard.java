@@ -106,24 +106,24 @@ public class SetupWizard {
                 bc.abort();
             }
         }
-        
+
         String setupKey = iapf.readToString().trim();
-        
-        LOGGER.info("\n\n*************************************************************\n"
-                + "*************************************************************\n"
-                + "*************************************************************\n"
-                + "\n"
+        String ls = System.lineSeparator();
+        LOGGER.info(ls + ls + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + ls
                 + "Jenkins initial setup is required. An admin user has been created and"
-                + "a password generated. \n"
-                + "Please use the following password to proceed to installation: \n"
-                + "\n"
-                + "" + setupKey + "\n"
-                + "\n"
-                + "This may also be found at: " + iapf.getRemote() + "\n"
-                + "\n"
-                + "*************************************************************\n"
-                + "*************************************************************\n"
-                + "*************************************************************\n");
+                + "a password generated." + ls
+                + "Please use the following password to proceed to installation:" + ls
+                + ls
+                + setupKey + ls
+                + ls
+                + "This may also be found at: " + iapf.getRemote() + ls
+                + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls);
         
         try {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
