@@ -48,7 +48,6 @@ exports.availablePlugins = [
         "category":"Build Features",
         "description":"Add general purpose features to your jobs",
         "plugins": [
-            { "name": "ansicolor" },
             { "name": "build-name-setter" },
             { "name": "build-timeout" },
             { "name": "config-file-provider" },
