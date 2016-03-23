@@ -74,6 +74,12 @@ import org.kohsuke.stapler.QueryParameter;
  * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
+    /**
+     * Holds a default TCP connect timeout set on all connections returned from this class,
+     * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
+     */
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("jenkins.proxy.default_connect_timeout_millis", 20 * 1000);
+    
     public final String name;
     public final int port;
 
@@ -218,22 +224,29 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      */
     public static URLConnection open(URL url) throws IOException {
         final ProxyConfiguration p = get();
-        if(p==null)
-            return url.openConnection();
-
-        URLConnection con = url.openConnection(p.createProxy(url.getHost()));
-        if(p.getUserName()!=null) {
-            // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(new Authenticator() {
-                @Override
-                public PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    return new PasswordAuthentication(p.getUserName(),
-                            p.getPassword().toCharArray());
-                }
-            });
+        
+        URLConnection con;
+        if(p==null) {
+            con = url.openConnection();
+        } else {
+            con = url.openConnection(p.createProxy(url.getHost()));
+            if(p.getUserName()!=null) {
+                // Add an authenticator which provides the credentials for proxy authentication
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        if (getRequestorType()!=RequestorType.PROXY)    return null;
+                        return new PasswordAuthentication(p.getUserName(),
+                                p.getPassword().toCharArray());
+                    }
+                });
+            }
         }
-
+        
+        if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
+            con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
+        }
+        
         if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
             decorate(con);
         }
@@ -329,7 +342,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", new Integer(30 * 1000));
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
                 
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null) {
