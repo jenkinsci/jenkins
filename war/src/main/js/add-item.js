@@ -15,6 +15,11 @@ var jRoot = $('head').attr('data-rooturl');
 
 $.when(getItems()).done(function(data){
   $(function() {
+
+    // The main panel content is hidden by default via an
+    // inline style. We're ready to remove that now.
+    $('#create-item-panel').removeAttr('style');
+
     //////////////////////////////
     // helpful reference DOM
 

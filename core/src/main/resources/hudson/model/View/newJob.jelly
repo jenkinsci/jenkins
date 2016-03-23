@@ -35,7 +35,7 @@ THE SOFTWARE.
     <l:css src="jsbundles/add-item.css" />
 
     <l:main-panel>
-
+      <div id="create-item-panel" style="display: none;">
       <s:form method="post" action="createItem" name="createItem">
 
         <j:if test="${!empty(app.itemMap)}">
@@ -61,6 +61,7 @@ THE SOFTWARE.
         </s:bottomButtonBar>  
         
       </s:form>
+      </div>
 
     </l:main-panel>
   </l:layout>
