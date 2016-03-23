@@ -25,17 +25,17 @@ public class Category implements Serializable {
 
     private String description;
 
-    private int weight;
+    private int order;
 
     private int minToShow;
 
     private List<Map<String, Serializable>> items;
 
-    public Category(String id, String name, String description, int weight, int minToShow, List<Map<String, Serializable>> items) {
+    public Category(String id, String name, String description, int order, int minToShow, List<Map<String, Serializable>> items) {
         this.id= id;
         this.name = name;
         this.description = description;
-        this.weight = weight;
+        this.order = order;
         this.minToShow = minToShow;
         this.items = items;
     }
@@ -56,8 +56,8 @@ public class Category implements Serializable {
     }
 
     @Exported
-    public int getWeight() {
-        return weight;
+    public int getOrder() {
+        return order;
     }
 
     @Exported

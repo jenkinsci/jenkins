@@ -1013,14 +1013,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     @Restricted(DoNotUse.class)
     public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Categories categories = new Categories();
-        int weight = 0;
+        int order = 0;
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 
             // Information about Item.
             metadata.put("class", descriptor.getId());
-            metadata.put("weight", ++weight);
+            metadata.put("order", ++order);
             metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", descriptor.getDescription());
             metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
@@ -1031,7 +1031,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             } else {
                 List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
                 temp.add(metadata);
-                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getWeight() , ic.getMinToShow(), temp);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getOrder(), ic.getMinToShow(), temp);
                 categories.getItems().add(category);
             }
         }

@@ -20,7 +20,7 @@ public abstract class ItemCategory implements ExtensionPoint {
     /**
      * Helpful to set the order.
      */
-    private int weight = 1;
+    private int order = 1;
 
     /**
      * Identifier, e.g. "standaloneprojects", etc.
@@ -50,12 +50,12 @@ public abstract class ItemCategory implements ExtensionPoint {
      */
     public abstract int getMinToShow();
 
-    private void setWeight(int weight) {
-        this.weight = weight;
+    private void setOrder(int order) {
+        this.order = order;
     }
 
-    public int getWeight() {
-        return weight;
+    public int getOrder() {
+        return order;
     }
 
     /**
@@ -65,14 +65,14 @@ public abstract class ItemCategory implements ExtensionPoint {
      */
     @Nonnull
     public static ItemCategory getCategory(TopLevelItemDescriptor descriptor) {
-        int weight = 0;
+        int order = 0;
         ExtensionList<ItemCategory> categories = ExtensionList.lookup(ItemCategory.class);
         for (ItemCategory category : categories) {
             if (category.getId().equals(descriptor.getCategoryId())) {
-                category.setWeight(categories.size() - weight);
+                category.setOrder(++order);
                 return category;
             }
-            weight++;
+            order++;
         }
         return new UncategorizedCategory();
     }

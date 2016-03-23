@@ -180,12 +180,6 @@ $.when(getItems()).done(function(data){
       var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
       return newDesc;
     }
-    function sortItemsByOrder(itemTypes) {
-      function sortByOrder(a, b) {
-        return b.weight - a.weight;
-      }
-      return itemTypes.sort(sortByOrder);
-    }
 
     function checkCatCount(elem){
       var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : defaultMinToShow;
@@ -385,18 +379,10 @@ $.when(getItems()).done(function(data){
       return $icn;
     }
 
-    // Sort the categories.
-    var sortedDCategories = sortItemsByOrder(data.categories);
-    var sortedDCategoriesWithCopy = addCopyOption(sortedDCategories);
-
-    // Sort the items in each category.
-    for (var i = 0; i < data.categories.length; i++) {
-      var category = data.categories[i];
-      category.items = sortItemsByOrder(category.items);
-    }
+    var categoriesWithCopy = addCopyOption(data.categories);
 
     makeButtonWrapper();
-    drawTabs(sortedDCategoriesWithCopy);
+    drawTabs(categoriesWithCopy);
     
   });
 });
