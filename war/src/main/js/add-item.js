@@ -181,8 +181,7 @@ $.when(getItems()).done(function(data){
     }
     function sortItemsByOrder(itemTypes) {
       function sortByOrder(a, b) {
-        var result = (b.weight - a.weight);
-        return result;
+        return b.weight - a.weight;
       }
       return itemTypes.sort(sortByOrder);
     }
@@ -380,9 +379,16 @@ $.when(getItems()).done(function(data){
       return $icn;
     }
 
-    // initialize
+    // Sort the categories.
     var sortedDCategories = sortItemsByOrder(data.categories);
     var sortedDCategoriesWithCopy = addCopyOption(sortedDCategories);
+
+    // Sort the items in each category.
+    for (var i = 0; i < data.categories.length; i++) {
+      var category = data.categories[i];
+      category.items = sortItemsByOrder(category.items);
+    }
+
     makeButtonWrapper();
     drawTabs(sortedDCategoriesWithCopy);
     
