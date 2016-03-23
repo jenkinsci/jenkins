@@ -87,11 +87,7 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
 
         @Override
         public String getIconFilePathPattern() {
-            if (Jenkins.RESOURCE_PATH.isEmpty()) {
-                return "images/:size/freestyleproject.png";
-            } else {
-                return Jenkins.RESOURCE_PATH.substring(1) + "/images/:size/freestyleproject.png";
-            }
+            return (Jenkins.RESOURCE_PATH + "/images/:size/freestyleproject.png").replaceFirst("^/", "");
         }
 
     }
