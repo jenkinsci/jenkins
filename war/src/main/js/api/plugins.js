@@ -10,7 +10,6 @@
 exports.recommendedPlugins = [
     "ant",
     "antisamy-markup-formatter",
-    "build-monitor-plugin",
     "build-timeout",
     "cloudbees-folder",
     "credentials-binding",
@@ -19,7 +18,7 @@ exports.recommendedPlugins = [
     "gradle",
     "ldap",
     "mailer",
-    // "matrix-auth",
+    "matrix-auth",
     "pam-auth",
     "pipeline-stage-view",
     "ssh-slaves",
@@ -38,8 +37,7 @@ exports.availablePlugins = [
     {
         "category":"Organization and Administration",
         "plugins": [
-            // { "name": "dashboard-view" },
-            { "name": "build-monitor-plugin" },
+            { "name": "dashboard-view" },
             { "name": "cloudbees-folder" },
             { "name": "antisamy-markup-formatter" }
         ]
@@ -48,16 +46,16 @@ exports.availablePlugins = [
         "category":"Build Features",
         "description":"Add general purpose features to your jobs",
         "plugins": [
-            { "name": "ansicolor" },
-            // { "name": "build-name-setter" },
+            { "name": "build-name-setter" },
             { "name": "build-timeout" },
             { "name": "config-file-provider" },
             { "name": "credentials-binding" },
+            { "name": "embeddable-build-status" },
             { "name": "rebuild" },
             { "name": "ssh-agent" },
-            // { "name": "throttle-concurrents" },
-            { "name": "timestamper" }
-            // { "name": "ws-cleanup" }
+            { "name": "throttle-concurrents" },
+            { "name": "timestamper" },
+            { "name": "ws-cleanup" }
         ]
     },
     {
@@ -72,12 +70,11 @@ exports.availablePlugins = [
     {
         "category":"Build Analysis and Reporting",
         "plugins": [
-            // { "name": "checkstyle" },
-            // { "name": "cobertura" },
+            { "name": "checkstyle" },
+            { "name": "cobertura" },
             { "name": "htmlpublisher" },
             { "name": "junit" },
-            // { "name": "sonar" },
-            // { "name": "warnings" },
+            { "name": "warnings" },
             { "name": "xunit" }
         ]
     },
@@ -88,8 +85,8 @@ exports.availablePlugins = [
             { "name": "github-organization-folder" },
             { "name": "pipeline-stage-view" },
             { "name": "build-pipeline-plugin" },
-            // { "name": "conditional-buildstep" },
-            // { "name": "jenkins-multijob-plugin" },
+            { "name": "conditional-buildstep" },
+            { "name": "jenkins-multijob-plugin" },
             { "name": "parameterized-trigger" },
             { "name": "copyartifact" }
         ]
@@ -122,10 +119,10 @@ exports.availablePlugins = [
     {
         "category":"User Management and Security",
         "plugins": [            
-            // { "name": "matrix-auth" },
+            { "name": "matrix-auth" },
             { "name": "pam-auth" },
             { "name": "ldap" },
-            // { "name": "role-strategy" },
+            { "name": "role-strategy" },
             { "name": "active-directory" }
         ]
     },
@@ -136,7 +133,7 @@ exports.availablePlugins = [
             { "name": "emailext-template" },
             { "name": "mailer" },
             { "name": "publish-over-ssh" },
-            { "name": "slack" },
+            // { "name": "slack" }, // JENKINS-33571, https://github.com/jenkinsci/slack-plugin/issues/191
             { "name": "ssh" }
         ]
     }

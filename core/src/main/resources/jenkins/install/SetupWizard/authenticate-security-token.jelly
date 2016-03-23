@@ -16,24 +16,19 @@
                   
                     <h1>${%Unlock Jenkins}</h1>
                     <p>
-                        ${%To ensure Jenkins is securely set up by the administrator, a setup security token has been printed to the logs.}
-                        <small>
-                            <a href="https://jenkins-ci.org/redirect/find-jenkins-logs" target="_blank">
-                                ${%Not sure where to find the logs?}
-                            </a>
-                        </small>
+                        ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}
                     </p>
-                    <p>${%Please copy the token and paste it below.}</p>
+                    <p>${%Please copy the password and paste it below.}</p>
                     <j:if test="${error}">
                         <div class="alert alert-danger">
                           <strong>${%ERROR:} </strong>
-                          ${%There is a problem with the security token, please check the logs for the correct token}
+                          ${%The password entered is incorrect, please check the file for the correct password}
                         </div>
                     </j:if>
                     <div class="form-group ${error ? 'has-error' : ''}">
-                    <label class="control-label" for="security-token">${%Security token}</label>
+                    <label class="control-label" for="security-token">${%Administrator password}</label>
                     <input name="j_username" value="${j.setupWizard.initialSetupAdminUserName}" type="hidden"/>
-                    <input id="security-token" class="form-control" name="j_password"/>
+                    <input id="security-token" class="form-control" type="password" name="j_password"/>
                     <link rel="stylesheet" href="${j.installWizardPath}.css" type="text/css" />
                     </div>
                     

@@ -1,28 +1,32 @@
 var jsTest = require("jenkins-js-test");
 
+require('./mocks');
+
 describe("tabbar-spec tests", function () {
 
     it("- test section count", function (done) {
-	//FIXME: this test is problematic because plugins can change the sections.
-	// added fix now just compares the number of dom elements to the results returned by sectionCount
-	// this test no longer tests section specifics.
         jsTest.onPage(function() {
-            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
-            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            var firstTableMetadata = tabbars.tabs[0];
 
             var jQD = require('jquery-detached');
             var $ = jQD.getJQuery();
 
-            expect(firstTableMetadata.sectionCount()).toBe($('.tabBar .tab').size());
+            expect($('.section-header-row', firstTableMetadata.configTable).size()).toBe(4);
+            expect(firstTableMetadata.sectionCount()).toBe(4);
+            expect($('.tabBar .tab').size()).toBe(4);
+
+            expect(firstTableMetadata.sectionIds().toString())
+                .toBe('config_general,config__advanced_project_options,config__build_triggers,config__build');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test section activation", function (done) {
         jsTest.onPage(function() {
-            var configTabBar = jsTest.requireSrcModule('widgets/config/tabbar');
-            var firstTableMetadata = configTabBar.addTabsOnFirst();
+            var tabbars = jsTest.requireSrcModule('config-tabbar.js');
+            var firstTableMetadata = tabbars.tabs[0];
 
             // The first section ("General") should be active by default
             expect(firstTableMetadata.activeSection().id).toBe('config_general');
@@ -30,8 +34,7 @@ describe("tabbar-spec tests", function () {
 
             firstTableMetadata.onShowSection(function() {
                 expect(this.id).toBe('config__build');
-                //TODO: FIXME: this should test that the window scroll position changes. Not sure how to do that.
-                //this might help: http://renaysha.me/2013/10/testing-scrolling-events-with-qunit-js/
+
                 expect(firstTableMetadata.activeSectionCount()).toBe(1);
                 var activeSection = firstTableMetadata.activeSection();
                 expect(activeSection.id).toBe('config__build');
@@ -46,7 +49,7 @@ describe("tabbar-spec tests", function () {
             firstTableMetadata.activateSection('config__build');
             // above 'firstTableMetadata.onShowSection' handler should get called now
 
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test row-group modeling", function (done) {
@@ -68,7 +71,7 @@ describe("tabbar-spec tests", function () {
             expect(generalSection.getRowGroupLabels().toString()).toBe('Discard Old Builds');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via handler triggering", function (done) {
@@ -87,13 +90,13 @@ describe("tabbar-spec tests", function () {
 
             var finder = configTabBar.findInput;
             expect(finder.size()).toBe(1);
+
             // Find sections that have the text "trigger" in them...
             keydowns('trigger', finder);
 
-            // Need to wait for the change to happen ... there's nearly a full second delay.
+            // Need to wait for the change to happen ... there's a 300ms delay.
             // We could just call configTabBar.showSections(), but ...
             setTimeout(function() {
-
                 expect($('.tab.hidden', tabBar).size()).toBe(3);
                 expect(textCleanup($('.tab.hidden', tabBar).text())).toBe('General|#Advanced Project Options|#Build');
 
@@ -103,8 +106,8 @@ describe("tabbar-spec tests", function () {
                 expect($('.highlight-split .highlight').text()).toBe('Trigger');
 
                 done();
-            }, 850);
-        }, 'widgets/config/freestyle-config.html');
+            }, 600);
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via showSections()", function (done) {
@@ -125,7 +128,7 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('#Advanced Project Options');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test finder - via showSections() - in inner row-group", function (done) {
@@ -146,7 +149,7 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     it("- test adopt sections ", function (done) {
@@ -179,7 +182,38 @@ describe("tabbar-spec tests", function () {
             expect(textCleanup(activeSection.title)).toBe('General');
 
             done();
-        }, 'widgets/config/freestyle-config.html');
+        }, 'widgets/config/freestyle-config-tabbed.html');
+    });
+
+    it("- test getSibling ", function (done) {
+        jsTest.onPage(function() {
+            var configTabBarWidget = jsTest.requireSrcModule('widgets/config/tabbar');
+            var configTabBar = configTabBarWidget.addTabsOnFirst();
+
+            // console.log('**** ' + configTabBar.sectionIds());
+            // config_general,config__advanced_project_options,config__build_triggers,config__build
+
+            var config_general = configTabBar.getSection('config_general');
+            var config__advanced_project_options = configTabBar.getSection('config__advanced_project_options');
+            var config__build_triggers = configTabBar.getSection('config__build_triggers');
+            var config__build = configTabBar.getSection('config__build');
+
+            expect(config_general.getSibling(-1)).toBeUndefined();
+            expect(config_general.getSibling(0)).toBe(config_general);
+            expect(config_general.getSibling(+1)).toBe(config__advanced_project_options);
+            expect(config_general.getSibling(+2)).toBe(config__build_triggers);
+            expect(config_general.getSibling(+3)).toBe(config__build);
+            expect(config_general.getSibling(+4)).toBeUndefined();
+
+            expect(config__advanced_project_options.getSibling(-2)).toBeUndefined();
+            expect(config__advanced_project_options.getSibling(-1)).toBe(config_general);
+            expect(config__advanced_project_options.getSibling(0)).toBe(config__advanced_project_options);
+            expect(config__advanced_project_options.getSibling(+1)).toBe(config__build_triggers);
+            expect(config__advanced_project_options.getSibling(+2)).toBe(config__build);
+            expect(config__advanced_project_options.getSibling(+3)).toBeUndefined();
+
+            done();
+        }, 'widgets/config/freestyle-config-tabbed.html');
     });
 
     function keydowns(text, onInput) {
@@ -191,7 +225,7 @@ describe("tabbar-spec tests", function () {
         onInput.val(text);
 
         // Now fire a keydown event to trigger the handler
-        var e = $.Event("keyup");
+        var e = $.Event("keydown");
         e.which = 116;
         onInput.trigger(e);
     }
@@ -200,5 +234,3 @@ describe("tabbar-spec tests", function () {
         return text.trim().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, "|");
     }
 });
-
-// TODO: lots more tests !!!

@@ -55,20 +55,37 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="bug">
+    Improve logging and error message when JNLP is already in use.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33453">issue 33453</a>)
+  <li class="rfe">
+    Improved the Build Other Projects help message.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32134">issue 32134</a>)
+  <li class="bug">
+    FutureImpl.cancel() doesn't cancel the linked job.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33038">issue 33038</a>)
+  <li class="bug">
+    Reject marformed range syntax.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33037">issue 33037</a>)
 </ul>
 </div><!--=TRUNK-END=-->
-<h3><a name=v2.0-alpha-3>What's new in 2.0-alpha-3</a> (2016/03/10)</h3>
+<h3><a name=v1.653>What's new in 1.653</a> (2016/03/13)</h3>
+<ul class=image>
+  <li class="bug">
+    More compact representation of redundant build causes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
+</ul>
+<h3><a name=v1.652>What's new in 1.652</a> (2016/03/06)</h3>
 <ul class=image>
   <li class="bug">
     Under some conditions Jenkins startup could fail because of incorrectly linked extensions; now recovering more gracefully.
-    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
 </ul>
 <h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
 <ul class=image>
   <li class="rfe">
     Move periodic task log files from <code>JENKINS_HOME/*.log</code> to <code>JENKINS_HOME/logs/tasks/*.log</code> and rotate them periodically rather than overwrite every execution.
-    (<a href-"https://issues.jenkins-ci.org/browse/JENKINS-33068">issue 33068</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33068">issue 33068</a>)
   <li class="bug">
     Fix documentation of proxy configuration.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2060">pull 2060</a>)

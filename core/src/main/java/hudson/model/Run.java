@@ -2276,9 +2276,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             throw new IllegalArgumentException(x);
         }
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return null;
-        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;

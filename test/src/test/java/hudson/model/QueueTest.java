@@ -305,6 +305,7 @@ public class QueueTest {
         }
     }
 
+    @Issue("JENKINS-33467")
     @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
@@ -348,14 +349,13 @@ public class QueueTest {
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
         assertEquals("Build causes should have all items, even duplicates",
-                "Started by user SYSTEM\nStarted by an SCM change\n"
-                + "Started by user SYSTEM\nStarted by timer\n"
+                "Started by user SYSTEM\nStarted by user SYSTEM\n"
+                + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
+                + "Started by timer\nStarted by timer\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
-                + "Started by an SCM change\n"
-                + "Started by remote host 1.2.3.4 with note: test\n"
-                + "Started by remote host 1.2.3.4 with note: foo\n"
-                + "Started by an SCM change\nStarted by timer\n",
+                + "Started by remote host 1.2.3.4 with note: foo\n",
                 causes.toString());
 
         // View for build should group duplicates
@@ -369,6 +369,7 @@ public class QueueTest {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")

@@ -232,6 +232,15 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// plugin data for the progress panel
 	var installingPlugins = [];
+	var getInstallingPlugin = function(plugName) {
+		for(var i = 0; i < installingPlugins.length; i++) {
+			var p = installingPlugins[i];
+			if(p.name === plugName) {
+				return p;
+			}
+		}
+		return null;
+	};
 
 	// recursively get all the dependencies for a particular plugin, this is used to show 'installing' status
 	// when only dependencies are being installed
@@ -266,28 +275,26 @@ var createPluginSetupWizard = function(appendTarget) {
 	// Initializes the set of installing plugins with pending statuses
 	var initInstallingPluginList = function() {
 		installingPlugins = [];
-		installingPlugins.names = [];
 		for (var i = 0; i < selectedPluginNames.length; i++) {
 			var pluginName = selectedPluginNames[i];
-			var p = availablePlugins[ pluginName];
+			var p = availablePlugins[pluginName];
 			if (p) {
 				var plug = $.extend({
 					installStatus : 'pending'
 				}, p);
 				installingPlugins.push(plug);
-				installingPlugins[plug.name] = plug;
-				installingPlugins.names.push(pluginName);
 			}
 		}
 	};
 
 	// call this to go install the selected set of plugins
 	var installPlugins = function(plugins) {
+		// Switch to the right view but function() to force update when progressPanel re-rendered
+		setPanel(function() { return progressPanel(arguments); }, { installingPlugins : [] });
+
 		pluginManager.installPlugins(plugins, handleGenericError(function() {
 			showInstallProgress();
 		}));
-
-		setPanel(progressPanel, { installingPlugins : installingPlugins });
 	};
 	
 	// toggles visibility of dependency listing for a plugin
@@ -408,7 +415,7 @@ var createPluginSetupWizard = function(appendTarget) {
 					}
 				}
 
-				$c = $('.install-console');
+				$c = $('.install-console-scroll');
 				if($c.is(':visible')) {
 					$c.scrollTop($c[0].scrollHeight);
 				}
@@ -599,7 +606,13 @@ var createPluginSetupWizard = function(appendTarget) {
 				$('.plugin-list .selected').addClass('match');
 			}
 			else {
-				var matches = findElementsWithText($pl[0], text.toLowerCase(), function(d) { return d.toLowerCase(); });
+				var matches = [];
+				$containers.find('.title,.description').each(function() {
+					var localMatches = findElementsWithText(this, text.toLowerCase(), function(d) { return d.toLowerCase(); });
+					if(localMatches.length > 0) {
+						matches = matches.concat(localMatches);
+					}
+				});
 				$(matches).parents('.plugin').addClass('match');
 				if(lastSearch !== text && scroll) {
 					scrollPlugin($pl, matches, text);
@@ -853,11 +866,10 @@ var createPluginSetupWizard = function(appendTarget) {
 							initInstallingPluginList();
 
 							for(var plugName in incompleteStatus) {
-								var j = installingPlugins[plugName];
+								var j = getInstallingPlugin(plugName);
 								
 								if (!j) {
 									console.warn('Plugin "' + plugName + '" not found in the list of installing plugins.');
-									console.warn('\tInstalling plugins: ' + installingPlugins.names);									
 									continue;
 								}
 
