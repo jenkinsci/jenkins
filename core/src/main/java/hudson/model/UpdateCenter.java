@@ -77,6 +77,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpRetryException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -1132,7 +1134,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                Util.copyStreamAndClose(ProxyConfiguration.open(url).getInputStream(),new NullOutputStream());
+                URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
+
+                if(connection instanceof HttpURLConnection) {
+                    int responseCode = ((HttpURLConnection)connection).getResponseCode();
+                    if(HttpURLConnection.HTTP_OK != responseCode) {
+                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
+                    }
+                } else {
+                    Util.copyStreamAndClose(connection.getInputStream(),new NullOutputStream());
+                }
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
@@ -1315,22 +1326,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             }
             LOGGER.fine("Doing a connectivity check");
+            Future<?> internetCheck = null;
             try {
-                String connectionCheckUrl = site.getConnectionCheckUrl();
+                final String connectionCheckUrl = site.getConnectionCheckUrl();
                 if (connectionCheckUrl!=null) {
                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.CHECKING);
                     statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
-                    try {
-                        config.checkConnection(this, connectionCheckUrl);
-                    } catch (Exception e) {
-                        if(e.getMessage().contains("Connection timed out")) {
-                            // Google can't be down, so this is probably a proxy issue
-                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                            statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
-                            return;
+                    // Run the internet check in parallel
+                    internetCheck = updateService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                config.checkConnection(ConnectionCheckJob.this, connectionCheckUrl);
+                            } catch (Exception e) {
+                                if(e.getMessage().contains("Connection timed out")) {
+                                    // Google can't be down, so this is probably a proxy issue
+                                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                                    return;
+                                }
+                            }
+                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
-                    }
-                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
+                    });
                 }
 
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
@@ -1349,6 +1367,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Functions.printThrowable(e));
                 error = e;
+            }
+            
+            if(internetCheck != null) {
+                try {
+                    // Wait for internet check to complete
+                    internetCheck.get();
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error completing internet connectivity check: " + e.getMessage(), e);
+                }
             }
         }
 
