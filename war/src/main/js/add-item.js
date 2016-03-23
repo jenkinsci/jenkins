@@ -35,6 +35,7 @@ $.when(getItems()).done(function(data){
     var $widgetBox = $('<div class="jenkins-config-widgets" />').appendTo($newView);
     var $categories = $('<div class="categories" />').appendTo($newView);
     var $subBtn = $('#bottom-sticker .yui-submit-button');
+    var $nameInput;
     var sectionsToShow = [];
 
     $widgetBox.prepend($navBox);
@@ -228,7 +229,7 @@ $.when(getItems()).done(function(data){
     function drawName() {
       var $name = $('<div class="j-add-item-name" />');
 
-      var $input = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
+      $nameInput = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
         .keyup(function(){
           $form.find('input[name="name"]').val($(this).val());
           checkFormReady();
@@ -236,7 +237,9 @@ $.when(getItems()).done(function(data){
         .appendTo($name);
 
       $widgetBox.prepend($name);
-      setTimeout(function(){$input.focus();},100);
+      setTimeout(function(){
+        $nameInput.focus();
+      },100);
     }
 
     function drawTabs(data){
@@ -346,6 +349,9 @@ $.when(getItems()).done(function(data){
         $this.addClass('active');
         $this.find('input[type="radio"]').prop('checked', true);
         checkFormReady();
+        if ($nameInput.val() === '') {
+          $nameInput.focus();
+        }
       }
 
       $item.click(setSelectState);
