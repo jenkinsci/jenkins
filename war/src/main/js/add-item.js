@@ -265,6 +265,7 @@ $.when(getItems()).done(function(data){
         $navBox.append($nav);
       }else{
         $categories.find('.category-header').hide();
+        $categories.addClass('flat');
       }
       drawName();
       cleanLayout();
