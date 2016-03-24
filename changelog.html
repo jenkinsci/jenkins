@@ -55,31 +55,58 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v1.654>What's new in 1.654</a> (2016/03/21)</h3>
+<ul class=image>
   <li class="bug">
     Improve logging and error message when JNLP is already in use.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33453">issue 33453</a>)
+  <li class="bug">
+    <code>NullPointerException</code> from <code>BuildTrigger$DescriptorImpl.doCheck</code> when using <em>Build other projects</em> in <em>Promotion process</em> of a CloudBees template, and perhaps other circumstances.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32525">issue 32525</a>)
   <li class="rfe">
     Improved the Build Other Projects help message.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32134">issue 32134</a>)
   <li class="bug">
-    FutureImpl.cancel() doesn't cancel the linked job.
+    <code>FutureImpl.cancel()</code> doesn't cancel the linked job.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33038">issue 33038</a>)
   <li class="bug">
-    Reject marformed range syntax.
+    Reject malformed range syntax in fingerprints data.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33037">issue 33037</a>)
+  <li class="bug">
+    Do not fail update center check if there are no tool installers defined.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32831">issue 32831</a>)
+  <li class="rfe">
+    Log otherwise unhandled exceptions when threads die.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33395">issue 33395</a>)
+  <li class="bug">
+    Do not specifically require .NET framework 2.0 since 4.0 will do as well.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21484">issue 21484</a>)
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v1.653>What's new in 1.653</a> (2016/03/13)</h3>
 <ul class=image>
+  <li class="major rfe">
+    Support encrypted communication between master and JNLP slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26580">issue 26580</a>)
+  <li class="bug">
+    Fix argument masking for sensitive build variables on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28790">issue 28790</a>)
   <li class="bug">
     More compact representation of redundant build causes.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
+  <li class="rfe">
+    Developer API: <tt>Jenkins.getInstance()</tt> cannot be <tt>null</tt> anymore. Introduced <tt>Jenkins.getInstanceOrNull()</tt>.
 </ul>
 <h3><a name=v1.652>What's new in 1.652</a> (2016/03/06)</h3>
 <ul class=image>
   <li class="bug">
     Under some conditions Jenkins startup could fail because of incorrectly linked extensions; now recovering more gracefully.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
+  <li class="rfe">
+    Developer API: Add <tt>WorkspaceList.tempDir(…)</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27152">issue 27152</a>)
 </ul>
 <h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
 <ul class=image>

@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.inject.Inject;
@@ -84,6 +85,11 @@ public class UpgradeWizard extends PageDecorator {
 
         // only admin users should see this
         if (!jenkins.hasPermission(Jenkins.ADMINISTER))
+            return false;
+
+        // only show when Jenkins is fully up & running
+        WebApp wa = WebApp.getCurrent();
+        if (wa==null || !(wa.getApp() instanceof Jenkins))
             return false;
 
         return System.currentTimeMillis() > getStateFile().lastModified();
