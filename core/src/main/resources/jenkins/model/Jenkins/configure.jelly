@@ -64,8 +64,8 @@ THE SOFTWARE.
       </j:forEach>
 
       <f:bottomButtonBar>
-        <f:submit value="${%Save All}"/>
-        <f:apply value="${%Apply All}"/>
+        <f:submit value="${%Save}" />
+        <f:apply />
       </f:bottomButtonBar>
     </f:form>
     <st:adjunct includes="lib.form.confirm" />
