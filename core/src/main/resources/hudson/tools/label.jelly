@@ -25,7 +25,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
     <st:documentation>
         Puts the input field for allowing an user to limit this installer to a certain label.
-        Meant to be used from config.jelly of ToolInstaller subypes. 
+        Meant to be used from config.jelly of ToolInstaller subtypes. 
     </st:documentation>
     <f:entry title="${%Label}" field="label" help="/help/tools/help-label.html">
         <!-- TODO could use Hudson.getLabels and make a combo box -->
