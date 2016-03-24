@@ -10,6 +10,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
@@ -30,9 +31,16 @@ public class UpgradeWizardTest {
 
     @Test
     public void snooze() throws Exception {
-        assertTrue(uw.isDue());
-        uw.doSnooze();
-        assertFalse(uw.isDue());
+        j.executeOnServer(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                assertTrue(uw.isDue());
+                uw.doSnooze();
+                assertFalse(uw.isDue());
+
+                return null;
+            }
+        });
     }
 
     /**
@@ -40,12 +48,19 @@ public class UpgradeWizardTest {
      */
     @Test
     public void upgrade() throws Exception {
-        assertTrue(j.jenkins.getUpdateCenter().getJobs().size() == 0);
-        assertTrue(newInstance().isDue());
-        assertNotSame(UpgradeWizard.NOOP, uw.doUpgrade());
+        j.executeOnServer(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                assertTrue(j.jenkins.getUpdateCenter().getJobs().size() == 0);
+                assertTrue(newInstance().isDue());
+                assertNotSame(UpgradeWizard.NOOP, uw.doUpgrade());
 
-        // can't really test this because UC metadata is empty
-        // assertTrue(j.jenkins.getUpdateCenter().getJobs().size() > 0);
+                // can't really test this because UC metadata is empty
+                // assertTrue(j.jenkins.getUpdateCenter().getJobs().size() > 0);
+
+                return null;
+            }
+        });
     }
 
     /**
@@ -70,9 +85,16 @@ public class UpgradeWizardTest {
 
     @Test
     public void freshInstallation() throws Exception {
-        assertTrue(uw.isDue());
-        uw.setCurrentLevel(new VersionNumber("2.0"));
-        assertFalse(uw.isDue());
+        j.executeOnServer(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                assertTrue(uw.isDue());
+                uw.setCurrentLevel(new VersionNumber("2.0"));
+                assertFalse(uw.isDue());
+
+                return null;
+            }
+        });
     }
 
     /**
