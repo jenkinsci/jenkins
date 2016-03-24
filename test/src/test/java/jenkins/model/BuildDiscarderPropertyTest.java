@@ -26,12 +26,18 @@ package jenkins.model;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.tasks.LogRotator;
+
 import java.io.StringReader;
+
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -48,7 +54,7 @@ public class BuildDiscarderPropertyTest {
     public void buildDiscarderField() throws Exception {
         FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
         verifyBuildDiscarder(p);
-        r.configRoundtrip(p);
+        r.configRoundtrip((Item)p);
         verifyBuildDiscarder(p);
         String xml = p.getConfigFile().asString();
         assertFalse(xml, xml.contains("<logRotator class="));

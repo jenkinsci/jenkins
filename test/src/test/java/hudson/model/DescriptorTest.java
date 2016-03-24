@@ -68,14 +68,14 @@ public class DescriptorTest {
     @Test public void overriddenId() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new BuilderImpl("builder-a"));
-        rule.configRoundtrip(p);
+        rule.configRoundtrip((Item)p);
         List<Builder> builders = p.getBuildersList();
         assertEquals(1, builders.size());
         assertEquals(BuilderImpl.class, builders.get(0).getClass());
         assertEquals("builder-a", ((BuilderImpl) builders.get(0)).id);
         rule.assertLogContains("running builder-a", rule.buildAndAssertSuccess(p));
         p.getBuildersList().replace(new BuilderImpl("builder-b"));
-        rule.configRoundtrip(p);
+        rule.configRoundtrip((Item)p);
         builders = p.getBuildersList();
         assertEquals(1, builders.size());
         assertEquals(BuilderImpl.class, builders.get(0).getClass());
@@ -118,7 +118,7 @@ public class DescriptorTest {
     @Test public void nestedDescribableOverridingId() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B1(Arrays.asList(new D1(), new D2())));
-        rule.configRoundtrip(p);
+        rule.configRoundtrip((Item)p);
         rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
     }
     public static abstract class D extends AbstractDescribableImpl<D> {
@@ -153,7 +153,7 @@ public class DescriptorTest {
     @Test public void nestedDescribableSharingClass() throws Exception {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B2(Arrays.asList(new D3("d3a"), new D3("d3b"))));
-        rule.configRoundtrip(p);
+        rule.configRoundtrip((Item)p);
         rule.assertLogContains("[d3a, d3b]", rule.buildAndAssertSuccess(p));
     }
     public static class D3 implements Describable<D3> {

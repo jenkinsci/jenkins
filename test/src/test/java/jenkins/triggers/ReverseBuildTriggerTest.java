@@ -71,7 +71,7 @@ public class ReverseBuildTriggerTest {
         downstream.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
         downstream.getPublishersList().add(new BuildTrigger(Collections.singleton(wayDownstream), Result.SUCCESS));
         downstream.save();
-        r.configRoundtrip(downstream);
+        r.configRoundtrip((Item)downstream);
         ReverseBuildTrigger rbt = downstream.getTrigger(ReverseBuildTrigger.class);
         assertNotNull(rbt);
         assertEquals("upstream", rbt.getUpstreamProjects());
@@ -170,7 +170,7 @@ public class ReverseBuildTriggerTest {
         final ReverseBuildTrigger reverseBuildTrigger2 = new ReverseBuildTrigger("upstream", Result.SUCCESS);
         downstreamJob2.addTrigger(reverseBuildTrigger2);
         downstreamJob2.save();
-        r.configRoundtrip(downstreamJob2);
+        r.configRoundtrip((Item)downstreamJob2);
 
         r.jenkins.rebuildDependencyGraph();
         final FreeStyleBuild build = upstreamJob.scheduleBuild2(0).get();

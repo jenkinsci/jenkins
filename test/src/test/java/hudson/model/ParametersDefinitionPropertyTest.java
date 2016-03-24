@@ -29,9 +29,13 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.sf.json.JSONObject;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
@@ -60,7 +64,7 @@ public class ParametersDefinitionPropertyTest {
         FreeStyleProject p = r.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(kpd);
         p.addProperty(pdp);
-        r.configRoundtrip(p);
+        r.configRoundtrip((Item)p);
         pdp = p.getProperty(ParametersDefinitionProperty.class);
         kpd = (KrazyParameterDefinition) pdp.getParameterDefinition("kpd");
         assertEquals("desc", kpd.getDescription());
