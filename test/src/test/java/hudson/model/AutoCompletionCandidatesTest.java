@@ -12,6 +12,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.Arrays;
 import java.util.TreeSet;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -58,6 +61,37 @@ public class AutoCompletionCandidatesTest {
         // relative path
         c = AutoCompletionCandidates.ofJobNames(Item.class, "../", x3, x3.getParent());
         assertContains(c, "../bar", "../foo");
+    }
+
+    /** Checks that {@link ViewDescriptor#doAutoCompleteCopyNewItemFrom} honors {@link DirectlyModifiableTopLevelItemGroup#canAdd}. */
+    @Test
+    public void canAdd() throws Exception {
+        MockFolder d1 = j.createFolder("d1");
+        d1.createProject(MockFolder.class, "sub");
+        d1.createProject(FreeStyleProject.class, "prj");
+        MockFolder d2 = j.jenkins.createProject(RestrictiveFolder.class, "d2");
+        assertContains(AutoCompletionCandidates.ofJobNames(TopLevelItem.class, "../d1/", d2), "../d1/prj");
+    }
+
+    public static class RestrictiveFolder extends MockFolder {
+
+        public RestrictiveFolder(ItemGroup parent, String name) {
+            super(parent, name);
+        }
+
+        @Override
+        public boolean canAdd(TopLevelItem item) {
+            return item instanceof FreeStyleProject;
+        }
+
+        @TestExtension("canAdd") public static class DescriptorImpl extends TopLevelItemDescriptor {
+
+            @Override public TopLevelItem newInstance(ItemGroup parent, String name) {
+                return new RestrictiveFolder(parent, name);
+            }
+
+        }
+
     }
 
     private void assertContains(AutoCompletionCandidates c, String... values) {

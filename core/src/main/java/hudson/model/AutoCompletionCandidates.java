@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 
 /**
  * Data representation of the auto-completion candidates.
@@ -106,7 +107,7 @@ public class AutoCompletionCandidates implements HttpResponse {
      *      The nearby contextual {@link ItemGroup} to resolve relative job names from.
      * @since 1.553
      */
-    public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, ItemGroup container) {
+    public static  <T extends Item> AutoCompletionCandidates ofJobNames(final Class<T> type, final String value, final ItemGroup container) {
         final AutoCompletionCandidates candidates = new AutoCompletionCandidates();
         class Visitor extends ItemVisitor {
             String prefix;
@@ -127,8 +128,10 @@ public class AutoCompletionCandidates implements HttpResponse {
                  && i.hasPermission(Item.READ)
                     // and read permission required
                 ) {
-                    if (type.isInstance(i) && n.startsWith(value))
+                    if (type.isInstance(i) && n.startsWith(value) &&
+                            (!(container instanceof DirectlyModifiableTopLevelItemGroup) || !(i instanceof TopLevelItem) || ((DirectlyModifiableTopLevelItemGroup) container).canAdd((TopLevelItem) i))) {
                         candidates.add(n);
+                    }
 
                     // recurse
                     String oldPrefix = prefix;
@@ -153,9 +156,10 @@ public class AutoCompletionCandidates implements HttpResponse {
             if (value.startsWith("/"))
                 new Visitor("/").onItemGroup(Jenkins.getInstance());
 
+            ItemGroup parentContainer = container;
             for ( String p="../"; value.startsWith(p); p+="../") {
-                container = ((Item)container).getParent();
-                new Visitor(p).onItemGroup(container);
+                parentContainer = ((Item) parentContainer).getParent();
+                new Visitor(p).onItemGroup(parentContainer);
             }
         }
 
