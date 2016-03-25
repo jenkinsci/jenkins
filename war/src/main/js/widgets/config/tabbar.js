@@ -120,7 +120,23 @@ exports.addTabs = function(configTable, options) {
         configTableMetadata.trackSectionVisibility();
     }
 
+    if (configTable.hasClass('nowrap')) {
+        exports.nowrap(configTableMetadata);
+    }
+
     return configTableMetadata;
+};
+
+/**
+ * Apply non-wrapping of the tabs in the tabBar.
+ * @param configTableMetadata The ConfigTableMetaData instance containing the tabBar containing the tabs.
+ */
+exports.nowrap = function(configTableMetadata) {
+    var configWidgets = configTableMetadata.configWidgets;
+
+    if (!configWidgets.hasClass('nowrap')) {
+        configWidgets.addClass('nowrap');
+    }
 };
 
 exports.addTabsActivator = function(configTable) {

@@ -33,7 +33,7 @@ THE SOFTWARE.
       <l:css src="jsbundles/config-scrollspy.css" />
 
       <div class="behavior-loading">${%LOADING}</div>
-      <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
+      <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy nowrap">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
