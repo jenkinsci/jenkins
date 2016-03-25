@@ -46,8 +46,8 @@
     display:none;
   }
 
-  .form-config.tabBarFrame {
-    position: relative;
+  .tabBarFrame {
+    background-color: inherit;
     border-bottom: solid 1px @solid-border;
 
     .config-section-activators {
@@ -92,6 +92,26 @@
   }
 
 }
+
+.jenkins-config-widgets.nowrap {
+  position: relative;
+
+  .tabBarFrame {
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    .tabBar {
+      overflow-x: hidden !important;
+      white-space: nowrap !important;
+      .tab {
+        display: inline-block !important;
+        float: none !important;
+      }
+    }
+  }
+}
+
 #jenkins{
   .jenkins-config {
     border:1px solid @solid-border;
