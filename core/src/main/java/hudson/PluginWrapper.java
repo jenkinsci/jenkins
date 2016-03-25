@@ -89,6 +89,12 @@ import javax.annotation.Nonnull;
 @ExportedBean
 public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
+     * A plugin won't be loaded unless his declared dependencies are present and match the required minimal version.
+     * This can be set to false to disable the version check (legacy behaviour)
+     */
+    private static final boolean ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK = Boolean.parseBoolean(System.getProperty(PluginWrapper.class.getName()+"." + "dependenciesVersionCheck.enabled", "true"));
+
+    /**
      * {@link PluginManager} to which this belongs to.
      */
     public final PluginManager parent;
@@ -229,7 +235,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         @Override
         public String toString() {
-            return shortName + " (" + version + ")";
+            return shortName + " (" + version + ") " + (optional ? "optional" : "");
         }        
     }
 
@@ -395,6 +401,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns the required Jenkins core version of this plugin.
+     * @return the required Jenkins core version of this plugin.
+     * @since XXX
+     */
+    @Exported
+    public @CheckForNull String getRequiredCoreVersion() {
+        String v = manifest.getMainAttributes().getValue("Jenkins-Version");
+        if (v!= null) return v;
+
+        v = manifest.getMainAttributes().getValue("Hudson-Version");
+        if (v!= null) return v;
+        return null;
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -524,19 +545,71 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        List<Dependency> missingDependencies = new ArrayList<>();
+        if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK) {
+            String requiredCoreVersion = getRequiredCoreVersion();
+            if (requiredCoreVersion == null) {
+                LOGGER.warning(shortName + " doesn't declare required core version.");
+            } else {
+                if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                    throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+                }
+            }
+        }
+        List<String> missingDependencies = new ArrayList<String>();
+        List<String> obsoleteDependencies = new ArrayList<String>();
+        List<String> disabledDependencies = new ArrayList<String>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
-            if (parent.getPlugin(d.shortName) == null)
-                missingDependencies.add(d);
-        }
-        if (!missingDependencies.isEmpty())
-            throw new MissingDependencyException(this.shortName, missingDependencies);
+            PluginWrapper dependency = parent.getPlugin(d.shortName);
+            if (dependency == null) {
+                missingDependencies.add(d.toString());
+            } else {
+                if (dependency.isActive()) {
+                    if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
+                        obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
+                    }
+                } else {
+                    disabledDependencies.add(d.toString());
+                }
 
+            }
+        }
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
-            if (parent.getPlugin(d.shortName) != null)
-                dependencies.add(d);
+            PluginWrapper dependency = parent.getPlugin(d.shortName);
+            if (dependency != null && dependency.isActive()) {
+                if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
+                    obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
+                } else {
+                    dependencies.add(d);
+                }
+            }
+        }
+        StringBuilder messageBuilder = new StringBuilder();
+        if (!missingDependencies.isEmpty()) {
+            boolean plural = missingDependencies.size() > 1;
+            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
+                    .append(Util.join(missingDependencies, ", "))
+                    .append(" ").append(plural ? "don't" : "doesn't")
+                    .append(" exist. ");
+        }
+        if (!disabledDependencies.isEmpty()) {
+            boolean plural = disabledDependencies.size() > 1;
+            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
+                    .append(Util.join(missingDependencies, ", "))
+                    .append(" ").append(plural ? "are" : "is")
+                    .append(" disabled. ");
+        }
+        if (!obsoleteDependencies.isEmpty()) {
+            boolean plural = obsoleteDependencies.size() > 1;
+            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
+                    .append(Util.join(obsoleteDependencies, ", "))
+                    .append(" ").append(plural ? "are" : "is")
+                    .append(" older than required.");
+        }
+        String message = messageBuilder.toString();
+        if (!message.isEmpty()) {
+            throw new IOException(message);
         }
     }
 
