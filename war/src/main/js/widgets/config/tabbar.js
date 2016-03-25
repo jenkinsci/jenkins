@@ -98,18 +98,18 @@ exports.addTabs = function(configTable, options) {
         section.setActivator(tab);
     }
 
-    var tabs = $('<div class="form-config tabBarFrame"></div>');
+    var tabBarFrame = $('<div class="form-config tabBarFrame"></div>');
     var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">Remove tabs</div>');
 
-    configTableMetadata.configWidgets.append(tabs);
+    configTableMetadata.configWidgets.append(tabBarFrame);
     configTableMetadata.configWidgets.prepend(noTabs);
-    tabs.append(tabBar);
+    tabBarFrame.append(tabBar);
 
-    tabs.mouseenter(function() {
-        tabs.addClass('mouse-over');
+    tabBarFrame.mouseenter(function() {
+        tabBarFrame.addClass('mouse-over');
     });
-    tabs.mouseleave(function() {
-        tabs.removeClass('mouse-over');
+    tabBarFrame.mouseleave(function() {
+        tabBarFrame.removeClass('mouse-over');
     });
     configTableMetadata.deactivator = noTabs;
 
@@ -121,7 +121,7 @@ exports.addTabs = function(configTable, options) {
     }
 
     if (configTable.hasClass('nowrap')) {
-        exports.nowrap(configTableMetadata);
+        exports.nowrap(configTableMetadata, tabBarFrame);
     }
 
     return configTableMetadata;
@@ -130,12 +130,22 @@ exports.addTabs = function(configTable, options) {
 /**
  * Apply non-wrapping of the tabs in the tabBar.
  * @param configTableMetadata The ConfigTableMetaData instance containing the tabBar containing the tabs.
+ * @param tabBarFrame The tabBar frame.
  */
-exports.nowrap = function(configTableMetadata) {
+exports.nowrap = function(configTableMetadata, tabBarFrame) {
     var configWidgets = configTableMetadata.configWidgets;
 
     if (!configWidgets.hasClass('nowrap')) {
+        var $ = jQD.getJQuery();
+
         configWidgets.addClass('nowrap');
+
+        var taboverflow =
+            $('<div class="taboverflow">' +
+                '<span class="icon">&#x25BE;&#9776;</span>' +
+                '<span class="count">9+</span>' +
+              '</div>');
+        tabBarFrame.append(taboverflow);
     }
 };
 
