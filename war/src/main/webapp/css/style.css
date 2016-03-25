@@ -1975,3 +1975,23 @@ body.main-panel-only #main-panel {
         padding: 2em 10%;
     }
 }
+
+IMG.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+IMG.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+IMG.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+IMG.icon-xl {
+    width: 48px;
+    height: 48px;
+}
