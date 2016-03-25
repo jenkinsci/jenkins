@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -23,6 +24,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
 import hudson.FilePath;
+import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
@@ -54,6 +56,7 @@ import java.util.logging.Logger;
  * 
  * @since 2.0
  */
+@Restricted(NoExternalUse.class) // use by Jelly
 public class SetupWizard {
     /**
      * The security token parameter name
@@ -135,7 +138,6 @@ public class SetupWizard {
     /**
      * Gets the file used to store the initial admin password
      */
-    @Restricted(NoExternalUse.class) // use by Jelly
     public FilePath getInitialAdminPasswordFile() {
         return jenkins.getRootPath().child("secrets/initialAdminPassword");
     }
@@ -161,6 +163,11 @@ public class SetupWizard {
      * This filter will validate that the security token is provided
      */
     private final Filter FORCE_SETUP_WIZARD_FILTER = new Filter() {
+        private Pattern RESOURCE_PATTERN = Pattern.compile(".*[.](css|ttf|gif|woff|eot|png|js)");
+        private Pattern ALLOWED_PATHS = Pattern.compile(
+            "\\Q/login\\E"
+            + "|\\Q/loginError\\E"
+            + "|\\Q/securityRealm/" + new HudsonPrivateSecurityRealm(true, false, null).getAuthenticationGatewayUrl() + "\\E");
         @Override
         public void init(FilterConfig cfg) throws ServletException {
         }
@@ -172,15 +179,24 @@ public class SetupWizard {
             // we'll set a cookie so the subsequent operations succeed
             if (request instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest)request;
-                //if (!Pattern.compile(".*[.](css|ttf|gif|woff|eot|png|js)").matcher(req.getRequestURI()).matches()) {
-                    // Allow js & css requests through
-                if((req.getContextPath() + "/").equals(req.getRequestURI())) {
+                // Allow js & css requests through
+                if (!RESOURCE_PATTERN.matcher(req.getRequestURI()).matches()) { // allow resources
+                    boolean isAdmin = jenkins.getACL().hasPermission(Jenkins.ADMINISTER);
+                    final String adjustedPath = req.getRequestURI().substring(req.getContextPath().length());
+                    final String destination;
+                    // if the user hasn't authenticated, don't allow anything other than the login submit and error page
+                    if (!isAdmin && !ALLOWED_PATHS.matcher(adjustedPath).matches()) {
+                        destination = req.getContextPath() + "/login";
+                    } else if (isAdmin && "/".equals(adjustedPath)) {
+                        destination = req.getContextPath() + "/setupWizard/";
+                    } else {
+                        destination = req.getRequestURI();
+                    }
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
-                            return getContextPath() + "/setupWizard/";
+                            return destination;
                         }
                     }, response);
-                    return;
                 }
                 // fall through to handling the request normally
             }
