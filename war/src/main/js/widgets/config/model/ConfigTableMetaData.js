@@ -329,7 +329,18 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     if (this.tabBarOverflow) {
         // We don't track tab visibility here if tabbar overflow handling
         // is enabled. The TabBarOverflow instance takes care of it.
-        this.tabBarOverflow.trackTabVisibility();
+        var thisCMD = this;
+        thisCMD.tabBarOverflow.trackTabVisibility(function (tab) {
+            // Look for the section that has this tab and check that the
+            // section is visible.
+            for (var i = 0; i < thisCMD.sections.length; i++) {
+                var section = thisCMD.sections[i];
+                if (section.activator === tab) {
+                    return section.isVisible();
+                }
+            }
+            return false;
+        });
         return;
     }
 

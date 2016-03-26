@@ -135,6 +135,10 @@ ConfigSection.prototype.markAsActive = function() {
     this.parentCMD.hideSection();
     this.activator.addClass('active');
     this.markRowsAsActive();
+
+    if (this.parentCMD.tabBarOverflow) {
+        this.parentCMD.tabBarOverflow.onTabActivate(this.activator);
+    }
 };
 
 ConfigSection.prototype.markRowsAsActive = function() {

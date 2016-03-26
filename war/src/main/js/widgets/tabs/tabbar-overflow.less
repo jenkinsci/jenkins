@@ -4,15 +4,20 @@
     position: absolute;
     left: 0;
     right: 0;
+    padding-top: 5px;
+    padding-right: 54px;
 
     .tabBar {
+      display: inline;
       overflow-x: hidden;
       white-space: nowrap;
-      margin-right: 54px;
 
       .tab {
-        display: inline-block;
+        display: none;
         float: none;
+      }
+      .tab.taboverflow-tab-visible {
+        display: inline-block;
       }
     }
 
