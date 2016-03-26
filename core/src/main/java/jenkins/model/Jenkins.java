@@ -970,6 +970,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                if (milestone==PLUGINS_PREPARED) {
+                    // set up Guice to enable injection as early as possible
+                    // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
+                    ExtensionList.lookup(ExtensionFinder.class).getComponents();
+                }
             }
         }.run(reactor);
     }
