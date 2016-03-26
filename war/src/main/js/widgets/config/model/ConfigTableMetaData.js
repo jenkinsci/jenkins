@@ -326,6 +326,12 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     if (isTestEnv()) {
         return;
     }
+    if (this.tabBarOverflow) {
+        // We don't track tab visibility here if tabbar overflow handling
+        // is enabled. The TabBarOverflow instance takes care of it.
+        this.tabBarOverflow.trackTabVisibility();
+        return;
+    }
 
     var thisConfig = this;
     

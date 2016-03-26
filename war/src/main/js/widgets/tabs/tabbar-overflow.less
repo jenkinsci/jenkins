@@ -39,9 +39,32 @@
       }
     }
 
-    .taboverflow-btn:hover {
+    .taboverflow-btn:hover, .drop-tab:hover {
       background:#bbb;
       color:@brightest;
+      cursor: pointer;
+    }
+
+    .taboverflow-popup {
+      padding: 5px 10px;
+      overflow-y: auto;
+      background-color: @brightest;
+      max-width: 200px;
+      max-height: 250px;
+      position: absolute;
+      top: 35px;
+      right: 5px;
+
+      border:1px solid @solid-border;
+      .border-radius(5px);
+
+      .drop-tab {
+        padding: 5px;
+        .border-radius(2px);
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     }
   }
 }

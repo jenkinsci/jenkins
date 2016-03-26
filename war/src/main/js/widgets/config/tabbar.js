@@ -138,7 +138,13 @@ exports.nowrap = function(configTableMetadata, tabBarFrame) {
     if (!configWidgets.hasClass('nowrap')) {
         configWidgets.addClass('nowrap');
         var TabBarOverflow = require('../tabs/TabBarOverflow');
-        new TabBarOverflow(tabBarFrame);
+        var tabs = [];
+
+        for (var i = 0; i < configTableMetadata.sections.length; i++) {
+            tabs.push(configTableMetadata.sections[i].activator);
+        }
+
+        configTableMetadata.tabBarOverflow = new TabBarOverflow(tabBarFrame, tabs);
     }
 };
 
