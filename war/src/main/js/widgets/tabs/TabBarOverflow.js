@@ -109,24 +109,24 @@ TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
     // the supplied tab). We stop showing tabs once we show a tab that overflows the tabBar.
 
     // Hide them all..
-    for (var i = 0; i < this.tabs.length; i++) {
-        $(this.tabs[i]).removeClass('taboverflow-tab-visible');
+    for (var i1 = 0; i1 < this.tabs.length; i1++) {
+        $(this.tabs[i1]).removeClass('taboverflow-tab-visible');
     }
 
     // Start showing tabs, starting from the tab that was just activated...
     var addTabs = false;
     var addedCount = 0;
     var activeTabIdx = 0;
-    for (var i = 0; i < this.tabs.length; i++) {
-        var tab = this.tabs[i];
-        if (tab === activatedTab) {
+    for (var i2 = 0; i2 < this.tabs.length; i2++) {
+        var tabForward = this.tabs[i2];
+        if (tabForward === activatedTab) {
             addTabs = true;
-            activeTabIdx = i;
+            activeTabIdx = i2;
         }
         if (addTabs) {
-            $(tab).addClass('taboverflow-tab-visible');
+            $(tabForward).addClass('taboverflow-tab-visible');
             if (this.isOverflown()) {
-                $(tab).removeClass('taboverflow-tab-visible');
+                $(tabForward).removeClass('taboverflow-tab-visible');
                 break;
             }
             addedCount++;
@@ -136,11 +136,11 @@ TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
     if (!this.isOverflown() && activeTabIdx > 0) {
         // There's room for more tabs. If there are tabs before the "active"
         // tab, then lets show some of those too.
-        for (var i = activeTabIdx - 1; i >= 0 ; i--) {
-            var tab = this.tabs[i];
-            $(tab).addClass('taboverflow-tab-visible');
+        for (var i3 = activeTabIdx - 1; i3 >= 0 ; i3--) {
+            var tabBack = this.tabs[i3];
+            $(tabBack).addClass('taboverflow-tab-visible');
             if (this.isOverflown()) {
-                $(tab).removeClass('taboverflow-tab-visible');
+                $(tabBack).removeClass('taboverflow-tab-visible');
                 break;
             }
             addedCount++;
