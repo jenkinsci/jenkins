@@ -1,3 +1,5 @@
+@import "../tabs/tabbar-overflow";
+
 /*
  * Tab bar specific rules.
  */
@@ -96,50 +98,7 @@
 
 .jenkins-config-widgets.nowrap {
   position: relative;
-
-  .tabBarFrame {
-    position: absolute;
-    left: 0;
-    right: 0;
-
-    .tabBar {
-      overflow-x: hidden;
-      white-space: nowrap;
-      margin-right: 54px;
-
-      .tab {
-        display: inline-block;
-        float: none;
-      }
-    }
-
-    .taboverflow {
-      cursor: pointer;
-      width: 44px;
-      position: absolute;
-      top: 7px;
-      right: 5px;
-      border:1px solid @solid-border;
-      .border-radius(5px);
-      padding: 3px 3px;
-      font-size: 0.9em;
-      text-align: center;
-
-      .icon {
-        float: left;
-        width: 18px;
-      }
-      .count {
-        float: right;
-        width: 18px;
-      }
-    }
-
-    .taboverflow:hover {
-      background:#bbb;
-      color:@brightest;
-    }
-  }
+  .tabBarOverflow();
 }
 
 #jenkins{
