@@ -443,6 +443,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     session.addAll(g.discoverTasks(session));
                 }
             });
+
+            // All plugins are loaded. Now we can figure out who depends on who.
+            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependant Plugins Graph", new Executable() {
+                @Override
+                public void run(Reactor reactor) throws Exception {
+                    resolveDependantPlugins();
+                }
+            });
         }});
     }
 
