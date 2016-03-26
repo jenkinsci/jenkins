@@ -136,16 +136,9 @@ exports.nowrap = function(configTableMetadata, tabBarFrame) {
     var configWidgets = configTableMetadata.configWidgets;
 
     if (!configWidgets.hasClass('nowrap')) {
-        var $ = jQD.getJQuery();
-
         configWidgets.addClass('nowrap');
-
-        var taboverflow =
-            $('<div class="taboverflow">' +
-                '<span class="icon">&#x25BE;&#9776;</span>' +
-                '<span class="count">9+</span>' +
-              '</div>');
-        tabBarFrame.append(taboverflow);
+        var TabBarOverflow = require('../tabs/TabBarOverflow');
+        new TabBarOverflow(tabBarFrame);
     }
 };
 
