@@ -326,9 +326,7 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     if (isTestEnv()) {
         return;
     }
-    if (this.tabBarOverflow) {
-        // We don't track tab visibility here if tabbar overflow handling
-        // is enabled. The TabBarOverflow instance takes care of it.
+    if (this.tabBarOverflow && !this.tabBarOverflow.tabVisibleChecker) {
         var thisCMD = this;
         thisCMD.tabBarOverflow.trackTabVisibility(function (tab) {
             // Look for the section that has this tab and check that the
@@ -341,7 +339,6 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
             }
             return false;
         });
-        return;
     }
 
     var thisConfig = this;
@@ -349,10 +346,14 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     try {
         for (var i = 0; i < this.sections.length; i++) {
             var section = this.sections[i];
-            if (section.isVisible()) {
-                section.activator.show();
-            } else {
-                section.activator.hide();
+            var isActivatorVisible = !section.activator.hasClass('hidden');
+            if (section.isVisible() !== isActivatorVisible) {
+                if (section.isVisible()) {
+                    section.activator.removeClass('hidden');
+                } else {
+                    section.activator.addClass('hidden');
+                }
+                this.tabBarOverflow.doRefresh();
             }
         }
     } finally {

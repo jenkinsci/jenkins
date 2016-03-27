@@ -115,9 +115,20 @@ ConfigSection.prototype.getRows = function() {
  * Set the element (jquery) that activates the section (on click).
  */
 ConfigSection.prototype.setActivator = function(activator) {
-    this.activator = activator;
-
     var section = this;
+
+    section.activator = activator;
+
+    // we do not want to use inline styles for this, so lets
+    // remove an inline 'display' styles.
+    var inlineDisplay = section.activator.css('display');
+    if (inlineDisplay) {
+        section.activator.css('display', null);
+        if (inlineDisplay === 'none') {
+            section.activator.addClass('hidden');
+        }
+    }
+
     section.activator.click(function() {
         section.parentCMD.showSection(section);
     });
