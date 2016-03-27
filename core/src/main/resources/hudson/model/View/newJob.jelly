@@ -29,38 +29,45 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout norefresh="true" cssclass="add-item main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout norefresh="true" cssclass="main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
 
     <l:main-panel>
       <div id="create-item-panel" style="display: none;">
-      <s:form method="post" action="createItem" name="createItem">
+        <s:form method="post" action="createItem" name="createItem" id="createItem" class="jenkins-config">
+          <div class="jenkins-config-widgets">
+            <div class="j-add-item-name">
+              <input name="name" id="name" placeholder="New item name..." type="text"></input>
+            </div>
+          </div>
+          <div class="categories">
+          </div>
 
-        <j:if test="${!empty(app.itemMap)}">
-          <s:block>
-            <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-            <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
-          </s:block>
-          <s:entry>
-            ${%Copy from}
-            <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
-          </s:entry>
-        </j:if>
+          <j:if test="${!empty(app.itemMap)}">
+            <s:block>
+              <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+              <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
+            </s:block>
+            <s:entry>
+              ${%Copy from}
+              <j:set var="descriptor" value="${it.descriptor}" />
+              <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
+            </s:entry>
+          </j:if>
 
-        <s:bottomButtonBar>
-          <!--
-            when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
-            So always force non-empty array
-           -->
-          <input type="radio" name="mode" value="dummy1" style="display:none" />
-          <input type="radio" name="mode" value="dummy2" style="display:none" />
-          <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-        </s:bottomButtonBar>  
-        
-      </s:form>
+          <s:bottomButtonBar>
+            <!--
+              when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
+              So always force non-empty array
+             -->
+            <input type="radio" name="mode" value="dummy1" style="display:none" />
+            <input type="radio" name="mode" value="dummy2" style="display:none" />
+            <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
+          </s:bottomButtonBar>
+
+        </s:form>
       </div>
 
     </l:main-panel>

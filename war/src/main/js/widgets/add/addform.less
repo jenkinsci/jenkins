@@ -1,57 +1,30 @@
-body.add-item {
-  #side-panel {
-    transition: all 0.5s ease;
-  }
+#create-item-panel {
 
-  #main-panel {
-    .jenkins-config.no-select .j-item-options li {
-      .icn {
-        border-color: #900;
-      }
-
-      .icn:after {
-        content: ' ';
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        box-shadow: #900 0 0 4px 2px;
-        border-radius: 50%;
-      }
+  .jenkins-config.no-select .j-item-options li {
+    .icn {
+      border-color: #900;
     }
 
-    .jenkins-config {
-      padding: 0px;
-      border-radius: 0;
-      background: #f9f9f9;
-      border: none;
-      border-bottom: 1px solid #cccccc;
-      .categories {
-        border-left: 1px solid #cccccc;
-        border-right: 1px solid #cccccc;
-      }
-      .flat {
-        .category {
-          border-bottom: none;
-          ul {
-            padding: 0 10px;
-          }
-        }
-        .category:first-child {
-          padding-top: 10px;
-        }
-        .category:last-child {
-          border-top: 1px solid #cccccc;
-          border-bottom: 1px solid #cccccc;
-          padding: 10px 0;
-          margin-top: 10px;
-        }
-      }
+    .icn:after {
+      content: ' ';
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      box-shadow: #900 0 0 4px 2px;
+      border-radius: 50%;
+    }
+  }
 
-      .category-header {
+  .categories {
+    border: 1px solid #cccccc;
+
+    .category {
+      .header {
         padding: 0 20px;
+
         h2 {
           margin: 0;
           padding: 15px 0 0;
@@ -61,29 +34,30 @@ body.add-item {
           margin-top: 5px;
         }
       }
+    }
+  }
 
-      table {
-        tr {
-          display: none;
-        }
 
-        tr:last-of-type {
-          display: table-row;
-          td {
-            border-left: 1px solid #cccccc;
-            border-right: 1px solid #cccccc;
-          }
+  table {
+    tr {
+      display: none;
+    }
 
-          #bottom-sticker {
-            margin: 30px 30px -16px -6px;
-          }
-        }
+    tr:last-of-type {
+      display: table-row;
+      td {
+        border-left: 1px solid #cccccc;
+        border-right: 1px solid #cccccc;
+      }
+
+      #bottom-sticker {
+        margin: 30px 30px -16px -6px;
       }
     }
   }
 }
 
-.j-item-options li , .j-item-options {
+.j-item-options li, .j-item-options {
   display: block;
   margin: 0;
   list-style: none;
@@ -146,11 +120,11 @@ body.add-item {
 
     .icn.df {
       box-shadow: inset #003399 0 0 1px, inset #ffffff 0 0 0 1px, 0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #336699, inset -5px -10px 15px 14px #6699cc;
-      .b{
+      .b {
         text-transform: lowercase;
       }
     }
-    .icn.df.c-D33833{
+    .icn.df.c-D33833 {
       border-color:#900;
       box-shadow: 
         inset #900 0 0 1px, 
@@ -159,7 +133,7 @@ body.add-item {
         inset -5px -5px 10px 2px #903,
         inset -5px -10px 15px 14px #D33833
     }
-    .icn.df.c-6D6B6D{
+    .icn.df.c-6D6B6D {
       border-color:#000;
       box-shadow: 
         inset #333 0 0 1px, 
@@ -168,7 +142,7 @@ body.add-item {
         inset -5px -5px 10px 2px #222,
         inset -5px -10px 15px 14px #555
     }
-    .icn.df.c-335061{
+    .icn.df.c-335061 {
       border-color:#356;
       box-shadow: 
         inset #024 0 0 1px, 
@@ -177,7 +151,7 @@ body.add-item {
         inset -5px -5px 10px 2px #012,
         inset -5px -10px 15px 14px #335061
     }
-    .icn.df.c-49728B{
+    .icn.df.c-49728B {
       border-color:#036;
       box-shadow: 
         inset #036 0 0 1px, 
@@ -239,21 +213,22 @@ body.add-item {
 }
 
 .jenkins-config-widgets {
-  .form-config.tabBarFrame {
+
+  /*.form-config.tabBarFrame {
     position: relative;
     border-bottom: solid 1px #cccccc;
-  }
+  }*/
 
   .j-add-item-name {
-    padding: 20px 20px 10px;
+    padding: 20px;
+
     input {
       font-size: 1.5em;
       background-color: #fff;
-      border-radius: 0;
-      padding: 5px;
-      border: none;
-      box-shadow: none;
-      border-bottom: 1px solid #ccc;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      width: 50%;
+      min-width: 300px;
     }
 
     input.no-val {
@@ -264,4 +239,3 @@ body.add-item {
     }
   }
 }
-
