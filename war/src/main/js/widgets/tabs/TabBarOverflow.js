@@ -111,6 +111,31 @@ TabBarOverflow.prototype.visibleTabCount = function() {
     return $('.taboverflow-tab-visible', this.tabBar).size();
 };
 
+TabBarOverflow.prototype.fillForward = function(fromTabIndex) {
+    var $ = jQD.getJQuery();
+    for (var i = fromTabIndex; i < this.tabs.length; i++) {
+        var tabForward = this.tabs[i];
+        $(tabForward).addClass('taboverflow-tab-visible');
+        if (this.isOverflown()) {
+            $(tabForward).removeClass('taboverflow-tab-visible');
+            return true;
+        }
+    }
+    return false;
+};
+
+TabBarOverflow.prototype.fillBackward = function(fromTabIndex) {
+    for (var i = fromTabIndex - 1; i >= 0 ; i--) {
+        var tabBack = this.tabs[i];
+        $(tabBack).addClass('taboverflow-tab-visible');
+        if (this.isOverflown()) {
+            $(tabBack).removeClass('taboverflow-tab-visible');
+            return true;
+        }
+    }
+    return false;
+};
+
 TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
     // We need to check if this table is visible to the user and if not,
     // we need to make it visible.
@@ -134,26 +159,12 @@ TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
 
     // Start showing tabs, starting from the tab that was just activated...
     var activeTabIdx = this.tabIndex(activatedTab);
-    for (var i1 = activeTabIdx; i1 < this.tabs.length; i1++) {
-        var tabForward = this.tabs[i1];
-        $(tabForward).addClass('taboverflow-tab-visible');
-        if (this.isOverflown()) {
-            $(tabForward).removeClass('taboverflow-tab-visible');
-            break;
-        }
-    }
+    var isFull = this.fillForward(activeTabIdx);
 
-    if (!this.isOverflown() && activeTabIdx > 0) {
-        // There's room for more tabs. If there are tabs before the "active"
-        // tab, then lets show some of those too.
-        for (var i2 = activeTabIdx - 1; i2 >= 0 ; i2--) {
-            var tabBack = this.tabs[i2];
-            $(tabBack).addClass('taboverflow-tab-visible');
-            if (this.isOverflown()) {
-                $(tabBack).removeClass('taboverflow-tab-visible');
-                break;
-            }
-        }
+    // If there's room for more tabs and there are tabs before the "active"
+    // tab, then lets show some of those too.
+    if (!isFull && activeTabIdx > 0) {
+        this.fillBackward(activeTabIdx);
     }
 
     if (this.visibleTabCount() < this.tabs.length) {
