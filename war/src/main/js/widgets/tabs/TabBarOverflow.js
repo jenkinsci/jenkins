@@ -25,6 +25,9 @@ function TabBarOverflow(tabBarFrame, tabs) {
     this.taboverflowBtn = taboverflowBtn;
     this.taboverflowCount = taboverflowCount;
     this.taboverflowPopup = taboverflowPopup;
+    this.activeTabIndex = undefined;
+    this.visibleStartIndex = undefined;
+    this.visibleEndIndex = undefined;
     this.setTabCount();
 
     // Show and hide the dropdown.
@@ -39,17 +42,35 @@ function TabBarOverflow(tabBarFrame, tabs) {
 
     var win = $(windowHandle.getWindow());
     win.resize(function() {
-        if (tabOverflow.activeTab) {
-            tabOverflow.onTabActivate(tabOverflow.activeTab, true);
-        }
+        tabOverflow.doRefresh();
     });
+
+    function trackOverflow() {
+        try {
+            if (tabOverflow.isOverflown()) {
+                tabOverflow.doRefresh();
+            }
+        } finally {
+            setTimeout(trackOverflow, 200);
+        }
+    }
+    trackOverflow();
 }
 
+TabBarOverflow.prototype.doRefresh = function() {
+    var activeTab = this.activeTab();
+    if (activeTab) {
+        this.onTabActivate(activeTab, true);
+    }
+    this.setTabCount();
+};
+
 TabBarOverflow.prototype.setTabCount = function() {
-    if (this.tabs.length > 9) {
+    var showableTabCount = this.showableTabCount();
+    if (showableTabCount > 9) {
         this.taboverflowCount.text('9+');
     } else {
-        this.taboverflowCount.text(this.tabs.length);
+        this.taboverflowCount.text(showableTabCount);
     }
 };
 
@@ -68,13 +89,15 @@ TabBarOverflow.prototype.setDropdownContent = function() {
 
     tabOverflow.taboverflowPopup.empty();
     function addDropTab(tab) {
-        var dropTab = $('<div class="drop-tab">');
-        dropTab.text(tab.text());
-        tabOverflow.taboverflowPopup.append(dropTab);
-        dropTab.click(function() {
-            tabOverflow.hideDropdown();
-            tab.click();
-        });
+        if (tabOverflow.isTabShowable(tab)) {
+            var dropTab = $('<div class="drop-tab">');
+            dropTab.text(tab.text());
+            tabOverflow.taboverflowPopup.append(dropTab);
+            dropTab.click(function() {
+                tabOverflow.hideDropdown();
+                tab.click();
+            });
+        }
     }
 
     for (var i = 0; i < this.tabs.length; i++) {
@@ -88,6 +111,18 @@ TabBarOverflow.prototype.trackTabVisibility = function(tabVisibleChecker) {
 
 TabBarOverflow.prototype.isOverflown = function() {
     return (this.tabBar.width() > this.tabBarFrame.width());
+};
+
+TabBarOverflow.prototype.isTabShowable = function(tab) {
+    return (this.tabVisibleChecker === undefined || this.tabVisibleChecker(tab));
+};
+
+TabBarOverflow.prototype.activeTab = function() {
+    if (this.activeTabIndex !== undefined) {
+        return this.tabs[this.activeTabIndex];
+    } else {
+        return undefined;
+    }
 };
 
 TabBarOverflow.prototype.tabIndex = function(tab) {
@@ -111,27 +146,49 @@ TabBarOverflow.prototype.visibleTabCount = function() {
     return $('.taboverflow-tab-visible', this.tabBar).size();
 };
 
+TabBarOverflow.prototype.showableTabCount = function() {
+    var count = 0;
+    for (var i = 0; i < this.tabs.length; i++) {
+        if (this.isTabShowable(this.tabs[i])) {
+            count++;
+        }
+    }
+    return count;
+};
+
 TabBarOverflow.prototype.fillForward = function(fromTabIndex) {
     var $ = jQD.getJQuery();
     for (var i = fromTabIndex; i < this.tabs.length; i++) {
-        var tabForward = this.tabs[i];
-        $(tabForward).addClass('taboverflow-tab-visible');
+        var tab = this.tabs[i];
+
+        if (!this.isTabShowable(tab)) {
+            continue;
+        }
+
+        $(tab).addClass('taboverflow-tab-visible');
         if (this.isOverflown()) {
-            $(tabForward).removeClass('taboverflow-tab-visible');
+            $(tab).removeClass('taboverflow-tab-visible');
             return true;
         }
+        this.visibleEndIndex = i;
     }
     return false;
 };
 
 TabBarOverflow.prototype.fillBackward = function(fromTabIndex) {
     for (var i = fromTabIndex - 1; i >= 0 ; i--) {
-        var tabBack = this.tabs[i];
-        $(tabBack).addClass('taboverflow-tab-visible');
+        var tab = this.tabs[i];
+
+        if (!this.isTabShowable(tab)) {
+            continue;
+        }
+
+        $(tab).addClass('taboverflow-tab-visible');
         if (this.isOverflown()) {
-            $(tabBack).removeClass('taboverflow-tab-visible');
+            $(tab).removeClass('taboverflow-tab-visible');
             return true;
         }
+        this.visibleStartIndex = i;
     }
     return false;
 };
@@ -158,20 +215,18 @@ TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
     this.hideAllTabs();
 
     // Start showing tabs, starting from the tab that was just activated...
-    var activeTabIdx = this.tabIndex(activatedTab);
-    var isFull = this.fillForward(activeTabIdx);
+    this.activeTabIndex = this.tabIndex(activatedTab);
+    var isFull = this.fillForward(this.activeTabIndex);
 
     // If there's room for more tabs and there are tabs before the "active"
     // tab, then lets show some of those too.
-    if (!isFull && activeTabIdx > 0) {
-        this.fillBackward(activeTabIdx);
+    if (!isFull && this.activeTabIndex > 0) {
+        this.fillBackward(this.activeTabIndex);
     }
 
-    if (this.visibleTabCount() < this.tabs.length) {
+    if (this.visibleTabCount() < this.showableTabCount()) {
         this.taboverflowBtn.show();
     } else {
         this.taboverflowBtn.hide();
     }
-
-    this.activeTab = activatedTab;
 };
