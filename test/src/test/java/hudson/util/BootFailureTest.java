@@ -154,6 +154,8 @@ public class BootFailureTest {
         @Override
         public void onLoaded() {
             wa.contextDestroyed(null);
+            // make the Jenkins.<init> thread abort
+            throw new Error();
         }
     }
 
