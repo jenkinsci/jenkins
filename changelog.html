@@ -61,7 +61,28 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.655>What's new in 1.655</a> (2016/03/27)</h3>
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    Downgrade Stapler to 1.239 to fix remote API issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33546">issue 33546</a>, 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33605">issue 33605</a>)
+  <li class="major bug">
+    Plugin filters were failing to be removed and blocking restart.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33681">issue 33681</a>)
+  <li class="bug">
+    Do not hardcode <tt>.bat</tt> extension for Maven on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33693">issue 33693</a>)
+  <li class="rfe">
+    Reduce log level of <tt>Succesfully installed a global UncaughtExceptionHandler</tt> on startup.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2171">pull 2171</a>)
+  <li class="rfe">
+    Make list of build causes immutable.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
+  <li class="rfe">
+    Developer API: Add <tt>Fingerprint.getXStream()</tt>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2163">pull 2163</a>)
+  <li class="rfe">
+    Core Development:  Add the <tt>.mvn</tt> directory and set default <tt>-Xmx</tt> value.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2162">pull 2162</a>)
 </ul>
 <h3><a name=v1.654>What's new in 1.654</a> (2016/03/21)</h3>
 <ul class=image>
