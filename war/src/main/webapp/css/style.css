@@ -1124,14 +1124,25 @@ table.parameters > tbody:hover {
 }
 .build-row-cell .build-badge {
   display: inline-block;
-  padding: 2px;
-  width: 70%;
   text-align: right;
+  width: 70%;
+  padding: 2px 0;
 }
-.build-row-cell .build-badge span:after {
-    content: " ";
-    font-size: 0%;
+.build-row-cell .build-badge > span {
+  display: inline-block;
+  max-width: 256px;
+  padding: 0 1px;
+  overflow: hidden;
 }
+.build-row-cell .build-badge > span + span {
+  margin: 0 0 0 2px !important;
+}
+@media (min-width: 1170px) {
+  .build-row-cell .build-badge > span {
+    max-width: 296px;
+  }
+}
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
