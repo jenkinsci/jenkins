@@ -43,8 +43,8 @@
           padding: 1px 8px;
       }
     </style>
-    <form action="${rootURL}/securityRealm/${action}" method="post">
-      <local:_entryForm host="${app.securityRealm}" title="${%Create First Admin User}" action="createFirstAccount" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+    <form action="${rootURL}/setupWizard/createAdminUser" method="post">
+      <local:_entryForm it="${app.securityRealm}" host="${app.securityRealm}" title="${%Create First Admin User}" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
       <script>
         $('username').focus();
       </script>
