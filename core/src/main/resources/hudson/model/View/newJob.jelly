@@ -35,38 +35,35 @@ THE SOFTWARE.
     <l:css src="jsbundles/add-item.css" />
 
     <l:main-panel>
-      <div id="create-item-panel" style="display: none;">
+      <div id="add-item-panel" style="display: none;">
         <s:form method="post" action="createItem" name="createItem" id="createItem" class="jenkins-config">
-          <div class="jenkins-config-widgets">
-            <div class="j-add-item-name">
-              <input name="name" id="name" placeholder="New item name..." type="text"></input>
+          <div class="header">
+            <div class="add-item-name">
+              <input name="name" id="name" placeholder="New item name..." type="text" />
             </div>
           </div>
-          <div class="categories">
-          </div>
+
+          <div class="categories" />
 
           <j:if test="${!empty(app.itemMap)}">
-            <s:block>
-              <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-              <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
-            </s:block>
-            <s:entry>
-              ${%Copy from}
-              <j:set var="descriptor" value="${it.descriptor}" />
-              <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
-            </s:entry>
+            <div class="add-item-copy">
+              <input type="radio" id="copy" name="mode" value="copy" />
+              <div class="icon">
+                <img src="${resURL}/images/48x48/copy.png" />
+              </div>
+              <label>${%Copy from}</label>
+              <input id="from" name="from" field="copyNewItemFrom" />
+            </div>
           </j:if>
 
-          <s:bottomButtonBar>
-            <!--
-              when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
-              So always force non-empty array
-             -->
-            <input type="radio" name="mode" value="dummy1" style="display:none" />
-            <input type="radio" name="mode" value="dummy2" style="display:none" />
-            <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-          </s:bottomButtonBar>
-
+          <div class="footer">
+            <div class="btn-decorator">
+              <input type="radio" name="mode" value="dummy1" style="display:none" />
+              <input type="radio" name="mode" value="dummy2" style="display:none" />
+              <button type="submit" id="ok-button">OK</button>
+              <!-- <input type="submit" name="Submit" value="OK" id="ok-button" /> -->
+            </div>
+          </div>
         </s:form>
       </div>
 

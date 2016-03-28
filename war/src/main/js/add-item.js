@@ -17,42 +17,21 @@ $.when(getItems()).done(function(data){
   $(function() {
 
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
-    $('#create-item-panel').removeAttr('style');
+    $('#add-item-panel').removeAttr('style');
 
     //////////////////////////////
     // helpful reference DOM
 
     //var defaultMinToShow = 2;
     //var defaultLooseItems = 'jenkins.category.uncategorized';
-    var $form = $('form[name="createItem"]');
+    //var $form = $('form[name="createItem"]');
     var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
     var $widgetBox = $('<div class="jenkins-config-widgets" />');
     var $categories = $('div.categories');
-    var $subBtn = $('#bottom-sticker .yui-submit-button');
     var $nameInput;
     //var sectionsToShow = [];
 
     $widgetBox.prepend($navBox);
-    
-    ////////////////////////////////
-    // submit button click
-    
-    /*function makeButtonWrapper(){
-      var $p = window.$; // jshint ignore:line
-      var btn = $p('ok'); 
-      var okButton = window.makeButton(btn, null); // jshint ignore:line 
-
-      $subBtn = $('#bottom-sticker .yui-submit-button');
-      
-      checkFormReady();
-      
-      $subBtn.on('click',function() {
-        $(this).addClass('yui-button-disabled yui-submit-button-disabled')
-          .find('button')
-            .attr('disabled','disabled')
-            .text('. . .');
-      });
-    }*/
 
     ////////////////////////////////
     // scroll action......
@@ -118,53 +97,23 @@ $.when(getItems()).done(function(data){
     //////////////////////////
     // helper functions...
 
-    function checkFormReady(){
+    /*function checkFormReady() {
       //make sure everyone has changed and gotten attached...
-      setTimeout(function(){
+      setTimeout(function() {
         var $name = $form.removeClass('no-select').find('input[name="name"]').removeClass('no-val');
         
-        function checkItems(){
+        function checkItems() {
           var selected = $form.find('input[type="radio"]:checked').length > 0;
           var named = $.trim($name.val()).length > 0;
           return {selected:selected,named:named};
         }
-        if(checkItems().selected && checkItems().named){
+        if (checkItems().selected && checkItems().named) {
           $subBtn.removeClass('yui-button-disabled').find('button').removeAttr('disabled');
         }
-        else{
+        else {
           $subBtn.addClass('yui-button-disabled').find('button').attr('disabled','disabled');
         }
-      },10);
-    }
-    
-    /*function addCopyOption(data){
-      var $copy = $('#copy').closest('tr');
-      if($copy.length === 0) {return data;} // exit if copy should not be added to page. Jelly page holds that logic.
-      var copyTitle = $copy.find('label').text();
-      var copyDom = $copy.next().find('.setting-main').html();
-      var copy = {
-          name:'Copy',
-          id:'copy',
-          minToShow:0,
-          items:[
-            {
-              class:"copy",
-              description:copyDom,
-              displayName:copyTitle,
-              iconFilePathPattern:'images/48x48/copy.png'
-            }
-          ]
-      };
-      var newData = [];
-
-      $.each(data,function(i,elem){
-        if(elem.id !== "category-id-copy")
-          { newData.push(elem); }
-      });
-      
-      newData.push(copy);
-
-      return newData;
+      }, 10);
     }*/
 
     function checkForLink(desc){
@@ -294,11 +243,11 @@ $.when(getItems()).done(function(data){
     }*/
 
     function drawCategory(category) {
-      var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-'+cleanClassName(category.id));
+      var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
       var $items = $('<ul/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
-      var $title = ['<h2>', category.name, '</h2>'];
-      var $description = ['<p>', category.description, '</p>'];
+      var title = '<h2>' + category.name + '</h2>';
+      var description = '<p>' + category.description + '</p>';
 
       // if there are enough items for a category, attach the category and its header...
       /*if (checkCatCount(category)) {
@@ -320,8 +269,8 @@ $.when(getItems()).done(function(data){
         $items.append(drawItem(elem));
       });
 
-      $catHeader.append($title);
-      $catHeader.append($description);
+      $catHeader.append(title);
+      $catHeader.append(description);
       $category.append($catHeader);
       $category.append($items);
 
@@ -354,7 +303,7 @@ $.when(getItems()).done(function(data){
         $this.closest('.categories').find('.active').removeClass('active');
         $this.addClass('active');
         $this.find('input[type="radio"]').prop('checked', true);
-        checkFormReady();
+        //checkFormReady();
 
         if ($nameInput.val() === '') {
           $nameInput.focus();
@@ -366,38 +315,36 @@ $.when(getItems()).done(function(data){
       return $item;
     }
 
-    function drawIcon(elem){
-      var $icn = $('<div class="icn">');
-      if (!elem.iconFilePathPattern) {
-        var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D','c-DCD9D8','other'];
+    function drawIcon(elem) {
+      var $icn;
+      if (elem.iconFilePathPattern) {
+        $icn = $('<div class="icon">');
+        var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
+        $(['<img src="', iconFilePath, '">'].join('')).appendTo($icn);
+      } else {
+        $icn = $('<div class="default-icon">');
+        var colors = ['c-49728B','c-335061','c-D33833','c-6D6B6D', 'c-6699CC'];
         var desc = elem.description || '';
         var name = elem.displayName;
-        var colorClass= colors[(desc.length) % 6];
+        var colorClass= colors[(desc.length) % 4];
         var aName = name.split(' ');
         var a = name.substring(0,1);
         var b = ((aName.length === 1) ? name.substring(1,2) : aName[1].substring(0,1));
-        $([
-          '<span class="dfIcn"><span class="a">',a,'</span><span class="b">',b,'</span></span>'
-         ].join(''))
-          .appendTo($icn);
-        return $icn.addClass('df').addClass(colorClass);
+        $(['<span class="a">',a,'</span><span class="b">',b,'</span>'].join('')).appendTo($icn);
+        $icn.addClass(colorClass);
       }
-
-      var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
-      $(['<span class="img" style="background:url(', iconFilePath, ')"></span>'].join('')).appendTo($icn);
-
       return $icn;
     }
 
-    //var categoriesWithCopy = addCopyOption(data.categories);
-
-    // makeButtonWrapper();
     // drawTabs(data.categories);
 
     // Render all categories
     $.each(data.categories, function(i, elem) {
       drawCategory(elem).appendTo($categories);
     });
+
+    // Focus
+    $('#add-item-panel').find('#name').focus();
   });
 });
 
