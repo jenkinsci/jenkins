@@ -58,11 +58,11 @@ function TabBarOverflow(tabBarFrame, tabs) {
 }
 
 TabBarOverflow.prototype.doRefresh = function() {
-    var activeTab = this.activeTab();
-    if (activeTab) {
-        this.onTabActivate(activeTab, true);
-    }
+    // If this is a refresh, then just slide backward to the first visible
+    // tab i.e. fill forward from it.
+    this.slideBackward(this.visibleStartIndex);
     this.setTabCount();
+    this.toggleOverflowBtn();
 };
 
 TabBarOverflow.prototype.setTabCount = function() {
@@ -156,6 +156,14 @@ TabBarOverflow.prototype.showableTabCount = function() {
     return count;
 };
 
+TabBarOverflow.prototype.toggleOverflowBtn = function() {
+    if (this.visibleTabCount() < this.showableTabCount()) {
+        this.taboverflowBtn.show();
+    } else {
+        this.taboverflowBtn.hide();
+    }
+};
+
 TabBarOverflow.prototype.fillForward = function(fromTabIndex) {
     var $ = jQD.getJQuery();
     for (var i = fromTabIndex; i < this.tabs.length; i++) {
@@ -175,8 +183,18 @@ TabBarOverflow.prototype.fillForward = function(fromTabIndex) {
     return false;
 };
 
+TabBarOverflow.prototype.slideForward = function(toTabIndex) {
+    // Hide them all..
+    this.hideAllTabs();
+
+    // Move the visible tab window such that the last (end) visible tab
+    // is the toTabIndex. Then, fill backward from that tab.
+    this.visibleEndIndex = toTabIndex;
+    this.fillBackward(toTabIndex);
+};
+
 TabBarOverflow.prototype.fillBackward = function(fromTabIndex) {
-    for (var i = fromTabIndex - 1; i >= 0 ; i--) {
+    for (var i = fromTabIndex; i >= 0 ; i--) {
         var tab = this.tabs[i];
 
         if (!this.isTabShowable(tab)) {
@@ -193,40 +211,45 @@ TabBarOverflow.prototype.fillBackward = function(fromTabIndex) {
     return false;
 };
 
-TabBarOverflow.prototype.onTabActivate = function(activatedTab, refresh) {
-    // We need to check if this table is visible to the user and if not,
-    // we need to make it visible.
-
-    if (refresh === undefined || refresh === false) {
-        if (!this.isOverflown() && activatedTab.hasClass('taboverflow-tab-visible')) {
-            // This tab is already visible.
-            return;
-        }
-    }
-
-    // Ok, the tab that's just been activated is not visible to the user. So,
-    // we make it (and local sibling tabs) visible by hiding other tabs before it.
-    // We start by hiding all tabs. Then, we start showing tabs (starting from
-    // the supplied tab). We stop showing tabs once we show a tab that overflows the tabBar.
-
-    var $ = jQD.getJQuery();
-
+TabBarOverflow.prototype.slideBackward = function(toTabIndex) {
     // Hide them all..
     this.hideAllTabs();
 
-    // Start showing tabs, starting from the tab that was just activated...
-    this.activeTabIndex = this.tabIndex(activatedTab);
-    var isFull = this.fillForward(this.activeTabIndex);
+    // Move the visible tab window such that the first (start) visible tab
+    // is the toTabIndex. Then, fill forward from that tab.
+    this.visibleStartIndex = toTabIndex;
+    this.fillForward(toTabIndex);
+};
 
-    // If there's room for more tabs and there are tabs before the "active"
-    // tab, then lets show some of those too.
-    if (!isFull && this.activeTabIndex > 0) {
-        this.fillBackward(this.activeTabIndex);
+TabBarOverflow.prototype.isActiveTabVisible = function() {
+    return (this.activeTabIndex >= this.visibleStartIndex && this.activeTabIndex <= this.visibleEndIndex);
+};
+
+TabBarOverflow.prototype.onTabActivate = function(activatedTab) {
+    var lastActiveTab = this.activeTabIndex;
+    this.activeTabIndex = this.tabIndex(activatedTab);
+
+    if (this.isActiveTabVisible()) {
+        // Nothing to do. The tab is already visible.
+        return;
     }
 
-    if (this.visibleTabCount() < this.showableTabCount()) {
-        this.taboverflowBtn.show();
+    if (this.activeTabIndex === 0 || lastActiveTab === undefined) {
+        // First time activating a tab. Just "slide back" to that tab i.e. show it
+        // and all tabs "forward" of it.
+        this.slideBackward(this.activeTabIndex);
     } else {
-        this.taboverflowBtn.hide();
+        // We need to decide if we want to "slide forward" or "slide backward".
+        // We do that based on what the last active tab was and if it was to the
+        // left (backward) or to the right (forward) of the newly activated tab.
+
+        if (this.activeTabIndex < lastActiveTab) {
+            // The newly activated tab it to the left (backward).
+            this.slideBackward(this.activeTabIndex);
+        } else if (this.activeTabIndex > lastActiveTab) {
+            this.slideForward(this.activeTabIndex);
+        } else {
+            // Do nothing
+        }
     }
 };
