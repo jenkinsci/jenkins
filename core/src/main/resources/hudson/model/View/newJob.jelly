@@ -36,7 +36,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <div id="add-item-panel" style="display: none;">
-        <s:form method="post" action="createItem" name="createItem" id="createItem" class="jenkins-config">
+        <form method="post" action="createItem" name="createItem" id="createItem">
           <div class="header">
             <div class="add-item-name">
               <input name="name" id="name" placeholder="New item name..." type="text" />
@@ -52,19 +52,17 @@ THE SOFTWARE.
                 <img src="${resURL}/images/48x48/copy.png" />
               </div>
               <label>${%Copy from}</label>
-              <input id="from" name="from" field="copyNewItemFrom" />
+              <input type="text" id="from" name="from" field="copyNewItemFrom" />
             </div>
           </j:if>
 
           <div class="footer">
             <div class="btn-decorator">
-              <input type="radio" name="mode" value="dummy1" style="display:none" />
-              <input type="radio" name="mode" value="dummy2" style="display:none" />
               <button type="submit" id="ok-button">OK</button>
               <!-- <input type="submit" name="Submit" value="OK" id="ok-button" /> -->
             </div>
           </div>
-        </s:form>
+        </form>
       </div>
 
     </l:main-panel>

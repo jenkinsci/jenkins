@@ -19,228 +19,23 @@ $.when(getItems()).done(function(data){
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
     $('#add-item-panel').removeAttr('style');
 
-    //////////////////////////////
-    // helpful reference DOM
-
-    //var defaultMinToShow = 2;
-    //var defaultLooseItems = 'jenkins.category.uncategorized';
-    //var $form = $('form[name="createItem"]');
-    var $navBox = $('<nav class="navbar navbar-default navbar-static form-config tabBarFrame"/>');
-    var $widgetBox = $('<div class="jenkins-config-widgets" />');
-    var $categories = $('div.categories');
-    var $nameInput;
-    //var sectionsToShow = [];
-
-    $widgetBox.prepend($navBox);
-
-    ////////////////////////////////
-    // scroll action......
-
-    //var isManualScrolling = false;
-    //var ignoreNextScrollEvent = false;
-    //var $window = $(window);
-    //var $breadcrumbBar = $('#breadcrumbBar');
-    //var $createItemPanel = $('#create-item-panel');
-    //var createPanelOffset = $createItemPanel.offset().top;
-
-    /*function autoActivateTabs(){
-      if (isManualScrolling === true) {
-        // We ignore scroll events when a manual scroll is in
-        // operation e.g. when the user clicks on a category tab.
-        return;
-      }      
-      if (ignoreNextScrollEvent === true) {
-        // Things like repositioning of the tabbar can trigger scroll
-        // events that we want to ignore.
-        ignoreNextScrollEvent = false;
-        return;
-      }
-
-      var winScoll = $window.scrollTop();
-
-      $widgetBox.find('.active').removeClass('active');
-      $.each(data.categories,function(i,cat){
-        var domId = '#j-add-item-type-'+cat.id;
-        var $cat = $(domId);
-        var catHeight = ($cat.length > 0)?
-        $cat.offset().top + $cat.outerHeight() - createPanelOffset: 0;
-
-        if(winScoll < catHeight){
-          var $thisTab = $widgetBox.find(['[href="',cleanHref(domId),'"]'].join(''));
-          resetActiveTab($thisTab);
-          return false;
-        }
-      });
-    }*/
-
-    /*function stickTabbar() {
-      var winScoll = $window.scrollTop();
-      var setWidth = function() {
-          $widgetBox.width($form.outerWidth() - 2);
-      };
-
-      if(winScoll > createPanelOffset - $breadcrumbBar.height()){
-        setWidth();
-        $widgetBox.css({
-          'position':'fixed',
-          'top':($breadcrumbBar.height())+'px'});
-        $categories.css({'margin-top':$widgetBox.outerHeight()+'px'});
-        $window.resize(setWidth);
-        return true;
-      } else{
-        $widgetBox.add($categories).removeAttr('style');
-        $window.unbind('resize', setWidth);
-        return false;
-      }
-    }*/
-
     //////////////////////////
     // helper functions...
-
-    /*function checkFormReady() {
-      //make sure everyone has changed and gotten attached...
-      setTimeout(function() {
-        var $name = $form.removeClass('no-select').find('input[name="name"]').removeClass('no-val');
-        
-        function checkItems() {
-          var selected = $form.find('input[type="radio"]:checked').length > 0;
-          var named = $.trim($name.val()).length > 0;
-          return {selected:selected,named:named};
-        }
-        if (checkItems().selected && checkItems().named) {
-          $subBtn.removeClass('yui-button-disabled').find('button').removeAttr('disabled');
-        }
-        else {
-          $subBtn.addClass('yui-button-disabled').find('button').attr('disabled','disabled');
-        }
-      }, 10);
-    }*/
-
-    function checkForLink(desc){
-      if(desc.indexOf('&lt;a href="') === -1) {
-        return false;
-      }
-      var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
-      return newDesc;
-    }
-
-    /*function checkCatCount(elem){
-      var minToShow = (typeof elem.minToShow === 'number')? elem.minToShow : defaultMinToShow;
-      var showIt = ($.isArray(elem.items) && elem.items.length >= minToShow);
-      return showIt;
-    }*/
 
     function cleanClassName(className){
       return className.replace(/\./g,'_');
     }
 
-    /*function cleanHref(id,reverse){
-      if(reverse){
-        var gotHash = (id.indexOf('#') === 0)? 
-           '#j-add-item-type-'+ id.substring(1).replace(/\./g,'_'):
-             'j-add-item-type-'+ id.replace(/\./g,'_');
-        return gotHash;
+    function checkForLink(desc) {
+      if (desc.indexOf('&lt;a href="') === -1) {
+        return desc;
       }
-      else{
-        return id.replace('j-add-item-type-','');
-      }
-    }*/
-
-    /*function cleanLayout(){
-      // Do a little shimmy-hack to force legacy code to resize correctly and set tab state.
-      $('html,body').animate({scrollTop: 1}, 1);
-      $('html,body').animate({scrollTop: 0}, 10);
-
-      setTimeout(fireBottomStickerAdjustEvent,410);
-    }*/
-
-    /*function resetActiveTab($this){
-      var $nav = $this.closest('.nav');
-      $nav.find('.active').removeClass('active');
-      $this.addClass('active');
-    }*/
+      var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
+      return newDesc;
+    }
 
     //////////////////////////////////
     // Draw functions
-
-    /*function drawName() {
-      var $name = $('<div class="j-add-item-name" />');
-
-      $nameInput = $('<input type="text" name="name" class="name" id="name" placeholder="New item name..." />')
-        .keyup(function(){
-          $form.find('input[name="name"]').val($(this).val());
-          checkFormReady();
-        })
-        .appendTo($name);
-
-      $widgetBox.prepend($name);
-      setTimeout(function(){
-        $nameInput.focus();
-      },100);
-    }*/
-
-    /*function drawTabs(data){
-      //$('#main-panel').addClass('container');
-      var $nav = $('<ul class="nav navbar-nav tabBar config-section-activators" />');
-      
-      $.each(data,function(i,elem) {
-
-        // little bit hacky here... need to keep track if I have tabs to show, so if there is just 1, I can hide it later....
-        if (elem.minToShow !== 0 && checkCatCount(elem)) {
-          sectionsToShow.push(elem.id);
-        }
-        
-        var $tab = drawTab(i,elem);
-        var $items = drawCategory(elem);
-        var $cat = $items.parent();
-        
-        $.each(elem.items, function(i, elem) {
-          var $item = drawItem(elem);
-          $items.append($item);
-        });
-        
-        if (checkCatCount(elem)) {
-          $nav.append($tab);
-        }
-        $categories.append($cat);
-
-      });
-      //$(window).on('scroll', autoActivateTabs);
-      //$(window).on('scroll', stickTabbar);
-   
-      if (sectionsToShow.length > 0){
-        $navBox.append($nav);
-      } else {
-        $categories.find('.header').hide();
-        $categories.addClass('flat');
-      }
-      drawName();
-      cleanLayout();
-    }*/
-
-    /*function drawTab(i, elem){
-      if (!elem) {
-        elem = i;
-      }
-      var $tab = $(['<li><a class="tab ' , ((i === 0) ? 'active' : ''), '" href="#', cleanHref(elem.id), '">', elem.name,'</a></li>'].join('')).click(function() {
-          var $this = $(this).children('a');
-          //var tab = $this.attr('href');
-          //var scrollTop = $(cleanHref(tab, true)).offset().top - ($newView.children('.jenkins-config-widgets').height() + 15);
-
-          setTimeout(function() {
-            resetActiveTab($this);
-          }, 510);
-
-          /*isManualScrolling = true;
-          $('html,body').animate({
-            scrollTop: scrollTop
-          }, 500, function() {
-            isManualScrolling = false;
-            ignoreNextScrollEvent = stickTabbar();
-          });
-        });
-      return $tab;
-    }*/
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
@@ -248,21 +43,6 @@ $.when(getItems()).done(function(data){
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
       var description = '<p>' + category.description + '</p>';
-
-      // if there are enough items for a category, attach the category and its header...
-      /*if (checkCatCount(category)) {
-        var $catHeader = $('<div class="category-header" />').prependTo($category);
-        var catheader = ['<h2>', category.name, '</h2>'].join('');
-        var catDesc = ['<p>', category.description, '</p>'].join('');
-
-        if ((category.minToShow > 0)) {
-          $(catheader).appendTo($catHeader);
-          $(catDesc).appendTo($catHeader);
-        }
-      } else {
-        var targ = category.remainders || defaultLooseItems;
-        $items = $('#'+cleanHref(targ,true)).find('.j-item-options');
-      }*/
 
       // Add items
       $.each(category.items, function(i, elem) {
@@ -278,38 +58,19 @@ $.when(getItems()).done(function(data){
     }
 
     function drawItem(elem) {
-      var desc = (checkForLink(elem.description)) ? checkForLink(elem.description) : elem.description;
-      var $item = $([
-          '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
-      ].join('')).append([
-          '<div class="desc">', desc, '</div>'
-      ].join('')).append(drawIcon(elem));
+      var desc = checkForLink(elem.description);
+      var $item = $(['<li class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
+      elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
 
       function setSelectState(e) {
         e.preventDefault();
-        var href = $(e.target).attr('href');
-        if (href) {
-          window.open(href);
-        }
-        
         var $this = $(this).closest('li');
         $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
-
-        //if this is a hyperlink, don't move the selection.
-        if ($this.find('a:focus').length === 1) {
-          return false;
-        }
-
         $this.closest('.categories').find('.active').removeClass('active');
         $this.addClass('active');
-        $this.find('input[type="radio"]').prop('checked', true);
-        //checkFormReady();
-
-        if ($nameInput.val() === '') {
-          $nameInput.focus();
-        }
+        $this.find('input[type="radio"][name="mode"]').prop('checked', true);
+        $('input[type="text"][name="from"]', '#createItem').val('');
       }
-
       $item.click(setSelectState);
 
       return $item;
@@ -339,15 +100,27 @@ $.when(getItems()).done(function(data){
     // drawTabs(data.categories);
 
     // Render all categories
+    var $categories = $('div.categories');
     $.each(data.categories, function(i, elem) {
       drawCategory(elem).appendTo($categories);
     });
 
     // Focus
-    $('#add-item-panel').find('#name').focus();
+    $("#add-item-panel").find("#name").focus();
+
+    // Init CopyFromField
+    $('input[name="from"]', '#createItem').focus(function() {
+      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
+      $('.categories').find('.active').removeClass('active');
+    });
+
+    // Client-side validation
+    $("#createItem").submit(function(event) {
+      console.log( "Handler for .submit() called.");
+      console.log("JobName: " + $("input[name=name]", "#createItem").val());
+      console.log("JobType: " + $("input[type=radio]:checked", "#createItem").val());
+      console.log("CopyFromValue: " + $("input[name=from]", "#createItem").val());
+      event.preventDefault();
+    });
   });
 });
-
-/*function fireBottomStickerAdjustEvent() {
-  Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
-}*/
