@@ -148,7 +148,7 @@ $.when(getItems()).done(function(data){
       var $copy = $('#copy').closest('tr');
       if($copy.length === 0) {return data;} // exit if copy should not be added to page. Jelly page holds that logic.
       var copyTitle = $copy.find('label').text();
-      var copyDom = $copy.next().find('.setting-main').html();
+      var copyDom = $copy.next().find('.setting-main');
       var copy = {
           name:'Copy',
           id:'copy',
@@ -163,7 +163,7 @@ $.when(getItems()).done(function(data){
           ]
       };
       var newData = [];
-
+      
       $.each(data,function(i,elem){
         if(elem.id !== "category-id-copy")
           { newData.push(elem); }
@@ -173,12 +173,20 @@ $.when(getItems()).done(function(data){
 
       return newData;
     }
-    function checkForLink(desc){
+    function checkDescription(desc){
+      if(typeof desc !== 'string' && desc.jquery){
+        var $newDesc = $('<label class="desc" />')
+          .prepend($.trim(desc.text()));
+        desc.children().each(function(){
+          $newDesc.append($(this));
+        });
+        return $newDesc;
+      }
       if(desc.indexOf('&lt;a href="') === -1) {
-        return false;
+        return $('<div class="desc" />').html(desc);
       }
       var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
-      return newDesc;
+      return $('<div class="desc" />').html(newDesc);
     }
 
     function checkCatCount(elem){
@@ -322,12 +330,12 @@ $.when(getItems()).done(function(data){
     }
 
     function drawItem(elem){
-      var desc = (checkForLink(elem.description))? checkForLink(elem.description):elem.description;
+      var desc = checkDescription(elem.description);
       var $item = $([
-          '<li class="',cleanClassName(elem.class),'"><label><input name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
-      ].join('')).append([
-          '<div class="desc">', desc, '</div>'
-      ].join('')).append(drawIcon(elem));
+          '<li class="item-box ',cleanClassName(elem.class),'"><label><input class="radio-mode" name="mode" value="',elem.class,'" type="radio" /> <span class="label">', elem.displayName, '</span></label></li>'
+      ].join(''))
+        .append(drawIcon(elem))
+        .append(desc);
 
       function setSelectState(e){
         e.preventDefault();

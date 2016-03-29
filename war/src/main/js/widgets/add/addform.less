@@ -35,7 +35,7 @@ body.add-item {
       .flat {
         .category {
           border-bottom: none;
-          ul {
+          .j-item-options {
             padding: 0 10px;
           }
         }
@@ -92,7 +92,7 @@ body.add-item {
 }
 
 .j-item-options {
-  li:hover {
+  .item-box:hover {
     border-color: #cccccc;
     background: rgba(255, 255, 255, 0.75);
     .icn {
@@ -100,7 +100,7 @@ body.add-item {
     }    
   }
 
-  li.active {
+  .item-box.active {
     cursor: text;
     background-color: #ffffff;
     border-color: #6699cc;
@@ -116,7 +116,7 @@ body.add-item {
     }
   }
 
-  li {
+  .item-box {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -136,11 +136,18 @@ body.add-item {
       color: #000;
       padding-bottom: 5px;
       cursor: pointer;
-      input {
+      input.radio-mode {
         position: absolute;
         top: 24px;
         left: 25px;
         display: none;
+      }
+      .setting-input {
+        display:block;
+        margin-top:3px;
+      }
+      .yui-ac-container{
+        font-weight:normal;
       }
     }
 

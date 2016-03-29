@@ -40,7 +40,7 @@ THE SOFTWARE.
 
         <j:if test="${!empty(app.itemMap)}">
           <s:block>
-            <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
+            <input type="radio" id="copy" name="mode" value="copy" />
             <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
           </s:block>
           <s:entry>
