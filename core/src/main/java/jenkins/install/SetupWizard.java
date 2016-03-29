@@ -107,29 +107,43 @@ public class SetupWizard {
             }
         }
 
-        String setupKey = iapf.readToString().trim();
-        String ls = System.lineSeparator();
-        LOGGER.info(ls + ls + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + ls
-                + "Jenkins initial setup is required. An admin user has been created and "
-                + "a password generated." + ls
-                + "Please use the following password to proceed to installation:" + ls
-                + ls
-                + setupKey + ls
-                + ls
-                + "This may also be found at: " + iapf.getRemote() + ls
-                + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls);
+        if(iapf.exists()) {
+            String setupKey = iapf.readToString().trim();
+            String ls = System.lineSeparator();
+            LOGGER.info(ls + ls + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + ls
+                    + "Jenkins initial setup is required. An admin user has been created and "
+                    + "a password generated." + ls
+                    + "Please use the following password to proceed to installation:" + ls
+                    + ls
+                    + setupKey + ls
+                    + ls
+                    + "This may also be found at: " + iapf.getRemote() + ls
+                    + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls);
+        }
         
         try {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
         } catch (ServletException e) {
             throw new AssertionError(e);
         }
+    }
+    
+    /**
+     * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
+     */
+    public boolean useGeneratedPassword() {
+        try {
+            return getInitialAdminPasswordFile().exists();
+        } catch (Exception e) {
+            // ignore
+        }
+        return false;
     }
 
     /**
