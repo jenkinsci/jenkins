@@ -52,7 +52,8 @@ THE SOFTWARE.
                 <img src="${resURL}/images/48x48/copy.png" />
               </div>
               <label>${%Copy from}</label>
-              <input type="text" id="from" name="from" field="copyNewItemFrom" />
+              <j:set var="descriptor" value="${it.descriptor}" />
+              <s:textbox id="from" name="from" field="copyNewItemFrom"/>
             </div>
           </j:if>
 
