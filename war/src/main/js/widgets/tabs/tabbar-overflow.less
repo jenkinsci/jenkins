@@ -54,7 +54,7 @@
       padding: 5px 10px;
       overflow-y: auto;
       background-color: @brightest;
-      max-width: 200px;
+      max-width: 250px;
       max-height: 250px;
       position: absolute;
       top: 35px;
@@ -69,6 +69,13 @@
         overflow-x: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+      }
+
+      .drop-tab.visible {
+        opacity: 0.5;
+        .eye {
+          margin-right: 5px;
+        }
       }
     }
   }
