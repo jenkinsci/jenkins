@@ -46,7 +46,7 @@ exports.pluginNames = function() {
  * @returns The subset of plugins (subset of the plugin list) that are recommended by default.
  */
 exports.recommendedPluginNames = function() {
-    return plugins.recommendedPlugins;
+    return plugins.recommendedPlugins.slice(); // copy this
 };
 
 /**
