@@ -41,7 +41,7 @@ function TabBarOverflow(tabBarFrame, tabs) {
     });
 
     var win = $(windowHandle.getWindow());
-    win.resize(function() {
+    win.on('resize.jenkins.taboverflow', function() {
         tabOverflow.doRefresh();
     });
 
