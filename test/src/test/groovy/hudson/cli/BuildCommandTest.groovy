@@ -35,7 +35,6 @@ import org.junit.Test
 import org.jvnet.hudson.test.Issue
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder
 import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.RandomlyFails
 import org.jvnet.hudson.test.TestBuilder
 import org.jvnet.hudson.test.TestExtension
 import org.kohsuke.stapler.StaplerRequest
@@ -159,7 +158,7 @@ public class BuildCommandTest {
         }
     }
 
-    @RandomlyFails("Started test0 #1")
+    // TODO randomly fails: Started test0 #1
     @Test void consoleOutput() {
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
@@ -174,7 +173,7 @@ public class BuildCommandTest {
         }
     }
 
-    @RandomlyFails("Started test0 #1")
+    // TODO randomly fails: Started test0 #1
     @Test void consoleOutputWhenBuildSchedulingRefused() {
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
