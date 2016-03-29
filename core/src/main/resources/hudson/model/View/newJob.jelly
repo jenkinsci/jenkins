@@ -58,6 +58,9 @@ THE SOFTWARE.
                 <input type="text" id="from" name="from" field="copyNewItemFrom" />
                 <div id="copyfrom-validation-required" class="input-validation-message input-message-disabled">&#187; ${%CopyFrom.validation.required}</div>
               </div>
+              <label>${%Copy from}</label>
+              <j:set var="descriptor" value="${it.descriptor}" />
+              <s:textbox id="from" name="from" field="copyNewItemFrom"/>
             </div>
           </j:if>
 
