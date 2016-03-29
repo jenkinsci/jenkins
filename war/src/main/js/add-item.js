@@ -34,6 +34,44 @@ $.when(getItems()).done(function(data){
       return newDesc;
     }
 
+    function getItemTypeSelected() {
+      return $('input[type="radio"][name="mode"]:checked', '#createItem').val();
+    }
+
+    function getItemCopyFromSelected() {
+      return $('input[type="radio"][name="mode"][value="copy"]:checked', '#createItem').val();
+    }
+
+    function getCopyFromValue() {
+      return $('input[type="text"][name="from"]', '#createItem').val();
+    }
+
+    function isItemNameValid() {
+      var itemName = $('input[name="name"]', '#createItem').val();
+      if (itemName !== '') {
+        return true;
+      }
+      return false;
+    }
+
+    function activateValidationMessage(messageId, context) {
+      cleanValidationMessages(context);
+      hideInputHelp(context);
+      $(messageId).removeClass('input-message-disabled');
+    }
+
+    function cleanValidationMessages(context) {
+      $(context).find('.input-validation-message').addClass('input-message-disabled');
+    }
+
+    function hideInputHelp(context) {
+      $('.input-help', context).addClass('input-message-disabled');
+    }
+
+    function showInputHelp(context) {
+      $('.input-help', context).removeClass('input-message-disabled');
+    }
+
     //////////////////////////////////
     // Draw functions
 
@@ -70,6 +108,11 @@ $.when(getItems()).done(function(data){
         $this.addClass('active');
         $this.find('input[type="radio"][name="mode"]').prop('checked', true);
         $('input[type="text"][name="from"]', '#createItem').val('');
+        cleanValidationMessages('.add-item-copy');
+        if (!isItemNameValid()) {
+          activateValidationMessage('#itemname-validation-required', '.add-item-name');
+          $('input[name="name"][type="text"]', '#createItem').focus();
+        }
       }
       $item.click(setSelectState);
 
@@ -97,8 +140,6 @@ $.when(getItems()).done(function(data){
       return $icn;
     }
 
-    // drawTabs(data.categories);
-
     // Render all categories
     var $categories = $('div.categories');
     $.each(data.categories, function(i, elem) {
@@ -108,19 +149,42 @@ $.when(getItems()).done(function(data){
     // Focus
     $("#add-item-panel").find("#name").focus();
 
+
+    // Init NameField
+    $('input[name="name"]', '#createItem').blur(function() {
+      if (isItemNameValid()) {
+        cleanValidationMessages('.add-item-name');
+        showInputHelp('.add-item-name');
+      }
+    });
+
     // Init CopyFromField
     $('input[name="from"]', '#createItem').focus(function() {
       $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
       $('.categories').find('.active').removeClass('active');
     });
 
+    $('input[name="from"]', '#createItem').blur(function() {
+      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+    });
+
     // Client-side validation
     $("#createItem").submit(function(event) {
-      console.log( "Handler for .submit() called.");
-      console.log("JobName: " + $("input[name=name]", "#createItem").val());
-      console.log("JobType: " + $("input[type=radio]:checked", "#createItem").val());
-      console.log("CopyFromValue: " + $("input[name=from]", "#createItem").val());
-      event.preventDefault();
+      if (!isItemNameValid()) {
+        activateValidationMessage('#itemname-validation-required', '.add-item-name');
+        $('input[name="name"][type="text"]', '#createItem').focus();
+        event.preventDefault();
+      } else {
+        if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
+          activateValidationMessage('#itemtype-validation-required', '.add-item-name');
+          $('input[name="name"][type="text"]', '#createItem').focus();
+          event.preventDefault();
+        } else if (getItemCopyFromSelected() && getCopyFromValue() === '') {
+          activateValidationMessage('#copyfrom-validation-required', '.add-item-copy');
+          $('input[name="from"][type="text"]', '#createItem').focus();
+          event.preventDefault();
+        }
+      }
     });
   });
 });

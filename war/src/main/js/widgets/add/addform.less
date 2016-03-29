@@ -49,34 +49,71 @@
 
   .add-item-name {
     padding: 20px;
+
+    label {
+      position: relative;
+      display: block;
+      font-size: 22px;
+      font-weight: bold;
+      padding-bottom: 10px;
+    }
   }
 
-  .add-item-copy {
+  .item-copy {
     position: relative;
     border: 1px solid #cccccc;
     border-top: none;
-    padding: 20px 20px 20px 78px;
+    padding: 20px;
     background-color: #f9f9f9;
 
-    input[type=radio] {
+    p.description {
+      font-size: 16px;
+      margin-top: 0;
+    }
+
+    .add-item-copy {
+      position: relative;
+      padding-left: 58px;
+
+      input[type=radio] {
+        display: none;
+      }
+
+      label {
+        line-height: 48px;
+        padding: 0 10px 0 0;
+      }
+
+      input {
+        font-size: inherit;
+      }
+
+      .icon {
+        left: 0;
+        top: 0;
+      }
+    }
+  }
+
+  .add-item-name, .add-item-copy {
+    .input-help {
+      color: #666;
+      font-style: italic;
+      font-size: 13px;
+      padding-top: 2px;
+    }
+
+    .input-validation-message {
+      color: red;
+      padding-top: 2px;
+      font-weight: bold;
+    }
+
+    .input-message-disabled {
       display: none;
     }
-
-    label {
-      line-height: 48px;
-      padding: 0 10px 0 0;
-    }
-
-    input {
-      font-size: inherit;
-    }
-
-    .icon {
-      left: 20px;
-      top: 20px;
-    }
-
   }
+
 
   .icon {
     position: absolute;
@@ -193,6 +230,7 @@
 
     .category {
       border-bottom: 1px solid #cccccc;
+      padding: 10px;
 
       .header {
         padding: 0 20px;
@@ -213,14 +251,33 @@
     }
   }
 
+  .categories.flat {
+    .category {
+      border-bottom: none;
+
+      .header {
+        display: none;
+      }
+    }
+
+    .category:first-child {
+      padding-bottom: 0;
+    }
+
+    .category:last-child {
+      padding-top: 0;
+    }
+
+  }
+
 }
 
 .j-item-options li, .j-item-options {
   display: block;
   margin: 0;
+  padding: 0;
   list-style: none;
   position: relative;
-  padding: 10px;
 }
 
 .j-item-options {

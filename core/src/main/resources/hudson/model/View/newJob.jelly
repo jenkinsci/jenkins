@@ -22,9 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New Project" page.
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
@@ -39,17 +36,27 @@ THE SOFTWARE.
         <form method="post" action="createItem" name="createItem" id="createItem">
           <div class="header">
             <div class="add-item-name">
+              <label for="name">Enter an item name</label>
               <input name="name" id="name" placeholder="New item name..." type="text" />
+              <div class="input-help">&#187; ${%ItemName.help}</div>
+              <div id="itemname-validation-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+              <div id="itemtype-validation-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
             </div>
           </div>
 
-          <div class="categories" />
+          <div class="categories flat" />
 
           <j:if test="${!empty(app.itemMap)}">
-            <div class="add-item-copy">
-              <input type="radio" id="copy" name="mode" value="copy" />
-              <div class="icon">
-                <img src="${resURL}/images/48x48/copy.png" />
+            <div class="item-copy">
+              <p class="description">Use this option if you want to create a new item from other existing</p>
+              <div class="add-item-copy">
+                <input type="radio" id="copy" name="mode" value="copy" />
+                <div class="icon">
+                  <img src="${resURL}/images/48x48/copy.png" />
+                </div>
+                <label>${%Copy from}</label>
+                <input type="text" id="from" name="from" field="copyNewItemFrom" />
+                <div id="copyfrom-validation-required" class="input-validation-message input-message-disabled">&#187; ${%CopyFrom.validation.required}</div>
               </div>
               <label>${%Copy from}</label>
               <j:set var="descriptor" value="${it.descriptor}" />
