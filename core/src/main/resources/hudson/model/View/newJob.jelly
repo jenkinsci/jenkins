@@ -46,7 +46,7 @@ THE SOFTWARE.
           <s:entry>
             ${%Copy from}
             <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
+            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" />
           </s:entry>
         </j:if>
 

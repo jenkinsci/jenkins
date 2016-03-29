@@ -139,8 +139,8 @@ body.add-item {
       input.radio-mode {
         position: absolute;
         top: 24px;
-        left: 25px;
-        display: none;
+        left: -99999999px;
+        
       }
       .setting-input {
         display:block;
@@ -246,6 +246,15 @@ body.add-item {
 }
 
 .jenkins-config-widgets {
+  .error {
+padding: 5px 42px;
+    background-position-x: 22px;
+    background-color: #fcc;
+    box-shadow: 0 0 1px #900;
+    position: relative;
+    z-index: 1;
+    img {display:none;}
+  }
   .form-config.tabBarFrame {
     position: relative;
     border-bottom: solid 1px #cccccc;
@@ -253,14 +262,25 @@ body.add-item {
 
   .j-add-item-name {
     padding: 20px 20px 10px;
+    
+    label{
+      font-size:.85em;
+      line-height:normal;
+      color:#999;
+      margin:-5px 0 5px;
+      display:block;
+    }
+    
     input {
-      font-size: 1.5em;
+      font-size: 1.67em;
       background-color: #fff;
       border-radius: 0;
       padding: 5px;
       border: none;
       box-shadow: none;
       border-bottom: 1px solid #ccc;
+      display:block;
+      margin-top:3px;
     }
 
     input.no-val {
