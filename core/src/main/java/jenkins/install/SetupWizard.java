@@ -137,7 +137,7 @@ public class SetupWizard {
                 admin.delete(); // assume the new user may well be 'admin'
             }
             
-            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", j.getRootUrl());
+            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", req.getContextPath() + "/");
             if (u != null) {
                 if(admin != null) {
                     admin = null;
