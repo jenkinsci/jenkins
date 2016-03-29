@@ -39,8 +39,8 @@ THE SOFTWARE.
               <label for="name">Enter an item name</label>
               <input name="name" id="name" placeholder="New item name..." type="text" />
               <div class="input-help">&#187; ${%ItemName.help}</div>
-              <div id="itemname-validation-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
-              <div id="itemtype-validation-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+              <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+              <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
             </div>
           </div>
 
@@ -48,16 +48,15 @@ THE SOFTWARE.
 
           <j:if test="${!empty(app.itemMap)}">
             <div class="item-copy">
-              <p class="description">if you want to create a new item from other existing, you can use this option:</p>
+              <p class="description">${%CopyOption.description}:</p>
               <div class="add-item-copy">
-                <input type="radio" id="copy" name="mode" value="copy" />
+                <input type="radio" name="mode" value="copy" />
                 <div class="icon">
                   <img src="${resURL}/images/48x48/copy.png" />
                 </div>
                 <label>${%Copy from}</label>
                 <j:set var="descriptor" value="${it.descriptor}" />
                 <s:textbox id="from" name="from" field="copyNewItemFrom"/>
-                <div id="copyfrom-validation-required" class="input-validation-message input-message-disabled">&#187; ${%CopyFrom.validation.required}</div>
               </div>
             </div>
           </j:if>
@@ -65,7 +64,6 @@ THE SOFTWARE.
           <div class="footer">
             <div class="btn-decorator">
               <button type="submit" id="ok-button">OK</button>
-              <!-- <input type="submit" name="Submit" value="OK" id="ok-button" /> -->
             </div>
           </div>
         </form>

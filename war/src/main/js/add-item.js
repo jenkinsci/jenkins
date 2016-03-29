@@ -35,7 +35,11 @@ $.when(getItems()).done(function(data){
     }
 
     function getItemTypeSelected() {
-      return $('input[type="radio"][name="mode"]:checked', '#createItem').val();
+      var item = $('input[type="radio"][name="mode"]:checked', '#createItem').val();
+      if (item === "copy") {
+        return undefined;
+      }
+      return item;
     }
 
     function getItemCopyFromSelected() {
@@ -77,7 +81,7 @@ $.when(getItems()).done(function(data){
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      var $items = $('<ul/>').addClass('j-item-options');
+      var $items = $('<ul"/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
       var description = '<p>' + category.description + '</p>';
@@ -110,7 +114,7 @@ $.when(getItems()).done(function(data){
         $('input[type="text"][name="from"]', '#createItem').val('');
         cleanValidationMessages('.add-item-copy');
         if (!isItemNameValid()) {
-          activateValidationMessage('#itemname-validation-required', '.add-item-name');
+          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         }
       }
@@ -165,23 +169,21 @@ $.when(getItems()).done(function(data){
     });
 
     $('input[name="from"]', '#createItem').blur(function() {
-      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+      if (getCopyFromValue() === '') {
+        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+      }
     });
 
     // Client-side validation
     $("#createItem").submit(function(event) {
       if (!isItemNameValid()) {
-        activateValidationMessage('#itemname-validation-required', '.add-item-name');
+        activateValidationMessage('#itemname-required', '.add-item-name');
         $('input[name="name"][type="text"]', '#createItem').focus();
         event.preventDefault();
       } else {
         if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
-          activateValidationMessage('#itemtype-validation-required', '.add-item-name');
+          activateValidationMessage('#itemtype-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
-          event.preventDefault();
-        } else if (getItemCopyFromSelected() && getCopyFromValue() === '') {
-          activateValidationMessage('#copyfrom-validation-required', '.add-item-copy');
-          $('input[name="from"][type="text"]', '#createItem').focus();
           event.preventDefault();
         }
       }
