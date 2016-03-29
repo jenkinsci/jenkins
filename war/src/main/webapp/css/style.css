@@ -1976,22 +1976,23 @@ body.main-panel-only #main-panel {
     }
 }
 
-img.icon-sm {
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
     width: 16px;
     height: 16px;
 }
 
-img.icon-md {
+.icon-md {
     width: 24px;
     height: 24px;
 }
 
-img.icon-lg {
+.icon-lg {
     width: 32px;
     height: 32px;
 }
 
-img.icon-xl {
+.icon-xlg {
     width: 48px;
     height: 48px;
 }
