@@ -45,6 +45,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.Functions;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
+import hudson.security.SecurityRealm;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
@@ -88,7 +89,8 @@ public class InstallUtil {
             // Edge case: used Jenkins 1 but did not save the system config page,
             // the version is not persisted and returns 1.0, so try to check if
             // they actually did anything
-            if (!Jenkins.getInstance().getItemMap().isEmpty()) {
+            if (!Jenkins.getInstance().getItemMap().isEmpty()
+                    || Jenkins.getInstance().getSecurityRealm() != SecurityRealm.NO_AUTHENTICATION) {
                 return InstallState.UPGRADE;
             }
             return InstallState.NEW;

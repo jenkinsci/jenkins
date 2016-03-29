@@ -810,11 +810,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            installState = InstallUtil.getInstallState();
-            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
-                InstallUtil.saveLastExecVersion();
-            }
-            
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
@@ -875,6 +870,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(KILL_AFTER_LOAD)
                 System.exit(0);
 
+            installState = InstallUtil.getInstallState();
+            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
+                InstallUtil.saveLastExecVersion();
+            }
+            
             if(!installState.isSetupComplete()) {
                 // Start immediately with the setup wizard for new installs
                 setupWizard = new SetupWizard(this);
