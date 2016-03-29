@@ -35,6 +35,7 @@ import hudson.Indenter;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -50,6 +51,7 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
+import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
@@ -110,6 +112,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
 
 /**
@@ -1004,6 +1007,36 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *      null if fails.
      */
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+
+    /**
+     * Makes sure that the given name is good as a job name.
+     * For use from {@code newJob}.
+     */
+    @Restricted(DoNotUse.class) // called from newJob view
+    public FormValidation doCheckJobName(@QueryParameter String value) {
+        // this method can be used to check if a file exists anywhere in the file system,
+        // so it should be protected.
+        getOwner().checkPermission(Item.CREATE);
+
+        if (Util.fixEmpty(value) == null) {
+            return FormValidation.ok();
+        }
+
+        try {
+            Jenkins.checkGoodName(value);
+            value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
+            Jenkins.getInstance().getProjectNamingStrategy().checkName(value);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        if (getOwnerItemGroup().getItem(value) != null) {
+            return FormValidation.error(Messages.Hudson_JobAlreadyExists(value));
+        }
+
+        // looks good
+        return FormValidation.ok();
+    }
 
     /**
      * An API REST method to get the allowed {$link TopLevelItem}s and its categories.
