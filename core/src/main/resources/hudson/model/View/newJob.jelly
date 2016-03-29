@@ -48,7 +48,7 @@ THE SOFTWARE.
 
           <j:if test="${!empty(app.itemMap)}">
             <div class="item-copy">
-              <p class="description">Use this option if you want to create a new item from other existing</p>
+              <p class="description">if you want to create a new item from other existing, you can use this option:</p>
               <div class="add-item-copy">
                 <input type="radio" id="copy" name="mode" value="copy" />
                 <div class="icon">
