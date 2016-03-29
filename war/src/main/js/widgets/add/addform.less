@@ -35,7 +35,7 @@ body.add-item {
       .flat {
         .category {
           border-bottom: none;
-          ul {
+          .j-item-options {
             padding: 0 10px;
           }
         }
@@ -92,7 +92,7 @@ body.add-item {
 }
 
 .j-item-options {
-  li:hover {
+  .item-box:hover {
     border-color: #cccccc;
     background: rgba(255, 255, 255, 0.75);
     .icn {
@@ -100,7 +100,7 @@ body.add-item {
     }    
   }
 
-  li.active {
+  .item-box.active {
     cursor: text;
     background-color: #ffffff;
     border-color: #6699cc;
@@ -116,7 +116,7 @@ body.add-item {
     }
   }
 
-  li {
+  .item-box {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -136,11 +136,18 @@ body.add-item {
       color: #000;
       padding-bottom: 5px;
       cursor: pointer;
-      input {
+      input.radio-mode {
         position: absolute;
         top: 24px;
-        left: 25px;
-        display: none;
+        left: -99999999px;
+        
+      }
+      .setting-input {
+        display:block;
+        margin-top:3px;
+      }
+      .yui-ac-container{
+        font-weight:normal;
       }
     }
 
@@ -239,6 +246,15 @@ body.add-item {
 }
 
 .jenkins-config-widgets {
+  .error {
+padding: 5px 42px;
+    background-position-x: 22px;
+    background-color: #fcc;
+    box-shadow: 0 0 1px #900;
+    position: relative;
+    z-index: 1;
+    img {display:none;}
+  }
   .form-config.tabBarFrame {
     position: relative;
     border-bottom: solid 1px #cccccc;
@@ -246,14 +262,25 @@ body.add-item {
 
   .j-add-item-name {
     padding: 20px 20px 10px;
+    
+    label{
+      font-size:.85em;
+      line-height:normal;
+      color:#999;
+      margin:-5px 0 5px;
+      display:block;
+    }
+    
     input {
-      font-size: 1.5em;
+      font-size: 1.67em;
       background-color: #fff;
       border-radius: 0;
       padding: 5px;
       border: none;
       box-shadow: none;
       border-bottom: 1px solid #ccc;
+      display:block;
+      margin-top:3px;
     }
 
     input.no-val {
