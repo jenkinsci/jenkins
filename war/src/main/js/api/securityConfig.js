@@ -29,3 +29,16 @@ exports.saveProxy = function($form, success, error) {
 			error: error
 		});
 };
+
+/**
+ * Calls a stapler post method to save the security configuration
+ */
+exports.saveSecurity = function($form, success, error) {
+	jenkins.staplerPost(
+			'/setupWizard/saveSecurityConfig',
+		$form,
+		success, {
+			dataType: 'html',
+			error: error
+		});
+};

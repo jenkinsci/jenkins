@@ -1,9 +1,7 @@
 package jenkins.install;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -16,37 +14,25 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import hudson.util.VersionNumber;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
 import hudson.FilePath;
+import hudson.model.Descriptor.FormException;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.GlobalSecurityConfiguration;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.HttpResponse;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.logging.Logger;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -66,6 +52,14 @@ public class SetupWizard {
 
     public SetupWizard(Jenkins j) throws IOException, InterruptedException {
         this.jenkins = j;
+        
+        // don't run the upgrade wizard for new installs
+        if(InstallState.NEW.equals(j.getInstallState())) {
+            UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
+            if (uw!=null)
+                uw.setCurrentLevel(new VersionNumber("2.0"));
+        }
+        
         // Create an admin user by default with a 
         // difficult password
         FilePath iapf = getInitialAdminPasswordFile();
@@ -150,11 +144,22 @@ public class SetupWizard {
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
 
-        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
-        if (uw!=null)
-            uw.setCurrentLevel(new VersionNumber("2.0"));
-
         return HttpResponses.okJSON();
+    }
+    
+    /**
+     * Handle security configuration
+     */
+    public HttpResponse doSaveSecurityConfig(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        jenkins.checkPermission(Jenkins.ADMINISTER); // this is redundant, maybe
+        GlobalSecurityConfiguration securityConfig = (GlobalSecurityConfiguration)jenkins.getDynamic("configureSecurity");
+        boolean configureSuccess = securityConfig.configure(req, req.getSubmittedForm());
+        if(configureSuccess) {
+            jenkins.save();
+            jenkins.setInstallState(InstallState.CONFIGURE_SECURITY.getNextState());
+            return HttpResponses.okJSON();
+        }
+        return HttpResponses.errorJSON("Unable to configure security");
     }
     
     /**
