@@ -11,6 +11,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ * Like {@link Initializer} but used during the shut down.
+ *
  * @author Kohsuke Kawaguchi
  */
 @Indexed

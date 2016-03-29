@@ -1,6 +1,7 @@
 package jenkins.slaves;
 
 import hudson.Extension;
+import hudson.init.Terminator;
 import hudson.model.Computer;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
@@ -32,6 +33,14 @@ public class NioChannelSelector {
 
     public NioChannelHub getHub() {
         return hub;
+    }
+
+    @Terminator
+    public void cleanUp() throws IOException {
+        if (hub!=null) {
+            hub.close();
+            hub = null;
+        }
     }
 
     /**
