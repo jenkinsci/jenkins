@@ -44,6 +44,9 @@ function TabBarOverflow(tabBarFrame, tabs) {
     win.on('resize.jenkins.taboverflow', function() {
         tabOverflow.doRefresh();
     });
+    win.on('scroll.jenkins.taboverflow', function() {
+        tabOverflow.hideDropdown();
+    });
 
     function trackOverflow() {
         try {
@@ -88,10 +91,17 @@ TabBarOverflow.prototype.setDropdownContent = function() {
     var tabOverflow = this;
 
     tabOverflow.taboverflowPopup.empty();
-    function addDropTab(tab) {
+    function addDropTab(tabIndex) {
+        var tab = tabOverflow.tabs[tabIndex];
         if (tabOverflow.isTabShowable(tab)) {
             var dropTab = $('<div class="drop-tab">');
-            dropTab.text(tab.text());
+            if (tabOverflow.isTabVisible(tabIndex)) {
+                dropTab.addClass('visible');
+                dropTab.append('<span class="eye">&#x1f441;</span>');
+                dropTab.append(tab.text());
+            } else {
+                dropTab.text(tab.text());
+            }
             tabOverflow.taboverflowPopup.append(dropTab);
             dropTab.click(function() {
                 tabOverflow.hideDropdown();
@@ -100,8 +110,8 @@ TabBarOverflow.prototype.setDropdownContent = function() {
         }
     }
 
-    for (var i = 0; i < this.tabs.length; i++) {
-        addDropTab(this.tabs[i]);
+    for (var i = 0; i < tabOverflow.tabs.length; i++) {
+        addDropTab(i);
     }
 };
 
@@ -194,6 +204,7 @@ TabBarOverflow.prototype.slideForward = function(toTabIndex) {
 };
 
 TabBarOverflow.prototype.fillBackward = function(fromTabIndex) {
+    var $ = jQD.getJQuery();
     for (var i = fromTabIndex; i >= 0 ; i--) {
         var tab = this.tabs[i];
 
@@ -221,8 +232,16 @@ TabBarOverflow.prototype.slideBackward = function(toTabIndex) {
     this.fillForward(toTabIndex);
 };
 
+TabBarOverflow.prototype.isTabVisible = function(tab) {
+    var tabIndex = tab;
+    if (typeof tab === 'object') {
+        tabIndex = this.tabIndex(tab);
+    }
+    return (tabIndex >= this.visibleStartIndex && tabIndex <= this.visibleEndIndex);
+};
+
 TabBarOverflow.prototype.isActiveTabVisible = function() {
-    return (this.activeTabIndex >= this.visibleStartIndex && this.activeTabIndex <= this.visibleEndIndex);
+    return this.isTabVisible(this.activeTabIndex);
 };
 
 TabBarOverflow.prototype.onTabActivate = function(activatedTab) {
