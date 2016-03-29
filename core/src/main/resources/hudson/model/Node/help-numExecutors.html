@@ -1,12 +1,18 @@
 <div>
-  This controls the number of concurrent builds that Jenkins may perform on the
-  master agent. So the value affects the overall system load Jenkins may incur.
+  The maximum number of concurrent builds that Jenkins may perform on this
+  agent.
+  <p>
   A good value to start with would be the number of CPU cores on the machine.
+  Setting a higher value would cause each build to take longer, but could
+  increase the overall throughput. For example, one build might be CPU-bound,
+  while a second build running at the same time might be I/O-bound &mdash; so
+  the second build could take advantage of the spare I/O capacity at that
+  moment.
   <p>
-  Increasing this value beyond that would cause each build to take longer, but
-  it could increase the overall throughput. For example, one build may be
-  CPU-bound, and in the meantime another build, which is I/O-bound, can take
-  advantage of the spare I/O capacity at that moment.
+  Agents must have at least one executor. To temporarily prevent any builds from
+  being executed on an agent, use the <i>Mark this node temporarily offline</i>
+  button on the agent's page.
   <p>
-  Setting this value to 0 will prevent the master from executing any builds.
+  This does not apply to the Jenkins master &mdash; setting the number of
+  executors to zero will prevent any builds from being executed on the master.
 </div>
