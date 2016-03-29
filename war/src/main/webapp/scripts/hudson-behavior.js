@@ -520,9 +520,9 @@ function makeButton(e,onclick) {
         btn.addListener("click",h);
     var be = btn.get("element");
     Element.addClassName(be,clsName);
+    be.setAttribute("title",e.value);
     if(n){ // copy the name
         be.setAttribute("name",n);
-        be.setAttribute("title",n);
     }
     return btn;
 }
