@@ -55,12 +55,10 @@ THE SOFTWARE.
                   <img src="${resURL}/images/48x48/copy.png" />
                 </div>
                 <label>${%Copy from}</label>
-                <input type="text" id="from" name="from" field="copyNewItemFrom" />
+                <j:set var="descriptor" value="${it.descriptor}" />
+                <s:textbox id="from" name="from" field="copyNewItemFrom"/>
                 <div id="copyfrom-validation-required" class="input-validation-message input-message-disabled">&#187; ${%CopyFrom.validation.required}</div>
               </div>
-              <label>${%Copy from}</label>
-              <j:set var="descriptor" value="${it.descriptor}" />
-              <s:textbox id="from" name="from" field="copyNewItemFrom"/>
             </div>
           </j:if>
 
