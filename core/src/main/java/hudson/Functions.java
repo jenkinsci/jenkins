@@ -1925,7 +1925,7 @@ public class Functions {
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
             if (tal !=null) {
-                int p = TcpSlaveAgentListener.CLI_PORT !=null ? TcpSlaveAgentListener.CLI_PORT : tal.getPort();
+                int p = tal.getAdvertisedPort();
                 rsp.setIntHeader("X-Hudson-CLI-Port", p);
                 rsp.setIntHeader("X-Jenkins-CLI-Port", p);
                 rsp.setIntHeader("X-Jenkins-CLI2-Port", p);
