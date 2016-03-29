@@ -777,6 +777,10 @@ var createPluginSetupWizard = function(appendTarget) {
 			jenkins.goTo('/');
 		}));
 	};
+	
+	var startOver = function() {
+		jenkins.goTo('/');
+	};
 
 	// scoped click handler, prevents default actions automatically
 	var bindClickHandler = function(cls, action) {
@@ -807,7 +811,8 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.skip-first-user': skipFirstUser,
 		'.show-proxy-config': setupProxy,
 		'.save-proxy-config': saveProxyConfig,
-		'.skip-plugin-installs': function() { installPlugins([]); }
+		'.skip-plugin-installs': function() { installPlugins([]); },
+		'.start-over': startOver
 	};
 	for(var cls in actions) {
 		bindClickHandler(cls, actions[cls]);
