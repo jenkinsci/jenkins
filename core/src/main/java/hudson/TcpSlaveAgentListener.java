@@ -94,6 +94,13 @@ public final class TcpSlaveAgentListener extends Thread {
         return serverSocket.socket().getLocalPort();
     }
 
+    /**
+     * Gets the TCP port number in which we are advertising.
+     */
+    public int getAdvertisedPort() {
+        return CLI_PORT != null ? CLI_PORT : getPort();
+    }
+
     @Override
     public void run() {
         try {

@@ -28,8 +28,8 @@ THE SOFTWARE.
     Publicize the TCP port number for JNLP slave agents so that they know where to conenct.
     Keep the legacy header for better backward compatibility
   -->
-  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
-  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
+  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
   <!--
     if the host name is overriden, advertise that as well
   -->
