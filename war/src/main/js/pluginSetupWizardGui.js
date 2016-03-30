@@ -289,11 +289,13 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 
 	// call this to go install the selected set of plugins
-	var installPlugins = function(plugins) {
+	var installPlugins = function(pluginNames) {
+		// make sure to have the correct list of selected plugins
+		selectedPluginNames = pluginNames;
 		// Switch to the right view but function() to force update when progressPanel re-rendered
 		setPanel(function() { return progressPanel(arguments); }, { installingPlugins : [] });
 
-		pluginManager.installPlugins(plugins, handleGenericError(function() {
+		pluginManager.installPlugins(pluginNames, handleGenericError(function() {
 			showInstallProgress();
 		}));
 	};
@@ -822,6 +824,10 @@ var createPluginSetupWizard = function(appendTarget) {
 			jenkins.goTo('/');
 		}));
 	};
+	
+	var startOver = function() {
+		jenkins.goTo('/');
+	};
 
 	// scoped click handler, prevents default actions automatically
 	var bindClickHandler = function(cls, action) {
@@ -853,7 +859,8 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.show-proxy-config': setupProxy,
 		'.save-proxy-config': saveProxyConfig,
 		'.save-security': saveSecurity,
-		'.skip-plugin-installs': function() { installPlugins([]); }
+		'.skip-plugin-installs': function() { installPlugins([]); },
+		'.start-over': startOver
 	};
 	for(var cls in actions) {
 		bindClickHandler(cls, actions[cls]);
