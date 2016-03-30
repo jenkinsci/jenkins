@@ -16,9 +16,6 @@ var jRoot = $('head').attr('data-rooturl');
 $.when(getItems()).done(function(data){
   $(function() {
 
-    // The main panel content is hidden by default via an inline style. We're ready to remove that now.
-    $('#add-item-panel').removeAttr('style');
-
     //////////////////////////
     // helper functions...
 
@@ -66,7 +63,7 @@ $.when(getItems()).done(function(data){
 
     function activateValidationMessage(messageId, context, message) {
       if (message !== undefined && message !== '') {
-        $(messageId, context).text(message);
+        $(messageId, context).html('&#187; ' + message);
       }
       cleanValidationMessages(context);
       hideInputHelp(context);
@@ -153,6 +150,9 @@ $.when(getItems()).done(function(data){
       return $icn;
     }
 
+    // The main panel content is hidden by default via an inline style. We're ready to remove that now.
+    $('#add-item-panel').removeAttr('style');
+
     // Render all categories
     var $categories = $('div.categories');
     $.each(data.categories, function(i, elem) {
@@ -161,7 +161,6 @@ $.when(getItems()).done(function(data){
 
     // Focus
     $("#add-item-panel").find("#name").focus();
-
 
     // Init NameField
     $('input[name="name"]', '#createItem').blur(function() {

@@ -40,7 +40,7 @@ THE SOFTWARE.
               <input name="name" id="name" placeholder="New item name..." type="text" />
               <div class="input-help">&#187; ${%ItemName.help}</div>
               <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
-              <div id="itemname-invalid" class="input-validation-message input-message-disabled">&#187; </div>
+              <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
               <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
             </div>
           </div>
