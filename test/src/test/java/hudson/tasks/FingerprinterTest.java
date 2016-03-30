@@ -54,7 +54,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -315,7 +314,7 @@ public class FingerprinterTest {
     }
 
     @SuppressWarnings("unchecked")
-    @RandomlyFails("for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>")
+    // TODO randomly fails: for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>
     @Issue("JENKINS-18417")
     @Test
     public void fingerprintCleanup() throws Exception {
