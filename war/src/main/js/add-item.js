@@ -22,6 +22,15 @@ $.when(getItems()).done(function(data){
     //////////////////////////
     // helper functions...
 
+    function parseResponseFromCheckJobName(data) {
+      var html = $.parseHTML(data);
+      var element = html[0];
+      if (element !== undefined) {
+        return $(element).text();
+      }
+      return undefined;
+    }
+
     function cleanClassName(className){
       return className.replace(/\./g,'_');
     }
@@ -50,15 +59,15 @@ $.when(getItems()).done(function(data){
       return $('input[type="text"][name="from"]', '#createItem').val();
     }
 
-    function isItemNameValid() {
+    function isItemNameEmpty() {
       var itemName = $('input[name="name"]', '#createItem').val();
-      if (itemName !== '') {
-        return true;
-      }
-      return false;
+      return (itemName === '') ? true : false;
     }
 
-    function activateValidationMessage(messageId, context) {
+    function activateValidationMessage(messageId, context, message) {
+      if (message !== undefined && message !== '') {
+        $(messageId, context).text(message);
+      }
       cleanValidationMessages(context);
       hideInputHelp(context);
       $(messageId).removeClass('input-message-disabled');
@@ -113,7 +122,7 @@ $.when(getItems()).done(function(data){
         $this.find('input[type="radio"][name="mode"]').prop('checked', true);
         $('input[type="text"][name="from"]', '#createItem').val('');
         cleanValidationMessages('.add-item-copy');
-        if (!isItemNameValid()) {
+        if (isItemNameEmpty()) {
           activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         }
@@ -156,9 +165,21 @@ $.when(getItems()).done(function(data){
 
     // Init NameField
     $('input[name="name"]', '#createItem').blur(function() {
-      if (isItemNameValid()) {
-        cleanValidationMessages('.add-item-name');
-        showInputHelp('.add-item-name');
+      if (!isItemNameEmpty()) {
+        var itemName = $('input[name="name"]', '#createItem').val();
+        $.get(jRoot + "/checkJobName", { value: itemName }).done(function(data) {
+          var message = parseResponseFromCheckJobName(data);
+          if (message !== '') {
+            activateValidationMessage('#itemname-invalid', '.add-item-name', message);
+            $('input[name="name"][type="text"]', '#createItem').focus();
+          } else {
+            cleanValidationMessages('.add-item-name');
+            showInputHelp('.add-item-name');
+          }
+        });
+      } else {
+        activateValidationMessage('#itemname-required', '.add-item-name');
+        $('input[name="name"][type="text"]', '#createItem').focus();
       }
     });
 
@@ -176,7 +197,7 @@ $.when(getItems()).done(function(data){
 
     // Client-side validation
     $("#createItem").submit(function(event) {
-      if (!isItemNameValid()) {
+      if (isItemNameEmpty()) {
         activateValidationMessage('#itemname-required', '.add-item-name');
         $('input[name="name"][type="text"]', '#createItem').focus();
         event.preventDefault();
