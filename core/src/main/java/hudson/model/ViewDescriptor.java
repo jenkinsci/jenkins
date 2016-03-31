@@ -26,12 +26,14 @@ package hudson.model;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
+import java.util.Iterator;
+import java.util.List;
+import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.AncestorInPath;
-
-import java.util.List;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link Descriptor} for {@link View}.
@@ -76,8 +78,22 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Auto-completion for the "copy from" field in the new job page.
      */
     @Restricted(DoNotUse.class)
-    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup container) {
-        return AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
+    public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup<?> container) {
+        AutoCompletionCandidates candidates = AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
+        if (container instanceof DirectlyModifiableTopLevelItemGroup) {
+            DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;
+            Iterator<String> it = candidates.getValues().iterator();
+            while (it.hasNext()) {
+                TopLevelItem item = Jenkins.getInstance().getItem(it.next(), container, TopLevelItem.class);
+                if (item == null) {
+                    continue; // ?
+                }
+                if (!modifiableContainer.canAdd(item)) {
+                    it.remove();
+                }
+            }
+        }
+        return candidates;
     }
 
     /**

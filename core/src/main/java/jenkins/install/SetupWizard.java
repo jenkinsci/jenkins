@@ -102,7 +102,7 @@ public class SetupWizard {
                 + "*************************************************************" + ls
                 + "*************************************************************" + ls
                 + ls
-                + "Jenkins initial setup is required. An admin user has been created and"
+                + "Jenkins initial setup is required. An admin user has been created and "
                 + "a password generated." + ls
                 + "Please use the following password to proceed to installation:" + ls
                 + ls
