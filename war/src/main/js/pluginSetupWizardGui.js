@@ -212,6 +212,15 @@ var createPluginSetupWizard = function(appendTarget) {
 						'<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>');
 				}
 
+				// add Jenkins version
+				if(translations.installWizard_jenkinsVersionTitle) { // wait until translations available
+					var $modalFooter = $container.find('.modal-footer');
+					if($modalFooter.length == 0) {
+						$modalFooter = $('<div class="modal-footer"></div>').appendTo($container);
+					}
+					$modalFooter.prepend('<div class="jenkins-version">'+translations.installWizard_jenkinsVersionTitle+' '+$('body').attr('data-version')+'</div>');
+				}
+				
 				if(oncomplete) {
 					oncomplete();
 				}
