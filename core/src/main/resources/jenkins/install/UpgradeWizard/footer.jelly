@@ -3,25 +3,52 @@
   <j:if test="${it.due}">
     <style>
       #upgrade-fragment {
-        background-color: #fce94f;
+        background: url(${rootURL}/images/jenkins.png) no-repeat 5% -63px;
+        padding: 10px;
+        box-shadow: 0 1px rgba(0,0,0,.1), 0 2px 5px rgba(0,0,0,.2), inset 0 -50px 50px -50px #cef;
+        position: relative;
       }
 
       #upgrade-notice {
-        font-weight: bold;
         text-align: center;
         font-size: 20px;
         height: 60px;
-
+        vertical-align:middle;
         display: flex;
         justify-content: center;
         align-items: center;
       }
-
+      #upgrade-notice > .post{
+        display:inline-block;
+        color:#fff;
+        background: #478;
+        border:1px solid #356;
+        text-decoration:none;
+        padding:.5em;
+        margin:0 .33em 0 .5em;
+        border-radius:3px;
+      }
+      #upgrade-notice > .post:hover{
+        background: #356;
+      }
       #upgrade-snooze {
-        float:right;
-        margin: 3px;
-        text-decoration: none;
-        display: block;
+        position:absolute;
+        text-decoration:none;
+        font-weight:bold;
+        width:2.5em;
+        line-height:1.33em;
+        text-align:center;
+        top: -2px;
+        right: 25px;
+        background-color: #d24939;
+        color: #eeeeee;
+        border: 1px solid #be3a2b;
+        border-bottom-left-radius:3px;
+        border-bottom-right-radius:3px;
+      }
+      #upgrade-snooze:hover{
+        background:#900;
+        color:#fff;
       }
     </style>
     <div style="display:none">
@@ -30,11 +57,9 @@
           x
         </a>
         <div id="upgrade-notice">
-          <div>
-            <j:whitespace>${%msg.before}</j:whitespace>
-            <f:link href="${rootURL}/${it.url}/upgrade" post="true">${%msg.link}</f:link>
-            <j:whitespace>${%msg.after}</j:whitespace>
-          </div>
+          <j:whitespace>${%msg.before}</j:whitespace> 
+          <f:link href="${rootURL}/${it.url}/upgrade" post="true">${%msg.link}</f:link>
+          <j:whitespace>${%msg.after}</j:whitespace>
         </div>
       </div>
     </div>

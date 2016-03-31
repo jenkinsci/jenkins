@@ -9,7 +9,7 @@ var jenkins = require('../util/jenkins');
  */
 exports.saveFirstUser = function($form, success, error) {
 	jenkins.staplerPost(
-			'/securityRealm/createFirstAccount',
+			'/setupWizard/createAdminUser',
 		$form,
 		success, {
 			dataType: 'html',

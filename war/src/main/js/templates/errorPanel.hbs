@@ -2,10 +2,15 @@
 	<h4 class="modal-title">Error</h4>
 </div>
 <div class="modal-body">
-	<div class="container error-container">
+	<div class="container error-container" id="error-message">
 		<h1>{{translations.installWizard_error_header}}</h1>
 		<div class="alert alert-danger fade in">
 			{{errorMessage}}
 		</div>
 	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-primary start-over">
+		{{translations.installWizard_retry}}
+	</button>
 </div>

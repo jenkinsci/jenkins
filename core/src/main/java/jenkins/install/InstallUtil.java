@@ -70,6 +70,16 @@ public class InstallUtil {
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static InstallState getInstallState() {
+        // Support a simple state override. Useful for testing.
+        String stateOverride = System.getenv("jenkins.install.state");
+        if (stateOverride != null) {
+            try {
+                return InstallState.valueOf(stateOverride.toUpperCase());
+            } catch (RuntimeException e) {
+                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
+            }
+        }
+
         // install wizard will always run if environment specified
         if (!Boolean.getBoolean("jenkins.install.runSetupWizard")) {
             if (Functions.getIsUnitTest()) {
