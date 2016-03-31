@@ -1,57 +1,242 @@
-body.add-item {
-  #side-panel {
-    transition: all 0.5s ease;
+#add-item-panel {
+
+  form > .header {
+    position: relative;
+    border: 1px solid #cccccc;
+    border-bottom: none;
+    background: #eeeeee;
+    -webkit-border-top-left-radius: 3px;
+    -moz-border-top-left-radius: 3px;
+    border-top-left-radius: 3px;
+    -webkit-border-top-right-radius: 3px;
+    -moz-border-top-right-radius: 3px;
+    border-top-right-radius: 3px;
+    z-index: 5;
   }
 
-  #main-panel {
-    .jenkins-config.no-select .j-item-options li {
-      .icn {
-        border-color: #900;
-      }
+  form > .footer {
+    position: relative;
+    border: 1px solid #cccccc;
+    border-top: none;
+    background: #eeeeee;
+    height: 110px;
 
-      .icn:after {
-        content: ' ';
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        box-shadow: #900 0 0 4px 2px;
-        border-radius: 50%;
+    .btn-decorator {
+      position: absolute;
+      bottom: -1px;
+      left: -1px;
+      padding: 20px 30px;
+      width: auto;
+      border-top-right-radius: 10px;
+      border: 1px solid #aaccbb;
+      background: rgba(245, 249, 239, 0.75);
+      text-align: center;
+
+      button[type=submit] {
+        padding: 5px 20px;
+        background-color: rgb(204, 221, 238);
+        border-color: rgb(102, 153, 204);
+        border-radius: 3px;
+        border-width: 1px;
+        border-style: solid;
+        color: rgb(80, 80, 80);
+        font-weight: bold;
+        font-size: 12px;
+        line-height: 27px;
       }
     }
+  }
 
-    .jenkins-config {
-      padding: 0px;
-      border-radius: 0;
-      background: #f9f9f9;
-      border: none;
+  .add-item-name {
+    padding: 20px;
+
+    label {
+      position: relative;
+      display: block;
+      font-size: 22px;
+      font-weight: bold;
+      padding-bottom: 10px;
+    }
+  }
+
+  .item-copy {
+    position: relative;
+    border: 1px solid #cccccc;
+    border-top: none;
+    padding: 20px;
+    background-color: #f9f9f9;
+
+    p.description {
+      font-size: 16px;
+      margin-top: 0;
+    }
+
+    .add-item-copy {
+      position: relative;
+      padding-left: 58px;
+
+      /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
+      font-family: Helvetica, Arial, sans-serif !important;
+
+      input[type=radio] {
+        display: none;
+      }
+
+      label {
+        line-height: 48px;
+        padding: 0 10px 0 0;
+      }
+
+      input {
+        font-size: inherit;
+      }
+
+      .icon {
+        left: 0;
+        top: 0;
+      }
+    }
+  }
+
+  .add-item-name, .add-item-copy {
+    .input-help {
+      color: #666;
+      font-style: italic;
+      font-size: 13px;
+      padding-top: 2px;
+    }
+
+    .input-validation-message {
+      color: red;
+      padding-top: 2px;
+      font-weight: bold;
+    }
+
+    .input-message-disabled {
+      display: none;
+    }
+  }
+
+
+  .icon {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    height: 48px;
+    width: 48px;
+    background: #ffffff;
+    border: 1px solid #6699cc;
+    border-radius: 50%;
+    opacity: .9;
+
+    img {
+      position: relative;
+    }
+  }
+
+  .icon:before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    background: #C0D8E2;
+  }
+
+  .default-icon {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 48px;
+    font-weight: bold;
+    font-size: 175%;
+    color: #ffffff;
+    text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 1px;
+    opacity: .75;
+
+    .b {
+      text-transform: lowercase;
+    }
+  }
+
+  .c-D33833 {
+    border: 1px solid #900;
+    box-shadow:
+      inset #900 0 0 1px,
+      inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25),
+      inset -5px -5px 10px 2px #903,
+      inset -5px -10px 15px 14px #D33833
+  }
+
+  .c-6D6B6D {
+    border: 1px solid #000;
+    box-shadow:
+      inset #333 0 0 1px,
+      inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25),
+      inset -5px -5px 10px 2px #222,
+      inset -5px -10px 15px 14px #555
+  }
+
+  .c-335061 {
+    border: 1px solid #356;
+    box-shadow:
+      inset #024 0 0 1px,
+      inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25),
+      inset -5px -5px 10px 2px #012,
+      inset -5px -10px 15px 14px #335061
+  }
+
+  .c-49728B {
+    border: 1px solid #036;
+    box-shadow:
+      inset #036 0 0 1px,
+      inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25),
+      inset -5px -5px 10px 2px #036,
+      inset -5px -10px 15px 14px #49728B
+  }
+
+  .c-6699CC {
+    border: 1px solid #6699cc;
+    box-shadow:
+      inset #003399 0 0 1px,
+      inset #ffffff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25),
+      inset -5px -5px 10px 2px #336699,
+      inset -5px -10px 15px 14px #6699cc;
+  }
+
+  input {
+    font-size: 1.5em;
+    background-color: #fff;
+    padding: 5px 10px;
+    border: 1px solid #999;
+    width: 50%;
+    min-width: 300px;
+  }
+
+  .categories {
+    border: 1px solid #cccccc;
+    background-color: #f9f9f9;
+
+    .category {
       border-bottom: 1px solid #cccccc;
-      .categories {
-        border-left: 1px solid #cccccc;
-        border-right: 1px solid #cccccc;
-      }
-      .flat {
-        .category {
-          border-bottom: none;
-          ul {
-            padding: 0 10px;
-          }
-        }
-        .category:first-child {
-          padding-top: 10px;
-        }
-        .category:last-child {
-          border-top: 1px solid #cccccc;
-          border-bottom: 1px solid #cccccc;
-          padding: 10px 0;
-          margin-top: 10px;
-        }
-      }
+      padding: 10px;
 
-      .category-header {
+      .header {
         padding: 0 20px;
+
         h2 {
           margin: 0;
           padding: 15px 0 0;
@@ -61,43 +246,46 @@ body.add-item {
           margin-top: 5px;
         }
       }
+    }
 
-      table {
-        tr {
-          display: none;
-        }
-
-        tr:last-of-type {
-          display: table-row;
-          td {
-            border-left: 1px solid #cccccc;
-            border-right: 1px solid #cccccc;
-          }
-
-          #bottom-sticker {
-            margin: 30px 30px -16px -6px;
-          }
-        }
-      }
+    .category:last-child {
+      border-bottom: none;
     }
   }
+
+  .categories.flat {
+    .category {
+      border-bottom: none;
+
+      .header {
+        display: none;
+      }
+    }
+
+    .category:first-child {
+      padding-bottom: 0;
+    }
+
+    .category:last-child {
+      padding-top: 0;
+    }
+  }
+
 }
 
-.j-item-options li , .j-item-options {
+.j-item-options li, .j-item-options {
   display: block;
   margin: 0;
+  padding: 0;
   list-style: none;
   position: relative;
-  padding: 10px;
 }
 
 .j-item-options {
-  li:hover {
+
+  li:hover, li:focus {
     border-color: #cccccc;
-    background: rgba(255, 255, 255, 0.75);
-    .icn {
-      opacity:.9;
-    }    
+    background: rgba(255, 255, 255, 0.65);
   }
 
   li.active {
@@ -111,7 +299,12 @@ body.add-item {
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
-    .icn {
+    -moz-transition: .5s;
+    -webkit-transition: .5s;
+    -o-transition: .5s;
+    transition: .5s;
+
+    .icon {
       opacity: 1
     }
   }
@@ -129,6 +322,7 @@ body.add-item {
     padding: 10px 10px 10px 68px;
     min-height: 68px;
     margin: 2px 0;
+
     label {
       display: block;
       font-size: 1.1em;
@@ -136,6 +330,7 @@ body.add-item {
       color: #000;
       padding-bottom: 5px;
       cursor: pointer;
+
       input {
         position: absolute;
         top: 24px;
@@ -143,125 +338,5 @@ body.add-item {
         display: none;
       }
     }
-
-    .icn.df {
-      box-shadow: inset #003399 0 0 1px, inset #ffffff 0 0 0 1px, 0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #336699, inset -5px -10px 15px 14px #6699cc;
-      .b{
-        text-transform: lowercase;
-      }
-    }
-    .icn.df.c-D33833{
-      border-color:#900;
-      box-shadow: 
-        inset #900 0 0 1px, 
-        inset #fff 0 0 0 1px, 
-        0 5px 3px -2px rgba(0, 0, 0, 0.25), 
-        inset -5px -5px 10px 2px #903,
-        inset -5px -10px 15px 14px #D33833
-    }
-    .icn.df.c-6D6B6D{
-      border-color:#000;
-      box-shadow: 
-        inset #333 0 0 1px, 
-        inset #fff 0 0 0 1px, 
-        0 5px 3px -2px rgba(0, 0, 0, 0.25), 
-        inset -5px -5px 10px 2px #222,
-        inset -5px -10px 15px 14px #555
-    }
-    .icn.df.c-335061{
-      border-color:#356;
-      box-shadow: 
-        inset #024 0 0 1px, 
-        inset #fff 0 0 0 1px, 
-        0 5px 3px -2px rgba(0, 0, 0, 0.25), 
-        inset -5px -5px 10px 2px #012,
-        inset -5px -10px 15px 14px #335061
-    }
-    .icn.df.c-49728B{
-      border-color:#036;
-      box-shadow: 
-        inset #036 0 0 1px, 
-        inset #fff 0 0 0 1px, 
-        0 5px 3px -2px rgba(0, 0, 0, 0.25), 
-        inset -5px -5px 10px 2px #036,
-        inset -5px -10px 15px 14px #49728B
-    }
-
-    .icn.df:before {
-      background: none ! important;
-    }
-
-    .icn {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      height: 48px;
-      width: 48px;
-      background: #ffffff;
-      border: 1px solid #6699cc;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 48px;
-      opacity: .75;
-      .img {
-        display: block;
-        top: -1px;
-        left: -1px;
-        height: 48px;
-        width: 48px;
-        position: absolute;
-      }
-
-      .dfIcn {
-        position: relative;
-        z-index: 2;
-        font-weight: bold;
-        font-size: 175%;
-        color: #ffffff;
-        text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 1px;
-        vertical-align: top;
-      }
-    }
-
-    .icn:before {
-      content: ' ';
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 24px;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      background: #C0D8E2;
-    }
   }
 }
-
-.jenkins-config-widgets {
-  .form-config.tabBarFrame {
-    position: relative;
-    border-bottom: solid 1px #cccccc;
-  }
-
-  .j-add-item-name {
-    padding: 20px 20px 10px;
-    input {
-      font-size: 1.5em;
-      background-color: #fff;
-      border-radius: 0;
-      padding: 5px;
-      border: none;
-      box-shadow: none;
-      border-bottom: 1px solid #ccc;
-    }
-
-    input.no-val {
-      border-color: #900;
-      color: #900;
-      background: #fee;
-      box-shadow: inset #900 0 0 1px;
-    }
-  }
-}
-
