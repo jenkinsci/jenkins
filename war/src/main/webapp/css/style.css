@@ -1976,6 +1976,18 @@ body.main-panel-only #main-panel {
     }
 }
 
+body.no-decoration #main-panel {
+    margin: 0 auto !important;
+}
+body.no-decoration #page-head,
+body.no-decoration #side-panel,
+body.no-decoration footer {
+    display: none;
+}
+body.no-sticker #bottom-sticker {
+    display: none;
+}
+
 /* see the Icon class for the definition of these CSS classes */
 .icon-sm {
     width: 16px;

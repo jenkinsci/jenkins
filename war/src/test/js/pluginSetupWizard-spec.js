@@ -355,10 +355,10 @@ describe("pluginSetupWizard.js", function () {
         setTimeout(function() {
                 expect($('.install-done').is(':visible')).toBe(false);
 
-                expect($('.save-first-user').is(':visible')).toBe(true);
+                expect($('.installing-panel').is(':visible')).toBe(true);
 
                 done();
-        }, 500);
+        }, 1);
 
             goButton.click();
         }, ajaxMappings);

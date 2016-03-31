@@ -224,9 +224,11 @@ exports.getWindow = function($form) {
 	$(top.document).find('iframe').each(function() {
 		var windowFrame = this.contentWindow;
 		var $f = $(this).contents().find('form');
-		if($f.length > 0 && $form[0] === $f[0]) {
-			wnd = windowFrame;
-		}
+		$f.each(function() {
+			if($form[0] === this) {
+				wnd = windowFrame;
+			}
+		});
 	});
 	return wnd;
 };
