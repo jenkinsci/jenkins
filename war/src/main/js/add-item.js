@@ -166,7 +166,7 @@ $.when(getItems()).done(function(data){
     $('input[name="name"]', '#createItem').blur(function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
-        $.get(jRoot + "/checkJobName", { value: itemName }).done(function(data) {
+        $.get("checkJobName", { value: itemName }).done(function(data) {
           var message = parseResponseFromCheckJobName(data);
           if (message !== '') {
             activateValidationMessage('#itemname-invalid', '.add-item-name', message);
