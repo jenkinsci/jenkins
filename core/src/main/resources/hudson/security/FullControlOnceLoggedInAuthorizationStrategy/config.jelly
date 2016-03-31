@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
+  xmlns:f="/lib/form">
+  <f:entry field="allowAnonymousRead">
+    <f:checkbox default="true" title="${%Allow anonymous read access}"/>
+  </f:entry>
+</j:jelly>

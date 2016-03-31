@@ -50,7 +50,7 @@ public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveCo
     }
 
     /**
-     * When the slave is deleted, free the node right away.
+     * When the agent is deleted, free the node right away.
      */
     @Override
     public HttpResponse doDoDelete() throws IOException {

@@ -34,7 +34,7 @@ THE SOFTWARE.
 
         <l:hasPermission permission="${it.CONNECT}">
           <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Relaunch slave agent}" />
+            <f:submit value="${%Relaunch agent}" />
           </form>
         </l:hasPermission>
       </j:when>
@@ -42,7 +42,7 @@ THE SOFTWARE.
       <j:otherwise>
         <l:hasPermission permission="${it.CONNECT}">
           <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Launch slave agent}" />
+            <f:submit value="${%Launch agent}" />
           </form>
         </l:hasPermission>
       </j:otherwise>

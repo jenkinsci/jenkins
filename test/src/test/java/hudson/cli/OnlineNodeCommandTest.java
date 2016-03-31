@@ -65,7 +65,7 @@ public class OnlineNodeCommandTest {
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Slave/Connect permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
     }
 
     @Test public void onlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
@@ -74,7 +74,7 @@ public class OnlineNodeCommandTest {
                 .invokeWithArgs("never_created");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: No such slave \"never_created\" exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
 
     }
 
