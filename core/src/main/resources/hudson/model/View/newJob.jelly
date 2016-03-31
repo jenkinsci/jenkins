@@ -36,8 +36,8 @@ THE SOFTWARE.
         <form method="post" action="createItem" name="createItem" id="createItem">
           <div class="header">
             <div class="add-item-name">
-              <label for="name">Enter an item name</label>
-              <input name="name" id="name" placeholder="New item name..." type="text" />
+              <label for="name">${%ItemName.label}</label>
+              <input name="name" id="name" type="text" />
               <div class="input-help">&#187; ${%ItemName.help}</div>
               <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
               <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
@@ -55,9 +55,9 @@ THE SOFTWARE.
                 <div class="icon">
                   <img src="${resURL}/images/48x48/copy.png" />
                 </div>
-                <label>${%Copy from}</label>
+                <label>${%CopyOption.label}</label>
                 <j:set var="descriptor" value="${it.descriptor}" />
-                <s:textbox id="from" name="from" field="copyNewItemFrom"/>
+                <s:textbox id="from" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
               </div>
             </div>
           </j:if>

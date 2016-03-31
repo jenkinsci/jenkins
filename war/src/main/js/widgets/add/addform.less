@@ -75,6 +75,9 @@
       position: relative;
       padding-left: 58px;
 
+      /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
+      font-family: Helvetica, Arial, sans-serif !important;
+
       input[type=radio] {
         display: none;
       }
@@ -129,7 +132,6 @@
     img {
       position: relative;
     }
-
   }
 
   .icon:before {
@@ -219,7 +221,7 @@
     font-size: 1.5em;
     background-color: #fff;
     padding: 5px 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #999;
     width: 50%;
     min-width: 300px;
   }
@@ -267,7 +269,6 @@
     .category:last-child {
       padding-top: 0;
     }
-
   }
 
 }
