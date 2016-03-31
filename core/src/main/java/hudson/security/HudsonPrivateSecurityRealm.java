@@ -271,6 +271,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates a user account. Requires {@link Jenkins#ADMINISTER}
      */
+    @Restricted(NoExternalUse.class)
     public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         User u = createAccount(req, rsp, false, addUserView);
