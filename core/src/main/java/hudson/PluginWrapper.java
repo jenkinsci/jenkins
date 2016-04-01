@@ -549,12 +549,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        String requiredCoreVersion = getRequiredCoreVersion();
-        if (requiredCoreVersion == null) {
-            throw new IOException(shortName + " doesn't declare required core version.");
-        } else {
-            if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+        if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK) {
+            String requiredCoreVersion = getRequiredCoreVersion();
+            if (requiredCoreVersion == null) {
+                LOGGER.warning(shortName + " doesn't declare required core version.");
+            } else {
+                if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                    throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+                }
             }
         }
         List<String> missingDependencies = new ArrayList<String>();
