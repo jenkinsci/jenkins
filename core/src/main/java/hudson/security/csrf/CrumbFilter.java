@@ -62,17 +62,11 @@ public class CrumbFilter implements Filter {
             String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
             String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
 
-            String crumb = httpRequest.getHeader(crumbFieldName);
             boolean valid = false;
+            String crumb = extractCrumbFromRequest(httpRequest, crumbFieldName);
             if (crumb == null) {
-                Enumeration<?> paramNames = request.getParameterNames();
-                while (paramNames.hasMoreElements()) {
-                    String paramName = (String) paramNames.nextElement();
-                    if (crumbFieldName.equals(paramName)) {
-                        crumb = request.getParameter(paramName);
-                        break;
-                    }
-                }
+                // compatibility for clients that hard-code the default crumb name up to Jenkins 1.TODO
+                extractCrumbFromRequest(httpRequest, ".crumb");
             }
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
@@ -91,6 +85,21 @@ public class CrumbFilter implements Filter {
         } else {
             chain.doFilter(request, response);
         }
+    }
+
+    private String extractCrumbFromRequest(HttpServletRequest httpRequest, String crumbFieldName) {
+        String crumb = httpRequest.getHeader(crumbFieldName);
+        if (crumb == null) {
+            Enumeration<?> paramNames = httpRequest.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String paramName = (String) paramNames.nextElement();
+                if (crumbFieldName.equals(paramName)) {
+                    crumb = httpRequest.getParameter(paramName);
+                    break;
+                }
+            }
+        }
+        return crumb;
     }
 
     protected static boolean isMultipart(HttpServletRequest request) {

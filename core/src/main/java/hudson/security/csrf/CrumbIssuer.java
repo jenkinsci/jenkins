@@ -44,6 +44,9 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
 
+    @Restricted(NoExternalUse.class)
+    public static final String DEFAULT_CRUMB_NAME = "Jenkins-Crumb";
+
     /**
      * Get the name of the request parameter the crumb will be stored in. Exposed
      * here for the remote API.
@@ -199,7 +202,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             } else if ("concat(//crumbRequestField,\":\",//crumb)".equals(xpath)) { // new FullDuplexHttpStream; Main
                 text = ci.getCrumbRequestField() + ':' + ci.getCrumb();
             } else if ("concat(//crumbRequestField,'=',//crumb)".equals(xpath)) { // NetBeans
-                if (ci.getCrumbRequestField().startsWith(".")) {
+                if (ci.getCrumbRequestField().startsWith(".") || ci.getCrumbRequestField().contains("-")) {
                     text = ci.getCrumbRequestField() + '=' + ci.getCrumb();
                 } else {
                     text = null;
