@@ -32,7 +32,6 @@ import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
-import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
 
@@ -55,6 +54,12 @@ public class SetupWizard {
 
     public SetupWizard(Jenkins j) throws IOException, InterruptedException {
         this.jenkins = j;
+
+        // this was determined to be a new install, don't run the update wizard here
+        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
+        if (uw!=null)
+            uw.setCurrentLevel(Jenkins.getVersion());
+        
         // Create an admin user by default with a 
         // difficult password
         FilePath iapf = getInitialAdminPasswordFile();
@@ -157,6 +162,13 @@ public class SetupWizard {
                     admin = null;
                 }
                 
+                // Success! Delete the temporary password file:
+                try {
+                    getInitialAdminPasswordFile().delete();
+                } catch (InterruptedException e) {
+                    throw new IOException(e);
+                }
+                
                 j.setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
                 
                 // ... and then login
@@ -187,10 +199,6 @@ public class SetupWizard {
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
-
-        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
-        if (uw!=null)
-            uw.setCurrentLevel(new VersionNumber("2.0"));
 
         return HttpResponses.okJSON();
     }

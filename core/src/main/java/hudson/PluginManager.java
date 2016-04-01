@@ -1193,7 +1193,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
 			updateCenter.persistInstallStatus();
                     jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
-                    InstallUtil.saveLastExecVersion();
                 }
             }.start();
         }
