@@ -3,6 +3,7 @@ package jenkins.install;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -25,6 +26,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
 import hudson.FilePath;
+import hudson.model.UpdateCenter;
 import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -32,6 +34,7 @@ import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
 
@@ -58,7 +61,7 @@ public class SetupWizard {
         // this was determined to be a new install, don't run the update wizard here
         UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
         if (uw!=null)
-            uw.setCurrentLevel(Jenkins.getVersion());
+            uw.setCurrentLevel(new VersionNumber("2.0"));
         
         // Create an admin user by default with a 
         // difficult password
@@ -125,6 +128,13 @@ public class SetupWizard {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
         } catch (ServletException e) {
             throw new AssertionError(e);
+        }
+        
+        try {
+            // Make sure plugin metadata is up to date
+            UpdateCenter.updateDefaultSite();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
     

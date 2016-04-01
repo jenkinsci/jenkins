@@ -342,7 +342,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private transient InstallState installState = InstallState.NEW;
+    private transient InstallState installState = InstallState.UNKNOWN;
     
     /**
      * If we're in the process of an initial setup, 
