@@ -71,6 +71,7 @@ public class SetupWizard {
                 // JENKINS-33599 - write to a file in the jenkins home directory
                 // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
                 // and use group 'jenkins' for admins. So we allo groups to read this file
+                iapf.touch(System.currentTimeMillis());
                 iapf.chmod(0640);
                 iapf.write(randomUUID, "UTF-8");
                 
