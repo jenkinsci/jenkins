@@ -22,45 +22,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New Project" page.
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout norefresh="true" cssclass="add-item main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout norefresh="true" cssclass="main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
 
     <l:main-panel>
-      <div id="create-item-panel" style="display: none;">
-      <s:form method="post" action="createItem" name="createItem">
+      <div id="add-item-panel" style="display: none;">
+        <form method="post" action="createItem" name="createItem" id="createItem">
+          <div class="header">
+            <div class="add-item-name">
+              <label for="name">${%ItemName.label}</label>
+              <input name="name" id="name" type="text" />
+              <div class="input-help">&#187; ${%ItemName.help}</div>
+              <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+              <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
+              <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+            </div>
+          </div>
 
-        <j:if test="${!empty(app.itemMap)}">
-          <s:block>
-            <input type="radio" id="copy" name="mode" value="copy" onchange="updateOk(this.form)" onclick="updateOk(this.form)" />
-            <label class="attach-previous"><b>${attrs.copyTitle}</b></label>
-          </s:block>
-          <s:entry>
-            ${%Copy from}
-            <j:set var="descriptor" value="${it.descriptor}" />
-            <s:textbox id="from" name="from" field="copyNewItemFrom" style="width:40em" onfocus="$('copy').click()" />
-          </s:entry>
-        </j:if>
+          <div class="categories flat" />
 
-        <s:bottomButtonBar>
-          <!--
-            when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
-            So always force non-empty array
-           -->
-          <input type="radio" name="mode" value="dummy1" style="display:none" />
-          <input type="radio" name="mode" value="dummy2" style="display:none" />
-          <input type="submit" name="Submit" value="OK" id="ok" style="margin-left:5em" />
-        </s:bottomButtonBar>  
-        
-      </s:form>
+          <j:if test="${!empty(app.itemMap)}">
+            <div class="item-copy">
+              <p class="description">${%CopyOption.description}:</p>
+              <div class="add-item-copy">
+                <input type="radio" name="mode" value="copy" />
+                <div class="icon">
+                  <img src="${resURL}/images/48x48/copy.png" />
+                </div>
+                <label>${%CopyOption.label}</label>
+                <j:set var="descriptor" value="${it.descriptor}" />
+                <s:textbox id="from" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+              </div>
+            </div>
+          </j:if>
+
+          <div class="footer">
+            <div class="btn-decorator">
+              <button type="submit" id="ok-button">OK</button>
+            </div>
+          </div>
+        </form>
       </div>
 
     </l:main-panel>
