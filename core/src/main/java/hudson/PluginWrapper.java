@@ -91,7 +91,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * A plugin won't be loaded unless his declared dependencies are present and match the required minimal version.
      * This can be set to false to disable the version check (legacy behaviour)
      */
-    public static final boolean ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK = Boolean.parseBoolean(System.getProperty(PluginWrapper.class.getName()+"." + "dependenciesVersionCheck.enabled", "true"));
+    private static final boolean ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK = Boolean.parseBoolean(System.getProperty(PluginWrapper.class.getName()+"." + "dependenciesVersionCheck.enabled", "true"));
 
     /**
      * {@link PluginManager} to which this belongs to.
