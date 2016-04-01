@@ -47,11 +47,8 @@ public class UpdateCenterTest {
             doData("http://updates.jenkins-ci.org/update-center.json?version=build");
             doData("http://updates.jenkins-ci.org/stable/update-center.json?version=build");
         } catch (Exception x) {
-            if (Boolean.getBoolean("ignore.random.failures")) {
-                assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
-            } else {
-                throw x;
-            }
+            // TODO this should not be in core at all; should be in repo built by a separate job somewhere
+            assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
         }
     }
     private void doData(String location) throws Exception {

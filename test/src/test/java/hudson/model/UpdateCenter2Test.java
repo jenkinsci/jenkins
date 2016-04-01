@@ -31,9 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
-
-import java.io.IOException;
 
 /**
  *
@@ -47,7 +44,7 @@ public class UpdateCenter2Test {
     /**
      * Makes sure a plugin installs fine.
      */
-    @RandomlyFails("SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…")
+    // TODO randomly fails: SocketTimeoutException from goTo due to GET http://localhost:…/update-center.json?…
     @Test public void install() throws Exception {
         UpdateSite.neverUpdate = false;
         j.jenkins.pluginManager.doCheckUpdatesServer(); // load the metadata
