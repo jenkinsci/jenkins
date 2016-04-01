@@ -43,6 +43,8 @@ import org.kohsuke.stapler.StaplerResponse;
 public abstract class CrumbIssuer implements Describable<CrumbIssuer>, ExtensionPoint {
 
     private static final String CRUMB_ATTRIBUTE = CrumbIssuer.class.getName() + "_crumb";
+
+    @Restricted(NoExternalUse.class)
     public static final String DEFAULT_CRUMB_NAME = "Jenkins-Crumb";
 
     /**
