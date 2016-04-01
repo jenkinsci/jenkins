@@ -3,7 +3,7 @@ var $ = require('jquery-detached').getJQuery();
 
 var getItems = function(){
   var d = $.Deferred();
-  $.get('categories?depth=3').done(
+  $.get('itemCategories?depth=3').done(
       function(data){
         d.resolve(data);
       }

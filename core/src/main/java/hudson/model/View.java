@@ -1041,10 +1041,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * An API REST method to get the allowed {$link TopLevelItem}s and its categories.
      *
-     * @return A {@link Categories} entity that is shown as  JSON file.
+     * @return A {@link Categories} entity that is shown as JSON file.
      */
     @Restricted(DoNotUse.class)
-    public Categories doCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Categories categories = new Categories();
         int order = 0;
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
