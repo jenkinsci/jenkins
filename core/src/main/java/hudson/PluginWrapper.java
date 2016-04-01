@@ -409,6 +409,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns the required Jenkins core version of this plugin.
+     * @return the required Jenkins core version of this plugin.
+     * @since XXX
+     */
+    @Exported
+    public @CheckForNull String getRequiredCoreVersion() {
+        String v = manifest.getMainAttributes().getValue("Jenkins-Version");
+        if (v!= null) return v;
+
+        v = manifest.getMainAttributes().getValue("Hudson-Version");
+        if (v!= null) return v;
+        return null;
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -534,6 +549,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
+        String requiredCoreVersion = getRequiredCoreVersion();
+        if (requiredCoreVersion == null) {
+            throw new IOException(shortName + " doesn't declare required core version.");
+        } else {
+            if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+            }
+        }
         List<String> missingDependencies = new ArrayList<String>();
         List<String> obsoleteDependencies = new ArrayList<String>();
         List<String> disabledDependencies = new ArrayList<String>();
