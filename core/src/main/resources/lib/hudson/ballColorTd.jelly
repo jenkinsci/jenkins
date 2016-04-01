@@ -71,7 +71,7 @@ THE SOFTWARE.
             <j:otherwise>
               <!-- We don't seem to have this icon in the IconSet... fallback again... -->
               <j:set var="iconUrl" value="${it.getImageOf(iconSize)}"/>
-              <l:icon src="${iconUrl}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
+              <l:icon src="${iconUrl}" class="${iconSizeClass}" alt="${it.description}" tooltip="${it.description}" style="${attrs.style}" />
             </j:otherwise>
           </j:choose>
         </j:otherwise>

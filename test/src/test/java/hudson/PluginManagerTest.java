@@ -42,9 +42,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import jenkins.RestartRequiredException;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
+
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -353,6 +357,23 @@ public class PluginManagerTest {
             // good
         }
         assertEquals("should not have tried to delete & unpack", lastMod, timestamp.lastModified());
+    }
+
+    @WithPlugin("tasks.jpi")
+    @Test public void pluginListJSONApi() throws IOException {
+        JSONObject response = r.getJSON("pluginManager/plugins").getJSONObject();
+
+        // Check that the basic API endpoint invocation works.
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONArray data = response.getJSONArray("data");
+        Assert.assertTrue(data.size() > 0);
+
+        // Check that there was some data in the response and that the first entry
+        // at least had some of the expected fields.
+        JSONObject pluginInfo = data.getJSONObject(0);
+        Assert.assertTrue(pluginInfo.getString("name") != null);
+        Assert.assertTrue(pluginInfo.getString("title") != null);
+        Assert.assertTrue(pluginInfo.getString("dependencies") != null);
     }
 
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {

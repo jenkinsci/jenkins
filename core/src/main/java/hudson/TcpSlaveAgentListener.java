@@ -46,11 +46,11 @@ import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
 /**
- * Listens to incoming TCP connections from JNLP slave agents and CLI.
+ * Listens to incoming TCP connections from JNLP agents and CLI.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
- * Historically  this was used for inbound connection from slave agents (hence the name), but over time
+ * Historically  this was used for inbound connection from agents (hence the name), but over time
  * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
  * same socket.
  *
@@ -73,7 +73,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
-        super("TCP slave agent listener port="+port);
+        super("TCP agent listener port="+port);
         try {
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(port));
@@ -82,7 +82,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
 
-        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
+        LOGGER.log(Level.FINE, "JNLP agent listener started on TCP port {0}", getPort());
 
         start();
     }
@@ -120,7 +120,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         } catch (IOException e) {
             if(!shuttingDown) {
-                LOGGER.log(Level.SEVERE,"Failed to accept JNLP slave agent connections",e);
+                LOGGER.log(Level.SEVERE,"Failed to accept JNLP agent connections",e);
             }
         }
     }
@@ -159,7 +159,7 @@ public final class TcpSlaveAgentListener extends Thread {
             synchronized(getClass()) {
                 id = iotaGen++;
             }
-            setName("TCP slave agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
+            setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
         }
 
         @Override

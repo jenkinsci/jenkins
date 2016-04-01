@@ -43,9 +43,9 @@ THE SOFTWARE.
       <d:invokeBody />
     </j:when>
     <j:otherwise>
-      <tr ref="${attrs.ref}" class="row-set-start" style="display:none" name="${attrs.name}" />
+      <tr ref="${attrs.ref}" class="row-set-start row-group-start" style="display:none" name="${attrs.name}" />
       <d:invokeBody />
-      <tr class="row-set-end" />
+      <tr class="row-set-end row-group-end" />
     </j:otherwise>
   </j:choose>
 </j:jelly>

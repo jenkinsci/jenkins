@@ -269,7 +269,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         final Jenkins j = Jenkins.getInstance();
         final List<Node> nodes = j != null ? j.getNodes() : null;
         if(nodes!=null && !nodes.isEmpty()) {
-            // if a new job is configured with Hudson that already has slave nodes
+            // if a new job is configured with Hudson that already has agent nodes
             // make it roamable by default
             canRoam = true;
         }
@@ -408,7 +408,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Set of labels relevant to this job.
      *
-     * This method is used to determine what slaves are relevant to jobs, for example by {@link View}s.
+     * This method is used to determine what agents are relevant to jobs, for example by {@link View}s.
      * It does not affect the scheduling. This information is informational and the best-effort basis.
      *
      * @since 1.456
@@ -501,7 +501,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the directory where the module is checked out.
      *
      * @return
-     *      null if the workspace is on a slave that's not connected.
+     *      null if the workspace is on an agent that's not connected.
      * @deprecated as of 1.319
      *      To support concurrent builds of the same project, this method is moved to {@link AbstractBuild}.
      *      For backward compatibility, this method returns the right {@link AbstractBuild#getWorkspace()} if called
@@ -1395,7 +1395,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // At this point we start thinking about triggering a build just to get a workspace,
                 // because otherwise there's no way we can detect changes.
                 // However, first there are some conditions in which we do not want to do so.
-                // give time for slaves to come online if we are right after reconnection (JENKINS-8408)
+                // give time for agents to come online if we are right after reconnection (JENKINS-8408)
                 long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
                 long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
                 if (remaining>0 && /* this logic breaks tests of polling */!Functions.getIsUnitTest()) {
@@ -1404,7 +1404,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                     return NO_CHANGES;
                 }
 
-                // Do not trigger build, if no suitable slave is online
+                // Do not trigger build, if no suitable agent is online
                 if (workspaceOfflineReason.equals(WorkspaceOfflineReason.all_suitable_nodes_are_offline)) {
                     // No suitable executor is online
                     listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(running/1000));
@@ -1415,7 +1415,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 Label label = getAssignedLabel();
                 if (label != null && label.isSelfLabel()) {
                     // if the build is fixed on a node, then attempting a build will do us
-                    // no good. We should just wait for the slave to come back.
+                    // no good. We should just wait for the agent to come back.
                     listener.getLogger().print(Messages.AbstractProject_NoWorkspace());
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
                     return NO_CHANGES;

@@ -5,7 +5,7 @@ import jenkins.security.Roles;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
- * {@link FileCallable}s that can be executed on the master, sent by the slave.
+ * {@link FileCallable}s that can be executed on the master, sent by the agent.
  *
  * @since 1.THU
  */

@@ -62,7 +62,7 @@ public class DeleteNodeCommandTest {
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Slave/Delete permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Delete permission"));
     }
 
     @Test public void deleteNodeShouldSucceed() throws Exception {

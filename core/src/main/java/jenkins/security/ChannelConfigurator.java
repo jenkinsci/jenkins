@@ -30,7 +30,7 @@ public abstract class ChannelConfigurator implements ExtensionPoint {
      *
      *      <dl>
      *          <dt>{@link SlaveComputer}
-     *          <dd>When a channel is being established to talk to a slave.
+     *          <dd>When a channel is being established to talk to a agent.
      *      </dl>
      */
     public void onChannelBuilding(ChannelBuilder builder, @Nullable Object context) {}

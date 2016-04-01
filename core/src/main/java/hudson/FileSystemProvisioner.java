@@ -51,7 +51,7 @@ import java.io.OutputStream;
  * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
- *   -> probably per slave.
+ *   -> probably per agent.
  *
  * <h2>Design Problems</h2>
  * <ol>
@@ -71,7 +71,7 @@ import java.io.OutputStream;
  * one more configuration option. It's especially tricky because
  * during the configuration we don't know the OS type.
  *
- * OTOH special slave type like the ones for network.com grid can
+ * OTOH special agent type like the ones for network.com grid can
  * hide this.
  * </ol>
  *
@@ -80,8 +80,8 @@ import java.io.OutputStream;
  *
  * To recap,
  *
- * - when a slave connects, we auto-detect the file system provisioner.
- *   (for example, ZFS FSP would check the slave root user prop
+ * - when an agent connects, we auto-detect the file system provisioner.
+ *   (for example, ZFS FSP would check the agent root user prop
  *   and/or attempt to "pfexec zfs create" and take over.)
  *
  * - the user may configure jobs for snapshot collection, along with

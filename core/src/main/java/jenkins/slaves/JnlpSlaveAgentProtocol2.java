@@ -13,7 +13,7 @@ import java.net.Socket;
  *
  * <p>
  * This protocol extends the version 1 protocol by adding a per-client cookie,
- * so that we can detect a reconnection from the slave and take appropriate action,
+ * so that we can detect a reconnection from the agent and take appropriate action,
  * when the connection disappeared without the master noticing.
  *
  * @author Kohsuke Kawaguchi
@@ -46,7 +46,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
         }
 
         /**
-         * Handles JNLP slave agent connection request (v2 protocol)
+         * Handles JNLP agent connection request (v2 protocol)
          */
         @Override
         protected void run() throws IOException, InterruptedException {
