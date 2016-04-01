@@ -60,6 +60,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
@@ -959,12 +960,35 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             pluginUploaded = true;
 
+            JSONArray dependencies = new JSONArray();
+            try {
+                Manifest m = new JarFile(t).getManifest();
+                String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
+                // create the dependencies object, so that the "download" can fail and people will know what
+                // dependencies are needed for the upload.
+
+                if (StringUtils.isNotBlank(deps)) {
+                    // now we get to parse it!
+                    String[] plugins = deps.split(",");
+                    for (String p : plugins) {
+                        // should have name:version[;resolution:=optional]
+                        String[] attrs = p.split("[:;]");
+                        dependencies.add(new JSONObject()
+                                .element("name", attrs[0])
+                                .element("version", attrs[1])
+                                .element("optional", p.contains("resolution:=optional")));
+                    }
+                }
+            } catch(IOException e) {
+                // we don't do anything here to retain the current behavior
+            }
+
             // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
             JSONObject cfg = new JSONObject().
                     element("name", baseName).
                     element("version", "0"). // unused but mandatory
                     element("url", t.toURI().toString()).
-                    element("dependencies", new JSONArray());
+                    element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("../updateCenter");
         } catch (IOException e) {
