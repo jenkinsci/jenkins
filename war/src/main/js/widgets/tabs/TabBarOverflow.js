@@ -40,12 +40,22 @@ function TabBarOverflow(tabBarFrame, tabs) {
         }
     });
 
+    var mouseInPopover = false;
+    taboverflowPopup.mouseenter(function() {
+        mouseInPopover = true;
+    });
+    taboverflowPopup.mouseleave(function() {
+        mouseInPopover = false;
+    });
+
     var win = $(windowHandle.getWindow());
     win.on('resize.jenkins.taboverflow', function() {
         tabOverflow.doRefresh();
     });
     win.on('scroll.jenkins.taboverflow', function() {
-        tabOverflow.hideDropdown();
+        if (!mouseInPopover) {
+            tabOverflow.hideDropdown();
+        }
     });
 
     function trackOverflow() {
