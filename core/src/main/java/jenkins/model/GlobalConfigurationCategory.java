@@ -4,8 +4,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.ModelObject;
-import hudson.security.*;
-import hudson.security.Messages;
 
 /**
  * Grouping of related {@link GlobalConfiguration}s.
@@ -73,11 +71,12 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
     public static class Security extends GlobalConfigurationCategory {
         @Override
         public String getShortDescription() {
-            return Messages.GlobalSecurityConfiguration_Description();
+            return hudson.security.Messages.GlobalSecurityConfiguration_Description();
         }
 
         public String getDisplayName() {
             return hudson.security.Messages.GlobalSecurityConfiguration_DisplayName();
         }
     }
+
 }

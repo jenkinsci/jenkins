@@ -1021,6 +1021,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                if (milestone==PLUGINS_PREPARED) {
+                    // set up Guice to enable injection as early as possible
+                    // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
+                    ExtensionList.lookup(ExtensionFinder.class).getComponents();
+                }
             }
         }.run(reactor);
     }
@@ -3354,8 +3359,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
 
-            setJDKs(req.bindJSONToList(JDK.class, json.get("jdks")));
-
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
@@ -3581,20 +3584,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // looks good
-    }
-
-    /**
-     * Makes sure that the given name is good as a job name.
-     * @return trimmed name if valid; throws Failure if not
-     */
-    private String checkJobName(String name) throws Failure {
-        checkGoodName(name);
-        name = name.trim();
-        projectNamingStrategy.checkName(name);
-        if(getItem(name)!=null)
-            throw new Failure(Messages.Hudson_JobAlreadyExists(name));
-        // looks good
-        return name;
     }
 
     private static String toPrintableName(String name) {
@@ -4122,25 +4111,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return FormValidation.ok();
         else
             return FormValidation.errorWithMarkup(Messages.Hudson_NoJavaInPath(request.getContextPath()));
-    }
-
-    /**
-     * Makes sure that the given name is good as a job name.
-     */
-    public FormValidation doCheckJobName(@QueryParameter String value) {
-        // this method can be used to check if a file exists anywhere in the file system,
-        // so it should be protected.
-        checkPermission(Item.CREATE);
-
-        if(fixEmpty(value)==null)
-            return FormValidation.ok();
-
-        try {
-            checkJobName(value);
-            return FormValidation.ok();
-        } catch (Failure e) {
-            return FormValidation.error(e.getMessage());
-        }
     }
 
     /**

@@ -23,6 +23,7 @@
  */
 package hudson.init;
 
+import hudson.Extension;
 import org.jvnet.hudson.annotation_indexer.Indexed;
 import org.jvnet.hudson.reactor.Task;
 
@@ -36,7 +37,7 @@ import static hudson.init.InitMilestone.STARTED;
 import static hudson.init.InitMilestone.COMPLETED;
 
 /**
- * Placed on static methods to indicate that this method is to be run during the Jenkins start up to perform
+ * Placed on methods to indicate that this method is to be run during the Jenkins start up to perform
  * some sort of initialization tasks.
  *
  * <h3>Example</h3>
@@ -46,6 +47,11 @@ import static hudson.init.InitMilestone.COMPLETED;
        ....
    }
  * </pre>
+ *
+ * <p>
+ * The method in question can be either {@code static} or an instance method. When used with instance
+ * methods, those methods have to be on a class annotated with {@link Extension} and marked as
+ * {@link #after()} {@link InitMilestone#PLUGINS_PREPARED}.
  * 
  * @author Kohsuke Kawaguchi
  */

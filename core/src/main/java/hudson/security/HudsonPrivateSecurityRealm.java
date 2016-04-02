@@ -29,8 +29,6 @@ import hudson.ExtensionList;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
-import jenkins.install.InstallState;
-import jenkins.install.SetupWizard;
 import jenkins.model.Jenkins;
 import hudson.model.ManagementLink;
 import hudson.model.ModelObject;
@@ -261,16 +259,26 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * Creates an user account. Used by admins.
+     * Creates a user account. Used by admins.
      *
      * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
      * this is someone creating another user.
      */
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
+    }
+
+    /**
+     * Creates a user account. Requires {@link Jenkins#ADMINISTER}
+     */
+    @Restricted(NoExternalUse.class)
+    public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
-        if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
-            rsp.sendRedirect(".");  // send the user back to the listing page
+        User u = createAccount(req, rsp, false, addUserView);
+        if(u != null) {
+            rsp.sendRedirect(successView);
         }
+        return u;
     }
 
     /**
@@ -280,36 +288,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This can be run by anyone, but only to create the very first user account.
      */
     public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        boolean inSetup = !Jenkins.getInstance().getInstallState().isSetupComplete();
-        if(!inSetup && hasSomeUser()) {
+        if(hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED,"First user was already created");
             return;
         }
-        
-        User admin = null;
-        try {
-            String view = "firstUser.jelly";
-            if(inSetup) {
-                admin = getUser(SetupWizard.initialSetupAdminUserName);
-                if(admin != null) {
-                    admin.delete(); // assume the new user may well be 'admin'
-                }
-                view = "setupWizardFirstUser.jelly";
-            }
-            
-            User u = createAccount(req, rsp, false, view);
-            if (u!=null) {
-                tryToMakeAdmin(u);
-                if(admin != null) {
-                    admin = null;
-                }
-                Jenkins.getInstance().setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
-                loginAndTakeBack(req, rsp, u);
-            }
-        } finally {
-            if(admin != null) {
-                admin.save(); // recreate this initial user if something failed
-            }
+        User u = createAccount(req, rsp, false, "firstUser.jelly");
+        if (u!=null) {
+            tryToMakeAdmin(u);
+            loginAndTakeBack(req, rsp, u);
         }
     }
 

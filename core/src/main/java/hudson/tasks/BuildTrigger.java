@@ -367,6 +367,8 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
          * Form validation method.
          */
         public FormValidation doCheck(@AncestorInPath AbstractProject project, @QueryParameter String value) {
+            // JENKINS-32525: Check that it behaves gracefully for an unknown context
+            if (project == null) return FormValidation.ok(Messages.BuildTrigger_ok_ancestor_is_null());
             // Require CONFIGURE permission on this project
             if(!project.hasPermission(Item.CONFIGURE))      return FormValidation.ok();
 

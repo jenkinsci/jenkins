@@ -1,36 +1,34 @@
 <div>
   <p>
   An agent needs to have a directory dedicated to Jenkins. Specify
-  the  path of this work directory on the agent. It is best to use
-  an absolute path, such as '/var/jenkins' or 'c:\jenkins'. This
-  should be a path local to the agent machine. There's no need for
-  this path to be visible from the master, under normal circumstances.
-
+  the path to this directory on the agent. It is best to use
+  an absolute path, such as <tt>/var/jenkins</tt> or <tt>c:\jenkins</tt>.
+  This should be a path local to the agent machine. There is no need for
+  this path to be visible from the master.
   <p>
-  Agents do not maintain important data (other than active workspaces
-  of projects last built on it), so you can possibly set the agent
-  workspace to a temporary directory. The only downside of doing this
-  is that you may lose the up-to-date workspace if the agent is turned off.
-
+  Agents do not maintain important data; all job configurations, build logs and
+  artifacts are stored on the master, so it would be possible to use a temporary
+  directory as the agent root directory.
+  <br>
+  However, by giving an agent a directory that is not deleted after a machine
+  reboot, for example, the agent can cache data such as tool installations, or
+  build workspaces. This prevents unnecessary downloading of tools, or checking
+  out source code again when builds start to run on this agent again after a
+  reboot.
   <p>
-  If you use a relative path, such as './jenkins-slave', the path will
-  be relative to the current working directory that the launcher provides.
+  If you use a relative path, such as <tt>./jenkins-agent</tt>, the path will be
+  relative to the working directory provided by the <i>Launch method</i>.
   <ul>
   <li>For launchers where Jenkins controls starting the agent process, such
   as SSH, the current working directory will typically be consistent,
-  <i>e.g.</i> the user's home directory. This means that Jenkins will be able to
-  rely on the caching of tool installations and workspaces from previous
-  builds.
-  </li>
+  e.g. the user's home directory.</li>
   <li>For launchers where Jenkins has no control over starting the agent
   process, such as JNLP when launched from either the command line or via
   a web browser link, the current working directory may change between
   launches of the agent and use of a relative path may prove problematic.
+  <br>
   The principal issue encountered when using relative paths with launchers
   like JNLP is the proliferation of stale workspaces and tool installation
-  on the agent machine. This can cause disk space issues.
-  <i>Note: there are some cloud providers that specifically use relative
-  paths with the JNLP launcher to allow for dynamically provisioned pools
-  of semi-heterogeneous agents.</i></li>
+  on the agent machine. This can cause disk space issues.</li>
   </ul>
 </div>

@@ -8,7 +8,7 @@
   -khtml-user-select: none;    /* Konqueror */
   -moz-user-select: none;      /* Firefox */
   -ms-user-select: none;       /* IE/Edge */
-  user-select: none; 
+  user-select: none;
 }
 .text-select{
   -webkit-touch-callout: text; /* iOS Safari */
@@ -16,8 +16,9 @@
   -khtml-user-select: text;    /* Konqueror */
   -moz-user-select: text;      /* Firefox */
   -ms-user-select: text;       /* IE/Edge */
-  user-select: text; 
+  user-select: text;
 }
+
 /*
  * Border radius
  */
@@ -61,4 +62,8 @@
 .border-radius-right(@radius) {
   .border-radius-top-right(@radius);
   .border-radius-bottom-right(@radius);
+}
+
+.hidden {
+  display: none;
 }

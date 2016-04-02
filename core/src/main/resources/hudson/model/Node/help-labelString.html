@@ -1,11 +1,23 @@
 <div>
-  Labels (AKA tags) are used for grouping multiple agents into one logical group.
-  Use spaces between each label. For instance 'regression java6' will assign a
-  node the labels 'regression' and 'java6'.
-
+  Labels (or tags) are used to group multiple agents into one logical group.
   <p>
-  For example, if you have multiple Windows agents and you have jobs that require
-  Windows, then you can configure all your Windows agents to have the label 'windows',
-  then tie the job to the 'windows' label. This allows your job to run on any
-  of your Windows agents but not on anywhere else. 
+  For example, if you have multiple Windows agents and you have a job that
+  must run on Windows, then you could configure all your Windows agents to have
+  the label <tt>windows</tt>, and then tie that job to this label.
+  <br>
+  This would ensure that your job runs on one of your Windows agents, but not on
+  any agents without this label.
+  <p>
+  Labels do not necessarily have to represent the operating system on the agent;
+  you can also use labels to note the CPU architecture, or that a certain tool
+  is installed on the agent.
+  <p>
+  Multiple labels must be separated by a space. For example,
+  <tt>windows docker</tt> would assign two labels to the agent: <tt>windows</tt>
+  and <tt>docker</tt>.
+  <p>
+  Labels may contain any non-space characters, but you should avoid special
+  characters such as any of these: <tt>!&amp;|&lt;&gt;()</tt>, as other Jenkins
+  features allow for defining label expressions, where these characters may be
+  used.
 </div>

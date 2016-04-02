@@ -1,9 +1,7 @@
 package jenkins.install;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -16,28 +14,35 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
-import hudson.model.Descriptor;
+import hudson.FilePath;
 import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
+import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
  * initial installation is in progress
+ * 
+ * @since 2.0
  */
+@Restricted(NoExternalUse.class)
 public class SetupWizard {
     /**
      * The security token parameter name
@@ -46,62 +51,68 @@ public class SetupWizard {
 
     private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
-    public SetupWizard(Jenkins j) throws IOException {
-        User admin;
+    private final Jenkins jenkins;
+
+    public SetupWizard(Jenkins j) throws IOException, InterruptedException {
+        this.jenkins = j;
         // Create an admin user by default with a 
         // difficult password
+        FilePath iapf = getInitialAdminPasswordFile();
         if(j.getSecurityRealm() == null || j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
             BulkChange bc = new BulkChange(j);
-            
-            HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
-            j.setSecurityRealm(securityRealm);
-            String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
-            admin = securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
-            admin.addProperty(new SetupWizard.AuthenticationKey(randomUUID));
-            
-            // Lock Jenkins down:
-            FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
-            authStrategy.setAllowAnonymousRead(false);
-            j.setAuthorizationStrategy(authStrategy);
-
-            // Shut down all the ports we can by default:
-            j.setSlaveAgentPort(-1); // -1 to disable
-            
-            // require a crumb issuer
-            j.setCrumbIssuer(new DefaultCrumbIssuer(false));
-            
-            // set master -> slave security:
-            j.getInjector().getInstance(AdminWhitelistRule.class)
-                .setMasterKillSwitch(false);
-            
             try{
+                HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+                j.setSecurityRealm(securityRealm);
+                String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
+
+                // create an admin user
+                securityRealm.createAccount(SetupWizard.initialSetupAdminUserName, randomUUID);
+
+                // JENKINS-33599 - write to a file in the jenkins home directory
+                // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
+                // and use group 'jenkins' for admins. So we allo groups to read this file
+                iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
+                iapf.chmod(0640);
+
+                // Lock Jenkins down:
+                FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
+                authStrategy.setAllowAnonymousRead(false);
+                j.setAuthorizationStrategy(authStrategy);
+
+                // Shut down all the ports we can by default:
+                j.setSlaveAgentPort(-1); // -1 to disable
+
+                // require a crumb issuer
+                j.setCrumbIssuer(new DefaultCrumbIssuer(false));
+
+                // set master -> slave security:
+                j.getInjector().getInstance(AdminWhitelistRule.class)
+                    .setMasterKillSwitch(false);
+            
                 j.save(); // !!
-            } finally {
                 bc.commit();
+            } finally {
+                bc.abort();
             }
         }
-        else {
-            admin = j.getUser(SetupWizard.initialSetupAdminUserName);
-        }
-        
-        String setupKey = null;
-        if(admin != null && admin.getProperty(SetupWizard.AuthenticationKey.class) != null) {
-            setupKey = admin.getProperty(SetupWizard.AuthenticationKey.class).getKey();
-        }
-        if(setupKey != null) {
-            LOGGER.info("\n\n*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "\n"
-                    + "Jenkins initial setup is required. A security token is required to proceed. \n"
-                    + "Please use the following security token to proceed to installation: \n"
-                    + "\n"
-                    + "" + setupKey + "\n"
-                    + "\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n"
-                    + "*************************************************************\n");
-        }
+
+        String setupKey = iapf.readToString().trim();
+        String ls = System.lineSeparator();
+        LOGGER.info(ls + ls + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + ls
+                + "Jenkins initial setup is required. An admin user has been created and "
+                + "a password generated." + ls
+                + "Please use the following password to proceed to installation:" + ls
+                + ls
+                + setupKey + ls
+                + ls
+                + "This may also be found at: " + iapf.getRemote() + ls
+                + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls
+                + "*************************************************************" + ls);
         
         try {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
@@ -109,56 +120,65 @@ public class SetupWizard {
             throw new AssertionError(e);
         }
     }
+    
+    /**
+     * Called during the initial setup to create an admin user
+     */
+    public void doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins j = Jenkins.getInstance();
+        j.checkPermission(Jenkins.ADMINISTER);
+        
+        // This will be set up by default. if not, something changed, ok to fail
+        HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
+        
+        User admin = securityRealm.getUser(SetupWizard.initialSetupAdminUserName);
+        try {
+            if(admin != null) {
+                admin.delete(); // assume the new user may well be 'admin'
+            }
+            
+            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", req.getContextPath() + "/");
+            if (u != null) {
+                if(admin != null) {
+                    admin = null;
+                }
+                
+                j.setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
+                
+                // ... and then login
+                Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
+                a = securityRealm.getSecurityComponents().manager.authenticate(a);
+                SecurityContextHolder.getContext().setAuthentication(a);
+            }
+        } finally {
+            if(admin != null) {
+                admin.save(); // recreate this initial user if something failed
+            }
+        }
+    }
+
+    /**
+     * Gets the file used to store the initial admin password
+     */
+    public FilePath getInitialAdminPasswordFile() {
+        return jenkins.getRootPath().child("secrets/initialAdminPassword");
+    }
 
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
-    public HttpResponse doCompleteInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins j = Jenkins.getActiveInstance();
-        User u = j.getUser("admin");
-        // JENKINS-33572 - without creating a new 'admin' user, auth key erroneously remained
-        if(u != null && u.getProperty(AuthenticationKey.class) != null) {
-            // There must be a better way of removing things...
-            Iterator<Map.Entry<Descriptor<UserProperty>,UserProperty>> entries = u.getProperties().entrySet().iterator();
-            while(entries.hasNext()) {
-                Map.Entry<?, ?> entry = entries.next();
-                if(entry.getValue() instanceof AuthenticationKey) {
-                    entries.remove();
-                }
-            }
-            u.save();
-        }
-        j.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
+    public HttpResponse doCompleteInstall() throws IOException, ServletException {
+        jenkins.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
         PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
-        j.setSetupWizard(null);
-        return HttpResponses.okJSON();
-    }
+        jenkins.setSetupWizard(null);
 
-    // Stores a user property for the authentication key, which is really the auto-generated user's password
-    public static class AuthenticationKey extends UserProperty {
-        String key;
-        
-        public AuthenticationKey() {
-        }
-        
-        public AuthenticationKey(String key) {
-            this.key = key;
-        }
-        
-        public String getKey() {
-            return key;
-        }
-        
-        public void setKey(String key) {
-            this.key = key;
-        }
-        
-        @Override
-        public UserPropertyDescriptor getDescriptor() {
-            return null;
-        }
+        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
+        if (uw!=null)
+            uw.setCurrentLevel(new VersionNumber("2.0"));
+
+        return HttpResponses.okJSON();
     }
     
     /**
@@ -171,13 +191,9 @@ public class SetupWizard {
 
         @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-            // As an extra measure of security, the install wizard generates a security token, and
-            // requires the user to enter it before proceeding through the installation. Once set
-            // we'll set a cookie so the subsequent operations succeed
+            // Force root requests to the setup wizard
             if (request instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest)request;
-                //if (!Pattern.compile(".*[.](css|ttf|gif|woff|eot|png|js)").matcher(req.getRequestURI()).matches()) {
-                    // Allow js & css requests through
                 if((req.getContextPath() + "/").equals(req.getRequestURI())) {
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
