@@ -213,12 +213,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
             Map<Job,Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
             SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
-            for (Job<?, ?> downstream : Jenkins.getInstance().getAllItems(Job.class)) {
-                ReverseBuildTrigger trigger = ParameterizedJobMixIn.getTrigger(downstream, ReverseBuildTrigger.class);
-                if (trigger == null) {
-                    continue;
-                }
-                try {
+            try {
+                for (Job<?, ?> downstream : Jenkins.getInstance().getAllItems(Job.class)) {
+                    ReverseBuildTrigger trigger = ParameterizedJobMixIn.getTrigger(downstream, ReverseBuildTrigger.class);
+                    if (trigger == null) {
+                        continue;
+                    }
                     List<Job> upstreams = Items.fromNameList(downstream.getParent(), trigger.upstreamProjects, Job.class);
                     LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[] {downstream, upstreams});
                     for (Job upstream : upstreams) {
@@ -233,9 +233,9 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         triggers.remove(trigger);
                         triggers.add(trigger);
                     }
-                } finally {
-                    SecurityContextHolder.setContext(orig);
                 }
+            } finally {
+                SecurityContextHolder.setContext(orig);
             }
             return result;
         }
