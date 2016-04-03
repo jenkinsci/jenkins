@@ -1,21 +1,23 @@
 <div>
-  If set, a newly scheduled build waits for this many seconds before actually being built.
-  This is useful for:
-  <ul>
-    <li>
-      Collapsing multiple CVS change notification e-mails into one (some CVS changelog
-      e-mail generation scripts generate multiple e-mails in quick succession when
-      a commit spans across directories).
-    </li>
-    <li>
-      If your coding style is such that you commit one logical change in a few cvs/svn
-      operations, then setting a longer quiet period would prevent Jenkins from building
-      it prematurely and reporting a failure.
-    </li>
-    <li>
-      Throttling builds. If your Jenkins installation is too busy with too many builds,
-      setting a longer quiet period can reduce the number of builds.
-    </li>
-  </ul>
-  If not explicitly set at project-level, the system-wide default value is used.
-</div>
+  When this option is checked, newly triggered builds of this project will be
+  added to the queue, but Jenkins will wait for the specified period of time
+  before actually starting the build.
+  <p>
+  For example, if your builds take a long time to execute, you may want to
+  prevent multiple source control commits that are made at approximately the
+  same time from triggering multiple builds.  Enabling the quiet period would
+  prevent a build from being started as soon as Jenkins discovers the first
+  commit; this would give the developer the chance to push more commits which
+  would be included in the build when it starts.  This reduces the size of the
+  queue, meaning that developers would get feedback faster for their series of
+  commits, and the load on the Jenkins system would be reduced.
+  <p>
+  If a new build of this project is triggered while a build is already sitting
+  in the queue, waiting for its quiet period to end, the quiet period will not
+  be reset.  The newly triggered build will not be added to the queue, unless
+  this project is parameterised and the build has different parameters to the
+  build already in the queue.
+  <p>
+  If this option is not checked, then the system-wide default value from the
+  <i>Configure System</i> screen will be used.
+  </div>
