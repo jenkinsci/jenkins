@@ -166,7 +166,7 @@ void withMavenEnv(List envVars = [], def body) {
     // Using the "tool" Workflow call automatically installs those tools on the
     // node.
     String mvntool = tool name: "mvn3.3.3", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk7_80", type: 'hudson.model.JDK'
+    String jdktool = tool name: "jdk8_51", type: 'hudson.model.JDK'
 
     // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
     // using.
