@@ -1,7 +1,10 @@
 <div>
-  Name that uniquely identifies a agent within this Jenkins installation.
-
+  Name that uniquely identifies an agent within this Jenkins installation.
   <p>
-  This value could be any string, and doesn't have to be the same as the agent host name,
-  but it's often convenient to make them the same.
+  This does not have to be the same as the agent hostname (where applicable),
+  but it is often convenient to make them the same.
+  <p>
+  The name may not contain any characters from this list:
+  <tt>?*/\%!@#$^&amp;|&lt;&gt;[]:;</tt>
+  <!-- See jenkins.model.Jenkins#checkGoodName -->
 </div>

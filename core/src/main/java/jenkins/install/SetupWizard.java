@@ -73,7 +73,7 @@ public class SetupWizard {
                 // and use group 'jenkins' for admins. So we allo groups to read this file
                 iapf.touch(System.currentTimeMillis());
                 iapf.chmod(0640);
-                iapf.write(randomUUID, "UTF-8");
+                iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
                 
 
                 // Lock Jenkins down:

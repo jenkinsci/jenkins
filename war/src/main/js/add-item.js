@@ -3,7 +3,7 @@ var $ = require('jquery-detached').getJQuery();
 
 var getItems = function(){
   var d = $.Deferred();
-  $.get('categories?depth=3').done(
+  $.get('itemCategories?depth=3').done(
       function(data){
         d.resolve(data);
       }
@@ -121,7 +121,6 @@ $.when(getItems()).done(function(data){
         cleanValidationMessages('.add-item-copy');
         if (isItemNameEmpty()) {
           activateValidationMessage('#itemname-required', '.add-item-name');
-          $('input[name="name"][type="text"]', '#createItem').focus();
         }
       }
       $item.click(setSelectState);
@@ -170,7 +169,6 @@ $.when(getItems()).done(function(data){
           var message = parseResponseFromCheckJobName(data);
           if (message !== '') {
             activateValidationMessage('#itemname-invalid', '.add-item-name', message);
-            $('input[name="name"][type="text"]', '#createItem').focus();
           } else {
             cleanValidationMessages('.add-item-name');
             showInputHelp('.add-item-name');
@@ -178,7 +176,6 @@ $.when(getItems()).done(function(data){
         });
       } else {
         activateValidationMessage('#itemname-required', '.add-item-name');
-        $('input[name="name"][type="text"]', '#createItem').focus();
       }
     });
 
