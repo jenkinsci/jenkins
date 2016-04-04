@@ -187,11 +187,11 @@ public class InstallUtil {
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "last_run_version");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getInstance().getRootDir(), "setup_wizard_installing_plugins");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {

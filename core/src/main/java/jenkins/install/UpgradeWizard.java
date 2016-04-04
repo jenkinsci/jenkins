@@ -47,7 +47,7 @@ public class UpgradeWizard extends PageDecorator {
      * This file records the vesrion number that the installation has upgraded to.
      */
     /*package*/ File getStateFile() {
-        return new File(Jenkins.getInstance().getRootDir(),"last_upgrade_version");
+        return new File(Jenkins.getInstance().getRootDir(),"jenkins.install.UpgradeWizard.state");
     }
 
     public UpgradeWizard() throws IOException {
