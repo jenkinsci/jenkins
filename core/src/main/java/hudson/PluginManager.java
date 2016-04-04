@@ -489,7 +489,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // so existing plugins can't be depending on this newly deployed one.
 
         plugins.add(p);
-        activePlugins.add(p);
+        if (p.isActive())
+            activePlugins.add(p);
         synchronized (((UberClassLoader) uberClassLoader).loaded) {
             ((UberClassLoader) uberClassLoader).loaded.clear();
         }
