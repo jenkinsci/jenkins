@@ -173,6 +173,13 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         
         function setEnableWidgetStates() {
             for (var i = 0; i < pluginTRs.length; i++) {
+                var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
+                if (pluginTRs[i].hasClassName('has-dependants-but-disabled')) {
+                    if (pluginMetadata.enableInput.checked) {
+                        pluginTRs[i].removeClassName('has-dependants-but-disabled');
+                        }
+                }
+
                 markAllDependantsDisabled(pluginTRs[i]);
                 markHasDisabledDependencies(pluginTRs[i]);
             }
