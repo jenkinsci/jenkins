@@ -175,6 +175,8 @@ public class XStreamDOMTest {
     /**
      * Regardless of how we read XML into XStreamDOM, XStreamDOM should retain the raw XML infoset,
      * which means escaped names.
+     *
+     * @throws Exception test failure
      */
     @Test
     public void escapeHandling() throws Exception {

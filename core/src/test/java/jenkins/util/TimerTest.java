@@ -14,6 +14,8 @@ public class TimerTest {
     /**
      * Launch two tasks which can only complete
      * by running doRun() concurrently.
+     *
+     * @throws InterruptedException test failure
      */
     @Test
     @Issue("JENKINS-19622")

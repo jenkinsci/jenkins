@@ -107,6 +107,10 @@ public class XMLUtilsTest {
     /**
      * Tests getValue() directly. Tests the parse methods too (indirectly - yeah, a purest would have
      * tests for each).
+     *
+     * @throws XPathExpressionException test failure
+     * @throws SAXException test failure
+     * @throws IOException test failure
      */
     @Test
     public void testGetValue() throws XPathExpressionException, SAXException, IOException {

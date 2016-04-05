@@ -87,6 +87,8 @@ public class FilePathTest {
     /**
      * An attempt to reproduce the file descriptor leak.
      * If this operation leaks a file descriptor, 2500 should be enough, I think.
+     *
+     * @throws Exception test failure
      */
     // TODO: this test is much too slow to be a traditional unit test. Should be extracted into some stress test
     // which is no part of the default test harness?
@@ -115,6 +117,8 @@ public class FilePathTest {
      * seeing the right byte count at the end.
      *
      * Also see JENKINS-7897
+     *
+     * @throws Exception test failure
      */
     @Issue("JENKINS-7871")
     @Test public void noRaceConditionInCopyTo() throws Exception {
@@ -435,6 +439,9 @@ public class FilePathTest {
      * Tests that permissions are kept when using {@link FilePath#copyToWithPermission(FilePath)}.
      * Also tries to check that a problem with setting the last-modified date on Windows doesn't fail the whole copy
      * - well at least when running this test on a Windows OS. See JENKINS-11073
+     *
+     * @throws IOException test failure
+     * @throws InterruptedException test failure
      */
     @Test public void copyToWithPermission() throws IOException, InterruptedException {
         File tmp = temp.getRoot();

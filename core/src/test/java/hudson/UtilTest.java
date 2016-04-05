@@ -527,6 +527,8 @@ public class UtilTest {
     /**
      * Compute 'known-correct' digests and see if I still get them when computed concurrently
      * to another digest.
+     *
+     * @throws InterruptedException test failure
      */
     @Issue("JENKINS-10346")
     @Test
