@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
 import hudson.Extension;
 import hudson.ExtensionList;

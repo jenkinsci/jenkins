@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 CloudBees, Inc.
+ * Copyright (c) 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,76 +22,58 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
-import hudson.model.TopLevelItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.export.Flavor;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Represents an {@link ItemCategory} and its {@link TopLevelItem}s.
+ * It is a logic representation of a set of {@link Category}.
  *
  * This class is not thread-safe.
  */
 @ExportedBean
 @Restricted(NoExternalUse.class)
-public class Category implements Serializable {
+public class Categories implements HttpResponse, Serializable {
 
-    private String id;
+    private List<Category> items;
 
-    private String name;
-
-    private String description;
-
-    private int order;
-
-    private int minToShow;
-
-    private List<Map<String, Serializable>> items;
-
-    public Category(String id, String name, String description, int order, int minToShow, List<Map<String, Serializable>> items) {
-        this.id= id;
-        this.name = name;
-        this.description = description;
-        this.order = order;
-        this.minToShow = minToShow;
-        this.items = items;
+    public Categories() {
+        items = new ArrayList<Category>();
     }
 
-    @Exported
-    public String getId() {
-        return id;
-    }
-
-    @Exported
-    public String getName() {
-        return name;
-    }
-
-    @Exported
-    public String getDescription() {
-        return description;
-    }
-
-    @Exported
-    public int getOrder() {
-        return order;
-    }
-
-    @Exported
-    public int getMinToShow() {
-        return minToShow;
-    }
-
-    @Exported
-    public List<Map<String, Serializable>> getItems() {
+    @Exported(name = "categories")
+    public List<Category> getItems() {
         return items;
+    }
+
+    @Override
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+        rsp.serveExposedBean(req, this, Flavor.JSON);
+    }
+
+    @CheckForNull
+    public Category getItem(@Nonnull String id) {
+        for (Category category : items) {
+            if (category.getId().equals(id)) {
+                return category;
+            }
+        }
+        return null;
     }
 
 }

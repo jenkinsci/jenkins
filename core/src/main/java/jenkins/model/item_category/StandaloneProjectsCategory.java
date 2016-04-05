@@ -22,28 +22,17 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.ItemCategory;
+package jenkins.model.item_category;
 
 import hudson.Extension;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
- * Designed for project hierarchies with folders.
- *
- * This category should be moved to cloudbees-folder-plugin short-term.
- * Really when upgrades its baseline to 2.0.
- *
- * @since 2.0
+ * Designed for projects with a self-contained configuration and history.
  */
-@Restricted(DoNotUse.class)
 @Extension(ordinal = -100)
-public class NestedProjectsCategory extends ItemCategory {
+public class StandaloneProjectsCategory extends ItemCategory {
 
-    /**
-     * TODO Make public when be moved to cloudbees-folder-plugin.
-     */
-    private static final String ID = "nested-projects";
+    public static final String ID = "standalone-projects";
 
     @Override
     public String getId() {
@@ -52,12 +41,12 @@ public class NestedProjectsCategory extends ItemCategory {
 
     @Override
     public String getDescription() {
-        return Messages.NestedProjects_Description();
+        return Messages.StandaloneProjects_Description();
     }
 
     @Override
     public String getDisplayName() {
-        return Messages.NestedProjects_DisplayName();
+        return Messages.StandaloneProjects_DisplayName();
     }
 
     @Override

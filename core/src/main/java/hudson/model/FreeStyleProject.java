@@ -25,7 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import jenkins.model.Jenkins;
-import jenkins.model.ItemCategory.StandaloneProjectsCategory;
+import jenkins.model.item_category.StandaloneProjectsCategory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
