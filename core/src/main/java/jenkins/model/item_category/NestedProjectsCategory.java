@@ -27,7 +27,7 @@ package jenkins.model.item_category;
 import hudson.Extension;
 import jenkins.model.Messages;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * A generic {@link ItemCategory}.
@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @since 2.0
  */
-@Restricted(NoExternalUse.class)
+@Restricted(DoNotUse.class)
 @Extension(ordinal = -100)
 public class NestedProjectsCategory extends ItemCategory {
 
