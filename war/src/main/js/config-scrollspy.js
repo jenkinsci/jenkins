@@ -19,9 +19,22 @@ function notify(event) {
     }
 }
 
-$(function() {
-    var tabBarWidget = require('./widgets/config/tabbar.js');
+function focusDelete(event){
+  var $box = $(this);
+  if(event.type === 'focusin'){
+    $box.closest('.repeated-chunk').addClass('hover');
+  }
+  else{
+    $box.closest('.repeated-chunk').removeClass('hover');
+  }
+}
 
+$(function() {
+  
+    var tabBarWidget = require('./widgets/config/tabbar.js');
+    var $delete = $('#main-panel')
+      .on('focus','.repeatable-delete button',focusDelete)
+      .on('blur','.repeatable-delete button',focusDelete);
     tabBarWidget.addPageTabs('.config-table.scrollspy', function(tabBar) {
         exports.tabbars.push(tabBar);
 
