@@ -211,15 +211,15 @@ public class InstallUtil {
     }
 
     static File getConfigFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), "config.xml");
+        return new File(Jenkins.getInstance().getRootDir(), "config.xml");
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), ".last_exec_version");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), ".installing_plugins");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {
