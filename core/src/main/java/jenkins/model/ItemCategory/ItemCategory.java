@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 CloudBees, Inc.
+ * Copyright (c) 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,12 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.item_category;
+package jenkins.model.ItemCategory;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.TopLevelItemDescriptor;
-import jenkins.model.Messages;
 
 import javax.annotation.Nonnull;
 
@@ -116,12 +115,12 @@ public abstract class ItemCategory implements ExtensionPoint {
 
         @Override
         public String getDescription() {
-            return Messages.ItemCategory_Uncategorized_Description();
+            return Messages.Uncategorized_Description();
         }
 
         @Override
         public String getDisplayName() {
-            return Messages.ItemCategory_Uncategorized_DisplayName();
+            return Messages.Uncategorized_DisplayName();
         }
 
         @Override

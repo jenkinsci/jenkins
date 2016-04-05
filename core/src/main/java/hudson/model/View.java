@@ -56,11 +56,11 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
-import jenkins.model.item_category.Categories;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.item_category.Category;
-import jenkins.model.item_category.ItemCategory;
+import jenkins.model.ItemCategory.Categories;
+import jenkins.model.ItemCategory.Category;
+import jenkins.model.ItemCategory.ItemCategory;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 

@@ -25,7 +25,7 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
-import jenkins.model.item_category.ItemCategory;
+import jenkins.model.ItemCategory.ItemCategory;
 import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;

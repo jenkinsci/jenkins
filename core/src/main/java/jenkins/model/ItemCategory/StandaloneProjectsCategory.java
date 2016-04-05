@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 CloudBees, Inc.
+ * Copyright (c) 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,9 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.item_category;
+package jenkins.model.ItemCategory;
 
 import hudson.Extension;
-import jenkins.model.Messages;
 
 /**
  * Designed for projects with a self-contained configuration and history.
@@ -42,12 +41,12 @@ public class StandaloneProjectsCategory extends ItemCategory {
 
     @Override
     public String getDescription() {
-        return Messages.ItemCategory_StandaloneProjects_Description();
+        return Messages.StandaloneProjects_Description();
     }
 
     @Override
     public String getDisplayName() {
-        return Messages.ItemCategory_StandaloneProjects_DisplayName();
+        return Messages.StandaloneProjects_DisplayName();
     }
 
     @Override

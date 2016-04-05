@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 CloudBees, Inc.
+ * Copyright (c) 2016 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,9 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.item_category;
+package jenkins.model.ItemCategory;
 
 import hudson.Extension;
-import jenkins.model.Messages;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -53,12 +52,12 @@ public class NestedProjectsCategory extends ItemCategory {
 
     @Override
     public String getDescription() {
-        return Messages.ItemCategory_NestedProjects_Description();
+        return Messages.NestedProjects_Description();
     }
 
     @Override
     public String getDisplayName() {
-        return Messages.ItemCategory_NestedProjects_DisplayName();
+        return Messages.NestedProjects_DisplayName();
     }
 
     @Override
