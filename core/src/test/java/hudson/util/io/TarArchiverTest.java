@@ -48,6 +48,8 @@ public class TarArchiverTest {
 
     /**
      * Makes sure that permissions are properly stored in the tar file.
+     *
+     * @throws Exception test failure
      */
     @Issue("JENKINS-9397")
     @Test public void permission() throws Exception {

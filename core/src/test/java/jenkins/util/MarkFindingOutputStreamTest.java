@@ -39,6 +39,8 @@ public class MarkFindingOutputStreamTest {
 
     /**
      * If a stream closes without completing a match, the partial match should be sent to the output.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void closeInTheMiddle() throws IOException {
