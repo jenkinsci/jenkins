@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
  * 
  * @since TODO
  * 
- * @author Daniel Weber <daniel.weber.dev@gmail.com>
+ * @author <a href="mailto:daniel.weber.dev@gmail.com">Daniel Weber</a>
  */
 public abstract class ProcessKillingVeto implements ExtensionPoint {
 
