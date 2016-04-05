@@ -30,7 +30,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
- * A generic {@link ItemCategory}.
+ * Designed for project hierarchies with folders.
  *
  * This category should be moved to cloudbees-folder-plugin short-term.
  * Really when upgrades its baseline to 2.0.

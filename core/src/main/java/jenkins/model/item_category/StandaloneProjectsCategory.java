@@ -28,7 +28,7 @@ import hudson.Extension;
 import jenkins.model.Messages;
 
 /**
- * A generic {@link ItemCategory}
+ * Designed for projects with a self-contained configuration and history.
  */
 @Extension(ordinal = -100)
 public class StandaloneProjectsCategory extends ItemCategory {
