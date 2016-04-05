@@ -53,7 +53,6 @@ import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
-import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
@@ -1913,18 +1912,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
-        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
-            LOGGER.log(INFO, "This is a new Jenkins instance. The Plugin Install Wizard will be launched.");
-            // Force update of the default site file (updates/default.json).
-            updateDefaultSite();
-        }
     }
 
-    private static void updateDefaultSite() {
+    @Restricted(NoExternalUse.class)
+    public static void updateDefaultSite() {
         try {
             // Need to do the following because the plugin manager will attempt to access
             // $JENKINS_HOME/updates/default.json. Needs to be up to date.
-            Jenkins.getActiveInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+            Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
         } catch (Exception e) {
             LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
         }

@@ -24,10 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${it.setupWizard != null}">
+  <j:choose>
+  <j:when test="${it.setupWizard != null and it.setupWizard.useGeneratedPassword()}">
     <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
-  </j:if>
-  <j:if test="${it.setupWizard == null}">
+  </j:when>
+  <j:otherwise>
   <l:layout norefresh="true">
     <l:hasPermission permission="${app.READ}">
       <st:include page="sidepanel.jelly" />
@@ -74,5 +75,6 @@ THE SOFTWARE.
       </div>
     </l:main-panel>
   </l:layout>
-  </j:if>
+  </j:otherwise>
+  </j:choose>
 </j:jelly>

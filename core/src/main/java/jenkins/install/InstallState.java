@@ -23,6 +23,8 @@
  */
 package jenkins.install;
 
+import javax.annotation.CheckForNull;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -33,6 +35,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class)
 public enum InstallState {
+    /**
+     * Need InstallState != NEW for tests by default
+     */
+    UNKNOWN(true, null),
     /**
      * The initial set up has been completed
      */
@@ -90,6 +96,7 @@ public enum InstallState {
     /**
      * Gets the next state
      */
+    @CheckForNull
     public InstallState getNextState() {
         return nextState;
     }
