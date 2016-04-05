@@ -33,7 +33,7 @@ import jenkins.model.Messages;
 @Extension(ordinal = -100)
 public class StandaloneProjectsCategory extends ItemCategory {
 
-    public static final String ID = "standaloneprojects";
+    public static final String ID = "standalone-projects";
 
     @Override
     public String getId() {

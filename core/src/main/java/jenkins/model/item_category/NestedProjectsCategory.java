@@ -44,7 +44,7 @@ public class NestedProjectsCategory extends ItemCategory {
     /**
      * TODO Make public when be moved to cloudbees-folder-plugin.
      */
-    private static final String ID = "nestedprojects";
+    private static final String ID = "nested-projects";
 
     @Override
     public String getId() {
