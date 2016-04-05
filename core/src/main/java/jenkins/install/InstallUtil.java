@@ -82,9 +82,14 @@ public class InstallUtil {
                 throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
             }
         }
-
+        
+        // Support a 3-state flag for running or disabling the setup wizard
+        String shouldRunFlag = System.getProperty("jenkins.install.runSetupWizard");
+        boolean shouldRun = "true".equalsIgnoreCase(shouldRunFlag);
+        boolean shouldNotRun = "false".equalsIgnoreCase(shouldRunFlag);
+        
         // install wizard will always run if environment specified
-        if (!Boolean.getBoolean("jenkins.install.runSetupWizard")) {
+        if (!shouldRun) {
             if (Functions.getIsUnitTest()) {
                 return InstallState.TEST;
             }
@@ -99,10 +104,24 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+            Jenkins j = Jenkins.getInstance();
+            
+            // Allow for skipping
+            if(shouldNotRun) {
+                try {
+                    SetupWizard.completeSetup(j);
+                    UpgradeWizard.completeUpgrade(j);
+                    return j.getInstallState();
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             // Edge case: used Jenkins 1 but did not save the system config page,
             // the version is not persisted and returns 1.0, so try to check if
             // they actually did anything
-            Jenkins j = Jenkins.getInstance();
             if (!j.getItemMap().isEmpty() || !mayBeJenkins2SecurityDefaults(j)) {
                 return InstallState.UPGRADE;
             }
