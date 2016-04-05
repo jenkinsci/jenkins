@@ -34,12 +34,13 @@ $(function() {
         });
 
         autoActivateTabs(tabBar);
+        stickTabbar(tabBar);
+        
         page.onWinScroll(function () {
             autoActivateTabs(tabBar);
-        });
-        page.onWinScroll(function () {
             stickTabbar(tabBar);
         });
+        
     }, {trackSectionVisibility: true});
 });
 
