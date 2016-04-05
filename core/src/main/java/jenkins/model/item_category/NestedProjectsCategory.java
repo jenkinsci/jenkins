@@ -33,6 +33,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * A generic {@link ItemCategory}.
  *
  * This category should be moved to cloudbees-folder-plugin short-term.
+ * Really when upgrades its baseline to 2.0.
  *
  * @since 2.0
  */
@@ -40,7 +41,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension(ordinal = -100)
 public class NestedProjectsCategory extends ItemCategory {
 
-    public static final String ID = "nestedprojects";
+    /**
+     * TODO Make public when be moved to cloudbees-folder-plugin.
+     */
+    private static final String ID = "nestedprojects";
 
     @Override
     public String getId() {
