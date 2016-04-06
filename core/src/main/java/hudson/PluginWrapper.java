@@ -573,7 +573,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                         obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
                     }
                 } else {
-                    disabledDependencies.add(d.shortName);
+                    disabledDependencies.add(d.toString());
                 }
 
             }
