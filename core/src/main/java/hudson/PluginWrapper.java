@@ -26,6 +26,7 @@ package hudson;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
 import jenkins.YesNoMaybe;
@@ -53,6 +54,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -560,13 +563,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null) {
                 missingDependencies.add(d);
+                NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_MissingDependency(getLongName(), d.shortName));
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
                         obsoleteDependencies.add(d);
+                        NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
                     }
                 } else {
                     disabledDependencies.add(d);
+                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_DisabledDependency(getLongName(), dependency.getLongName()));
                 }
 
             }
@@ -577,6 +583,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
                     obsoleteDependencies.add(d);
+                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
                 } else {
                     dependencies.add(d);
                 }
@@ -612,6 +619,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private void checkRequiredCoreVersion(String requiredCoreVersion) throws IOException {
         if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
+            NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_OutdatedCoreVersion(getLongName(), requiredCoreVersion));
             throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
         }
     }
@@ -723,6 +731,38 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
         return false;
+    }
+
+    @Extension
+    public final static PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
+
+    /**
+     * Administrative Monitor for failed plugins
+     */
+    public static final class PluginWrapperAdministrativeMonitor extends AdministrativeMonitor {
+        public final List<String> pluginError = new ArrayList<>();
+
+        void addErrorMessage(String error) {
+            pluginError.add(error);
+        }
+
+        public boolean isActivated() {
+            return !pluginError.isEmpty();
+        }
+
+        /**
+         * Depending on whether the user said "dismiss" or "correct", send him to the right place.
+         */
+        public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            if(req.hasParameter("correct")) {
+                rsp.sendRedirect(req.getContextPath()+"/pluginManager");
+
+            }
+        }
+
+        public static PluginWrapperAdministrativeMonitor get() {
+            return AdministrativeMonitor.all().get(PluginWrapperAdministrativeMonitor.class);
+        }
     }
 
 //
