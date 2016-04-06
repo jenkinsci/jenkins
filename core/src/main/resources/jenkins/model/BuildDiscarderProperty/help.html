@@ -37,15 +37,15 @@
   <p>
   For example, if a project builds some software and produces a large installer,
   which is archived, you may wish to always keep the console log and information
-  about which source control commit was built.  While for disk space reasons,
-  you may want to keep only the last three installers that were built.
+  about which source control commit was built, while for disk space reasons, you
+  may want to keep only the last three installers that were built.
   <br>
   This can make sense for projects where you can easily recreate the same
   artifacts later by building the same source control commit again.
 
   <hr>
 
-  For time-based limits, note that Jenkins does not discard items as soon as
-  the configured time is exceeded; these rules are evaluated the next time that
-  a build of this project starts.
+  Note that Jenkins does not discard items immediately when this configuration
+  is updated, or as soon as any of the configured values are exceeded; these
+  rules are evaluated each time that a build of this project completes.
 </div>
