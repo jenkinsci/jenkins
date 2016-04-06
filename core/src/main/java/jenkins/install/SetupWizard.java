@@ -58,10 +58,7 @@ public class SetupWizard {
     public SetupWizard(Jenkins j) throws IOException, InterruptedException {
         this.jenkins = j;
 
-        // this was determined to be a new install, don't run the update wizard here
-        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
-        if (uw!=null)
-            uw.setCurrentLevel(new VersionNumber("2.0"));
+        UpgradeWizard.completeUpgrade(j);
         
         // Create an admin user by default with a 
         // difficult password
@@ -206,13 +203,16 @@ public class SetupWizard {
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
     public HttpResponse doCompleteInstall() throws IOException, ServletException {
+        completeSetup(jenkins);
+        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
+        return HttpResponses.okJSON();
+    }
+    
+    static void completeSetup(Jenkins jenkins) {
         jenkins.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
-        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
-
-        return HttpResponses.okJSON();
     }
     
     /**

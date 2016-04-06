@@ -71,9 +71,16 @@ public class UpgradeWizard extends PageDecorator {
     }
 
     /*package*/
-    public void setCurrentLevel(VersionNumber v) throws IOException {
+    void setCurrentLevel(VersionNumber v) throws IOException {
         FileUtils.writeStringToFile(getStateFile(), v.toString());
         updateUpToDate();
+    }
+    
+    static void completeUpgrade(Jenkins jenkins) throws IOException {
+        // this was determined to be a new install, don't run the update wizard here
+        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
+        if (uw!=null)
+            uw.setCurrentLevel(new VersionNumber("2.0"));
     }
 
     /**
