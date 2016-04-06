@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 
 /**
- * {@link RetentionStrategy} that controls the slave based on a schedule.
+ * {@link RetentionStrategy} that controls the agent based on a schedule.
  *
  * @author Stephen Connolly
  * @since 1.275

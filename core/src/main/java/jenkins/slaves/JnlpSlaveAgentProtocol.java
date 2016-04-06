@@ -27,26 +27,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@link AgentProtocol} that accepts connection from slave agents.
+ * {@link AgentProtocol} that accepts connection from agents.
  *
  * <h2>Security</h2>
  * <p>
- * Once connected, remote slave agents can send in commands to be
+ * Once connected, remote agents can send in commands to be
  * executed on the master, so in a way this is like an rsh service.
  * Therefore, it is important that we reject connections from
- * unauthorized remote slaves.
+ * unauthorized remote agents.
  *
  * <p>
- * We do this by computing HMAC of the slave name.
- * This code is sent to the slave inside the <tt>.jnlp</tt> file
+ * We do this by computing HMAC of the agent name.
+ * This code is sent to the agent inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
- * we use everywhere else in Jenkins), and the slave sends this
+ * we use everywhere else in Jenkins), and the agent sends this
  * token back when it connects to the master.
- * Unauthorized slaves can't access the protected <tt>.jnlp</tt> file,
- * so it can't impersonate a valid slave.
+ * Unauthorized agents can't access the protected <tt>.jnlp</tt> file,
+ * so it can't impersonate a valid agent.
  *
  * <p>
- * We don't want to force the JNLP slave agents to be restarted
+ * We don't want to force the JNLP agents to be restarted
  * whenever the server restarts, so right now this secret master key
  * is generated once and used forever, which makes this whole scheme
  * less secure.
@@ -96,7 +96,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
 
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
-                error("No such slave: "+nodeName);
+                error("No such agent: "+nodeName);
                 return;
             }
 
@@ -139,10 +139,10 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 return computer.getChannel();
             } catch (AbortException e) {
                 logw.println(e.getMessage());
-                logw.println("Failed to establish the connection with the slave");
+                logw.println("Failed to establish the connection with the agent");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName);
+                logw.println("Failed to establish the connection with the agent " + nodeName);
                 e.printStackTrace(logw);
                 throw e;
             }
@@ -152,7 +152,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol.class.getName());
 
     /**
-     * This secret value is used as a seed for slaves.
+     * This secret value is used as a seed for agents.
      */
     public static final HMACConfidentialKey SLAVE_SECRET = new HMACConfidentialKey(JnlpSlaveAgentProtocol.class,"secret");
 }

@@ -124,15 +124,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final File disableFile;
 
     /**
-     * Used to control the unpacking of the bundled plugin.
-     * If a pin file exists, Jenkins assumes that the user wants to pin down a particular version
-     * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
-     * by a bundled copy, to ensure consistency across upgrade/downgrade.
-     * @since 1.325
-     */
-    private final File pinFile;
-
-    /**
      * A .jpi file, an exploded plugin directory, or a .jpl file.
      */
     private final File archive;
@@ -270,7 +261,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
-        this.pinFile = new File(archive.getPath() + ".pinned");
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
@@ -653,8 +643,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
     
     @Exported
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinned() {
-        return pinFile.exists();
+        return false;
     }
 
     /**
@@ -716,16 +707,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
-        if (!isPinned())    return false;
-
-        Manifest bundled = Jenkins.getInstance().pluginManager.getBundledPluginManifest(getShortName());
-        if (bundled==null)  return false;
-
-        VersionNumber you = new VersionNumber(getVersionOf(bundled));
-        VersionNumber me = getVersionNumber();
-
-        return me.isOlderThan(you);
+        return false;
     }
 
 //
@@ -748,16 +732,18 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doPin() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        new FileOutputStream(pinFile).close();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doUnpin() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        pinFile.delete();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 

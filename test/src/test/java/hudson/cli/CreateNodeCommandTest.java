@@ -60,7 +60,7 @@ public class CreateNodeCommandTest {
                 .invoke()
         ;
 
-        assertThat(result.stderr(), containsString("ERROR: user is missing the Slave/Create permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Create permission"));
         assertThat(result, hasNoStandardOutput());
         assertThat(result, failedWith(6));
     }

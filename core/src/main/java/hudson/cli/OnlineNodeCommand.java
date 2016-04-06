@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 @Extension
 public class OnlineNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NAME", usage="Slave name, or empty string for master")
+    @Argument(metaVar="NAME", usage="Agent name, or empty string for master")
     public String computerName;
 
     @Override

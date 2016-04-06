@@ -66,9 +66,9 @@ THE SOFTWARE.
 
   <j:choose>
     <j:when test="${attrs.title!=null}">
-      <tr class="optional-block-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
+      <tr class="optional-block-start row-group-start ${attrs.inline?'':'row-set-start'}" hasHelp="${attrs.help!=null}"><!-- this ID marks the beginning -->
         <td colspan="3">
-          <f:checkbox name="${attrs.name}" onclick="javascript:updateOptionalBlock(this,true)"
+          <f:checkbox name="${attrs.name}" class="optional-block-control block-control" onclick="javascript:updateOptionalBlock(this,true)"
                       negative="${attrs.negative}" checked="${attrs.checked}" field="${attrs.field}" title="${title}" />
         </td>
         <f:helpLink url="${attrs.help}" featureName="${title}"/>
@@ -79,7 +79,7 @@ THE SOFTWARE.
       <tr class="rowvg-start" />
       <d:invokeBody />
       <!-- end marker -->
-      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end" />
+      <tr class="${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end row-group-end" />
     </j:when>
 
     <j:otherwise>

@@ -35,6 +35,7 @@ import hudson.Indenter;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
+import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -50,12 +51,16 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
+import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.item_category.Categories;
+import jenkins.model.item_category.Category;
+import jenkins.model.item_category.ItemCategory;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 
@@ -63,6 +68,7 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -84,6 +90,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +112,7 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.model.Jenkins.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 import org.xml.sax.SAXException;
 
 /**
@@ -917,7 +925,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         SearchIndexBuilder sib = super.makeSearchIndex();
         sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
                 protected TopLevelItem get(String key) { return getItem(key); }
-                protected Collection<TopLevelItem> all() { return getItems(); }                
+                protected Collection<TopLevelItem> all() { return getItems(); }
                 @Override
                 protected String getName(TopLevelItem o) {
                     // return the name instead of the display for suggestion searching
@@ -999,6 +1007,69 @@ public abstract class View extends AbstractModelObject implements AccessControll
      *      null if fails.
      */
     public abstract Item doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+
+    /**
+     * Makes sure that the given name is good as a job name.
+     * For use from {@code newJob}.
+     */
+    @Restricted(DoNotUse.class) // called from newJob view
+    public FormValidation doCheckJobName(@QueryParameter String value) {
+        // this method can be used to check if a file exists anywhere in the file system,
+        // so it should be protected.
+        getOwner().checkPermission(Item.CREATE);
+
+        if (Util.fixEmpty(value) == null) {
+            return FormValidation.ok();
+        }
+
+        try {
+            Jenkins.checkGoodName(value);
+            value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
+            Jenkins.getInstance().getProjectNamingStrategy().checkName(value);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+
+        if (getOwnerItemGroup().getItem(value) != null) {
+            return FormValidation.error(Messages.Hudson_JobAlreadyExists(value));
+        }
+
+        // looks good
+        return FormValidation.ok();
+    }
+
+    /**
+     * An API REST method to get the allowed {$link TopLevelItem}s and its categories.
+     *
+     * @return A {@link Categories} entity that is shown as JSON file.
+     */
+    @Restricted(DoNotUse.class)
+    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Categories categories = new Categories();
+        int order = 0;
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
+            ItemCategory ic = ItemCategory.getCategory(descriptor);
+            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
+
+            // Information about Item.
+            metadata.put("class", descriptor.getId());
+            metadata.put("order", ++order);
+            metadata.put("displayName", descriptor.getDisplayName());
+            metadata.put("description", descriptor.getDescription());
+            metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+
+            Category category = categories.getItem(ic.getId());
+            if (category != null) {
+                category.getItems().add(metadata);
+            } else {
+                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
+                temp.add(metadata);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getOrder(), ic.getMinToShow(), temp);
+                categories.getItems().add(category);
+            }
+        }
+        return categories;
+    }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         rss(req, rsp, " all builds", getBuilds());

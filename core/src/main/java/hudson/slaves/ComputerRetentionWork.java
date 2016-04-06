@@ -34,7 +34,7 @@ import hudson.model.PeriodicWork;
 import hudson.Extension;
 
 /**
- * Periodically checks the slaves and try to reconnect dead slaves.
+ * Periodically checks the agents and try to reconnect dead agents.
  *
  * @author Kohsuke Kawaguchi
  * @author Stephen Connolly

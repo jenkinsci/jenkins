@@ -1,11 +1,11 @@
 <div>
-    If you want to always run this project on a specific node/slave, just specify its name.
+    If you want to always run this project on a specific agent, just specify its name.
     This works well when you have a small number of nodes.
 
     <p>
-    As the size of the cluster grows, it becomes useful not to tie projects to specific slaves,
-    as it hurts resource utilization when slaves may come and go. For such situation, assign labels
-    to slaves to classify their capabilities and characteristics, and specify a boolean expression
+    As the size of the cluster grows, it becomes useful not to tie projects to specific agents,
+    as it hurts resource utilization when agents may come and go. For such situation, assign labels
+    to agents to classify their capabilities and characteristics, and specify a boolean expression
     over those labels to decide where to run.
 
     <h3>Valid Operators</h3>
@@ -31,15 +31,15 @@
         <dt>a -> b</dt>
         <dd>
             "implies" operator. Equivalent to <tt>!a|b</tt>.
-            For example, <tt>windows->x64</tt> could be thought of as "if run on a Windows slave,
-            that slave must be 64bit." It still allows Jenkins to run this build on linux.
+            For example, <tt>windows->x64</tt> could be thought of as "if run on a Windows agent,
+            that agent must be 64bit." It still allows Jenkins to run this build on linux.
         </dd>
 
         <dt>a &lt;-> b</dt>
         <dd>
             "if and only if" operator. Equivalent to <tt>a&amp;&amp;b || !a&amp;&amp;!b</tt>.
-            For example, <tt>windows&lt;->sfbay</tt> could be thought of as "if run on a Windows slave,
-            that slave must be in the SF bay area, but if not on Windows, it must not be in the bay area."
+            For example, <tt>windows&lt;->sfbay</tt> could be thought of as "if run on a Windows agent,
+            that agent must be in the SF bay area, but if not on Windows, it must not be in the bay area."
         </dd>
     </dl>
     <p>
@@ -47,6 +47,6 @@
     An expression can contain whitespace for better readability, and it'll be ignored.
 
     <p>
-    Label names or slave names can be quoted if they contain unsafe characters. For example,
+    Label names or agent names can be quoted if they contain unsafe characters. For example,
     <tt>"jenkins-solaris (Solaris)" || "Windows 2008"</tt>
 </div>

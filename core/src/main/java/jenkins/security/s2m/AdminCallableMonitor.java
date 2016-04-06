@@ -38,7 +38,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Slave \u2192 Master Access Control";
+        return "Agent \u2192 Master Access Control";
     }
 
     // bind this to URL

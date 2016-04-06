@@ -140,7 +140,7 @@ public class CommandLauncher extends ComputerLauncher {
                 }
             });
 
-            LOGGER.info("slave agent launched for " + computer.getDisplayName());
+            LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
             e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
         } catch (RuntimeException e) {
