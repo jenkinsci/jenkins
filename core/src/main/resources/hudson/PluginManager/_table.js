@@ -176,7 +176,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
                 if (pluginTRs[i].hasClassName('has-dependants-but-disabled')) {
                     if (pluginMetadata.enableInput.checked) {
-                        pluginTRs[i].removeClassName('has-dependants-but-disabled');
+                            pluginTRs[i].removeClassName('has-dependants-but-disabled');
                         }
                 }
                 markAllDependantsDisabled(pluginTRs[i]);
