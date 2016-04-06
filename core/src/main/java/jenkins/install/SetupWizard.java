@@ -3,6 +3,7 @@ package jenkins.install;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -25,6 +26,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
 import hudson.FilePath;
+import hudson.model.UpdateCenter;
 import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -55,6 +57,9 @@ public class SetupWizard {
 
     public SetupWizard(Jenkins j) throws IOException, InterruptedException {
         this.jenkins = j;
+
+        UpgradeWizard.completeUpgrade(j);
+        
         // Create an admin user by default with a 
         // difficult password
         FilePath iapf = getInitialAdminPasswordFile();
@@ -71,8 +76,10 @@ public class SetupWizard {
                 // JENKINS-33599 - write to a file in the jenkins home directory
                 // most native packages of Jenkins creates a machine user account 'jenkins' to run Jenkins,
                 // and use group 'jenkins' for admins. So we allo groups to read this file
-                iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
+                iapf.touch(System.currentTimeMillis());
                 iapf.chmod(0640);
+                iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
+                
 
                 // Lock Jenkins down:
                 FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
@@ -96,29 +103,50 @@ public class SetupWizard {
             }
         }
 
-        String setupKey = iapf.readToString().trim();
-        String ls = System.lineSeparator();
-        LOGGER.info(ls + ls + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + ls
-                + "Jenkins initial setup is required. An admin user has been created and "
-                + "a password generated." + ls
-                + "Please use the following password to proceed to installation:" + ls
-                + ls
-                + setupKey + ls
-                + ls
-                + "This may also be found at: " + iapf.getRemote() + ls
-                + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls
-                + "*************************************************************" + ls);
+        if(iapf.exists()) {
+            String setupKey = iapf.readToString().trim();
+            String ls = System.lineSeparator();
+            LOGGER.info(ls + ls + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + ls
+                    + "Jenkins initial setup is required. An admin user has been created and "
+                    + "a password generated." + ls
+                    + "Please use the following password to proceed to installation:" + ls
+                    + ls
+                    + setupKey + ls
+                    + ls
+                    + "This may also be found at: " + iapf.getRemote() + ls
+                    + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls
+                    + "*************************************************************" + ls);
+        }
         
         try {
             PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
         } catch (ServletException e) {
             throw new AssertionError(e);
         }
+        
+        try {
+            // Make sure plugin metadata is up to date
+            UpdateCenter.updateDefaultSite();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
+     */
+    public boolean useGeneratedPassword() {
+        try {
+            return getInitialAdminPasswordFile().exists();
+        } catch (Exception e) {
+            // ignore
+        }
+        return false;
     }
     
     /**
@@ -141,6 +169,13 @@ public class SetupWizard {
             if (u != null) {
                 if(admin != null) {
                     admin = null;
+                }
+                
+                // Success! Delete the temporary password file:
+                try {
+                    getInitialAdminPasswordFile().delete();
+                } catch (InterruptedException e) {
+                    throw new IOException(e);
                 }
                 
                 j.setInstallState(InstallState.CREATE_ADMIN_USER.getNextState());
@@ -168,17 +203,16 @@ public class SetupWizard {
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
     public HttpResponse doCompleteInstall() throws IOException, ServletException {
+        completeSetup(jenkins);
+        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
+        return HttpResponses.okJSON();
+    }
+    
+    static void completeSetup(Jenkins jenkins) {
         jenkins.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
-        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
-
-        UpgradeWizard uw = jenkins.getInjector().getInstance(UpgradeWizard.class);
-        if (uw!=null)
-            uw.setCurrentLevel(new VersionNumber("2.0"));
-
-        return HttpResponses.okJSON();
     }
     
     /**
