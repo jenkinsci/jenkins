@@ -88,7 +88,7 @@ public class OldDataMonitorTest {
     }
 
     @Issue("JENKINS-19544")
-    @Ignore
+    @Ignore("Disabled while diagnosing a random OOM issue") // FIXME enable and remove -XX:+HeapDumpOnOutOfMemoryError
     @Test public void memory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject("p");
         FreeStyleBuild b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
