@@ -1,52 +1,128 @@
 <div>
-    If you want to always run this project on a specific agent, just specify its name.
-    This works well when you have a small number of nodes.
+  Defines a logical expression which determines which agents may execute builds
+  of this project.  This expression, when tested against the name and labels of
+  each available agent, will be either <i>true</i> or <i>false</i>.  If the
+  expression evaluates to <i>true</i>, then that agent will be allowed to
+  execute builds of this project.
+  <p>
+  If this project should always be built on a specific agent, or on the Jenkins
+  master, then you can just enter the agent's name, or <code>master</code>,
+  respectively.
+  <p>
+  However, you should generally avoid using the <i>Name</i> of an agent here,
+  preferring to target the <i>Labels</i> of an agent.  As documented on the
+  configuration page for each agent, and the <i>Configure System</i> page for
+  the master, labels can be used to represent which operating system the agent
+  is running on, its CPU architecture, or any number of other characteristics.
+  <br>
+  Using labels removes the need to re-configure the label expression entered
+  here each time that you add, remove, or rename agents.
+  <p>
+  A label expression can be as simple as entering a single <b>label</b> or
+  <b>agent name</b>, for example <code>android-builder</code>, or
+  <code>linux-machine-42</code>.<br>
+  You can also make use of various <i>operators</i> to create more complex
+  expressions.
 
-    <p>
-    As the size of the cluster grows, it becomes useful not to tie projects to specific agents,
-    as it hurts resource utilization when agents may come and go. For such situation, assign labels
-    to agents to classify their capabilities and characteristics, and specify a boolean expression
-    over those labels to decide where to run.
+  <h3>Supported operators</h3>
+  The following operators are supported, in descending order of precedence:
+  <dl>
+    <dt><tt>(expression)</tt></dt>
+    <dd>
+      parentheses — used to explicitly define the associativity of an expression
+    </dd>
 
-    <h3>Valid Operators</h3>
-    <p>
-    The following operators are supported, in the order of precedence.
-    <dl>
-        <dt>(expr)</dt>
-        <dd>parenthesis</dd>
+    <dt><tt>!expression</tt></dt>
+    <dd>
+      NOT — negation; the result of <tt>expression</tt> must <b>not</b> be true
+    </dd>
 
-        <dt>!expr</dt>
-        <dd>negation</dd>
+    <dt><tt>a &amp;&amp; b</tt></dt>
+    <dd>
+      AND — <b>both</b> of the expressions <tt>a</tt> and <tt>b</tt> must be
+      true
+    </dd>
 
-        <dt>expr&amp;&amp;expr</dt>
-        <dd>
-            and
-        </dd>
+    <dt><tt>a || b</tt></dt>
+    <dd>
+      OR — <b>either</b> of the expressions <tt>a</tt> or <tt>b</tt> may be
+      true
+    </dd>
 
-        <dt>expr||expr</dt>
-        <dd>
-            or
-        </dd>
+    <dt><tt>a -> b</tt></dt>
+    <dd>
+      "implies" operator — equivalent to <tt>!a || b</tt>.<br>
+      For example, <tt>windows -> x64</tt> could be thought of as "if a Windows
+      agent is used, then that agent <i>must</i> be 64-bit", while still
+      allowing this project to be executed on any agents that <i>do not</i> have
+      the <tt>windows</tt> label, regardless of whether they have also have an
+      <tt>x64</tt> label
+    </dd>
 
-        <dt>a -> b</dt>
-        <dd>
-            "implies" operator. Equivalent to <tt>!a|b</tt>.
-            For example, <tt>windows->x64</tt> could be thought of as "if run on a Windows agent,
-            that agent must be 64bit." It still allows Jenkins to run this build on linux.
-        </dd>
+    <dt><tt>a &lt;-> b</tt></dt>
+    <dd>
+      "if and only if" operator — equivalent to <tt>a &amp;&amp; b ||
+      !a &amp;&amp; !b</tt><br>
+      For example, <tt>windows &lt;-> dc2</tt> could be thought of as "if a
+      Windows agent is used, then that agent <i>must</i> be in datacenter 2, but
+      if a non-Windows agent is used, then it <i>must not</i> be in datacenter
+      2"
+    </dd>
+  </dl>
 
-        <dt>a &lt;-> b</dt>
-        <dd>
-            "if and only if" operator. Equivalent to <tt>a&amp;&amp;b || !a&amp;&amp;!b</tt>.
-            For example, <tt>windows&lt;->sfbay</tt> could be thought of as "if run on a Windows agent,
-            that agent must be in the SF bay area, but if not on Windows, it must not be in the bay area."
-        </dd>
-    </dl>
-    <p>
-    All operators are left-associative (i.e., a->b->c &lt;-> (a->b)->c )
-    An expression can contain whitespace for better readability, and it'll be ignored.
+  <h3>Notes</h3>
+  <ul>
+    <li>
+      All operators are left-associative, i.e. <tt>a -> b -> c</tt> is
+      equivalent to <tt>(a -> b) -> c</tt>.
+    </li>
+    <li>
+      Labels or agent names can be surrounded with quotation marks if they
+      contain characters that would conflict with the operator syntax.<br>
+      For example, <tt>"osx (10.11)" || "Windows Server"</tt>.
+    </li>
+    <li>
+      Expressions can be written without whitespace, but including it is
+      recommended for readability; Jenkins will ignore whitespace when
+      evaluating expressions.
+    </li>
+    <li>
+      Matching labels or agent names with wildcards or regular expressions is
+      not supported.
+    </li>
+    <li>
+      An empty expression will always evaluate to <i>true</i>, matching all
+      agents.
+    </li>
+  </ul>
 
-    <p>
-    Label names or agent names can be quoted if they contain unsafe characters. For example,
-    <tt>"jenkins-solaris (Solaris)" || "Windows 2008"</tt>
+  <h3>Examples</h3>
+  <dl>
+    <dt><tt>master</tt></dt>
+    <dd>Builds of this project may be executed only on the Jenkins master<dd>
+
+    <dt><tt>linux-machine-42</tt></dt>
+    <dd>
+      Builds of this project may be executed only on the agent with the name
+      <tt>linux-machine-42</tt> (or on any machine that happens to have a label
+      called <tt>linux-machine-42</tt>)
+    </dd>
+
+    <dt><tt>windows &amp;&amp; jdk9</tt></dt>
+    <dd>
+      Builds of this project may be executed only on any Windows agent that has
+      version 9 of the Java Development Kit installed (assuming that agents
+      with JDK 9 installed have been given a <tt>jdk9</tt> label)
+    </dd>
+
+    <dt><tt>postgres &amp;&amp; !vm &amp;&amp; (linux || freebsd)</tt></dt>
+    <dd>
+      Builds of this project may be executed only any on Linux or FreeBSD agent,
+      so long as they are <i>not</i> a virtual machine, and they have PostgreSQL
+      installed (assuming that each agent has the appropriate labels — in
+      particular, each agent running in a virtual machine must have the
+      <tt>vm</tt> label in order for this example to work as expected)
+    </dd>
+
+  </dl>
 </div>
