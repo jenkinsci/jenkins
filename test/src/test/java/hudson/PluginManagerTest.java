@@ -47,7 +47,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -340,75 +339,6 @@ public class PluginManagerTest {
         assertTrue(r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint").isEmpty());
     }
 
-    @Issue("JENKINS-21486")
-    @Test public void installPluginWithObsoleteDependencyFails() throws Exception {
-        // Load dependee 0.0.1.
-        {
-            dynamicLoad("dependee.hpi");
-        }
-
-        // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
-    }
-
-    @Issue("JENKINS-21486")
-    @Test public void installPluginWithDisabledOptionalDependencySucceeds() throws Exception {
-        // Load dependee 0.0.2.
-        {
-            dynamicLoadAndDisable("dependee-0.0.2.hpi");
-        }
-
-        // Load depender 0.0.2, depending optionally on dependee 0.0.2
-        {
-            dynamicLoad("depender-0.0.2.hpi");
-        }
-
-        // dependee is not loaded so we cannot list any extension for it.
-        try {
-            r.jenkins.getExtensionList("org.jenkinsci.plugins.dependencytest.dependee.DependeeExtensionPoint");
-            fail();
-        } catch( ClassNotFoundException _ ){
-        }
-    }
-
-    @Issue("JENKINS-21486")
-    @Test public void installPluginWithDisabledDependencyFails() throws Exception {
-        // Load dependee 0.0.2.
-        {
-            dynamicLoadAndDisable("dependee-0.0.2.hpi");
-        }
-
-        // Load mandatory-depender 0.0.2, depending on dependee 0.0.2
-        try {
-            dynamicLoad("mandatory-depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
-    }
-
-
-    @Issue("JENKINS-21486")
-    @Test public void installPluginWithObsoleteOptionalDependencyFails() throws Exception {
-        // Load dependee 0.0.1.
-        {
-            dynamicLoad("dependee.hpi");
-        }
-
-        // Load depender 0.0.2, depending optionally on dependee 0.0.2
-        try {
-            dynamicLoad("depender-0.0.2.hpi");
-            fail("Should not have worked");
-        } catch (IOException e) {
-            // Expected
-        }
-    }
-
     @Issue("JENKINS-12753")
     @WithPlugin("tasks.jpi")
     @Test public void dynamicLoadRestartRequiredException() throws Exception {
@@ -446,9 +376,5 @@ public class PluginManagerTest {
 
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
-    }
-
-    private void dynamicLoadAndDisable(String plugin) throws IOException, InterruptedException, RestartRequiredException {
-        PluginManagerUtil.dynamicLoad(plugin, r.jenkins, true);
     }
 }
