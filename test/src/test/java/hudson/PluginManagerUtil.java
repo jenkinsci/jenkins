@@ -48,16 +48,9 @@ public class PluginManagerUtil {
     }
 
     public static void dynamicLoad(String plugin, Jenkins jenkins) throws IOException, InterruptedException, RestartRequiredException {
-        dynamicLoad(plugin, jenkins, false);
-    }
-
-    public static void dynamicLoad(String plugin, Jenkins jenkins, boolean disable) throws IOException, InterruptedException, RestartRequiredException {
         URL src = PluginManagerTest.class.getClassLoader().getResource("plugins/" + plugin);
         File dest = new File(jenkins.getRootDir(), "plugins/" + plugin);
         FileUtils.copyURLToFile(src, dest);
-        if (disable) {
-            new File(dest.getPath() + ".disabled").createNewFile();
-        }
         jenkins.pluginManager.dynamicLoad(dest);
     }
 }
