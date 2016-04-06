@@ -18,7 +18,7 @@
                     <p>
                         ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}
                     </p>
-                    <p>${%Please copy the password and paste it below.}</p>
+                    <p>${%Please copy the password from either location and paste it below.}</p>
                     <j:if test="${error}">
                         <div class="alert alert-danger">
                           <strong>${%ERROR:} </strong>
