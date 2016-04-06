@@ -590,7 +590,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (!disabledDependencies.isEmpty()) {
             boolean plural = disabledDependencies.size() > 1;
             messageBuilder.append(plural ? "Dependencies " : "Dependency ")
-                    .append(Util.join(missingDependencies, ", "))
+                    .append(Util.join(disabledDependencies, ", "))
                     .append(" ").append(plural ? "are" : "is")
                     .append(" disabled. ");
         }
