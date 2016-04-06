@@ -11,7 +11,7 @@
   Each parameter has a <i>Name</i> and some sort of <i>Value</i>, depending on
   the parameter type.  These name-value pairs will be exported as environment
   variables when the build starts, allowing subsequent parts of the build
-  configuration (like build steps) to access those values, e.g. by using the
+  configuration (such as build steps) to access those values, e.g. by using the
   <tt>${PARAMETER_NAME}</tt> syntax (or <tt>%PARAMETER_NAME%</tt> on Windows).
   <br>
   This also implies that each parameter defined here should have a unique
@@ -25,6 +25,10 @@
   <p>
   If a build is started automatically, for example if started by an SCM trigger,
   the default values for each parameter will be used.
+  <p>
+  When a parameterized build is in the queue, attempting to start another build
+  of the same project will only succeed if the parameter values are different,
+  or if the <i>Execute concurrent builds if necessary</i> option is enabled.
   <p>
   See the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Parameterized+Build"
   target="_blank">Parameterized Builds wiki page</a> for more information about
