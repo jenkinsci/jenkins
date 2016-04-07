@@ -77,6 +77,7 @@ import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Handler;
@@ -486,9 +487,9 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause!=null) {
                     offlineCause = new ChannelTermination(cause);
-                    cause.printStackTrace(taskListener.error("Connection terminated"));
+                    cause.printStackTrace(taskListener.error(getTimestamp() + " Connection terminated"));
                 } else {
-                    taskListener.getLogger().println("Connection terminated");
+                    taskListener.getLogger().println(getTimestamp() + " Connection terminated");
                 }
                 closeChannel();
                 try {
@@ -506,7 +507,7 @@ public class SlaveComputer extends Computer {
             channel.addListener(listener);
 
         String slaveVersion = channel.call(new SlaveVersion());
-        log.println("Slave.jar version: " + slaveVersion);
+        log.println(getTimestamp() + " Slave.jar version: " + slaveVersion);
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
@@ -521,10 +522,10 @@ public class SlaveComputer extends Computer {
         String remoteFS = node.getRemoteFS();
         if (Util.isRelativePath(remoteFS)) {
             remoteFS = channel.call(new AbsolutePath(remoteFS));
-            log.println("NOTE: Relative remote path resolved to: "+remoteFS);
+            log.println(getTimestamp() + " NOTE: Relative remote path resolved to: "+remoteFS);
         }
         if(_isUnix && !remoteFS.contains("/") && remoteFS.contains("\\"))
-            log.println("WARNING: "+remoteFS
+            log.println(getTimestamp() + " WARNING: "+remoteFS
                     +" looks suspiciously like Windows path. Maybe you meant "+remoteFS.replace('\\','/')+"?");
         FilePath root = new FilePath(channel,remoteFS);
 
@@ -575,8 +576,12 @@ public class SlaveComputer extends Computer {
         } finally {
             SecurityContextHolder.setContext(old);
         }
-        log.println("Slave successfully connected and online");
+        log.println(getTimestamp() + " Slave successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
+    }
+
+    protected String getTimestamp() {
+        return String.format("[%1$tD %1$tT]", new Date());
     }
 
     @Override
