@@ -91,6 +91,7 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
+    <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
@@ -184,7 +185,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>${guavaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>${guavaVersion}</version>
       </dependency>
 
       <dependency>
