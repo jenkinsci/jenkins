@@ -31,7 +31,9 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
-    <div class="behavior-loading">${%LOADING}</div>
+    <div class="behavior-loading">${%LOADING}
+      <div class="progress-bar"><span class="unknown"></span></div>
+    </div>
     <f:form method="post" name="config" action="configSubmit">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />

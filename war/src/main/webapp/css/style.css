@@ -703,11 +703,24 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 div.behavior-loading {
-    position: absolute; width: 80%; height:100%;
-    background-color: #e4e4e4; text-align: center; font-size: 300%;
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
+    position: absolute;
+    width: 80%;
+    height:100%;
+    background-color: #FFF;
+    text-align: center;
+    font-size: 150%;
+    margin: 0 auto;
+    padding-top: 100px;
+}
+
+div.behavior-loading .progress-bar {
+    margin: 0 auto;
+}
+
+div.behavior-loading .progress-bar .unknown {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 LABEL.attach-previous {
@@ -1614,7 +1627,7 @@ TEXTAREA.rich-editor {
 
 /* ========================= progress bar ========================= */
 
-table.progress-bar {
+.progress-bar, table.progress-bar {
   border-collapse: collapse;
   border: 1px solid #3465a4;
   height: 6px;
@@ -1622,26 +1635,26 @@ table.progress-bar {
   clear: none;
 }
 
-table.progress-bar tr.unknown {
+.progress-bar .unknown {
     background-image:url(../images/progress-unknown.gif);
 }
 
-td.progress-bar-done {
+.progress-bar-done {
   background-color: #3465a4;
 }
 
-td.progress-bar-left {
+.progress-bar-left {
   background-color: #ffffff;
 }
 
-table.progress-bar.red {
+.progress-bar.red {
   border: 1px solid #cc0000;
 }
 
-table.progress-bar.red tr.unknown {
+.progress-bar.red .unknown {
     background-image:url(../images/progress-unknown-red.gif);
 }
-table.progress-bar.red td.progress-bar-done {
+.progress-bar.red .progress-bar-done {
   background-color: #cc0000;
 }
 
