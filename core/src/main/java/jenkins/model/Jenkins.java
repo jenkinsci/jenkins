@@ -680,6 +680,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     };
 
+    /**
+     * Cached root URL.
+     *
+     * Updated by {@link Functions#initPageVariables(org.apache.commons.jelly.JellyContext)} on every HTTP
+     * request so {@link #getRootUrl()} returns a sensible value if a explicit value is not set in
+     * general configuration.
+     */
+    private transient String cachedRootUrl = null;
+
 
     /**
      * Hook for a test harness to intercept Jenkins.getInstance()
@@ -1997,7 +2006,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         StaplerRequest req = Stapler.getCurrentRequest();
         if(req!=null)
             return getRootUrlFromRequest();
+        if (cachedRootUrl != null) {
+            return Util.ensureEndsWith(cachedRootUrl, "/");
+        }
         return null;
+    }
+
+    /**
+     * Sets the last known root URL that will be used as fallback in {@link #getRootUrl()} if any other way
+     * to infere the value fail.
+     * @see #cachedRootUrl
+     */
+    @Restricted(NoExternalUse.class)
+    public void setCachedRootUrl(@Nonnull String url) {
+        this.cachedRootUrl = url;
     }
 
     /**

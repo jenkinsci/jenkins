@@ -6,6 +6,8 @@ import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -156,6 +158,9 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      * Checks the URL in <tt>global.jelly</tt>
      */
     public FormValidation doCheckUrl(@QueryParameter String value) {
+        if (StringUtils.isBlank(value)) {
+            return FormValidation.warning(Messages.Jenkins_EmptyRootUrl());
+        }
         if(value.startsWith("http://localhost"))
             return FormValidation.warning(Messages.Mailer_Localhost_Error());
         return FormValidation.ok();
