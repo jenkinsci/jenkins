@@ -358,4 +358,48 @@ public class PluginManagerTest {
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
     }
+
+    @Test public void uploadDependencyResolution() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertNotNull(site.getData());
+
+        // neither of the following plugins should be installed
+        assertNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"),plugin);
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        r.submit(f);
+
+        assertTrue(r.jenkins.getUpdateCenter().getJobs().size() > 0);
+
+        // wait for all the download jobs to complete
+        boolean done = true;
+        do {
+            Thread.sleep(100);
+            for(UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
+                if(job instanceof UpdateCenter.DownloadJob) {
+                    done &= ((UpdateCenter.DownloadJob)job).status.isSuccess();
+                }
+            }
+        } while(!done);
+
+        // the files get renamed to .jpi
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/Parameterized-Remote-Trigger.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/token-macro.jpi").exists() );
+
+        // now the other plugins should have been found as dependencies and downloaded
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+    }
 }

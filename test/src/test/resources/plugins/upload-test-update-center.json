@@ -1,0 +1,89 @@
+updateCenter.post(
+{"connectionCheckUrl":"http://www.google.com/", // has to be here because updateDirectly sniffs only very limited formats
+    "core": {
+        "buildDate": "Dec 31, 1969",
+        "name": "core",
+        "url": "jenkins.war",
+        "version": "23"
+    },
+    "id": "default",
+    "plugins": {
+        "credentials": {
+	    "buildDate": "Apr 04, 2016",
+	    "dependencies": [
+                {
+		    "name": "icon-shim",
+		    "optional": false,
+		    "version":"2.0.2"
+		}
+	    ],
+	    "developers": [],
+	    "excerpt": "This plugin allows you to store credentials in Jenkins.",
+	    "gav": "org.jenkins-ci.plugins:credentials:1.27",
+	    "labels": [],
+	    "name": "credentials",
+	    "previousTimestamp": "2016-03-24T01:19:58.00Z",
+	    "previousVersion": "1.26",
+	    "releaseTimestamp": "2016-04-04T16:26:54.00Z",
+	    "requiredCore": "1.565",
+	    "scm": "github.com",
+	    "sha1": "5Ffulp5hSySnUL3gs427m6wVFJ4=",
+	    "title": "Credentials Plugin",
+	    "url": "credentials.hpi",
+	    "version": "1.27",
+	    "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Credentials+Plugin"
+	},
+	"icon-shim": {
+	    "buildDate": "Feb 23, 2016",
+	    "dependencies": [],
+	    "developers": [],
+	    "excerpt": "This plugin allows other Jenkins plugins to take advantage of the <l:icon> tag. ",
+	    "gav": "org.jenkins-ci.plugins.icon-shim:icon-shim:2.0.3",
+	    "labels": ["ui"],
+	    "name": "icon-shim",
+	    "previousTimestamp": "2016-01-09T20:01:12.00Z",
+	    "previousVersion": "2.0.2",
+	    "releaseTimestamp": "2016-02-23T23:08:18.00Z",
+	    "requiredCore": "1.609",
+	    "scm": "github.com",
+	    "sha1": "umtSUbNwIuqU6JGEQcBxqFt1X24=",
+	    "title": "Icon Shim Plugin",
+	    "url": "icon-shim.hpi",
+	    "version": "2.0.3", 
+	    "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin"
+	},
+        "token-macro": {
+	    "buildDate": "Dec 14, 2015",
+	    "dependencies": [],
+	    "developers": [],
+	    "excerpt": "This plugin adds reusable macro expansion capability for other plugins to use",
+	    "gav": "org.jenkins-ci.plugins:token-macro:1.12.1",
+	    "labels": [],
+	    "name": "token-macro",
+	    "previousTimestamp": "2015-12-11T08:27:18.00Z",
+	    "previousVersion": "1.12",
+	    "releaseTimestamp": "2015-12-14T18:07:56.00Z",
+	    "requiredCore": "1.609.2",
+	    "scm": "github.com",
+	    "sha1": "TV61PGo+od75URp3maLGUFJ768k=",
+	    "title": "Token Macro Plugin",
+	    "url": "token-macro.hpi",
+	    "version": "1.9",
+	    "wiki": "https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin"
+	},
+        "dummy": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [],
+            "excerpt": "…",
+            "name": "dummy",
+            "requiredCore": "1.100",
+            "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "Dummy",
+            "url": "http://nowhere.net/dummy.hpi",
+            "version": "1.0"
+        }
+    },
+    "updateCenterVersion": 1
+}
+);

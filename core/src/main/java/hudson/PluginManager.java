@@ -964,8 +964,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             try {
                 Manifest m = new JarFile(t).getManifest();
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
-                // create the dependencies object, so that the "download" can fail and people will know what
-                // dependencies are needed for the upload.
 
                 if (StringUtils.isNotBlank(deps)) {
                     // now we get to parse it!
@@ -980,7 +978,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                 }
             } catch(IOException e) {
-                // we don't do anything here to retain the current behavior
+                LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
             }
 
             // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
