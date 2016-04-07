@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <div class="error">
+        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+            <div style="float:right">
+                <f:submit name="correct" value="${%Correct}"/>
+            </div>
+        </form>
+            <ul>
+                <j:forEach items="${it.pluginError}" var="pluginError">
+                    <li>${pluginError}</li>
+                </j:forEach>
+            </ul>
+    </div>
+</j:jelly>
