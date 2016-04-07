@@ -1,0 +1,14 @@
+<!DOCTYPE walkmod PUBLIC "-//WALKMOD//DTD" "http://www.walkmod.com/dtd/walkmod-1.1.dtd">
+<walkmod>
+    <conf-providers>
+        <conf-provider type="maven"/>
+    </conf-providers>
+    <chain name="default">
+        <transformation type="dead-code-cleaner">
+            <param name="ignoreSerializableMethods">true</param>
+            <param name="excludedMethods">["hudson.FilePath#_syncIO()"]</param>
+            <param name="excludedFields">["hudson.model.Slave#labels", "hudson.model.JenkinsLocationConfiguration#charset", "jenkins.model.JenkinsLocationConfiguration#useSsl"]</param>
+        </transformation>
+        <writer path="src/main/java" type="org.walkmod:walkmod-javalang-plugin:string-writer"/>
+    </chain>
+</walkmod>

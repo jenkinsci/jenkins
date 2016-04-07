@@ -3,4 +3,3 @@
  */
 package hudson.cli.handlers;
 
-import org.kohsuke.args4j.spi.OptionHandler;

@@ -1601,7 +1601,7 @@ public final class FilePath implements Serializable {
         PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
     }
 
-    private static boolean CHMOD_WARNED = false;
+    
 
     /**
      * Gets the file permission bit mask.
