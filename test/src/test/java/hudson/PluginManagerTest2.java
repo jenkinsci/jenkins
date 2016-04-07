@@ -7,7 +7,6 @@ import java.net.URL;
 import javax.servlet.ServletContext;
 
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -27,21 +26,6 @@ public class PluginManagerTest2 extends HudsonTestCase {
     protected ServletContext createWebServer() throws Exception {
         servletContext=super.createWebServer();
         return servletContext;
-    }
-
-    @WithPlugin("tasks.jpi")
-    public void testPinned() throws Exception {
-        PluginWrapper tasks = jenkins.getPluginManager().getPlugin("tasks");
-        assertFalse("tasks shouldn't be bundled",tasks.isBundled());
-        assertFalse("tasks shouldn't be pinned before update",tasks.isPinned());
-        uploadPlugin("tasks.jpi", false);
-        assertFalse("tasks shouldn't be pinned after update",tasks.isPinned());
-
-        PluginWrapper cvs = jenkins.getPluginManager().getPlugin("cvs");
-        assertTrue("cvs should be bundled",cvs.isBundled());
-        assertFalse("cvs shouldn't be pinned before update",cvs.isPinned());
-        uploadPlugin("cvs.hpi", true);
-        assertTrue("cvs should be pinned after update",cvs.isPinned());
     }
 
     private void uploadPlugin(String pluginName, boolean useServerRoot) throws IOException, SAXException, Exception {

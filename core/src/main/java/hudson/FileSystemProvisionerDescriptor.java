@@ -38,9 +38,9 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * Called to clean up a workspace that may potentially belong to this {@link FileSystemProvisioner}.
      *
      * <p>
-     * Because users may modify the file system behind Hudson, and slaves may come and go when
+     * Because users may modify the file system behind Hudson, and agents may come and go when
      * configuration changes happen, in general case Hudson is unable to keep track of which jobs
-     * have workspaces in which slaves.
+     * have workspaces in which agents.
      *
      * <p>
      * So instead we rey on a garbage collection mechanism, to look at workspaces left in the file system

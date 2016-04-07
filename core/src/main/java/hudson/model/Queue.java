@@ -2484,7 +2484,7 @@ public class Queue extends ResourceController implements Saveable {
             Label label = getAssignedLabel();
             List<Node> allNodes = jenkins.getNodes();
             if (allNodes.isEmpty())
-                label = null;    // no master/slave. pointless to talk about nodes
+                label = null;    // no master/agent. pointless to talk about nodes
 
             if (label != null) {
                 Set<Node> nodes = label.getNodes();

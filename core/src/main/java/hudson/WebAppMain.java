@@ -119,8 +119,6 @@ public class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            markCookieAsHttpOnly(context);
-
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
@@ -253,31 +251,6 @@ public class WebAppMain implements ServletContextListener {
         } catch (RuntimeException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
-        }
-    }
-
-    /**
-     * Set the session cookie as HTTP only.
-     *
-     * @see <a href="https://www.owasp.org/index.php/HttpOnly">discussion of this topic in OWASP</a>
-     */
-    private void markCookieAsHttpOnly(ServletContext context) {
-        try {
-            Method m;
-            try {
-                m = context.getClass().getMethod("getSessionCookieConfig");
-            } catch (NoSuchMethodException x) { // 3.0+
-                LOGGER.log(Level.FINE, "Failed to set secure cookie flag", x);
-                return;
-            }
-            Object sessionCookieConfig = m.invoke(context);
-
-            // not exposing session cookie to JavaScript to mitigate damage caused by XSS
-            Class scc = Class.forName("javax.servlet.SessionCookieConfig");
-            Method setHttpOnly = scc.getMethod("setHttpOnly",boolean.class);
-            setHttpOnly.invoke(sessionCookieConfig,true);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to set HTTP-only cookie flag", e);
         }
     }
 

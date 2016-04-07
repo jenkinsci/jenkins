@@ -26,17 +26,24 @@ package jenkins.xml;
 
 import jenkins.util.xml.XMLUtils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URL;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPathExpressionException;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 import org.jvnet.hudson.test.Issue;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
 
@@ -97,4 +104,30 @@ public class XMLUtilsTest {
         assertThat(stringWriter.toString(), containsString("<description>&amp;</description>"));
     }
 
+    /**
+     * Tests getValue() directly. Tests the parse methods too (indirectly - yeah, a purest would have
+     * tests for each).
+     */
+    @Test
+    public void testGetValue() throws XPathExpressionException, SAXException, IOException {
+        URL configUrl = getClass().getResource("/jenkins/xml/config.xml");
+        File configFile = new File(configUrl.getFile());
+
+        Assert.assertEquals("1.480.1", XMLUtils.getValue("/hudson/version", configFile));
+        Assert.assertEquals("", XMLUtils.getValue("/hudson/unknown-element", configFile));
+    }
+    
+    @Test
+    public void testParse_with_XXE() throws IOException, XPathExpressionException {
+        try {
+            Document doc = XMLUtils.parse(new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<!DOCTYPE foo [\n" +
+                    "   <!ELEMENT foo ANY >\n" +
+                    "   <!ENTITY xxe SYSTEM \"http://abc.com/temp/test.jsp\" >]> " +
+                    "<foo>&xxe;</foo>"));
+            Assert.fail("Expecting SAXException for XXE.");
+        } catch (SAXException e) {
+            assertThat(e.getMessage(), containsString("DOCTYPE is disallowed"));
+        }
+    }    
 }

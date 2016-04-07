@@ -36,12 +36,12 @@ THE SOFTWARE.
       This page has moved
     </h1>
     <p>
-      Starting 1.271, slave configuration is split into individual configuration page per slave,
+      Starting 1.271, agent configuration is split into individual configuration page per agent,
       accessible from <a href="computer/">here</a>.
     </p>
     <ul>
-      <li>To configure existing slaves, click the above link, click their name, and then click the config link from the left</li>
-      <li>To add a new slave, click the above link, and click "add new slave"</li>
+      <li>To configure existing agents, click the above link, click their name, and then click the config link from the left</li>
+      <li>To add a new agent, click the above link, and click "add new agent"</li>
     </ul>
   </l:main-panel>
 </l:layout>

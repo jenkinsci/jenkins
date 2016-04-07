@@ -108,7 +108,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Gets the slave node of the give name, hooked under this Hudson.
+     * Gets the agent of the give name, hooked under this Hudson.
      *
      * @deprecated
      *      Use {@link #getNode(String)}. Since 1.252.
@@ -131,7 +131,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Updates the slave list.
+     * Updates the agent list.
      *
      * @deprecated
      *      Use {@link #setNodes(List)}. Since 1.252.

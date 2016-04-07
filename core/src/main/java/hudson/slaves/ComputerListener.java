@@ -51,7 +51,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      *
      * <p>
      * This enables you to do some configurable checks to see if we
-     * want to bring this slave online or if there are considerations
+     * want to bring this agent online or if there are considerations
      * that would keep us from doing so.
      *
      * <p>
@@ -61,7 +61,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * @param c
      *      Computer that's being launched. Never null.
      * @param taskListener
-     *      Connected to the slave console log. Useful for reporting progress/errors on a lengthy operation.
+     *      Connected to the agent console log. Useful for reporting progress/errors on a lengthy operation.
      *      Never null.
      * @throws AbortException
      *      Exceptions will be recorded to the listener, and
@@ -73,12 +73,12 @@ public abstract class ComputerListener implements ExtensionPoint {
     }
 
     /**
-     * Called when a slave attempted to connect via {@link ComputerLauncher} but it failed.
+     * Called when an agent attempted to connect via {@link ComputerLauncher} but it failed.
      *
      * @param c
      *      Computer that was trying to launch. Never null.
      * @param taskListener
-     *      Connected to the slave console log. Useful for reporting progress/errors on a lengthy operation.
+     *      Connected to the agent console log. Useful for reporting progress/errors on a lengthy operation.
      *      Never null.
      *
      * @since 1.402
@@ -90,19 +90,19 @@ public abstract class ComputerListener implements ExtensionPoint {
      * Called before a {@link Computer} is marked online.
      *
      * <p>
-     * This enables you to do some work on all the slaves
+     * This enables you to do some work on all the agents
      * as they get connected. Unlike {@link #onOnline(Computer, TaskListener)},
      * a failure to carry out this function normally will prevent
      * a computer from marked as online.
      *
      * @param channel
-     *      This is the channel object to talk to the slave.
+     *      This is the channel object to talk to the agent.
      *      (This is the same object returned by {@link Computer#getChannel()} once
      *      it's connected.
      * @param root
-     *      The directory where this slave stores files.
+     *      The directory where this agent stores files.
      *      The same as {@link Node#getRootPath()}, except that method returns
-     *      null until the slave is connected. So this parameter is passed explicitly instead.
+     *      null until the agent is connected. So this parameter is passed explicitly instead.
      * @param listener
      *      This is connected to the launch log of the computer.
      *      Since this method is called synchronously from the thread
@@ -136,11 +136,11 @@ public abstract class ComputerListener implements ExtensionPoint {
      * Called right after a {@link Computer} comes online.
      *
      * <p>
-     * This enables you to do some work on all the slaves
+     * This enables you to do some work on all the agents
      * as they get connected.
      *
      * <p>
-     * Starting Hudson 1.312, this method is also invoked for the master, not just for slaves.
+     * Starting Hudson 1.312, this method is also invoked for the master, not just for agents.
      *
      * @param listener
      *      This is connected to the launch log of the computer.
@@ -199,7 +199,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * Called when configuration of the node was changed, a node is added/removed, etc.
      *
      * <p>
-     * This callback is to signal when there's any change to the list of slaves registered to the system,
+     * This callback is to signal when there's any change to the list of agents registered to the system,
      * including addition, removal, changing of the setting, and so on.
      *
      * @since 1.377

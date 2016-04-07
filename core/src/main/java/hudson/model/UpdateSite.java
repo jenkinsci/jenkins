@@ -25,6 +25,7 @@
 
 package hudson.model;
 
+import hudson.ClassicPluginStrategy;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -466,7 +468,17 @@ public class UpdateSite {
                 core = null;
             }
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
-                plugins.put(e.getKey(),new Plugin(sourceId, e.getValue()));
+                Plugin p = new Plugin(sourceId, e.getValue());
+                // JENKINS-33308 - include implied dependencies for older plugins that may need them
+                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                if(!implicitDeps.isEmpty()) {
+                    for(PluginWrapper.Dependency dep : implicitDeps) {
+                        if(!p.dependencies.containsKey(dep.shortName)) {
+                            p.dependencies.put(dep.shortName, dep.version);
+                        }
+                    }
+                }
+                plugins.put(e.getKey(), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -611,7 +623,7 @@ public class UpdateSite {
         public final String[] categories;
 
         /**
-         * Dependencies of this plugin.
+         * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
@@ -633,10 +645,8 @@ public class UpdateSite {
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
-                // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
-                // and that the optional value isn't true.
-                if (get(depObj,"name")!=null
-                    && !get(depObj,"name").equals("maven-plugin")) {
+                // Make sure there's a name attribute and that the optional value isn't true.
+                if (get(depObj,"name")!=null) {
                     if (get(depObj, "optional").equals("false")) {
                         dependencies.put(get(depObj, "name"), get(depObj, "version"));
                     } else {
@@ -814,6 +824,23 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
+            return deploy(dynamicLoad, null);
+        }
+
+        /**
+         * Schedules the installation of this plugin.
+         *
+         * <p>
+         * This is mainly intended to be called from the UI. The actual installation work happens
+         * asynchronously in another thread.
+         *
+         * @param dynamicLoad
+         *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
+         *      the plugin will only take effect after the reboot.
+         *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
+         * @param correlationId A correlation ID to be set on the job.
+         */
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
@@ -825,7 +852,9 @@ public class UpdateSite {
                     LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
                 }
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
+            UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            job.setCorrelationId(correlationId);
+            return uc.addJob(job);
         }
 
         /**

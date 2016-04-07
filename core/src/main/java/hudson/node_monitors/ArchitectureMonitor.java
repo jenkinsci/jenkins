@@ -33,7 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.IOException;
 
 /**
- * Discovers the architecture of the system to display in the slave list page.
+ * Discovers the architecture of the system to display in the agent list page.
  *
  * @author Kohsuke Kawaguchi
  */
