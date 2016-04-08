@@ -204,7 +204,7 @@ $.when(getItems()).done(function(data){
     
     // Set radio state if copy input is selected. 
     // Will check in setSelectedState to make sure there is a value to ensure tabbing through still works...
-    $('input[name="from"]').on('blur,click',setSelectState);
+    $('input[name="from"]').on('blur click',setSelectState);
 
     // Client-side validation
     $("#createItem").submit(function(event) {
