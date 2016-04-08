@@ -866,7 +866,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public ChangeLogSet<? extends Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
-				scm = NullChangeLogParser.INSTANCE;                
+                scm = NullChangeLogParser.INSTANCE;                
             }
         }
 
