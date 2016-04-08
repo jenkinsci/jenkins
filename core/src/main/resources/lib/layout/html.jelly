@@ -166,7 +166,7 @@ ${h.initPageVariables(context)}
     </j:if>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
       <div id="main-panel" style="margin-left: 0;">
          <j:set var="mode" value="main-panel" />
          <d:invokeBody />
