@@ -57,7 +57,7 @@ Jenkins is **licensed** under the **[MIT License]**. The terms of the license ar
 [MIT License]: https://github.com/jenkinsci/jenkins/raw/master/LICENSE.txt
 [Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
-[website]: https://jenkins.io/index.html
+[website]: https://jenkins.io/
 [@jenkinsci]: https://twitter.com/jenkinsci
 [Contributing]: https://wiki.jenkins-ci.org/display/JENKINS/contributing
 [Extend Jenkins]: https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins
