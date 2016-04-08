@@ -63,39 +63,26 @@
     position: relative;
     border: 1px solid #cccccc;
     border-top: none;
-    padding: 20px;
     background-color: #f9f9f9;
+    padding:10px;
 
     p.description {
       font-size: 16px;
-      margin-top: 0;
+      margin:0;
+      padding: 10px 10px 0;
     }
 
-    .add-item-copy {
-      position: relative;
-      padding-left: 58px;
+    input[type=radio] {
+      position:absolute;
+      left:-99999px;
+    }
 
+    input {
+      font-size: inherit;
       /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
       font-family: Helvetica, Arial, sans-serif !important;
-
-      input[type=radio] {
-        display: none;
-      }
-
-      label {
-        line-height: 48px;
-        padding: 0 10px 0 0;
-      }
-
-      input {
-        font-size: inherit;
-      }
-
-      .icon {
-        left: 0;
-        top: 0;
-      }
     }
+    
   }
 
   .add-item-name, .add-item-copy {
@@ -115,8 +102,19 @@
     .input-message-disabled {
       display: none;
     }
-  }
 
+  }
+  .item-copy{
+    .add-item-copy{
+      label{
+        display:inline-block;
+        font-size:1em;
+        line-height: 48px;
+        padding: 0 10px 0 0; 
+        font-weight:normal;     
+      }      
+    }
+  }
 
   .icon {
     position: absolute;
@@ -281,14 +279,14 @@
   position: relative;
 }
 
-.j-item-options {
-
-  li:hover, li:focus {
+#createItem {
+  .add-item-copy:hover, .add-item-copy:focus,
+  .categories li:hover, li:focus {
     border-color: #cccccc;
     background: rgba(255, 255, 255, 0.65);
   }
-
-  li.active {
+  .add-item-copy.active,
+  .categories li.active {
     cursor: text;
     background-color: #ffffff;
     border-color: #6699cc;
@@ -304,12 +302,9 @@
     -o-transition: .5s;
     transition: .5s;
 
-    .icon {
-      opacity: 1
-    }
   }
-
-  li {
+  .add-item-copy,
+  .categories li {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -334,8 +329,7 @@
       input {
         position: absolute;
         top: 24px;
-        left: 25px;
-        display: none;
+        left: -99925px;
       }
     }
   }
