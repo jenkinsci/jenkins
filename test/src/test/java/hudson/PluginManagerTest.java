@@ -404,12 +404,17 @@ public class PluginManagerTest {
 
         // wait for all the download jobs to complete
         boolean done = true;
+	boolean passed = true;
         do {
             Thread.sleep(100);
-            for(UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
+	    done = true;
+    	    for(UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
                 if(job instanceof UpdateCenter.DownloadJob) {
-                    done &= ((UpdateCenter.DownloadJob)job).status.isSuccess();
-                }
+		    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
+		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
+                    done &= !(((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
+			(j.status instanceof UpdateCenter.DownloadJob.Installing)));
+                }		
             }
         } while(!done);
 

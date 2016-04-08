@@ -1,5 +1,5 @@
 updateCenter.post(
-{"connectionCheckUrl":"http://www.google.com/", // has to be here because updateDirectly sniffs only very limited formats
+{"connectionCheckUrl":"http://www.google.com/", 
     "core": {
         "buildDate": "Dec 31, 1969",
         "name": "core",
@@ -27,7 +27,7 @@ updateCenter.post(
 	    "releaseTimestamp": "2016-04-04T16:26:54.00Z",
 	    "requiredCore": "1.565",
 	    "scm": "github.com",
-	    "sha1": "5Ffulp5hSySnUL3gs427m6wVFJ4=",
+	    "sha1": "XWJpfL8B2x7qrISJg7IY2ZTPxFk=",
 	    "title": "Credentials Plugin",
 	    "url": "credentials.hpi",
 	    "version": "1.27",
