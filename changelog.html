@@ -55,8 +55,52 @@ Upcoming changes</a>
 
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
+
+<div style="margin: 10px; padding: 10px; background-color: #FFFFCE;">
+  <strong>More detailed information about the new features in Jenkins 2.0 <a href="/2.0/">on the overview page</a>.</strong>
+</div>
+
 <ul class=image>
-  <li class=>
+  <li class="rfe major">
+    New password-protected setup wizard shown on first run to guide users through installation of popular plugins and setting up an admin user.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30749">issue 30749</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-9598">issue 9598</a>)
+  <li class="rfe major">
+    Plugin bundling overhaul: Bundled plugins are only installed if necessary when upgrading, all plugins can be uninstalled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20617">issue 20617</a>)
+  <li class="rfe major">
+    Redesigned job configuration form makes it easier to see the option hierarchy, and to navigate the form using scrolling tabs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32357">issue 32357</a>)
+  <li class="rfe major">
+    Richer 'Create Item' form with job icons and job categories (once a threshold of three categories has been reached).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31162">issue 31162</a>)
+
+  <li class="rfe">
+    Upgrade wizard encourages installation of Pipeline related plugins when upgrading from 1.x.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33662">issue 33662</a>)
+  <li class="rfe">
+    Jenkins now requires Servlet 3.1. Upgraded embedded Winstone-Jetty to Jetty 9 accordingly. This removes AJP support.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23378">issue 23378</a>)
+  <li class="rfe">
+    Bundled Groovy updated from 1.8.9 to 2.4.6.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21249">issue 21249</a>)
+  <li class="rfe">
+    Renamed 'slave' to 'agent' on the UI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">issue 27268</a>)
+  <li class="rfe">
+    Improvements to inline documentation of numerous form fields in Jenkins global and job configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33364">issue 33364</a>)
+  <li class="rfe">
+    Change default CSRF protection crumb name to Jenkins-Crumb for nginx compatibility.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12875">issue 12875</a>)
+
+  <li class="bug">
+    Enforce correct icon size in list view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33799">issue 33799</a>)
+  <li class="bug">
+    CLI: Fixed NPE when non-existent run is requested.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33942">issue 33942</a>)
+
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v1.656>What's new in 1.656</a> (2016/04/03)</h3>
