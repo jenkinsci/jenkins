@@ -130,14 +130,13 @@ $.when(getItems()).done(function(data) {
       $item.click(select);
 
       $item.keypress(function(e) {
-        switch (e.keyCode) {
-          case 0:
+        switch (e.which) {
           case 13:
           case 32:
             $(this).trigger('click');
+            e.stopPropagation();
             break;
         }
-        e.stopPropagation();
       });
 
       return $item;
@@ -195,14 +194,14 @@ $.when(getItems()).done(function(data) {
     });
 
     // Init CopyFromField
-    $('input[name="from"]', '#createItem').focus(function() {
-      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
-      $('.categories').find('.active').removeClass('active');
-    });
-
     $('input[name="from"]', '#createItem').blur(function() {
       if (getCopyFromValue() === '') {
-        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+        $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
+      } else {
+        $('.categories').find('li[role="radio"]').attr("aria-checked", "false");
+        $('#createItem').find('input[type="radio"][name="mode"]').removeAttr('checked');
+        $('.categories').find('.active').removeClass('active');
+        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
       }
     });
 
