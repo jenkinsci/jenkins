@@ -22,100 +22,6 @@
  * THE SOFTWARE.
  */
 
-/* General page layout */
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0 0 40px 0;
-}
-
-#header {
-  background-color: #000000;
-  height: 40px;
-}
-
-#header div {
-  display: inline-block;
-  height: inherit;
-}
-#header .logo {
-  margin-left: 16px;
-}
-
-#jenkins-home-link {
-  position: absolute;
-  height: 40px;
-}
-
-#jenkins-head-icon {
-  position: absolute;
-  bottom: 0px;
-}
-#jenkins-name-icon {
-  position: absolute;
-  bottom: 3px;
-  left: 32px;
-}
-
-#header .searchbox, #header .login {
-  float: right;
-  padding: 6px 11px;
-}
-
-#breadcrumbBar, #footer-container, .top-sticker-inner {
-  background-color: #f6faf2;
-}
-
-#page-body.clear:after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
-#side-panel {
-  padding: 15px 15px 40px 15px;
-  float: left;
-  width: 320px;
-}
-
-#main-panel {
-  padding: 15px 15px 40px 15px;
-  margin-left: 320px;
-}
-
-body#jenkins.j-hide-left #main-panel {
-  max-width:70em;
-  margin:0 auto;
-}
-
-@media (max-width: 750px) {
-  #side-panel {
-    width: 100%;
-    float: none;
-    padding-bottom: 20px;
-  }
-
-  #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (min-width: 1170px) {
-  #side-panel {
-    width: 360px;
-  }
-
-  #main-panel {
-    margin-left: 360px;
-  }
-}
-
 /* task */
 
 #tasks {
@@ -133,28 +39,6 @@ body#jenkins.j-hide-left #main-panel {
 #buildQueue {
   margin-bottom: 20px;
 }
-
-/* footer */
-
-footer {
-  padding: 11px 0;
-  background-color: #f6faf2;
-  border-top: 1px solid #d3d7cf;
-  border-bottom: 1px solid #f6faf2;
-  width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  clear: both;
-  font-size: 12px;
-  text-align: right;
-}
-
-footer span {
-  margin-left: 15px;
-  line-height: 14px;
-}
-
 
 /* Fonts etc */
 

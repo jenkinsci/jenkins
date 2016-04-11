@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
-  <l:layout norefresh="true" cssclass="main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+  <l:layout norefresh="true" type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
 
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
