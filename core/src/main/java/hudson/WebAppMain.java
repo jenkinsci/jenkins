@@ -245,10 +245,7 @@ public class WebAppMain implements ServletContextListener {
             initThread.start();
         } catch (BootFailure e) {
             e.publish(context,home);
-        } catch (Error e) {
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (Error | RuntimeException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }

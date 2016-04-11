@@ -346,9 +346,7 @@ public class Util {
         if (Functions.isWindows()) {
             try {
                 return Kernel32Utils.isJunctionOrSymlink(file);
-            } catch (UnsupportedOperationException e) {
-                // fall through
-            } catch (LinkageError e) {
+            } catch (UnsupportedOperationException | LinkageError e) {
                 // fall through
             }
         }

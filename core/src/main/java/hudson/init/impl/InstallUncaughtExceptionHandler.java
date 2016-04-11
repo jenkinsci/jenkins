@@ -29,11 +29,7 @@ public class InstallUncaughtExceptionHandler {
                 try {
                     WebApp.get(j.servletContext).getSomeStapler()
                             .invoke(req,rsp, Jenkins.getInstance(), "/oops");
-                } catch (ServletException x) {
-                    if (!Stapler.isSocketException(x)) {
-                        throw x;
-                    }
-                } catch (IOException x) {
+                } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
                         throw x;
                     }
