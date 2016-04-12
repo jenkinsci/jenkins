@@ -1853,24 +1853,6 @@ table#legend-table td {
     border-color: #faebcc;
 }
 
-body.main-panel-only #side-panel {
-    width: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-}
-body.main-panel-only #main-panel {
-    margin: 0 auto !important;
-    min-width: 100%;
-    padding: 2em 2em;
-    display: inline-block;
-    width: auto;
-}
-@media screen and (min-width: 1024px) {
-    body.main-panel-only #main-panel {
-        padding: 2em 10%;
-    }
-}
-
 /* see the Icon class for the definition of these CSS classes */
 .icon-sm {
     width: 16px;

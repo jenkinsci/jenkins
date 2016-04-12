@@ -32,7 +32,7 @@ body {
   padding: 0 0 40px 0;
 }
 
-/* ---------- header ---------- */
+/* --------------- header --------------- */
 
 #header {
   background-color: #000000;
@@ -73,7 +73,7 @@ body {
   background-color: #f6faf2;
 }
 
-/* ---------------------------- */
+/* -------------------------------------- */
 
 #page-body.clear:after {
   clear: both;
@@ -91,11 +91,11 @@ body {
   padding: 15px 15px 40px 15px;
 }
 
-body.left-side #main-panel {
+body.two-column #main-panel {
   margin-left: 320px;
 }
 
-@media (max-width: 750px) {
+@media (max-width: 970px) {
   body.two-column #side-panel {
     width: 100%;
     float: none;
@@ -117,8 +117,7 @@ body.left-side #main-panel {
   }
 }
 
-
-/* ---------- footer ---------- */
+/* --------------- footer --------------- */
 
 footer {
   padding: 11px 0;
@@ -139,4 +138,4 @@ footer span {
   line-height: 14px;
 }
 
-/* ---------------------------- */
+/* -------------------------------------- */
