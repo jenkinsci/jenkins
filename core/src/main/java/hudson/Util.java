@@ -63,6 +63,12 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.NotLinkException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -251,19 +257,9 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
-                try {
-                    Class.forName("java.nio.file.Files").getMethod("delete", Class.forName("java.nio.file.Path")).invoke(null, File.class.getMethod("toPath").invoke(f));
-                } catch (InvocationTargetException x) {
-                    Throwable x2 = x.getCause();
-                    if (x2 instanceof IOException) {
-                        // may have a specific exception message
-                        throw (IOException) x2;
-                    }
-                    // else suppress
-                } catch (Throwable x) {
-                    // linkage errors, etc.; suppress
-                }
-                // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
+                Files.deleteIfExists(f.toPath());
+
+                // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
@@ -367,10 +363,8 @@ public class Util {
     @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
-            Object path = File.class.getMethod("toPath").invoke(file);
-            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
-        } catch (NoSuchMethodException x) {
-            return null; // fine, Java 6
+            Path path = file.toPath();
+            return Files.isSymbolicLink(path);
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -1218,48 +1212,36 @@ public class Util {
 
     private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
         try {
-            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
-            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
-            Class<?> filesC = Class.forName("java.nio.file.Files");
-            Class<?> pathC = Class.forName("java.nio.file.Path");
-            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+            Path path = new File(baseDir, symlinkPath).toPath();
+            Path target = Paths.get(targetPath, new String[0]);
 
-            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
             for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
-                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                Files.deleteIfExists(path);
                 try {
-                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                    Files.createSymbolicLink(path, target);
                     break;
-                }
-                catch (Exception x) {
-                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
-                        if(tryNumber < maxNumberOfTries) {
-                            TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
-                            continue;
-                        }
-                        LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
+                } catch (FileAlreadyExistsException fileAlreadyExistsException) {
+                    if (tryNumber < maxNumberOfTries) {
+                        TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
+                        continue;
                     }
-                    throw x;
+                    LOGGER.warning("symlink FileAlreadyExistsException thrown " + maxNumberOfTries + " times => cannot createSymbolicLink");
+                    throw fileAlreadyExistsException;
                 }
             }
             return true;
-        } catch (NoSuchMethodException x) {
-            return false; // fine, Java 6
-        } catch (InvocationTargetException x) {
-            Throwable x2 = x.getCause();
-            if (x2 instanceof UnsupportedOperationException) {
+        } catch (UnsupportedOperationException e) {
                 return true; // no symlinks on this platform
-            }
-            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
+        } catch (FileSystemException e) {
+            if (Functions.isWindows()) {
                 warnWindowsSymlink();
                 return true;
             }
-            if (x2 instanceof IOException) {
-                throw (IOException) x2;
-            }
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            return false;
+        } catch (IOException x) {
+            throw x;
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -1310,61 +1292,18 @@ public class Util {
      */
     @CheckForNull
     public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
-        try { // Java 7
-            Object path = File.class.getMethod("toPath").invoke(link);
-            return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
-        } catch (NoSuchMethodException x) {
-            // fine, Java 6; fall through
-        } catch (InvocationTargetException x) {
-            Throwable x2 = x.getCause();
-            if (x2 instanceof UnsupportedOperationException) {
-                return null; // no symlinks on this platform
-            }
-            try {
-                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
-                    return null;
-                }
-            } catch (ClassNotFoundException x3) {
-                assert false : x3; // should be Java 7+ here
-            }
-            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
-                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
-                return null;
-            }
-            if (x2 instanceof IOException) {
-                throw (IOException) x2;
-            }
-            throw (IOException) new IOException(x.toString()).initCause(x);
+        try {
+            Path path =  link.toPath();
+            return Files.readSymbolicLink(path).toString();
+        } catch (UnsupportedOperationException | FileSystemException x) {
+            // no symlinks on this platform (windows?),
+            // or not a link (// Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink,
+            // rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?) ?
+            return null;
+        } catch (IOException x) {
+            throw x;
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
-        }
-
-        if(Functions.isWindows())     return null;
-
-        String filename = link.getAbsolutePath();
-        try {
-            for (int sz=512; sz < 65536; sz*=2) {
-                Memory m = new Memory(sz);
-                int r = LIBC.readlink(filename,m,new NativeLong(sz));
-                if (r<0) {
-                    int err = Native.getLastError();
-                    if (err==22/*EINVAL --- but is this really portable?*/)
-                        return null; // this means it's not a symlink
-                    throw new IOException("Failed to readlink "+link+" error="+ err+" "+ LIBC.strerror(err));
-                }
-                if (r==sz)
-                    continue;   // buffer too small
-
-                byte[] buf = new byte[r];
-                m.read(0,buf,0,r);
-                return new String(buf);
-            }
-            // something is wrong. It can't be this long!
-            throw new IOException("Symlink too long: "+link);
-        } catch (LinkageError e) {
-            // if JNA is unavailable, fall back.
-            // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.jnr().readlink(filename);
         }
     }
 
