@@ -212,14 +212,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 URI uri = (URI) pathJDK7.getMethod("toUri").invoke(toPath);
 
                 baseResourceURL = uri.toURL();
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                 throw new Error(e);
             } catch (ClassNotFoundException e) {
                 baseResourceURL = expandDir.toURI().toURL();
-            } catch (InvocationTargetException e) {
-                throw new Error(e);
-            } catch (IllegalAccessException e) {
-                throw new Error(e);
             }
         }
         File disableFile = new File(archive.getPath() + ".disabled");
@@ -514,13 +510,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
                     }
                     wrapper.setPlugin((Plugin) o);
-                } catch (LinkageError e) {
+                } catch (LinkageError | ClassNotFoundException e) {
                     throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (IllegalAccessException e) {
-                    throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
-                } catch (InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException e) {
                     throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
             }
@@ -849,9 +841,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
                 $pathComponents.setAccessible(true);
                 pathComponents = (Vector)$pathComponents.get(this);
-            } catch (NoSuchFieldException e) {
-                throw new Error(e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new Error(e);
             }
         }

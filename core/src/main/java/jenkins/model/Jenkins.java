@@ -3850,9 +3850,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
                 }
             }
@@ -4770,14 +4768,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // double check that initialization order didn't do any harm
             assert PERMISSIONS != null;
             assert ADMINISTER != null;
-        } catch (RuntimeException e) {
+
+        } catch (RuntimeException | Error e) {
             // when loaded on an agent and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
             // As we don't know where the first exception will go, let's also send this to logging so that
             // we have a known place to look at.
-            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
-            throw e;
-        } catch (Error e) {
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
         }
