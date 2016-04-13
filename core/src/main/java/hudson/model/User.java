@@ -424,8 +424,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
             // check for legacy users and migrate if safe to do so.
 
-            try {
-                DirectoryStream<Path> legacy = getLegacyConfigFilesFor(id);
+            try (DirectoryStream<Path> legacy = getLegacyConfigFilesFor(id)){
                 if (legacy != null && legacy.iterator().hasNext()) {
                     for (Path legacyUserDir : legacy) {
                         final XmlFile legacyXml = new XmlFile(XSTREAM, legacyUserDir.resolve("config.xml").toFile());
