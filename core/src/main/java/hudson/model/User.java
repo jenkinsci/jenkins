@@ -425,7 +425,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             // check for legacy users and migrate if safe to do so.
 
             try (DirectoryStream<Path> legacy = getLegacyConfigFilesFor(id)){
-                if (legacy != null && legacy.iterator().hasNext()) {
+                if (legacy.iterator().hasNext()) {
                     for (Path legacyUserDir : legacy) {
                         final XmlFile legacyXml = new XmlFile(XSTREAM, legacyUserDir.resolve("config.xml").toFile());
                         try {
@@ -437,8 +437,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                                     try {
                                         Files.move(legacyUserDir, Paths.get(configFile.toURI()));
                                     } catch (IOException e) {
-                                        LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
-                                                new Object[]{legacyUserDir, configFile.getParentFile()});
+                                        LOGGER.log(Level.WARNING, String.format("Failed to migrate user record from %s to %s",
+                                                legacyUserDir, configFile.getParentFile()), e);
                                     }
                                     break;
                                 }
@@ -447,13 +447,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                                         new Object[]{ legacyUserDir, o });
                             }
                         } catch (IOException e) {
-                            LOGGER.log(Level.FINE, String.format("Exception trying to load user from {0}: {1}",
-                                    new Object[]{ legacyUserDir, e.getMessage() }), e);
+                            LOGGER.log(Level.FINE, String.format("Exception trying to load user from %s: %s",
+                                    legacyUserDir, e.getMessage()), e);
                         }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING, "Issue obtaining the directory stream for legacy users.", e);
             }
 
         }
