@@ -1415,6 +1415,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public abstract String getName();
 
         /**
+         * Any additional detail about the plugin which might be displayed to the user,
+         * e.g. a version or URL
+         */
+        @CheckForNull
+        public String getDetail() {
+            return null;
+        }
+
+        /**
          * Called when the whole thing went successfully.
          */
         protected abstract void onSuccess();
@@ -1561,6 +1570,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
+         * Indicates that the plugin was successfully installed.
+         */
+        public class Skipped extends InstallationStatus {
+            @Override public boolean isSuccess() {
+                return true;
+            }
+        }
+
+        /**
          * Indicates that the plugin is waiting for its turn for installation.
          */
         public class Pending extends InstallationStatus {
@@ -1649,6 +1667,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String getName() {
             return plugin.getDisplayName();
         }
+        
+        @Override
+        public String getDetail() {
+            return  plugin.version;
+        }
 
         @Override
         public void _run() throws IOException, InstallationStatus {
@@ -1663,6 +1686,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } finally {
                     SecurityContextHolder.setContext(oldContext);
                 }
+            } else if (isAlreadyInstalling()) {
+                status = new UpdateCenter.DownloadJob.Skipped();
+                // check to see if the plugin is already installed at the same version and skip it
+                LOGGER.warning("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                return;
             }
 
             if (dynamicLoad) {
@@ -1675,6 +1703,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             } else {
                 throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+            }
+        }
+
+        /**
+         * Indicates there is another installation job for this plugin
+         * @since TODO
+         */
+        protected boolean isAlreadyInstalling() {
+            synchronized(UpdateCenter.this) {
+                for (UpdateCenterJob job : getJobs()) {
+                    if (job == this) {
+                        // oldest entries first, if we reach this instance,
+                        // we need it to continue installing
+                        return false;
+                    }
+                    if (job instanceof InstallationJob) {
+                        InstallationJob ij = (InstallationJob)job;
+                        if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         }
 
