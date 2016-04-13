@@ -40,6 +40,7 @@
 						<span class="title">
 							<input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
 							{{plugin.title}}
+							<a href="{{plugin.website}}" target="_blank">{{../../translations.installWizard_websiteLinkLabel}}</a>
 						</span>
 						<span class="description">
 							{{{plugin.excerpt}}}
@@ -47,9 +48,9 @@
 						{{#hasDependencies plugin.name}}
 							<div class="dep-list">
 								{{#eachDependency ../plugin.name}}
-								<span class="dep badge">
+								<a class="dep badge" href="{{website}}" target="_blank">
 								{{title}}
-								</span>
+								</a>
 								{{/eachDependency}}
 							</div>
 						{{/hasDependencies}}
