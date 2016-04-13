@@ -191,6 +191,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
@@ -3333,7 +3335,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return a;
         }
         for (Action a : getManagementLinks())
-            if(a.getUrlName().equals(token))
+            if (Objects.equals(a.getUrlName(), token))
                 return a;
         return null;
     }
@@ -4329,7 +4331,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
-                names.add(a.getUrlName());
+                String url = a.getUrlName();
+                if (url == null) continue;
+                names.add(url);
             }
         }
         return names;
