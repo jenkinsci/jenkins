@@ -59,6 +59,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -206,17 +207,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (libs != null)
                 paths.addAll(Arrays.asList(libs));
 
-            try {
-                Class pathJDK7 = Class.forName("java.nio.file.Path");
-                Object toPath = File.class.getMethod("toPath").invoke(expandDir);
-                URI uri = (URI) pathJDK7.getMethod("toUri").invoke(toPath);
+            baseResourceURL = expandDir.toPath().toUri().toURL();
 
-                baseResourceURL = uri.toURL();
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                throw new Error(e);
-            } catch (ClassNotFoundException e) {
-                baseResourceURL = expandDir.toURI().toURL();
-            }
         }
         File disableFile = new File(archive.getPath() + ".disabled");
         if (disableFile.exists()) {
