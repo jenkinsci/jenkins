@@ -9,6 +9,8 @@ import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +23,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.kohsuke.stapler.HttpResponseRenderer;
+import org.kohsuke.stapler.HttpResponses.HttpResponseException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
@@ -41,6 +50,39 @@ public class CrumbFilter implements Filter {
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
+        WebApp webApp = WebApp.get(filterConfig.getServletContext());
+        addRequirePostCrumbHandler(webApp);
+    }
+
+    private void addRequirePostCrumbHandler(WebApp webApp) {
+        webApp.getResponseRenderers().add(0, new HttpResponseRenderer() {
+            @Override
+            public boolean generateResponse(StaplerRequest req, StaplerResponse rsp, Object node, Object response) throws IOException, ServletException {
+                if (response instanceof HttpResponseException) {
+                    Class<?> c = response.getClass();
+                    // The only response with enclosing class of RequirePOST.Processor is the 'try post'
+                    // response, which we need ot modify to be crumb-aware
+                    if (RequirePOST.Processor.class.equals(c.getEnclosingClass())) {
+                        CrumbIssuer crumbIssuer = getCrumbIssuer();
+                        if (crumbIssuer != null) {
+                            String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
+                            StringWriter output = new StringWriter();
+                            final PrintWriter resWriter = new PrintWriter(output);
+                            StaplerResponse res = new StaplerResponseWrapper(rsp) {
+                                public PrintWriter getWriter() throws IOException {
+                                    return resWriter;
+                                }
+                            };
+                            ((HttpResponseException)response).generateResponse(req, res, node);
+                            String crumbHiddenInput = "<input type=\"hidden\" name=\""+crumbFieldName+"\" value=\""+crumbIssuer.getCrumb(req)+"\"/>";
+                            rsp.getWriter().write(output.toString().replace("</form>",crumbHiddenInput+"</form>"));
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
