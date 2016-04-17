@@ -1415,15 +1415,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public abstract String getName();
 
         /**
-         * Any additional detail about the plugin which might be displayed to the user,
-         * e.g. a version or URL
-         */
-        @CheckForNull
-        public String getDetail() {
-            return null;
-        }
-
-        /**
          * Called when the whole thing went successfully.
          */
         protected abstract void onSuccess();
@@ -1667,14 +1658,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String getName() {
             return plugin.getDisplayName();
         }
-        
-        @Override
-        public String getDetail() {
-            return  plugin.version;
-        }
 
         @Override
         public void _run() throws IOException, InstallationStatus {
+            if (isAlreadyInstalling()) {
+                // Do this first so we can avoid duplicate downloads, too
+                // check to see if the plugin is already installed at the same version and skip it
+                LOGGER.warning("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                //throw new Skipped(); // TODO set skipped once we have a status indicator for it
+                return;
+            }
+            try {
             super._run();
 
             // if this is a bundled plugin, make sure it won't get overwritten
@@ -1686,11 +1680,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 } finally {
                     SecurityContextHolder.setContext(oldContext);
                 }
-            } else if (isAlreadyInstalling()) {
-                status = new UpdateCenter.DownloadJob.Skipped();
-                // check to see if the plugin is already installed at the same version and skip it
-                LOGGER.warning("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
-                return;
             }
 
             if (dynamicLoad) {
@@ -1703,6 +1692,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
             } else {
                 throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+            }
+            } finally {
+                synchronized(this) {
+                    // There may be other threads waiting on completion
+                    LOGGER.fine("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
+                    // some status other than Installing or Downloading needs to be set here
+                    // {@link #isAlreadyInstalling()}, it will be overwritten by {@link DownloadJob#run()}
+                    status = new Skipped();
+                    notifyAll();
+                }
             }
         }
 
@@ -1721,6 +1720,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     if (job instanceof InstallationJob) {
                         InstallationJob ij = (InstallationJob)job;
                         if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
+                            // wait until other install is completed
+                            synchronized(ij) {
+                                if(ij.status instanceof Installing || ij.status instanceof Pending) {
+                                    try {
+                                        LOGGER.fine("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                                        ij.wait();
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
                             return true;
                         }
                     }
