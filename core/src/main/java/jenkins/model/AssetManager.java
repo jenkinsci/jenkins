@@ -20,6 +20,8 @@ import java.util.Enumeration;
  * resource from the classpath below {@code /assets}.
  *
  * @author Kohsuke Kawaguchi
+ *
+ * @since 2.0
  */
 @Extension
 public class AssetManager implements UnprotectedRootAction {

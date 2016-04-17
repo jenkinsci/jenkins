@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Simple {@link java.util.ResourceBundle} utility class.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @since FIXME
+ * @since 2.0
  */
 public class ResourceBundleUtil {
 

@@ -107,7 +107,7 @@ public final class XMLUtils {
      * @return The XML {@link Document}.
      * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
      * @throws IOException Error reading from the steam.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull Document parse(@Nonnull Reader stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
@@ -129,7 +129,7 @@ public final class XMLUtils {
      * @return The parsed document.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws IOException Error reading from the file.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull Document parse(@Nonnull File file, @Nonnull String encoding) throws SAXException, IOException {
         if (!file.exists() || !file.isFile()) {
@@ -161,7 +161,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the file.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file) throws IOException, SAXException, XPathExpressionException {
         return getValue(xpath, file, Charset.defaultCharset().toString());
@@ -177,7 +177,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the file.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file, @Nonnull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
         Document document = parse(file, fileDataEncoding);
@@ -191,7 +191,7 @@ public final class XMLUtils {
      * @return The data value. An empty {@link String} is returned when the expression does not evaluate
      * to anything in the document.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static String getValue(String xpath, Document document) throws XPathExpressionException {
         XPath xPathProcessor = XPathFactory.newInstance().newXPath();
