@@ -290,6 +290,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
@@ -338,6 +339,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doIncompleteInstallStatus() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
         Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
         if(jobs == null) {
@@ -354,6 +356,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * us to support install resume if Jenkins is restarted while plugins are
      * being installed.
      */
+    @Restricted(NoExternalUse.class)
     public synchronized void persistInstallStatus() {
         List<UpdateCenterJob> jobs = getJobs();
 
@@ -386,6 +389,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doInstallStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String correlationId = request.getParameter("correlationId");
             Map<String,Object> response = new HashMap<>();
