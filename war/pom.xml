@@ -300,7 +300,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>1.9</version>
+                  <version>1.10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
