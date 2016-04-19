@@ -539,6 +539,51 @@ public class UserTest {
         } catch (AccessDeniedException expected) { }
     }
 
+    @Issue("SECURITY-243")
+    @Test
+    public void resolveByIdThenName() throws Exception{
+        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null));
+
+        User u1 = User.get("user1");
+        u1.setFullName("User One");
+        u1.save();
+
+        User u2 = User.get("user2");
+        u2.setFullName("User Two");
+        u2.save();
+
+        assertNotSame("Users should not have the same id.", u1.getId(), u2.getId());
+
+        User u = User.get("User One");
+        assertEquals("'User One' should resolve to u1", u1.getId(), u.getId());
+
+        u = User.get("User Two");
+        assertEquals("'User Two' should resolve to u2", u2.getId(), u.getId());
+
+        u = User.get("user1");
+        assertEquals("'user1' should resolve to u1", u1.getId(), u.getId());
+
+        u = User.get("user2");
+        assertEquals("'user2' should resolve to u2", u2.getId(), u.getId());
+
+        u1.setFullName("user2");
+        u1.save();
+        u = User.get("user2");
+        assertEquals("'user2' should resolve to u2", u2.getId(), u.getId());
+        u = User.get("user1");
+        assertEquals("'user1' should resolve to u1", u1.getId(), u.getId());
+
+
+        u1.setFullName("user1");
+        u1.save();
+        u2.setFullName("user1");
+        u2.save();
+        u = User.get("user1");
+        assertEquals("'user1' should resolve to u1", u1.getId(), u.getId());
+        u = User.get("user2");
+        assertEquals("'user2' should resolve to u2", u2.getId(), u.getId());
+    }
+
      public static class SomeUserProperty extends UserProperty {
          
         @TestExtension
