@@ -1720,7 +1720,7 @@ public class Functions {
             if (req != null) {
                 Item item = req.findAncestorObject(Item.class);
                 if (item != null && !item.hasPermission(Item.CONFIGURE)) {
-                    return "(some secret)";
+                    return "********";
                 }
             }
             return ((Secret) o).getEncryptedValue();

@@ -27,14 +27,20 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
+import hudson.cli.GetJobCommand;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
+import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.util.Secret;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.Locale;
 import jenkins.model.Jenkins;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -101,13 +107,24 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             assertThat(xmlAdmin, containsString("<secret>" + sEnc + "</secret>"));
             assertThat(xmlAdmin, containsString("<displayName>" + p.getDisplayName() + "</displayName>"));
             assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
+            // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
+            GetJobCommand getJobCommand = new GetJobCommand();
+            getJobCommand.setTransportAuth(User.get("admin").impersonate());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            getJobCommand.main(Collections.singletonList(p.getFullName()), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset()));
             wc.login("dev");
             configure = wc.getPage(p, "configure");
             assertThat(configure.getWebResponse().getContentAsString(), not(containsString(sEnc)));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
             String xmlDev = configXml.getWebResponse().getContentAsString();
             assertThat(xmlDev, not(containsString(sEnc)));
-            assertEquals(xmlAdmin.replace(sEnc, "(some secret)"), xmlDev);
+            assertEquals(xmlAdmin.replace(sEnc, "********"), xmlDev);
+            getJobCommand = new GetJobCommand();
+            getJobCommand.setTransportAuth(User.get("dev").impersonate());
+            baos = new ByteArrayOutputStream();
+            getJobCommand.main(Collections.singletonList(p.getFullName()), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset()));
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }

@@ -56,6 +56,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
@@ -75,6 +76,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
@@ -82,6 +84,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 
 /**
@@ -607,25 +611,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
-            checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml");
-            XmlFile configFile = getConfigFile();
-            if (hasPermission(CONFIGURE)) {
-                IOUtils.copy(configFile.getFile(), rsp.getOutputStream());
-            } else {
-                String encoding = configFile.sniffEncoding();
-                String xml = FileUtils.readFileToString(configFile.getFile(), encoding);
-                Matcher matcher = SECRET_PATTERN.matcher(xml);
-                StringBuffer cleanXml = new StringBuffer();
-                while (matcher.find()) {
-                    String text = matcher.group(1);
-                    if (Secret.decrypt(text) != null) {
-                        matcher.appendReplacement(cleanXml, ">(some secret)<");
-                    }
-                }
-                matcher.appendTail(cleanXml);
-                org.apache.commons.io.IOUtils.write(cleanXml.toString(), rsp.getOutputStream(), encoding);
-            }
+            writeConfigDotXml(rsp.getOutputStream());
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -636,6 +623,33 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
         // huh?
         rsp.sendError(SC_BAD_REQUEST);
+    }
+
+    /**
+     * Writes {@code config.xml} to the specified output stream.
+     * The user must have at least {@link #EXTENDED_READ}.
+     * If he lacks {@link #CONFIGURE}, then any {@link Secret}s detected will be masked out.
+     */
+    @Restricted(NoExternalUse.class)
+    public void writeConfigDotXml(OutputStream os) throws IOException {
+        checkPermission(EXTENDED_READ);
+        XmlFile configFile = getConfigFile();
+        if (hasPermission(CONFIGURE)) {
+            IOUtils.copy(configFile.getFile(), os);
+        } else {
+            String encoding = configFile.sniffEncoding();
+            String xml = FileUtils.readFileToString(configFile.getFile(), encoding);
+            Matcher matcher = SECRET_PATTERN.matcher(xml);
+            StringBuffer cleanXml = new StringBuffer();
+            while (matcher.find()) {
+                String text = matcher.group(1);
+                if (Secret.decrypt(text) != null) {
+                    matcher.appendReplacement(cleanXml, ">********<");
+                }
+            }
+            matcher.appendTail(cleanXml);
+            org.apache.commons.io.IOUtils.write(cleanXml.toString(), os, encoding);
+        }
     }
 
     /**
