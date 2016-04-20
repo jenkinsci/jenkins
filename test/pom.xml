@@ -208,7 +208,7 @@ THE SOFTWARE.
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
-          <reuseForks>true</reuseForks>
+          <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
         </configuration>
       </plugin>
