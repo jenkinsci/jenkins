@@ -602,7 +602,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         Util.deleteRecursive(getRootDir());
     }
 
-    private static final Pattern SECRET_PATTERN = Pattern.compile(">(" + Secret.ENCRYPTED_VALUE_PATTERN + ")<");
     /**
      * Accepts <tt>config.xml</tt> submission, as well as serve it.
      */
@@ -625,6 +624,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         rsp.sendError(SC_BAD_REQUEST);
     }
 
+    static final Pattern SECRET_PATTERN = Pattern.compile(">(" + Secret.ENCRYPTED_VALUE_PATTERN + ")<");
     /**
      * Writes {@code config.xml} to the specified output stream.
      * The user must have at least {@link #EXTENDED_READ}.
@@ -642,8 +642,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             Matcher matcher = SECRET_PATTERN.matcher(xml);
             StringBuffer cleanXml = new StringBuffer();
             while (matcher.find()) {
-                String text = matcher.group(1);
-                if (Secret.decrypt(text) != null) {
+                if (Secret.decrypt(matcher.group(1)) != null) {
                     matcher.appendReplacement(cleanXml, ">********<");
                 }
             }

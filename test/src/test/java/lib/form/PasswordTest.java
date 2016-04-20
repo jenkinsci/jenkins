@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
+import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -39,9 +40,11 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.util.Secret;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -87,6 +90,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             pmas.add(Item.READ, "dev");
             Item.EXTENDED_READ.setEnabled(true);
             pmas.add(Item.EXTENDED_READ, "dev");
+            pmas.add(Item.CREATE, "dev"); // so we can show CopyJobCommand would barf; more realistic would be to grant it only in a subfolder
             jenkins.setAuthorizationStrategy(pmas);
             Secret s = Secret.fromString("s3cr3t");
             String sEnc = s.getEncryptedValue();
@@ -95,6 +99,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             p.setDescription("This+looks+like+Base64+but+is+not+a+secret");
             p.addProperty(new VulnerableProperty(s));
             WebClient wc = createWebClient();
+            // Control case: an administrator can read and write configuration freely.
             wc.login("admin");
             HtmlPage configure = wc.getPage(p, "configure");
             assertThat(configure.getWebResponse().getContentAsString(), containsString(sEnc));
@@ -109,10 +114,21 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
             // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
             GetJobCommand getJobCommand = new GetJobCommand();
-            getJobCommand.setTransportAuth(User.get("admin").impersonate());
+            Authentication adminAuth = User.get("admin").impersonate();
+            getJobCommand.setTransportAuth(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            getJobCommand.main(Collections.singletonList(p.getFullName()), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            String pName = p.getFullName();
+            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset()));
+            CopyJobCommand copyJobCommand = new CopyJobCommand();
+            copyJobCommand.setTransportAuth(adminAuth);
+            String pAdminName = pName + "-admin";
+            assertEquals(0, copyJobCommand.main(Arrays.asList(pName, pAdminName), Locale.ENGLISH, System.in, System.out, System.err));
+            FreeStyleProject pAdmin = jenkins.getItemByFullName(pAdminName, FreeStyleProject.class);
+            assertNotNull(pAdmin);
+            pAdmin.setDisplayName(p.getDisplayName()); // counteract DisplayNameListener
+            assertEquals(p.getConfigFile().asString(), pAdmin.getConfigFile().asString());
+            // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
             wc.login("dev");
             configure = wc.getPage(p, "configure");
             assertThat(configure.getWebResponse().getContentAsString(), not(containsString(sEnc)));
@@ -121,10 +137,17 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             assertThat(xmlDev, not(containsString(sEnc)));
             assertEquals(xmlAdmin.replace(sEnc, "********"), xmlDev);
             getJobCommand = new GetJobCommand();
-            getJobCommand.setTransportAuth(User.get("dev").impersonate());
+            Authentication devAuth = User.get("dev").impersonate();
+            getJobCommand.setTransportAuth(devAuth);
             baos = new ByteArrayOutputStream();
-            getJobCommand.main(Collections.singletonList(p.getFullName()), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
             assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset()));
+            copyJobCommand = new CopyJobCommand();
+            copyJobCommand.setTransportAuth(devAuth);
+            String pDevName = pName + "-dev";
+            assertThat(copyJobCommand.main(Arrays.asList(pName, pDevName), Locale.ENGLISH, System.in, System.out, System.err), not(0));
+            assertNull(jenkins.getItemByFullName(pDevName, FreeStyleProject.class));
+
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }

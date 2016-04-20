@@ -27,8 +27,10 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
+import hudson.security.AccessDeniedException2;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,6 +49,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import org.xml.sax.SAXException;
 
@@ -221,13 +224,22 @@ public abstract class ItemGroupMixIn {
     public synchronized <T extends TopLevelItem> T copy(T src, String name) throws IOException {
         acl.checkPermission(Item.CREATE);
         src.checkPermission(Item.EXTENDED_READ);
+        XmlFile srcConfigFile = Items.getConfigFile(src);
+        if (!src.hasPermission(Item.CONFIGURE)) {
+            Matcher matcher = AbstractItem.SECRET_PATTERN.matcher(srcConfigFile.asString());
+            while (matcher.find()) {
+                if (Secret.decrypt(matcher.group(1)) != null) {
+                    throw new AccessDeniedException2(Jenkins.getAuthentication(), Item.CONFIGURE);
+                }
+            }
+        }
         src.getDescriptor().checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, src.getDescriptor());
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
         // copy config
-        Util.copyFile(Items.getConfigFile(src).getFile(),Items.getConfigFile(result).getFile());
+        Util.copyFile(srcConfigFile.getFile(), Items.getConfigFile(result).getFile());
 
         // reload from the new config
         final File rootDir = result.getRootDir();
