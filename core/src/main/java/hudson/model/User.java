@@ -52,6 +52,8 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -994,6 +996,49 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         public int getPriority() {
             return -1; // lower than default
         }
+    }
+
+
+    /**
+     * Resolve user ID from id.
+     * @since TODO
+     */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
+
+        @Override
+        public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
+            // use the same as DefaultUserCanonicalIdResolver
+            String _id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+                                            .replace('>', '_');  // 4 replace() still faster than regex
+            Jenkins j = Jenkins.getInstance();
+            if (j == null) {
+                return null;
+            }
+            IdStrategy userIdStrategy = j.getSecurityRealm().getUserIdStrategy();
+            Collection<User> users = User.getAll();
+            for (User u : users) {
+                if (userIdStrategy.equals(u.getId(), _id)) {
+                    return u.getId();
+                }
+            }
+
+            // XXX I have seen files created in AD that are in the form DOMAIN\User so not sure why they get through but lets also try those...
+            for (User u : users) {
+                if (userIdStrategy.equals(u.getId(), idOrFullName)) {
+                    return u.getId();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public int getPriority() {
+            // should always come first so that ID that are ids get mapped correctly
+            return Integer.MAX_VALUE;
+        }
+
     }
 
     /**
