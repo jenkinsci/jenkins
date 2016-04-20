@@ -23,6 +23,7 @@
  */
 package lib.form;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Extension;
@@ -81,20 +82,32 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             Item.EXTENDED_READ.setEnabled(true);
             pmas.add(Item.EXTENDED_READ, "dev");
             jenkins.setAuthorizationStrategy(pmas);
-            Secret secret = Secret.fromString("s3cr3t");
+            Secret s = Secret.fromString("s3cr3t");
+            String sEnc = s.getEncryptedValue();
             FreeStyleProject p = createFreeStyleProject("p");
-            p.addProperty(new VulnerableProperty(secret));
+            p.setDisplayName("Unicode here ←");
+            p.setDescription("This+looks+like+Base64+but+is+not+a+secret");
+            p.addProperty(new VulnerableProperty(s));
             WebClient wc = createWebClient();
             wc.login("admin");
             HtmlPage configure = wc.getPage(p, "configure");
-            assertThat(configure.getWebResponse().getContentAsString(), containsString(secret.getEncryptedValue()));
+            assertThat(configure.getWebResponse().getContentAsString(), containsString(sEnc));
             submit(configure.getFormByName("config"));
             VulnerableProperty vp = p.getProperty(VulnerableProperty.class);
             assertNotNull(vp);
-            assertEquals(secret, vp.secret);
+            assertEquals(s, vp.secret);
+            Page configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
+            String xmlAdmin = configXml.getWebResponse().getContentAsString();
+            assertThat(xmlAdmin, containsString("<secret>" + sEnc + "</secret>"));
+            assertThat(xmlAdmin, containsString("<displayName>" + p.getDisplayName() + "</displayName>"));
+            assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
             wc.login("dev");
             configure = wc.getPage(p, "configure");
-            assertThat(configure.getWebResponse().getContentAsString(), not(containsString(secret.getEncryptedValue())));
+            assertThat(configure.getWebResponse().getContentAsString(), not(containsString(sEnc)));
+            configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
+            String xmlDev = configXml.getWebResponse().getContentAsString();
+            assertThat(xmlDev, not(containsString(sEnc)));
+            assertEquals(xmlAdmin.replace(sEnc, "(some secret)"), xmlDev);
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }

@@ -41,6 +41,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import hudson.util.Secret;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -60,6 +61,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -78,6 +81,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.Ancestor;
 
 /**
@@ -594,6 +598,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         Util.deleteRecursive(getRootDir());
     }
 
+    private static final Pattern SECRET_PATTERN = Pattern.compile(">(" + Secret.ENCRYPTED_VALUE_PATTERN + ")<");
     /**
      * Accepts <tt>config.xml</tt> submission, as well as serve it.
      */
@@ -604,7 +609,23 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // read
             checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml");
-            IOUtils.copy(getConfigFile().getFile(),rsp.getOutputStream());
+            XmlFile configFile = getConfigFile();
+            if (hasPermission(CONFIGURE)) {
+                IOUtils.copy(configFile.getFile(), rsp.getOutputStream());
+            } else {
+                String encoding = configFile.sniffEncoding();
+                String xml = FileUtils.readFileToString(configFile.getFile(), encoding);
+                Matcher matcher = SECRET_PATTERN.matcher(xml);
+                StringBuffer cleanXml = new StringBuffer();
+                while (matcher.find()) {
+                    String text = matcher.group(1);
+                    if (Secret.decrypt(text) != null) {
+                        matcher.appendReplacement(cleanXml, ">(some secret)<");
+                    }
+                }
+                matcher.appendTail(cleanXml);
+                org.apache.commons.io.IOUtils.write(cleanXml.toString(), rsp.getOutputStream(), encoding);
+            }
             return;
         }
         if (req.getMethod().equals("POST")) {
