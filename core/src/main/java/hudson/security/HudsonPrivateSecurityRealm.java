@@ -324,7 +324,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.username==null || si.username.length()==0)
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
         else {
-            User user = User.get(si.username, false); // TODO why false? use getById?
+            // do not create the user - we just want to check if the user already exists but is not a "login" user.
+            User user = User.getById(si.username, false); 
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
