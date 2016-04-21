@@ -79,6 +79,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     @Restricted(DoNotUse.class)
     public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value, @AncestorInPath ItemGroup<?> container) {
+        // TODO do we need a permissions check here?
         AutoCompletionCandidates candidates = AutoCompletionCandidates.ofJobNames(TopLevelItem.class, value, container);
         if (container instanceof DirectlyModifiableTopLevelItemGroup) {
             DirectlyModifiableTopLevelItemGroup modifiableContainer = (DirectlyModifiableTopLevelItemGroup) container;

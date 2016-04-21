@@ -4257,14 +4257,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     
     /**
      * If set, a currently active setup wizard - e.g. installation
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public SetupWizard getSetupWizard() {
         return setupWizard;
     }
     
     /**
      * Sets the setup wizard
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public void setSetupWizard(SetupWizard setupWizard) {
         this.setupWizard = setupWizard;
     }
@@ -4597,8 +4603,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The version number before it is "computed" (by a call to computeVersion()).
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
     /**
@@ -4620,8 +4627,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
         return toVersion(Jenkins.getActiveInstance().version);
     }
