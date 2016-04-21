@@ -135,16 +135,18 @@ public class BasicAuthenticationFilter implements Filter {
         }
 
         {// attempt to authenticate as API token
-            User u = User.get(username);
-            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-            if (t!=null && t.matchesPassword(password)) {
-                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
-                try {
-                    chain.doFilter(request,response);
-                } finally {
-                    SecurityContextHolder.clearContext();
+            User u = User.getById(username, false);
+            if (u != null) {
+                ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+                if (t!=null && t.matchesPassword(password)) {
+                    SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                    try {
+                        chain.doFilter(request,response);
+                    } finally {
+                        SecurityContextHolder.clearContext();
+                    }
+                    return;
                 }
-                return;
             }
         }
 

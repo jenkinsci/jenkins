@@ -169,7 +169,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Override
     public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-        User u = User.get(username,false);
+        User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
             throw new UsernameNotFoundException("Password is not set: "+username);
@@ -324,7 +324,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.username==null || si.username.length()==0)
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
         else {
-            User user = User.get(si.username, false);
+            User user = User.get(si.username, false); // TODO why false? use getById?
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
@@ -373,7 +373,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a new user account by registering a password to the user.
      */
     public User createAccount(String userName, String password) throws IOException {
-        User user = User.get(userName);
+        User user = User.getById(userName, true);
         user.addProperty(Details.fromPlainPassword(password));
         return user;
     }
@@ -416,7 +416,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This in turn helps us set up the right navigation breadcrumb.
      */
     public User getUser(String id) {
-        return User.get(id);
+        return User.getById(id, true);
     }
 
     // TODO

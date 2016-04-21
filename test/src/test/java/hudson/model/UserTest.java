@@ -584,6 +584,52 @@ public class UserTest {
         assertEquals("'user2' should resolve to u2", u2.getId(), u.getId());
     }
 
+    @Test
+    public void resolveById() throws Exception {
+        User u1 = User.get("user1");
+        u1.setFullName("User One");
+        u1.save();
+
+        User u2 = User.get("user2");
+        u2.setFullName("User Two");
+        u2.save();
+
+        assertNotSame("Users should not have the same id.", u1.getId(), u2.getId());
+
+        // We can get the same user back.
+        User u = User.getById("user1", false);
+        assertSame("'user1' should return u1", u1, u);
+
+        // passing true should not create a new user if it does not exist.
+        u = User.getById("user1", true);
+        assertSame("'user1' should return u1", u1, u);
+
+        // should not lookup by name.
+        u = User.getById("User One", false);
+        assertNull("'User One' should not resolve to any user", u);
+
+        // We can get the same user back.
+        u = User.getById("user2", false);
+        assertSame("'user2' should return u2", u2, u);
+
+        // passing true should not create a new user if it does not exist.
+        u = User.getById("user2", true);
+        assertSame("'user2' should return u1", u2, u);
+
+        // should not lookup by name.
+        u = User.getById("User Two", false);
+        assertNull("'User Two' should not resolve to any user", u);
+
+        u1.setFullName("user1");
+        u1.save();
+        u2.setFullName("user1");
+        u2.save();
+        u = User.getById("user1", false);
+        assertSame("'user1' should resolve to u1", u1, u);
+        u = User.getById("user2", false);
+        assertSame("'user2' should resolve to u2", u2, u);
+    }
+
      public static class SomeUserProperty extends UserProperty {
          
         @TestExtension

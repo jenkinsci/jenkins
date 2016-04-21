@@ -100,7 +100,9 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         @Override
         protected void loggedIn(@Nonnull String username) {
             try {
-                User u = User.get(username);
+                // user should have been created but may not have been saved for some realms
+                // but as this is a callback of a successful login we can safely create the user.
+                User u = User.getById(username, true);
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
                 if (o==null)
                     u.addProperty(o=new LastGrantedAuthoritiesProperty());

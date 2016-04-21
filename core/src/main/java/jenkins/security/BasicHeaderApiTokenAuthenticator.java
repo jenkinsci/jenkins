@@ -24,21 +24,22 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
     @Override
     public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         // attempt to authenticate as API token
-        User u = User.get(username);
-        ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-        if (t!=null && t.matchesPassword(password)) {
-            try {
-                return u.impersonate();
-            } catch (UsernameNotFoundException x) {
-                // The token was valid, but the impersonation failed. This token is clearly not his real password,
-                // so there's no point in continuing the request processing. Report this error and abort.
-                LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
-                throw new ServletException(x);
-            } catch (DataAccessException x) {
-                throw new ServletException(x);
+        User u = User.getById(username, false);
+        if (u != null) {
+            ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+            if (t!=null && t.matchesPassword(password)) {
+                try {
+                    return u.impersonate();
+                } catch (UsernameNotFoundException x) {
+                    // The token was valid, but the impersonation failed. This token is clearly not his real password,
+                    // so there's no point in continuing the request processing. Report this error and abort.
+                    LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
+                    throw new ServletException(x);
+                } catch (DataAccessException x) {
+                    throw new ServletException(x);
+                }
             }
         }
-
         return null;
     }
 
