@@ -134,7 +134,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
              */
 
 //            try {
-//                User u = User.get(username,false,Collections.emptyMap());
+//                User u = User.getById(username,false);
 //                LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
 //                if (o!=null)
 //                    o.invalidate();
