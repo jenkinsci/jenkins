@@ -1665,7 +1665,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         public void _run() throws IOException, InstallationStatus {
-            if (isAlreadyInstalling()) {
+            if (wasInstalled()) {
                 // Do this first so we can avoid duplicate downloads, too
                 // check to see if the plugin is already installed at the same version and skip it
                 LOGGER.warning("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
@@ -1673,30 +1673,30 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             }
             try {
-            super._run();
+                super._run();
 
-            // if this is a bundled plugin, make sure it won't get overwritten
-            PluginWrapper pw = plugin.getInstalled();
-            if (pw!=null && pw.isBundled()) {
-                SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-                try {
-                    pw.doPin();
-                } finally {
-                    SecurityContextHolder.setContext(oldContext);
+                // if this is a bundled plugin, make sure it won't get overwritten
+                PluginWrapper pw = plugin.getInstalled();
+                if (pw!=null && pw.isBundled()) {
+                    SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+                    try {
+                        pw.doPin();
+                    } finally {
+                        SecurityContextHolder.setContext(oldContext);
+                    }
                 }
-            }
 
-            if (dynamicLoad) {
-                try {
-                    pm.dynamicLoad(getDestination());
-                } catch (RestartRequiredException e) {
-                    throw new SuccessButRequiresRestart(e.message);
-                } catch (Exception e) {
-                    throw new IOException("Failed to dynamically deploy this plugin",e);
+                if (dynamicLoad) {
+                    try {
+                        pm.dynamicLoad(getDestination());
+                    } catch (RestartRequiredException e) {
+                        throw new SuccessButRequiresRestart(e.message);
+                    } catch (Exception e) {
+                        throw new IOException("Failed to dynamically deploy this plugin",e);
+                    }
+                } else {
+                    throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
                 }
-            } else {
-                throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
-            }
             } finally {
                 synchronized(this) {
                     // There may be other threads waiting on completion
@@ -1713,7 +1713,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Indicates there is another installation job for this plugin
          * @since TODO
          */
-        protected boolean isAlreadyInstalling() {
+        protected boolean wasInstalled() {
             synchronized(UpdateCenter.this) {
                 for (UpdateCenterJob job : getJobs()) {
                     if (job == this) {
