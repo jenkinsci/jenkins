@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  */
 public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
 
-    static final Logger LOGGER = Logger.getLogger(TopLevelItemDescriptor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TopLevelItemDescriptor.class.getName());
 
     protected TopLevelItemDescriptor(Class<? extends TopLevelItem> clazz) {
         super(clazz);

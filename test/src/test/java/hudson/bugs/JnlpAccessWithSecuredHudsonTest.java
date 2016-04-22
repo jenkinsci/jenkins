@@ -106,11 +106,9 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
         String secret = slave.getComputer().getJnlpMac();
         // To watch it fail: secret = secret.replace('1', '2');
         ProcessBuilder pb = new ProcessBuilder(JavaEnvUtils.getJreExecutable("java"), "-jar", Which.jarFile(Launcher.class).getAbsolutePath(), "-jnlpUrl", getURL() + "computer/test/slave-agent.jnlp", "-secret", secret);
-        try {
-            pb = (ProcessBuilder) ProcessBuilder.class.getMethod("inheritIO").invoke(pb);
-        } catch (NoSuchMethodException x) {
-            // prior to Java 7
-        }
+
+        pb = pb.inheritIO();
+
         System.err.println("Running: " + pb.command());
         Process p = pb.start();
         try {

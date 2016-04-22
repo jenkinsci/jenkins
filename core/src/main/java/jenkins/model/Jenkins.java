@@ -191,6 +191,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
@@ -3333,7 +3335,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return a;
         }
         for (Action a : getManagementLinks())
-            if(a.getUrlName().equals(token))
+            if (Objects.equals(a.getUrlName(), token))
                 return a;
         return null;
     }
@@ -4255,14 +4257,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     
     /**
      * If set, a currently active setup wizard - e.g. installation
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public SetupWizard getSetupWizard() {
         return setupWizard;
     }
     
     /**
      * Sets the setup wizard
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public void setSetupWizard(SetupWizard setupWizard) {
         this.setupWizard = setupWizard;
     }
@@ -4329,7 +4337,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
-                names.add(a.getUrlName());
+                String url = a.getUrlName();
+                if (url == null) continue;
+                names.add(url);
             }
         }
         return names;
@@ -4593,8 +4603,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The version number before it is "computed" (by a call to computeVersion()).
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
     /**
@@ -4616,8 +4627,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
         return toVersion(Jenkins.getActiveInstance().version);
     }

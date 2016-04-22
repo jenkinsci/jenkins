@@ -15,7 +15,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
-String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
+String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'jenkins-2.0'
 
 timestampedNode('java') {
 

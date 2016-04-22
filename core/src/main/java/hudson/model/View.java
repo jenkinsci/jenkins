@@ -552,7 +552,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         for (Action a : getActions()) {
             String url = a.getUrlName();
             if (url==null)  continue;
-            if(a.getUrlName().equals(token))
+            if (url.equals(token))
                 return a;
         }
         return null;
@@ -1045,6 +1045,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
