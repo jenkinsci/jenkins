@@ -1009,6 +1009,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             pluginInfo.put("bundled", plugin.isBundled);
             pluginInfo.put("deleted", plugin.isDeleted());
             pluginInfo.put("downgradable", plugin.isDowngradable());
+            pluginInfo.put("website", plugin.getUrl());
             List<Dependency> dependencies = plugin.getDependencies();
             if (dependencies != null && !dependencies.isEmpty()) {
                 Map<String, String> dependencyMap = new HashMap<>();
@@ -1033,6 +1034,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 pluginInfo.put("excerpt", plugin.excerpt);
                 pluginInfo.put("site", site.getId());
                 pluginInfo.put("dependencies", plugin.dependencies);
+                pluginInfo.put("website", plugin.wiki);
                 response.add(pluginInfo);
             }
         }
@@ -1198,19 +1200,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             new Thread() {
                 @Override
                 public void run() {
-                    final boolean failures[] = { false };
+                    boolean failures = false;
                     INSTALLING: while (true) {
                         try {
                             updateCenter.persistInstallStatus();
                             Thread.sleep(500);
-                            failures[0] = false;
+                            failures = false;
                             for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
                                 if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
                                     continue INSTALLING;
                                 }
                                 UpdateCenter.UpdateCenterJob job = jobFuture.get();
                                 if(job instanceof InstallationJob && ((InstallationJob)job).status instanceof DownloadJob.Failure) {
-                                    failures[0] = true;
+                                    failures = true;
                                 }
                             }
                         } catch (Exception e) {
@@ -1219,7 +1221,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         break;
                     }
                     updateCenter.persistInstallStatus();
-                    if(!failures[0]) {
+                    if(!failures) {
                         jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
                     }
                 }
