@@ -1007,6 +1007,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             pluginInfo.put("bundled", plugin.isBundled);
             pluginInfo.put("deleted", plugin.isDeleted());
             pluginInfo.put("downgradable", plugin.isDowngradable());
+            pluginInfo.put("website", plugin.getUrl());
             List<Dependency> dependencies = plugin.getDependencies();
             if (dependencies != null && !dependencies.isEmpty()) {
                 Map<String, String> dependencyMap = new HashMap<>();
@@ -1031,6 +1032,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 pluginInfo.put("excerpt", plugin.excerpt);
                 pluginInfo.put("site", site.getId());
                 pluginInfo.put("dependencies", plugin.dependencies);
+                pluginInfo.put("website", plugin.wiki);
                 response.add(pluginInfo);
             }
         }
