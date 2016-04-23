@@ -59,6 +59,7 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
+import hudson.init.TermMilestone;
 import hudson.init.TerminatorFinder;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
@@ -178,6 +179,7 @@ import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
+import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
@@ -189,17 +191,26 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+
+import java.util.Objects;
+import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.install.InstallState;
+import jenkins.install.InstallUtil;
+import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
+import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.AcegiSecurityException;
@@ -213,8 +224,10 @@ import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
+import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Reactor;
 import org.jvnet.hudson.reactor.ReactorException;
+import org.jvnet.hudson.reactor.ReactorListener;
 import org.jvnet.hudson.reactor.Task;
 import org.jvnet.hudson.reactor.TaskBuilder;
 import org.jvnet.hudson.reactor.TaskGraphBuilder;
@@ -329,6 +342,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private String version = "1.0";
 
     /**
+     * The Jenkins instance startup type i.e. NEW, UPGRADE etc
+     */
+    private transient InstallState installState = InstallState.UNKNOWN;
+    
+    /**
+     * If we're in the process of an initial setup, 
+     * this will be set
+     */
+    private transient SetupWizard setupWizard;
+
+    /**
      * Number of executors of the master node.
      */
     private int numExecutors = 2;
@@ -430,6 +454,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient volatile boolean isQuietingDown;
     private transient volatile boolean terminating;
+    @GuardedBy("Jenkins.class")
+    private transient boolean cleanUpStarted;
 
     private volatile List<JDK> jdks = new ArrayList<JDK>();
 
@@ -563,7 +589,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient final CopyOnWriteList<SCMListener> scmListeners = new CopyOnWriteList<SCMListener>();
 
     /**
-     * TCP slave agent port.
+     * TCP agent port.
      * 0 for random, -1 to disable.
      */
     private int slaveAgentPort = Integer.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
@@ -593,7 +619,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public transient final OverallLoadStatistics overallLoad = new OverallLoadStatistics();
 
     /**
-     * Load statistics of the free roaming jobs and slaves.
+     * Load statistics of the free roaming jobs and agents.
      *
      * This includes all executors on {@link hudson.model.Node.Mode#NORMAL} nodes and jobs that do not have any assigned nodes.
      *
@@ -613,7 +639,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      Use {@link #unlabeledNodeProvisioner}.
      *      This was broken because it was tracking all the executors in the system, but it was only tracking
      *      free-roaming jobs in the queue. So {@link Cloud} fails to launch nodes when you have some exclusive
-     *      slaves and free-roaming jobs in the queue.
+     *      agents and free-roaming jobs in the queue.
      */
     @Restricted(NoExternalUse.class)
     @Deprecated
@@ -688,12 +714,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getInstance()} provides the unchecked versions of the method.
+     * {@link #getInstanceOrNull()} provides the unchecked versions of the method.
      * @return {@link Jenkins} instance
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      * @since 1.590
+     * @deprecated use {@link #getInstance()}
      */
-    public static @Nonnull Jenkins getActiveInstance() throws IllegalStateException {
+    @Deprecated
+    @Nonnull
+    public static Jenkins getActiveInstance() throws IllegalStateException {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
             throw new IllegalStateException("Jenkins has not been started, or was already shut down");
@@ -706,10 +735,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #getActiveInstance()} provides the checked versions of the method.
      * @return The instance. Null if the {@link Jenkins} instance has not been started,
      * or was already shut down
+     * @since 1.653
+     */
+    @CheckForNull
+    public static Jenkins getInstanceOrNull() {
+        return HOLDER.getInstance();
+    }
+
+    /**
+     * Gets the {@link Jenkins} singleton. In certain rare cases you may have code that is intended to run before
+     * Jenkins starts or while Jenkins is being shut-down. For those rare cases use {@link #getInstanceOrNull()}.
+     * In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master,
+     * for those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting
+     * channel it uses a {@code writeReplace} method or similar to ensure that the {@link Jenkins} class is not being
+     * loaded into the remote class loader
+     * @return The instance.
+     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
     @CLIResolver
-    @CheckForNull
+    @Nullable // TODO replace with non-null once Jenkins 2.0+
     public static Jenkins getInstance() {
+        // TODO throw an IllegalStateException in Jenkins 2.0+
         return HOLDER.getInstance();
     }
 
@@ -737,6 +783,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private transient final LogRecorderManager log = new LogRecorderManager();
 
+    private transient final boolean oldJenkinsJVM;
+
     protected Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
         this(root,context,null);
     }
@@ -750,9 +798,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
     })
     protected Jenkins(File root, ServletContext context, PluginManager pluginManager) throws IOException, InterruptedException, ReactorException {
+        oldJenkinsJVM = JenkinsJVM.isJenkinsJVM(); // capture to restore in cleanUp()
+        JenkinsJVMAccess._setJenkinsJVM(true); // set it for unit tests as they will not have gone through WebAppMain
         long start = System.currentTimeMillis();
 
-    	// As Jenkins is starting, grant this process full control
+        // As Jenkins is starting, grant this process full control
         ACL.impersonate(ACL.SYSTEM);
         try {
             this.root = root;
@@ -763,7 +813,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             theInstance = this;
 
             if (!new File(root,"jobs").exists()) {
-                // if this is a fresh install, use more modern default layout that's consistent with slaves
+                // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
             }
 
@@ -821,6 +871,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if(KILL_AFTER_LOAD)
                 System.exit(0);
+
+            installState = InstallUtil.getInstallState();
+            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
+                InstallUtil.saveLastExecVersion();
+            }
+            
+            if(!installState.isSetupComplete()) {
+                // Start immediately with the setup wizard for new installs
+                setupWizard = new SetupWizard(this);
+            }
 
             launchTcpSlaveAgentListener();
 
@@ -896,6 +956,33 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return this;
     }
+    
+    /**
+     * Get the Jenkins {@link jenkins.install.InstallState install state}.
+     * @return The Jenkins {@link jenkins.install.InstallState install state}.
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public InstallState getInstallState() {
+        return installState;
+    }
+
+    /**
+     * Update the current install state.
+     */
+    @Restricted(NoExternalUse.class)
+    public void setInstallState(@Nonnull InstallState newState) {
+        installState = newState;
+    }
+
+    /**
+     * Get the URL path to the Install Wizard JavaScript.
+     * @return The URL path to the Install Wizard JavaScript.
+     */
+    @Restricted(NoExternalUse.class)
+    public String getInstallWizardPath() {
+        return servletContext.getInitParameter("install-wizard-path");
+    }
 
     /**
      * Executes a reactor.
@@ -936,6 +1023,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                if (milestone==PLUGINS_PREPARED) {
+                    // set up Guice to enable injection as early as possible
+                    // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
+                    ExtensionList.lookup(ExtensionFinder.class).getComponents();
+                }
             }
         }.run(reactor);
     }
@@ -987,9 +1079,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         }
                     }
                 } catch (BindException e) {
+                    LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through JNLP port %s. Change the JNLP port number", slaveAgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
-                            "Failed to listen to incoming slave connection",
-                            "Failed to listen to incoming slave connection. <a href='configure'>Change the port number</a> to solve the problem.", e);
+                            "Failed to listen to incoming agent connections through JNLP",
+                            "Failed to listen to incoming agent connections through JNLP. <a href='configureSecurity'>Change the JNLP port number</a> to solve the problem.", e);
                 }
             }
         }
@@ -1399,10 +1492,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Exported(name="jobs")
     public List<TopLevelItem> getItems() {
-		if (authorizationStrategy instanceof AuthorizationStrategy.Unsecured ||
-			authorizationStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
-			return new ArrayList(items.values());
-		}
+        if (authorizationStrategy instanceof AuthorizationStrategy.Unsecured ||
+            authorizationStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
+            return new ArrayList(items.values());
+        }
 
         List<TopLevelItem> viewableItems = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items.values()) {
@@ -1709,7 +1802,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
     /**
-     * Gets the slave node of the give name, hooked under this Jenkins.
+     * Gets the agent node of the give name, hooked under this Jenkins.
      */
     public @CheckForNull Node getNode(String name) {
         return nodes.getNode(name);
@@ -1777,11 +1870,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
-    	return nodeProperties;
+        return nodeProperties;
     }
 
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getGlobalNodeProperties() {
-    	return globalNodeProperties;
+        return globalNodeProperties;
     }
 
     /**
@@ -2390,7 +2483,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Override public TopLevelItem getItem(String name) throws AccessDeniedException {
         if (name==null)    return null;
-    	TopLevelItem item = items.get(name);
+        TopLevelItem item = items.get(name);
         if (item==null)
             return null;
         if (!item.hasPermission(Item.READ)) {
@@ -2671,6 +2764,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new Hudson.MasterComputer();
     }
 
+    private void loadConfig() throws IOException {
+        XmlFile cfg = getConfigFile();
+        if (cfg.exists()) {
+            // reset some data that may not exist in the disk file
+            // so that we can take a proper compensation action later.
+            primaryView = null;
+            views.clear();
+
+            // load from disk
+            cfg.unmarshal(Jenkins.this);
+        }
+    }
+
     private synchronized TaskBuilder loadTasks() throws IOException {
         File projectsDir = new File(root,"jobs");
         if(!projectsDir.getCanonicalFile().isDirectory() && !projectsDir.mkdirs()) {
@@ -2685,17 +2791,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TaskGraphBuilder g = new TaskGraphBuilder();
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(JOB_LOADED).add("Loading global config", new Executable() {
             public void run(Reactor session) throws Exception {
-                XmlFile cfg = getConfigFile();
-                if (cfg.exists()) {
-                    // reset some data that may not exist in the disk file
-                    // so that we can take a proper compensation action later.
-                    primaryView = null;
-                    views.clear();
-
-                    // load from disk
-                    cfg.unmarshal(Jenkins.this);
-                }
-
+                loadConfig();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);
@@ -2743,7 +2839,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                 {// recompute label objects - populates the labels mapping.
                     for (Node slave : nodes.getNodes())
-                        // Note that not all labels are visible until the slaves have connected.
+                        // Note that not all labels are visible until the agents have connected.
                         slave.getAssignedLabels();
                     getAssignedLabels();
                 }
@@ -2809,9 +2905,99 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void cleanUp() {
-        for (ItemListener l : ItemListener.all())
-            l.onBeforeShutdown();
+        if (theInstance != this && theInstance != null) {
+            LOGGER.log(Level.WARNING, "This instance is no longer the singleton, ignoring cleanUp()");
+            return;
+        }
+        synchronized (Jenkins.class) {
+            if (cleanUpStarted) {
+                LOGGER.log(Level.WARNING, "Jenkins.cleanUp() already started, ignoring repeated cleanUp()");
+                return;
+            }
+            cleanUpStarted = true;
+        }
+        try {
+            LOGGER.log(Level.INFO, "Stopping Jenkins");
 
+            final List<Throwable> errors = new ArrayList<>();
+
+            fireBeforeShutdown(errors);
+
+            _cleanUpRunTerminators(errors);
+
+            terminating = true;
+
+            final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
+
+            _cleanUpShutdownUDPBroadcast(errors);
+
+            _cleanUpCloseDNSMulticast(errors);
+
+            _cleanUpInterruptReloadThread(errors);
+
+            _cleanUpShutdownTriggers(errors);
+
+            _cleanUpShutdownTimer(errors);
+
+            _cleanUpShutdownTcpSlaveAgent(errors);
+
+            _cleanUpShutdownPluginManager(errors);
+
+            _cleanUpPersistQueue(errors);
+
+            _cleanUpShutdownThreadPoolForLoad(errors);
+
+            _cleanUpAwaitDisconnects(errors, pending);
+
+            _cleanUpPluginServletFilters(errors);
+
+            _cleanUpReleaseAllLoggers(errors);
+
+            LOGGER.log(Level.INFO, "Jenkins stopped");
+
+            if (!errors.isEmpty()) {
+                StringBuilder message = new StringBuilder("Unexpected issues encountered during cleanUp: ");
+                Iterator<Throwable> iterator = errors.iterator();
+                message.append(iterator.next().getMessage());
+                while (iterator.hasNext()) {
+                    message.append("; ");
+                    message.append(iterator.next().getMessage());
+                }
+                iterator = errors.iterator();
+                RuntimeException exception = new RuntimeException(message.toString(), iterator.next());
+                while (iterator.hasNext()) {
+                    exception.addSuppressed(iterator.next());
+                }
+                throw exception;
+            }
+        } finally {
+            theInstance = null;
+            if (JenkinsJVM.isJenkinsJVM()) {
+                JenkinsJVMAccess._setJenkinsJVM(oldJenkinsJVM);
+            }
+        }
+    }
+
+    private void fireBeforeShutdown(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Notifying termination");
+        for (ItemListener l : ItemListener.all()) {
+            try {
+                l.onBeforeShutdown();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(Level.WARNING, "ItemListener " + l + ": " + e.getMessage(), e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "ItemListener " + l + ": " + e.getMessage(), e);
+                // save for later
+                errors.add(e);
+            }
+        }
+    }
+
+    private void _cleanUpRunTerminators(List<Throwable> errors) {
         try {
             final TerminatorFinder tf = new TerminatorFinder(
                     pluginManager != null ? pluginManager.uberClassLoader : Thread.currentThread().getContextClassLoader());
@@ -2820,71 +3006,325 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 public void execute(Runnable command) {
                     command.run();
                 }
-            });
-        } catch (InterruptedException e) {
-            LOGGER.log(SEVERE, "Failed to execute termination",e);
-            e.printStackTrace();
-        } catch (ReactorException e) {
-            LOGGER.log(SEVERE, "Failed to execute termination",e);
-        } catch (IOException e) {
-            LOGGER.log(SEVERE, "Failed to execute termination",e);
-        }
+            }, new ReactorListener() {
+                final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
 
+                public void onTaskStarted(Task t) {
+                    LOGGER.log(level, "Started " + t.getDisplayName());
+                }
+
+                public void onTaskCompleted(Task t) {
+                    LOGGER.log(level, "Completed " + t.getDisplayName());
+                }
+
+                public void onTaskFailed(Task t, Throwable err, boolean fatal) {
+                    LOGGER.log(SEVERE, "Failed " + t.getDisplayName(), err);
+                }
+
+                public void onAttained(Milestone milestone) {
+                    Level lv = level;
+                    String s = "Attained " + milestone.toString();
+                    if (milestone instanceof TermMilestone) {
+                        lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
+                        s = milestone.toString();
+                    }
+                    LOGGER.log(lv, s);
+                }
+            });
+        } catch (InterruptedException | ReactorException | IOException e) {
+            LOGGER.log(SEVERE, "Failed to execute termination",e);
+            errors.add(e);
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to execute termination", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to execute termination", e);
+            // save for later
+            errors.add(e);
+        }
+    }
+
+    private Set<Future<?>> _cleanUpDisconnectComputers(final List<Throwable> errors) {
+        LOGGER.log(Level.INFO, "Starting node disconnection");
         final Set<Future<?>> pending = new HashSet<Future<?>>();
-        terminating = true;
         // JENKINS-28840 we know we will be interrupting all the Computers so get the Queue lock once for all
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
                 for( Computer c : computers.values() ) {
-                    c.interrupt();
-                    killComputer(c);
-                    pending.add(c.disconnect(null));
+                    try {
+                        c.interrupt();
+                        killComputer(c);
+                        pending.add(c.disconnect(null));
+                    } catch (OutOfMemoryError e) {
+                        // we should just propagate this, no point trying to log
+                        throw e;
+                    } catch (LinkageError e) {
+                        LOGGER.log(Level.WARNING, "Could not disconnect " + c + ": " + e.getMessage(), e);
+                        // safe to ignore and continue for this one
+                    } catch (Throwable e) {
+                        LOGGER.log(Level.WARNING, "Could not disconnect " + c + ": " + e.getMessage(), e);
+                        // save for later
+                        errors.add(e);
+                    }
                 }
             }
         });
-        if(udpBroadcastThread!=null)
-            udpBroadcastThread.shutdown();
-        if(dnsMultiCast!=null)
-            dnsMultiCast.close();
-        interruptReloadThread();
+        return pending;
+    }
 
-        java.util.Timer timer = Trigger.timer;
-        if (timer != null) {
-            timer.cancel();
+    private void _cleanUpShutdownUDPBroadcast(List<Throwable> errors) {
+        if(udpBroadcastThread!=null) {
+            LOGGER.log(Level.FINE, "Shutting down {0}", udpBroadcastThread.getName());
+            try {
+                udpBroadcastThread.shutdown();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
+                // save for later
+                errors.add(e);
+            }
         }
-        // TODO: how to wait for the completion of the last job?
-        Trigger.timer = null;
+    }
 
-        Timer.shutdown();
+    private void _cleanUpCloseDNSMulticast(List<Throwable> errors) {
+        if(dnsMultiCast!=null) {
+            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
+            try {
+                dnsMultiCast.close();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
+                // save for later
+                errors.add(e);
+            }
+        }
+    }
 
-        if(tcpSlaveAgentListener!=null)
-            tcpSlaveAgentListener.shutdown();
+    private void _cleanUpInterruptReloadThread(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Interrupting reload thread");
+        try {
+            interruptReloadThread();
+        } catch (SecurityException e) {
+            LOGGER.log(WARNING, "Not permitted to interrupt reload thread", e);
+            errors.add(e);
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to interrupt reload thread", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to interrupt reload thread", e);
+            // save for later
+            errors.add(e);
+        }
+    }
 
-        if(pluginManager!=null) // be defensive. there could be some ugly timing related issues
-            pluginManager.stop();
+    private void _cleanUpShutdownTriggers(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Shutting down triggers");
+        try {
+            final java.util.Timer timer = Trigger.timer;
+            if (timer != null) {
+                final CountDownLatch latch = new CountDownLatch(1);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        timer.cancel();
+                        latch.countDown();
+                    }
+                }, 0);
+                if (latch.await(10, TimeUnit.SECONDS)) {
+                    LOGGER.log(Level.FINE, "Triggers shut down successfully");
+                } else {
+                    timer.cancel();
+                    LOGGER.log(Level.INFO, "Gave up waiting for triggers to finish running");
+                }
+            }
+            Trigger.timer = null;
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to shut down triggers", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to shut down triggers", e);
+            // save for later
+            errors.add(e);
+        }
+    }
 
-        if(getRootDir().exists())
+    private void _cleanUpShutdownTimer(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Shutting down timer");
+        try {
+            Timer.shutdown();
+        } catch (SecurityException e) {
+            LOGGER.log(WARNING, "Not permitted to shut down Timer", e);
+            errors.add(e);
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to shut down Timer", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to shut down Timer", e);
+            // save for later
+            errors.add(e);
+        }
+    }
+
+    private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
+        if(tcpSlaveAgentListener!=null) {
+            LOGGER.log(FINE, "Shutting down TCP/IP slave agent listener");
+            try {
+                tcpSlaveAgentListener.shutdown();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(SEVERE, "Failed to shut down TCP/IP slave agent listener", e);
+                // save for later
+                errors.add(e);
+            }
+        }
+    }
+
+    private void _cleanUpShutdownPluginManager(List<Throwable> errors) {
+        if(pluginManager!=null) {// be defensive. there could be some ugly timing related issues
+            LOGGER.log(Level.INFO, "Stopping plugin manager");
+            try {
+                pluginManager.stop();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to stop plugin manager", e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(SEVERE, "Failed to stop plugin manager", e);
+                // save for later
+                errors.add(e);
+            }
+        }
+    }
+
+    private void _cleanUpPersistQueue(List<Throwable> errors) {
+        if(getRootDir().exists()) {
             // if we are aborting because we failed to create JENKINS_HOME,
             // don't try to save. Issue #536
-            getQueue().save();
+            LOGGER.log(Level.INFO, "Persisting build queue");
+            try {
+                getQueue().save();
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to persist build queue", e);
+                // safe to ignore and continue for this one
+            } catch (Throwable e) {
+                LOGGER.log(SEVERE, "Failed to persist build queue", e);
+                // save for later
+                errors.add(e);
+            }
+        }
+    }
 
-        threadPoolForLoad.shutdown();
-        for (Future<?> f : pending)
+    private void _cleanUpShutdownThreadPoolForLoad(List<Throwable> errors) {
+        LOGGER.log(FINE, "Shuting down Jenkins load thread pool");
+        try {
+            threadPoolForLoad.shutdown();
+        } catch (SecurityException e) {
+            LOGGER.log(WARNING, "Not permitted to shut down Jenkins load thread pool", e);
+            errors.add(e);
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to shut down Jenkins load thread pool", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to shut down Jenkins load thread pool", e);
+            // save for later
+            errors.add(e);
+        }
+    }
+
+    private void _cleanUpAwaitDisconnects(List<Throwable> errors, Set<Future<?>> pending) {
+        if (!pending.isEmpty()) {
+            LOGGER.log(Level.INFO, "Waiting for node disconnection completion");
+        }
+        for (Future<?> f : pending) {
             try {
                 f.get(10, TimeUnit.SECONDS);    // if clean up operation didn't complete in time, we fail the test
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;  // someone wants us to die now. quick!
             } catch (ExecutionException e) {
-                LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
+                LOGGER.log(Level.WARNING, "Failed to shut down remote computer connection cleanly", e);
             } catch (TimeoutException e) {
-                LOGGER.log(Level.WARNING, "Failed to shut down properly",e);
+                LOGGER.log(Level.WARNING, "Failed to shut down remote computer connection within 10 seconds", e);
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(Level.WARNING, "Failed to shut down remote computer connection", e);
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected error while waiting for remote computer connection disconnect", e);
+                errors.add(e);
             }
+        }
+    }
 
-        LogFactory.releaseAll();
+    private void _cleanUpPluginServletFilters(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Stopping filters");
+        try {
+            PluginServletFilter.cleanUp();
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to stop filters", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to stop filters", e);
+            // save for later
+            errors.add(e);
+        }
+    }
 
-        theInstance = null;
+    private void _cleanUpReleaseAllLoggers(List<Throwable> errors) {
+        LOGGER.log(Level.FINE, "Releasing all loggers");
+        try {
+            LogFactory.releaseAll();
+        } catch (OutOfMemoryError e) {
+            // we should just propagate this, no point trying to log
+            throw e;
+        } catch (LinkageError e) {
+            LOGGER.log(SEVERE, "Failed to release all loggers", e);
+            // safe to ignore and continue for this one
+        } catch (Throwable e) {
+            LOGGER.log(SEVERE, "Failed to release all loggers", e);
+            // save for later
+            errors.add(e);
+        }
     }
 
     public Object getDynamic(String token) {
@@ -2895,7 +3335,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return a;
         }
         for (Action a : getManagementLinks())
-            if(a.getUrlName().equals(token))
+            if (Objects.equals(a.getUrlName(), token))
                 return a;
         return null;
     }
@@ -2920,8 +3360,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             buildsDir = json.getString("rawBuildsDir");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
-
-            setJDKs(req.bindJSONToList(JDK.class, json.get("jdks")));
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
@@ -3038,10 +3476,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public HttpResponse doToggleCollapse() throws ServletException, IOException {
-    	final StaplerRequest request = Stapler.getCurrentRequest();
-    	final String paneId = request.getParameter("paneId");
+        final StaplerRequest request = Stapler.getCurrentRequest();
+        final String paneId = request.getParameter("paneId");
 
-    	PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
+        PaneStatusProperties.forCurrentUser().toggleCollapsed(paneId);
 
         return HttpResponses.forwardToPreviousPage();
     }
@@ -3054,10 +3492,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Obtains the thread dump of all slaves (including the master.)
+     * Obtains the thread dump of all agents (including the master.)
      *
      * <p>
-     * Since this is for diagnostics, it has a built-in precautionary measure against hang slaves.
+     * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
      */
     public Map<String,Map<String,String>> getAllThreadDumps() throws IOException, InterruptedException {
         checkPermission(ADMINISTER);
@@ -3072,9 +3510,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 LOGGER.info("Failed to get thread dump for node " + c.getName() + ": " + e.getMessage());
             }
         }
-		if (toComputer() == null) {
-			future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
-		}
+        if (toComputer() == null) {
+            future.put("master", RemotingDiagnostics.getThreadDumpAsync(FilePath.localChannel));
+        }
 
         // if the result isn't available in 5 sec, ignore that.
         // this is a precaution against hang nodes
@@ -3148,20 +3586,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // looks good
-    }
-
-    /**
-     * Makes sure that the given name is good as a job name.
-     * @return trimmed name if valid; throws Failure if not
-     */
-    private String checkJobName(String name) throws Failure {
-        checkGoodName(name);
-        name = name.trim();
-        projectNamingStrategy.checkName(name);
-        if(getItem(name)!=null)
-            throw new Failure(Messages.Hudson_JobAlreadyExists(name));
-        // looks good
-        return name;
     }
 
     private static String toPrintableName(String name) {
@@ -3238,7 +3662,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Serves jar files for JNLP slave agents.
+     * Serves jar files for JNLP agents.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
         return new Slave.JnlpJar(fileName);
@@ -3255,6 +3679,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
+        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         servletContext.setAttribute("app", new HudsonIsLoading());
@@ -3427,9 +3852,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
                 }
             }
@@ -3692,25 +4115,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Makes sure that the given name is good as a job name.
-     */
-    public FormValidation doCheckJobName(@QueryParameter String value) {
-        // this method can be used to check if a file exists anywhere in the file system,
-        // so it should be protected.
-        checkPermission(Item.CREATE);
-
-        if(fixEmpty(value)==null)
-            return FormValidation.ok();
-
-        try {
-            checkJobName(value);
-            return FormValidation.ok();
-        } catch (Failure e) {
-            return FormValidation.error(e.getMessage());
-        }
-    }
-
-    /**
      * Checks if a top-level view with the given name exists and
      * make sure that the name is good as a view name.
      */
@@ -3850,6 +4254,26 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public List<ManagementLink> getManagementLinks() {
         return ManagementLink.all();
     }
+    
+    /**
+     * If set, a currently active setup wizard - e.g. installation
+     *
+     * @since 2.0
+     */
+    @Restricted(NoExternalUse.class)
+    public SetupWizard getSetupWizard() {
+        return setupWizard;
+    }
+    
+    /**
+     * Sets the setup wizard
+     *
+     * @since 2.0
+     */
+    @Restricted(NoExternalUse.class)
+    public void setSetupWizard(SetupWizard setupWizard) {
+        this.setupWizard = setupWizard;
+    }
 
     /**
      * Exposes the current user to <tt>/me</tt> URL.
@@ -3913,7 +4337,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
-                names.add(a.getUrlName());
+                String url = a.getUrlName();
+                if (url == null) continue;
+                names.add(url);
             }
         }
         return names;
@@ -4112,10 +4538,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Shortcut for {@code Jenkins.getInstance().lookup.get(type)}
+     * Shortcut for {@code Jenkins.getInstanceOrNull()?.lookup.get(type)}
      */
     public static @CheckForNull <T> T lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j != null ? j.lookup.get(type) : null;
     }
 
@@ -4160,14 +4586,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
-        if(ver==null)   ver="?";
+        if(ver==null)   ver = UNCOMPUTED_VERSION;
         VERSION = ver;
         context.setAttribute("version",ver);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals("?") || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;
@@ -4176,23 +4602,56 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * The version number before it is "computed" (by a call to computeVersion()).
+     * @since 2.0
+     */
+    @Restricted(NoExternalUse.class)
+    public static final String UNCOMPUTED_VERSION = "?";
+
+    /**
      * Version number of this Jenkins.
      */
-    public static String VERSION="?";
+    public static String VERSION = UNCOMPUTED_VERSION;
 
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
      */
-    public static VersionNumber getVersion() {
+    public @CheckForNull static VersionNumber getVersion() {
+        return toVersion(VERSION);
+    }
+
+    /**
+     * Get the stored version of Jenkins, as stored by
+     * {@link #doConfigSubmit(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)}.
+     * <p>
+     * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     * @since 2.0
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull static VersionNumber getStoredVersion() {
+        return toVersion(Jenkins.getActiveInstance().version);
+    }
+
+    /**
+     * Parses a version string into {@link VersionNumber}, or null if it's not parseable as a version number
+     * (such as when Jenkins is run with "mvn hudson-dev:run")
+     */
+    private static @CheckForNull VersionNumber toVersion(@CheckForNull String versionString) {
+        if (versionString == null) {
+            return null;
+        }
+
         try {
-            return new VersionNumber(VERSION);
+            return new VersionNumber(versionString);
         } catch (NumberFormatException e) {
             try {
                 // for non-released version of Jenkins, this looks like "1.345 (private-foobar), so try to approximate.
-                int idx = VERSION.indexOf(' ');
-                if (idx>0)
-                    return new VersionNumber(VERSION.substring(0,idx));
+                int idx = versionString.indexOf(' ');
+                if (idx > 0) {
+                    return new VersionNumber(versionString.substring(0,idx));
+                }
             } catch (NumberFormatException _) {
                 // fall through
             }
@@ -4263,7 +4722,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
 
     /**
-     * Automatically try to launch a slave when Jenkins is initialized or a new slave is created.
+     * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.
      */
     public static boolean AUTOMATIC_SLAVE_LAUNCH = true;
 
@@ -4321,16 +4780,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // double check that initialization order didn't do any harm
             assert PERMISSIONS != null;
             assert ADMINISTER != null;
-        } catch (RuntimeException e) {
-            // when loaded on a slave and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
+
+        } catch (RuntimeException | Error e) {
+            // when loaded on an agent and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
             // As we don't know where the first exception will go, let's also send this to logging so that
             // we have a known place to look at.
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
-        } catch (Error e) {
-            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
-            throw e;
+        }
+    }
+
+    private static final class JenkinsJVMAccess extends JenkinsJVM {
+        private static void _setJenkinsJVM(boolean jenkinsJVM) {
+            JenkinsJVM.setJenkinsJVM(jenkinsJVM);
         }
     }
 

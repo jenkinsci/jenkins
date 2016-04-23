@@ -7,6 +7,7 @@ import hudson.model.Slave;
 import hudson.remoting.Channel;
 import hudson.slaves.SlaveComputer;
 import jenkins.model.Jenkins;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -18,7 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Match the name against the slave name and route the incoming JNLP agent as {@link Slave}.
+ * Match the name against the agent name and route the incoming JNLP agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561  
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
-    public boolean handle(String nodeName, JnlpSlaveHandshake handshake) throws IOException, InterruptedException {
+    public boolean handle(String nodeName, JnlpServerHandshake handshake) throws IOException, InterruptedException {
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
 
         if (computer==null) {
@@ -43,9 +44,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
                 LOGGER.info("Disconnecting "+nodeName+" as we are reconnected from the current peer");
                 try {
                     computer.disconnect(new ConnectionFromCurrentPeer()).get(15, TimeUnit.SECONDS);
-                } catch (ExecutionException e) {
-                    throw new IOException("Failed to disconnect the current client",e);
-                } catch (TimeoutException e) {
+                } catch (ExecutionException | TimeoutException e) {
                     throw new IOException("Failed to disconnect the current client",e);
                 }
             } else {
@@ -55,7 +54,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         }
 
         if (!matchesSecret(nodeName,handshake)) {
-            handshake.error(nodeName + " can't be connected since the slave's secret does not match the handshake secret.");
+            handshake.error(nodeName + " can't be connected since the agent's secret does not match the handshake secret.");
             return true;
         }
 
@@ -75,7 +74,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
     
     /**
-     * Called after the client has connected to check if the slave secret matches the handshake secret
+     * Called after the client has connected to check if the agent secret matches the handshake secret
      *
      * @param nodeName
      * Name of the incoming JNLP agent. All {@link JnlpAgentReceiver} shares a single namespace
@@ -85,12 +84,12 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      * Encapsulation of the interaction with the incoming JNLP agent.
      *
      * @return
-     * true if the slave secret matches the handshake secret, false otherwise.
+     * true if the agent secret matches the handshake secret, false otherwise.
      */
-    private boolean matchesSecret(String nodeName, JnlpSlaveHandshake handshake){
+    private boolean matchesSecret(String nodeName, JnlpServerHandshake handshake){
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
         String handshakeSecret = handshake.getRequestProperty("Secret-Key");
-        // Verify that the slave secret matches the handshake secret.
+        // Verify that the agent secret matches the handshake secret.
         if (!computer.getJnlpMac().equals(handshakeSecret)) {
             LOGGER.log(Level.WARNING, "An attempt was made to connect as {0} from {1} with an incorrect secret", new Object[]{nodeName, handshake.getSocket()!=null?handshake.getSocket().getRemoteSocketAddress():null});
             return false;

@@ -624,7 +624,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * When the build has started running in an executor.
      *
-     * For example, if a build is scheduled 1pm, and stayed in the queue for 1 hour (say, no idle slaves),
+     * For example, if a build is scheduled 1pm, and stayed in the queue for 1 hour (say, no idle agents),
      * then this method returns 2pm, which is the time the job moved from the queue to the building state.
      *
      * @see #getTimestamp()
@@ -2276,9 +2276,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             throw new IllegalArgumentException(x);
         }
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return null;
-        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;

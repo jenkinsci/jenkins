@@ -5,6 +5,7 @@
  */
 package hudson.security.csrf;
 
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -95,7 +96,9 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         if (request instanceof HttpServletRequest) {
             String newCrumb = issueCrumb(request, salt);
             if ((newCrumb != null) && (crumb != null)) {
-                return newCrumb.equals(crumb);
+                // String.equals() is not constant-time, but this is
+                return MessageDigest.isEqual(newCrumb.getBytes(Charset.forName("US-ASCII")),
+                        crumb.getBytes(Charset.forName("US-ASCII")));
             }
         }
         return false;
@@ -121,7 +124,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
         
         public DescriptorImpl() {
-            super(CRUMB_SALT.get(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            super(CRUMB_SALT.get(), System.getProperty("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));
             load();
         }
 

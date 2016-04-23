@@ -1,0 +1,69 @@
+downloadService.post('hudson.tools.JDKInstaller',{
+"data": [
+    {
+      "name": "JDK 8",
+      "releases": [
+        {
+          "files": [
+            {
+              "filepath": "http://download.oracle2.com/otn-pub/java/jdk/8u66-b17/jdk-8u66-linux-i586.tar.gz",
+              "name": "jdk-8u66-linux-i586.tar.gz",
+              "title": "Linux x86"
+            },
+            {
+            "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u66-b17/jdk-8u66-solaris-x64.tar.gz",
+            "name": "jdk-8u66-solaris-x64.tar.gz",
+            "title": "Solaris x64"
+            },
+            {
+            "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u66-b18/jdk-8u66-windows-i586.exe",
+            "name": "jdk-8u66-windows-i586.exe",
+            "title": "Windows x86"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/terms/license",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-8u66-oth-JPR",
+          "title": "Java SE Development Kit 8u66"
+        },
+        {
+          "files": [
+            {
+              "filepath": "http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jdk-8u65-linux-arm32-vfp-hflt.tar.gz",
+              "name": "jdk-8u65-linux-arm32-vfp-hflt.tar.gz",
+              "title": "Linux ARM v6/v7 Hard Float ABI"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/terms/license",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-8u65-oth-JPR",
+          "title": "Java SE Development Kit 8u65"
+        }
+      ]
+    },
+    {
+      "name": "JDK 6",
+      "releases":       [
+        {
+          "files":           [
+            {
+              "filepath": "http://download.oracle.com/otn/java/jdk/6u45-b06/jdk-6u45-linux-i586.bin",
+              "name": "jdk-6u45-linux-i586.bin",
+              "title": "Linux x86"
+            },
+            {
+              "filepath": "http://download.oracle.com/otn/java/jdk/6u45-b06/jdk-6u45-linux-ia64.bin",
+              "name": "jdk-6u45-linux-ia64.bin",
+              "title": "Linux Intel Itanium"
+            }
+          ],
+          "licpath": "/technetwork/java/javase/downloads/java-se-archive-license-1382604.html",
+          "lictitle": "Oracle Binary Code License Agreement for Java SE",
+          "name": "jdk-6u45-oth-JPR",
+          "title": "Java SE Development Kit 6u45"
+        }
+      ],
+    }
+  ],
+  "version": 3
+}

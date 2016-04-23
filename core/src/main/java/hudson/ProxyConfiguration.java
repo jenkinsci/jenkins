@@ -47,7 +47,9 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -72,6 +74,12 @@ import org.kohsuke.stapler.QueryParameter;
  * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
+    /**
+     * Holds a default TCP connect timeout set on all connections returned from this class,
+     * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
+     */
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
+    
     public final String name;
     public final int port;
 
@@ -215,34 +223,39 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
-        ProxyConfiguration p = h!=null ? h.proxy : null;
-        if(p==null)
-            return url.openConnection();
-
-        URLConnection con = url.openConnection(p.createProxy(url.getHost()));
-        if(p.getUserName()!=null) {
-            // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(new Authenticator() {
-                @Override
-                public PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Jenkins.getInstance().proxy;
-                    return new PasswordAuthentication(p.getUserName(),
-                            p.getPassword().toCharArray());
-                }
-            });
+        final ProxyConfiguration p = get();
+        
+        URLConnection con;
+        if(p==null) {
+            con = url.openConnection();
+        } else {
+            con = url.openConnection(p.createProxy(url.getHost()));
+            if(p.getUserName()!=null) {
+                // Add an authenticator which provides the credentials for proxy authentication
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        if (getRequestorType()!=RequestorType.PROXY)    return null;
+                        return new PasswordAuthentication(p.getUserName(),
+                                p.getPassword().toCharArray());
+                    }
+                });
+            }
         }
-
-        for (URLConnectionDecorator d : URLConnectionDecorator.all())
-            d.decorate(con);
+        
+        if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
+            con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
+        }
+        
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+            decorate(con);
+        }
 
         return con;
     }
-    
+
     public static InputStream getInputStream(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
-        final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        final ProxyConfiguration p = get();
         if (p == null) 
             return new RetryableHttpStream(url);
 
@@ -262,6 +275,27 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         return is;
+    }
+
+    @CheckForNull
+    private static ProxyConfiguration get() {
+        if (JenkinsJVM.isJenkinsJVM()) {
+            return _get();
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static ProxyConfiguration _get() {
+        JenkinsJVM.checkJenkinsJVM();
+        // this code could be called between the JVM flag being set and theInstance initialized
+        Jenkins jenkins = Jenkins.getInstance();
+        return jenkins == null ? null : jenkins.proxy;
+    }
+
+    private static void decorate(URLConnection con) throws IOException {
+        for (URLConnectionDecorator d : URLConnectionDecorator.all())
+            d.decorate(con);
     }
 
     private static final XStream XSTREAM = new XStream2();
@@ -308,7 +342,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", new Integer(30 * 1000));
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
                 
                 HttpClient client = new HttpClient();
                 if (Util.fixEmptyAndTrim(name) != null) {

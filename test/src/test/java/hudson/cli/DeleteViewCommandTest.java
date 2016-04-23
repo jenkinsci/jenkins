@@ -67,9 +67,9 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Delete permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Delete permission"));
     }
 
     @Test public void deleteViewShouldFailWithoutViewReadPermission() throws IOException {
@@ -81,9 +81,9 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("aView")
                 ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Read permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Read permission"));
     }
 
     @Test public void deleteViewShouldSucceed() throws Exception {
@@ -106,9 +106,9 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("never_created")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: No view named never_created inside view Jenkins"));
     }
 
     // ViewGroup.canDelete()
@@ -119,10 +119,32 @@ public class DeleteViewCommandTest {
                 .invokeWithArgs("All")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
         assertThat(j.jenkins.getView("All"), notNullValue());
-        assertThat(result.stderr(), containsString("Jenkins does not allow to delete 'All' view"));
+        assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete 'All' view"));
+    }
+
+    @Test public void deleteViewShoudlFailIfViewNameIsEmpty() {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("")
+                ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: View name is empty"));
+    }
+
+    @Test public void deleteViewShoudlFailIfViewNameIsSpace() {
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs(" ")
+                ;
+
+        assertThat(result, failedWith(3));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("ERROR: No view named   inside view Jenkins"));
     }
 
     @Test public void deleteViewManyShouldSucceed() throws Exception {
@@ -141,7 +163,45 @@ public class DeleteViewCommandTest {
         assertThat(j.jenkins.getView("aView3"), nullValue());
     }
 
-    @Test public void deleteViewManyShouldFailIfAViewDoesNotExist() throws Exception {
+    @Test public void deleteViewManyShouldFailIfFirstViewDoesNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("never_created", "aView1", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfMiddleViewDoesNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "never_created", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfLastViewDoesNotExist() throws Exception {
 
         j.jenkins.addView(new ListView("aView1"));
         j.jenkins.addView(new ListView("aView2"));
@@ -150,13 +210,35 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "aView2", "never_created");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
         assertThat(j.jenkins.getView("never_created"), nullValue());
+    }
+
+    @Test public void deleteViewManyShouldFailIfMoreViewsDoNotExist() throws Exception {
+
+        j.jenkins.addView(new ListView("aView1"));
+        j.jenkins.addView(new ListView("aView2"));
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
+                .invokeWithArgs("aView1", "never_created1", "never_created2", "aView2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created1: No view named never_created1 inside view Jenkins"));
+        assertThat(result.stderr(), containsString("never_created2: No view named never_created2 inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(j.jenkins.getView("aView1"), nullValue());
+        assertThat(j.jenkins.getView("aView2"), nullValue());
+        assertThat(j.jenkins.getView("never_created1"), nullValue());
+        assertThat(j.jenkins.getView("never_created2"), nullValue());
     }
 
     @Test public void deleteViewManyShouldSucceedEvenAViewSpecifiedTwice() throws Exception {
@@ -182,9 +264,10 @@ public class DeleteViewCommandTest {
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("aView1", "aView2", "All");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("Jenkins does not allow to delete 'All' view"));
+        assertThat(result.stderr(), containsString("All: Jenkins does not allow to delete 'All' view"));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());

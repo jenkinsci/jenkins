@@ -88,14 +88,9 @@ public final class WorkUnitContext {
     }
 
     /**
-     * Called by the executor that executes a member {@link SubTask} that belongs to this task
-     * to create its {@link WorkUnit}.
+     * Called within the queue maintenance process to create a {@link WorkUnit} for the given {@link SubTask}
      */
     public WorkUnit createWorkUnit(SubTask execUnit) {
-        Executor executor = Executor.currentExecutor();
-        if (executor != null) { // TODO is it legal for this to be called by a non-executor thread?
-            future.addExecutor(executor);
-        }
         WorkUnit wu = new WorkUnit(this, execUnit);
         workUnits.add(wu);
         return wu;

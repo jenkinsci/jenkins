@@ -103,6 +103,10 @@ import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,10 +118,6 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.ServletHolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -283,12 +283,12 @@ public class QueueTest {
 
 
         Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
-        server.addHandler(handler);
+        server.setHandler(handler);
 
         server.start();
 
@@ -305,6 +305,7 @@ public class QueueTest {
         }
     }
 
+    @Issue("JENKINS-33467")
     @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
@@ -348,14 +349,13 @@ public class QueueTest {
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
         assertEquals("Build causes should have all items, even duplicates",
-                "Started by user SYSTEM\nStarted by an SCM change\n"
-                + "Started by user SYSTEM\nStarted by timer\n"
+                "Started by user SYSTEM\nStarted by user SYSTEM\n"
+                + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
+                + "Started by timer\nStarted by timer\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
-                + "Started by an SCM change\n"
-                + "Started by remote host 1.2.3.4 with note: test\n"
-                + "Started by remote host 1.2.3.4 with note: foo\n"
-                + "Started by an SCM change\nStarted by timer\n",
+                + "Started by remote host 1.2.3.4 with note: foo\n",
                 causes.toString());
 
         // View for build should group duplicates
@@ -369,6 +369,7 @@ public class QueueTest {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")
@@ -404,7 +405,7 @@ public class QueueTest {
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -581,7 +582,6 @@ public class QueueTest {
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -608,7 +608,6 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -742,12 +741,10 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       e.printStackTrace();
-                   } catch (ServletException e) {
+                   } catch (IOException | ServletException e) {
                        e.printStackTrace();
                    }
-                }
+            }
             }, 2, TimeUnit.SECONDS);
 
         try {

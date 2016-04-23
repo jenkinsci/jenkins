@@ -41,6 +41,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
@@ -109,15 +111,15 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String password) {
-        return  getApiTokenInsecure().equals(password);
+        String token = getApiTokenInsecure();
+        // String.equals isn't constant time, but this is
+        return MessageDigest.isEqual(password.getBytes(Charset.forName("US-ASCII")),
+                token.getBytes(Charset.forName("US-ASCII")));
     }
     
     private boolean hasPermissionToSeeToken() {
         final Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
-            return false; // Should not happen - we don't display UIs in this stage
-        }
-        
+
         // Administrators can do whatever they want
         if (SHOW_TOKEN_TO_ADMINS && jenkins.hasPermission(Jenkins.ADMINISTER)) {
             return true;

@@ -23,9 +23,9 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Node;
-import org.acegisecurity.AccessDeniedException;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 
@@ -43,8 +43,6 @@ public class DeleteNodeCommand extends CLICommand {
     @Argument(usage="Nodes name to delete", required=true, multiValued=true)
     private List<String> nodes;
 
-    private static final Logger LOGGER = Logger.getLogger(DeleteNodeCommand.class.getName());
-
     @Override
     public String getShortDescription() {
 
@@ -55,12 +53,7 @@ public class DeleteNodeCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getInstance();
-
-        if (jenkins == null) {
-            stderr.println("The Jenkins instance has not been started, or was already shut down!");
-            return -1;
-        }
+        final Jenkins jenkins = Jenkins.getActiveInstance();
 
         final HashSet<String> hs = new HashSet<String>();
         hs.addAll(nodes);
@@ -71,29 +64,26 @@ public class DeleteNodeCommand extends CLICommand {
             try {
                 node = jenkins.getNode(node_s);
 
-                if(node == null) {
-                    stderr.format("No such node '%s'\n", node_s);
-                    errorOccurred = true;
-                    continue;
+                if (node == null) {
+                    throw new IllegalArgumentException("No such node '" + node_s + "'");
                 }
 
                 node.toComputer().doDoDelete();
-            } catch (AccessDeniedException e) {
-                stderr.println(e.getMessage());
-                errorOccurred = true;
-                //noinspection UnnecessaryContinue
-                continue;
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during deletion of node '%s': %s",
-                        node == null ? "(null)" : node.toComputer().getName(),
-                        e.getMessage());
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = String.format(node_s + ": " + e.getMessage());
                 stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
                 errorOccurred = true;
-                //noinspection UnnecessaryContinue
                 continue;
             }
         }
-        return errorOccurred ? -1 : 0;
+
+        if (errorOccurred) {
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
+        return 0;
     }
 }

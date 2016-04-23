@@ -59,7 +59,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return fs.getName();
 
-                // TODO: for now, only support slaves that are already on ZFS.
+                // TODO: for now, only support agents that are already on ZFS.
                 throw new IOException("Not on ZFS");
             }
         });

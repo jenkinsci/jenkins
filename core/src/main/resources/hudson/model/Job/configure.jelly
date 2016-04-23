@@ -27,12 +27,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
-    <st:include page="sidepanel.jelly" />
-    <f:breadcrumb-config-outline />
+  <l:layout title="${it.displayName} Config" cssclass="main-panel-only" norefresh="true" permission="${it.EXTENDED_READ}">
     <l:main-panel>
+      <l:js src="jsbundles/config-scrollspy.js" />
+      <l:css src="jsbundles/config-scrollspy.css" />
+
       <div class="behavior-loading">${%LOADING}</div>
-      <f:form method="post" action="configSubmit" name="config">
+      <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
 
@@ -54,7 +55,7 @@ THE SOFTWARE.
           <f:bottomButtonBar>
             <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
             <f:submit value="${%Save}"/>
-            <f:apply />
+            <f:apply value="${%Apply}"/>
           </f:bottomButtonBar>
         </j:if>
       </f:form>

@@ -156,11 +156,7 @@ public abstract class Proc {
                                     unit.toString().toLowerCase(Locale.ENGLISH));
                             kill();
                         }
-                    } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (IOException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (RuntimeException x) {
+                    } catch (InterruptedException | IOException | RuntimeException x) {
                         x.printStackTrace(listener.error("Failed to join a process"));
                     }
                 }

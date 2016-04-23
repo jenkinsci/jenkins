@@ -23,7 +23,7 @@
  */
 package hudson.jobs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.net.URL;
 import java.text.MessageFormat;
@@ -37,6 +37,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import hudson.model.FreeStyleProject;
+import org.jvnet.hudson.test.MockFolder;
 
 /**
  * Tests the /createItem REST API.
@@ -82,4 +84,16 @@ public class CreateItemTest {
     private void deleteContentTypeHeader(WebRequest request) {
         request.setEncodingType(null);
     }
+
+    @Test
+    public void createWithFolderPaths() throws Exception {
+        rule.jenkins.setCrumbIssuer(null);
+        rule.createFolder("d1").createProject(FreeStyleProject.class, "p");
+        MockFolder d2 = rule.createFolder("d2");
+        rule.createWebClient().getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
+        assertNotNull(d2.getItem("p2"));
+        rule.createWebClient().getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
+        assertNotNull(d2.getItem("p3"));
+    }
+
 }
