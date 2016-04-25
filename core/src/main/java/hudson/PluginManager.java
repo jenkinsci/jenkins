@@ -36,6 +36,8 @@ import hudson.model.Failure;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
+import hudson.model.UpdateCenter.DownloadJob;
+import hudson.model.UpdateCenter.InstallationJob;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
@@ -1057,6 +1059,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         return new HttpRedirect("./sites");
     }
+    
+    /**
+     * Called to progress status beyond installing plugins, e.g. if 
+     * there were failures that prevented installation from naturally proceeding
+     */
+    @RequirePOST
+    @Restricted(DoNotUse.class) // WebOnly
+    public void doInstallPluginsDone() {
+        Jenkins j = Jenkins.getInstance();
+        j.checkPermission(Jenkins.ADMINISTER);
+        if(InstallState.INITIAL_PLUGINS_INSTALLING.equals(j.getInstallState())) {
+            Jenkins.getInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+        }
+    }
 
     /**
      * Performs the installation of the plugins.
@@ -1184,22 +1200,30 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             new Thread() {
                 @Override
                 public void run() {
+                    boolean failures = false;
                     INSTALLING: while (true) {
                         try {
-				updateCenter.persistInstallStatus();
+                            updateCenter.persistInstallStatus();
                             Thread.sleep(500);
+                            failures = false;
                             for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
                                 if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
                                     continue INSTALLING;
                                 }
+                                UpdateCenter.UpdateCenterJob job = jobFuture.get();
+                                if(job instanceof InstallationJob && ((InstallationJob)job).status instanceof DownloadJob.Failure) {
+                                    failures = true;
+                                }
                             }
-                        } catch (InterruptedException e) {
+                        } catch (Exception e) {
                             LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
                         }
                         break;
                     }
-			updateCenter.persistInstallStatus();
-                    jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+                    updateCenter.persistInstallStatus();
+                    if(!failures) {
+                        jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+                    }
                 }
             }.start();
         }

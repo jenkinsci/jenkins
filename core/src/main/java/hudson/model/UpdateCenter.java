@@ -136,6 +136,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 
     /**
+     * Read timeout when downloading plugins, defaults to 1 minute
+     */
+    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = Integer.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
+
+    /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
      * @since 1.483
      */
@@ -1004,6 +1009,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             URLConnection con = null;
             try {
                 con = connect(job,src);
+                //JENKINS-34174 - set timeout for downloads, may hang indefinitely
+                // particularly noticeable during 2.0 install when downloading
+                // many plugins
+                con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
+                
                 int total = con.getContentLength();
                 in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
