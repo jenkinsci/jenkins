@@ -215,7 +215,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				// add Jenkins version
 				if(translations.installWizard_jenkinsVersionTitle) { // wait until translations available
 					var $modalFooter = $container.find('.modal-footer');
-					if($modalFooter.length == 0) {
+					if($modalFooter.length === 0) {
 						$modalFooter = $('<div class="modal-footer"></div>').appendTo($container);
 					}
 					$modalFooter.prepend('<div class="jenkins-version">'+translations.installWizard_jenkinsVersionTitle+' '+$('body').attr('data-version')+'</div>');
