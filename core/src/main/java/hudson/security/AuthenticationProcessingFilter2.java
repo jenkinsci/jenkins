@@ -53,7 +53,7 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         if (targetUrl == null)
             return getDefaultTargetUrl();
 
-        if (Util.isAbsoluteUri(targetUrl))
+        if (Util.isAbsoluteOrSchemeRelativeUri(targetUrl))
             return "."; // avoid open redirect
 
         // URL returned from determineTargetUrl() is resolved against the context path,
