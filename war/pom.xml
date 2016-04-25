@@ -733,7 +733,7 @@ THE SOFTWARE.
                                 <goal>gulp</goal>
                             </goals>
                             <configuration>
-                                <arguments>bundle lint</arguments>
+                                <arguments>lint bundle</arguments>
                             </configuration>
                         </execution>
 
