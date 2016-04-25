@@ -54,5 +54,6 @@ builder.bundle('src/main/js/add-item.js')
 gulp.task('lint', function() {
     return gulp.src('./src/main/js/**/*.js')
         .pipe(jshint())
-        .pipe(jshint.reporter('default'));
+        .pipe(jshint.reporter('default'))
+        .pipe(jshint.reporter('fail'));
 });
