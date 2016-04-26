@@ -1602,8 +1602,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Completely replaces views
+     * Completely replaces views.
+     *
+     * <p>
+     * This operation is NOT provided as an atomic operation, but rather
+     * the sole purpose of this is to define a setter for this to help
+     * introspecting code, such as system-config-dsl plugin
      */
+    // even if we want to offer this atomic operation, CopyOnWriteArrayList
+    // offers no such operation
     public void setViews(Collection<View> views) throws IOException {
         BulkChange bc = new BulkChange(this);
         try {
