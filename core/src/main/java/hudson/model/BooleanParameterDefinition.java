@@ -73,7 +73,9 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         return new BooleanParameterValue(getName(), defaultValue, getDescription());
     }
 
-    @Extension @Symbol("booleanParam")
+    // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
+    // to avoid picking the Java reserved word "boolean" as the primary identifier
+    @Extension @Symbol({"booleanParam","boolean"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

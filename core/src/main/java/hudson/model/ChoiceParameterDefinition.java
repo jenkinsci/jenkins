@@ -92,7 +92,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return checkValue(new StringParameterValue(getName(), value, getDescription()));
     }
 
-    @Extension @Symbol("choiceParam")
+    @Extension @Symbol({"choice","choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
