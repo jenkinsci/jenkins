@@ -558,7 +558,7 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <id>signWar</id>
-                <phase>verify</phase>
+                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
