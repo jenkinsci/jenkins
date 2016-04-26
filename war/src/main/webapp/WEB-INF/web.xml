@@ -42,6 +42,7 @@ THE SOFTWARE.
       <param-name>diagnosticThreadName</param-name>
       <param-value>false</param-value>
     </init-param>
+    <async-supported>true</async-supported>
   </servlet>
 
   <context-param>
@@ -57,26 +58,32 @@ THE SOFTWARE.
   <filter>
     <filter-name>diagnostic-name-filter</filter-name>
     <filter-class>org.kohsuke.stapler.DiagnosticThreadNameFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>encoding-filter</filter-name>
     <filter-class>hudson.util.CharacterEncodingFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>compression-filter</filter-name>
     <filter-class>org.kohsuke.stapler.compression.CompressionFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>authentication-filter</filter-name>
     <filter-class>hudson.security.HudsonFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>csrf-filter</filter-name>
     <filter-class>hudson.security.csrf.CrumbFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>plugins-filter</filter-name>
     <filter-class>hudson.util.PluginServletFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
 
   <!--
