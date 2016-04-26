@@ -558,12 +558,16 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <id>signWar</id>
-                <phase>verify</phase>
+                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
                 <configuration>
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
+                  <arguments>
+                    <argument>-tsa</argument>
+                    <argument>http://timestamp.comodoca.com/rfc3161</argument>
+                  </arguments>
                 </configuration>
               </execution>
             </executions>
