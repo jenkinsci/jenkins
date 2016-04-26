@@ -224,6 +224,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
