@@ -227,6 +227,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -976,6 +977,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
             FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
             if (v.kind != FormValidation.Kind.OK) {
