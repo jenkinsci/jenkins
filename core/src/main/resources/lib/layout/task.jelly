@@ -179,7 +179,7 @@ THE SOFTWARE.
               </l:confirmationLink>
             </j:when>
             <j:otherwise>
-              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'postRequest_' + id + '(this)' : null)}">
+              <a href="${href}" class="task-icon-link" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
                 <j:choose>
                   <j:when test="${iconMetadata != null}">
                     <l:icon class="${iconMetadata.classSpec}" style="width: 24px; height: 24px; margin: 2px;" />

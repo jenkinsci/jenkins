@@ -840,6 +840,7 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
          */
+        @Restricted(NoExternalUse.class)
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();

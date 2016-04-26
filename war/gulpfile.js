@@ -39,3 +39,8 @@ builder.bundle('src/main/js/config-scrollspy.js')
     .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
     .less('src/main/js/config-scrollspy.less')
     .inDir('src/main/webapp/jsbundles');
+
+builder.bundle('src/main/js/add-item.js')
+    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+    .less('src/main/js/add-item.less')
+    .inDir('src/main/webapp/jsbundles');

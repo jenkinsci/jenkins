@@ -70,13 +70,7 @@ public class CliProtocol2 extends CliProtocol {
                     signer.initSign(instanceId);
                     signer.update(secret);
                     c.writeByteArray(signer.sign());
-                } catch (ClassNotFoundException e) {
-                    throw new Error(e);
-                } catch (IllegalAccessException e) {
-                    throw new Error(e);
-                } catch (InvocationTargetException e) {
-                    throw new Error(e);
-                } catch (NoSuchMethodException e) {
+                } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new Error(e);
                 }
 

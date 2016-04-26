@@ -51,6 +51,8 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
     /**
      * Create an empty "ok" response.
+     *
+     * @since 2.0
      */
     public static HttpResponse okJSON() {
         return new JSONObjectResponse();
@@ -59,6 +61,8 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     /**
      * Create a response containing the supplied "data".
      * @param data The data.
+     *
+     * @since 2.0
      */
     public static HttpResponse okJSON(@Nonnull JSONObject data) {
         return new JSONObjectResponse(data);
@@ -67,6 +71,8 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     /**
      * Create a response containing the supplied "data".
      * @param data The data.
+     *
+     * @since 2.0
      */
     public static HttpResponse okJSON(@Nonnull JSONArray data) {
         return new JSONObjectResponse(data);
@@ -75,6 +81,8 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     /**
      * Create a response containing the supplied "data".
      * @param data The data.
+     *
+     * @since 2.0
      */
     public static HttpResponse okJSON(@Nonnull Map<?,?> data) {
         return new JSONObjectResponse(data);
@@ -84,6 +92,8 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
          * Set the response as an error response.
          * @param message The error "message" set on the response.
          * @return {@link this} object.
+         *
+         * @since 2.0
          */
     public static HttpResponse errorJSON(@Nonnull String message) {
         return new JSONObjectResponse().error(message);

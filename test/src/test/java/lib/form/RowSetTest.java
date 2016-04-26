@@ -2,6 +2,7 @@ package lib.form;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.RootAction;
+import hudson.security.csrf.CrumbIssuer;
 import junit.framework.Assert;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -27,12 +28,12 @@ public class RowSetTest {
     public static class Subject implements RootAction {
         public void doSubmitTest1(StaplerRequest req) throws Exception {
             JSONObject json = req.getSubmittedForm();
-            json.remove("crumb");
+            json.remove(CrumbIssuer.DEFAULT_CRUMB_NAME);
             System.out.println(json);
 
             JSONObject expected = JSONObject.fromObject(
                     "{'a':'aaa','b':'bbb','c':{'c1':'ccc1','c2':'ccc2'},'d':{'d1':'d1','d2':'d2'}}");
-            Assert.assertEquals(json,expected);
+            Assert.assertEquals(expected, json);
         }
 
         @Override

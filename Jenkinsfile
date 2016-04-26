@@ -1,4 +1,3 @@
-#!groovy
 /*
  * This Jenkinsfile is intended to run on https://ci.jenkins-ci.org and may fail anywhere else.
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
@@ -16,7 +15,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
-String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
+String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'jenkins-2.0'
 
 timestampedNode('java') {
 
@@ -166,7 +165,7 @@ void withMavenEnv(List envVars = [], def body) {
     // Using the "tool" Workflow call automatically installs those tools on the
     // node.
     String mvntool = tool name: "mvn3.3.3", type: 'hudson.tasks.Maven$MavenInstallation'
-    String jdktool = tool name: "jdk7_80", type: 'hudson.model.JDK'
+    String jdktool = tool name: "jdk8_51", type: 'hudson.model.JDK'
 
     // Set JAVA_HOME, MAVEN_HOME and special PATH variables for the tools we're
     // using.

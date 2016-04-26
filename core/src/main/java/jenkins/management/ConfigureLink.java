@@ -36,7 +36,7 @@ public class ConfigureLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.png";
+        return "gear2.png";
     }
 
     public String getDisplayName() {

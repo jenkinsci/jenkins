@@ -47,8 +47,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
-
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -364,19 +362,68 @@ public class PluginManagerTest {
         JSONObject response = r.getJSON("pluginManager/plugins").getJSONObject();
 
         // Check that the basic API endpoint invocation works.
-        Assert.assertEquals("ok", response.getString("status"));
+        assertEquals("ok", response.getString("status"));
         JSONArray data = response.getJSONArray("data");
-        Assert.assertTrue(data.size() > 0);
+        assertTrue(data.size() > 0);
 
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
         JSONObject pluginInfo = data.getJSONObject(0);
-        Assert.assertTrue(pluginInfo.getString("name") != null);
-        Assert.assertTrue(pluginInfo.getString("title") != null);
-        Assert.assertTrue(pluginInfo.getString("dependencies") != null);
+        assertTrue(pluginInfo.getString("name") != null);
+        assertTrue(pluginInfo.getString("title") != null);
+        assertTrue(pluginInfo.getString("dependencies") != null);
     }
 
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
+    }
+
+    @Test public void uploadDependencyResolution() throws Exception {
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertNotNull(site.getData());
+
+        // neither of the following plugins should be installed
+        assertNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"),plugin);
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        r.submit(f);
+
+        assertTrue(r.jenkins.getUpdateCenter().getJobs().size() > 0);
+
+        // wait for all the download jobs to complete
+        boolean done = true;
+	boolean passed = true;
+        do {
+            Thread.sleep(100);
+	    done = true;
+    	    for(UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
+                if(job instanceof UpdateCenter.DownloadJob) {
+		    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob)job;
+		    assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
+                    done &= !(((j.status instanceof UpdateCenter.DownloadJob.Pending) || 
+			(j.status instanceof UpdateCenter.DownloadJob.Installing)));
+                }		
+            }
+        } while(!done);
+
+        // the files get renamed to .jpi
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/Parameterized-Remote-Trigger.jpi").exists() );
+        assertTrue( new File(r.jenkins.getRootDir(),"plugins/token-macro.jpi").exists() );
+
+        // now the other plugins should have been found as dependencies and downloaded
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
     }
 }

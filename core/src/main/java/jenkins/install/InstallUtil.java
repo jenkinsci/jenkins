@@ -45,6 +45,10 @@ import com.thoughtworks.xstream.XStream;
 import hudson.Functions;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.SecurityRealm;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
@@ -69,8 +73,23 @@ public class InstallUtil {
      * @return The type of "startup" currently under way in Jenkins.
      */
     public static InstallState getInstallState() {
+        // Support a simple state override. Useful for testing.
+        String stateOverride = System.getenv("jenkins.install.state");
+        if (stateOverride != null) {
+            try {
+                return InstallState.valueOf(stateOverride.toUpperCase());
+            } catch (RuntimeException e) {
+                throw new IllegalStateException("Unknown install state override specified on the commandline: '" + stateOverride + "'.");
+            }
+        }
+        
+        // Support a 3-state flag for running or disabling the setup wizard
+        String shouldRunFlag = System.getProperty("jenkins.install.runSetupWizard");
+        boolean shouldRun = "true".equalsIgnoreCase(shouldRunFlag);
+        boolean shouldNotRun = "false".equalsIgnoreCase(shouldRunFlag);
+        
         // install wizard will always run if environment specified
-        if (!Boolean.getBoolean("jenkins.install.runSetupWizard")) {
+        if (!shouldRun) {
             if (Functions.getIsUnitTest()) {
                 return InstallState.TEST;
             }
@@ -85,10 +104,25 @@ public class InstallUtil {
         // Neither the top level config or the lastExecVersionFile have a version
         // stored in them, which means it's a new install.
         if (lastRunVersion.compareTo(NEW_INSTALL_VERSION) == 0) {
+            Jenkins j = Jenkins.getInstance();
+            
+            // Allow for skipping
+            if(shouldNotRun) {
+                try {
+                    SetupWizard.completeSetup(j);
+                    UpgradeWizard.completeUpgrade(j);
+                    return j.getInstallState();
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             // Edge case: used Jenkins 1 but did not save the system config page,
             // the version is not persisted and returns 1.0, so try to check if
             // they actually did anything
-            if (!Jenkins.getInstance().getItemMap().isEmpty()) {
+            if (!j.getItemMap().isEmpty() || !mayBeJenkins2SecurityDefaults(j)) {
                 return InstallState.UPGRADE;
             }
             return InstallState.NEW;
@@ -105,6 +139,29 @@ public class InstallUtil {
             // Last running version was the same as "this" running version.
             return InstallState.RESTART;
         }
+    }
+
+    /**
+     * This could be an upgrade, detect a non-default security realm for the stupid case
+     * where someone installed 1.x and did not save global config or create any items...
+     */
+    private static boolean mayBeJenkins2SecurityDefaults(Jenkins j) {
+        if(j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // called before security set up first
+            return true;
+        }
+        if(j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) { // might be called after a restart, setup isn't complete
+            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
+            if(securityRealm.getAllUsers().size() == 1 && securityRealm.getUser(SetupWizard.initialSetupAdminUserName) != null) {
+                AuthorizationStrategy authStrategy = j.getAuthorizationStrategy();
+                if(authStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
+                    // must have been using 2.0+ to set this, as it wasn't present in 1.x and the default is true, to _allow_ anon read
+                    if(!((FullControlOnceLoggedInAuthorizationStrategy)authStrategy).isAllowAnonymousRead()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -173,15 +230,15 @@ public class InstallUtil {
     }
 
     static File getConfigFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), "config.xml");
+        return new File(Jenkins.getInstance().getRootDir(), "config.xml");
     }
 
     static File getLastExecVersionFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), ".last_exec_version");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.lastExecVersion");
     }
 
     static File getInstallingPluginsFile() {
-        return new File(Jenkins.getActiveInstance().getRootDir(), ".installing_plugins");
+        return new File(Jenkins.getInstance().getRootDir(), "jenkins.install.InstallUtil.installingPlugins");
     }
 
     private static String getCurrentExecVersion() {

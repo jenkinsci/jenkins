@@ -1,0 +1,53 @@
+<!--
+  This is used to create the first user.
+-->
+<?jelly escape-by-default='true'?>
+<l:html norefresh="true" title="${it.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:main-panel>
+    <style type="text/css">
+      @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css);
+      @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,500,900,700);
+      
+      #main-panel {
+          margin: 0;
+          padding: 0;
+      }
+      tr td {
+          padding-bottom: 2px;
+      }
+      body {
+          padding: 20px 20px 20px 100px;
+          font-family: 'roboto';
+      }
+      form > div {
+          margin: 0 !important;
+      }
+      h1 {
+          font-family: 'roboto', sans-serif;
+          font-size: 48px;
+          margin-top: 30px;
+          font-weight: 500;
+      }
+      h1 img {
+          position: absolute;
+          right: -80px;
+          top: 38px;
+      }
+      tr td, input {
+          line-height: 25px;
+          margin-bottom: 6px;
+      }
+      input[type=text], input[type=password] {
+          border: 1px solid #ddd;
+          border-radius: 2px;
+          padding: 1px 8px;
+      }
+    </style>
+    <form action="${rootURL}/setupWizard/createAdminUser" method="post">
+      <local:_entryForm it="${app.securityRealm}" host="${app.securityRealm}" title="${%Create First Admin User}" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
+      <script>
+        $('username').focus();
+      </script>
+    </form>
+  </l:main-panel>
+</l:html>

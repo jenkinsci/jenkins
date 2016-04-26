@@ -46,7 +46,7 @@ exports.pluginNames = function() {
  * @returns The subset of plugins (subset of the plugin list) that are recommended by default.
  */
 exports.recommendedPluginNames = function() {
-    return plugins.recommendedPlugins;
+    return plugins.recommendedPlugins.slice(); // copy this
 };
 
 /**
@@ -172,6 +172,20 @@ exports.isRestartRequired = function(handler) {
 		}
 	});
 };
+
+/**
+ * Skip failed plugins, continue
+ */
+exports.installPluginsDone = function(handler) {
+	jenkins.post('/pluginManager/installPluginsDone', {}, function() {
+		handler();
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, message: errorThrown });
+		}
+	});
+}
 
 /**
  * Restart Jenkins

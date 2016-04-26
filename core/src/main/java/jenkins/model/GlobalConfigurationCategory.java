@@ -74,11 +74,12 @@ public abstract class GlobalConfigurationCategory implements ExtensionPoint, Mod
     public static class Security extends GlobalConfigurationCategory {
         @Override
         public String getShortDescription() {
-            return Messages.GlobalSecurityConfiguration_Description();
+            return hudson.security.Messages.GlobalSecurityConfiguration_Description();
         }
 
         public String getDisplayName() {
             return hudson.security.Messages.GlobalSecurityConfiguration_DisplayName();
         }
     }
+
 }

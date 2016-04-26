@@ -34,7 +34,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.tools.ToolConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.stapler.QueryParameter;
@@ -87,6 +90,12 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      */
     public List<ToolPropertyDescriptor> getPropertyDescriptors() {
         return PropertyDescriptor.for_(ToolProperty.all(),clazz);
+    }
+
+
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
     /**

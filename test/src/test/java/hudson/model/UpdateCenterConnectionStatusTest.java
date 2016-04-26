@@ -99,7 +99,7 @@ public class UpdateCenterConnectionStatusTest {
         job.run();
 
         Assert.assertEquals(ConnectionStatus.FAILED, job.connectionStates.get(ConnectionStatus.INTERNET));
-        Assert.assertEquals(ConnectionStatus.UNCHECKED, job.connectionStates.get(ConnectionStatus.UPDATE_SITE));
+        Assert.assertEquals(ConnectionStatus.OK, job.connectionStates.get(ConnectionStatus.UPDATE_SITE));
     }
 
     @Test

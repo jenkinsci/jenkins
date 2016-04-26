@@ -75,12 +75,9 @@ public class FileParameterDefinition extends ParameterDefinition {
         FileItem src;
         try {
             src = req.getFileItem( getName() );
-        } catch (ServletException e) {
+        } catch (ServletException | IOException e) {
             // Not sure what to do here. We might want to raise this
             // but that would involve changing the throws for this call
-            return null;
-        } catch (IOException e) {
-            // ditto above
             return null;
         }
         if ( src == null ) {

@@ -114,13 +114,11 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
 
     @Initializer(fatal=false,after=InitMilestone.PLUGINS_STARTED,before=InitMilestone.EXTENSIONS_AUGMENTED)
     // as early as possible, but this needs to be late enough that the ConfidentialStore is available
-    public static void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
-        RekeySecretAdminMonitor m = new RekeySecretAdminMonitor();  // throw-away instance
-
-        FileBoolean flag = m.scanOnBoot;
+    public void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
+        FileBoolean flag = scanOnBoot;
         if (flag.isOn()) {
             flag.off();
-            m.start(false).join();
+            start(false).join();
             // block the boot until the rewrite process is complete
             // don't let the failure in RekeyThread block Jenkins boot.
         }

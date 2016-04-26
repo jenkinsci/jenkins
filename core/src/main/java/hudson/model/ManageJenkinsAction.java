@@ -36,7 +36,7 @@ import org.jenkinsci.Symbol;
 public class ManageJenkinsAction implements RootAction {
     public String getIconFileName() {
         if (Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
-            return "setting.png";
+            return "gear2.png";
         else
             return null;
     }

@@ -88,6 +88,11 @@ body {
   margin-left: 320px;
 }
 
+body#jenkins.j-hide-left #main-panel {
+  max-width:70em;
+  margin:0 auto;
+}
+
 @media (max-width: 750px) {
   #side-panel {
     width: 100%;
@@ -157,8 +162,21 @@ body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
@@ -355,7 +373,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;  
 }
 
 pre.console {
@@ -567,7 +585,7 @@ div.pane-header {
 }
 
 div.pane-header .collapse {
-	float: right;
+  float: right;
   margin-left: 3px;
 }
 
@@ -1181,14 +1199,25 @@ table.parameters > tbody:hover {
 }
 .build-row-cell .build-badge {
   display: inline-block;
-  padding: 2px;
-  width: 70%;
   text-align: right;
+  width: 70%;
+  padding: 2px 0;
 }
-.build-row-cell .build-badge span:after {
-    content: " ";
-    font-size: 0%;
+.build-row-cell .build-badge > span {
+  display: inline-block;
+  max-width: 256px;
+  padding: 0 1px;
+  overflow: hidden;
 }
+.build-row-cell .build-badge > span + span {
+  margin: 0 0 0 2px !important;
+}
+@media (min-width: 1170px) {
+  .build-row-cell .build-badge > span {
+    max-width: 296px;
+  }
+}
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
@@ -1499,7 +1528,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-	color: inherit;
+  color: inherit;
 }
 
 DIV.yahooTree td {
@@ -1747,7 +1776,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    // TODO does not work: font-size: 70%;
+    font-size: 70%;
 }
 
 .logrecord-metadata-new {
@@ -1760,38 +1789,41 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
-	border-collapse: collapse;
+  border: 1px #BBBBBB solid;
+  border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
-	font-weight: bold;
+  background: #f0f0f0;
+  font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  padding: 3px;
 }
 td#matrix-title {
-	padding: 3px;
+  padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
-	font-weight: bold;
-	background: #f0f0f0;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  font-weight: bold;
+  background: #f0f0f0;
+  padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
-	text-align: center;
+  border: 1px #BBBBBB solid;
+  text-align: center;
 }
 
 /* ========================= legend.jelly ================== */
 table#legend-table td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 /* ========================= Button styles ================= */
-
+.btn-box {
+  display:block; 
+  margin-top:2em
+}
 #disable-project {
     margin-top: 6px;
 }
@@ -1815,7 +1847,7 @@ table#legend-table td {
     border-style: none;
     border-color: transparent;
 }
-
+#jenkins .yui-button .btn,
 #jenkins .yui-button button {
   font-size: 12px;
   padding: 3px 20px;
@@ -1834,6 +1866,7 @@ table#legend-table td {
     padding-right: 35px;
 }
 
+#jenkins .yui-button .btn:hover,
 #jenkins .yui-button button:hover,
 #jenkins .yui-button .hover
 {
@@ -1841,6 +1874,7 @@ table#legend-table td {
     border: 1px solid #c0c0c0;
 }
 
+#jenkins .yui-button .btn:active,
 #jenkins .yui-button button:active,
 #jenkins .yui-button .active {
     background-color: #bbb;
@@ -1848,6 +1882,7 @@ table#legend-table td {
     border: 1px solid #bbb;
 }
 
+#jenkins .yui-button .btn.disabled,
 #jenkins .yui-button button[disabled],
 #jenkins .yui-button button[disabled]:hover,
 #jenkins .yui-button button[disabled]:active,
@@ -1858,19 +1893,20 @@ table#legend-table td {
 }
 
 /* Color overrides */
+#jenkins .yui-button.primary .btn,
 #jenkins .yui-button.primary button {
     background-color: #4b758b;
     color: #eee;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:hover,
 #jenkins .yui-button.primary button:hover,
 #jenkins .yui-button.primary .hover
 {
     background-color: #3f6275;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:active,
 #jenkins .yui-button.primary button:active,
 #jenkins .yui-button.primary .active
 {
@@ -1940,5 +1976,34 @@ body.main-panel-only #side-panel {
 }
 body.main-panel-only #main-panel {
     margin: 0 auto !important;
-    max-width: 75em !important;
+    min-width: 100%;
+    padding: 2em 2em;
+    display: inline-block;
+    width: auto;
+}
+@media screen and (min-width: 1024px) {
+    body.main-panel-only #main-panel {
+        padding: 2em 10%;
+    }
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xlg {
+    width: 48px;
+    height: 48px;
 }

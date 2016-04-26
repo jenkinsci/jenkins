@@ -61,7 +61,8 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
         return Collections.unmodifiableList(problems);
     }
 
-    private void verify() {
+    @Initializer(after=EXTENSIONS_AUGMENTED)
+    public void verify() {
         Jenkins h = Jenkins.getInstance();
         for (Descriptor d : h.getExtensionList(Descriptor.class)) {
             PluginWrapper p = h.getPluginManager().whichPlugin(d.getClass());
@@ -80,11 +81,6 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
                 problems.add(d);
             }
         }
-    }
-
-    @Initializer(after=EXTENSIONS_AUGMENTED)
-    public static void verifyId() {
-        AdministrativeMonitor.all().get(NullIdDescriptorMonitor.class).verify();
     }
 
     private static final Logger LOGGER = Logger.getLogger(NullIdDescriptorMonitor.class.getName());

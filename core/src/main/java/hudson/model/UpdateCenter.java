@@ -53,7 +53,6 @@ import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
-import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
@@ -78,6 +77,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpRetryException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -134,6 +135,11 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+
+    /**
+     * Read timeout when downloading plugins, defaults to 1 minute
+     */
+    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = Integer.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
@@ -290,6 +296,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doConnectionStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
@@ -338,6 +345,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doIncompleteInstallStatus() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
         Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
         if(jobs == null) {
@@ -354,6 +362,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * us to support install resume if Jenkins is restarted while plugins are
      * being installed.
      */
+    @Restricted(NoExternalUse.class)
     public synchronized void persistInstallStatus() {
         List<UpdateCenterJob> jobs = getJobs();
 
@@ -386,6 +395,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Restricted(DoNotUse.class)
     public HttpResponse doInstallStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         try {
             String correlationId = request.getParameter("correlationId");
             Map<String,Object> response = new HashMap<>();
@@ -1000,6 +1010,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             URLConnection con = null;
             try {
                 con = connect(job,src);
+                //JENKINS-34174 - set timeout for downloads, may hang indefinitely
+                // particularly noticeable during 2.0 install when downloading
+                // many plugins
+                con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
+                
                 int total = con.getContentLength();
                 in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
@@ -1133,7 +1148,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                Util.copyStreamAndClose(ProxyConfiguration.open(url).getInputStream(),new NullOutputStream());
+                URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
+
+                if(connection instanceof HttpURLConnection) {
+                    int responseCode = ((HttpURLConnection)connection).getResponseCode();
+                    if(HttpURLConnection.HTTP_OK != responseCode) {
+                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
+                    }
+                } else {
+                    Util.copyStreamAndClose(connection.getInputStream(),new NullOutputStream());
+                }
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
@@ -1316,22 +1340,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return;
             }
             LOGGER.fine("Doing a connectivity check");
+            Future<?> internetCheck = null;
             try {
-                String connectionCheckUrl = site.getConnectionCheckUrl();
+                final String connectionCheckUrl = site.getConnectionCheckUrl();
                 if (connectionCheckUrl!=null) {
                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.CHECKING);
                     statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
-                    try {
-                        config.checkConnection(this, connectionCheckUrl);
-                    } catch (Exception e) {
-                        if(e.getMessage().contains("Connection timed out")) {
-                            // Google can't be down, so this is probably a proxy issue
-                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                            statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
-                            return;
+                    // Run the internet check in parallel
+                    internetCheck = updateService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                config.checkConnection(ConnectionCheckJob.this, connectionCheckUrl);
+                            } catch (Exception e) {
+                                if(e.getMessage().contains("Connection timed out")) {
+                                    // Google can't be down, so this is probably a proxy issue
+                                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                                    return;
+                                }
+                            }
+                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
-                    }
-                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
+                    });
                 }
 
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
@@ -1350,6 +1381,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Functions.printThrowable(e));
                 error = e;
+            }
+            
+            if(internetCheck != null) {
+                try {
+                    // Wait for internet check to complete
+                    internetCheck.get();
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error completing internet connectivity check: " + e.getMessage(), e);
+                }
             }
         }
 
@@ -1887,18 +1927,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
-        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
-            LOGGER.log(INFO, "This is a new Jenkins instance. The Plugin Install Wizard will be launched.");
-            // Force update of the default site file (updates/default.json).
-            updateDefaultSite();
-        }
     }
 
-    private static void updateDefaultSite() {
+    @Restricted(NoExternalUse.class)
+    public static void updateDefaultSite() {
         try {
             // Need to do the following because the plugin manager will attempt to access
             // $JENKINS_HOME/updates/default.json. Needs to be up to date.
-            Jenkins.getActiveInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+            Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
         } catch (Exception e) {
             LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
         }

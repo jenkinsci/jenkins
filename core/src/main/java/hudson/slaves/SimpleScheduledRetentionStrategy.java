@@ -187,8 +187,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                                         new Object[]{c.getName()});
                                 c.setAcceptingTasks(true);
                             }
-                        } catch (InterruptedException e) {
-                        } catch (ExecutionException e) {
+                        } catch (InterruptedException | ExecutionException e) {
                         }
                     }
                 });

@@ -452,10 +452,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             NodeMonitor nm = d.clazz.newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (InstantiationException e) {
-            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
-        } catch (IllegalAccessException e) {
-            LOGGER.log(Level.SEVERE, "Failed to instanciate "+d.clazz,e);
+        } catch (InstantiationException | IllegalAccessException e) {
+            LOGGER.log(Level.SEVERE, "Failed to instantiate "+d.clazz,e);
         }
         return null;
     }

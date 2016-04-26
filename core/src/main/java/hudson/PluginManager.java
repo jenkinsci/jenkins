@@ -36,6 +36,8 @@ import hudson.model.Failure;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
+import hudson.model.UpdateCenter.DownloadJob;
+import hudson.model.UpdateCenter.InstallationJob;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
@@ -62,6 +64,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.bytecode.Transformer;
@@ -994,6 +997,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doPlugins() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         JSONArray response = new JSONArray();
         Map<String,JSONObject> allPlugins = new HashMap<>();
         for (PluginWrapper plugin : plugins) {
@@ -1006,6 +1010,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             pluginInfo.put("bundled", plugin.isBundled);
             pluginInfo.put("deleted", plugin.isDeleted());
             pluginInfo.put("downgradable", plugin.isDowngradable());
+            pluginInfo.put("website", plugin.getUrl());
             List<Dependency> dependencies = plugin.getDependencies();
             if (dependencies != null && !dependencies.isEmpty()) {
                 Map<String, String> dependencyMap = new HashMap<>();
@@ -1030,6 +1035,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 pluginInfo.put("excerpt", plugin.excerpt);
                 pluginInfo.put("site", site.getId());
                 pluginInfo.put("dependencies", plugin.dependencies);
+                pluginInfo.put("website", plugin.wiki);
                 response.add(pluginInfo);
             }
         }
@@ -1054,11 +1060,26 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         return new HttpRedirect("./sites");
     }
+    
+    /**
+     * Called to progress status beyond installing plugins, e.g. if 
+     * there were failures that prevented installation from naturally proceeding
+     */
+    @RequirePOST
+    @Restricted(DoNotUse.class) // WebOnly
+    public void doInstallPluginsDone() {
+        Jenkins j = Jenkins.getInstance();
+        j.checkPermission(Jenkins.ADMINISTER);
+        if(InstallState.INITIAL_PLUGINS_INSTALLING.equals(j.getInstallState())) {
+            Jenkins.getInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+        }
+    }
 
     /**
      * Performs the installation of the plugins.
      */
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Set<String> plugins = new LinkedHashSet<>();
 
         Enumeration<String> en = req.getParameterNames();
@@ -1087,6 +1108,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     @Restricted(DoNotUse.class) // WebOnly
     public HttpResponse doInstallPlugins(StaplerRequest req) throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         String payload = IOUtils.toString(req.getInputStream(), req.getCharacterEncoding());
         JSONObject request = JSONObject.fromObject(payload);
         JSONArray pluginListJSON = request.getJSONArray("plugins");
@@ -1119,6 +1141,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * @return The install job list.
      * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {
         return install(plugins, dynamicLoad, null);
     }
@@ -1178,23 +1201,30 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             new Thread() {
                 @Override
                 public void run() {
+                    boolean failures = false;
                     INSTALLING: while (true) {
                         try {
-				updateCenter.persistInstallStatus();
+                            updateCenter.persistInstallStatus();
                             Thread.sleep(500);
+                            failures = false;
                             for (Future<UpdateCenter.UpdateCenterJob> jobFuture : installJobs) {
                                 if(!jobFuture.isDone() && !jobFuture.isCancelled()) {
                                     continue INSTALLING;
                                 }
+                                UpdateCenter.UpdateCenterJob job = jobFuture.get();
+                                if(job instanceof InstallationJob && ((InstallationJob)job).status instanceof DownloadJob.Failure) {
+                                    failures = true;
+                                }
                             }
-                        } catch (InterruptedException e) {
+                        } catch (Exception e) {
                             LOGGER.log(WARNING, "Unexpected error while waiting for initial plugin set to install.", e);
                         }
                         break;
                     }
-			updateCenter.persistInstallStatus();
-                    jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
-                    InstallUtil.saveLastExecVersion();
+                    updateCenter.persistInstallStatus();
+                    if(!failures) {
+                        jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+                    }
                 }
             }.start();
         }
@@ -1300,12 +1330,33 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             pluginUploaded = true;
 
+            JSONArray dependencies = new JSONArray();
+            try {
+                Manifest m = new JarFile(t).getManifest();
+                String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
+
+                if (StringUtils.isNotBlank(deps)) {
+                    // now we get to parse it!
+                    String[] plugins = deps.split(",");
+                    for (String p : plugins) {
+                        // should have name:version[;resolution:=optional]
+                        String[] attrs = p.split("[:;]");
+                        dependencies.add(new JSONObject()
+                                .element("name", attrs[0])
+                                .element("version", attrs[1])
+                                .element("optional", p.contains("resolution:=optional")));
+                    }
+                }
+            } catch(IOException e) {
+                LOGGER.log(WARNING, "Unable to setup dependency list for plugin upload", e);
+            }
+
             // Now create a dummy plugin that we can dynamically load (the InstallationJob will force a restart if one is needed):
             JSONObject cfg = new JSONObject().
                     element("name", baseName).
                     element("version", "0"). // unused but mandatory
                     element("url", t.toURI().toString()).
-                    element("dependencies", new JSONArray());
+                    element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("../updateCenter");
         } catch (IOException e) {

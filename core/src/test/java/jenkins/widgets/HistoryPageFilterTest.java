@@ -59,7 +59,7 @@ public class HistoryPageFilterTest {
     }
 
     /**
-     * Latest/top page where total number of items < the max page size.
+     * Latest/top page where total number of items less than the max page size.
      */
     @Test
     public void test_latest_partial_page() throws IOException {
@@ -88,7 +88,7 @@ public class HistoryPageFilterTest {
     }
 
     /**
-     * Latest/top page where total number of items > the max page size.
+     * Latest/top page where total number of items greater than the max page size.
      */
     @Test
     public void test_latest_longer_list() throws IOException {

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
@@ -30,8 +31,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.TestExtension;
 
 import java.util.List;
 
@@ -57,6 +60,30 @@ public class ManagementLinkTest {
             if (i==anchors.size())  return; // done
 
             ((HtmlAnchor)anchors.get(i)).click();
+        }
+    }
+
+    @Test @Issue("JENKINS-33683")
+    public void invisibleLinks() throws Exception {
+        assertEquals(null, j.jenkins.getDynamic("and_fail_trying"));
+    }
+
+    @TestExtension // Intentionally hooked in all tests
+    public static final class InvisibleManagementLink extends ManagementLink {
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return null;
         }
     }
 }

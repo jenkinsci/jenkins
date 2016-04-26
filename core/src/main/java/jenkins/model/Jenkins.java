@@ -191,6 +191,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
@@ -343,7 +345,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private transient InstallState installState = InstallState.NEW;
+    private transient InstallState installState = InstallState.UNKNOWN;
     
     /**
      * If we're in the process of an initial setup, 
@@ -811,11 +813,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 throw new IllegalStateException("second instance");
             theInstance = this;
 
-            installState = InstallUtil.getInstallState();
-            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
-                InstallUtil.saveLastExecVersion();
-            }
-            
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
                 workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
@@ -876,6 +873,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(KILL_AFTER_LOAD)
                 System.exit(0);
 
+            installState = InstallUtil.getInstallState();
+            if (installState == InstallState.RESTART || installState == InstallState.DOWNGRADE) {
+                InstallUtil.saveLastExecVersion();
+            }
+            
             if(!installState.isSetupComplete()) {
                 // Start immediately with the setup wizard for new installs
                 setupWizard = new SetupWizard(this);
@@ -1022,6 +1024,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             @Override
             protected void onInitMilestoneAttained(InitMilestone milestone) {
                 initLevel = milestone;
+                if (milestone==PLUGINS_PREPARED) {
+                    // set up Guice to enable injection as early as possible
+                    // before this milestone, ExtensionList.ensureLoaded() won't actually try to locate instances
+                    ExtensionList.lookup(ExtensionFinder.class).getComponents();
+                }
             }
         }.run(reactor);
     }
@@ -3347,7 +3354,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return a;
         }
         for (Action a : getManagementLinks())
-            if(a.getUrlName().equals(token))
+            if (Objects.equals(a.getUrlName(), token))
                 return a;
         return null;
     }
@@ -3372,8 +3379,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             buildsDir = json.getString("rawBuildsDir");
 
             systemMessage = Util.nullify(req.getParameter("system_message"));
-
-            setJDKs(req.bindJSONToList(JDK.class, json.get("jdks")));
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
@@ -3602,20 +3607,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // looks good
     }
 
-    /**
-     * Makes sure that the given name is good as a job name.
-     * @return trimmed name if valid; throws Failure if not
-     */
-    private String checkJobName(String name) throws Failure {
-        checkGoodName(name);
-        name = name.trim();
-        projectNamingStrategy.checkName(name);
-        if(getItem(name)!=null)
-            throw new Failure(Messages.Hudson_JobAlreadyExists(name));
-        // looks good
-        return name;
-    }
-
     private static String toPrintableName(String name) {
         StringBuilder printableName = new StringBuilder();
         for( int i=0; i<name.length(); i++ ) {
@@ -3707,6 +3698,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
+        LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
         servletContext.setAttribute("app", new HudsonIsLoading());
@@ -3879,9 +3871,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
                 }
             }
@@ -4144,25 +4134,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Makes sure that the given name is good as a job name.
-     */
-    public FormValidation doCheckJobName(@QueryParameter String value) {
-        // this method can be used to check if a file exists anywhere in the file system,
-        // so it should be protected.
-        checkPermission(Item.CREATE);
-
-        if(fixEmpty(value)==null)
-            return FormValidation.ok();
-
-        try {
-            checkJobName(value);
-            return FormValidation.ok();
-        } catch (Failure e) {
-            return FormValidation.error(e.getMessage());
-        }
-    }
-
-    /**
      * Checks if a top-level view with the given name exists and
      * make sure that the name is good as a view name.
      */
@@ -4305,14 +4276,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     
     /**
      * If set, a currently active setup wizard - e.g. installation
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public SetupWizard getSetupWizard() {
         return setupWizard;
     }
     
     /**
      * Sets the setup wizard
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public void setSetupWizard(SetupWizard setupWizard) {
         this.setupWizard = setupWizard;
     }
@@ -4379,7 +4356,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
-                names.add(a.getUrlName());
+                String url = a.getUrlName();
+                if (url == null) continue;
+                names.add(url);
             }
         }
         return names;
@@ -4643,8 +4622,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The version number before it is "computed" (by a call to computeVersion()).
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
     /**
@@ -4666,8 +4646,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
         return toVersion(Jenkins.getActiveInstance().version);
     }
@@ -4818,14 +4799,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // double check that initialization order didn't do any harm
             assert PERMISSIONS != null;
             assert ADMINISTER != null;
-        } catch (RuntimeException e) {
+
+        } catch (RuntimeException | Error e) {
             // when loaded on an agent and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
             // As we don't know where the first exception will go, let's also send this to logging so that
             // we have a known place to look at.
-            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
-            throw e;
-        } catch (Error e) {
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
         }

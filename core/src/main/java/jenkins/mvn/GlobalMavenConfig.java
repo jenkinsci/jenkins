@@ -2,6 +2,8 @@ package jenkins.mvn;
 
 import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
+import jenkins.tools.ToolConfigurationCategory;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
@@ -15,6 +17,11 @@ public class GlobalMavenConfig extends GlobalConfiguration {
 
     public GlobalMavenConfig() {
         load();
+    }
+
+    @Override
+    public ToolConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
     }
 
     @Override

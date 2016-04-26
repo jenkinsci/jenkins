@@ -26,9 +26,7 @@ public class GlobalPluginConfiguration  extends GlobalConfiguration {
             for( JSONObject o : StructuredForm.toList(json, "plugin"))
                 Jenkins.getInstance().pluginManager.getPlugin(o.getString("name")).getPlugin().configure(req, o);
             return true;
-        } catch (IOException e) {
-            throw new FormException(e,"plugin");
-        } catch (ServletException e) {
+        } catch (IOException | ServletException e) {
             throw new FormException(e,"plugin");
         }
     }

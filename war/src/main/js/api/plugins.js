@@ -46,11 +46,11 @@ exports.availablePlugins = [
         "category":"Build Features",
         "description":"Add general purpose features to your jobs",
         "plugins": [
-            { "name": "ansicolor" },
             { "name": "build-name-setter" },
             { "name": "build-timeout" },
             { "name": "config-file-provider" },
             { "name": "credentials-binding" },
+            { "name": "embeddable-build-status" },
             { "name": "rebuild" },
             { "name": "ssh-agent" },
             { "name": "throttle-concurrents" },
@@ -74,7 +74,6 @@ exports.availablePlugins = [
             { "name": "cobertura" },
             { "name": "htmlpublisher" },
             { "name": "junit" },
-            { "name": "sonar" },
             { "name": "warnings" },
             { "name": "xunit" }
         ]
@@ -134,7 +133,7 @@ exports.availablePlugins = [
             { "name": "emailext-template" },
             { "name": "mailer" },
             { "name": "publish-over-ssh" },
-            // { "name": "slack" }, // JENKINS-33571
+            // { "name": "slack" }, // JENKINS-33571, https://github.com/jenkinsci/slack-plugin/issues/191
             { "name": "ssh" }
         ]
     }

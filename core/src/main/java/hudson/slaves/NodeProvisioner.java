@@ -556,10 +556,9 @@ public class NodeProvisioner {
                         if (node != null) {
                             additionalPlannedCapacity += node.getNumExecutors();
                         }
-                    } catch (InterruptedException e) {
-                        // should never happen as we were told the future was done
-                    } catch (ExecutionException e) {
-                        // ignore, this will be caught by others later
+                    } catch (InterruptedException | ExecutionException e) {
+                        // InterruptedException: should never happen as we were told the future was done
+                        // ExecutionException: ignore, this will be caught by others later
                     }
                 } else {
                     additionalPlannedCapacity += f.numExecutors;

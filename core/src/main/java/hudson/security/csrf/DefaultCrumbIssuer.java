@@ -125,7 +125,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);
         
         public DescriptorImpl() {
-            super(CRUMB_SALT.get(), System.getProperty("hudson.security.csrf.requestfield", ".crumb"));
+            super(CRUMB_SALT.get(), System.getProperty("hudson.security.csrf.requestfield", CrumbIssuer.DEFAULT_CRUMB_NAME));
             load();
         }
 

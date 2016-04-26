@@ -26,7 +26,7 @@ package hudson.model;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * @author Rafa de la Torre <rtorre@tuenti.com>
+ * @author <a href="mailto:rtorre@tuenti.com">Rafa de la Torre</a>
  */
 public class TextParameterValue extends StringParameterValue {
 

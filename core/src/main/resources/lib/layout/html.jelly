@@ -155,9 +155,8 @@ ${h.initPageVariables(context)}
       </j:forEach>
     </j:if>
 
-  <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getActiveInstance" />
-    <j:set var="installState" value="${j.installState.name()}" />
-    <j:if test="${installState == 'NEW' || installState == 'INITIAL_PLUGINS_INSTALLING'}">
+    <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="getInstance" />
+    <j:if test="${!j.installState.setupComplete}">
       <script src="${resURL}/${j.installWizardPath}.js" type="text/javascript"/>
       <link rel="stylesheet" href="${resURL}/${j.installWizardPath}.css" type="text/css" />
     </j:if>
@@ -167,7 +166,7 @@ ${h.initPageVariables(context)}
     </j:if>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="jenkins-${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
       <div id="main-panel" style="margin-left: 0;">
          <j:set var="mode" value="main-panel" />
          <d:invokeBody />
