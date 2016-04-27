@@ -98,7 +98,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public List<String> getParameterDefinitionNames() {
         return new AbstractList<String>() {
             public String get(int index) {
-                return parameterDefinitions.get(index).getName();
+                if (parameterDefinitions != null && parameterDefinitions.get(index) != null) {
+                    return parameterDefinitions.get(index).getName();
+                } else {
+                    return "";
+                }
             }
 
             public int size() {
