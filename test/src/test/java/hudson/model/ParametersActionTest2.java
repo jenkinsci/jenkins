@@ -2,21 +2,17 @@ package hudson.model;
 
 import hudson.Launcher;
 import hudson.tasks.Builder;
-import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 public class ParametersActionTest2 {
@@ -70,7 +66,33 @@ public class ParametersActionTest2 {
         }
     }
 
+    @Test
+    @Issue("SECURITY-170")
+    @LocalData
+    public void backwardCompatibility() throws Exception {
+        // Local data contains a parameterized job with two parameters (FOO and BAR) and one build
+        // with pre-fix format (generated with 1.609.3) with FOO, BAR and UNDEF.
+        FreeStyleProject p = j.jenkins.getItemByFullName("parameterized", FreeStyleProject.class);
+        FreeStyleBuild b1 = p.getBuildByNumber(1);
+        ParametersAction pa = b1.getAction(ParametersAction.class);
+        ParametersCheckBuilder.hasParameterWithName(pa, "FOO");
+        ParametersCheckBuilder.hasParameterWithName(pa, "BAR");
+        // legacy behaviour expected (UNDEF returned by getParameters())
+        ParametersCheckBuilder.hasParameterWithName(pa, "UNDEF");
 
+        // A new build should work as expected (undef is not published to env)
+        ParametersCheckBuilder b = new ParametersCheckBuilder(false);
+        p.getBuildersList().add(b);
+        p.save();
+
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new StringParameterValue("foo", "baz"),
+                new StringParameterValue("undef", "undef")
+        )));
+        if (b.t != null) {
+            throw b.t;
+        }
+    }
 
     public static class ParametersCheckBuilder extends Builder {
 
@@ -87,7 +109,6 @@ public class ParametersActionTest2 {
             try {
                 ParametersAction pa = build.getAction(ParametersAction.class);
                 assertEquals("foo value expected changed", "baz", pa.getParameter("foo").getValue());
-//                assertEquals("bar value expected default", "bar", pa.getParameter("bar").getValue()); // haha… no…
 
                 if (expectLegacyBehavior) {
                     assertTrue("undef parameter is listed in getParameters", hasParameterWithName(pa.getParameters(), "undef"));
@@ -110,7 +131,7 @@ public class ParametersActionTest2 {
             return true;
         }
 
-        private boolean hasParameterWithName(Iterable<ParameterValue> values, String name) {
+        public static boolean hasParameterWithName(Iterable<ParameterValue> values, String name) {
             for (ParameterValue v : values) {
                 if (v.getName().equals(name)) {
                     return true;
