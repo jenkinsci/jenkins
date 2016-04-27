@@ -1017,8 +1017,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
 
     /**
-     * Resolve user ID from id.
-     * @since TODO
+     * Tries to verify if an ID is valid.
+     * If so, we do not want to even consider users who might have the same full name.
      */
     @Extension
     @Restricted(NoExternalUse.class)
