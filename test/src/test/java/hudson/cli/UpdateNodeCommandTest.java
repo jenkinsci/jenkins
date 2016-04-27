@@ -100,7 +100,7 @@ public class UpdateNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void getNodeShouldFailForMaster() throws Exception {
+    public void updateNodeShouldFailForMaster() throws Exception {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.CONFIGURE, Jenkins.READ).withStdin(Computer.class.getResourceAsStream("node.xml")).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(-1));
