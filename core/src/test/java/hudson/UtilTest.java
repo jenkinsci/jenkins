@@ -356,6 +356,12 @@ public class UtilTest {
         assertTrue(Util.isSafeToRedirectTo("foo?abc:def"));
         assertTrue(Util.isSafeToRedirectTo("foo#abc:def"));
         assertTrue(Util.isSafeToRedirectTo("foo/bar"));
+        assertTrue(Util.isSafeToRedirectTo("/"));
+        assertTrue(Util.isSafeToRedirectTo("/foo"));
+        assertTrue(Util.isSafeToRedirectTo(".."));
+        assertTrue(Util.isSafeToRedirectTo("../.."));
+        assertTrue(Util.isSafeToRedirectTo("/#foo"));
+        assertTrue(Util.isSafeToRedirectTo("/?foo"));
     }
 
     @Test
