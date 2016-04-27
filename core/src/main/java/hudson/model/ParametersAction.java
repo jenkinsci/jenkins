@@ -70,6 +70,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             ".keepUndefinedParameters";
     private final List<ParameterValue> parameters;
 
+    private List<String> parameterDefinitionNames;
+
     /**
      * @deprecated since 1.283; kept to avoid warnings loading old build data, but now transient.
      */
@@ -233,6 +235,13 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Override
     public void onAttached(Run<?, ?> r) {
+        Job<?, ?> job = r.getParent();
+        if (r.getParent() != null) {
+            ParametersDefinitionProperty p = job.getProperty(ParametersDefinitionProperty.class);
+            if (p != null) {
+                this.parameterDefinitionNames = p.getParameterDefinitionNames();
+            }
+        }
         this.run = r;
     }
 
@@ -245,14 +254,13 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         if (this.run == null) {
             return parameters;
         }
-        List<String> names = Collections.emptyList();
+
         Job<?, ?> parent = run.getParent();
         if (parent == null) {
             return parameters;
         }
 
-        ParametersDefinitionProperty p = parent.getProperty(ParametersDefinitionProperty.class);
-        if (p == null) {
+        if (this.parameterDefinitionNames == null) {
             return parameters;
         }
 
@@ -260,12 +268,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
-        names = p.getParameterDefinitionNames();
-
         List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
 
         for (ParameterValue v : this.parameters) {
-            if (names.contains(v.getName())) {
+            if (this.parameterDefinitionNames.contains(v.getName())) {
                 filteredParameters.add(v);
             } else {
                 if (LOGGER.isLoggable(Level.FINE)) {
