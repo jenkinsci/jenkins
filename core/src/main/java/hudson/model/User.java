@@ -1024,27 +1024,30 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
 
+        private static final ThreadLocal<Boolean> resolving = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return false;
+            }
+        };
+
         @Override
         public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
-            // use the same as DefaultUserCanonicalIdResolver
-            String _id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
-                                            .replace('>', '_');  // 4 replace() still faster than regex
+            User existing = getById(idOrFullName, false);
+            if (existing != null) {
+                return existing.getId();
+            }
             Jenkins j = Jenkins.getInstance();
-            if (j == null) {
-                return null;
-            }
-            IdStrategy userIdStrategy = j.getSecurityRealm().getUserIdStrategy();
-            Collection<User> users = User.getAll();
-            for (User u : users) {
-                if (userIdStrategy.equals(u.getId(), _id)) {
-                    return u.getId();
-                }
-            }
-
-            // XXX I have seen files created in AD that are in the form DOMAIN\User so not sure why they get through but lets also try those...
-            for (User u : users) {
-                if (userIdStrategy.equals(u.getId(), idOrFullName)) {
-                    return u.getId();
+            if (j != null) {
+                if (!resolving.get()) {
+                    resolving.set(true);
+                    try {
+                        return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
+                    } catch (UsernameNotFoundException x) {
+                        // not sure
+                    } finally {
+                        resolving.set(false);
+                    }
                 }
             }
             return null;
