@@ -102,7 +102,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
             }
 
             public int size() {
-                return parameterDefinitions.size();
+                if (parameterDefinitions != null) {
+                    return parameterDefinitions.size();
+                } else {
+                    return 0;
+                }
             }
         };
     }
