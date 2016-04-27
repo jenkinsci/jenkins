@@ -225,6 +225,11 @@ public class WebAppMain implements ServletContextListener {
                     boolean success = false;
                     try {
                         Jenkins instance = new Hudson(_home, context);
+
+                        // one last check to make sure everything is in order before we go live
+                        if (Thread.interrupted())
+                            throw new InterruptedException();
+
                         context.setAttribute(APP, instance);
 
                         BootFailure.getBootFailureFile(_home).delete();
