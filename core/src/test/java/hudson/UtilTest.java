@@ -345,6 +345,20 @@ public class UtilTest {
     }
 
     @Test
+    @Issue("SECURITY-276")
+    public void testIsSafeToRedirectTo() {
+        assertFalse(Util.isSafeToRedirectTo("http://foobar/"));
+        assertFalse(Util.isSafeToRedirectTo("mailto:kk@kohsuke.org"));
+        assertFalse(Util.isSafeToRedirectTo("d123://test/"));
+        assertFalse(Util.isSafeToRedirectTo("//google.com"));
+
+        assertTrue(Util.isSafeToRedirectTo("foo/bar/abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo?abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo#abc:def"));
+        assertTrue(Util.isSafeToRedirectTo("foo/bar"));
+    }
+
+    @Test
     public void loadProperties() throws IOException {
 
         assertEquals(0, Util.loadProperties("").size());

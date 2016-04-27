@@ -158,7 +158,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String pattern = req.getParameter("pattern");
         if(pattern==null)
             pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if(pattern!=null && !Util.isAbsoluteOrSchemeRelativeUri(pattern)) {// avoid open redirect
+        if(pattern!=null && Util.isSafeToRedirectTo(pattern)) {// avoid open redirect
             rsp.sendRedirect2(pattern);
             return;
         }

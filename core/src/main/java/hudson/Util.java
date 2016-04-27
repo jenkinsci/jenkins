@@ -1471,10 +1471,10 @@ public class Util {
     }
 
     /**
-     * Return true iff the parameter denotes an absolute URI, or a scheme-relative URI.
+     * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
      */
-    public static boolean isAbsoluteOrSchemeRelativeUri(@Nonnull String uri) {
-        return isAbsoluteUri(uri) || uri.startsWith("//");
+    public static boolean isSafeToRedirectTo(@Nonnull String uri) {
+        return !isAbsoluteUri(uri) && !uri.startsWith("//");
     }
 
     /**
