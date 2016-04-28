@@ -158,7 +158,7 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
                 getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
-            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
                 url = req.getContextPath()+'/'+item.getUrl();
             rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
         } else
