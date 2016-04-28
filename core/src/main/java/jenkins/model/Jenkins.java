@@ -297,6 +297,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
+import org.kohsuke.stapler.WebMethod;
 
 /**
  * Root object of the system.
@@ -4064,6 +4065,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @Override
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
             Jenkins.getInstance().doConfigExecutorsSubmit(req, rsp);
+        }
+
+        @WebMethod(name="config.xml")
+        @Override
+        public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            throw HttpResponses.status(SC_BAD_REQUEST);
         }
 
         @Override
