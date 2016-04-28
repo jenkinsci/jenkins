@@ -94,6 +94,44 @@ public class ParametersActionTest2 {
         }
     }
 
+    @Test
+    @Issue("SECURITY-170")
+    public void parametersDefinitionChange() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[] {
+                new StringParameterDefinition("foo", "foo"),
+                new StringParameterDefinition("bar", "bar")
+        })));
+
+        FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new StringParameterValue("foo", "baz"),
+                new StringParameterValue("bar", "bar"),
+                new StringParameterValue("undef", "undef")
+        )));
+
+        assertTrue("undef parameter is not listed in getParameters",
+                !ParametersCheckBuilder.hasParameterWithName(build.getAction(ParametersAction.class), "undef"));
+
+        p.removeProperty(ParametersDefinitionProperty.class);
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[] {
+                new StringParameterDefinition("foo", "foo"),
+                new StringParameterDefinition("bar", "bar"),
+                new StringParameterDefinition("undef", "undef")
+        })));
+
+        // undef is still not listed even after being added to the job parameters definition
+        assertTrue("undef parameter is not listed in getParameters",
+                !ParametersCheckBuilder.hasParameterWithName(build.getAction(ParametersAction.class), "undef"));
+
+        // remove bar and undef from parameters definition
+        p.removeProperty(ParametersDefinitionProperty.class);
+        p.addProperty(new ParametersDefinitionProperty(Arrays.asList(new ParameterDefinition[] {
+                new StringParameterDefinition("foo", "foo")
+        })));
+
+        assertTrue("the build still have 2 parameters", build.getAction(ParametersAction.class).getParameters().size() == 2);
+    }
+
     public static class ParametersCheckBuilder extends Builder {
 
         private final boolean expectLegacyBehavior;
