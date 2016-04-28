@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequestSettings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.MavenModuleSet;
@@ -41,6 +45,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
+import java.net.HttpURLConnection;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -398,6 +403,22 @@ public class NodeTest {
 
         TagCloud<LabelAtom> cloud = n.getLabelCloud();
         assertThatCloudLabelDoesNotContain(cloud, "label1 label2", 0);
+    }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void masterComputerConfigDotXml() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
+        WebRequestSettings settings = new WebRequestSettings(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        settings.setHttpMethod(HttpMethod.POST);
+        settings.setRequestBody("<hudson/>");
+        try {
+            Page page = wc.getPage(settings);
+            fail(page.getWebResponse().getContentAsString());
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, x.getStatusCode());
+        }
     }
 
     /**
