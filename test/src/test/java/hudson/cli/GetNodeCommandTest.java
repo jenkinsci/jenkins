@@ -37,6 +37,7 @@ import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class GetNodeCommandTest {
@@ -90,4 +91,18 @@ public class GetNodeCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void getNodeShouldFailForMaster() throws Exception {
+        CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
+        assertThat(result.stderr(), containsString("No such node ''"));
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+        result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("(master)");
+        assertThat(result.stderr(), containsString("No such node '(master)'"));
+        assertThat(result, failedWith(-1));
+        assertThat(result, hasNoStandardOutput());
+    }
+
 }
