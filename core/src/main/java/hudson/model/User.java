@@ -1024,6 +1024,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
 
+        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE = Boolean.parseBoolean(System.getProperty(User.class.getName() + ".SECURITY_243_FULL_DEFENSE", "true"));
+
         private static final ThreadLocal<Boolean> resolving = new ThreadLocal<Boolean>() {
             @Override
             protected Boolean initialValue() {
@@ -1037,18 +1039,20 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             if (existing != null) {
                 return existing.getId();
             }
-            Jenkins j = Jenkins.getInstance();
-            if (j != null) {
-                if (!resolving.get()) {
-                    resolving.set(true);
-                    try {
-                        return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
-                    } catch (UsernameNotFoundException x) {
-                        LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
-                    } catch (DataAccessException x) {
-                        LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
-                    } finally {
-                        resolving.set(false);
+            if (SECURITY_243_FULL_DEFENSE) {
+                Jenkins j = Jenkins.getInstance();
+                if (j != null) {
+                    if (!resolving.get()) {
+                        resolving.set(true);
+                        try {
+                            return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
+                        } catch (UsernameNotFoundException x) {
+                            LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                        } catch (DataAccessException x) {
+                            LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
+                        } finally {
+                            resolving.set(false);
+                        }
                     }
                 }
             }
