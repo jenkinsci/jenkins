@@ -77,6 +77,8 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -1456,13 +1458,25 @@ public class Util {
      * The same algorithm can be seen in {@link URI}, but
      * implementing this by ourselves allow it to be more lenient about
      * escaping of URI.
+     *
+     * @deprecated Use {@code isAbsoluteOrSchemeRelativeUri} instead if your goal is to prevent open redirects
      */
+    @Deprecated
+    @RestrictedSince("1.651.2 / 2.TODO")
+    @Restricted(NoExternalUse.class)
     public static boolean isAbsoluteUri(@Nonnull String uri) {
         int idx = uri.indexOf(':');
         if (idx<0)  return false;   // no ':'. can't be absolute
 
         // #, ?, and / must not be before ':'
         return idx<_indexOf(uri, '#') && idx<_indexOf(uri,'?') && idx<_indexOf(uri,'/');
+    }
+
+    /**
+     * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     */
+    public static boolean isSafeToRedirectTo(@Nonnull String uri) {
+        return !isAbsoluteUri(uri) && !uri.startsWith("//");
     }
 
     /**
