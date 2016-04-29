@@ -149,6 +149,42 @@ public class ParametersActionTest2 {
         }
     }
 
+    @Test
+    @Issue("SECURITY-170")
+    public void nonParameterizedJob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                new StringParameterValue("foo", "baz"),
+                new StringParameterValue("bar", "bar")
+        )));
+
+        assertTrue("foo parameter is not listed in getParameters",
+                !hasParameterWithName(build.getAction(ParametersAction.class), "foo"));
+        assertTrue("bar parameter is not listed in getParameters",
+                !hasParameterWithName(build.getAction(ParametersAction.class), "bar"));
+    }
+
+    @Test
+    @Issue("SECURITY-170")
+    public void nonParameterizedJobButWhitelisted() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        try {
+            System.setProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, "foo,bar");
+            FreeStyleBuild build2 = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                    new StringParameterValue("foo", "baz"),
+                    new StringParameterValue("bar", "bar")
+            )));
+
+            assertTrue("foo parameter is listed in getParameters",
+                    hasParameterWithName(build2.getAction(ParametersAction.class), "foo"));
+            assertTrue("bar parameter is listed in getParameters",
+                    hasParameterWithName(build2.getAction(ParametersAction.class), "bar"));
+        } finally {
+            System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        }
+    }
+
     public static boolean hasParameterWithName(Iterable<ParameterValue> values, String name) {
         for (ParameterValue v : values) {
             if (v.getName().equals(name)) {
