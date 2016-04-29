@@ -29,6 +29,7 @@ import com.gargoylesoftware.htmlunit.Page;
 
 import java.io.File;
 import java.net.HttpURLConnection;
+import org.junit.Ignore;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,6 +93,7 @@ public class ApiTest {
         assertEquals("<root><name>All</name></root>", page.getWebResponse().getContentAsString());
     }
 
+    @Ignore("JENKINS-26775: fails in JDK 8 builds prior to stapler 1.238")
     @Test
     public void wrappedMultipleItems() throws Exception {
         j.createFreeStyleProject();
