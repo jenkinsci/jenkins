@@ -23,10 +23,17 @@
  */
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+import hudson.init.Terminator;
 import hudson.model.Hudson;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import hudson.util.OneShotEvent;
+
+import static java.util.logging.Level.SEVERE;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -38,6 +45,12 @@ import java.net.UnknownHostException;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest;
+
+import com.google.inject.Injector;
 
 /**
  * Monitors a UDP multicast broadcast and respond with the location of the Hudson service.
@@ -54,6 +67,46 @@ public class UDPBroadcastThread extends Thread {
     private MulticastSocket mcs;
     private boolean shutdown;
     static boolean udpHandlingProblem; // for tests
+
+    private static UDPBroadcastThread udpBroadcastThread;
+    
+    @Initializer(after=InitMilestone.PLUGINS_PREPARED)
+    @Restricted(NoExternalUse.class)
+    public static synchronized void startUdpBroadcastThread() {
+        if(udpBroadcastThread == null && UDPBroadcastThread.PORT != -1) {
+            try {
+                // check config for this feature being enabled
+                Jenkins jenkins = Jenkins.getInstance();
+                jenkins.checkPermission(Jenkins.ADMINISTER);
+                Injector injector = jenkins.getInjector();
+                UDPBroadcastThreadGlobalConfiguration config = injector.getInstance(UDPBroadcastThreadGlobalConfiguration.class);
+                if (config.isUdpBroadcastEnabled()) {
+                    udpBroadcastThread = new UDPBroadcastThread(Jenkins.getInstance());
+                    udpBroadcastThread.start();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
+            }
+        }
+    }
+    
+    @Terminator
+    @Restricted(NoExternalUse.class)
+    public static synchronized void stopUdpBroadcastThread() throws Exception {
+        Jenkins jenkins = Jenkins.getInstance();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        if(udpBroadcastThread!=null) {
+            LOGGER.log(Level.FINE, "Shutting down {0}", udpBroadcastThread.getName());
+            try {
+                udpBroadcastThread.shutdown();
+                udpBroadcastThread = null;
+            } catch (Exception e) {
+                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
+                // save for later
+                throw e;
+            }
+        }
+    }
 
     /**
      * @deprecated as of 1.416
@@ -142,6 +195,47 @@ public class UDPBroadcastThread extends Thread {
             MULTICAST = InetAddress.getByAddress(new byte[]{(byte)239, (byte)77, (byte)124, (byte)213});
         } catch (UnknownHostException e) {
             throw new Error(e);
+        }
+    }
+    
+    @Extension(ordinal=193) // after DNSMultiCast
+    public static class UDPBroadcastThreadGlobalConfiguration extends GlobalConfiguration {
+        public UDPBroadcastThreadGlobalConfiguration() {
+            load();
+        }
+        
+        // JENKINS-33596 - disable UDP by default
+        private boolean isUdpBroadcastEnabled = false;
+        
+        @Override
+        public GlobalConfigurationCategory getCategory() {
+            return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+        }
+        
+        public boolean isUdpBroadcastEnabled() {
+            return isUdpBroadcastEnabled;
+        }
+        
+        public void setUdpBroadcastEnabled(boolean isUdpBroadcastEnabled) {
+            this.isUdpBroadcastEnabled = isUdpBroadcastEnabled;
+        }
+        
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            // for compatibility reasons, the actual value is stored in Jenkins
+            if (json.getBoolean("udpBroadcastEnabled")) {
+                isUdpBroadcastEnabled = true;
+                startUdpBroadcastThread();;
+            } else {
+                isUdpBroadcastEnabled = false;
+                try {
+                    stopUdpBroadcastThread();
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Unable to stop UDP Broadcast Services: ", e);
+                }
+            }
+            save();
+            return true;
         }
     }
 }

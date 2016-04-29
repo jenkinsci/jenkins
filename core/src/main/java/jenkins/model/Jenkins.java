@@ -50,7 +50,6 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.TcpSlaveAgentListener;
-import hudson.UDPBroadcastThread;
 import hudson.Util;
 import hudson.WebAppMain;
 import hudson.XmlFile;
@@ -578,8 +577,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient final Object tcpSlaveAgentListenerLock = new Object();
 
-    private transient UDPBroadcastThread udpBroadcastThread;
-
     /**
      * List of registered {@link SCMListener}s.
      */
@@ -880,15 +877,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             launchTcpSlaveAgentListener();
-
-            if (UDPBroadcastThread.PORT != -1) {
-                try {
-                    udpBroadcastThread = new UDPBroadcastThread(this);
-                    udpBroadcastThread.start();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
-                }
-            }
 
             Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
                 @Override
@@ -2925,8 +2913,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
 
-            _cleanUpShutdownUDPBroadcast(errors);
-
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3068,25 +3054,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
         return pending;
-    }
-
-    private void _cleanUpShutdownUDPBroadcast(List<Throwable> errors) {
-        if(udpBroadcastThread!=null) {
-            LOGGER.log(Level.FINE, "Shutting down {0}", udpBroadcastThread.getName());
-            try {
-                udpBroadcastThread.shutdown();
-            } catch (OutOfMemoryError e) {
-                // we should just propagate this, no point trying to log
-                throw e;
-            } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
-                // safe to ignore and continue for this one
-            } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
-                // save for later
-                errors.add(e);
-            }
-        }
     }
 
     private void _cleanUpInterruptReloadThread(List<Throwable> errors) {
