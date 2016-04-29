@@ -119,7 +119,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         return defaultAddress;
     }
     
-    @Extension @Symbol("default")
+    @Extension @Symbol("standard")
     public static final class DescriptorImpl extends CrumbIssuerDescriptor<DefaultCrumbIssuer> implements ModelObject {
 
         private final static HexStringConfidentialKey CRUMB_SALT = new HexStringConfidentialKey(Jenkins.class,"crumbSalt",16);

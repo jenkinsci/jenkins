@@ -236,7 +236,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             }
         }
 
-        @Extension @Symbol("default")
+        @Extension @Symbol("standard")
         public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
             public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
                 // the default provisioner does not do anything special,

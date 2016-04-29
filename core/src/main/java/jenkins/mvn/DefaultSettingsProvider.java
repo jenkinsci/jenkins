@@ -24,7 +24,7 @@ public class DefaultSettingsProvider extends SettingsProvider {
         return null;
     }
 
-    @Extension(ordinal = 99) @Symbol("default")
+    @Extension(ordinal = 99) @Symbol("standard")
     public static class DescriptorImpl extends SettingsProviderDescriptor {
 
         @Override

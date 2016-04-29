@@ -109,7 +109,7 @@ public abstract class ProjectNamingStrategy implements Describable<ProjectNaming
             return DEFAULT_NAMING_STRATEGY;
         }
 
-        @Extension @Symbol("default")
+        @Extension @Symbol("standard")
         public static final class DescriptorImpl extends ProjectNamingStrategyDescriptor {
             @Override
             public String getDisplayName() {

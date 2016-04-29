@@ -39,7 +39,7 @@ public class DefaultViewsTabBar extends ViewsTabBar {
     public DefaultViewsTabBar() {
     }
 
-    @Extension @Symbol("default")
+    @Extension @Symbol("standard")
     public static class DescriptorImpl extends ViewsTabBarDescriptor {
         @Override
         public String getDisplayName() {
