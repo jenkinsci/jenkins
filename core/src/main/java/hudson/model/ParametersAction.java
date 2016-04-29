@@ -68,6 +68,13 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Restricted(NoExternalUse.class)
     public static final String KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".keepUndefinedParameters";
+
+    @Restricted(NoExternalUse.class)
+    public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
+            ".safeParameters";
+
+    private transient List<String> safeParameters;
+
     private final List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
@@ -235,12 +242,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Override
     public void onAttached(Run<?, ?> r) {
-        Job<?, ?> job = r.getParent();
-        if (r.getParent() != null) {
-            ParametersDefinitionProperty p = job.getProperty(ParametersDefinitionProperty.class);
-            if (p != null) {
-                this.parameterDefinitionNames = p.getParameterDefinitionNames();
-            }
+        ParametersDefinitionProperty p = r.getParent().getProperty(ParametersDefinitionProperty.class);
+        if (p != null) {
+            this.parameterDefinitionNames = p.getParameterDefinitionNames();
+        } else {
+            this.parameterDefinitionNames = Collections.emptyList();
         }
         this.run = r;
     }
@@ -255,11 +261,6 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
-        Job<?, ?> parent = run.getParent();
-        if (parent == null) {
-            return parameters;
-        }
-
         if (this.parameterDefinitionNames == null) {
             return parameters;
         }
@@ -271,13 +272,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
 
         for (ParameterValue v : this.parameters) {
-            if (this.parameterDefinitionNames.contains(v.getName())) {
+            if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
             } else {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Skipped parameter '" + v.getName() + "' as it is undefined on '" +
-                            run.getParent().getFullName() + "'");
-                }
+                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}`=true to allow "
+                        + "undefined parameters to be injected as environment variables, even though it represents a security breach",
+                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME });
             }
         }
 
@@ -285,13 +285,29 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     /**
-     * Returns all parameters. Be careful in how you process them.
+     * Returns all parameters.
+     *
+     * Be careful in how you process them. It will return parameters even not being defined as
+     * {@link ParametersDefinitionProperty} in the job, so any external
+     * caller could inject any parameter (using any key) here. <strong>Treat it as untrusted data</strong>.
      *
      * @return all parameters defined here.
      * @since TODO
      */
     public List<ParameterValue> getAllParameters() {
         return Collections.unmodifiableList(parameters);
+    }
+
+    private boolean isSafeParameter(String name) {
+        if (safeParameters == null) {
+            String paramNames = System.getProperty(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+            if (paramNames != null) {
+                safeParameters = Arrays.asList(paramNames.split(","));
+            } else {
+                safeParameters = Collections.emptyList();
+            }
+        }
+        return safeParameters.contains(name);
     }
 
     private static final Logger LOGGER = Logger.getLogger(ParametersAction.class.getName());
