@@ -9,6 +9,8 @@ import net.sf.json.JSONObject;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 import com.google.inject.Injector;
@@ -37,19 +39,21 @@ public class DNSMultiCast implements Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
 
-    private static transient DNSMultiCast dnsMultiCast;
+    private static DNSMultiCast dnsMultiCast;
 
     /**
      * Starts the DNS Multicast services, if enabled
      */
     @Initializer(after=InitMilestone.PLUGINS_PREPARED)
-    public static void startDnsMulticast() {
+    @Restricted(NoExternalUse.class)
+    public static synchronized void startDnsMulticast() {
         if(disabled) { // this will force disabling DNS
             return;
         }
         if(dnsMultiCast == null) {
             // check config for this feature being enabled
             Jenkins jenkins = Jenkins.getInstance();
+            jenkins.checkPermission(Jenkins.ADMINISTER);
             Injector injector = jenkins.getInjector();
             GlobalDNSMultiCastConfiguration config = injector.getInstance(GlobalDNSMultiCastConfiguration.class);
             if(config.isDnsMultiCastEnabled()) {
@@ -62,8 +66,11 @@ public class DNSMultiCast implements Closeable {
      * Stops the DNS Multicast services if running
      */
     @hudson.init.Terminator
-    public static void stopDnsMulticast() throws Exception {
+    @Restricted(NoExternalUse.class)
+    public static synchronized void stopDnsMulticast() throws Exception {
         if(dnsMultiCast!=null) {
+            Jenkins jenkins = Jenkins.getInstance();
+            jenkins.checkPermission(Jenkins.ADMINISTER);
             LOGGER.log(Level.FINE, "Closing DNS Multicast service");
             try {
                 dnsMultiCast.close();
@@ -145,7 +152,7 @@ public class DNSMultiCast implements Closeable {
         }
     }
 
-    @Extension(ordinal=196) // after GlobalCrumbIssuerConfiguration
+    @Extension(ordinal=194) // after GlobalCrumbIssuerConfiguration
     public static class GlobalDNSMultiCastConfiguration extends GlobalConfiguration {
         public GlobalDNSMultiCastConfiguration() {
             load();
