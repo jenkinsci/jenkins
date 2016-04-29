@@ -1408,12 +1408,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Enables a required plugin, provides feedback in the update center
      */
-    public class EnableJob extends UpdateCenterJob {
-        private final Plugin plugin;
-        
-        public EnableJob(UpdateSite site, @Nonnull Plugin plugin) {
-            super(site);
-            this.plugin = plugin;
+    public class EnableJob extends InstallationJob {
+        public EnableJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin, boolean dynamicLoad) {
+            super(plugin, site, auth, dynamicLoad);
         }
         
         public Plugin getPlugin() {
@@ -1428,6 +1425,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
                 error = e;
             }
+            
+            if (dynamicLoad) {
+                try {
+                    // remove the existing, disabled inactive plugin to force a new one to load
+                    pm.dynamicLoad(getDestination(), true);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
+                    error = e;
+                    requiresRestart = true;
+                }
+            } else {
+                requiresRestart = true;
+            }
         }
     }
     
@@ -1435,8 +1445,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * A no-op, e.g. this plugin is already installed
      */
     public class NoOpJob extends EnableJob {
-        public NoOpJob(UpdateSite site, @Nonnull Plugin plugin) {
-            super(site, plugin);
+        public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
+            super(site, auth, plugin, false);
         }
     }
     
@@ -1653,19 +1663,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob extends DownloadJob {
+    public class InstallationJob extends DownloadJob {
         /**
          * What plugin are we trying to install?
          */
         @Exported
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
          */
-        private final boolean dynamicLoad;
+        protected final boolean dynamicLoad;
 
         /**
          * @deprecated as of 1.442

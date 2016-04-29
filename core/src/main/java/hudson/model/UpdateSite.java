@@ -861,12 +861,12 @@ public class UpdateSite {
             if(pw != null) { // JENKINS-34494 - check for this plugin being disabled
                 Future<UpdateCenterJob> enableJob = null;
                 if(!pw.isEnabled()) {
-                    UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, this);
+                    UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
                     job.setCorrelationId(correlationId);
                     enableJob = uc.addJob(job);
                 }
                 if(pw.getVersionNumber().equals(new VersionNumber(version))) {
-                    return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, this));
+                    return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, null, this));
                 }
             }
             UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);

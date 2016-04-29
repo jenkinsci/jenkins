@@ -27,7 +27,7 @@ THE SOFTWARE.
   <tr id="row${it.id}">
     <td style="vertical-align: top; padding-right:1em">${it.plugin.displayName}</td>
     <td style="vertical-align:middle">
-      <l:icon class="icon-yellow icon-md"/> ${%Enabled}
+      <l:icon class="icon-${it.error!=null?'yellow':'blue'} icon-md"/> ${%Enabled Dependency}
     </td>
   </tr>
 </j:jelly>
