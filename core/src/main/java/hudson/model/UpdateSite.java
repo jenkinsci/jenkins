@@ -731,6 +731,10 @@ public class UpdateSite {
                 else if (current.isOlderThan(requiredVersion)) {
                     deps.add(depPlugin);
                 }
+                // JENKINS-34494 - or if the plugin is disabled, this will allow us to enable it
+                else if (!current.isEnabled()) {
+                    deps.add(depPlugin);
+                }
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
@@ -851,6 +855,18 @@ public class UpdateSite {
                     dep.deploy(dynamicLoad);
                 } else {
                     LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                }
+            }
+            PluginWrapper pw = getInstalled();
+            if(pw != null) { // JENKINS-34494 - check for this plugin being disabled
+                Future<UpdateCenterJob> enableJob = null;
+                if(!pw.isEnabled()) {
+                    UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, this);
+                    job.setCorrelationId(correlationId);
+                    enableJob = uc.addJob(job);
+                }
+                if(pw.getVersionNumber().equals(new VersionNumber(version))) {
+                    return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, this));
                 }
             }
             UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);

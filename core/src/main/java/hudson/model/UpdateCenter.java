@@ -1404,7 +1404,42 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
 
     }
-
+    
+    /**
+     * Enables a required plugin, provides feedback in the update center
+     */
+    public class EnableJob extends UpdateCenterJob {
+        private final Plugin plugin;
+        
+        public EnableJob(UpdateSite site, @Nonnull Plugin plugin) {
+            super(site);
+            this.plugin = plugin;
+        }
+        
+        public Plugin getPlugin() {
+            return plugin;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                plugin.getInstalled().enable();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
+                error = e;
+            }
+        }
+    }
+    
+    /**
+     * A no-op, e.g. this plugin is already installed
+     */
+    public class NoOpJob extends EnableJob {
+        public NoOpJob(UpdateSite site, @Nonnull Plugin plugin) {
+            super(site, plugin);
+        }
+    }
+    
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
