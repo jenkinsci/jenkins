@@ -40,6 +40,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.regex.Pattern;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
@@ -127,6 +130,14 @@ public final class Secret implements Serializable {
             throw new Error(e); // impossible
         }
     }
+
+    /**
+     * Pattern matching a possible output of {@link #getEncryptedValue}.
+     * Basically, any Base64-encoded value.
+     * You must then call {@link #decrypt} to eliminate false positives.
+     */
+    @Restricted(NoExternalUse.class)
+    public static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("[A-Za-z0-9+/]+={0,2}");
 
     /**
      * Reverse operation of {@link #getEncryptedValue()}. Returns null
