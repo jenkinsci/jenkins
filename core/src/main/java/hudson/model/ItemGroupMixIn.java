@@ -27,7 +27,6 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.security.AccessControlled;
-import hudson.security.AccessDeniedException2;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.Secret;
@@ -51,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.acegisecurity.AccessDeniedException;
 import org.xml.sax.SAXException;
 
 /**
@@ -229,7 +229,8 @@ public abstract class ItemGroupMixIn {
             Matcher matcher = AbstractItem.SECRET_PATTERN.matcher(srcConfigFile.asString());
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
-                    throw new AccessDeniedException2(Jenkins.getAuthentication(), Item.CONFIGURE);
+                    // AccessDeniedException2 does not permit a custom message, and anyway redirecting the user to the login screen is obviously pointless.
+                    throw new AccessDeniedException(Messages.ItemGroupMixIn_may_not_copy_as_it_contains_secrets_and_(src.getFullName(), Jenkins.getAuthentication().getName(), Item.PERMISSIONS.title, Item.EXTENDED_READ.name, Item.CONFIGURE.name));
                 }
             }
         }
