@@ -1,8 +1,4 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="${%Cluster Broadcast Messaging}">
-    <f:entry title="" field="dnsMultiCastEnabled">
-      <f:checkbox checked="${it.isDnsMultiCastEnabled()}" title="${%Enable DNS Multicast}" />
-    </f:entry>
-  </f:section>
+  <f:optionalBlock field="dnsMultiCastEnabled" checked="${it.isDnsMultiCastEnabled()}" title="${%Enable DNS Multicast}" />
 </j:jelly>

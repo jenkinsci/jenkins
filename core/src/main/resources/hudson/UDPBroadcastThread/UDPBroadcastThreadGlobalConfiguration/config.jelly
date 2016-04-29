@@ -1,6 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="" field="udpBroadcastEnabled">
-    <f:checkbox checked="${it.isUdpBroadcastEnabled()}" title="${%Enable UDP Broadcast}" />
-  </f:entry>
+  <f:optionalBlock field="udpBroadcastEnabled" checked="${it.isUdpBroadcastEnabled()}" title="${%Enable UDP Broadcast}">
+    <f:entry title="${%UDP Broadcast Port}" field="udpBroadcastPort">
+      <f:number />
+    </f:entry>
+  </f:optionalBlock>
 </j:jelly>

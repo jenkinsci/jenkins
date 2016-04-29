@@ -81,7 +81,7 @@ public class UDPBroadcastThread extends Thread {
                 Injector injector = jenkins.getInjector();
                 UDPBroadcastThreadGlobalConfiguration config = injector.getInstance(UDPBroadcastThreadGlobalConfiguration.class);
                 if (config.isUdpBroadcastEnabled()) {
-                    udpBroadcastThread = new UDPBroadcastThread(Jenkins.getInstance());
+                    udpBroadcastThread = new UDPBroadcastThread(jenkins);
                     udpBroadcastThread.start();
                 }
             } catch (IOException e) {
@@ -118,9 +118,15 @@ public class UDPBroadcastThread extends Thread {
     }
 
     public UDPBroadcastThread(Jenkins jenkins) throws IOException {
-        super("Jenkins UDP "+PORT+" monitoring thread");
+        super("Jenkins UDP "+getPort(jenkins)+" monitoring thread");
         this.jenkins = jenkins;
-        mcs = new MulticastSocket(PORT);
+        mcs = new MulticastSocket(getPort(jenkins));
+    }
+
+    private static int getPort(Jenkins jenkins) {
+        Injector injector = jenkins.getInjector();
+        UDPBroadcastThreadGlobalConfiguration config = injector.getInstance(UDPBroadcastThreadGlobalConfiguration.class);
+        return config.getUdpBroadcastPort();
     }
 
     @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
@@ -161,7 +167,7 @@ public class UDPBroadcastThread extends Thread {
                 return;
             }            // if we failed to listen to UDP, just silently abandon it, as a stack trace
             // makes people unnecessarily concerned, for a feature that currently does no good.
-            LOGGER.log(Level.INFO, "Cannot listen to UDP port {0}, skipping: {1}", new Object[] {PORT, e});
+            LOGGER.log(Level.INFO, "Cannot listen to UDP port {0}, skipping: {1}", new Object[] {getPort(jenkins), e});
             LOGGER.log(Level.FINE, null, e);
         } catch (IOException e) {
             if (shutdown)   return; // forcibly closed
@@ -206,6 +212,7 @@ public class UDPBroadcastThread extends Thread {
         
         // JENKINS-33596 - disable UDP by default
         private boolean isUdpBroadcastEnabled = false;
+        private int udpBroadcastPort = PORT;
         
         @Override
         public GlobalConfigurationCategory getCategory() {
@@ -220,21 +227,45 @@ public class UDPBroadcastThread extends Thread {
             this.isUdpBroadcastEnabled = isUdpBroadcastEnabled;
         }
         
+        public int getUdpBroadcastPort() {
+            return udpBroadcastPort;
+        }
+        
+        public void setUdpBroadcastPort(int udpBroadcastPort) {
+            this.udpBroadcastPort = udpBroadcastPort;
+        }
+        
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            Jenkins jenkins = Jenkins.getInstance();
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+
             // for compatibility reasons, the actual value is stored in Jenkins
-            if (json.getBoolean("udpBroadcastEnabled")) {
+            if (json.get("udpBroadcastEnabled") != null) {
+                boolean neeedsRestart = !isUdpBroadcastEnabled;
                 isUdpBroadcastEnabled = true;
-                startUdpBroadcastThread();;
+                int originalUdpBroadcastPort = getUdpBroadcastPort();
+                JSONObject broadcastConfig = json.getJSONObject("udpBroadcastEnabled");
+                setUdpBroadcastPort(broadcastConfig.getInt("udpBroadcastPort"));
+                neeedsRestart = neeedsRestart || originalUdpBroadcastPort != udpBroadcastPort;
+                if(neeedsRestart) {
+                    try {
+                        stopUdpBroadcastThread();
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Unable to stop UDP Broadcast Services: ", e);
+                    }
+                }
+                save();
+                startUdpBroadcastThread();
             } else {
                 isUdpBroadcastEnabled = false;
+                save();
                 try {
                     stopUdpBroadcastThread();
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Unable to stop UDP Broadcast Services: ", e);
                 }
             }
-            save();
             return true;
         }
     }
