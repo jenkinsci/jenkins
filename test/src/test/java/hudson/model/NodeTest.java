@@ -26,7 +26,7 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.MavenModuleSet;
@@ -416,7 +416,7 @@ public class NodeTest {
     public void masterComputerConfigDotXml() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
-        WebRequestSettings settings = new WebRequestSettings(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("<hudson/>");
         try {
