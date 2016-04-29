@@ -33,7 +33,6 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
-import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionComponent;
@@ -581,8 +580,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private transient UDPBroadcastThread udpBroadcastThread;
 
-    private transient DNSMultiCast dnsMultiCast;
-
     /**
      * List of registered {@link SCMListener}s.
      */
@@ -892,7 +889,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     LOGGER.log(Level.WARNING, "Failed to broadcast over UDP (use -Dhudson.udp=-1 to disable)", e);
                 }
             }
-            dnsMultiCast = new DNSMultiCast(this);
 
             Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
                 @Override
@@ -2931,8 +2927,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             _cleanUpShutdownUDPBroadcast(errors);
 
-            _cleanUpCloseDNSMulticast(errors);
-
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3089,25 +3083,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // safe to ignore and continue for this one
             } catch (Throwable e) {
                 LOGGER.log(SEVERE, "Failed to shutdown UDP Broadcast Thread", e);
-                // save for later
-                errors.add(e);
-            }
-        }
-    }
-
-    private void _cleanUpCloseDNSMulticast(List<Throwable> errors) {
-        if(dnsMultiCast!=null) {
-            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
-            try {
-                dnsMultiCast.close();
-            } catch (OutOfMemoryError e) {
-                // we should just propagate this, no point trying to log
-                throw e;
-            } catch (LinkageError e) {
-                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
-                // safe to ignore and continue for this one
-            } catch (Throwable e) {
-                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
                 // save for later
                 errors.add(e);
             }

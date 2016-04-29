@@ -1,10 +1,23 @@
 package hudson;
 
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.MasterComputer;
+import net.sf.json.JSONObject;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+
+import org.kohsuke.stapler.StaplerRequest;
+
+import com.google.inject.Injector;
+
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
+
+import static java.util.logging.Level.SEVERE;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
@@ -20,11 +33,58 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class DNSMultiCast implements Closeable {
+    public static boolean disabled = Boolean.getBoolean(DNSMultiCast.class.getName()+".disabled");
+
+    private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
+
+    private static transient DNSMultiCast dnsMultiCast;
+
+    /**
+     * Starts the DNS Multicast services, if enabled
+     */
+    @Initializer(after=InitMilestone.PLUGINS_PREPARED)
+    public static void startDnsMulticast() {
+        if(disabled) { // this will force disabling DNS
+            return;
+        }
+        if(dnsMultiCast == null) {
+            // check config for this feature being enabled
+            Jenkins jenkins = Jenkins.getInstance();
+            Injector injector = jenkins.getInjector();
+            GlobalDNSMultiCastConfiguration config = injector.getInstance(GlobalDNSMultiCastConfiguration.class);
+            if(config.isDnsMultiCastEnabled()) {
+                dnsMultiCast = new DNSMultiCast(jenkins);
+            }
+        }
+    }
+    
+    /**
+     * Stops the DNS Multicast services if running
+     */
+    @hudson.init.Terminator
+    public static void stopDnsMulticast() throws Exception {
+        if(dnsMultiCast!=null) {
+            LOGGER.log(Level.FINE, "Closing DNS Multicast service");
+            try {
+                dnsMultiCast.close();
+                dnsMultiCast = null;
+            } catch (OutOfMemoryError e) {
+                // we should just propagate this, no point trying to log
+                throw e;
+            } catch (LinkageError e) {
+                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
+                // safe to ignore and continue for this one
+            } catch (Exception e) {
+                LOGGER.log(SEVERE, "Failed to close DNS Multicast service", e);
+                // save for later
+                throw e;
+            }
+        }
+    }
+
     private JmDNS jmdns;
 
     public DNSMultiCast(final Jenkins jenkins) {
-        if (disabled)   return; // escape hatch
-        
         // the registerService call can be slow. run these asynchronously
         MasterComputer.threadPoolForRemoting.submit(new Callable<Object>() {
             public Object call() {
@@ -85,7 +145,44 @@ public class DNSMultiCast implements Closeable {
         }
     }
 
-    private static final Logger LOGGER = Logger.getLogger(DNSMultiCast.class.getName());
-
-    public static boolean disabled = Boolean.getBoolean(DNSMultiCast.class.getName()+".disabled");
+    @Extension(ordinal=196) // after GlobalCrumbIssuerConfiguration
+    public static class GlobalDNSMultiCastConfiguration extends GlobalConfiguration {
+        public GlobalDNSMultiCastConfiguration() {
+            load();
+        }
+        
+        // JENKINS-33596 - disable jmDNS by default
+        private boolean isDnsMultiCastEnabled = false;
+        
+        @Override
+        public GlobalConfigurationCategory getCategory() {
+            return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
+        }
+        
+        public boolean isDnsMultiCastEnabled() {
+            return isDnsMultiCastEnabled;
+        }
+        
+        public void setDnsMultiCastEnabled(boolean isDnsMultiCastEnabled) {
+            this.isDnsMultiCastEnabled = isDnsMultiCastEnabled;
+        }
+        
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            // for compatibility reasons, the actual value is stored in Jenkins
+            if (json.getBoolean("dnsMultiCastEnabled")) {
+                isDnsMultiCastEnabled = true;
+                startDnsMulticast();
+            } else {
+                isDnsMultiCastEnabled = false;
+                try {
+                    stopDnsMulticast();
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Unable to stop DNS Multicast Services: ", e);
+                }
+            }
+            save();
+            return true;
+        }
+    }
 }
