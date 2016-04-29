@@ -176,8 +176,11 @@ public class DNSMultiCast implements Closeable {
         
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            Jenkins jenkins = Jenkins.getInstance();
+            jenkins.checkPermission(Jenkins.ADMINISTER);
+            
             // for compatibility reasons, the actual value is stored in Jenkins
-            if (json.getBoolean("dnsMultiCastEnabled")) {
+            if (json.get("dnsMultiCastEnabled") != null) {
                 isDnsMultiCastEnabled = true;
                 startDnsMulticast();
             } else {
