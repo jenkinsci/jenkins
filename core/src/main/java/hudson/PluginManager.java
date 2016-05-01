@@ -108,6 +108,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -659,6 +660,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * TODO: revisit where/how to expose this. This is an experiment.
      */
     public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
+        dynamicLoad(arc, false);
+    }
+
+    /**
+     * Try the dynamicLoad, removeExisting to attempt to dynamic load disabled plugins
+     */
+    @Restricted(NoExternalUse.class)
+    public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
         LOGGER.info("Attempting to dynamic load "+arc);
         PluginWrapper p = null;
         String sn;
@@ -669,9 +678,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             p = strategy.createPluginWrapper(arc);
             sn = p.getShortName();
         }
-        if (getPlugin(sn)!=null)
-            throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
-
+        PluginWrapper pw = getPlugin(sn);
+        if (pw!=null) {
+            if (removeExisting) { // try to load disabled plugins
+                for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
+                    pw = i.next();
+                    if(sn.equals(pw.getShortName())) {
+                        i.remove();
+                        pw = null;
+                        break;
+                    }
+                }
+            } else {
+                throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+            }
+        }
         if (p == null) {
             p = strategy.createPluginWrapper(arc);
         }
