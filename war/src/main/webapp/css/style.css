@@ -1424,6 +1424,12 @@ TABLE.fingerprint-in-build TD {
   opacity: 0.2;
 }
 
+#plugins tr.has-dependants-but-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
 #plugins tr.has-disabled-dependency .enable input {
   opacity: 0.4;
 }
