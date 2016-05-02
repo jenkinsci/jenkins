@@ -1405,7 +1405,52 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
 
     }
-
+    
+    /**
+     * Enables a required plugin, provides feedback in the update center
+     */
+    public class EnableJob extends InstallationJob {
+        public EnableJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin, boolean dynamicLoad) {
+            super(plugin, site, auth, dynamicLoad);
+        }
+        
+        public Plugin getPlugin() {
+            return plugin;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                plugin.getInstalled().enable();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
+                error = e;
+            }
+            
+            if (dynamicLoad) {
+                try {
+                    // remove the existing, disabled inactive plugin to force a new one to load
+                    pm.dynamicLoad(getDestination(), true);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
+                    error = e;
+                    requiresRestart = true;
+                }
+            } else {
+                requiresRestart = true;
+            }
+        }
+    }
+    
+    /**
+     * A no-op, e.g. this plugin is already installed
+     */
+    public class NoOpJob extends EnableJob {
+        public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
+            super(site, auth, plugin, false);
+        }
+    }
+    
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
@@ -1576,6 +1621,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
+         * Indicates that the plugin was successfully installed.
+         */
+        public class Skipped extends InstallationStatus {
+            @Override public boolean isSuccess() {
+                return true;
+            }
+        }
+
+        /**
          * Indicates that the plugin is waiting for its turn for installation.
          */
         public class Pending extends InstallationStatus {
@@ -1619,19 +1673,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob extends DownloadJob {
+    public class InstallationJob extends DownloadJob {
         /**
          * What plugin are we trying to install?
          */
         @Exported
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
          */
-        private final boolean dynamicLoad;
+        protected final boolean dynamicLoad;
 
         /**
          * @deprecated as of 1.442
@@ -1667,29 +1721,81 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         public void _run() throws IOException, InstallationStatus {
-            super._run();
+            if (wasInstalled()) {
+                // Do this first so we can avoid duplicate downloads, too
+                // check to see if the plugin is already installed at the same version and skip it
+                LOGGER.info("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                //throw new Skipped(); // TODO set skipped once we have a status indicator for it
+                return;
+            }
+            try {
+                super._run();
 
-            // if this is a bundled plugin, make sure it won't get overwritten
-            PluginWrapper pw = plugin.getInstalled();
-            if (pw!=null && pw.isBundled()) {
-                SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-                try {
-                    pw.doPin();
-                } finally {
-                    SecurityContextHolder.setContext(oldContext);
+                // if this is a bundled plugin, make sure it won't get overwritten
+                PluginWrapper pw = plugin.getInstalled();
+                if (pw!=null && pw.isBundled()) {
+                    SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+                    try {
+                        pw.doPin();
+                    } finally {
+                        SecurityContextHolder.setContext(oldContext);
+                    }
+                }
+
+                if (dynamicLoad) {
+                    try {
+                        pm.dynamicLoad(getDestination());
+                    } catch (RestartRequiredException e) {
+                        throw new SuccessButRequiresRestart(e.message);
+                    } catch (Exception e) {
+                        throw new IOException("Failed to dynamically deploy this plugin",e);
+                    }
+                } else {
+                    throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+                }
+            } finally {
+                synchronized(this) {
+                    // There may be other threads waiting on completion
+                    LOGGER.fine("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
+                    // some status other than Installing or Downloading needs to be set here
+                    // {@link #isAlreadyInstalling()}, it will be overwritten by {@link DownloadJob#run()}
+                    status = new Skipped();
+                    notifyAll();
                 }
             }
+        }
 
-            if (dynamicLoad) {
-                try {
-                    pm.dynamicLoad(getDestination());
-                } catch (RestartRequiredException e) {
-                    throw new SuccessButRequiresRestart(e.message);
-                } catch (Exception e) {
-                    throw new IOException("Failed to dynamically deploy this plugin",e);
+        /**
+         * Indicates there is another installation job for this plugin
+         * @since TODO
+         */
+        protected boolean wasInstalled() {
+            synchronized(UpdateCenter.this) {
+                for (UpdateCenterJob job : getJobs()) {
+                    if (job == this) {
+                        // oldest entries first, if we reach this instance,
+                        // we need it to continue installing
+                        return false;
+                    }
+                    if (job instanceof InstallationJob) {
+                        InstallationJob ij = (InstallationJob)job;
+                        if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
+                            // wait until other install is completed
+                            synchronized(ij) {
+                                if(ij.status instanceof Installing || ij.status instanceof Pending) {
+                                    try {
+                                        LOGGER.fine("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                                        ij.wait();
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                    }
                 }
-            } else {
-                throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+                return false;
             }
         }
 
