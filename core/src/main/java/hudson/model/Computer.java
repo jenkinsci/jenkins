@@ -66,7 +66,6 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1400,7 +1399,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
@@ -1435,28 +1434,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Replaces the current {@link Node} by another one.
-     */
-    private void replaceBy(final Node newNode) throws ServletException, IOException {
-        final Jenkins app = Jenkins.getInstance();
-
-        // use the queue lock until Nodes has a way of directly modifying a single node.
-        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
-            public Void call() throws IOException {
-                List<Node> nodes = new ArrayList<Node>(app.getNodes());
-                Node node = getNode();
-                int i  = (node != null) ? nodes.indexOf(node) : -1;
-                if(i<0) {
-                    throw new IOException("This agent appears to be removed while you were editing the configuration");
-                }
-                nodes.set(i, newNode);
-                app.setNodes(nodes);
-                return null;
-            }
-        });
-    }
-
-    /**
      * Updates Job by its XML definition.
      *
      * @since 1.526
@@ -1464,7 +1441,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
     }
 
     /**
