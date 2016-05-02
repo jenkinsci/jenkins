@@ -851,10 +851,10 @@ public class UpdateSite {
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
-                    LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
                     dep.deploy(dynamicLoad);
                 } else {
-                    LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
                 }
             }
             PluginWrapper pw = getInstalled();
