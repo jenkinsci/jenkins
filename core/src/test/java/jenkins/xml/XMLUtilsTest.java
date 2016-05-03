@@ -120,11 +120,14 @@ public class XMLUtilsTest {
     @Test
     public void testParse_with_XXE() throws IOException, XPathExpressionException {
         try {
-            Document doc = XMLUtils.parse(new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<!DOCTYPE foo [\n" +
                     "   <!ELEMENT foo ANY >\n" +
                     "   <!ENTITY xxe SYSTEM \"http://abc.com/temp/test.jsp\" >]> " +
-                    "<foo>&xxe;</foo>"));
+                    "<foo>&xxe;</foo>";
+
+            StringReader stringReader = new StringReader(xml);
+            Document doc = XMLUtils.parse(stringReader);
             Assert.fail("Expecting SAXException for XXE.");
         } catch (SAXException e) {
             assertThat(e.getMessage(), containsString("DOCTYPE is disallowed"));

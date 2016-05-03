@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.0-rc-2-SNAPSHOT</version>
+  <version>2.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -94,6 +94,7 @@ THE SOFTWARE.
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
+    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
     <test-annotations.version>1.2</test-annotations.version>
@@ -800,17 +801,24 @@ THE SOFTWARE.
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </reporting>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </build>

@@ -24,7 +24,7 @@ Some tips:
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
 <![endif]-->
-  <script type="text/javascript" src="https://jenkins-ci.org/rate/rate.js"></script>
+  <script type="text/javascript" src="https://rating.jenkins.io/rate/rate.js"></script>
 </head>
 <body>
 <div align="right">Legend:
@@ -55,7 +55,85 @@ Upcoming changes</a>
 
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
+<ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v2.1>What's new in 2.1</a> (2016/05/01)</h3>
+<ul class=image>
+  <li class="major bug">
+  	Enable disabled dependencies during plugin installations.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34494">issue 34494</a>)
+  <li class="major bug">
+  	Force ordering between GPG and jarsigner to ensure correct GPG signature.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2285">pull 2285</a>)
+  <li class="major bug">
+  	Secured Jenkins installations didn't properly save the queue on shutdown.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34281">issue 34281</a>)
 
+  <li class="rfe">
+  	Add dependency resolution to manually uploaded plugins.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-15057">issue 15057</a>)
+  <li class="rfe">
+  	Show Jenkins version on setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33535">issue 33535</a>)
+  <li class="rfe">
+  	Update remoting to 2.57.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33999">issue 33999</a>)
+  <li class="rfe">
+  	Allow retrying plugin downloads in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33244">issue 33244</a>)
+  <li class="rfe">
+  	Add links to homepage of plugins and dependencies in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33936">issue 33936</a>,
+  	 <a href="https://issues.jenkins-ci.org/browse/JENKINS-33937">issue 33937</a>)
+  <li class="rfe">
+  	Improved handling of the 'close' button during setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34137">issue 34137</a>)
+  <li class="rfe">
+  	Wrong spacing in flat mode of 'Create Item' screen.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-31162">issue 31162</a>)
+  <li class="rfe">
+  	Add timestamp to the <tt>jarsigner</tt> signature.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2284">pull 2284</a>)
+  <li class="rfe">
+  	Improved French translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2267">pull 2267</a>)
+  <li class="rfe">
+  	Improved Lithuanian translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2286">pull 2286</a>)
+  <li class="rfe">
+  	Improved Brazilian Portuguese translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2273">pull 2273</a>)
+
+  <li class="bug">
+  	Prevent errors when hiding management links.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33683">issue 33683</a>)
+  <li class="bug">
+  	Internal: Make logger field private.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34093">issue 34093</a>)
+  <li class="bug">
+  	Shorter timeout for plugin downloads to prevent setup wizard from hanging.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34174">issue 34174</a>)
+  <li class="bug">
+  	Check if job is buildable before showing 'Build with parameters' page.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34146">issue 34146</a>)
+  <li class="bug">
+  	Fixed race condition in slave offline cause.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34448">issue 34448</a>)
+  <li class="bug">
+  	Allow enabling disabled dependencies in the plugin manager to fix broken configurations.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-32340">issue 32340</a>)
+  <li class="bug">
+  	Always display clicked scrollspy items as active in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33948">issue 33948</a>)
+  <li class="bug">
+  	Prevent multiple installations of the same dependency.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33950">issue 33950</a>)
+</ul>
+
+
+<h3><a name=v2.0>What's new in 2.0</a> (2016/04/20)</h3>
 <div style="margin: 10px; padding: 10px; background-color: #FFFFCE;">
   <strong>More detailed information about the new features in Jenkins 2.0 <a href="/2.0/">on the overview page</a>.</strong>
 </div>
@@ -86,6 +164,9 @@ Upcoming changes</a>
     Bundled Groovy updated from 1.8.9 to 2.4.6.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21249">issue 21249</a>)
   <li class="rfe">
+    Added option to prohibit anonymous access to security realm "Logged in users can do anything", enable by default.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30749">issue 30749</a>)
+  <li class="rfe">
     Renamed 'slave' to 'agent' on the UI.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">issue 27268</a>)
   <li class="rfe">
@@ -103,7 +184,6 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33942">issue 33942</a>)
 
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v1.656>What's new in 1.656</a> (2016/04/03)</h3>
 <ul class=image>
   <li class="bug">

@@ -39,7 +39,7 @@ THE SOFTWARE.
             <div class="header">
               <div class="add-item-name">
                 <label for="name">${%ItemName.label}</label>
-                <input name="name" id="name" type="text" />
+                <input name="name" id="name" type="text" tabindex="0" />
                 <div class="input-help">&#187; ${%ItemName.help}</div>
                 <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
                 <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
@@ -47,8 +47,7 @@ THE SOFTWARE.
               </div>
             </div>
 
-            <div class="categories flat" />
-
+            <div class="categories flat" role="radiogroup" aria-labelledby="Items"/>
             <j:if test="${!empty(app.itemMap)}">
               <div class="item-copy">
                 <p class="description">${%CopyOption.description}:</p>
@@ -63,6 +62,7 @@ THE SOFTWARE.
                 </div>
               </div>
             </j:if>
+            </div>
 
             <div class="footer">
               <div class="btn-decorator">

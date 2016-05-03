@@ -191,6 +191,8 @@ import hudson.views.DefaultViewsTabBar;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
+
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import jenkins.ExtensionComponentSet;
@@ -920,28 +922,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
 
-            // All plugins are loaded. Now we can figure out who depends on who.
-            resolveDependantPlugins();
-
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
-    }
-
-    private void resolveDependantPlugins() throws InterruptedException, ReactorException, IOException {
-        TaskGraphBuilder graphBuilder = new TaskGraphBuilder();
-
-        graphBuilder.add("Resolving Dependant Plugins Graph", new Executable() {
-            @Override
-            public void run(Reactor reactor) throws Exception {
-                pluginManager.resolveDependantPlugins();
-            }
-        });
-
-        executeReactor(null, graphBuilder);
     }
 
     /**
@@ -3333,7 +3319,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return a;
         }
         for (Action a : getManagementLinks())
-            if(a.getUrlName().equals(token))
+            if (Objects.equals(a.getUrlName(), token))
                 return a;
         return null;
     }
@@ -3850,9 +3836,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     for (RestartListener listener : RestartListener.all())
                         listener.onRestart();
                     lifecycle.restart();
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.WARNING, "Failed to restart Jenkins",e);
                 }
             }
@@ -4257,14 +4241,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     
     /**
      * If set, a currently active setup wizard - e.g. installation
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public SetupWizard getSetupWizard() {
         return setupWizard;
     }
     
     /**
      * Sets the setup wizard
+     *
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public void setSetupWizard(SetupWizard setupWizard) {
         this.setupWizard = setupWizard;
     }
@@ -4331,7 +4321,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // TODO consider caching (expiring cache when actions changes)
         for (Action a : getActions()) {
             if (a instanceof UnprotectedRootAction) {
-                names.add(a.getUrlName());
+                String url = a.getUrlName();
+                if (url == null) continue;
+                names.add(url);
             }
         }
         return names;
@@ -4595,8 +4587,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The version number before it is "computed" (by a call to computeVersion()).
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public static final String UNCOMPUTED_VERSION = "?";
 
     /**
@@ -4618,8 +4611,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>
      * Parses the version into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
-     * @since FIXME
+     * @since 2.0
      */
+    @Restricted(NoExternalUse.class)
     public @CheckForNull static VersionNumber getStoredVersion() {
         return toVersion(Jenkins.getActiveInstance().version);
     }
@@ -4770,14 +4764,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // double check that initialization order didn't do any harm
             assert PERMISSIONS != null;
             assert ADMINISTER != null;
-        } catch (RuntimeException e) {
+
+        } catch (RuntimeException | Error e) {
             // when loaded on an agent and this fails, subsequent NoClassDefFoundError will fail to chain the cause.
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8051847
             // As we don't know where the first exception will go, let's also send this to logging so that
             // we have a known place to look at.
-            LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
-            throw e;
-        } catch (Error e) {
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
         }
