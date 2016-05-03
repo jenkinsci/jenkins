@@ -57,10 +57,24 @@ $.when(getItems()).done(function(data){
     }
 
     function isItemNameEmpty() {
-      var itemName = $('input[name="name"]', '#createItem').val();
-      return (itemName === '') ? true : false;
+      var $name = $('input[name="name"]', '#createItem');
+      var empty = $.trim($name.val()).length === 0;
+      if(empty){
+        $name.addClass('invalid');
+        return true;
+      }
+      return false;
     }
 
+    function watchNameBlur(){
+      $('input[name="name"]').blur(function(){
+        var $radios = $('#createItem input[type="radio"]');
+        if(!$radios.is(':checked')){
+          $($radios[0]).prop('checked',true).closest('li').addClass('active');
+        }
+      });
+    }
+    
     function activateValidationMessage(messageId, context, message) {
       if (message !== undefined && message !== '') {
         $(messageId, context).html('&#187; ' + message);
@@ -71,7 +85,7 @@ $.when(getItems()).done(function(data){
     }
 
     function cleanValidationMessages(context) {
-      $(context).find('.input-validation-message').addClass('input-message-disabled');
+      $(context).find('.input-validation-message').addClass('input-message-disabled').removeClass('invalid');
     }
 
     function hideInputHelp(context) {
@@ -82,6 +96,25 @@ $.when(getItems()).done(function(data){
       $('.input-help', context).removeClass('input-message-disabled');
     }
 
+    function setSelectState(e) {
+      var $this = $(this);
+      
+      // Checking to make sure we are not passing through an empty text input on the way to OK
+      if($this.attr('type') === 'text' && $.trim($this.val()).length === 0){
+        return
+      }
+      var $li = $this.closest('li, .add-item-copy');
+      var $form = $('#createItem');
+      $form.find('.active input[type="radio"][name="mode"]').prop('checked',false);
+      $form.find('.active').removeClass('active');
+      $li.addClass('active');
+      $li.find('input[type="radio"][name="mode"]').prop('checked', true);
+      cleanValidationMessages('.add-item-copy');
+      if (isItemNameEmpty()) {
+        activateValidationMessage('#itemname-required', '.add-item-name');
+      }
+    }
+    
     //////////////////////////////////
     // Draw functions
 
@@ -109,20 +142,7 @@ $.when(getItems()).done(function(data){
       var desc = checkForLink(elem.description);
       var $item = $(['<li class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
       elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
-
-      function setSelectState(e) {
-        e.preventDefault();
-        var $this = $(this).closest('li');
-        $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
-        $this.closest('.categories').find('.active').removeClass('active');
-        $this.addClass('active');
-        $this.find('input[type="radio"][name="mode"]').prop('checked', true);
-        $('input[type="text"][name="from"]', '#createItem').val('');
-        cleanValidationMessages('.add-item-copy');
-        if (isItemNameEmpty()) {
-          activateValidationMessage('#itemname-required', '.add-item-name');
-        }
-      }
+      
       $item.click(setSelectState);
 
       return $item;
@@ -151,6 +171,9 @@ $.when(getItems()).done(function(data){
 
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
     $('#add-item-panel').removeAttr('style');
+    
+    // watch the name input for first blur.
+    watchNameBlur();
 
     // Render all categories
     var $categories = $('div.categories');
@@ -178,18 +201,10 @@ $.when(getItems()).done(function(data){
         activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
-
-    // Init CopyFromField
-    $('input[name="from"]', '#createItem').focus(function() {
-      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
-      $('.categories').find('.active').removeClass('active');
-    });
-
-    $('input[name="from"]', '#createItem').blur(function() {
-      if (getCopyFromValue() === '') {
-        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
-      }
-    });
+    
+    // Set radio state if copy input is selected. 
+    // Will check in setSelectedState to make sure there is a value to ensure tabbing through still works...
+    $('input[name="from"]').on('blur click',setSelectState);
 
     // Client-side validation
     $("#createItem").submit(function(event) {
