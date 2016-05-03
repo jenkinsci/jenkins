@@ -25,6 +25,8 @@ package jenkins;
 
 import hudson.ExtensionList;
 import jenkins.util.HttpSessionListener;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.servlet.http.HttpSessionEvent;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@Restricted(NoExternalUse.class)
 public final class JenkinsHttpSessionListener implements javax.servlet.http.HttpSessionListener {
     
     // TODO: Seems like classes like this should live in the /war/src/java
