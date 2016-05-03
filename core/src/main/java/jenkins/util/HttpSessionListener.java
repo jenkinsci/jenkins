@@ -24,6 +24,7 @@
 package jenkins.util;
 
 
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 
 import javax.servlet.http.HttpSession;
@@ -38,6 +39,14 @@ import javax.servlet.http.HttpSessionEvent;
  * @since TODO
  */
 public abstract class HttpSessionListener implements ExtensionPoint, javax.servlet.http.HttpSessionListener {
+
+    /**
+     * Get all of the {@link HttpSessionListener} implementations.
+     * @return All of the {@link HttpSessionListener} implementations.
+     */
+    public static ExtensionList<HttpSessionListener> all() {
+        return ExtensionList.lookup(HttpSessionListener.class);
+    }
 
     /**
      * {@inheritDoc}

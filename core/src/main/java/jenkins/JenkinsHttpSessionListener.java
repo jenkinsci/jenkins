@@ -23,13 +23,11 @@
  */
 package jenkins;
 
-import hudson.ExtensionList;
 import jenkins.util.HttpSessionListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.servlet.http.HttpSessionEvent;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +47,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
     
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-        for (HttpSessionListener listener : all()) {
+        for (HttpSessionListener listener : HttpSessionListener.all()) {
             try {
                 listener.sessionCreated(httpSessionEvent);
             } catch (Exception e) {
@@ -60,7 +58,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
 
     @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
-        for (HttpSessionListener listener : all()) {
+        for (HttpSessionListener listener : HttpSessionListener.all()) {
             try {
                 listener.sessionDestroyed(httpSessionEvent);
             } catch (Exception e) {
@@ -69,7 +67,4 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
         }
     }
 
-    private static List<HttpSessionListener> all() {
-        return ExtensionList.lookup(HttpSessionListener.class);
-    }
 }
