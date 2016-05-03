@@ -913,7 +913,7 @@ var createPluginSetupWizard = function(appendTarget) {
 								if (j.correlationId) {
 									selectedPluginNames.push(j.name);
 								}
-								setFailureStatus(j)
+								setFailureStatus(j);
 							}
 							showInstallProgress(data.state);
 						}));

@@ -700,8 +700,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>0.0.23</version>
-
+            <version>1.0</version>
             <executions>
 
               <execution>
@@ -737,7 +736,7 @@ THE SOFTWARE.
                   <goal>gulp</goal>
                 </goals>
                 <configuration>
-                  <arguments>bundle</arguments>
+                  <arguments>lint bundle</arguments>
                 </configuration>
               </execution>
 

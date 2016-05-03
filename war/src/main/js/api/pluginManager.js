@@ -185,7 +185,7 @@ exports.installPluginsDone = function(handler) {
 			handler.call({ isError: true, message: errorThrown });
 		}
 	});
-}
+};
 
 /**
  * Restart Jenkins
