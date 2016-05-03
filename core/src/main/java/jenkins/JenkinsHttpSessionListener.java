@@ -49,7 +49,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
     
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
-        for (HttpSessionListener listener : getExtensionPoints()) {
+        for (HttpSessionListener listener : all()) {
             try {
                 listener.sessionCreated(httpSessionEvent);
             } catch (Exception e) {
@@ -60,7 +60,7 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
 
     @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
-        for (HttpSessionListener listener : getExtensionPoints()) {
+        for (HttpSessionListener listener : all()) {
             try {
                 listener.sessionDestroyed(httpSessionEvent);
             } catch (Exception e) {
@@ -68,8 +68,8 @@ public final class JenkinsHttpSessionListener implements javax.servlet.http.Http
             }
         }
     }
-    
-    private static List<HttpSessionListener> getExtensionPoints() {
+
+    private static List<HttpSessionListener> all() {
         return ExtensionList.lookup(HttpSessionListener.class);
     }
 }
