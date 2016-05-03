@@ -35,6 +35,7 @@ import javax.servlet.http.HttpSessionEvent;
  * Allows plugins to listen to {@link HttpSession} lifecycle events.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since TODO
  */
 public abstract class HttpSessionListener implements ExtensionPoint, javax.servlet.http.HttpSessionListener {
 
