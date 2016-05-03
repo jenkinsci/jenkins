@@ -174,6 +174,20 @@ exports.isRestartRequired = function(handler) {
 };
 
 /**
+ * Skip failed plugins, continue
+ */
+exports.installPluginsDone = function(handler) {
+	jenkins.post('/pluginManager/installPluginsDone', {}, function() {
+		handler();
+	}, {
+		timeout: pluginManagerErrorTimeoutMillis,
+		error: function(xhr, textStatus, errorThrown) {
+			handler.call({ isError: true, message: errorThrown });
+		}
+	});
+}
+
+/**
  * Restart Jenkins
  */
 exports.restartJenkins = function(handler) {

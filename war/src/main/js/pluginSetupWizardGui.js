@@ -104,12 +104,13 @@ var createPluginSetupWizard = function(appendTarget) {
 			return options.fn();
 		}
 	});
-
+	
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
 	var errorPanel = require('./templates/errorPanel.hbs');
 	var loadingPanel = require('./templates/loadingPanel.hbs');
 	var welcomePanel = require('./templates/welcomePanel.hbs');
 	var progressPanel = require('./templates/progressPanel.hbs');
+	var pluginSuccessPanel = require('./templates/successPanel.hbs');
 	var pluginSelectionPanel = require('./templates/pluginSelectionPanel.hbs');
 	var setupCompletePanel = require('./templates/setupCompletePanel.hbs');
 	var proxyConfigPanel = require('./templates/proxyConfigPanel.hbs');
@@ -164,6 +165,19 @@ var createPluginSetupWizard = function(appendTarget) {
 			html: true,
 			title: text
 		}).tooltip('show');
+	});
+	
+	// handle clicking links that might not get highlighted due to position on the page
+	$wizard.on('click', '.nav>li>a', function(){
+		var $li = $(this).parent();
+		var activateClicked = function() {
+			if(!$li.is('.active')) {
+				$li.parent().find('>li').removeClass('active');
+				$li.addClass('active');
+			}
+		};
+		setTimeout(activateClicked, 150); // this is the scroll time
+		setTimeout(activateClicked, 250); // this should combat timing issues
 	});
 
 	// localized messages
@@ -241,6 +255,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// plugin data for the progress panel
 	var installingPlugins = [];
+	var failedPluginNames = [];
 	var getInstallingPlugin = function(plugName) {
 		for(var i = 0; i < installingPlugins.length; i++) {
 			var p = installingPlugins[i];
@@ -249,6 +264,16 @@ var createPluginSetupWizard = function(appendTarget) {
 			}
 		}
 		return null;
+	};
+	var setFailureStatus = function(plugData) {
+		var plugFailIdx = failedPluginNames.indexOf(plugData.name);
+		if(/.*Fail.*/.test(plugData.installStatus)) {
+			if(plugFailIdx < 0) {
+				failedPluginNames.push(plugData.name);
+			}
+		} else if(plugFailIdx > 0) {
+			failedPluginNames = failedPluginNames.slice(plugFailIdx,1);
+		}
 	};
 
 	// recursively get all the dependencies for a particular plugin, this is used to show 'installing' status
@@ -336,6 +361,12 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// Define actions
 	var showInstallProgress = function(state) {
+		// check for installing plugins that failed
+		if(failedPluginNames.length > 0) {
+			setPanel(pluginSuccessPanel, { installingPlugins : installingPlugins, failedPlugins: true });
+			return;
+		}
+		
 		if(state) {
 			if(/CREATE_ADMIN_USER/.test(state)) {
 				setupFirstUser();
@@ -396,6 +427,8 @@ var createPluginSetupWizard = function(appendTarget) {
 						state = 'fail';
 					}
 
+					setFailureStatus(j);
+
 					if(txt && state) {
 						for(var installingIdx = 0; installingIdx < installingPlugins.length; installingIdx++) {
 							var installing = installingPlugins[installingIdx];
@@ -440,7 +473,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				else {
 					// mark complete
 					$('.progress-bar').css({width: '100%'});
-					setupFirstUser();
+					showInstallProgress('CREATE_ADMIN_USER'); // this temporary, changed in another PR
 				}
 			}));
 		};
@@ -744,6 +777,23 @@ var createPluginSetupWizard = function(appendTarget) {
 		});
 	};
 	
+	// push failed plugins to retry
+	var retryFailedPlugins = function() {
+		var failedPlugins = failedPluginNames;
+		failedPluginNames = [];
+		installPlugins(failedPlugins);
+	};
+	
+	// continue with failed plugins
+	var continueWithFailedPlugins = function() {
+		pluginManager.installPluginsDone(function(){
+			pluginManager.installStatus(handleGenericError(function(data) {
+				failedPluginNames = [];
+				showInstallProgress(data.state);
+			}));
+		});
+	};
+	
 	// Call this to resume an installation after restart
 	var resumeInstallation = function() {
 		// don't re-initialize installing plugins
@@ -823,6 +873,8 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.show-proxy-config': setupProxy,
 		'.save-proxy-config': saveProxyConfig,
 		'.skip-plugin-installs': function() { installPlugins([]); },
+		'.retry-failed-plugins': retryFailedPlugins,
+		'.continue-with-failed-plugins': continueWithFailedPlugins,
 		'.start-over': startOver
 	};
 	for(var cls in actions) {
@@ -855,13 +907,15 @@ var createPluginSetupWizard = function(appendTarget) {
 						selectedPluginNames = [];
 						loadPluginData(handleGenericError(function() {
 							for (var i = 0; i < jobs.length; i++) {
+								var j = jobs[i];
 								// If the job does not have a 'correlationId', then it was not selected
 								// by the user for install i.e. it's probably a dependency plugin.
-								if (jobs[i].correlationId) {
-									selectedPluginNames.push(jobs[i].name);
+								if (j.correlationId) {
+									selectedPluginNames.push(j.name);
 								}
+								setFailureStatus(j)
 							}
-						showInstallProgress(data.state);
+							showInstallProgress(data.state);
 						}));
 					} else {
 						showInstallProgress(data.state);
