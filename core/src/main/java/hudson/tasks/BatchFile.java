@@ -28,9 +28,12 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.util.LineEndingConversion;
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import java.io.ObjectStreamException;
+
+import com.google.common.collect.ObjectArrays;
 
 /**
  * Executes commands by using Windows batch file.
@@ -42,9 +45,25 @@ public class BatchFile extends CommandInterpreter {
     public BatchFile(String command) {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Windows));
     }
-
+    
     public String[] buildCommandLine(FilePath script) {
         return new String[] {"cmd","/c","call",script.getRemote()};
+    }
+
+    protected String[] buildCommandLine(FilePath script, FilePath ws) {
+    	String[] cmdLine = buildCommandLine(script);
+    	
+    	if (ws.getRemote().startsWith("\\\\"))
+    	{
+    		// If workspace path is a UNC path, use pushd/popd to create a temporary drive and avoid cmd.exe to
+    		// complain about unsupported UNC path and moving to C:\Windows as working directory
+	    	String[] prependCmdLine = new String[] {"pushd",  "&&", "set", "WORKSPACE=%CD%", "&&"};
+	    	String[] appendCmdLine = new String[] { "&&", "popd"};
+	    	cmdLine = ObjectArrays.concat(prependCmdLine, cmdLine, String.class);
+	    	cmdLine = ObjectArrays.concat(cmdLine, appendCmdLine, String.class);
+    	}
+    	
+        return cmdLine;
     }
 
     protected String getContents() {

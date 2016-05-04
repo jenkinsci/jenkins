@@ -449,8 +449,10 @@ public abstract class Slave extends Node implements Serializable {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(Messages.Slave_Remote_Director_Mandatory());
 
-            if(value.startsWith("\\\\") || value.startsWith("/net/"))
+            if(value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
+            else if(value.startsWith("\\\\"))
+                return FormValidation.warning(Messages.Slave_Network_UNC_Path_Warning());
 
             if (Util.isRelativePath(value)) {
                 return FormValidation.warning(Messages.Slave_Remote_Relative_Path_Warning());
