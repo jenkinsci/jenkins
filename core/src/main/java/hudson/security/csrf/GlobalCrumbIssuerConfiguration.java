@@ -28,6 +28,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -35,7 +36,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=195) // immediately after the security setting
+@Extension(ordinal=195) @Symbol("crumb") // immediately after the security setting
 public class GlobalCrumbIssuerConfiguration extends GlobalConfiguration {
     @Override
     public GlobalConfigurationCategory getCategory() {

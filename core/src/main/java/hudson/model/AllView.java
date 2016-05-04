@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -88,7 +89,7 @@ public class AllView extends View {
         // noop
     }
 
-    @Extension
+    @Extension @Symbol("all")
     public static final class DescriptorImpl extends ViewDescriptor {
         @Override
         public boolean isInstantiable() {

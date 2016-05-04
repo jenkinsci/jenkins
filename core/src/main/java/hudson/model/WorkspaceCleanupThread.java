@@ -37,13 +37,14 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
+import org.jenkinsci.Symbol;
 
 /**
  * Clean up old left-over workspaces from agents.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("workspaceCleanup")
 public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     public WorkspaceCleanupThread() {
         super("Workspace clean-up");

@@ -38,6 +38,7 @@ import hudson.util.FormValidation;
 import java.io.File;
 
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
@@ -306,7 +307,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Deprecated
     public static volatile DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("archiveArtifacts")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             DESCRIPTOR = this; // backward compatibility

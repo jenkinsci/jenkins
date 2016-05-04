@@ -31,6 +31,7 @@ import hudson.model.queue.Tasks;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -380,7 +381,7 @@ public abstract class LoadStatistics {
     /**
      * Periodically update the load statistics average.
      */
-    @Extension
+    @Extension @Symbol("loadStatistics")
     public static class LoadStatisticsUpdater extends PeriodicWork {
         public long getRecurrencePeriod() {
             return CLOCK;

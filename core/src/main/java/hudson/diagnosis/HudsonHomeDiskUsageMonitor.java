@@ -28,6 +28,7 @@ import hudson.model.AbstractModelObject;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.ExtensionList;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
@@ -40,7 +41,7 @@ import java.util.List;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("diskUsageCheck")
 public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
     /**
      * Value updated by {@link HudsonHomeDiskUsageChecker}.

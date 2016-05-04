@@ -32,6 +32,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import hudson.model.MyViewsProperty;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -67,7 +68,7 @@ public abstract class MyViewsTabBar extends AbstractDescribableImpl<MyViewsTabBa
      *
      * @author Kohsuke Kawaguchi
      */
-    @Extension(ordinal=305)
+    @Extension(ordinal=305) @Symbol("myView")
     public static class GlobalConfigurationImpl extends GlobalConfiguration {
         public MyViewsTabBar getMyViewsTabBar() {
             return Jenkins.getInstance().getMyViewsTabBar();

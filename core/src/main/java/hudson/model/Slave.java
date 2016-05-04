@@ -67,6 +67,7 @@ import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -98,7 +99,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Description of this node.
      */
-    private final String description;
+    private String description;
 
     /**
      * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
@@ -118,7 +119,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Job allocation strategy.
      */
-    private Mode mode;
+    private Mode mode = Mode.NORMAL;
 
     /**
      * Agent availablility strategy.
@@ -162,6 +163,16 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
+    public Slave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+        this.name = name;
+        this.remoteFS = remoteFS;
+        this.launcher = launcher;
+    }
+
+    /**
+     * @deprecated as of 1.XXX
+     *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     */
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -231,6 +242,11 @@ public abstract class Slave extends Node implements Serializable {
         this.name = name;
     }
 
+    @DataBoundSetter
+    public void setNodeDescription(String value) {
+        this.description = value;
+    }
+
     public String getNodeDescription() {
         return description;
     }
@@ -239,10 +255,16 @@ public abstract class Slave extends Node implements Serializable {
         return numExecutors;
     }
 
+    @DataBoundSetter
+    public void setNumExecutors(int n) {
+        this.numExecutors = n;
+    }
+
     public Mode getMode() {
         return mode;
     }
 
+    @DataBoundSetter
     public void setMode(Mode mode) {
         this.mode = mode;
     }
@@ -252,10 +274,16 @@ public abstract class Slave extends Node implements Serializable {
     	return nodeProperties;
     }
 
+    @DataBoundSetter
+    public void setNodeProperties(List<? extends NodeProperty<?>> properties) throws IOException {
+        nodeProperties.replaceBy(properties);
+    }
+
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
 
+    @DataBoundSetter
     public void setRetentionStrategy(RetentionStrategy availabilityStrategy) {
         this.retentionStrategy = availabilityStrategy;
     }
@@ -265,6 +293,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     @Override
+    @DataBoundSetter
     public void setLabelString(String labelString) throws IOException {
         this.label = Util.fixNull(labelString).trim();
         // Compute labels now.

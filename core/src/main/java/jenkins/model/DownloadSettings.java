@@ -35,6 +35,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -46,7 +47,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see DownloadService
  */
 @Restricted(NoExternalUse.class) // no clear reason for this to be an API
-@Extension public final class DownloadSettings extends GlobalConfiguration {
+@Extension @Symbol("downloadSettings")
+public final class DownloadSettings extends GlobalConfiguration {
 
     public static DownloadSettings get() {
         return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
@@ -87,7 +89,8 @@ import org.kohsuke.stapler.StaplerRequest;
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
     }
 
-    @Extension public static final class DailyCheck extends AsyncPeriodicWork {
+    @Extension @Symbol("updateCenterCheck")
+    public static final class DailyCheck extends AsyncPeriodicWork {
 
         public DailyCheck() {
             super("Download metadata");

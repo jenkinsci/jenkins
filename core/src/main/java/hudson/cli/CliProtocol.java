@@ -8,6 +8,7 @@ import hudson.remoting.ChannelBuilder;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.slaves.NioChannelSelector;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.inject.Inject;
@@ -25,7 +26,7 @@ import java.net.Socket;
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
-@Extension
+@Extension @Symbol("cli")
 public class CliProtocol extends AgentProtocol {
     @Inject
     NioChannelSelector nio;
