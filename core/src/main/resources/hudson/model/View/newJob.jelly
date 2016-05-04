@@ -22,20 +22,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New Project" page.
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
-  <l:layout norefresh="true" permission="${permission}" title="${%NewJob(it.newPronoun)}">
-    <st:include page="sidepanel.jelly" />
+
+  <l:layout norefresh="true" cssclass="main-panel-only" permission="${permission}" title="${%NewJob(it.newPronoun)}">
+
+    <l:js src="jsbundles/add-item.js" />
+    <l:css src="jsbundles/add-item.css" />
+
     <l:main-panel>
-      <j:invokeStatic var="jobs" className="hudson.model.Items" method="all">
-        <j:arg type="hudson.model.ItemGroup" value="${it.ownerItemGroup}"/>
-      </j:invokeStatic>
-      <n:form nameTitle="${%JobName(it.newPronoun)}" copyTitle="${%CopyExisting(it.newPronoun)}" showCopyOption="${!empty(app.itemMap)}"
-              descriptors="${jobs}" checkUrl="${rootURL}/checkJobName" xmlns:n="/lib/hudson/newFromList" />
+      <div id="add-item-panel" style="display: none;">
+        <form method="post" action="createItem" name="createItem" id="createItem">
+          <div class="header">
+            <div class="add-item-name">
+              <label for="name">${%ItemName.label}</label>
+              <input name="name" id="name" type="text" tabindex="0" />
+              <div class="input-help">&#187; ${%ItemName.help}</div>
+              <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+              <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
+              <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+            </div>
+          </div>
+
+          <div class="categories flat" role="radiogroup" aria-labelledby="Items"/>
+
+          <j:if test="${!empty(app.itemMap)}">
+            <div class="item-copy">
+              <p class="description">${%CopyOption.description}:</p>
+              <div class="add-item-copy">
+                <input type="radio" name="mode" value="copy" />
+                <div class="icon">
+                  <img src="${resURL}/images/48x48/copy.png" />
+                </div>
+                <label>${%CopyOption.label}</label>
+                <j:set var="descriptor" value="${it.descriptor}" />
+                <s:textbox id="from" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+              </div>
+            </div>
+          </j:if>
+
+          <div class="footer">
+            <div class="btn-decorator">
+              <button type="submit" id="ok-button">OK</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
     </l:main-panel>
   </l:layout>
 </j:jelly>

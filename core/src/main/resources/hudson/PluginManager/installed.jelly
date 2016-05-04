@@ -68,7 +68,7 @@ THE SOFTWARE.
                 <th width="1">${%Uninstall}</th>
               </tr>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
-                <tr class="plugin ${p.hasDependants()?'has-dependants':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
+                <tr class="plugin ${p.hasDependants()?'has-dependants':''} ${(p.hasDependants() &amp;&amp; !p.enabled)?'has-dependants-but-disabled':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
                   <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="center pane enable" data="${state}">
                     <input type="checkbox" checked="${state}" onclick="flip(event)"

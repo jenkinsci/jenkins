@@ -228,13 +228,13 @@ public class NodeProvisioner {
                             } catch (InterruptedException e) {
                                 throw new AssertionError(e); // since we confirmed that the future is already done
                             } catch (ExecutionException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch",
+                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
                                         e.getCause());
                                 for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                                     cl.onFailure(f, e.getCause());
                                 }
                             } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", 
+                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch", 
                                         e);
                                 for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                                     cl.onFailure(f, e);
@@ -244,7 +244,7 @@ public class NodeProvisioner {
                                 throw e;
                             } catch (Throwable e) {
                                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while " 
-                                        + "processing provisioned slave " + f.displayName, e);
+                                        + "processing provisioned agent " + f.displayName, e);
                             } finally {
                                 while (true) {
                                     List<PlannedNode> orig = pendingLaunches.get();
@@ -555,10 +555,9 @@ public class NodeProvisioner {
                         if (node != null) {
                             additionalPlannedCapacity += node.getNumExecutors();
                         }
-                    } catch (InterruptedException e) {
-                        // should never happen as we were told the future was done
-                    } catch (ExecutionException e) {
-                        // ignore, this will be caught by others later
+                    } catch (InterruptedException | ExecutionException e) {
+                        // InterruptedException: should never happen as we were told the future was done
+                        // ExecutionException: ignore, this will be caught by others later
                     }
                 } else {
                     additionalPlannedCapacity += f.numExecutors;
@@ -607,23 +606,23 @@ public class NodeProvisioner {
         @Override
         public StrategyDecision apply(@Nonnull StrategyState state) {
         /*
-            Here we determine how many additional slaves we need to keep up with the load (if at all),
+            Here we determine how many additional agents we need to keep up with the load (if at all),
             which involves a simple math.
 
             Broadly speaking, first we check that all the executors are fully utilized before attempting
-            to start any new slave (this also helps to ignore the temporary gap between different numbers,
+            to start any new agent (this also helps to ignore the temporary gap between different numbers,
             as changes in them are not necessarily synchronized --- for example, there's a time lag between
-            when a slave launches (thus bringing the planned capacity down) and the time when its executors
+            when an agent launches (thus bringing the planned capacity down) and the time when its executors
             pick up builds (thus bringing the queue length down.)
 
-            Once we confirm that, we compare the # of buildable items against the additional slaves
-            that are being brought online. If we have more jobs than our executors can handle, we'll launch a new slave.
+            Once we confirm that, we compare the # of buildable items against the additional agents
+            that are being brought online. If we have more jobs than our executors can handle, we'll launch a new agent.
 
             So this computation involves three stats:
 
               1. # of idle executors
               2. # of jobs that are starving for executors
-              3. # of additional slaves being provisioned (planned capacities.)
+              3. # of additional agents being provisioned (planned capacities.)
 
             To ignore a temporary surge/drop, we make conservative estimates on each one of them. That is,
             we take the current snapshot value, and we take the current exponential moving average (EMA) value,
@@ -675,14 +674,14 @@ public class NodeProvisioner {
                     CLOUD:
                     for (Cloud c : Jenkins.getInstance().clouds) {
                         if (excessWorkload < 0) {
-                            break;  // enough slaves allocated
+                            break;  // enough agents allocated
                         }
 
                         // Make sure this cloud actually can provision for this label.
                         if (c.canProvision(state.getLabel())) {
                             // provisioning a new node should be conservative --- for example if excessWorkload is 1.4,
                             // we don't want to allocate two nodes but just one.
-                            // OTOH, because of the exponential decay, even when we need one slave,
+                            // OTOH, because of the exponential decay, even when we need one agent,
                             // excess workload is always
                             // something like 0.95, in which case we want to allocate one node.
                             // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to
@@ -774,7 +773,7 @@ public class NodeProvisioner {
     @Extension
     public static class NodeProvisionerInvoker extends PeriodicWork {
         /**
-         * Give some initial warm up time so that statically connected slaves
+         * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
     	 public static int INITIALDELAY = Integer.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);

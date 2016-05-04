@@ -137,7 +137,7 @@ public abstract class ItemGroupMixIn {
     };
 
     /**
-     * Creates a {@link TopLevelItem} from the submission of the '/lib/hudson/newFromList/formList'
+     * Creates a {@link TopLevelItem} for example from the submission of the {@code /lib/hudson/newFromList/form} tag
      * or throws an exception if it fails.
      */
     public synchronized TopLevelItem createTopLevelItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -170,12 +170,7 @@ public abstract class ItemGroupMixIn {
             String from = req.getParameter("from");
 
             // resolve a name to Item
-            Item src = null;
-            if (!from.startsWith("/"))
-                src = parent.getItem(from);
-            if (src==null)
-                src = Jenkins.getInstance().getItemByFullName(from);
-
+            Item src = Jenkins.getInstance().getItem(from, parent);
             if(src==null) {
                 if(Util.fixEmpty(from)==null)
                     throw new Failure("Specify which job to copy");

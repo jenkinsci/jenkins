@@ -182,15 +182,21 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
-        Jenkins hudson = Jenkins.getInstance();
-
+        final Jenkins jenkins = Jenkins.getInstance();
+        
         List<T> r = new ArrayList<T>();
+        if (jenkins == null) {
+            return r;
+        }
+        
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            T item = hudson.getItem(fullName, context, type);
-            if(item!=null)
-                r.add(item);
+            if (StringUtils.isNotEmpty(fullName)) {
+                T item = jenkins.getItem(fullName, context, type);
+                if(item!=null)
+                    r.add(item);
+            }
         }
         return r;
     }

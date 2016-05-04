@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Receives incoming slaves connecting through {@link JnlpSlaveAgentProtocol2}.
+ * Receives incoming agents connecting through {@link JnlpSlaveAgentProtocol2}.
  *
  * <p>
  * This is useful to establish the communication with other JVMs and use them

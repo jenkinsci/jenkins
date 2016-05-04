@@ -59,12 +59,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -74,6 +76,10 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.bytecode.Transformer;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.annotation.Nonnull;
 
 import static org.apache.commons.io.FilenameUtils.getBaseName;
 
@@ -201,21 +207,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (libs != null)
                 paths.addAll(Arrays.asList(libs));
 
-            try {
-                Class pathJDK7 = Class.forName("java.nio.file.Path");
-                Object toPath = File.class.getMethod("toPath").invoke(expandDir);
-                URI uri = (URI) pathJDK7.getMethod("toUri").invoke(toPath);
+            baseResourceURL = expandDir.toPath().toUri().toURL();
 
-                baseResourceURL = uri.toURL();
-            } catch (NoSuchMethodException e) {
-                throw new Error(e);
-            } catch (ClassNotFoundException e) {
-                baseResourceURL = expandDir.toURI().toURL();
-            } catch (InvocationTargetException e) {
-                throw new Error(e);
-            } catch (IllegalAccessException e) {
-                throw new Error(e);
-            }
         }
         File disableFile = new File(archive.getPath() + ".disabled");
         if (disableFile.exists()) {
@@ -236,8 +229,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
             }
         }
-        for (DetachedPlugin detached : DETACHED_LIST)
-            detached.fix(atts,optionalDependencies);
+        
+        fix(atts,optionalDependencies);
 
         // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
         // such as database plugin for JPA support. The Mask-Classes attribute is insufficient because those classes
@@ -253,6 +246,41 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+
+    private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
+        String pluginName = atts.getValue("Short-Name");
+        
+        String jenkinsVersion = atts.getValue("Jenkins-Version");
+        if (jenkinsVersion==null)
+            jenkinsVersion = atts.getValue("Hudson-Version");
+        
+        optionalDependencies.addAll(getImpliedDependencies(pluginName, jenkinsVersion));
+    }
+    
+    /**
+     * Returns all the plugin dependencies that are implicit based on a particular Jenkins version
+     * @since 2.0
+     */
+    @Nonnull
+    public static List<PluginWrapper.Dependency> getImpliedDependencies(String pluginName, String jenkinsVersion) {
+        List<PluginWrapper.Dependency> out = new ArrayList<>();
+        for (DetachedPlugin detached : DETACHED_LIST) {
+            // don't fix the dependency for itself, or else we'll have a cycle
+            if (detached.shortName.equals(pluginName)) {
+                continue;
+            }
+            if (BREAK_CYCLES.contains(pluginName + '/' + detached.shortName)) {
+                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {pluginName, detached.shortName});
+                continue;
+            }
+            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
+            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
+                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requireVersion));
+                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {pluginName, detached.shortName, jenkinsVersion});
+            }
+        }
+        return out;
     }
 
     @Deprecated
@@ -281,9 +309,65 @@ public class ClassicPluginStrategy implements PluginStrategy {
     }
 
     /**
-     * Information about plugins that were originally in the core.
+     * Get the list of all plugins that have ever been {@link DetachedPlugin detached} from Jenkins core.
+     * @return A {@link List} of {@link DetachedPlugin}s.
      */
-    private static final class DetachedPlugin {
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins() {
+        return DETACHED_LIST;
+    }
+
+    /**
+     * Get the list of plugins that have been detached since a specific Jenkins release version.
+     * @param since The Jenkins version.
+     * @return A {@link List} of {@link DetachedPlugin}s.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull List<DetachedPlugin> getDetachedPlugins(@Nonnull VersionNumber since) {
+        List<DetachedPlugin> detachedPlugins = new ArrayList<>();
+
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (!detachedPlugin.getSplitWhen().isOlderThan(since)) {
+                detachedPlugins.add(detachedPlugin);
+            }
+        }
+
+        return detachedPlugins;
+    }
+
+    /**
+     * Is the named plugin a plugin that was detached from Jenkins at some point in the past.
+     * @param pluginId The plugin ID.
+     * @return {@code true} if the plugin is a plugin that was detached from Jenkins at some
+     * point in the past, otherwise {@code false}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean isDetachedPlugin(@Nonnull String pluginId) {
+        for (DetachedPlugin detachedPlugin : DETACHED_LIST) {
+            if (detachedPlugin.getShortName().equals(pluginId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Information about plugins that were originally in the core.
+     * <p>
+     * A detached plugin is one that has any of the following characteristics:
+     * <ul>
+     *     <li>
+     *         Was an existing plugin that at some time previously bundled with the Jenkins war file.
+     *     </li>
+     *     <li>
+     *         Was previous code in jenkins core that was split to a separate-plugin (but may not have
+     *         ever been bundled in a jenkins war file - i.e. it gets split after this 2.0 update).
+     *     </li>
+     * </ul>
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class DetachedPlugin {
         private final String shortName;
         /**
          * Plugins built for this Jenkins version (and earlier) will automatically be assumed to have
@@ -301,42 +385,39 @@ public class ClassicPluginStrategy implements PluginStrategy {
             this.requireVersion = requireVersion;
         }
 
-        private void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
-            // don't fix the dependency for yourself, or else we'll have a cycle
-            String yourName = atts.getValue("Short-Name");
-            if (shortName.equals(yourName))   return;
-            if (BREAK_CYCLES.contains(yourName + '/' + shortName)) {
-                LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {yourName, shortName});
-                return;
-            }
+        /**
+         * Get the short name of the plugin.
+         * @return The short name of the plugin.
+         */
+        public String getShortName() {
+            return shortName;
+        }
 
-            // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
-            String jenkinsVersion = atts.getValue("Jenkins-Version");
-            if (jenkinsVersion==null)
-                jenkinsVersion = atts.getValue("Hudson-Version");
-            if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(splitWhen) <= 0) {
-                optionalDependencies.add(new PluginWrapper.Dependency(shortName + ':' + requireVersion));
-                LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {yourName, shortName, jenkinsVersion});
-            }
+        /**
+         * Get the Jenkins version from which the plugin was detached.
+         * @return The Jenkins version from which the plugin was detached.
+         */
+        public VersionNumber getSplitWhen() {
+            return splitWhen;
         }
     }
 
-    private static final List<DetachedPlugin> DETACHED_LIST = Arrays.asList(
-        new DetachedPlugin("maven-plugin","1.296","1.296"),
-        new DetachedPlugin("subversion","1.310","1.0"),
-        new DetachedPlugin("cvs","1.340","0.1"),
-        new DetachedPlugin("ant","1.430.*","1.0"),
-        new DetachedPlugin("javadoc","1.430.*","1.0"),
-        new DetachedPlugin("external-monitor-job","1.467.*","1.0"),
-        new DetachedPlugin("ldap","1.467.*","1.0"),
-        new DetachedPlugin("pam-auth","1.467.*","1.0"),
-        new DetachedPlugin("mailer","1.493.*","1.2"),
-        new DetachedPlugin("matrix-auth","1.535.*","1.0.2"),
-        new DetachedPlugin("windows-slaves","1.547.*","1.0"),
-        new DetachedPlugin("antisamy-markup-formatter","1.553.*","1.0"),
-        new DetachedPlugin("matrix-project","1.561.*","1.0"),
-        new DetachedPlugin("junit","1.577.*","1.0")
-    );
+    private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
+            new DetachedPlugin("maven-plugin", "1.296", "1.296"),
+            new DetachedPlugin("subversion", "1.310", "1.0"),
+            new DetachedPlugin("cvs", "1.340", "0.1"),
+            new DetachedPlugin("ant", "1.430.*", "1.0"),
+            new DetachedPlugin("javadoc", "1.430.*", "1.0"),
+            new DetachedPlugin("external-monitor-job", "1.467.*", "1.0"),
+            new DetachedPlugin("ldap", "1.467.*", "1.0"),
+            new DetachedPlugin("pam-auth", "1.467.*", "1.0"),
+            new DetachedPlugin("mailer", "1.493.*", "1.2"),
+            new DetachedPlugin("matrix-auth", "1.535.*", "1.0.2"),
+            new DetachedPlugin("windows-slaves", "1.547.*", "1.0"),
+            new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
+            new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
+            new DetachedPlugin("junit", "1.577.*", "1.0")
+    ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
     private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(
@@ -421,13 +502,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         throw new IOException(className+" doesn't extend from hudson.Plugin");
                     }
                     wrapper.setPlugin((Plugin) o);
-                } catch (LinkageError e) {
+                } catch (LinkageError | ClassNotFoundException e) {
                     throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (ClassNotFoundException e) {
-                    throw new IOException("Unable to load " + className + " from " + wrapper.getShortName(),e);
-                } catch (IllegalAccessException e) {
-                    throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
-                } catch (InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException e) {
                     throw new IOException("Unable to create instance of " + className + " from " + wrapper.getShortName(),e);
                 }
             }
@@ -756,9 +833,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
                 $pathComponents.setAccessible(true);
                 pathComponents = (Vector)$pathComponents.get(this);
-            } catch (NoSuchFieldException e) {
-                throw new Error(e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new Error(e);
             }
         }

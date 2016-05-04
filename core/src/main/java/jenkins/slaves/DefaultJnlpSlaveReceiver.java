@@ -19,7 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Match the name against the slave name and route the incoming JNLP agent as {@link Slave}.
+ * Match the name against the agent name and route the incoming JNLP agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561  
@@ -54,7 +54,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         }
 
         if (!matchesSecret(nodeName,handshake)) {
-            handshake.error(nodeName + " can't be connected since the slave's secret does not match the handshake secret.");
+            handshake.error(nodeName + " can't be connected since the agent's secret does not match the handshake secret.");
             return true;
         }
 
@@ -74,7 +74,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
     
     /**
-     * Called after the client has connected to check if the slave secret matches the handshake secret
+     * Called after the client has connected to check if the agent secret matches the handshake secret
      *
      * @param nodeName
      * Name of the incoming JNLP agent. All {@link JnlpAgentReceiver} shares a single namespace
@@ -84,12 +84,12 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      * Encapsulation of the interaction with the incoming JNLP agent.
      *
      * @return
-     * true if the slave secret matches the handshake secret, false otherwise.
+     * true if the agent secret matches the handshake secret, false otherwise.
      */
     private boolean matchesSecret(String nodeName, JnlpServerHandshake handshake){
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
         String handshakeSecret = handshake.getRequestProperty("Secret-Key");
-        // Verify that the slave secret matches the handshake secret.
+        // Verify that the agent secret matches the handshake secret.
         if (!computer.getJnlpMac().equals(handshakeSecret)) {
             LOGGER.log(Level.WARNING, "An attempt was made to connect as {0} from {1} with an incorrect secret", new Object[]{nodeName, handshake.getSocket()!=null?handshake.getSocket().getRemoteSocketAddress():null});
             return false;

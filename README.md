@@ -53,12 +53,12 @@ Jenkins is **licensed** under the **[MIT License]**. The terms of the license ar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 
-[ButlerImage]: http://jenkins-ci.org/sites/default/files/jenkins_logo.png
+[ButlerImage]: https://jenkins.io/sites/default/files/jenkins_logo.png
 [MIT License]: https://github.com/jenkinsci/jenkins/raw/master/LICENSE.txt
 [Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
-[website]: http://jenkins-ci.org
-[@jenkinsci]: http://twitter.com/jenkinsci
+[website]: https://jenkins.io/
+[@jenkinsci]: https://twitter.com/jenkinsci
 [Contributing]: https://wiki.jenkins-ci.org/display/JENKINS/contributing
 [Extend Jenkins]: https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins
 [wiki]: https://wiki.jenkins-ci.org

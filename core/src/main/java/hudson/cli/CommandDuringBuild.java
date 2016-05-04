@@ -77,9 +77,7 @@ public abstract class CommandDuringBuild extends CLICommand {
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid build number: "+envs[1]);
             }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to identify the build being executed",e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new IllegalArgumentException("Failed to identify the build being executed",e);
         }
     }

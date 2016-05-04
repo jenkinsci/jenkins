@@ -43,6 +43,9 @@ import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import jnr.posix.FileStat;
 import jnr.posix.POSIX;
 
@@ -63,6 +66,12 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.NotLinkException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -208,24 +217,54 @@ public class Util {
     /**
      * Deletes the contents of the given directory (but not the directory itself)
      * recursively.
+     * It does not take no for an answer - if necessary, it will have multiple
+     * attempts at deleting things.
      *
      * @throws IOException
      *      if the operation fails.
      */
     public static void deleteContentsRecursive(@Nonnull File file) throws IOException {
-        File[] files = file.listFiles();
-        if(files==null)
-            return;     // the directory didn't exist in the first place
-        for (File child : files)
-            deleteRecursive(child);
+        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
+            try {
+                tryOnceDeleteContentsRecursive(file);
+                break; // success
+            } catch (IOException ex) {
+                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
+                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
+                    throw new IOException(deleteFailExceptionMessage(file, numberOfAttempts, threadWasInterrupted), ex);
+            }
+        }
     }
 
     /**
      * Deletes this file (and does not take no for an answer).
+     * If necessary, it will have multiple attempts at deleting things.
+     *
      * @param f a file to delete
      * @throws IOException if it exists but could not be successfully deleted
      */
     public static void deleteFile(@Nonnull File f) throws IOException {
+        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
+            try {
+                tryOnceDeleteFile(f);
+                break; // success
+            } catch (IOException ex) {
+                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
+                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
+                    throw new IOException(deleteFailExceptionMessage(f, numberOfAttempts, threadWasInterrupted), ex);
+            }
+        }
+    }
+
+    /**
+     * Deletes this file, working around most problems which might make
+     * this difficult.
+     * 
+     * @param f
+     *            What to delete. If a directory, it'll need to be empty.
+     * @throws IOException if it exists but could not be successfully deleted
+     */
+    private static void tryOnceDeleteFile(File f) throws IOException {
         if (!f.delete()) {
             if(!f.exists())
                 // we are trying to delete a file that no longer exists, so this is not an error
@@ -251,19 +290,9 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
-                try {
-                    Class.forName("java.nio.file.Files").getMethod("delete", Class.forName("java.nio.file.Path")).invoke(null, File.class.getMethod("toPath").invoke(f));
-                } catch (InvocationTargetException x) {
-                    Throwable x2 = x.getCause();
-                    if (x2 instanceof IOException) {
-                        // may have a specific exception message
-                        throw (IOException) x2;
-                    }
-                    // else suppress
-                } catch (Throwable x) {
-                    // linkage errors, etc.; suppress
-                }
-                // see http://www.nabble.com/Sometimes-can%27t-delete-files-from-hudson.scm.SubversionSCM%24CheckOutTask.invoke%28%29-tt17333292.html
+                Files.deleteIfExists(f.toPath());
+
+                // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
@@ -304,19 +333,144 @@ public class Util {
 
     }
 
+    /**
+     * Deletes the given directory (including its contents) recursively.
+     * It does not take no for an answer - if necessary, it will have multiple
+     * attempts at deleting things.
+     *
+     * @throws IOException
+     * if the operation fails.
+     */
     public static void deleteRecursive(@Nonnull File dir) throws IOException {
-        if(!isSymlink(dir))
-            deleteContentsRecursive(dir);
-        try {
-            deleteFile(dir);
-        } catch (IOException e) {
-            // if some of the child directories are big, it might take long enough to delete that
-            // it allows others to create new files, causing problemsl ike JENKINS-10113
-            // so give it one more attempt before we give up.
-            if(!isSymlink(dir))
-                deleteContentsRecursive(dir);
-            deleteFile(dir);
+        for( int numberOfAttempts=1 ; ; numberOfAttempts++ ) {
+            try {
+                tryOnceDeleteRecursive(dir);
+                break; // success
+            } catch (IOException ex) {
+                boolean threadWasInterrupted = pauseBetweenDeletes(numberOfAttempts);
+                if( numberOfAttempts>= DELETION_MAX || threadWasInterrupted)
+                    throw new IOException(deleteFailExceptionMessage(dir, numberOfAttempts, threadWasInterrupted), ex);
+            }
         }
+    }
+
+    /**
+     * Deletes a file or folder, throwing the first exception encountered, but
+     * having a go at deleting everything. i.e. it does not <em>stop</em> on the
+     * first exception, but tries (to delete) everything once.
+     *
+     * @param dir
+     * What to delete. If a directory, the contents will be deleted
+     * too.
+     * @throws The first exception encountered.
+     */
+    private static void tryOnceDeleteRecursive(File dir) throws IOException {
+        if(!isSymlink(dir))
+            tryOnceDeleteContentsRecursive(dir);
+        tryOnceDeleteFile(dir);
+    }
+
+    /**
+     * Deletes a folder's contents, throwing the first exception encountered,
+     * but having a go at deleting everything. i.e. it does not <em>stop</em>
+     * on the first exception, but tries (to delete) everything once.
+     *
+     * @param directory
+     * The directory whose contents will be deleted.
+     * @throws The first exception encountered.
+     */
+    private static void tryOnceDeleteContentsRecursive(File directory) throws IOException {
+        File[] directoryContents = directory.listFiles();
+        if(directoryContents==null)
+            return; // the directory didn't exist in the first place
+        IOException firstCaught = null;
+        for (File child : directoryContents) {
+            try {
+                tryOnceDeleteRecursive(child);
+            } catch (IOException justCaught) {
+                if( firstCaught==null) {
+                    firstCaught = justCaught;
+                }
+            }
+        }
+        if( firstCaught!=null )
+            throw firstCaught;
+    }
+
+    /**
+     * Pauses between delete attempts, and says if it's ok to try again.
+     * This does not wait if the wait time is zero or if we have tried
+     * too many times already.
+     * <p>
+     * See {@link #WAIT_BETWEEN_DELETION_RETRIES} for details of
+     * the pause duration.<br/>
+     * See {@link #GC_AFTER_FAILED_DELETE} for when {@link System#gc()} is called.
+     * 
+     * @return false if it is ok to continue trying to delete things, true if
+     *         we were interrupted (and should stop now).
+     */
+    private static boolean pauseBetweenDeletes(int numberOfAttemptsSoFar) {
+        long delayInMs;
+        if( numberOfAttemptsSoFar>=DELETION_MAX ) return false;
+        /* If the Jenkins process had the file open earlier, and it has not
+         * closed it then Windows won't let us delete it until the Java object
+         * with the open stream is Garbage Collected, which can result in builds
+         * failing due to "file in use" on Windows despite working perfectly
+         * well on other OSs. */
+        if (GC_AFTER_FAILED_DELETE) {
+            System.gc();
+        }
+        if (WAIT_BETWEEN_DELETION_RETRIES>=0) {
+            delayInMs = WAIT_BETWEEN_DELETION_RETRIES;
+        } else {
+            delayInMs = -numberOfAttemptsSoFar*WAIT_BETWEEN_DELETION_RETRIES;
+        }
+        if (delayInMs<=0)
+            return Thread.interrupted();
+        try {
+            Thread.sleep(delayInMs);
+            return false;
+        } catch (InterruptedException e) {
+            return true;
+        }
+    }
+
+    /**
+     * Creates a "couldn't delete file" message that explains how hard we tried.
+     * See {@link #DELETION_MAX}, {@link #WAIT_BETWEEN_DELETION_RETRIES}
+     * and {@link #GC_AFTER_FAILED_DELETE} for more details.
+     */
+    private static String deleteFailExceptionMessage(File whatWeWereTryingToRemove, int retryCount, boolean wasInterrupted) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Unable to delete '");
+        sb.append(whatWeWereTryingToRemove);
+        sb.append("'. Tried ");
+        sb.append(retryCount);
+        sb.append(" time");
+        if( retryCount!=1 ) sb.append('s');
+        if( DELETION_MAX>1 ) {
+            sb.append(" (of a maximum of ");
+            sb.append(DELETION_MAX);
+            sb.append(')');
+            if( GC_AFTER_FAILED_DELETE )
+                sb.append(" garbage-collecting");
+            if( WAIT_BETWEEN_DELETION_RETRIES!=0 && GC_AFTER_FAILED_DELETE )
+                sb.append(" and");
+            if( WAIT_BETWEEN_DELETION_RETRIES!=0 ) {
+                sb.append(" waiting ");
+                sb.append(getTimeSpanString(Math.abs(WAIT_BETWEEN_DELETION_RETRIES)));
+                if( WAIT_BETWEEN_DELETION_RETRIES<0 ) {
+                    sb.append("-");
+                    sb.append(getTimeSpanString(Math.abs(WAIT_BETWEEN_DELETION_RETRIES)*DELETION_MAX));
+                }
+            }
+            if( WAIT_BETWEEN_DELETION_RETRIES!=0 || GC_AFTER_FAILED_DELETE)
+                sb.append(" between attempts");
+        }
+        if( wasInterrupted )
+            sb.append(". The delete operation was interrupted before it completed successfully");
+        sb.append('.');
+        return sb.toString();
     }
 
     /*
@@ -346,9 +500,7 @@ public class Util {
         if (Functions.isWindows()) {
             try {
                 return Kernel32Utils.isJunctionOrSymlink(file);
-            } catch (UnsupportedOperationException e) {
-                // fall through
-            } catch (LinkageError e) {
+            } catch (UnsupportedOperationException | LinkageError e) {
                 // fall through
             }
         }
@@ -369,10 +521,8 @@ public class Util {
     @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
-            Object path = File.class.getMethod("toPath").invoke(file);
-            return (Boolean) Class.forName("java.nio.file.Files").getMethod("isSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path);
-        } catch (NoSuchMethodException x) {
-            return null; // fine, Java 6
+            Path path = file.toPath();
+            return Files.isSymbolicLink(path);
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -1220,48 +1370,36 @@ public class Util {
 
     private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
         try {
-            Object path = File.class.getMethod("toPath").invoke(new File(baseDir, symlinkPath));
-            Object target = Class.forName("java.nio.file.Paths").getMethod("get", String.class, String[].class).invoke(null, targetPath, new String[0]);
-            Class<?> filesC = Class.forName("java.nio.file.Files");
-            Class<?> pathC = Class.forName("java.nio.file.Path");
-            Class<?> fileAlreadyExistsExceptionC = Class.forName("java.nio.file.FileAlreadyExistsException");
+            Path path = new File(baseDir, symlinkPath).toPath();
+            Path target = Paths.get(targetPath, new String[0]);
 
-            Object noAttrs = Array.newInstance(Class.forName("java.nio.file.attribute.FileAttribute"), 0);
             final int maxNumberOfTries = 4;
             final int timeInMillis = 100;
             for (int tryNumber = 1; tryNumber <= maxNumberOfTries; tryNumber++) {
-                filesC.getMethod("deleteIfExists", pathC).invoke(null, path);
+                Files.deleteIfExists(path);
                 try {
-                    filesC.getMethod("createSymbolicLink", pathC, pathC, noAttrs.getClass()).invoke(null, path, target, noAttrs);
+                    Files.createSymbolicLink(path, target);
                     break;
-                }
-                catch (Exception x) {
-                    if (fileAlreadyExistsExceptionC.isInstance(x)) {
-                        if(tryNumber < maxNumberOfTries) {
-                            TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
-                            continue;
-                        }
-                        LOGGER.warning("symlink FileAlreadyExistsException thrown "+maxNumberOfTries+" times => cannot createSymbolicLink");
+                } catch (FileAlreadyExistsException fileAlreadyExistsException) {
+                    if (tryNumber < maxNumberOfTries) {
+                        TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
+                        continue;
                     }
-                    throw x;
+                    LOGGER.warning("symlink FileAlreadyExistsException thrown " + maxNumberOfTries + " times => cannot createSymbolicLink");
+                    throw fileAlreadyExistsException;
                 }
             }
             return true;
-        } catch (NoSuchMethodException x) {
-            return false; // fine, Java 6
-        } catch (InvocationTargetException x) {
-            Throwable x2 = x.getCause();
-            if (x2 instanceof UnsupportedOperationException) {
+        } catch (UnsupportedOperationException e) {
                 return true; // no symlinks on this platform
-            }
-            if (Functions.isWindows() && String.valueOf(x2).contains("java.nio.file.FileSystemException")) {
+        } catch (FileSystemException e) {
+            if (Functions.isWindows()) {
                 warnWindowsSymlink();
                 return true;
             }
-            if (x2 instanceof IOException) {
-                throw (IOException) x2;
-            }
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            return false;
+        } catch (IOException x) {
+            throw x;
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
         }
@@ -1312,61 +1450,18 @@ public class Util {
      */
     @CheckForNull
     public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
-        try { // Java 7
-            Object path = File.class.getMethod("toPath").invoke(link);
-            return Class.forName("java.nio.file.Files").getMethod("readSymbolicLink", Class.forName("java.nio.file.Path")).invoke(null, path).toString();
-        } catch (NoSuchMethodException x) {
-            // fine, Java 6; fall through
-        } catch (InvocationTargetException x) {
-            Throwable x2 = x.getCause();
-            if (x2 instanceof UnsupportedOperationException) {
-                return null; // no symlinks on this platform
-            }
-            try {
-                if (Class.forName("java.nio.file.NotLinkException").isInstance(x2)) {
-                    return null;
-                }
-            } catch (ClassNotFoundException x3) {
-                assert false : x3; // should be Java 7+ here
-            }
-            if (x2.getClass().getName().equals("java.nio.file.FileSystemException")) {
-                // Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink, rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?
-                return null;
-            }
-            if (x2 instanceof IOException) {
-                throw (IOException) x2;
-            }
-            throw (IOException) new IOException(x.toString()).initCause(x);
+        try {
+            Path path =  link.toPath();
+            return Files.readSymbolicLink(path).toString();
+        } catch (UnsupportedOperationException | FileSystemException x) {
+            // no symlinks on this platform (windows?),
+            // or not a link (// Thrown ("Incorrect function.") on JDK 7u21 in Windows 2012 when called on a non-symlink,
+            // rather than NotLinkException, contrary to documentation. Maybe only when not on NTFS?) ?
+            return null;
+        } catch (IOException x) {
+            throw x;
         } catch (Exception x) {
             throw (IOException) new IOException(x.toString()).initCause(x);
-        }
-
-        if(Functions.isWindows())     return null;
-
-        String filename = link.getAbsolutePath();
-        try {
-            for (int sz=512; sz < 65536; sz*=2) {
-                Memory m = new Memory(sz);
-                int r = LIBC.readlink(filename,m,new NativeLong(sz));
-                if (r<0) {
-                    int err = Native.getLastError();
-                    if (err==22/*EINVAL --- but is this really portable?*/)
-                        return null; // this means it's not a symlink
-                    throw new IOException("Failed to readlink "+link+" error="+ err+" "+ LIBC.strerror(err));
-                }
-                if (r==sz)
-                    continue;   // buffer too small
-
-                byte[] buf = new byte[r];
-                m.read(0,buf,0,r);
-                return new String(buf);
-            }
-            // something is wrong. It can't be this long!
-            throw new IOException("Symlink too long: "+link);
-        } catch (LinkageError e) {
-            // if JNA is unavailable, fall back.
-            // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-            return PosixAPI.jnr().readlink(filename);
         }
     }
 
@@ -1528,4 +1623,57 @@ public class Util {
     public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
 
     public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
+
+    /**
+     * The number of times we will attempt to delete files/directory trees
+     * before giving up and throwing an exception.<br/>
+     * Specifying a value less than 1 is invalid and will be treated as if
+     * a value of 1 (i.e. one attempt, no retries) was specified.
+     * <p>
+     * e.g. if some of the child directories are big, it might take long enough
+     * to delete that it allows others to create new files in the directory we
+     * are trying to empty, causing problems like JENKINS-10113.
+     * Or, if we're on Windows, then deletes can fail for transient reasons
+     * regardless of external activity; see JENKINS-15331.
+     * Whatever the reason, this allows us to do multiple attempts before we
+     * give up, thus improving build reliability.
+     */
+    @Restricted(value = NoExternalUse.class)
+    static int DELETION_MAX = Math.max(1, Integer.getInteger(Util.class.getName() + ".maxFileDeletionRetries", 3).intValue());
+
+    /**
+     * The time (in milliseconds) that we will wait between attempts to
+     * delete files when retrying.<br>
+     * This has no effect unless {@link #DELETION_MAX} is non-zero.
+     * <p>
+     * If zero, we will not delay between attempts.<br>
+     * If negative, we will wait an (linearly) increasing multiple of this value
+     * between attempts.
+     */
+    @Restricted(value = NoExternalUse.class)
+    static int WAIT_BETWEEN_DELETION_RETRIES = Integer.getInteger(Util.class.getName() + ".deletionRetryWait", 100).intValue();
+
+    /**
+     * If this flag is set to true then we will request a garbage collection
+     * after a deletion failure before we next retry the delete.<br>
+     * It defaults to <code>false</code> and is ignored unless
+     * {@link #DELETION_MAX} is greater than 1.
+     * <p>
+     * Setting this flag to true <i>may</i> resolve some problems on Windows,
+     * and also for directory trees residing on an NFS share, <b>but</b> it can
+     * have a negative impact on performance and may have no effect at all (GC
+     * behavior is JVM-specific).
+     * <p>
+     * Warning: This should only ever be used if you find that your builds are
+     * failing because Jenkins is unable to delete files, that this failure is
+     * because Jenkins itself has those files locked "open", and even then it
+     * should only be used on slaves with relatively few executors (because the
+     * garbage collection can impact the performance of all job executors on
+     * that slave).<br/>
+     * i.e. Setting this flag is a act of last resort - it is <em>not</em>
+     * recommended, and should not be used on the main Jenkins server
+     * unless you can tolerate the performance impact.
+     */
+    @Restricted(value = NoExternalUse.class)
+    static boolean GC_AFTER_FAILED_DELETE = Boolean.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
 }

@@ -1,14 +1,36 @@
 <div>
-    When you are using Jenkins for various automations, it's sometimes convenient
-    to be able to "parameterize" a build, by requiring a set of user inputs to
-    be made available to the build process. For example, you might be setting up
-    an on-demand test job, where the user can submit a zip file of the binaries to be tested.
-
-    <p>
-    This section configures what parameters your build takes. Parameters are distinguished
-    by their names, and so you can have multiple parameters provided that they have different names.
-
-    <p>
-    See <a  href="http://wiki.jenkins-ci.org/display/JENKINS/Parameterized+Build">the Wiki topic</a>
-    for more discussions about this feature.
+  Parameters allow you to prompt users for one or more inputs that will be
+  passed into a build.  For example, you might have a project that runs tests on
+  demand by allowing users to upload a zip file with binaries to be tested.
+  This could be done by adding a <i>File Parameter</i> here.
+  <br>
+  Or you might have a project that releases some software, and you want users to
+  enter release notes that will be uploaded along with the software. This could
+  be done by adding a <i>Multi-line String Parameter</i> here.
+  <p>
+  Each parameter has a <i>Name</i> and some sort of <i>Value</i>, depending on
+  the parameter type.  These name-value pairs will be exported as environment
+  variables when the build starts, allowing subsequent parts of the build
+  configuration (such as build steps) to access those values, e.g. by using the
+  <tt>${PARAMETER_NAME}</tt> syntax (or <tt>%PARAMETER_NAME%</tt> on Windows).
+  <br>
+  This also implies that each parameter defined here should have a unique
+  <i>Name</i>.
+  <p>
+  When a project is parameterized, the usual <i>Build Now</i> link will be
+  replaced with a <i>Build with Parameters</i> link, where users will be
+  prompted to specify values for each of the defined parameters.  If they choose
+  not to enter anything, the build will start with the default value for each
+  parameter.
+  <p>
+  If a build is started automatically, for example if started by an SCM trigger,
+  the default values for each parameter will be used.
+  <p>
+  When a parameterized build is in the queue, attempting to start another build
+  of the same project will only succeed if the parameter values are different,
+  or if the <i>Execute concurrent builds if necessary</i> option is enabled.
+  <p>
+  See the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Parameterized+Build"
+  target="_blank">Parameterized Builds wiki page</a> for more information about
+  this feature.
 </div>

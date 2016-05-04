@@ -29,11 +29,7 @@ public class InstallUncaughtExceptionHandler {
                 try {
                     WebApp.get(j.servletContext).getSomeStapler()
                             .invoke(req,rsp, Jenkins.getInstance(), "/oops");
-                } catch (ServletException x) {
-                    if (!Stapler.isSocketException(x)) {
-                        throw x;
-                    }
-                } catch (IOException x) {
+                } catch (ServletException | IOException x) {
                     if (!Stapler.isSocketException(x)) {
                         throw x;
                     }
@@ -42,7 +38,7 @@ public class InstallUncaughtExceptionHandler {
         });
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
-            DefaultUncaughtExceptionHandler.LOGGER.log(Level.INFO, "Succesfully installed a global UncaughtExceptionHandler."); 
+            DefaultUncaughtExceptionHandler.LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");
         }
         catch (SecurityException ex) {
             DefaultUncaughtExceptionHandler.LOGGER.log(Level.SEVERE, 

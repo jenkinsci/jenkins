@@ -82,14 +82,21 @@ public class CauseAction implements FoldableAction, RunAction2 {
    	public CauseAction(CauseAction ca) {
    		addCauses(ca.getCauses());
    	}
-   	
+
+    /**
+     * Lists all causes of this build.
+     * Note that the current implementation does not preserve insertion order of duplicates.
+     * @return an immutable list;
+     *         to create an action with multiple causes use either of the constructors that support this;
+     *         to append causes retroactively to a build you must create a new {@link CauseAction} and replace the old
+     */
 	@Exported(visibility=2)
 	public List<Cause> getCauses() {
 		List<Cause> r = new ArrayList<>();
         for (Map.Entry<Cause,Integer> entry : causeBag.entrySet()) {
             r.addAll(Collections.nCopies(entry.getValue(), entry.getKey()));
         }
-        return r;
+        return Collections.unmodifiableList(r);
 	}
 
     /**

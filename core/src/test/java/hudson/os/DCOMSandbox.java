@@ -14,14 +14,14 @@ import java.util.Properties;
  * creating an instance.
  *
  * <p>
- * It turns out that the bogus credential works with ServerAlive.  The protocol specification
- * <http://download.microsoft.com/download/a/e/6/ae6e4142-aa58-45c6-8dcf-a657e5900cd3/%5BMS-DCOM%5D.pdf>
+ * It turns out that the bogus credential works with ServerAlive.  The
+ * <a href="http://download.microsoft.com/download/a/e/6/ae6e4142-aa58-45c6-8dcf-a657e5900cd3/%5BMS-DCOM%5D.pdf">protocol specification</a>
  * explicitly says this RPC must not check the credential.
  *
  * <p>
  * The feature in question of Windows is called "ForceGuest", and it's recorded in the registry at
  * HKLM\SYSTEM\CurrentControlSet\Control\LSA\forceguest (0=classic, 1=forceguest).
- * <http://support.microsoft.com/kb/290403>
+ * <a href="http://support.microsoft.com/kb/290403">KB 290403</a>
  *
  * @author Kohsuke Kawaguchi
  */

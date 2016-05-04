@@ -284,7 +284,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Directory where rotated slave logs are stored.
+     * Directory where rotated agent logs are stored.
      *
      * The method also creates a log directory if required.
      *
@@ -293,7 +293,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
         if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
+            LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
         }
         return dir;
     }
@@ -306,7 +306,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Gets the string representation of the slave log.
+     * Gets the string representation of the agent log.
      */
     public String getLog() throws IOException {
         return Util.loadFile(getLogFile());
@@ -383,12 +383,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract Charset getDefaultCharset();
 
     /**
-     * Gets the logs recorded by this slave.
+     * Gets the logs recorded by this agent.
      */
     public abstract List<LogRecord> getLogRecords() throws IOException, InterruptedException;
 
     /**
-     * If {@link #getChannel()}==null, attempts to relaunch the slave agent.
+     * If {@link #getChannel()}==null, attempts to relaunch the agent.
      */
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
@@ -523,6 +523,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         setTemporarilyOffline(true, new ByCLI(cause));
     }
 
+    /**
+     * Deprecated - implementation of CLI command "online-node" moved to {@link hudson.cli.OnlineNodeCommand}.
+     */
+    @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         setTemporarilyOffline(false, null);
@@ -619,8 +623,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
-     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     * This method is called to determine whether manual launching of the agent is allowed at this point in time.
+     * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
     @Exported
     public boolean isManualLaunchAllowed() {
@@ -648,8 +652,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns true if this computer can be launched by Hudson proactively and automatically.
      *
      * <p>
-     * For example, JNLP slaves return {@code false} from this, because the launch process
-     * needs to be initiated from the slave side.
+     * For example, JNLP agents return {@code false} from this, because the launch process
+     * needs to be initiated from the agent side.
      */
     @Exported
     public boolean isLaunchSupported() {
@@ -662,7 +666,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * <p>
      * In contrast, {@link #isOffline()} represents the actual online/offline
      * state. For example, this method may return false while {@link #isOffline()}
-     * returns true if the slave agent failed to launch.
+     * returns true if the agent failed to launch.
      *
      * @deprecated
      *      You should almost always want {@link #isOffline()}.
@@ -1143,7 +1147,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Gets the thread dump of the slave JVM.
+     * Gets the thread dump of the agent JVM.
      * @return
      *      key is the thread name, and the value is the pre-formatted dump.
      */
@@ -1162,14 +1166,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This method tries to compute the name of the host that's reachable by all the other nodes.
      *
      * <p>
-     * Since it's possible that the slave is not reachable from the master (it may be behind a firewall,
+     * Since it's possible that the agent is not reachable from the master (it may be behind a firewall,
      * connecting to master via JNLP), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.
      *
      * <p>
-     * So the technique here is to compute possible interfaces and names on the slave,
+     * So the technique here is to compute possible interfaces and names on the agent,
      * then try to ping them from the master, and pick the one that worked.
      *
      * <p>
@@ -1178,7 +1182,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because the slave is behind the firewall, etc.)
+     *      because the agent is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
@@ -1340,7 +1344,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (vc instanceof Channel) {
             w.println("Master to slave");
             ((Channel)vc).dumpExportTable(w);
-            w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
+            w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
 
             w.println("\n\n\nSlave to master");
             w.print(vc.call(new DumpExportTableTask()));
@@ -1402,7 +1406,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Node result = node.reconfigure(req, req.getSubmittedForm());
         replaceBy(result);
 
-        // take the user back to the slave top page.
+        // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
     }
 
@@ -1447,7 +1451,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 Node node = getNode();
                 int i  = (node != null) ? nodes.indexOf(node) : -1;
                 if(i<0) {
-                    throw new IOException("This slave appears to be removed while you were editing the configuration");
+                    throw new IOException("This agent appears to be removed while you were editing the configuration");
                 }
                 nodes.set(i, newNode);
                 app.setNodes(nodes);
@@ -1468,7 +1472,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Really deletes the slave.
+     * Really deletes the agent.
      */
     @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
@@ -1521,7 +1525,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns {@code true} if the computer is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
      * scheduling that does not overlap with being offline.
      *
      * @return {@code true} if the computer is accepting tasks
@@ -1539,7 +1543,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Slave name, or empty string for master") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
         Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {

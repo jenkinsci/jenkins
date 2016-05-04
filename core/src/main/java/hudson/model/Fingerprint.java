@@ -1469,7 +1469,19 @@ public class Fingerprint implements ModelObject, Saveable {
         return res[0];
     }
 
-    private static final XStream XSTREAM = new XStream2();
+    private static final XStream2 XSTREAM = new XStream2();
+
+    /**
+     * Provides the XStream instance this class is using for serialization.
+     *
+     * @return the XStream instance
+     * @since FIXME
+     */
+    @Nonnull
+    public static XStream2 getXStream() {
+        return XSTREAM;
+    }
+
     static {
         XSTREAM.alias("fingerprint",Fingerprint.class);
         XSTREAM.alias("range",Range.class);

@@ -66,7 +66,7 @@ THE SOFTWARE.
          name="${name}"
          value="${attrs.value}"
          title="${attrs.tooltip}"
-         onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+         onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
          checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
          checked="${value ? 'true' : null}"/>
   <j:if test="${attrs.title!=null}">

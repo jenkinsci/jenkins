@@ -24,7 +24,7 @@ Some tips:
 <!--[if IE]>
 <style type="text/css">div.rate-offset { bottom: 0.2em !important; left: 5em !important; }</style>
 <![endif]-->
-  <script type="text/javascript" src="/rate/rate.js"></script>
+  <script type="text/javascript" src="https://rating.jenkins.io/rate/rate.js"></script>
 </head>
 <body>
 <div align="right">Legend:
@@ -33,6 +33,7 @@ Some tips:
         <img src="/images/bug2.gif" alt="major bug">major bug fix     <img src="/images/bug.gif" alt="bug">bug fix
     </span><span style="visibility:hidden">xxxxx</span>
 </div>
+<div id="head"></div>
 
 <div id="ratings" style="display:none; font-size:120%;
      border:1px solid black; background-color:#eee; padding:0.5em; margin-bottom:1em">
@@ -55,6 +56,182 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v2.1>What's new in 2.1</a> (2016/05/01)</h3>
+<ul class=image>
+  <li class="major bug">
+  	Enable disabled dependencies during plugin installations.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34494">issue 34494</a>)
+  <li class="major bug">
+  	Force ordering between GPG and jarsigner to ensure correct GPG signature.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2285">pull 2285</a>)
+  <li class="major bug">
+  	Secured Jenkins installations didn't properly save the queue on shutdown.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34281">issue 34281</a>)
+
+  <li class="rfe">
+  	Add dependency resolution to manually uploaded plugins.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-15057">issue 15057</a>)
+  <li class="rfe">
+  	Show Jenkins version on setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33535">issue 33535</a>)
+  <li class="rfe">
+  	Update remoting to 2.57.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33999">issue 33999</a>)
+  <li class="rfe">
+  	Allow retrying plugin downloads in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33244">issue 33244</a>)
+  <li class="rfe">
+  	Add links to homepage of plugins and dependencies in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33936">issue 33936</a>,
+  	 <a href="https://issues.jenkins-ci.org/browse/JENKINS-33937">issue 33937</a>)
+  <li class="rfe">
+  	Improved handling of the 'close' button during setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34137">issue 34137</a>)
+  <li class="rfe">
+  	Wrong spacing in flat mode of 'Create Item' screen.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-31162">issue 31162</a>)
+  <li class="rfe">
+  	Add timestamp to the <tt>jarsigner</tt> signature.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2284">pull 2284</a>)
+  <li class="rfe">
+  	Improved French translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2267">pull 2267</a>)
+  <li class="rfe">
+  	Improved Lithuanian translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2286">pull 2286</a>)
+  <li class="rfe">
+  	Improved Brazilian Portuguese translation.
+  	(<a href="https://github.com/jenkinsci/jenkins/pull/2273">pull 2273</a>)
+
+  <li class="bug">
+  	Prevent errors when hiding management links.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33683">issue 33683</a>)
+  <li class="bug">
+  	Internal: Make logger field private.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34093">issue 34093</a>)
+  <li class="bug">
+  	Shorter timeout for plugin downloads to prevent setup wizard from hanging.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34174">issue 34174</a>)
+  <li class="bug">
+  	Check if job is buildable before showing 'Build with parameters' page.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34146">issue 34146</a>)
+  <li class="bug">
+  	Fixed race condition in slave offline cause.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-34448">issue 34448</a>)
+  <li class="bug">
+  	Allow enabling disabled dependencies in the plugin manager to fix broken configurations.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-32340">issue 32340</a>)
+  <li class="bug">
+  	Always display clicked scrollspy items as active in setup wizard.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33948">issue 33948</a>)
+  <li class="bug">
+  	Prevent multiple installations of the same dependency.
+  	(<a href="https://issues.jenkins-ci.org/browse/JENKINS-33950">issue 33950</a>)
+</ul>
+
+
+<h3><a name=v2.0>What's new in 2.0</a> (2016/04/20)</h3>
+<div style="margin: 10px; padding: 10px; background-color: #FFFFCE;">
+  <strong>More detailed information about the new features in Jenkins 2.0 <a href="/2.0/">on the overview page</a>.</strong>
+</div>
+
+<ul class=image>
+  <li class="rfe major">
+    New password-protected setup wizard shown on first run to guide users through installation of popular plugins and setting up an admin user.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30749">issue 30749</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-9598">issue 9598</a>)
+  <li class="rfe major">
+    Plugin bundling overhaul: Bundled plugins are only installed if necessary when upgrading, all plugins can be uninstalled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20617">issue 20617</a>)
+  <li class="rfe major">
+    Redesigned job configuration form makes it easier to understand the option hierarchy, and to navigate the form.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32357">issue 32357</a>)
+  <li class="rfe major">
+    Richer 'Create Item' form with job icons and job categories (once a threshold of three categories has been reached).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31162">issue 31162</a>)
+
+  <li class="rfe">
+    Upgrade wizard encourages installation of Pipeline related plugins when upgrading from 1.x.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33662">issue 33662</a>)
+  <li class="rfe">
+    <strong>Jenkins now requires Servlet 3.1</strong>. Upgraded embedded Winstone-Jetty to Jetty 9 accordingly.
+    <strong>This removes AJP support when using the embedded Winstone-Jetty container.</strong>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23378">issue 23378</a>)
+  <li class="rfe">
+    Bundled Groovy updated from 1.8.9 to 2.4.6.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21249">issue 21249</a>)
+  <li class="rfe">
+    Added option to prohibit anonymous access to security realm "Logged in users can do anything", enable by default.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30749">issue 30749</a>)
+  <li class="rfe">
+    Renamed 'slave' to 'agent' on the UI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">issue 27268</a>)
+  <li class="rfe">
+    Improvements to inline documentation of numerous form fields in Jenkins global and job configuration.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33364">issue 33364</a>)
+  <li class="rfe">
+    Change default CSRF protection crumb name to Jenkins-Crumb for nginx compatibility.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-12875">issue 12875</a>)
+
+  <li class="bug">
+    Enforce correct icon size in list view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33799">issue 33799</a>)
+  <li class="bug">
+    CLI: Fixed NPE when non-existent run is requested.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33942">issue 33942</a>)
+
+</ul>
+<h3><a name=v1.656>What's new in 1.656</a> (2016/04/03)</h3>
+<ul class=image>
+  <li class="bug">
+    Advertise the correct JNLP port when using the system property override.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2189">pull 2189</a>)
+  <li class="bug">
+    Pipeline runs not reliably started after restart when using <em>Build after other projects are built</em>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33971">issue 33971</a>)
+  <li class="bug">
+    Prevent badges in build history sidepanel widget from overlapping page contents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33826">issue 33826</a>)
+  <li class="rfe">
+    Developer API: Allow putting <tt>@Initializer</tt> annotations on instance methods.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2176">pull 2176</a>)
+  <li class="rfe">
+    Core development: Rerun failing tests rather than ignoring flaky tests.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2188">pull 2188</a>)
+  <li class="bug">
+    Core development: Prevent leaking threads due to <tt>NioChannelSelector</tt>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2176">pull 2176</a>)
+</ul>
+<h3><a name=v1.655>What's new in 1.655</a> (2016/03/27)</h3>
+<ul class=image>
+  <li class="major bug">
+    Downgrade Stapler to 1.239 to fix remote API issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33546">issue 33546</a>, 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-33605">issue 33605</a>)
+  <li class="major bug">
+    Plugin filters were failing to be removed and blocking restart.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33681">issue 33681</a>)
+  <li class="bug">
+    Do not hardcode <tt>.bat</tt> extension for Maven on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33693">issue 33693</a>)
+  <li class="rfe">
+    Reduce log level of <tt>UncaughtExceptionHandler</tt> message on startup.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2171">pull 2171</a>)
+  <li class="rfe">
+    Make list of build causes immutable.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
+  <li class="rfe">
+    Developer API: Add <tt>Fingerprint.getXStream()</tt>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2163">pull 2163</a>)
+  <li class="rfe">
+    Core Development:  Add the <tt>.mvn</tt> directory and set default <tt>-Xmx</tt> value.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2162">pull 2162</a>)
+</ul>
+<h3><a name=v1.654>What's new in 1.654</a> (2016/03/21)</h3>
+<ul class=image>
   <li class="bug">
     Improve logging and error message when JNLP is already in use.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33453">issue 33453</a>)
@@ -65,24 +242,43 @@ Upcoming changes</a>
     Improved the Build Other Projects help message.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32134">issue 32134</a>)
   <li class="bug">
-    FutureImpl.cancel() doesn't cancel the linked job.
+    <code>FutureImpl.cancel()</code> doesn't cancel the linked job.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33038">issue 33038</a>)
   <li class="bug">
-    Reject malformed range syntax.
+    Reject malformed range syntax in fingerprints data.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33037">issue 33037</a>)
+  <li class="bug">
+    Do not fail update center check if there are no tool installers defined.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32831">issue 32831</a>)
+  <li class="rfe">
+    Log otherwise unhandled exceptions when threads die.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33395">issue 33395</a>)
+  <li class="bug">
+    Do not specifically require .NET framework 2.0 since 4.0 will do as well.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21484">issue 21484</a>)
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v1.653>What's new in 1.653</a> (2016/03/13)</h3>
 <ul class=image>
+  <li class="major rfe">
+    Support encrypted communication between master and JNLP slaves.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26580">issue 26580</a>)
+  <li class="bug">
+    Fix argument masking for sensitive build variables on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28790">issue 28790</a>)
   <li class="bug">
     More compact representation of redundant build causes.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33467">issue 33467</a>)
+  <li class="rfe">
+    Developer API: <tt>Jenkins.getInstance()</tt> cannot be <tt>null</tt> anymore. Introduced <tt>Jenkins.getInstanceOrNull()</tt>.
 </ul>
 <h3><a name=v1.652>What's new in 1.652</a> (2016/03/06)</h3>
 <ul class=image>
   <li class="bug">
     Under some conditions Jenkins startup could fail because of incorrectly linked extensions; now recovering more gracefully.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25440">issue 25440</a>)
+  <li class="rfe">
+    Developer API: Add <tt>WorkspaceList.tempDir(…)</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27152">issue 27152</a>)
 </ul>
 <h3><a name=v1.651>What's new in 1.651</a> (2016/02/28)</h3>
 <ul class=image>
@@ -1982,7 +2178,7 @@ Upcoming changes</a>
 </ul>
 
 <p>
-<b>Older changelogs can be found in a <a href="/changelog-old.html">separate file</a></b>
+<b>Older changelogs can be found in a <a href="/changelog-old/">separate file</a></b>
 
 </body>
 </html>

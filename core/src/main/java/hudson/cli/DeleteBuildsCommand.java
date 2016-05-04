@@ -29,6 +29,7 @@ import hudson.model.Run;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -54,10 +55,16 @@ public class DeleteBuildsCommand extends AbstractBuildRangeCommand {
     protected int act(List<AbstractBuild<?, ?>> builds) throws IOException {
         job.checkPermission(Run.DELETE);
 
-        for (AbstractBuild build : builds)
-            build.delete();
+        final HashSet<Integer> hsBuilds = new HashSet<Integer>();
 
-        stdout.println("Deleted "+builds.size()+" builds");
+        for (AbstractBuild build : builds) {
+            if (!hsBuilds.contains(build.number)) {
+                build.delete();
+                hsBuilds.add(build.number);
+            }
+        }
+
+        stdout.println("Deleted "+hsBuilds.size()+" builds");
 
         return 0;
     }

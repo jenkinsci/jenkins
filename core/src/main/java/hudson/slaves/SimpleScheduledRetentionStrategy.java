@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 
 /**
- * {@link RetentionStrategy} that controls the slave based on a schedule.
+ * {@link RetentionStrategy} that controls the agent based on a schedule.
  *
  * @author Stephen Connolly
  * @since 1.275
@@ -186,8 +186,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                                         new Object[]{c.getName()});
                                 c.setAcceptingTasks(true);
                             }
-                        } catch (InterruptedException e) {
-                        } catch (ExecutionException e) {
+                        } catch (InterruptedException | ExecutionException e) {
                         }
                     }
                 });

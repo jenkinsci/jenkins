@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Palette of objects to talk to the incoming JNLP slave connection.
+ * Palette of objects to talk to the incoming JNLP agent connection.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.561

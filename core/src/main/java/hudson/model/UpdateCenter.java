@@ -33,6 +33,9 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
 import hudson.init.Initializer;
 import hudson.lifecycle.Lifecycle;
 import hudson.lifecycle.RestartNotSupportedException;
@@ -50,14 +53,18 @@ import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.RestartRequiredException;
+import jenkins.install.InstallUtil;
 import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
+import net.sf.json.JSONObject;
+
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -66,27 +73,30 @@ import javax.annotation.Nonnull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpRetryException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,8 +132,13 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
-	
+
     private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+
+    /**
+     * Read timeout when downloading plugins, defaults to 1 minute
+     */
+    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = Integer.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
@@ -133,7 +148,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
-	
+
     /**
      * {@link ExecutorService} that performs installation.
      * @since 1.501
@@ -146,7 +161,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     protected final ExecutorService updateService = Executors.newCachedThreadPool(
         new NamingThreadFactory(new DaemonThreadFactory(), "Update site data downloader"));
-        
+
     /**
      * List of created {@link UpdateCenterJob}s. Access needs to be synchronized.
      */
@@ -170,8 +185,42 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     private boolean requiresRestart;
 
+    /**
+     * Simple connection status enum.
+     */
+    @Restricted(NoExternalUse.class)
+    static enum ConnectionStatus {
+        /**
+         * Connection status has not started yet.
+         */
+        PRECHECK,
+        /**
+         * Connection status is being checked at this time.
+         */
+        CHECKING,
+        /**
+         * Connection status was not checked.
+         */
+        UNCHECKED,
+        /**
+         * Connection is ok.
+         */
+        OK,
+        /**
+         * Connection status check failed.
+         */
+        FAILED;
+
+        static final String INTERNET = "internet";
+        static final String UPDATE_SITE = "updatesite";
+    }
+
     public UpdateCenter() {
         configure(new UpdateCenterConfiguration());
+    }
+
+    UpdateCenter(@Nonnull UpdateCenterConfiguration configuration) {
+        configure(configuration);
     }
 
     public Api getApi() {
@@ -234,6 +283,148 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     return ij;
             }
         return null;
+    }
+
+    /**
+     * Get the current connection status.
+     * <p>
+     * Supports a "siteId" request parameter, defaulting to "default" for the default
+     * update site.
+     *
+     * @return The current connection status.
+     */
+    @Restricted(DoNotUse.class)
+    public HttpResponse doConnectionStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        try {
+            String siteId = request.getParameter("siteId");
+            if (siteId == null) {
+                siteId = ID_DEFAULT;
+            }
+            ConnectionCheckJob checkJob = getConnectionCheckJob(siteId);
+            if (checkJob == null) {
+                UpdateSite site = getSite(siteId);
+                if (site != null) {
+                    checkJob = addConnectionCheckJob(site);
+                }
+            }
+            if (checkJob != null) {
+                boolean isOffline = false;
+                for (ConnectionStatus status : checkJob.connectionStates.values()) {
+                    if(ConnectionStatus.FAILED.equals(status)) {
+                        isOffline = true;
+                        break;
+                    }
+                }
+                if (isOffline) {
+                    // retry connection states if determined to be offline
+                    checkJob.run();
+                    isOffline = false;
+                    for (ConnectionStatus status : checkJob.connectionStates.values()) {
+                        if(ConnectionStatus.FAILED.equals(status)) {
+                            isOffline = true;
+                            break;
+                        }
+                    }
+                    if(!isOffline) { // also need to download the metadata
+                        updateAllSites();
+                    }
+                }
+                return HttpResponses.okJSON(checkJob.connectionStates);
+            } else {
+                return HttpResponses.errorJSON(String.format("Unknown site '%s'.", siteId));
+            }
+        } catch (Exception e) {
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
+        }
+    }
+
+    /**
+     * Called to determine if there was an incomplete installation, what the statuses of the plugins are
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doIncompleteInstallStatus() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        try {
+        Map<String,String> jobs = InstallUtil.getPersistedInstallStatus();
+        if(jobs == null) {
+            jobs = Collections.emptyMap();
+        }
+            return HttpResponses.okJSON(jobs);
+        } catch (Exception e) {
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
+        }
+    }
+
+    /**
+     * Called to persist the currently installing plugin states. This allows
+     * us to support install resume if Jenkins is restarted while plugins are
+     * being installed.
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized void persistInstallStatus() {
+        List<UpdateCenterJob> jobs = getJobs();
+
+        boolean activeInstalls = false;
+        for (UpdateCenterJob job : jobs) {
+            if (job instanceof InstallationJob) {
+                InstallationJob installationJob = (InstallationJob) job;
+                if(!installationJob.status.isSuccess()) {
+            activeInstalls = true;
+                }
+            }
+        }
+
+        if(activeInstalls) {
+        InstallUtil.persistInstallStatus(jobs); // save this info
+        }
+        else {
+        InstallUtil.clearInstallStatus(); // clear this info
+        }
+    }
+
+    /**
+     * Get the current installation status of a plugin set.
+     * <p>
+     * Supports a "correlationId" request parameter if you only want to get the
+     * install status of a set of plugins requested for install through
+     * {@link PluginManager#doInstallPlugins(org.kohsuke.stapler.StaplerRequest)}.
+     *
+     * @return The current installation status of a plugin set.
+     */
+    @Restricted(DoNotUse.class)
+    public HttpResponse doInstallStatus(StaplerRequest request) {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        try {
+            String correlationId = request.getParameter("correlationId");
+            Map<String,Object> response = new HashMap<>();
+            response.put("state", Jenkins.getInstance().getInstallState().name());
+            List<Map<String, String>> installStates = new ArrayList<>();
+            response.put("jobs", installStates);
+            List<UpdateCenterJob> jobCopy = getJobs();
+
+            for (UpdateCenterJob job : jobCopy) {
+                if (job instanceof InstallationJob) {
+                    UUID jobCorrelationId = job.getCorrelationId();
+                    if (correlationId == null || (jobCorrelationId != null && correlationId.equals(jobCorrelationId.toString()))) {
+                        InstallationJob installationJob = (InstallationJob) job;
+                        Map<String, String> pluginInfo = new LinkedHashMap<>();
+                        pluginInfo.put("name", installationJob.plugin.name);
+                        pluginInfo.put("version", installationJob.plugin.version);
+                        pluginInfo.put("title", installationJob.plugin.title);
+                        pluginInfo.put("installStatus", installationJob.status.getType());
+                        pluginInfo.put("requiresRestart", Boolean.toString(installationJob.status.requiresRestart()));
+                        if (jobCorrelationId != null) {
+                            pluginInfo.put("correlationId", jobCorrelationId.toString());
+                        }
+                        installStates.add(pluginInfo);
+                    }
+                }
+            }
+            return HttpResponses.okJSON(JSONObject.fromObject(response));
+        } catch (Exception e) {
+            return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
+        }
     }
 
     /**
@@ -388,7 +579,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
         response.sendRedirect2(".");
     }
-    
+
     /**
      * Cancel all scheduled jenkins restarts
      */
@@ -497,10 +688,58 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     /*package*/ synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
-        // the first job is always the connectivity check
-        if (sourcesUsed.add(job.site))
-            new ConnectionCheckJob(job.site).submit();
+        addConnectionCheckJob(job.site);
         return job.submit();
+    }
+
+    private @Nonnull ConnectionCheckJob addConnectionCheckJob(@Nonnull UpdateSite site) {
+        // Create a connection check job if the site was not already in the sourcesUsed set i.e. the first
+        // job (in the jobs list) relating to a site must be the connection check job.
+        if (sourcesUsed.add(site)) {
+            ConnectionCheckJob connectionCheckJob = newConnectionCheckJob(site);
+            connectionCheckJob.submit();
+            return connectionCheckJob;
+        } else {
+            // Find the existing connection check job for that site and return it.
+            ConnectionCheckJob connectionCheckJob = getConnectionCheckJob(site);
+            if (connectionCheckJob != null) {
+                return connectionCheckJob;
+            } else {
+                throw new IllegalStateException("Illegal addition of an UpdateCenter job without calling UpdateCenter.addJob. " +
+                        "No ConnectionCheckJob found for the site.");
+            }
+        }
+    }
+
+    /**
+     * Create a {@link ConnectionCheckJob} for the specified update site.
+     * <p>
+     * Does not start/submit the job.
+     * @param site The site  for which the Job is to be created.
+     * @return A {@link ConnectionCheckJob} for the specified update site.
+     */
+    @Restricted(NoExternalUse.class)
+    ConnectionCheckJob newConnectionCheckJob(UpdateSite site) {
+        return new ConnectionCheckJob(site);
+    }
+
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull String siteId) {
+        UpdateSite site = getSite(siteId);
+        if (site == null) {
+            return null;
+        }
+        return getConnectionCheckJob(site);
+    }
+
+    private @CheckForNull ConnectionCheckJob getConnectionCheckJob(@Nonnull UpdateSite site) {
+        synchronized (jobs) {
+            for (UpdateCenterJob job : jobs) {
+                if (job instanceof ConnectionCheckJob && job.site.getId().equals(site.getId())) {
+                    return (ConnectionCheckJob) job;
+                }
+            }
+        }
+        return null;
     }
 
     public String getDisplayName() {
@@ -558,6 +797,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                     UpdateCenter.class.getName()+".xml"));
     }
 
+    @Exported
     public List<Plugin> getAvailables() {
         Map<String,Plugin> pluginMap = new LinkedHashMap<String, Plugin>();
         for (UpdateSite site : sites) {
@@ -626,16 +866,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         return new ArrayList<Plugin>(pluginMap.values());
     }
-    
+
     /**
      * Ensure that all UpdateSites are up to date, without requiring a user to
      * browse to the instance.
-     * 
+     *
      * @return a list of {@link FormValidation} for each updated Update Site
-     * @throws ExecutionException 
-     * @throws InterruptedException 
+     * @throws ExecutionException
+     * @throws InterruptedException
      * @since 1.501
-     * 
+     *
      */
     public List<FormValidation> updateAllSites() throws InterruptedException, ExecutionException {
         List <Future<FormValidation>> futures = new ArrayList<Future<FormValidation>>();
@@ -645,8 +885,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 futures.add(future);
             }
         }
-        
-        List<FormValidation> results = new ArrayList<FormValidation>(); 
+
+        List<FormValidation> results = new ArrayList<FormValidation>();
         for (Future<FormValidation> f : futures) {
             results.add(f.get());
         }
@@ -769,6 +1009,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             URLConnection con = null;
             try {
                 con = connect(job,src);
+                //JENKINS-34174 - set timeout for downloads, may hang indefinitely
+                // particularly noticeable during 2.0 install when downloading
+                // many plugins
+                con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
+                
                 int total = con.getContentLength();
                 in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
@@ -902,7 +1147,16 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                Util.copyStreamAndClose(ProxyConfiguration.open(url).getInputStream(),new NullOutputStream());
+                URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
+
+                if(connection instanceof HttpURLConnection) {
+                    int responseCode = ((HttpURLConnection)connection).getResponseCode();
+                    if(HttpURLConnection.HTTP_OK != responseCode) {
+                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
+                    }
+                } else {
+                    Util.copyStreamAndClose(connection.getInputStream(),new NullOutputStream());
+                }
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
@@ -932,6 +1186,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public final UpdateSite site;
 
         /**
+         * Simple correlation ID that can be used to associated a batch of jobs e.g. the
+         * installation of a set of plugins.
+         */
+        private UUID correlationId = null;
+
+        /**
          * If this job fails, set to the error.
          */
         protected Throwable error;
@@ -942,6 +1202,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public Api getApi() {
             return new Api(this);
+        }
+
+        public UUID getCorrelationId() {
+            return correlationId;
+        }
+
+        public void setCorrelationId(UUID correlationId) {
+            if (this.correlationId != null) {
+                throw new IllegalStateException("Illegal call to set the 'correlationId'. Already set.");
+            }
+            this.correlationId = correlationId;
         }
 
         /**
@@ -965,6 +1236,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         public Future<UpdateCenterJob> submit() {
             LOGGER.fine("Scheduling "+this+" to installerService");
+            // TODO: seems like this access to jobs should be synchronized, no?
+            // It might get synch'd accidentally via the addJob method, but that wouldn't be good.
             jobs.add(this);
             return installerService.submit(this,this);
         }
@@ -973,7 +1246,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String getErrorMessage() {
             return error != null ? error.getMessage() : null;
         }
-        
+
         public Throwable getError() {
             return error;
         }
@@ -988,10 +1261,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
          @Exported(inline=true)
         public volatile RestartJenkinsJobStatus status = new Pending();
-        
+
         /**
          * Cancel job
-         */     
+         */
         public synchronized boolean cancel() {
             if (status instanceof Pending) {
                 status = new Canceled();
@@ -999,7 +1272,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             return false;
         }
-        
+
         public RestartJenkinsJob(UpdateSite site) {
             super(site);
         }
@@ -1022,26 +1295,26 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public abstract class RestartJenkinsJobStatus {
             @Exported
             public final int id = iota.incrementAndGet();
-   
+
         }
-        
+
         public class Pending extends RestartJenkinsJobStatus {
             @Exported
             public String getType() {
                 return getClass().getSimpleName();
             }
         }
-        
+
         public class Running extends RestartJenkinsJobStatus {
-            
+
         }
-        
+
         public class Failure extends RestartJenkinsJobStatus {
-            
+
         }
-        
+
         public class Canceled extends RestartJenkinsJobStatus {
-            
+
         }
     }
 
@@ -1051,41 +1324,71 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public final class ConnectionCheckJob extends UpdateCenterJob {
         private final Vector<String> statuses= new Vector<String>();
 
+        final Map<String, ConnectionStatus> connectionStates = new ConcurrentHashMap<>();
+
         public ConnectionCheckJob(UpdateSite site) {
             super(site);
+            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.PRECHECK);
+            connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.PRECHECK);
         }
 
         public void run() {
+            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.UNCHECKED);
+            connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.UNCHECKED);
             if (ID_UPLOAD.equals(site.getId())) {
                 return;
             }
             LOGGER.fine("Doing a connectivity check");
+            Future<?> internetCheck = null;
             try {
-                String connectionCheckUrl = site.getConnectionCheckUrl();
+                final String connectionCheckUrl = site.getConnectionCheckUrl();
                 if (connectionCheckUrl!=null) {
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.CHECKING);
                     statuses.add(Messages.UpdateCenter_Status_CheckingInternet());
-                    try {
-                        config.checkConnection(this, connectionCheckUrl);
-                    } catch (IOException e) {
-                        if(e.getMessage().contains("Connection timed out")) {
-                            // Google can't be down, so this is probably a proxy issue
-                            statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
-                            return;
+                    // Run the internet check in parallel
+                    internetCheck = updateService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                config.checkConnection(ConnectionCheckJob.this, connectionCheckUrl);
+                            } catch (Exception e) {
+                                if(e.getMessage().contains("Connection timed out")) {
+                                    // Google can't be down, so this is probably a proxy issue
+                                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(connectionCheckUrl));
+                                    return;
+                                }
+                            }
+                            connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
-                    }
+                    });
                 }
 
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
                 statuses.add(Messages.UpdateCenter_Status_CheckingJavaNet());
+
                 config.checkUpdateCenter(this, site.getUrl());
 
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.OK);
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Messages.UpdateCenter_Status_UnknownHostException(e.getMessage()));
                 addStatus(e);
                 error = e;
-            } catch (IOException e) {
+            } catch (Exception e) {
+                connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
                 statuses.add(Functions.printThrowable(e));
                 error = e;
+            }
+            
+            if(internetCheck != null) {
+                try {
+                    // Wait for internet check to complete
+                    internetCheck.get();
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error completing internet connectivity check: " + e.getMessage(), e);
+                }
             }
         }
 
@@ -1098,8 +1401,55 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return statuses.toArray(new String[statuses.size()]);
             }
         }
-    }
 
+
+    }
+    
+    /**
+     * Enables a required plugin, provides feedback in the update center
+     */
+    public class EnableJob extends InstallationJob {
+        public EnableJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin, boolean dynamicLoad) {
+            super(plugin, site, auth, dynamicLoad);
+        }
+        
+        public Plugin getPlugin() {
+            return plugin;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                plugin.getInstalled().enable();
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
+                error = e;
+            }
+            
+            if (dynamicLoad) {
+                try {
+                    // remove the existing, disabled inactive plugin to force a new one to load
+                    pm.dynamicLoad(getDestination(), true);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
+                    error = e;
+                    requiresRestart = true;
+                }
+            } else {
+                requiresRestart = true;
+            }
+        }
+    }
+    
+    /**
+     * A no-op, e.g. this plugin is already installed
+     */
+    public class NoOpJob extends EnableJob {
+        public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
+            super(site, auth, plugin, false);
+        }
+    }
+    
     /**
      * Base class for a job that downloads a file from the Jenkins project.
      */
@@ -1270,6 +1620,15 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
 
         /**
+         * Indicates that the plugin was successfully installed.
+         */
+        public class Skipped extends InstallationStatus {
+            @Override public boolean isSuccess() {
+                return true;
+            }
+        }
+
+        /**
          * Indicates that the plugin is waiting for its turn for installation.
          */
         public class Pending extends InstallationStatus {
@@ -1313,19 +1672,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Represents the state of the installation activity of one plugin.
      */
-    public final class InstallationJob extends DownloadJob {
+    public class InstallationJob extends DownloadJob {
         /**
          * What plugin are we trying to install?
          */
         @Exported
         public final Plugin plugin;
 
-        private final PluginManager pm = Jenkins.getInstance().getPluginManager();
+        protected final PluginManager pm = Jenkins.getInstance().getPluginManager();
 
         /**
          * True to load the plugin into this Jenkins, false to wait until restart.
          */
-        private final boolean dynamicLoad;
+        protected final boolean dynamicLoad;
 
         /**
          * @deprecated as of 1.442
@@ -1349,7 +1708,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".jpi");
         }
-        
+
         private File getLegacyDestination() {
             File baseDir = pm.rootDir;
             return new File(baseDir, plugin.name + ".hpi");
@@ -1361,29 +1720,81 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         public void _run() throws IOException, InstallationStatus {
-            super._run();
+            if (wasInstalled()) {
+                // Do this first so we can avoid duplicate downloads, too
+                // check to see if the plugin is already installed at the same version and skip it
+                LOGGER.info("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                //throw new Skipped(); // TODO set skipped once we have a status indicator for it
+                return;
+            }
+            try {
+                super._run();
 
-            // if this is a bundled plugin, make sure it won't get overwritten
-            PluginWrapper pw = plugin.getInstalled();
-            if (pw!=null && pw.isBundled()) {
-                SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
-                try {
-                    pw.doPin();
-                } finally {
-                    SecurityContextHolder.setContext(oldContext);
+                // if this is a bundled plugin, make sure it won't get overwritten
+                PluginWrapper pw = plugin.getInstalled();
+                if (pw!=null && pw.isBundled()) {
+                    SecurityContext oldContext = ACL.impersonate(ACL.SYSTEM);
+                    try {
+                        pw.doPin();
+                    } finally {
+                        SecurityContextHolder.setContext(oldContext);
+                    }
+                }
+
+                if (dynamicLoad) {
+                    try {
+                        pm.dynamicLoad(getDestination());
+                    } catch (RestartRequiredException e) {
+                        throw new SuccessButRequiresRestart(e.message);
+                    } catch (Exception e) {
+                        throw new IOException("Failed to dynamically deploy this plugin",e);
+                    }
+                } else {
+                    throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+                }
+            } finally {
+                synchronized(this) {
+                    // There may be other threads waiting on completion
+                    LOGGER.fine("Install complete for: " + plugin.getDisplayName() + "@" + plugin.version);
+                    // some status other than Installing or Downloading needs to be set here
+                    // {@link #isAlreadyInstalling()}, it will be overwritten by {@link DownloadJob#run()}
+                    status = new Skipped();
+                    notifyAll();
                 }
             }
+        }
 
-            if (dynamicLoad) {
-                try {
-                    pm.dynamicLoad(getDestination());
-                } catch (RestartRequiredException e) {
-                    throw new SuccessButRequiresRestart(e.message);
-                } catch (Exception e) {
-                    throw new IOException("Failed to dynamically deploy this plugin",e);
+        /**
+         * Indicates there is another installation job for this plugin
+         * @since TODO
+         */
+        protected boolean wasInstalled() {
+            synchronized(UpdateCenter.this) {
+                for (UpdateCenterJob job : getJobs()) {
+                    if (job == this) {
+                        // oldest entries first, if we reach this instance,
+                        // we need it to continue installing
+                        return false;
+                    }
+                    if (job instanceof InstallationJob) {
+                        InstallationJob ij = (InstallationJob)job;
+                        if (ij.plugin.equals(plugin) && ij.plugin.version.equals(plugin.version)) {
+                            // wait until other install is completed
+                            synchronized(ij) {
+                                if(ij.status instanceof Installing || ij.status instanceof Pending) {
+                                    try {
+                                        LOGGER.fine("Waiting for other plugin install of: " + plugin.getDisplayName() + "@" + plugin.version);
+                                        ij.wait();
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                    }
                 }
-            } else {
-                throw new SuccessButRequiresRestart(Messages._UpdateCenter_DownloadButNotActivated());
+                return false;
             }
         }
 
@@ -1395,7 +1806,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public String toString() {
             return super.toString()+"[plugin="+plugin.title+"]";
         }
-        
+
         /**
          * Called when the download is completed to overwrite
          * the old file with the new file.
@@ -1450,7 +1861,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             File baseDir = pm.rootDir;
             final File legacy = new File(baseDir, plugin.name + ".hpi");
             if(legacy.exists()){
-            	return legacy;
+                return legacy;
             }
             return new File(baseDir, plugin.name + ".jpi");
         }
@@ -1621,6 +2032,17 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     @Initializer(after=PLUGINS_STARTED, fatal=false)
     public static void init(Jenkins h) throws IOException {
         h.getUpdateCenter().load();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void updateDefaultSite() {
+        try {
+            // Need to do the following because the plugin manager will attempt to access
+            // $JENKINS_HOME/updates/default.json. Needs to be up to date.
+            Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+        } catch (Exception e) {
+            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
+        }
     }
 
     /**

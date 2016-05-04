@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
- * Makes sure that connections to slaves are alive, and if they are not, cut them off.
+ * Makes sure that connections to agents are alive, and if they are not, cut them off.
  *
  * <p>
  * If we only rely on TCP retransmission time out for this, the time it takes to detect a bad connection
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 @Extension
 public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     public ConnectionActivityMonitor() {
-        super("Connection Activity monitoring to slaves");
+        super("Connection Activity monitoring to agents");
     }
 
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
@@ -61,7 +61,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
             if (ch instanceof Channel) {
                 Channel channel = (Channel) ch;
                 if (now-channel.getLastHeard() > TIME_TILL_PING) {
-                    // haven't heard from this slave for a while.
+                    // haven't heard from this agent for a while.
                     Long lastPing = (Long)channel.getProperty(ConnectionActivityMonitor.class);
 
                     if (lastPing!=null && now-lastPing > TIMEOUT) {
