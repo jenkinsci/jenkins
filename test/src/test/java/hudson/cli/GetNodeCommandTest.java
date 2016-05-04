@@ -30,9 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import hudson.model.Computer;
 import jenkins.model.Jenkins;
 
@@ -61,8 +59,8 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("user is missing the Slave/ExtendedRead permission"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/ExtendedRead permission"));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
     }
 
@@ -88,8 +86,8 @@ public class GetNodeCommandTest {
                 .invokeWithArgs("MySlave")
         ;
 
-        assertThat(result.stderr(), containsString("No such node 'MySlave'"));
-        assertThat(result, failedWith(-1));
+        assertThat(result.stderr(), containsString("ERROR: No such node 'MySlave'"));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
     }
 }

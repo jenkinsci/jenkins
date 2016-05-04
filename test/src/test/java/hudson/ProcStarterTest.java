@@ -33,20 +33,21 @@ import hudson.tasks.BuildWrapperDescriptor;
 import java.io.IOException;
 import org.jvnet.hudson.test.Issue;
 import hudson.Launcher.DecoratedLauncher;
+import hudson.Launcher.ProcStarter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Contains tests for {@link ProcStarter} class.
- * @author Oleg Nenashev <nenashev@synopsys.com>, Synopsys Inc.
- * @since TODO: define a version
+ * @author Oleg Nenashev, Synopsys Inc.
+ * @since 1.568
  */
 public class ProcStarterTest {
 
     @Rule
     public JenkinsRule rule = new JenkinsRule();
-    
+
     @Test
     @Issue("JENKINS-20559")
     public void testNonInitializedEnvsNPE() throws Exception {
@@ -72,11 +73,6 @@ public class ProcStarterTest {
         public boolean isApplicable(AbstractProject<?, ?> ap) {
             return true;
         }
-
-        @Override
-        public String getDisplayName() {
-            return "testStub";
-        }
     }
 
     /**
@@ -92,7 +88,7 @@ public class ProcStarterTest {
             return new Environment() {
             };
         }
-        
+
         @Extension
         public static class DescriptorImpl extends TestWrapperDescriptor {
         }
@@ -121,7 +117,7 @@ public class ProcStarterTest {
             return new Environment() {
             };
         }
-        
+
         @Extension
         public static class DescriptorImpl extends TestWrapperDescriptor {
         }

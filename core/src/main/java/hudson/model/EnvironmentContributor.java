@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import javax.annotation.Nonnull;

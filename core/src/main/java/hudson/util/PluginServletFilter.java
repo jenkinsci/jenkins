@@ -25,8 +25,10 @@ package hudson.util;
 
 import hudson.ExtensionPoint;
 import hudson.security.SecurityRealm;
+import java.util.ArrayList;
 import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -41,6 +43,8 @@ import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s, provided by plugins
@@ -71,8 +75,11 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
 
     /**
      * Lookup the instance from servlet context.
+     *
+     * @param c the ServletContext most of the time taken from a Jenkins instance
+     * @return get the current PluginServletFilter if it is already available
      */
-    private static PluginServletFilter getInstance(ServletContext c) {
+    private static @CheckForNull PluginServletFilter getInstance(ServletContext c) {
         return (PluginServletFilter)c.getAttribute(KEY);
     }
 
@@ -89,21 +96,26 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
     }
 
     public static void addFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstance();
-        if (j==null) {
+        Jenkins j = Jenkins.getInstanceOrNull();
+        
+        PluginServletFilter container = null;
+        if(j != null) {
+            container = getInstance(j.servletContext);
+	}
+        // https://marvelution.atlassian.net/browse/JJI-188
+        if (j==null || container == null) {
             // report who is doing legacy registration
             LOGGER.log(Level.WARNING, "Filter instance is registered too early: "+filter, new Exception());
             LEGACY.add(filter);
         } else {
-            PluginServletFilter container = getInstance(j.servletContext);
             filter.init(container.config);
             container.list.add(filter);
         }
     }
 
     public static void removeFilter(Filter filter) throws ServletException {
-        Jenkins j = Jenkins.getInstance();
-        if (j==null) {
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j==null || getInstance(j.servletContext) == null) {
             LEGACY.remove(filter);
         } else {
             getInstance(j.servletContext).list.remove(filter);
@@ -131,6 +143,34 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
             f.destroy();
         }
         list.clear();
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void cleanUp() {
+        PluginServletFilter instance = getInstance(Jenkins.getInstance().servletContext);
+        if (instance != null) {
+            // While we could rely on the current implementation of list being a CopyOnWriteArrayList
+            // safer to just take an explicit copy of the list and operate on the copy
+            for (Filter f: new ArrayList<>(instance.list)) {
+                instance.list.remove(f);
+                // remove from the list even if destroy() fails as a failed destroy is still a destroy
+                try {
+                    f.destroy();
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.WARNING, "Filter " + f + " propagated an exception from its destroy method",
+                            e);
+                } catch (Error e) {
+                    throw e; // we are not supposed to catch errors, don't log as could be an OOM
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE, "Filter " + f + " propagated an exception from its destroy method", e);
+                }
+            }
+            // if some fool adds a filter while we are terminating, we should just log the fact
+            if (!instance.list.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "The following filters appear to have been added during clean up: {0}",
+                        instance.list);
+            }
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(PluginServletFilter.class.getName());

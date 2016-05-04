@@ -33,7 +33,6 @@ import java.io.StringWriter;
 
 import jenkins.security.s2m.AdminWhitelistRule;
 import jenkins.security.s2m.DefaultFilePathFilter;
-import jenkins.security.s2m.MasterKillSwitchConfiguration;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +41,7 @@ import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import javax.inject.Inject;
+import org.jvnet.hudson.test.Issue;
 
 public class DefaultFilePathFilterTest {
 
@@ -111,4 +111,12 @@ public class DefaultFilePathFilterTest {
             throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
     }
+
+    @Issue("JENKINS-27055")
+    @Test public void matchBuildDir() throws Exception {
+        File f = new File(r.buildAndAssertSuccess(r.createFreeStyleProject()).getRootDir(), "whatever");
+        rule.setMasterKillSwitch(false);
+        assertTrue(rule.checkFileAccess("write", f));
+    }
+
 }

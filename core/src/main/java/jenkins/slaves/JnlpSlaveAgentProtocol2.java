@@ -1,19 +1,19 @@
 package jenkins.slaves;
 
 import hudson.Extension;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Properties;
 
 /**
  * {@link JnlpSlaveAgentProtocol} Version 2.
  *
  * <p>
  * This protocol extends the version 1 protocol by adding a per-client cookie,
- * so that we can detect a reconnection from the slave and take appropriate action,
+ * so that we can detect a reconnection from the agent and take appropriate action,
  * when the connection disappeared without the master noticing.
  *
  * @author Kohsuke Kawaguchi
@@ -36,6 +36,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler2(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler2(Socket socket) throws IOException {
             super(socket);
         }
@@ -45,7 +46,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
         }
 
         /**
-         * Handles JNLP slave agent connection request (v2 protocol)
+         * Handles JNLP agent connection request (v2 protocol)
          */
         @Override
         protected void run() throws IOException, InterruptedException {
@@ -54,11 +55,16 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
             final String nodeName = request.getProperty("Node-Name");
 
             for (JnlpAgentReceiver recv : JnlpAgentReceiver.all()) {
-                if (recv.handle(nodeName,this))
-                    return;
+                try {
+                    if (recv.handle(nodeName,this))
+                        return;
+                } catch (AbstractMethodError e) {
+                    if (recv.handle(nodeName,new JnlpSlaveHandshake(this)))
+                        return;
+                }
             }
 
-            error("Unrecognized name: "+nodeName);
+            error("JNLP2-connect: rejected connection for node: " + nodeName);
         }
     }
 }

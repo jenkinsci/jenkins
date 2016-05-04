@@ -36,6 +36,7 @@ import hudson.model.Result;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
 import jenkins.util.VirtualFile;
@@ -87,6 +88,7 @@ public class ArtifactArchiverTest {
     public void testAllowEmptyArchive() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ArtifactArchiver aa = new ArtifactArchiver("f");
+        assertFalse(aa.getAllowEmptyArchive());
         aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));
         assertEquals("(no artifacts)", Result.SUCCESS, build(project));
@@ -124,6 +126,34 @@ public class ArtifactArchiverTest {
         assertEquals(1, kids.length);
         assertEquals("lodge", kids[0].getName());
         // do not check that it .exists() since its target has not been archived
+    }
+
+    @Issue("SECURITY-162")
+    @Test public void outsideSymlinks() throws Exception {
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                ws.child("hack").symlinkTo(p.getConfigFile().getFile().getAbsolutePath(), listener);
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("hack", "", false, true));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
+        assertEquals(1, artifacts.size());
+        FreeStyleBuild.Artifact artifact = artifacts.get(0);
+        assertEquals("hack", artifact.relativePath);
+        VirtualFile[] kids = b.getArtifactManager().root().list();
+        assertEquals(1, kids.length);
+        assertEquals("hack", kids[0].getName());
+        assertFalse(kids[0].isDirectory());
+        assertFalse(kids[0].isFile());
+        assertFalse(kids[0].exists());
+        j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
     }
     
     private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{

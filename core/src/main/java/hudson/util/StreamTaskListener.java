@@ -28,8 +28,6 @@ import hudson.console.ConsoleNote;
 import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,6 +44,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -65,6 +64,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
      *      the charset and output stream separately, so that this class can handle encoding correctly,
      *      or use {@link #fromStdout()} or {@link #fromStderr()}.
      */
+    @Deprecated
     public StreamTaskListener(PrintStream out) {
         this(out,null);
     }
@@ -97,6 +97,22 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         this(new FileOutputStream(out),charset);
     }
 
+    /**
+     * Constructs a {@link StreamTaskListener} that sends the output to a specified file.
+     *
+     * @param out     the file.
+     * @param append  if {@code true}, then output will be written to the end of the file rather than the beginning.
+     * @param charset if non-{@code null} then the charset to use when writing.
+     * @throws IOException if the file could not be opened.
+     * @since 1.651
+     */
+    public StreamTaskListener(File out, boolean append, Charset charset) throws IOException {
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        this(new FileOutputStream(out, append),charset);
+    }
+
     public StreamTaskListener(Writer w) throws IOException {
         this(new WriterOutputStream(w));
     }
@@ -105,6 +121,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
      * @deprecated as of 1.349
      *      Use {@link #NULL}
      */
+    @Deprecated
     public StreamTaskListener() throws IOException {
         this(new NullStream());
     }

@@ -27,7 +27,6 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import jenkins.management.Messages;
-import jenkins.model.Jenkins;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>

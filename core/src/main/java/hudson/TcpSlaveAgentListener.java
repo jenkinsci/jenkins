@@ -24,6 +24,12 @@
 package hudson;
 
 import hudson.slaves.OfflineCause;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketAddress;
+import java.util.Arrays;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
@@ -37,13 +43,14 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 /**
- * Listens to incoming TCP connections from JNLP slave agents and CLI.
+ * Listens to incoming TCP connections from JNLP agents and CLI.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
- * Historically  this was used for inbound connection from slave agents (hence the name), but over time
+ * Historically  this was used for inbound connection from agents (hence the name), but over time
  * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
  * same socket.
  *
@@ -66,7 +73,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
-        super("TCP slave agent listener port="+port);
+        super("TCP agent listener port="+port);
         try {
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(port));
@@ -75,7 +82,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
 
-        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
+        LOGGER.log(Level.FINE, "JNLP agent listener started on TCP port {0}", getPort());
 
         start();
     }
@@ -87,11 +94,19 @@ public final class TcpSlaveAgentListener extends Thread {
         return serverSocket.socket().getLocalPort();
     }
 
+    /**
+     * Gets the TCP port number in which we are advertising.
+     * @since 1.656
+     */
+    public int getAdvertisedPort() {
+        return CLI_PORT != null ? CLI_PORT : getPort();
+    }
+
     @Override
     public void run() {
         try {
             // the loop eventually terminates when the socket is closed.
-            while (true) {
+            while (!shuttingDown) {
                 Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
@@ -105,7 +120,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         } catch (IOException e) {
             if(!shuttingDown) {
-                LOGGER.log(Level.SEVERE,"Failed to accept JNLP slave agent connections",e);
+                LOGGER.log(Level.SEVERE,"Failed to accept JNLP agent connections",e);
             }
         }
     }
@@ -115,6 +130,16 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public void shutdown() {
         shuttingDown = true;
+        try {
+            SocketAddress localAddress = serverSocket.getLocalAddress();
+            if (localAddress instanceof InetSocketAddress) {
+                InetSocketAddress address = (InetSocketAddress) localAddress;
+                Socket client = new Socket(address.getHostName(), address.getPort());
+                new PingAgentProtocol().connect(client);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Failed to send Ping to wake acceptor loop", e);
+        }
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -134,13 +159,13 @@ public final class TcpSlaveAgentListener extends Thread {
             synchronized(getClass()) {
                 id = iotaGen++;
             }
-            setName("TCP slave agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
+            setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
         }
 
         @Override
         public void run() {
             try {
-                LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
+                LOGGER.log(Level.INFO, "Accepted connection #{0} from {1}", new Object[]{id,s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
@@ -184,6 +209,79 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
+     * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
+     * We also use this to wake the acceptor thread on termination.
+     *
+     * @since 1.653
+     */
+    @Extension
+    public static class PingAgentProtocol extends AgentProtocol {
+
+        private final byte[] ping;
+
+        public PingAgentProtocol() {
+            try {
+                ping = "Ping\n".getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
+            }
+        }
+
+        @Override
+        public String getName() {
+            return "Ping";
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            try {
+                OutputStream stream = socket.getOutputStream();
+                try {
+                    LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
+                    stream.write(ping);
+                    stream.flush();
+                    LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
+                } finally {
+                    stream.close();
+                }
+            } finally {
+                socket.close();
+            }
+        }
+
+        public boolean connect(Socket socket) throws IOException {
+            try {
+                DataOutputStream out = null;
+                InputStream in = null;
+                try {
+                    LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                    out = new DataOutputStream(socket.getOutputStream());
+                    out.writeUTF("Protocol:Ping");
+                    in = socket.getInputStream();
+                    byte[] response = new byte[ping.length];
+                    int responseLength = in.read(response);
+                    if (responseLength == ping.length && Arrays.equals(response, ping)) {
+                        LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                        return true;
+                    } else {
+                        LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                                socket.getRemoteSocketAddress(),
+                                new String(ping, "UTF-8"),
+                                new String(response, 0, responseLength, "UTF-8")
+                        });
+                        return false;
+                    }
+                } finally {
+                    IOUtils.closeQuietly(out);
+                    IOUtils.closeQuietly(in);
+                }
+            } finally {
+                socket.close();
+            }
+        }
+    }
+
+    /**
      * Connection terminated because we are reconnected from the current peer.
      */
     public static class ConnectionFromCurrentPeer extends OfflineCause {
@@ -204,6 +302,18 @@ public final class TcpSlaveAgentListener extends Thread {
      * TODO: think about how to expose this (including whether this needs to be exposed at all.)
      */
     public static String CLI_HOST_NAME = System.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
+
+    /**
+     * Port number that we advertise the CLI client to connect to.
+     * This is primarily for the case where the port that Jenkins runs is different from the port
+     * that external world should connect to, because of the presence of NAT / port-forwarding / TCP reverse
+     * proxy.
+     *
+     * If left to null, fall back to {@link #getPort()}
+     *
+     * @since 1.611
+     */
+    public static Integer CLI_PORT = Integer.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
 
 /*

@@ -28,6 +28,7 @@ import hudson.model.Queue;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import javax.annotation.CheckForNull;
+import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -70,6 +71,9 @@ public final class WorkUnit {
 
     public void setExecutor(@CheckForNull Executor e) {
         executor = e;
+        if (e != null) {
+            context.future.addExecutor(e);
+        }
     }
 
     /**
@@ -85,6 +89,9 @@ public final class WorkUnit {
     @Restricted(NoExternalUse.class)
     public void setExecutable(Executable executable) {
         this.executable = executable;
+        if (executable instanceof Run) {
+            ((Run) executable).setQueueId(context.item.getId());
+        }
     }
 
     /**

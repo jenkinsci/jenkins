@@ -1,0 +1,45 @@
+<?jelly escape-by-default='true'?>
+<l:html norefresh="true" title="${app.instance.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:main-panel>
+    <form action="${app.instance.securityRealm.authenticationGatewayUrl}" method="POST">
+        <div class="plugin-setup-wizard bootstrap-3">
+          <div class="modal fade in" style="display: block;">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                
+                <div class="modal-header">
+                  <h4 class="modal-title">${%authenticate-security-token.getting.started}</h4>
+                </div>
+                <div class="modal-body">
+                  <i class="water-mark icon-service"></i>
+                  <div class="jumbotron welcome-panel offline">
+                  
+                    <h1>${%authenticate-security-token.unlock.jenkins}</h1>
+                    <p>
+                        ${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}
+                    </p>
+                    <p>${%authenticate-security-token.copy.password}</p>
+                    <j:if test="${error}">
+                        <div class="alert alert-danger">
+                          <strong>${%authenticate-security-token.error} </strong>
+                          ${%authenticate-security-token.password.incorrect}
+                        </div>
+                    </j:if>
+                    <div class="form-group ${error ? 'has-error' : ''}">
+                    <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
+                    <input name="j_username" value="${j.setupWizard.initialSetupAdminUserName}" type="hidden"/>
+                    <input id="security-token" class="form-control" type="password" name="j_password"/>
+                    </div>
+                    
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <input type="submit" class="btn btn-primary set-security-key" value="${%authenticate-security-token.continue}"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </form>
+  </l:main-panel>
+</l:html>

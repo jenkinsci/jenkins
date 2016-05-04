@@ -25,13 +25,14 @@ package hudson.model;
 
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.MultiStageTimeSeries.TrendChart;
+import hudson.model.queue.SubTask;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 
 /**
- * {@link LoadStatistics} for the entire system (the master and all the slaves combined),
+ * {@link LoadStatistics} for the entire system (the master and all the agents combined),
  * and all the jobs that are running on it.
  *
  * @author Kohsuke Kawaguchi
@@ -47,6 +48,7 @@ public class OverallLoadStatistics extends LoadStatistics {
      */
     @Exported
     @Restricted(NoExternalUse.class)
+    @Deprecated
     public final MultiStageTimeSeries totalQueueLength = queueLength;
 
     public OverallLoadStatistics() {
@@ -68,11 +70,21 @@ public class OverallLoadStatistics extends LoadStatistics {
         return Jenkins.getInstance().getQueue().countBuildableItems();
     }
 
+    @Override
+    protected Iterable<Node> getNodes() {
+        return Jenkins.getActiveInstance().getNodes();
+    }
+
+    @Override
+    protected boolean matches(Queue.Item item, SubTask subTask) {
+        return true;
+    }
+
     /**
      * When drawing the overall load statistics, use the total queue length,
      * not {@link #queueLength}, which just shows jobs that are to be run on the master.
      */
     protected TrendChart createOverallTrendChart(TimeScale timeScale) {
-        return MultiStageTimeSeries.createTrendChart(timeScale,busyExecutors,totalExecutors,queueLength);
+        return MultiStageTimeSeries.createTrendChart(timeScale,busyExecutors,onlineExecutors,queueLength,availableExecutors);
     }
 }

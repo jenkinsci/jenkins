@@ -32,11 +32,13 @@ THE SOFTWARE.
     <l:tasks>
       <l:task contextMenu="false" href="${rootURL}/computer" icon="icon-up icon-md" title="${%Back to List}"/>
       <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="icon-search icon-md" title="${%Status}"/>
-      <l:task href="${rootURL}/${it.url}delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Slave}"/>
+      <l:task href="${rootURL}/${it.url}delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Agent}"/>
       <l:task href="${rootURL}/${it.url}configure" icon="icon-setting icon-md" permission="${it.CONFIGURE}" title="${%Configure}"/>
       <l:task href="${rootURL}/${it.url}builds" icon="icon-notepad icon-md" title="${%Build History}"/>
       <l:task href="${rootURL}/${it.url}load-statistics" icon="icon-monitor icon-md" title="${%Load Statistics}"/>
-      <l:task href="${rootURL}/${it.url}script" icon="icon-terminal icon-md" permission="${app.RUN_SCRIPTS}" title="${%Script Console}"/>
+      <j:if test="${it.channel!=null}">
+        <l:task href="${rootURL}/${it.url}script" icon="icon-terminal icon-md" permission="${app.RUN_SCRIPTS}" title="${%Script Console}"/>
+      </j:if>
       <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
       <t:actions />
     </l:tasks>

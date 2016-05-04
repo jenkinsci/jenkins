@@ -2,12 +2,12 @@ package jenkins.util.io;
 
 /**
  * Marks the objects in Jenkins that only exist in the core
- * and not on slaves.
+ * and not on agents.
  *
  * <p>
  * This marker interface is for plugin developers to quickly
  * tell if they can take a specific object from a master to
- * a slave.
+ * an agent.
  *
  * (Core developers, if you find classes/interfaces that extend
  * from this, please be encouraged to add them.)

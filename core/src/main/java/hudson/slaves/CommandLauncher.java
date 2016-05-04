@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -57,7 +58,7 @@ public class CommandLauncher extends ComputerLauncher {
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      */
     private final String agentCommand;
-    
+
     /**
      * Optional environment variables to add to the current environment. Can be null.
      */
@@ -67,7 +68,7 @@ public class CommandLauncher extends ComputerLauncher {
     public CommandLauncher(String command) {
         this(command, null);
     }
-    
+
     public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
@@ -90,10 +91,10 @@ public class CommandLauncher extends ComputerLauncher {
         Process _proc = null;
         try {
             Slave node = computer.getNode();
-            if (node == null) { 
+            if (node == null) {
                 throw new AbortException("Cannot launch commands on deleted nodes");
             }
-            
+
             listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
             if(getCommand().trim().length()==0) {
                 listener.getLogger().println(Messages.CommandLauncher_NoLaunchCommand());
@@ -103,8 +104,8 @@ public class CommandLauncher extends ComputerLauncher {
 
             ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
-            pb.environment().putAll(cookie);      
-            pb.environment().put("WORKSPACE", node.getRemoteFS()); //path for local slave log
+            pb.environment().putAll(cookie);
+            pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local slave log
 
             {// system defined variables
                 String rootUrl = Jenkins.getInstance().getRootUrl();
@@ -118,7 +119,7 @@ public class CommandLauncher extends ComputerLauncher {
             if (env != null) {
             	pb.environment().putAll(env);
             }
-            
+
             final Process proc = _proc = pb.start();
 
             // capture error information from stderr. this will terminate itself
@@ -129,14 +130,7 @@ public class CommandLauncher extends ComputerLauncher {
             computer.setChannel(proc.getInputStream(), proc.getOutputStream(), listener.getLogger(), new Channel.Listener() {
                 @Override
                 public void onClosed(Channel channel, IOException cause) {
-                    try {
-                        int exitCode = proc.exitValue();
-                        if (exitCode!=0) {
-                            listener.error("Process terminated with exit code "+exitCode);
-                        }
-                    } catch (IllegalThreadStateException e) {
-                        // hasn't terminated yet
-                    }
+                    reportProcessTerminated(proc, listener);
 
                     try {
                         ProcessTree.get().killAll(proc, cookie);
@@ -146,7 +140,7 @@ public class CommandLauncher extends ComputerLauncher {
                 }
             });
 
-            LOGGER.info("slave agent launched for " + computer.getDisplayName());
+            LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
             e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
         } catch (RuntimeException e) {
@@ -166,12 +160,23 @@ public class CommandLauncher extends ComputerLauncher {
             LOGGER.log(Level.SEVERE, msg, e);
             e.printStackTrace(listener.error(msg));
 
-            if(_proc!=null)
+            if(_proc!=null) {
+                reportProcessTerminated(_proc, listener);
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
                     x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
                 }
+            }
+        }
+    }
+
+    private static void reportProcessTerminated(Process proc, TaskListener listener) {
+        try {
+            int exitCode = proc.exitValue();
+            listener.error("Process terminated with exit code " + exitCode);
+        } catch (IllegalThreadStateException e) {
+            // hasn't terminated yet
         }
     }
 

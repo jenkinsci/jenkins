@@ -122,9 +122,56 @@ public class ConsistentHashTest {
     @Test
     public void emptyBehavior() {
         ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
         assertFalse(hash.list(0).iterator().hasNext());
         assertNull(hash.lookup(0));
         assertNull(hash.lookup(999));
+    }
+
+    @Test
+    public void countAllPoints() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo", 10);
+        assertEquals(10, hash.countAllPoints());
+        hash.add("bar", 5);
+        assertEquals(15, hash.countAllPoints());
+        hash.remove("foo");
+        assertEquals(5, hash.countAllPoints());
+    }
+
+    @Test
+    public void defaultReplicationIsOneHundred() {
+        ConsistentHash<String> hash = new ConsistentHash<String>();
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo");
+        assertEquals(100, hash.countAllPoints());
+    }
+
+    @Test
+    public void setCustomDefaultReplication() {
+        ConsistentHash<String> hash = new ConsistentHash<String>((ConsistentHash.Hash<String>) ConsistentHash.DEFAULT_HASH, 7);
+        assertEquals(0, hash.countAllPoints());
+        hash.add("foo");
+        assertEquals(7, hash.countAllPoints());
+    }
+
+    @Test
+    public void usesCustomHash() {
+        final RuntimeException exception = new RuntimeException();
+        ConsistentHash.Hash<String> hashFunction = new ConsistentHash.Hash<String>() {
+            public String hash(String str) {
+                throw exception;
+            }
+        };
+
+        try {
+            ConsistentHash<String> hash = new ConsistentHash<String>(hashFunction);
+            hash.add("foo");
+            fail("Didn't use custom hash function");
+        } catch (RuntimeException e) {
+            assertSame(exception, e);
+        }
     }
 
     /**

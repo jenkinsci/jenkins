@@ -28,7 +28,7 @@ import javax.servlet.http.HttpSession;
  * {@link Authentication} often contains {@link UserDetails} implemented by a plugin,
  * but when it's persisted as a part of {@link HttpSession}, such instance will never
  * de-serialize correctly because the container isn't aware of additional classloading
- * in Hudson.
+ * in Jenkins.
  *
  * <p>
  * Jenkins doesn't work with a clustering anyway, and so it's better to just not persist

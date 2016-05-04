@@ -25,11 +25,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <!--
-    Publicize the TCP port number for JNLP slave agents so that they know where to conenct.
+    Publicize the TCP port number for JNLP agents so that they know where to conenct.
     Keep the legacy header for better backward compatibility
   -->
-  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
-  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
+  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
+  <!--
+    if the host name is overriden, advertise that as well
+  -->
+  <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
 
   Jenkins
 </j:jelly>

@@ -37,7 +37,7 @@ import org.apache.tools.ant.util.DeweyDecimal;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
- * meaning how they get connected to their slave agent program.
+ * meaning how they get connected to their agent program.
  *
  * <h2>Associated View</h2>
  * <dl>
@@ -54,17 +54,17 @@ import org.apache.tools.ant.util.DeweyDecimal;
 public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
-     * programatic launch of the slave agent in the target {@link Computer}.
+     * programatic launch of the agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
         return true;
     }
 
     /**
-     * Launches the slave agent for the given {@link Computer}.
+     * Launches the agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
+     * If the agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)
@@ -93,6 +93,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #launch(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void launch(SlaveComputer computer, StreamTaskListener listener) throws IOException , InterruptedException {
         throw new UnsupportedOperationException(getClass()+" must implement the launch method");
     }
@@ -117,6 +118,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #afterDisconnect(SlaveComputer, TaskListener)}
      */
+    @Deprecated
     public void afterDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -143,6 +145,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @deprecated as of 1.304
      *  Use {@link #beforeDisconnect(SlaveComputer, TaskListener)} 
      */
+    @Deprecated
     public void beforeDisconnect(SlaveComputer computer, StreamTaskListener listener) {
     }
 
@@ -159,6 +162,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      *      Use {@link Extension} for registration, and use
      *      {@link jenkins.model.Jenkins#getDescriptorList(Class)} for read access.
      */
+    @Deprecated
     public static final DescriptorList<ComputerLauncher> LIST = new DescriptorList<ComputerLauncher>(ComputerLauncher.class);
 
     /**

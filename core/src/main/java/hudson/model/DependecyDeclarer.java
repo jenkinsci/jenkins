@@ -30,4 +30,5 @@ import jenkins.model.DependencyDeclarer;
  * @deprecated Use {@link DependencyDeclarer} instead.
  * @since 1.160
  */
+@Deprecated
 public interface DependecyDeclarer extends DependencyDeclarer {}

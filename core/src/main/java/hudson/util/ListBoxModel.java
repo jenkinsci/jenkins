@@ -176,6 +176,7 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
      *      Exposed for stapler. Not meant for programatic consumption.
      */
     @Exported
+    @Deprecated
     public Option[] values() {
         return toArray(new Option[size()]);
     }

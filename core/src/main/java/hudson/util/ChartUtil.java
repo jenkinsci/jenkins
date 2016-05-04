@@ -100,6 +100,7 @@ public class ChartUtil {
      * @deprecated
      *      Use {@code awtProblemCause!=null} instead. As of 1.267.
      */
+    @Deprecated
     public static boolean awtProblem = false;
 
     /**
@@ -112,11 +113,12 @@ public class ChartUtil {
      *
      * @param defaultSize
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query paramter 'width' and 'height' in the request.
+     *      by the query parameter 'width' and 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
+    @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateGraph(req,rsp,chart,defaultSize.width, defaultSize.height);
     }
@@ -127,11 +129,12 @@ public class ChartUtil {
      * @param defaultW
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query paramter 'width' and 'height' in the request.
+     *      by the query parameter 'width' and 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
+    @Deprecated
     public static void generateGraph(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
             protected JFreeChart createGraph() {
@@ -147,6 +150,7 @@ public class ChartUtil {
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
+    @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, JFreeChart chart, Area defaultSize) throws IOException {
         generateClickableMap(req,rsp,chart,defaultSize.width,defaultSize.height);
     }
@@ -158,6 +162,7 @@ public class ChartUtil {
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
      */
+    @Deprecated
     public static void generateClickableMap(StaplerRequest req, StaplerResponse rsp, final JFreeChart chart, int defaultW, int defaultH) throws IOException {
         new Graph(-1,defaultW,defaultH) {
             protected JFreeChart createGraph() {

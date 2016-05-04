@@ -28,6 +28,7 @@ import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -171,6 +172,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @deprecated as of 1.281
      *      Put {@link Extension} on your class to get it auto-registered.
      */
+    @Deprecated
     public void register() {
         all().add(this);
     }
@@ -187,6 +189,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * @deprecated as of 1.281
      *      Use {@link #all()} for read access, and use {@link Extension} for registration.
      */
+    @Deprecated
     public static final CopyOnWriteList<RunListener> LISTENERS = ExtensionListView.createCopyOnWriteList(RunListener.class);
 
     /**
@@ -221,7 +224,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
-        if (Jenkins.getInstance() == null) {
+        if (Jenkins.getInstanceOrNull() == null) { // TODO use !Functions.isExtensionsAvailable() once JENKINS-33377
             return;
         }
         for (RunListener l : all()) {

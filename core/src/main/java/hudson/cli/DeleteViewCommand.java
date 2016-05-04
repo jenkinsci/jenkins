@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2013 Red Hat, Inc.
+ * Copyright (c) 2013-5 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,27 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
+import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.ViewGroup;
 import hudson.model.View;
 
 import org.kohsuke.args4j.Argument;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.logging.Logger;
+
 /**
- * @author ogondza
+ * @author ogondza, pjanouse
  * @since 1.538
  */
 @Extension
 public class DeleteViewCommand extends CLICommand {
 
-    @Argument(usage="Name of the view to delete", required=true)
-    private View view;
+    @Argument(usage="View names to delete", required=true, multiValued=true)
+    private List<String> views;
 
     @Override
     public String getShortDescription() {
@@ -48,20 +54,49 @@ public class DeleteViewCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        view.checkPermission(View.DELETE);
+        boolean errorOccurred = false;
 
-        final ViewGroup group = view.getOwner();
-        if (!group.canDelete(view)) {
+        // Remove duplicates
+        final HashSet<String> hs = new HashSet<String>();
+        hs.addAll(views);
 
-            stderr.format("%s does not allow to delete '%s' view\n",
-                    group.getDisplayName(),
-                    view.getViewName()
-            );
-            return -1;
+        ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
+
+        for(String view_s : hs) {
+            View view = null;
+
+            try {
+                view = voh.getView(view_s);
+
+                if (view == null) {
+                    throw new IllegalArgumentException("View name is empty");
+                }
+
+                view.checkPermission(View.DELETE);
+
+                ViewGroup group = view.getOwner();
+                if (!group.canDelete(view)) {
+                    throw new IllegalStateException(String.format("%s does not allow to delete '%s' view",
+                            group.getDisplayName(),
+                            view.getViewName()));
+                }
+
+                group.deleteView(view);
+            } catch (Exception e) {
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = String.format(view_s + ": " + e.getMessage());
+                stderr.println(errorMsg);
+                errorOccurred = true;
+                continue;
+            }
         }
 
-        group.deleteView(view);;
-
+        if (errorOccurred) {
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
         return 0;
     }
 }

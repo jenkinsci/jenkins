@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<pkg-contents spec="1.12">
-  <f n="Jenkins" o="root" g="admin" p="16893" pt="/Users/sami/Documents/Projektit/jenkins/osx/Library/Application Support/Jenkins" m="true" t="file">
-    <f n="jenkins-runner.sh" o="root" g="admin" p="33277"/>
-    <f n="Uninstall.command" o="root" g="admin" p="33277"/>
-    <mod>group</mod>
-    <mod>owner</mod>
-  </f>
-</pkg-contents>

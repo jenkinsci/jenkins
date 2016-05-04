@@ -27,7 +27,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
-import jenkins.model.Jenkins;
 
 import java.util.Map;
 

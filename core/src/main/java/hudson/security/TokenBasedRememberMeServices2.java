@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,8 +35,11 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -90,7 +93,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 			return;
 		}
 
-		Jenkins j = Jenkins.getInstance();
+		Jenkins j = Jenkins.getInstanceOrNull();
 		if (j != null && j.isDisableRememberMe()) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +
@@ -128,8 +131,41 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
         }
     }
 
-    /**
+	@Override
+	protected Cookie makeValidCookie(String tokenValueBase64, HttpServletRequest request, long maxAge) {
+		Cookie cookie = super.makeValidCookie(tokenValueBase64, request, maxAge);
+        // if we can mark the cookie HTTP only, do so to protect this cookie even in case of XSS vulnerability.
+		if (SET_HTTP_ONLY!=null) {
+            try {
+                SET_HTTP_ONLY.invoke(cookie,true);
+            } catch (IllegalAccessException e) {
+                // ignore
+            } catch (InvocationTargetException e) {
+                // ignore
+            }
+        }
+
+        // if the user is running Jenkins over HTTPS, we also want to prevent the cookie from leaking in HTTP.
+        // whether the login is done over HTTPS or not would be a good enough approximation of whether Jenkins runs in
+        // HTTPS or not, so use that.
+        if (request.isSecure())
+            cookie.setSecure(true);
+		return cookie;
+	}
+
+	/**
      * Used to compute the token signature securely.
      */
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(TokenBasedRememberMeServices.class,"mac");
+
+    private static final Method SET_HTTP_ONLY;
+
+	static {
+		Method m = null;
+		try {
+			m = Cookie.class.getMethod("setHttpOnly", boolean.class);
+		} catch (NoSuchMethodException x) { // 3.0+
+		}
+        SET_HTTP_ONLY = m;
+	}
 }

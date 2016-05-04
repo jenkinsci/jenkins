@@ -28,6 +28,7 @@ import static hudson.util.FormValidation.Kind.WARNING
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertEquals
 
+import hudson.security.csrf.CrumbIssuer
 import hudson.slaves.DumbSlave
 import hudson.slaves.JNLPLauncher
 import hudson.util.FormValidation
@@ -84,7 +85,7 @@ class SlaveTest {
         HttpURLConnection con = new URL(j.getURL(),url).openConnection();
         con.requestMethod = "POST"
         con.setRequestProperty("Content-Type","application/xml;charset=UTF-8")
-        con.setRequestProperty(".crumb","test")
+        con.setRequestProperty(CrumbIssuer.DEFAULT_CRUMB_NAME,"test")
         con.doOutput = true;
         con.outputStream.write(xml.getBytes("UTF-8"))
         con.outputStream.close();
@@ -96,7 +97,7 @@ class SlaveTest {
         def d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class)
         assert d.doCheckRemoteFS("c:\\")==FormValidation.ok();
         assert d.doCheckRemoteFS("/tmp")==FormValidation.ok();
-        assert d.doCheckRemoteFS("relative/path").kind==ERROR;
+        assert d.doCheckRemoteFS("relative/path").kind==WARNING;
         assert d.doCheckRemoteFS("/net/foo/bar/zot").kind==WARNING;
         assert d.doCheckRemoteFS("\\\\machine\\folder\\foo").kind==WARNING;
     }

@@ -46,9 +46,10 @@ import java.util.List;
 import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.WeakHashMap;
-import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticator;
 import org.acegisecurity.Authentication;
+
+import javax.annotation.Nonnull;
 
 /**
  * One step of the whole build process.
@@ -131,6 +132,7 @@ public interface BuildStep {
      * @deprecated as of 1.341.
      *      Use {@link #getProjectActions(AbstractProject)} instead.
      */
+    @Deprecated
     Action getProjectAction(AbstractProject<?,?> project);
 
     /**
@@ -154,6 +156,7 @@ public interface BuildStep {
      * @return
      *      can be empty but never null.
      */
+    @Nonnull
     Collection<? extends Action> getProjectActions(AbstractProject<?,?> project);
 
 
@@ -230,6 +233,7 @@ public interface BuildStep {
      *      Use {@link Builder#all()} for read access, and use
      *      {@link Extension} for registration.
      */
+    @Deprecated
     List<Descriptor<Builder>> BUILDERS = new DescriptorList<Builder>(Builder.class);
 
     /**
@@ -246,6 +250,7 @@ public interface BuildStep {
      *      Use {@link Publisher#all()} for read access, and use
      *      {@link Extension} for registration.
      */
+    @Deprecated
     PublisherList PUBLISHERS = new PublisherList();
 
     /**

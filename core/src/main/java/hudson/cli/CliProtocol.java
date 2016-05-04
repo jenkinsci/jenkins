@@ -48,6 +48,7 @@ public class CliProtocol extends AgentProtocol {
          * @deprecated as of 1.559
          *      Use {@link #Handler(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler(Socket socket) {
             this(null,socket);
         }
@@ -76,7 +77,7 @@ public class CliProtocol extends AgentProtocol {
             Channel channel = cb
                     .withMode(Mode.BINARY)
                     .withRestricted(true)
-                    .withBaseLoader(Jenkins.getInstance().pluginManager.uberClassLoader)
+                    .withBaseLoader(Jenkins.getActiveInstance().pluginManager.uberClassLoader)
                     .build(new BufferedInputStream(c.in), new BufferedOutputStream(c.out));
 
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));

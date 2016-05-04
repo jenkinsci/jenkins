@@ -31,29 +31,36 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1>${%Script Console}</h1>
+      <h1><img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
-      <p>
-        ${%description}
-      </p>
-      <!-- this is where the example goes -->
-      <d:invokeBody />
-      <p>
-        ${%description2}
-      </p>
+      <j:choose>
+        <j:when test="${it.channel != null}">
+          <p>
+            ${%description}
+          </p>
+          <!-- this is where the example goes -->
+          <d:invokeBody />
+          <p>
+            ${%description2}
+          </p>
 
-      <form action="script" method="post">
-        <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
-        <div align="right">
-          <f:submit  value="${%Run}"/>
-        </div>
-      </form>
-      <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
-      <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
-      <j:if test="${output!=null}">
-        <h2>${%Result}</h2>
-        <pre><st:out value="${output}"/></pre>
-      </j:if>
+          <form action="script" method="post">
+            <textarea id="script" name="script" class="script">${request.getParameter('script')}</textarea>
+            <div align="right">
+              <f:submit  value="${%Run}"/>
+            </div>
+          </form>
+          <st:adjunct includes="org.kohsuke.stapler.codemirror.mode.groovy.groovy"/>
+          <st:adjunct includes="org.kohsuke.stapler.codemirror.theme.default"/>
+          <j:if test="${output!=null}">
+            <h2>${%Result}</h2>
+            <pre><st:out value="${output}"/></pre>
+          </j:if>
+        </j:when>
+        <j:otherwise>
+          ${%It is not possible to run scripts when agent is offline.}
+        </j:otherwise>
+      </j:choose>
     </l:main-panel>
   </l:layout>
 </j:jelly>

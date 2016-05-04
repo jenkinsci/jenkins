@@ -34,6 +34,7 @@ import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.concurrent.GuardedBy;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.util.Calendar;
@@ -44,7 +45,7 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.INFO;
 
 /**
- * {@link RetentionStrategy} that controls the slave based on a schedule.
+ * {@link RetentionStrategy} that controls the agent based on a schedule.
  *
  * @author Stephen Connolly
  * @since 1.275
@@ -163,6 +164,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return isOnlineScheduled();
     }
 
+    @GuardedBy("hudson.model.Queue.lock")
     public synchronized long check(final SlaveComputer c) {
         boolean shouldBeOnline = isOnlineScheduled();
         LOGGER.log(Level.FINE, "Checking computer {0} against schedule. online = {1}, shouldBeOnline = {2}",
@@ -184,8 +186,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                                         new Object[]{c.getName()});
                                 c.setAcceptingTasks(true);
                             }
-                        } catch (InterruptedException e) {
-                        } catch (ExecutionException e) {
+                        } catch (InterruptedException | ExecutionException e) {
                         }
                     }
                 });

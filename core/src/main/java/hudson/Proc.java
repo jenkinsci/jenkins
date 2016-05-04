@@ -156,11 +156,7 @@ public abstract class Proc {
                                     unit.toString().toLowerCase(Locale.ENGLISH));
                             kill();
                         }
-                    } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (IOException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (RuntimeException x) {
+                    } catch (InterruptedException | IOException | RuntimeException x) {
                         x.printStackTrace(listener.error("Failed to join a process"));
                     }
                 }
@@ -431,6 +427,7 @@ public abstract class Proc {
      *
      * @deprecated as of 1.399. Replaced by {@link Launcher.RemoteLauncher.ProcImpl}
      */
+    @Deprecated
     public static final class RemoteProc extends Proc {
         private final Future<Integer> process;
 

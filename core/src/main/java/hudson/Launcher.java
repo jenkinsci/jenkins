@@ -29,7 +29,6 @@ import hudson.util.QuotedStringTokenizer;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.model.Node;
-import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
@@ -133,6 +132,7 @@ public abstract class Launcher {
      *      figure out the current {@link Computer} from within a build, use
      *      {@link Computer#currentComputer()}  
      */
+    @Deprecated
     public Computer getComputer() {
         for( Computer c : Jenkins.getInstance().getComputers() )
             if(c.getChannel()==channel)
@@ -297,7 +297,7 @@ public abstract class Launcher {
          *
          * <p>
          * In adition to what the current process
-         * is inherited (if this is going to be launched from a slave agent, that
+         * is inherited (if this is going to be launched from a agent agent, that
          * becomes the "current" process), these variables will be also set.
          */
         public ProcStarter envs(Map<String, String> overrides) {
@@ -412,6 +412,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String cmd, Map<String,String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd,Util.mapToEnv(env),out,workDir);
     }
@@ -420,6 +421,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, Util.mapToEnv(env), out, workDir);
     }
@@ -428,6 +430,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, Util.mapToEnv(env), in, out);
     }
@@ -449,6 +452,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, mask, Util.mapToEnv(env), out, workDir);
     }
@@ -470,6 +474,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, Map<String, String> env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, mask, Util.mapToEnv(env), in, out);
     }
@@ -478,6 +483,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String cmd,String[] env,OutputStream out, FilePath workDir) throws IOException {
         return launch(Util.tokenize(cmd),env,out,workDir);
     }
@@ -486,6 +492,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, String[] env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, env, null, out, workDir);
     }
@@ -494,6 +501,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, env, in, out, null);
     }
@@ -515,6 +523,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, String[] env, OutputStream out, FilePath workDir) throws IOException {
         return launch(cmd, mask, env, null, out, workDir);
     }
@@ -536,6 +545,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public final Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out) throws IOException {
         return launch(cmd, mask, env, in, out, null);
     }
@@ -554,6 +564,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public Proc launch(String[] cmd, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
         return launch(launch().cmds(cmd).envs(env).stdin(in).stdout(out).pwd(workDir));
     }
@@ -576,6 +587,7 @@ public abstract class Launcher {
      * @deprecated as of 1.311
      *      Use {@link #launch()} and its associated builder pattern
      */
+    @Deprecated
     public Proc launch(String[] cmd, boolean[] mask, String[] env, InputStream in, OutputStream out, FilePath workDir) throws IOException {
         return launch(launch().cmds(cmd).masks(mask).envs(env).stdin(in).stdout(out).pwd(workDir));
     }
@@ -599,7 +611,7 @@ public abstract class Launcher {
      *      from the current process
      * @param envVars
      *      Environment variable overrides. In addition to what the current process
-     *      is inherited (if this is going to be launched from a slave agent, that
+     *      is inherited (if this is going to be launched from an agent, that
      *      becomes the "current" process), these variables will be also set.
      */
     public abstract Channel launchChannel(String[] cmd, OutputStream out, FilePath workDir, Map<String,String> envVars) throws IOException, InterruptedException;

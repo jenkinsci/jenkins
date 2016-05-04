@@ -114,11 +114,11 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
     }
 
     /**
-     * True if this monitoring shouldn't mark the slaves offline.
+     * True if this monitoring shouldn't mark the agents offline.
      *
      * <p>
      * Many {@link NodeMonitor}s implement a logic that if the value goes above/below
-     * a threshold, the slave will be marked offline as a preventive measure.
+     * a threshold, the agent will be marked offline as a preventive measure.
      * This flag controls that.
      *
      * <p>
@@ -139,6 +139,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
      * @deprecated as of 1.286.
      *      Use {@link #all()} for read access and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<NodeMonitor> LIST = new DescriptorList<NodeMonitor>(NodeMonitor.class);
 
     /**

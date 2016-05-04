@@ -23,10 +23,12 @@
  */
 package hudson.model;
 
+import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.maven.MavenModuleSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.WaitingItem;
-import hudson.model.labels.LabelAtom;
+import hudson.model.labels.*;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -39,19 +41,20 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
-import hudson.util.TagCloud.Entry;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.List;
+
+import java.util.*;
+import java.util.concurrent.Callable;
+
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.context.SecurityContextHolder;
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
@@ -61,20 +64,20 @@ import org.jvnet.hudson.test.TestExtension;
  * @author Lucie Votypkova
  */
 public class NodeTest {
-    
+
     @Rule public JenkinsRule j = new JenkinsRule();
     public static boolean addDynamicLabel = false;
     public static boolean notTake = false;
-    
+
     @Before
     public void before(){
        addDynamicLabel = false;
        notTake = false;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
     }
-    
+
     @Test
-    public void testSetTemporaryOfflineCause() throws Exception { 
+    public void testSetTemporaryOfflineCause() throws Exception {
         Node node = j.createOnlineSlave();
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel(node.getDisplayName()));
@@ -100,7 +103,7 @@ public class NodeTest {
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by someone@somewhere.com : original message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
@@ -108,7 +111,7 @@ public class NodeTest {
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by root@localhost : new message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
@@ -120,22 +123,24 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
+        label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for(int i =0; i< cloud.size(); i ++){
-            Entry e = cloud.get(i);
-            if(e.item.equals(j.jenkins.getLabel("label1"))){
+            TagCloud.Entry e = cloud.get(i);
+            if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
             else{
                 assertEquals("Label " + e.item + " should not have any tied project.", 0, e.weight, 0);
             }
         }
-        
+
     }
-        
+
     @Test
-    public void testGetAssignedLabels() throws Exception { 
+    public void testGetAssignedLabels() throws Exception {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         LabelAtom notContained = j.jenkins.getLabelAtom("notContained");
@@ -143,10 +148,10 @@ public class NodeTest {
         assertTrue("Node should have label1.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label1")));
         assertTrue("Node should have label2.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label2")));
         assertTrue("Node should have dynamicly added dynamicLabel.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")));
-        assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained)); 
+        assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained));
         assertTrue("Node should have self label.", node.getAssignedLabels().contains(node.getSelfLabel()));
     }
-    
+
     @Test
     public void testCanTake() throws Exception {
         Node node = j.createOnlineSlave();
@@ -173,7 +178,7 @@ public class NodeTest {
         assertNotNull("Node should not take project because node property not alow it.", node.canTake(item));
         assertTrue("Cause of blockage should be bussy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
         User user = User.get("John");
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -185,7 +190,7 @@ public class NodeTest {
         message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be bussy label.", message, node.canTake(item).getShortDescription());
     }
-     
+
     @Test
     public void testCreatePath() throws Exception {
         Node node = j.createOnlineSlave();
@@ -194,7 +199,7 @@ public class NodeTest {
         FilePath path = node.createPath(absolutPath);
         assertNotNull("Path should be created.", path);
         assertNotNull("Channel should be set.", path.getChannel());
-        assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());       
+        assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
         path = node2.createPath(absolutPath);
         assertNull("Path should be null if slave have channel null.", path);
     }
@@ -202,7 +207,7 @@ public class NodeTest {
     @Test
     public void testHasPermission() throws Exception {
         Node node = j.createOnlineSlave();
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
@@ -215,13 +220,13 @@ public class NodeTest {
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
         SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
-        
+
         user = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));
     }
-    
+
     @Test
-    public void testGetChannel() throws Exception {      
+    public void testGetChannel() throws Exception {
         Slave slave = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
         Node node = new DumbSlave("slave2", "description", slave.getRemoteFS(), "1", Mode.NORMAL, "", slave.getLauncher(), slave.getRetentionStrategy(), slave.getNodeProperties());
@@ -229,7 +234,7 @@ public class NodeTest {
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
         assertNotNull("Channel of node should not be null.", slave.getChannel());
     }
-     
+
     @Test
     public void testToComputer() throws Exception {
         Slave slave = j.createOnlineSlave();
@@ -237,7 +242,212 @@ public class NodeTest {
         assertNull("Slave which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
         assertNotNull("Slave which is added into Jenkins list nodes should have assigned computer.", slave.toComputer());
     }
-    
+
+    /**
+     * Verify that the Label#getTiedJobCount does not perform a lazy loading operation.
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithJobs() throws Exception {
+        final Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+        MavenModuleSet mavenProject = j.jenkins.createProject(MavenModuleSet.class, "p");
+        mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
+        RunLoadCounter.prepare(mavenProject);
+        j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
+        Integer labelCount = RunLoadCounter.assertMaxLoads(mavenProject, 0, new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                final Label label = j.jenkins.getLabel("label1");
+                label.reset(); // Make sure cached value is not used
+                return label.getTiedJobCount();
+            }
+        });
+
+        assertEquals("Should have only one job tied to label.",
+                1, labelCount.intValue());
+    }
+
+    @Issue("JENKINS-27188")
+    @Test public void envPropertiesImmutable() throws Exception {
+        Slave slave = j.createSlave();
+
+        String propertyKey = "JENKINS-27188";
+        EnvVars envVars = slave.getComputer().getEnvironment();
+        envVars.put(propertyKey, "huuhaa");
+        assertTrue(envVars.containsKey(propertyKey));
+        assertFalse(slave.getComputer().getEnvironment().containsKey(propertyKey));
+
+        assertNotSame(slave.getComputer().getEnvironment(), slave.getComputer().getEnvironment());
+    }
+
+    /**
+     * Create two projects which have the same label and verify that both are accounted for when getting a count
+     * of the jobs tied to the current label.
+     *
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelMultipleSlaves() throws Exception {
+        final Node node1 = j.createOnlineSlave();
+        node1.setLabelString("label1");
+        final Node node2 = j.createOnlineSlave();
+        node1.setLabelString("label1");
+
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p1");
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
+        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
+
+        MavenModuleSet project2 = j.jenkins.createProject(MavenModuleSet.class, "p2");
+        project2.setAssignedLabel(label);
+        j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
+
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Two jobs should be tied to this label.", 2, label.getTiedJobCount());
+    }
+
+    /**
+     * Verify that when a label is removed from a job that the tied job count does not include the removed job.
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWhenLabelRemoveFromProject() throws Exception {
+        final Node node = j.createOnlineSlave();
+        node.setLabelString("label1");
+
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
+        j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
+
+        project.setAssignedLabel(null);
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Label1 should have no tied jobs after the job label was removed.", 0, label.getTiedJobCount());
+    }
+
+    /**
+     * Create a project with the OR label expression.
+     */
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithLabelOrExpression() throws Exception {
+        Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedLabel(new LabelExpression.Or(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
+
+        TagCloud<LabelAtom> cloud = node.getLabelCloud();
+        assertThatCloudLabelContains(cloud, "label1", 0);
+        assertThatCloudLabelContains(cloud, "label2", 0);
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithLabelAndExpression() throws Exception {
+        Node node = j.createOnlineSlave();
+        node.setLabelString("label1 label2");
+
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedLabel(new LabelExpression.And(j.jenkins.getLabel("label1"), j.jenkins.getLabel("label2")));
+
+        TagCloud<LabelAtom> cloud = node.getLabelCloud();
+        assertThatCloudLabelContains(cloud, "label1", 0);
+        assertThatCloudLabelContains(cloud, "label2", 0);
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithBothAndOrExpression() throws Exception {
+        Node n1 = j.createOnlineSlave();
+        Node n2 = j.createOnlineSlave();
+        Node n3 = j.createOnlineSlave();
+        Node n4 = j.createOnlineSlave();
+
+        n1.setLabelString("label1 label2 label3");
+        n2.setLabelString("label1");
+        n3.setLabelString("label1 label2");
+        n4.setLabelString("label1 label");
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(LabelExpression.parseExpression("label1 && (label2 || label3)"));
+
+        // Node 1 should not be tied to any labels
+        TagCloud<LabelAtom> n1LabelCloud = n1.getLabelCloud();
+        assertThatCloudLabelContains(n1LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n1LabelCloud, "label2", 0);
+        assertThatCloudLabelContains(n1LabelCloud, "label3", 0);
+
+        // Node 2 should not be tied to any labels
+        TagCloud<LabelAtom> n2LabelCloud = n1.getLabelCloud();
+        assertThatCloudLabelContains(n2LabelCloud, "label1", 0);
+
+        // Node 3 should not be tied to any labels
+        TagCloud<LabelAtom> n3LabelCloud = n1.getLabelCloud();
+        assertThatCloudLabelContains(n3LabelCloud, "label1", 0);
+        assertThatCloudLabelContains(n3LabelCloud, "label2", 0);
+
+        // Node 4 should not be tied to any labels
+        TagCloud<LabelAtom> n4LabelCloud = n1.getLabelCloud();
+        assertThatCloudLabelContains(n4LabelCloud, "label1", 0);
+    }
+
+    @Issue("JENKINS-26391")
+    @Test
+    public void testGetAssignedLabelWithSpaceOnly() throws Exception {
+        Node n = j.createOnlineSlave();
+        n.setLabelString("label1 label2");
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(j.jenkins.getLabel("label1 label2"));
+
+        TagCloud<LabelAtom> cloud = n.getLabelCloud();
+        assertThatCloudLabelDoesNotContain(cloud, "label1 label2", 0);
+    }
+
+    /**
+     * Assert that a tag cloud contains label name and weight.
+     */
+    public void assertThatCloudLabel(boolean contains, TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        StringBuilder containsFailureMessage = new StringBuilder().append("Unable to find label cloud. Expected: [")
+                .append(expectedLabel).append(", ").append(expectedWeight).append("]").append(" Actual: [");
+
+        for (TagCloud.Entry entry : tagCloud) {
+            if (expectedLabel.equals(((LabelAtom) entry.item).getName())) {
+                if (expectedWeight == entry.weight) {
+                    if (!contains) {
+                        fail("Cloud label should not contain [" + expectedLabel + ", " + expectedWeight + "]");
+                    } else {
+                        return;
+                    }
+                }
+            }
+
+            // Gather information for failure message just in case.
+            containsFailureMessage.append("{").append(entry.item.toString()).append(", ").append(entry.weight).append("}");
+        }
+
+        // If a label should be part of the cloud label then fail.
+        if (contains) {
+            fail(containsFailureMessage.toString() + "]");
+        }
+    }
+
+    /**
+     * Assert that a tag cloud does not contain the label name and weight.
+     */
+    public void assertThatCloudLabelDoesNotContain(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        assertThatCloudLabel(false, tagCloud, expectedLabel, expectedWeight);
+    }
+
+    /**
+     * Assert that a tag cloud contains label name and weight.
+     */
+    public void assertThatCloudLabelContains(TagCloud<LabelAtom> tagCloud, String expectedLabel, int expectedWeight) {
+        assertThatCloudLabel(true, tagCloud, expectedLabel, expectedWeight);
+    }
+
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder{
 
@@ -248,14 +458,14 @@ public class NodeTest {
                 atoms.add(Jenkins.getInstance().getLabelAtom("dynamicLabel"));
             }
             return atoms;
-            
+
         }
-        
+
     }
-    
+
     @TestExtension
     public static class NodePropertyImpl extends NodeProperty{
-        
+
         @Override
         public CauseOfBlockage canTake(Queue.BuildableItem item){
             if(notTake)
@@ -263,5 +473,5 @@ public class NodeTest {
             return null;
         }
     }
-    
+
 }

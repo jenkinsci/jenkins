@@ -41,7 +41,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import jline.UnsupportedTerminal;
-import jline.Terminal;
+import jline.TerminalFactory;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -61,14 +61,22 @@ public class GroovyshCommand extends CLICommand {
     @Override
     protected int run() {
         // this allows the caller to manipulate the JVM state, so require the admin privilege.
-        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        Jenkins.getActiveInstance().checkPermission(Jenkins.RUN_SCRIPTS);
 
         // this being remote means no jline capability is available
         System.setProperty("jline.terminal", UnsupportedTerminal.class.getName());
-        Terminal.resetTerminal();
+        TerminalFactory.reset();
+
+        StringBuilder commandLine = new StringBuilder();
+        for (String arg : args) {
+            if (commandLine.length() > 0) {
+                commandLine.append(" ");
+            }
+            commandLine.append(arg);
+        }
 
         Groovysh shell = createShell(stdin, stdout, stderr);
-        return shell.run(args.toArray(new String[args.size()]));
+        return shell.run(commandLine.toString());
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -78,12 +86,12 @@ public class GroovyshCommand extends CLICommand {
         Binding binding = new Binding();
         // redirect "println" to the CLI
         binding.setProperty("out", new PrintWriter(stdout,true));
-        binding.setProperty("hudson", Jenkins.getInstance()); // backward compatibility
-        binding.setProperty("jenkins", Jenkins.getInstance());
+        binding.setProperty("hudson", Jenkins.getActiveInstance()); // backward compatibility
+        binding.setProperty("jenkins", Jenkins.getActiveInstance());
 
         IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
 
-        final ClassLoader cl = Jenkins.getInstance().pluginManager.uberClassLoader;
+        final ClassLoader cl = Jenkins.getActiveInstance().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 
@@ -101,7 +109,7 @@ public class GroovyshCommand extends CLICommand {
             }
         };
         Groovysh shell = new Groovysh(cl, binding, io, registrar);
-        shell.getImports().add("import hudson.model.*");
+        shell.getImports().add("hudson.model.*");
 
         // defaultErrorHook doesn't re-throw IOException, so ShellRunner in
         // Groovysh will keep looping forever if we don't terminate when the

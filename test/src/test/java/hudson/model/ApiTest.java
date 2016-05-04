@@ -23,15 +23,20 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-
 import com.gargoylesoftware.htmlunit.Page;
-import java.net.HttpURLConnection;
-
+import com.gargoylesoftware.htmlunit.WebResponse;
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import java.io.File;
+import java.net.HttpURLConnection;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -47,11 +52,47 @@ public class ApiTest {
         j.createWebClient().goTo("api/xml?xpath=/*[1]", "application/xml");
     }
 
+    @Issue("JENKINS-27607")
+    @Test public void json() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        JenkinsRule.WebClient wc = j.createWebClient();
+        WebResponse response = wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse();
+        JSONObject json = JSONObject.fromObject(response.getContentAsString());
+        assertEquals("p", json.get("name"));
+
+        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString();
+        assertTrue(s.startsWith("wrap("));
+        assertEquals(')', s.charAt(s.length()-1));
+        json = JSONObject.fromObject(s.substring("wrap(".length(), s.length() - 1));
+        assertEquals("p", json.get("name"));
+    }
+
     @Test
     @Issue("JENKINS-3267")
     public void wrappedZeroItems() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/nonexistent", "application/xml");
         assertEquals("<root/>", page.getWebResponse().getContentAsString());
+    }
+
+    /**
+     * Test that calling the XML API with the XPath <code>document</code> function fails.
+     *
+     * @throws Exception if so
+     */
+    @Issue("SECURITY-165")
+    @Test public void xPathDocumentFunction() throws Exception {
+        File f = new File(j.jenkins.getRootDir(), "queue.xml");
+        JenkinsRule.WebClient client = j.createWebClient();
+
+        try {
+            client.goTo("api/xml?xpath=document(\"" + f.getAbsolutePath() + "\")", "application/xml");
+            fail("Should become 500 error");
+        } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException e) {
+            String contentAsString = e.getResponse().getContentAsString();
+            j.assertStringContains(
+                    contentAsString,
+                    "Illegal function: document");
+        }
     }
 
     @Test

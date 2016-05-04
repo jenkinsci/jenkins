@@ -51,7 +51,9 @@ public class WinswSlaveRestarter extends SlaveRestarter {
         // so it's possible that we end up in the situation where jenkins-slave.exe doesn't support
         // this command. If that is the case, there's nothing we can do about it.
         int r = exec("restart!");
-        throw new IOException("Restart failure. '"+exe+" restart' completed with "+r+" but I'm still alive");
+        throw new IOException("Restart failure. '"+exe+" restart' completed with "+r+" but I'm still alive!  "
+                               + "See https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds#Distributedbuilds-Windowsslaveserviceupgrades"
+                               + " for a possible explanation and solution");
     }
 
     private static final Logger LOGGER = Logger.getLogger(WinswSlaveRestarter.class.getName());

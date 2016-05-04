@@ -1,5 +1,6 @@
 package jenkins.bugs
 
+import com.gargoylesoftware.htmlunit.WebClientUtil
 import hudson.Launcher
 import hudson.model.AbstractBuild
 import hudson.model.AbstractProject
@@ -40,10 +41,12 @@ class Jenkins19124Test {
         def wc = j.createWebClient();
         def c = wc.getPage(p, "configure");
         c.getElementByName("_.alpha").valueAttribute = "hello";
+        WebClientUtil.waitForJSExec(wc);
         assert d.alpha=="hello";
         assert d.bravo=="2";
 
         c.getElementByName("_.bravo").setSelectedAttribute("1",true);
+        WebClientUtil.waitForJSExec(wc);
         assert d.alpha=="hello";
         assert d.bravo=="1";
     }
@@ -66,11 +69,6 @@ class Jenkins19124Test {
 
         public DescriptorImpl() {
             super(Foo.class)
-        }
-
-        @Override
-        String getDisplayName() {
-            return "---";
         }
 
         FormValidation doCheckAlpha(@QueryParameter String value, @QueryParameter String bravo) {

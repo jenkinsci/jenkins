@@ -152,7 +152,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag affects the behavior of Hudson when a job lost its workspace
-     * (typically due to a slave outage.) If this method returns false and
+     * (typically due to a agent outage.) If this method returns false and
      * polling is configured, then that would immediately trigger a new build.
      *
      * <p>
@@ -177,9 +177,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
      *
      * <p>
-     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecessary.
+     * Hudson periodically scans through all the agents and removes old workspaces that are deemed unnecessary.
      * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
-     * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
+     * disk consumption on agents. If we don't do this, in a long run, all the agents will have workspaces
      * for all the projects, which will be prohibitive in big Hudson.
      *
      * <p>
@@ -191,7 +191,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * recursive directory deletion happens.
      *
      * <p>
-     * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
+     * Note that this method does not guarantee that such a clean up will happen. For example, agents can be
      * taken offline by being physically removed from the network, and in such a case there's no opportunity
      * to perform this clean up.
      *
@@ -233,7 +233,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Checks if there has been any changes to this module in the repository.
      *
      * TODO: we need to figure out a better way to communicate an error back,
-     * so that we won't keep retrying the same node (for example a slave might be down.)
+     * so that we won't keep retrying the same node (for example an agent might be down.)
      *
      * <p>
      * If the SCM doesn't implement polling, have the {@link #supportsPolling()} method
@@ -268,6 +268,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      *      Call {@link #poll(AbstractProject, Launcher, FilePath, TaskListener, SCMRevisionState)} for use instead.
      */
+    @Deprecated
     public boolean pollChanges(AbstractProject<?,?> project, Launcher launcher, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         // up until 1.336, this method was abstract, so everyone should have overridden this method
         // without calling super.pollChanges. So the compatibility implementation is purely for
@@ -578,6 +579,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated since 1.382
      *      Use/override {@link #getModuleRoot(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath getModuleRoot(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoot", FilePath.class,AbstractBuild.class))
             // if the subtype already implements newer getModuleRoot(FilePath,AbstractBuild), call that.
@@ -632,6 +634,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @deprecated as of 1.382.
      *      Use/derive from {@link #getModuleRoots(FilePath, AbstractBuild)} instead.
      */
+    @Deprecated
     public FilePath[] getModuleRoots(FilePath workspace) {
         if (Util.isOverridden(SCM.class,getClass(),"getModuleRoots", FilePath.class, AbstractBuild.class))
             // if the subtype already derives newer getModuleRoots(FilePath,AbstractBuild), delegate to it

@@ -28,13 +28,14 @@ import hudson.Util;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.*;
-import hudson.model.Queue.*;
 import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.concurrent.GuardedBy;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,21 +48,22 @@ import java.util.logging.Logger;
 public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
 
     /**
-     * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
+     * This method will be called periodically to allow this strategy to decide what to do with it's owning agent.
      *
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide what action to take.
      * @return The number of minutes after which the strategy would like to be checked again. The strategy may be
      *         rechecked earlier or later that this!
      */
+    @GuardedBy("hudson.model.Queue.lock")
     public abstract long check(T c);
 
     /**
-     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
+     * This method is called to determine whether manual launching of the agent is allowed at this point in time.
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide if manual launching is
      * allowed at this time.
-     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
     public boolean isManualLaunchAllowed(T c) {
         return true;
@@ -83,7 +85,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
     /**
      * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
-     * a new slave is added.)
+     * a new agent is added.)
      *
      * <p>
      * The default implementation of this method delegates to {@link #check(Computer)},
@@ -91,8 +93,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *
      * @since 1.275
      */
-    public void start(T c) {
-        check(c);
+    public void start(final T c) {
+        Queue.withLock(new Runnable() {
+            @Override
+            public void run() {
+                check(c);
+            }
+        });
     }
 
     /**
@@ -107,12 +114,14 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * @deprecated as of 1.286
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
+    @Deprecated
     public static final DescriptorList<RetentionStrategy<?>> LIST = new DescriptorList<RetentionStrategy<?>>((Class)RetentionStrategy.class);
 
     /**
      * Dummy instance that doesn't do any attempt to retention.
      */
     public static final RetentionStrategy<Computer> NOOP = new RetentionStrategy<Computer>() {
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(Computer c) {
             return 60;
         }
@@ -129,11 +138,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         private final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-        class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
-            public String getDisplayName() {
-                return "";
-            }
-        }
+        class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {}
     };
 
     /**
@@ -152,6 +157,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         public Always() {
         }
 
+        @GuardedBy("hudson.model.Queue.lock")
         public long check(SlaveComputer c) {
             if (c.isOffline() && !c.isConnecting() && c.isLaunchSupported())
                 c.tryReconnect();
@@ -174,12 +180,12 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         private static final Logger logger = Logger.getLogger(Demand.class.getName());
 
         /**
-         * The delay (in minutes) for which the slave must be in demand before tring to launch it.
+         * The delay (in minutes) for which the agent must be in demand before tring to launch it.
          */
         private final long inDemandDelay;
 
         /**
-         * The delay (in minutes) for which the slave must be idle before taking it offline.
+         * The delay (in minutes) for which the agent must be idle before taking it offline.
          */
         private final long idleDelay;
 
@@ -208,7 +214,8 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         }
 
         @Override
-        public synchronized long check(final SlaveComputer c) {
+        @GuardedBy("hudson.model.Queue.lock")
+        public long check(final SlaveComputer c) {
             if (c.isOffline() && c.isLaunchSupported()) {
                 final HashMap<Computer, Integer> availableComputers = new HashMap<Computer, Integer>();
                 for (Computer o : Jenkins.getInstance().getComputers()) {
@@ -257,21 +264,13 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             } else if (c.isIdle()) {
                 final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
                 if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                    Queue.withLock(new Runnable() {
-                        @Override
-                        public void run() {
-                            // re-check idle now that we are within the Queue lock
-                            if (c.isIdle()) {
-                                final long idleMilliseconds = System.currentTimeMillis() - c.getIdleStartMilliseconds();
-                                if (idleMilliseconds > idleDelay * 1000 * 60 /*MINS->MILLIS*/) {
-                                    // we've been idle for long enough
-                                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
-                                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
-                                    c.disconnect(OfflineCause.create(Messages._RetentionStrategy_Demand_OfflineIdle()));
-                                }
-                            }
-                        }
-                    });
+                    // we've been idle for long enough
+                    logger.log(Level.INFO, "Disconnecting computer {0} as it has been idle for {1}",
+                            new Object[]{c.getName(), Util.getTimeSpanString(idleMilliseconds)});
+                    c.disconnect(new OfflineCause.IdleOfflineCause());
+                } else {
+                    // no point revisiting until we can be confident we will be idle
+                    return TimeUnit.MILLISECONDS.toMinutes(TimeUnit.MINUTES.toMillis(idleDelay) - idleMilliseconds);
                 }
             }
             return 1;

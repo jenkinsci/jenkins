@@ -119,6 +119,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      *      proper execution object.
      */
     @Restricted(NoExternalUse.class)
+    @Deprecated
     protected Runner createRunner() {
         return new BuildExecution();
     }
@@ -127,6 +128,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
      * @deprecated as of 1.467
      *      Please use {@link BuildExecution}
      */
+    @Deprecated
     protected class RunnerImpl extends BuildExecution {
     }
 
@@ -189,8 +191,12 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
         @Override
         public void cleanUp(@Nonnull BuildListener listener) throws Exception {
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, project.getPublishersList(), false);
-            performAllBuildSteps(listener, project.getProperties(), false);
+            try {
+                performAllBuildSteps(listener, project.getPublishersList(), false);
+                performAllBuildSteps(listener, project.getProperties(), false);
+            } catch (Exception x) {
+                x.printStackTrace(listener.error(Messages.Build_post_build_steps_failed()));
+            }
             super.cleanUp(listener);
         }
 

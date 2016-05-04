@@ -25,7 +25,6 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

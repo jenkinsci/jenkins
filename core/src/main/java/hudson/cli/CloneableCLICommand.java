@@ -26,7 +26,7 @@ package hudson.cli;
 /**
  * {@link Cloneable} {@link CLICommand}.
  *
- * Uses {@link #clone()} instead of "new" to create a copy for exection.
+ * Uses {@link #clone()} instead of "new" to create a copy for execution.
  *
  * @author Kohsuke Kawaguchi
  */

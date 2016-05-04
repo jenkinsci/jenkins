@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Erik Ramfelt, Martin Eigenbrodt, Stephen Connolly, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
@@ -51,8 +52,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
@@ -63,13 +66,14 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Information about a Hudson slave node.
+ * Information about a Hudson agent node.
  *
  * <p>
  * Ideally this would have been in the <tt>hudson.slaves</tt> package,
@@ -77,12 +81,17 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * <p>
  * TODO: move out more stuff to {@link DumbSlave}.
+ * 
+ * On Febrary, 2016 a general renaming was done internally: the "slave" term was replaced by
+ * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
+ * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
+ * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
     /**
-     * Name of this slave node.
+     * Name of this agent node.
      */
     protected String name;
 
@@ -92,8 +101,12 @@ public abstract class Slave extends Node implements Serializable {
     private final String description;
 
     /**
-     * Absolute path to the root of the workspace
-     * from the view point of this node, such as "/hudson"
+     * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
+     * be absolute provided that the launcher establishes a consistent working directory, such as "./.jenkins-slave"
+     * when used with an SSH launcher.
+     *
+     * NOTE: if the administrator is using a relative path they are responsible for ensuring that the launcher used
+     * provides a consistent working directory
      */
     protected final String remoteFS;
 
@@ -108,12 +121,12 @@ public abstract class Slave extends Node implements Serializable {
     private Mode mode;
 
     /**
-     * Slave availablility strategy.
+     * Agent availablility strategy.
      */
     private RetentionStrategy retentionStrategy;
 
     /**
-     * The starter that will startup this slave.
+     * The starter that will startup this agent.
      */
     private ComputerLauncher launcher;
 
@@ -121,16 +134,17 @@ public abstract class Slave extends Node implements Serializable {
      * Whitespace-separated labels.
      */
     private String label="";
-    
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
+
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
+                                    new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
 
     /**
      * Lazily computed set of labels from {@link #label}.
      */
     private transient volatile Set<Label> labels;
-    
+
     /**
-     * Id of user which creates this slave {@link User}.
+     * Id of user which creates this agent {@link User}.
      */
     private String userId;
 
@@ -147,7 +161,7 @@ public abstract class Slave extends Node implements Serializable {
             Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy) throws FormException, IOException {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
-    
+
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -159,16 +173,16 @@ public abstract class Slave extends Node implements Serializable {
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now
-        
+
         this.nodeProperties.replaceBy(nodeProperties);
          Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
        if(node!=null){
-            this.userId= node.getUserId(); //slave has already existed
+            this.userId= node.getUserId(); //agent has already existed
         }
        else{
             User user = User.current();
-            userId = user!=null ? user.getId() : "anonymous";     
+            userId = user!=null ? user.getId() : "anonymous";
         }
         if (name.equals(""))
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
@@ -179,10 +193,10 @@ public abstract class Slave extends Node implements Serializable {
         if (this.numExecutors<=0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
-    
+
     /**
-     * Return id of user which created this slave
-     * 
+     * Return id of user which created this agent
+     *
      * @return id of user
      */
     public String getUserId() {
@@ -192,7 +206,7 @@ public abstract class Slave extends Node implements Serializable {
     public void setUserId(String userId){
         this.userId = userId;
     }
-    
+
     public ComputerLauncher getLauncher() {
         return launcher == null ? new JNLPLauncher() : launcher;
     }
@@ -214,7 +228,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public void setNodeName(String name) {
-        this.name = name; 
+        this.name = name;
     }
 
     public String getNodeDescription() {
@@ -237,7 +251,7 @@ public abstract class Slave extends Node implements Serializable {
         assert nodeProperties != null;
     	return nodeProperties;
     }
-    
+
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
@@ -273,18 +287,25 @@ public abstract class Slave extends Node implements Serializable {
                 return workspace;
             }
         }
-        
+
         FilePath r = getWorkspaceRoot();
         if(r==null)     return null;    // offline
         return r.child(item.getFullName());
     }
 
+    @CheckForNull
     public FilePath getRootPath() {
-        return createPath(remoteFS);
+        final SlaveComputer computer = getComputer();
+        if (computer == null) {
+            // if computer is null then channel is null and thus we were going to return null anyway
+            return null;
+        } else {
+            return createPath(StringUtils.defaultString(computer.getAbsoluteRemoteFs(), remoteFS));
+        }
     }
 
     /**
-     * Root directory on this slave where all the job workspaces are laid out.
+     * Root directory on this agent where all the job workspaces are laid out.
      * @return
      *      null if not connected.
      */
@@ -326,7 +347,16 @@ public abstract class Slave extends Node implements Serializable {
 
         public URL getURL() throws MalformedURLException {
             String name = fileName;
-            if (name.equals("hudson-cli.jar"))  name="jenkins-cli.jar";
+            
+            // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
+            if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
+                throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
+            }
+            
+            if (name.equals("hudson-cli.jar"))  {
+                name="jenkins-cli.jar";
+            }
+            
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
@@ -347,7 +377,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Creates a launcher for the slave.
+     * Creates a launcher for the agent.
      *
      * @return
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
@@ -356,7 +386,7 @@ public abstract class Slave extends Node implements Serializable {
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
-            listener.error("Issue with creating launcher for slave " + name + ".");
+            listener.error("Issue with creating launcher for agent " + name + ".");
             return new Launcher.DummyLauncher(listener);
         } else {
             return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
@@ -396,7 +426,7 @@ public abstract class Slave extends Node implements Serializable {
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)
-            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance());
+            nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
         return this;
     }
 
@@ -413,7 +443,7 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         /**
-         * Performs syntactical check on the remote FS for slaves.
+         * Performs syntactical check on the remote FS for agents.
          */
         public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)
@@ -422,10 +452,8 @@ public abstract class Slave extends Node implements Serializable {
             if(value.startsWith("\\\\") || value.startsWith("/net/"))
                 return FormValidation.warning(Messages.Slave_Network_Mounted_File_System_Warning());
 
-            if (!value.contains("\\") && !value.startsWith("/")) {
-                // Unix-looking path that doesn't start with '/'
-                // TODO: detect Windows-looking relative path
-                return FormValidation.error(Messages.Slave_the_remote_root_must_be_an_absolute_path());
+            if (Util.isRelativePath(value)) {
+                return FormValidation.warning(Messages.Slave_Remote_Relative_Path_Warning());
             }
 
             return FormValidation.ok();
@@ -441,6 +469,7 @@ public abstract class Slave extends Node implements Serializable {
      * "ssh myslave java -jar /path/to/hudson-remoting.jar"
      * @deprecated in 1.216
      */
+    @Deprecated
     private transient String agentCommand;
 
     /**
@@ -501,4 +530,9 @@ public abstract class Slave extends Node implements Serializable {
      * Determines the workspace root file name for those who really really need the shortest possible path name.
      */
     private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
+
+    /**
+     * Provides a collection of file names, which are accessible via /jnlpJars link.
+     */
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

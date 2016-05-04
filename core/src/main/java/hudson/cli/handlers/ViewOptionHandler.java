@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 import jenkins.model.Jenkins;
 
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -37,6 +38,8 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
+
+import javax.annotation.CheckForNull;
 
 /**
  * Refers to {@link View} by its name.
@@ -73,10 +76,26 @@ public class ViewOptionHandler extends OptionHandler<View> {
         return 1;
     }
 
-    private View getView(String name) throws CmdLineException {
+    /**
+     *
+     * Gets a view by its name
+     * Note: Personal user's views aren't supported now.
+     *
+     * @param name A view name
+     * @return The {@link View} instance. Null if name is empty string
+     * @throws IllegalArgumentException
+     *      If the view isn't found
+     * @throws IllegalStateException
+     *      If cannot get active Jenkins instance or view can't contain a views
+     * @throws AccessDeniedException
+     *      If user doens't have a READ permission for the view
+     * @since TODO
+     */
+    @CheckForNull
+    public View getView(final String name) {
 
+        ViewGroup group = Jenkins.getActiveInstance();
         View view = null;
-        ViewGroup group = Jenkins.getInstance();
 
         final StringTokenizer tok = new StringTokenizer(name, "/");
         while(tok.hasMoreTokens()) {
@@ -84,19 +103,17 @@ public class ViewOptionHandler extends OptionHandler<View> {
             String viewName = tok.nextToken();
 
             view = group.getView(viewName);
-            if (view == null) throw new CmdLineException(owner, String.format(
-                    "No view named %s inside view %s",
-                    viewName, group.getDisplayName()
-            ));
+            if (view == null)
+                throw new IllegalArgumentException(String.format(
+                        "No view named %s inside view %s",
+                        viewName, group.getDisplayName()
+                ));
 
             view.checkPermission(View.READ);
-
             if (view instanceof ViewGroup) {
                 group = (ViewGroup) view;
             } else if (tok.hasMoreTokens()) {
-                throw new CmdLineException(
-                        owner, view.getViewName() + " view can not contain views"
-                );
+                throw new IllegalStateException(view.getViewName() + " view can not contain views");
             }
         }
 

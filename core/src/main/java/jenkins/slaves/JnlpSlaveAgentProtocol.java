@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
 import hudson.remoting.ChannelBuilder;
@@ -9,7 +10,9 @@ import hudson.remoting.Engine;
 import hudson.slaves.SlaveComputer;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
 import jenkins.security.HMACConfidentialKey;
+import org.jenkinsci.remoting.engine.JnlpServerHandshake;
 import org.jenkinsci.remoting.nio.NioChannelHub;
 
 import javax.inject.Inject;
@@ -24,26 +27,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@link AgentProtocol} that accepts connection from slave agents.
+ * {@link AgentProtocol} that accepts connection from agents.
  *
  * <h2>Security</h2>
  * <p>
- * Once connected, remote slave agents can send in commands to be
+ * Once connected, remote agents can send in commands to be
  * executed on the master, so in a way this is like an rsh service.
  * Therefore, it is important that we reject connections from
- * unauthorized remote slaves.
+ * unauthorized remote agents.
  *
  * <p>
- * We do this by computing HMAC of the slave name.
- * This code is sent to the slave inside the <tt>.jnlp</tt> file
+ * We do this by computing HMAC of the agent name.
+ * This code is sent to the agent inside the <tt>.jnlp</tt> file
  * (this file itself is protected by HTTP form-based authentication that
- * we use everywhere else in Jenkins), and the slave sends this
+ * we use everywhere else in Jenkins), and the agent sends this
  * token back when it connects to the master.
- * Unauthorized slaves can't access the protected <tt>.jnlp</tt> file,
- * so it can't impersonate a valid slave.
+ * Unauthorized agents can't access the protected <tt>.jnlp</tt> file,
+ * so it can't impersonate a valid agent.
  *
  * <p>
- * We don't want to force the JNLP slave agents to be restarted
+ * We don't want to force the JNLP agents to be restarted
  * whenever the server restarts, so right now this secret master key
  * is generated once and used forever, which makes this whole scheme
  * less secure.
@@ -66,20 +69,19 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
         new Handler(hub.getHub(),socket).run();
     }
 
-    protected static class Handler extends JnlpSlaveHandshake {
+    protected static class Handler extends JnlpServerHandshake {
 
         /**
          * @deprecated as of 1.559
          *      Use {@link #Handler(NioChannelHub, Socket)}
          */
+        @Deprecated
         public Handler(Socket socket) throws IOException {
             this(null,socket);
         }
 
         public Handler(NioChannelHub hub, Socket socket) throws IOException {
-            super(hub,socket,
-                    new DataInputStream(socket.getInputStream()),
-                    new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),"UTF-8")),true));
+            super(hub, Computer.threadPoolForRemoting, socket);
         }
 
         protected void run() throws IOException, InterruptedException {
@@ -94,7 +96,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
 
             SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(nodeName);
             if(computer==null) {
-                error("No such slave: "+nodeName);
+                error("No such agent: "+nodeName);
                 return;
             }
 
@@ -117,12 +119,16 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
             try {
                 ChannelBuilder cb = createChannelBuilder(nodeName);
 
+                for (ChannelConfigurator cc : ChannelConfigurator.all()) {
+                    cc.onChannelBuilding(cb, computer);
+                }
+
                 computer.setChannel(cb.withHeaderStream(log).build(socket), log,
                     new Listener() {
                         @Override
                         public void onClosed(Channel channel, IOException cause) {
                             if(cause!=null)
-                                LOGGER.log(Level.WARNING, Thread.currentThread().getName()+" for + " + nodeName + " terminated",cause);
+                                LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated", cause);
                             try {
                                 socket.close();
                             } catch (IOException e) {
@@ -133,10 +139,10 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
                 return computer.getChannel();
             } catch (AbortException e) {
                 logw.println(e.getMessage());
-                logw.println("Failed to establish the connection with the slave");
+                logw.println("Failed to establish the connection with the agent");
                 throw e;
             } catch (IOException e) {
-                logw.println("Failed to establish the connection with the slave " + nodeName);
+                logw.println("Failed to establish the connection with the agent " + nodeName);
                 e.printStackTrace(logw);
                 throw e;
             }
@@ -146,7 +152,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
     private static final Logger LOGGER = Logger.getLogger(JnlpSlaveAgentProtocol.class.getName());
 
     /**
-     * This secret value is used as a seed for slaves.
+     * This secret value is used as a seed for agents.
      */
     public static final HMACConfidentialKey SLAVE_SECRET = new HMACConfidentialKey(JnlpSlaveAgentProtocol.class,"secret");
 }

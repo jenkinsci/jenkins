@@ -82,7 +82,7 @@ public class LauncherTest {
         FreeStyleProject project = rule.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("jenkins_19926", "${jenkins_19926} and new value")));
         final CommandInterpreter script = Functions.isWindows()
-                ? new BatchFile("echo %jenkins_19926")
+                ? new BatchFile("echo %jenkins_19926%")
                 : new Shell("echo ${jenkins_19926}")
         ;
         project.getBuildersList().add(script);

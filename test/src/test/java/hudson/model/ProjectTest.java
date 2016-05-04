@@ -23,11 +23,15 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+
+import java.net.URL;
 import java.util.Collections;
 
 import org.jvnet.hudson.reactor.ReactorException;
@@ -36,6 +40,7 @@ import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
+import hudson.Util;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.model.queue.SubTaskContributor;
@@ -45,8 +50,8 @@ import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
+import jenkins.model.WorkspaceWriter;
 import jenkins.model.Jenkins;
-import hudson.model.AbstractProject.BecauseOfBuildInProgress;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
 import hudson.model.Cause.LegacyCodeCause;
@@ -85,10 +90,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 
 import org.junit.Ignore;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  *
@@ -356,7 +362,7 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
-        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BecauseOfBuildInProgress.class);
+        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
@@ -484,32 +490,42 @@ public class ProjectTest {
     
     @Test
     public void testGetRelationship() throws Exception{
-        FreeStyleProject project = j.createFreeStyleProject("project");
-        FreeStyleProject project2 = j.createFreeStyleProject("project2");
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        assertTrue("Project " + project.getDisplayName()  + " should not have any relationship with " + project2.getDisplayName(), project.getRelationship(project2).isEmpty());       
-        project.getPublishersList().add(new Fingerprinter("change.log", true));
-        project.getBuildersList().add(new Shell("echo hello > change.log"));
-        project.getPublishersList().add(new ArtifactArchiver("change.log","",true));
-        project2.getPublishersList().add(new Fingerprinter("change.log", false));
-        project2.getBuildersList().add(new Shell("cp " + project.getRootDir().getAbsolutePath() + "/builds/lastSuccessfulBuild/archive/change.log ."));
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        project.getBuildersList().add(new Shell("echo helloWorld > change.log"));
-        j.buildAndAssertSuccess(project);
-        j.buildAndAssertSuccess(project2);
-        Map<Integer,Fingerprint.RangeSet> ralationship = project.getRelationship(project2);
-        assertFalse("Project " + project.getDisplayName() + " should have relationship with " + project2.getDisplayName(), ralationship.isEmpty());      
-        assertTrue("Relationship should contains build 3 of project " + project.getDisplayName(), ralationship.keySet().contains(3));
-        assertFalse("Relationship should not contains build 4 of project " + project.getDisplayName() + " because previous fingerprinted file was not change since build 3", ralationship.keySet().contains(4));
-        assertEquals("Build 2 of project " + project2.getDisplayName() + " should be the first build which depends on build 3 of project " + project.getDisplayName(), 2, ralationship.get(3).min());
-        assertEquals("Build 3 of project " + project2.getDisplayName() + " should be the last build which depends on build 3 of project " + project.getDisplayName(), 3, ralationship.get(3).max()-1);
-        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).min());
-        assertEquals("Build 4 of project " + project2.getDisplayName() + " should depend only on build 5 of project " + project.getDisplayName(), 4, ralationship.get(5).max()-1);
+        final FreeStyleProject upstream = j.createFreeStyleProject("upstream");
+        FreeStyleProject downstream = j.createFreeStyleProject("downstream");
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        assertTrue("Project upstream should not have any relationship with downstream", upstream.getRelationship(downstream).isEmpty());
+
+        upstream.getPublishersList().add(new Fingerprinter("change.log", true));
+        upstream.getBuildersList().add(new WorkspaceWriter("change.log", "hello"));
+        upstream.getPublishersList().add(new ArtifactArchiver("change.log"));
+        downstream.getPublishersList().add(new Fingerprinter("change.log", false));
+        downstream.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                for (Run<?, ?>.Artifact a: upstream.getLastBuild().getArtifacts()) {
+                    Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
+                }
+                return true;
+            }
+        });
+
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+        upstream.getBuildersList().add(new WorkspaceWriter("change.log", "helloWorld"));
+        j.buildAndAssertSuccess(upstream);
+        j.buildAndAssertSuccess(downstream);
+
+        Map<Integer,Fingerprint.RangeSet> relationship = upstream.getRelationship(downstream);
+        assertFalse("Project upstream should have relationship with downstream", relationship.isEmpty());
+        assertTrue("Relationship should contain upstream #3", relationship.keySet().contains(3));
+        assertFalse("Relationship should not contain upstream #4 because previous fingerprinted file was not changed since #3", relationship.keySet().contains(4));
+        assertEquals("downstream #2 should be the first build which depends on upstream #3", 2, relationship.get(3).min());
+        assertEquals("downstream #3 should be the last build which depends on upstream #3", 3, relationship.get(3).max()-1);
+        assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).min());
+        assertEquals("downstream #4 should depend only on upstream #5", 4, relationship.get(5).max()-1);
     }
     
     @Test
@@ -592,7 +608,9 @@ public class ProjectTest {
         project.setAssignedLabel(slave.getSelfLabel());
         project.getBuildersList().add(new Shell("echo hello > change.log"));
         j.buildAndAssertSuccess(project);
-        HtmlPage page = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl() + "doWipeOutWorkspace");
+        JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        HtmlPage p = wc.getPage(request);
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
     }
@@ -824,11 +842,7 @@ public class ProjectTest {
             return true;
         }
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {
-                @Override public String getDisplayName() {
-                    return "";
-                }
-            };
+            return new SCMDescriptor<SCM>(null) {};
         }
         
         @Override

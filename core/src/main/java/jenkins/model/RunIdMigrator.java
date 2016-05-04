@@ -28,14 +28,17 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.RootAction;
-import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -198,22 +201,21 @@ public final class RunIdMigrator {
             File kid = it.next();
             String name = kid.getName();
             try {
-                String link = Util.resolveSymlink(kid);
-                if (link == null && name.matches("\\d+") && kid.isFile()) { // legacy Windows format
-                    link = FileUtils.readFileToString(kid);
-                } else if (link == null) {
+                Integer.parseInt(name);
+            } catch (NumberFormatException x) {
+                LOGGER.log(FINE, "ignoring nonnumeric entry {0}", name);
+                continue;
+            }
+            try {
+                if (Util.isSymlink(kid)) {
+                    LOGGER.log(FINE, "deleting build number symlink {0} → {1}", new Object[] {name, Util.resolveSymlink(kid)});
+                } else if (kid.isDirectory()) {
+                    LOGGER.log(FINE, "ignoring build directory {0}", name);
                     continue;
+                } else {
+                    LOGGER.log(WARNING, "need to delete anomalous file entry {0}", name);
                 }
-                try {
-                    Integer.parseInt(name);
-                    if (kid.delete()) {
-                        LOGGER.log(FINE, "deleted build number symlink {0} → {1}", new Object[] {name, link});
-                    } else {
-                        LOGGER.log(WARNING, "could not delete build number symlink {0} → {1}", new Object[] {name, link});
-                    }
-                } catch (NumberFormatException x) {
-                    LOGGER.log(FINE, "skipping other symlink {0} → {1}", new Object[] {name, link});
-                }
+                Util.deleteFile(kid);
                 it.remove();
             } catch (Exception x) {
                 LOGGER.log(WARNING, "failed to process " + kid, x);
@@ -259,16 +261,29 @@ public final class RunIdMigrator {
                 String nl = m.group(2);
                 xml = m.replaceFirst("  <id>" + name + "</id>" + nl + "  <timestamp>" + timestamp + "</timestamp>" + nl);
                 File newKid = new File(dir, Integer.toString(number));
-                if (!kid.renameTo(newKid)) {
-                    LOGGER.log(WARNING, "failed to rename {0} to {1}", new Object[] {name, number});
-                    continue;
-                }
+                move(kid, newKid);
                 FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, Charsets.UTF_8);
                 LOGGER.log(FINE, "fully processed {0} → {1}", new Object[] {name, number});
                 idToNumber.put(name, number);
             } catch (Exception x) {
                 LOGGER.log(WARNING, "failed to process " + kid, x);
             }
+        }
+    }
+
+    /**
+     * Tries to move/rename a file from one path to another.
+     * Uses {@link java.nio.file.Files#move} when available.
+     * Does not use {@link java.nio.file.StandardCopyOption#REPLACE_EXISTING} or any other options.
+     * TODO candidate for moving to {@link Util}
+     */
+    static void move(File src, File dest) throws IOException {
+        try {
+            Files.move(src.toPath(), dest.toPath());
+        } catch (IOException x) {
+            throw x;
+        } catch (Exception x) {
+            throw new IOException(x);
         }
     }
 
@@ -315,6 +330,12 @@ public final class RunIdMigrator {
             return;
         }
         for (File job : jobDirs) {
+
+            if (job.getName().equals("builds")) {
+                // Might be maven modules, matrix builds, etc. which are direct children of job
+                unmigrateBuildsDir(job);
+            }
+
             File[] kids = job.listFiles();
             if (kids == null) {
                 continue;
@@ -326,7 +347,8 @@ public final class RunIdMigrator {
                 if (kid.getName().equals("builds")) {
                     unmigrateBuildsDir(kid);
                 } else {
-                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation returns grandchildren.
+                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation
+                    // returns grandchildren, unmigrateJobsDir(job) call above handles children.
                     unmigrateJobsDir(kid);
                 }
             }

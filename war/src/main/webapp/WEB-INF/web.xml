@@ -23,10 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-         version="2.4">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1"
+         metadata-complete="true">
   <display-name>Jenkins v${project.version}</display-name>
   <description>Build management system</description>
 
@@ -41,7 +42,13 @@ THE SOFTWARE.
       <param-name>diagnosticThreadName</param-name>
       <param-value>false</param-value>
     </init-param>
+    <async-supported>true</async-supported>
   </servlet>
+
+  <context-param>
+      <param-name>install-wizard-path</param-name>
+      <param-value>jsbundles/pluginSetupWizard</param-value>
+  </context-param>
 
   <servlet-mapping>
     <servlet-name>Stapler</servlet-name>
@@ -51,26 +58,32 @@ THE SOFTWARE.
   <filter>
     <filter-name>diagnostic-name-filter</filter-name>
     <filter-class>org.kohsuke.stapler.DiagnosticThreadNameFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>encoding-filter</filter-name>
     <filter-class>hudson.util.CharacterEncodingFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>compression-filter</filter-name>
     <filter-class>org.kohsuke.stapler.compression.CompressionFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>authentication-filter</filter-name>
     <filter-class>hudson.security.HudsonFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>csrf-filter</filter-name>
     <filter-class>hudson.security.csrf.CrumbFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter>
     <filter-name>plugins-filter</filter-name>
     <filter-class>hudson.util.PluginServletFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
 
   <!--
@@ -169,7 +182,7 @@ THE SOFTWARE.
       <!--http-method>GET</http-method-->
     </web-resource-collection>
     <auth-constraint>
-      <role-name>*</role-name>
+      <role-name>**</role-name>
     </auth-constraint>
   </security-constraint>
   
@@ -231,4 +244,11 @@ THE SOFTWARE.
     <exception-type>java.lang.Throwable</exception-type>
     <location>/oops</location>
   </error-page>
+
+  <session-config>
+    <cookie-config>
+      <!-- See https://www.owasp.org/index.php/HttpOnly for the discussion of this topic in OWASP -->
+      <http-only>true</http-only>
+    </cookie-config>
+  </session-config>
 </web-app>

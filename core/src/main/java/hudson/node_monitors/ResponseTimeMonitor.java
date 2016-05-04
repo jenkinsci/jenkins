@@ -25,7 +25,6 @@ package hudson.node_monitors;
 
 import hudson.Util;
 import hudson.Extension;
-import hudson.slaves.OfflineCause;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;
@@ -41,7 +40,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Monitors the round-trip response time to this slave.
+ * Monitors the round-trip response time to this agent.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -65,9 +64,9 @@ public class ResponseTimeMonitor extends NodeMonitor {
                 }
 
                 if(d.hasTooManyTimeouts() && !isIgnored()) {
-                    // unlike other monitors whose failure still allow us to communicate with the slave,
+                    // unlike other monitors whose failure still allow us to communicate with the agent,
                     // the failure in this monitor indicates that we are just unable to make any requests
-                    // to this slave. So we should severe the connection, as opposed to marking it temporarily
+                    // to this agent. So we should severe the connection, as opposed to marking it temporarily
                     // off line, which still keeps the underlying channel open.
                     c.disconnect(d);
                     LOGGER.warning(Messages.ResponseTimeMonitor_MarkedOffline(c.getName()));
@@ -188,7 +187,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         }
 
         /**
-         * HTML rendering of the data
+         * String rendering of the data
          */
         @Override
         public String toString() {
@@ -200,7 +199,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
 //            return buf.toString();
             int fc = failureCount();
             if(fc>0)
-                return Util.wrapToErrorSpan(Messages.ResponseTimeMonitor_TimeOut(fc));
+                return Messages.ResponseTimeMonitor_TimeOut(fc);
             return getAverage()+"ms";
         }
 
