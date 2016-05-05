@@ -24,10 +24,10 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Launcher;
 import hudson.slaves.DumbSlave;
 import hudson.tasks.BuildWrapper;
@@ -39,7 +39,6 @@ import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -120,7 +119,7 @@ public class RunTest  {
         assertEnvVar(p, "DISPLAY", "BUILD_VAL");
     }
 
-    private FreeStyleProject setupJobOnSlaveWithEnv(String name, String value) throws Exception, IOException {
+    private FreeStyleProject setupJobOnSlaveWithEnv(String name, String value) throws Exception {
         DumbSlave slave = slaveContributing(name, value);
         FreeStyleProject p = j.createFreeStyleProject("job_name");
         p.setAssignedNode(slave);
@@ -132,7 +131,7 @@ public class RunTest  {
         p.getBuildersList().add(new Shell("echo actual=$" + key));
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        p.scheduleBuild2(0).get();
         assertThat(capture.getEnvVars().get(key), equalTo(value));
     }
 
@@ -209,14 +208,15 @@ public class RunTest  {
         }
     }
 
-    @Extension
+    @TestExtension
     public static final class ContributingExtension extends EnvironmentContributor {
-        private static String value;
-        private static String key;
+        private String value;
+        private String key;
 
         private static void values(String k, String v) {
-            value = v;
-            key = k;
+            ContributingExtension inst = ExtensionList.lookup(ContributingExtension.class).get(0);
+            inst.value = v;
+            inst.key = k;
         }
 
         @SuppressWarnings("rawtypes")
@@ -224,7 +224,9 @@ public class RunTest  {
         public void buildEnvironmentFor(
                 Run r, EnvVars envs, TaskListener listener
         ) throws IOException, InterruptedException {
-            envs.put(key, value);
+            if (key != null) {
+                envs.put(key, value);
+            }
         }
 
         @SuppressWarnings("rawtypes")
@@ -232,7 +234,9 @@ public class RunTest  {
         public void buildEnvironmentFor(
                 Job j, EnvVars envs, TaskListener listener
         ) throws IOException, InterruptedException {
-            envs.put(key, value);
+            if (key != null) {
+                envs.put(key, value);
+            }
         }
     }
 }
