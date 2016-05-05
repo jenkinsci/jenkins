@@ -447,7 +447,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * Deprecated - Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
      *
      * @param force
      *      If true cancel any currently pending connect operation and retry from scratch
