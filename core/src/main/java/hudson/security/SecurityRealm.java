@@ -62,6 +62,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -483,6 +484,44 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Singleton constant that represents "no authentication."
      */
     public static final SecurityRealm NO_AUTHENTICATION = new None();
+
+    /**
+     * Perform a calculation where we should go back after sucessfull login
+     *
+     * @return Encoded URI where we should go back after sucessfull login or "/" if no way back
+     *
+     * @since TODO
+     */
+    public static String getFrom() {
+        String from = null;
+        final StaplerRequest request = Stapler.getCurrentRequest();
+
+        if (request.getSession(false) != null) {
+            from = (String) request.getSession().getAttribute("from");
+        }
+
+        if (from == null) {
+            from = request.getParameter("from");
+        }
+
+        final String requestURI = request.getRequestURI();
+        if (from == null && requestURI != null
+                && requestURI.compareTo("/loginError") != 0 && requestURI.compareTo("/login") != 0) {
+            from = requestURI;
+        }
+
+        if (from == null || from.trim().isEmpty()) {
+            from = "/";
+        }
+
+        try {
+            from = java.net.URLEncoder.encode(from, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            from = "/";
+        }
+
+        return from;
+    }
 
     private static class None extends SecurityRealm {
         public SecurityComponents createSecurityComponents() {
