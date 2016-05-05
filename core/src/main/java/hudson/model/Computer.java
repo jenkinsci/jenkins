@@ -506,7 +506,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Deprecated - implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
      *
      * @param cause
      *      Record the note about why you are disconnecting this node

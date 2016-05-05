@@ -45,7 +45,7 @@ public class DisconnectNodeCommand extends CLICommand {
     @Argument(metaVar = "NAME", usage = "Slave name, or empty string for master; comama-separated list is supported", required = true, multiValued = true)
     private List<String> nodes;
 
-    @Option(name = "-m", usage = "Record the note about why you are disconnecting this node")
+    @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")
     public String cause;
 
     private static final Logger LOGGER = Logger.getLogger(DisconnectNodeCommand.class.getName());
