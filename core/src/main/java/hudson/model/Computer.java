@@ -524,7 +524,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Deprecated - implementation of CLI command "online-node" moved to {@link hudson.cli.OnlineNodeCommand}.
+     * @deprecated Implementation of CLI command "online-node" moved to {@link hudson.cli.OnlineNodeCommand}.
      */
     @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
