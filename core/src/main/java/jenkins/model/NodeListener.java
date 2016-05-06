@@ -29,6 +29,8 @@ import hudson.model.Node;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Listen to {@link Node} CRUD operations.
@@ -38,30 +40,72 @@ import java.util.List;
  */
 public abstract class NodeListener implements ExtensionPoint {
 
+    private static final Logger LOGGER = Logger.getLogger(NodeListener.class.getName());
+
+    /**
+     * Node is being created.
+     */
     protected void onCreated(@Nonnull Node node) {}
 
+    /**
+     * Node is being updated.
+     */
     protected void onUpdated(@Nonnull Node oldOne, @Nonnull Node newOne) {}
 
+    /**
+     * Node is being deleted.
+     */
     protected void onDeleted(@Nonnull Node node) {}
 
+    /**
+     * Inform listeners that node is being created.
+     *
+     * @param node A node being created.
+     */
     public static void fireOnCreated(@Nonnull Node node) {
         for (NodeListener nl: all()) {
-            nl.onCreated(node);
+            try {
+                nl.onCreated(node);
+            } catch (Throwable ex) {
+                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
+            }
         }
     }
 
+    /**
+     * Inform listeners that node is being updated.
+     *
+     * @param oldOne Old configuration.
+     * @param newOne New Configuration.
+     */
     public static void fireOnUpdated(@Nonnull Node oldOne, @Nonnull Node newOne) {
         for (NodeListener nl: all()) {
-            nl.onUpdated(oldOne, newOne);
+            try {
+                nl.onUpdated(oldOne, newOne);
+            } catch (Throwable ex) {
+                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
+            }
         }
     }
 
+    /**
+     * Inform listeners that node is being removed.
+     *
+     * @param node A node being removed.
+     */
     public static void fireOnDeleted(@Nonnull Node node) {
         for (NodeListener nl: all()) {
-            nl.onDeleted(node);
+            try {
+                nl.onDeleted(node);
+            } catch (Throwable ex) {
+                LOGGER.log(Level.WARNING, "Listener invocation failed", ex);
+            }
         }
     }
 
+    /**
+     * Get all {@link NodeListener}s registered in Jenkins.
+     */
     public static @Nonnull List<NodeListener> all() {
         return ExtensionList.lookup(NodeListener.class);
     }
