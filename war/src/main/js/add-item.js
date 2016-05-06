@@ -1,12 +1,12 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $ = require('jquery-detached').getJQuery();
 
-var getItems = function(){
+var getItems = function() {
   var d = $.Deferred();
   $.get('itemCategories?depth=3').done(
-      function(data){
-        d.resolve(data);
-      }
+    function(data){
+      d.resolve(data);
+    }
   );
   return d.promise();
 }; 
@@ -81,6 +81,27 @@ $.when(getItems()).done(function(data) {
     function showInputHelp(context) {
       $('.input-help', context).removeClass('input-message-disabled');
     }
+
+    var doSticky = function() {
+      var s = $('form .footer .btn-decorator');
+      var pos = s.offset();
+      var vpH = $(window).height();
+      if (pos.top >= vpH) {
+        s.css({position: 'fixed'});
+      }
+
+      $(window).scroll(function() {
+        var footer = $('form .footer');
+        var ref1 = s.offset().top + s.outerHeight();
+        var ref2 = footer.offset().top + footer.outerHeight();
+        var vpH = $(window).height();
+        if (ref2 > vpH + $(window).scrollTop()) {
+          s.css({position: 'fixed'});
+        } else if (ref2 - 1 <= ref1) {
+          s.css({position: 'absolute'});
+        }
+      });
+    };
 
     //////////////////////////////////
     // Draw functions
@@ -219,5 +240,8 @@ $.when(getItems()).done(function(data) {
         }
       }
     });
+
+    // Do sticky the form buttons
+    doSticky();
   });
 });
