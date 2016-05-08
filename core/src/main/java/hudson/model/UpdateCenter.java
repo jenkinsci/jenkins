@@ -143,9 +143,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
-     * @since 1.483
+     * @since 1.483 - public property
+     * @since TODO - configurable via system property
      */
-    public static final String ID_DEFAULT = "default";
+    public static final String ID_DEFAULT = System.getProperty(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
