@@ -4,7 +4,7 @@ var jshint = require('gulp-jshint');
 //
 // See https://github.com/tfennelly/jenkins-js-builder
 //
-var builder = require('jenkins-js-builder');
+var builder = require('@jenkins-cd/js-builder');
 
 //
 // Bundle the page init script.

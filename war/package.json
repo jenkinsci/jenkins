@@ -8,8 +8,9 @@
     "handlebars": "^3.0.3",
     "hbsfy": "^2.4.1",
     "jenkins-handlebars-rt": "^1.0.1",
-    "jenkins-js-builder": "0.0.40",
-    "jenkins-js-test": "^1.0.0",
+    "@jenkins-cd/js-builder": "0.0.32",
+    "@jenkins-cd/js-test": "1.1.2",
+    "@jenkins-cd/js-modules": "0.0.5",
     "jshint": "^2.9.2",
     "gulp-jshint": "^2.0.0"
   },
