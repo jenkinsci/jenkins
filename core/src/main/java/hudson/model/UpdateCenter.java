@@ -289,7 +289,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Get the current connection status.
      * <p>
-     * Supports a "siteId" request parameter, defaulting to "default" for the default
+     * Supports a "siteId" request parameter, defaulting to {@link #ID_DEFAULT} for the default
      * update site.
      *
      * @return The current connection status.
@@ -300,6 +300,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
+                siteId = ID_DEFAULT;
+            } else if (siteId.equals("default")) {
+                // If the request explicitly requires the default ID, ship it
                 siteId = ID_DEFAULT;
             }
             ConnectionCheckJob checkJob = getConnectionCheckJob(siteId);
@@ -333,7 +336,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
                 return HttpResponses.okJSON(checkJob.connectionStates);
             } else {
-                return HttpResponses.errorJSON(String.format("Unknown site '%s'.", siteId));
+                return HttpResponses.errorJSON(String.format("Cannot check connection status of the update site with ID='%s'"
+                        + ". This update center cannot be resolved", siteId));
             }
         } catch (Exception e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
@@ -462,7 +466,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * Alias for {@link #getById}.
+     * @param id ID of the update site to be retrieved
+     * @return Discovered {@link UpdateSite}. {@code null} if it cannot be found
      */
+    @CheckForNull
     public UpdateSite getSite(String id) {
         return getById(id);
     }
@@ -487,7 +494,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Gets {@link UpdateSite} by its ID.
      * Used to bind them to URL.
+     * @param id ID of the update site to be retrieved
+     * @return Discovered {@link UpdateSite}. {@code null} if it cannot be found
      */
+    @CheckForNull
     public UpdateSite getById(String id) {
         for (UpdateSite s : sites) {
             if (s.getId().equals(id)) {
@@ -501,8 +511,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Gets the {@link UpdateSite} from which we receive updates for <tt>jenkins.war</tt>.
      *
      * @return
-     *      null if no such update center is provided.
+     *      {@code null} if no such update center is provided.
      */
+    @CheckForNull
     public UpdateSite getCoreSource() {
         for (UpdateSite s : sites) {
             Data data = s.getData();
@@ -526,6 +537,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
+     * @return Discovered {@link Plugin}. {@code null} if it cannot be found
      */
     public @CheckForNull Plugin getPlugin(String artifactId) {
         for (UpdateSite s : sites) {
@@ -2037,12 +2049,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Restricted(NoExternalUse.class)
     public static void updateDefaultSite() {
+        final UpdateSite site = Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT);
+        if (site == null) {
+            LOGGER.log(Level.SEVERE, "Upgrading Jenkins. Cannot retrieve the default Update Site ''{0}''. "
+                    + "Plugin installation may fail.", UpdateCenter.ID_DEFAULT);
+            return;
+        }
         try {
             // Need to do the following because the plugin manager will attempt to access
-            // $JENKINS_HOME/updates/default.json. Needs to be up to date.
-            Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+            // $JENKINS_HOME/updates/$ID_DEFAULT.json. Needs to be up to date.
+            site.updateDirectlyNow(true);
         } catch (Exception e) {
-            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
+            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update the default Update Site '" + UpdateCenter.ID_DEFAULT +
+                    "'. Plugin upgrades may fail.", e);
         }
     }
 
