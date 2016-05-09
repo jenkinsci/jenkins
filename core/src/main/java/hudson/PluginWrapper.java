@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import jenkins.MissingDependencyException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -513,14 +514,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
+        List<Dependency> missingDependencies = new ArrayList<>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
             if (parent.getPlugin(d.shortName) == null)
-                missingDependencies.add(d.toString());
+                missingDependencies.add(d);
         }
         if (!missingDependencies.isEmpty())
-            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+            throw new MissingDependencyException(this.shortName, missingDependencies);
 
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
