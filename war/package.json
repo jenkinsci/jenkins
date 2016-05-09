@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "description": "Jenkins User Interface",
   "license": "MIT",
+  "author": {
+    "name": "Tom Fennelly",
+    "email": "tom.fennelly@gmail.com",
+    "url": "https://github.com/tfennelly"
+  },
+  "private": true,
   "devDependencies": {
     "gulp": "^3.9.0",
     "handlebars": "^3.0.3",
