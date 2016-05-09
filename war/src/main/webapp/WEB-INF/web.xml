@@ -47,7 +47,7 @@ THE SOFTWARE.
 
   <context-param>
       <param-name>install-wizard-path</param-name>
-      <param-value>jsbundles/pluginSetupWizard</param-value>
+      <param-value>org.jenkinsci.setup.pluginSetupWizard</param-value>
   </context-param>
 
   <servlet-mapping>
