@@ -44,6 +44,21 @@
         font-size: 12px;
         line-height: 27px;
       }
+
+      button[type=submit]:hover:not(.disabled) {
+        background-color: rgb(68, 119, 136);
+        border-color: rgb(51, 85, 102);
+        color: rgb(238, 238, 238);
+        cursor: pointer;
+      }
+
+      button[type=submit].disabled {
+        background-color: #ccc;
+        border-color: #aaa;
+        color: rgb(140, 140, 140);
+        cursor: auto;
+        opacity: 0.75;
+      }
     }
   }
 

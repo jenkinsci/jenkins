@@ -82,26 +82,44 @@ $.when(getItems()).done(function(data) {
       $('.input-help', context).removeClass('input-message-disabled');
     }
 
-    var doSticky = function() {
-      var s = $('form .footer .btn-decorator');
-      var pos = s.offset();
+    // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
+    function doSticky() {
+      var decorator = $('form .footer .btn-decorator');
+      var pos = decorator.offset();
       var vpH = $(window).height();
       if (pos.top >= vpH) {
-        s.css({position: 'fixed'});
+        decorator.css({position: 'fixed'});
       }
 
       $(window).scroll(function() {
         var footer = $('form .footer');
-        var ref1 = s.offset().top + s.outerHeight();
+        var ref1 = decorator.offset().top + decorator.outerHeight();
         var ref2 = footer.offset().top + footer.outerHeight();
         var vpH = $(window).height();
         if (ref2 > vpH + $(window).scrollTop()) {
-          s.css({position: 'fixed'});
+          decorator.css({position: 'fixed'});
         } else if (ref2 - 1 <= ref1) {
-          s.css({position: 'absolute'});
+          decorator.css({position: 'absolute'});
         }
       });
-    };
+    }
+
+    function enableSubmit(status) {
+      var btn = $('form .footer .btn-decorator button[type=submit]');
+      if (status === true) {
+        btn.removeClass('disabled');
+      } else {
+        btn.addClass('disabled');
+      }
+    }
+
+    function isSubmitEnabled() {
+      var btn = $('form .footer .btn-decorator button[type=submit]');
+      if (btn.hasClass('disabled')) {
+        return false;
+      }
+      return true;
+    }
 
     //////////////////////////////////
     // Draw functions
@@ -207,6 +225,7 @@ $.when(getItems()).done(function(data) {
           } else {
             cleanValidationMessages('.add-item-name');
             showInputHelp('.add-item-name');
+            enableSubmit(true);
           }
         });
       }
@@ -226,18 +245,25 @@ $.when(getItems()).done(function(data) {
 
     // Client-side validation
     $("#createItem").submit(function(event) {
-      if (isItemNameEmpty()) {
-        activateValidationMessage('#itemname-required', '.add-item-name');
-        $('input[name="name"][type="text"]', '#createItem').focus();
-        event.preventDefault();
-      } else {
-        if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
-          activateValidationMessage('#itemtype-required', '.add-item-name');
+      if (isSubmitEnabled()) {
+        if (isItemNameEmpty()) {
+          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
           event.preventDefault();
+        } else {
+          if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
+            activateValidationMessage('#itemtype-required', '.add-item-name');
+            $('input[name="name"][type="text"]', '#createItem').focus();
+            event.preventDefault();
+          }
         }
+      } else {
+        event.preventDefault();
       }
     });
+
+    // Disable the submit button
+    enableSubmit(false);
 
     // Do sticky the form buttons
     doSticky();
