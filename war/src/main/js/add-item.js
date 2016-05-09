@@ -209,8 +209,6 @@ $.when(getItems()).done(function(data) {
             showInputHelp('.add-item-name');
           }
         });
-      } else {
-        activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
 
