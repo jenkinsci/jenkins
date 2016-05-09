@@ -558,8 +558,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 LOGGER.warning(shortName + " doesn't declare required core version.");
             } else {
                 if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_OutdatedCoreVersion(shortName, requiredCoreVersion));
-                    throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_OutdatedCoreVersion(getLongName(), requiredCoreVersion));
+                    throw new IOException(getLongName() + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
                 }
             }
         }
@@ -571,16 +571,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null) {
                 missingDependencies.add(d.toString());
-                NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_MissingDependency(shortName, dependency.getLongName()));
+                NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_MissingDependency(getLongName(), d.shortName));
             } else {
                 if (dependency.isActive()) {
                     if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
                         obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
-                        NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(shortName, dependency.getLongName(), d.version));
+                        NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
                     }
                 } else {
                     disabledDependencies.add(d.toString());
-                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_DisabledDependency(shortName, dependency.getLongName()));
+                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_DisabledDependency(getLongName(), dependency.getLongName()));
                 }
 
             }
@@ -591,7 +591,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency != null && dependency.isActive()) {
                 if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
                     obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
-                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(shortName, dependency.getLongName(), d.version));
+                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
                 } else {
                     dependencies.add(d);
                 }
