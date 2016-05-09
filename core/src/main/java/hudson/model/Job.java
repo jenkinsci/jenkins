@@ -369,6 +369,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("SHORT_JOB_NAME",getName());
         return env;
     }
 
