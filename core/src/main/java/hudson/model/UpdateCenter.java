@@ -198,6 +198,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         PRECHECK,
         /**
+         * Connection status check has been skipped.
+         * As example, it may happen if there is no connection check URL defined for the site.
+         * @since TODO
+         */
+        SKIPPED,
+        /**
          * Connection status is being checked at this time.
          */
         CHECKING,
@@ -1377,6 +1383,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
                     });
+                } else {
+                    LOGGER.log(WARNING, "Update site '{0}' does not declare the connection check URL. "
+                            + "Skipping the network availability check.", site.getId());
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.SKIPPED);
                 }
 
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
