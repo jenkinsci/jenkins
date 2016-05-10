@@ -56,7 +56,23 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=rfe>
+    Internal/build: <code>jenkins-ui</code> (NPM module) is private, used only internally.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34629">issue 34629</a>)
+  <li class=rfe>
+    Do not print stack trace if a plugin is missing its dependencies.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34683">issue 34683</a>)
+  <li class=rfe>
+    Allow specifying custom <code>AbortException</code>s.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2288">pull 2288</a>)
+  <li class=rfe>
+    Internal: CLI command disconnect-node extracted from core to CLI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34328">issue 34328</a>)
+  <li class=rfe>
+    Developer API: Switch Jenkins.getInstance() to @Nonnull
+    (new <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">system property</a>).
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2297">pull 2297</a>)
+
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.2>What's new in 2.2</a> (2016/05/08)</h3>
@@ -85,7 +101,7 @@ Upcoming changes</a>
   <li class=rfe>
     API: New <tt>HttpSessionListener</tt> extension point.
   	(<a href="https://github.com/jenkinsci/jenkins/pull/2303">pull 2303</a>)
-  	
+
   <li class=bug>
     Don't go through init sequence twice.
   	(<a href="https://github.com/jenkinsci/jenkins/pull/2177">pull 2177</a>)
