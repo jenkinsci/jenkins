@@ -142,7 +142,8 @@ public class BuildCommand extends CLICommand {
         }
 
         if (checkSCM) {
-            if (!SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job).poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges()) {
+            SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
+            if (item != null && !item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges()) {
                 return 0;
             }
         }
