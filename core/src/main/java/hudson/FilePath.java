@@ -2549,6 +2549,7 @@ public final class FilePath implements Serializable {
 
     private static final UrlFactory DEFAULT_URL_FACTORY = new UrlFactory();
 
+    @Restricted(NoExternalUse.class)
     static class UrlFactory {
         public URL newURL(String location) throws MalformedURLException {
             return new URL(location);
