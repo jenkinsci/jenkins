@@ -495,42 +495,46 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @since TODO
      */
     public static String getFrom() {
-        String from = null;
+        String from = null, returnValue = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
-        if (from == null
-                && request != null
+        // Try to obtain a return point either from the Session
+        // or from the QueryParameter in this order
+        if (request != null
                 && request.getSession(false) != null) {
             from = (String) request.getSession().getAttribute("from");
-        }
-
-        if (from == null
-                && request != null) {
-            from = request.getParameter("from");
-        }
-
-        if (from == null
-                && request != null) {
-            final String requestURI = request.getRequestURI();
-            if (requestURI != null
-                    && requestURI.compareTo("/loginError") != 0
-                    && requestURI.compareTo("/login") != 0) {
-                from = requestURI;
+        } else {
+            if (request != null) {
+                from = request.getParameter("from");
             }
         }
 
+        // If entry point was not found, try to deduce it from the request URI
+        // except pages related to login process
+        if (from == null
+                && request != null
+                && request.getRequestURI() != null
+                && request.getRequestURI().compareTo("/loginError") != 0
+                && request.getRequestURI().compareTo("/login") != 0) {
+
+                from = request.getRequestURI();
+        }
+
+        // If deduced entry point isn't deduced yet or the content is a blank value
+        // use the root web point "/" as a fallback
+        from.trim();
         if (StringUtils.isBlank(from)) {
             from = "/";
         }
-        from.trim();
 
+        // Encode the return value
         try {
-            final String oldFrom = from;
-            from = null;
-            from = java.net.URLEncoder.encode(oldFrom, "UTF-8");
+            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
         } catch (UnsupportedEncodingException e) { }
 
-        return StringUtils.isBlank(from) ? "/" : from;
+        // Return encoded value or at least "/" in the case exception occurred during encode()
+        // or if the encoded content is blank value
+        return StringUtils.isBlank(returnValue) ? "/" : returnValue;
     }
 
     private static class None extends SecurityRealm {
