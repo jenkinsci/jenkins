@@ -72,6 +72,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
 import javax.annotation.CheckForNull;
@@ -2556,6 +2558,7 @@ public final class FilePath implements Serializable {
     private UrlFactory urlFactory;
 
     @VisibleForTesting
+    @Restricted(NoExternalUse.class)
     void setUrlFactory(UrlFactory urlFactory) {
         this.urlFactory = urlFactory;
     }
