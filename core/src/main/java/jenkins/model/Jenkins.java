@@ -3692,7 +3692,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Reloads the configuration.
      */
-    @CLIMethod(name="reload-configuration")
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
