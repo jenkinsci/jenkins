@@ -69,20 +69,12 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
-        if (parameterDefinitions != null) {
-            this.parameterDefinitions = parameterDefinitions;
-        } else {
-            this.parameterDefinitions = Collections.emptyList();
-        }
+    public ParametersDefinitionProperty(@CheckForNull List<ParameterDefinition> parameterDefinitions) {
+        this.parameterDefinitions = (parameterDefinitions != null) ? parameterDefinitions : Collections.<ParameterDefinition>emptyList();
     }
 
-    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
-        if (parameterDefinitions != null) {
-            this.parameterDefinitions = Arrays.asList(parameterDefinitions);
-        } else {
-            this.parameterDefinitions = Collections.emptyList();
-        }
+    public ParametersDefinitionProperty(@CheckForNull ParameterDefinition... parameterDefinitions) {
+        this(parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : null);
     }
 
     protected Object readResolve() {
@@ -113,19 +105,15 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public List<String> getParameterDefinitionNames() {
         return new AbstractList<String>() {
             public String get(int index) {
-                if (parameterDefinitions != null && parameterDefinitions.get(index) != null) {
+                if (parameterDefinitions.get(index) != null) {
                     return parameterDefinitions.get(index).getName();
                 } else {
-                    return "";
+                    return null;
                 }
             }
 
             public int size() {
-                if (parameterDefinitions != null) {
-                    return parameterDefinitions.size();
-                } else {
-                    return 0;
-                }
+                return parameterDefinitions.size();
             }
         };
     }
