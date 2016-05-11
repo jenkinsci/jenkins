@@ -60,17 +60,42 @@ Upcoming changes</a>
     Internal/build: <code>jenkins-ui</code> (NPM module) is private, used only internally.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34629">issue 34629</a>)
   <li class=rfe>
-    Do not print stack trace if a plugin is missing its dependencies.
+    Do not print stack trace during a plugin installation if it is missing its dependencies.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34683">issue 34683</a>)
   <li class=rfe>
     Allow specifying custom <code>AbortException</code>s.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2288">pull 2288</a>)
   <li class=rfe>
-    Internal: CLI command disconnect-node extracted from core to CLI.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34328">issue 34328</a>)
+     Add a <code>hudson.model.UpdateCenter.defaultUpdateSiteId</code> system property, 
+     which allows specifying an alternate default Update Site ID.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34674">issue 34674</a>)
   <li class=rfe>
-    Developer API: Switch Jenkins.getInstance() to @Nonnull
-    (new <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">system property</a>).
+    Remove the historical initialization of CVS changelog parser for jobs without explicit SCM definition.
+    <b>Warning!</b> This change may potentially cause a regression if a Jenkins plugin depends on this default behavior and injects changelogs without SCM.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-4610">issue 4610</a>)
+  <li class=bug>
+    Prevent hanging of the Installation Wizard if the default Update Site ID cannot be resolved.
+    In such case an error message will be displayed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34675">issue 34675</a>)
+  <li class=bug>
+    Do not fail with error when enabling a plugin, which has been already enabled.
+    It prevents errors in the new Installation Wizard, which installs plugins in parallel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34710">issue 34710</a>)
+  <li class=bug>
+    Disable JSESSIONID in URLs when running in the JBoss web container.
+    It prevents Error 404 due to invalid links starting from Jenkins 1.556.
+    More info: <a href="https://issues.jboss.org/browse/WFLY-4782">WFLY-4782</a>
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34675">issue 34675</a>)
+  <li class=rfe>
+    Internal: CLI commands <code>disconnect-node</code> and <code>reload-configuration</code> were extracted from the core to CLI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34328">issue 34328</a> and
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-31900">issue 31900</a>)
+  <li class=rfe>
+    Internal: Support latest source version to avoid compile time warnings with JDK7.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32978">issue 32978</a>)
+  <li class=rfe>
+    Developer API: Switch <code>Jenkins.getInstance()</code> to <code>@Nonnull</code>.
+    (new <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">system property</a>)
     (<a href="https://github.com/jenkinsci/jenkins/pull/2297">pull 2297</a>)
 
 </ul>
