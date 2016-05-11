@@ -48,6 +48,7 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -488,7 +489,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Perform a calculation where we should go back after sucessfull login
      *
-     * @return Encoded URI where we should go back after sucessfull login or "/" if no way back
+     * @return Encoded URI where we should go back after sucessfull login
+     *         or "/" if no way back or an issue occurred
      *
      * @since TODO
      */
@@ -496,31 +498,39 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         String from = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
-        if (request.getSession(false) != null) {
+        if (from == null
+                && request != null
+                && request.getSession(false) != null) {
             from = (String) request.getSession().getAttribute("from");
         }
 
-        if (from == null) {
+        if (from == null
+                && request != null) {
             from = request.getParameter("from");
         }
 
-        final String requestURI = request.getRequestURI();
-        if (from == null && requestURI != null
-                && requestURI.compareTo("/loginError") != 0 && requestURI.compareTo("/login") != 0) {
-            from = requestURI;
+        if (from == null
+                && request != null) {
+            final String requestURI = request.getRequestURI();
+            if (requestURI != null
+                    && requestURI.compareTo("/loginError") != 0
+                    && requestURI.compareTo("/login") != 0) {
+                from = requestURI;
+            }
         }
 
-        if (from == null || from.trim().isEmpty()) {
+        if (StringUtils.isBlank(from)) {
             from = "/";
         }
+        from.trim();
 
         try {
-            from = java.net.URLEncoder.encode(from, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            from = "/";
-        }
+            final String oldFrom = from;
+            from = null;
+            from = java.net.URLEncoder.encode(oldFrom, "UTF-8");
+        } catch (UnsupportedEncodingException e) { }
 
-        return from;
+        return StringUtils.isBlank(from) ? "/" : from;
     }
 
     private static class None extends SecurityRealm {
