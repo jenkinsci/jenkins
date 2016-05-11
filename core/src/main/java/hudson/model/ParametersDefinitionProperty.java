@@ -66,15 +66,30 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
-    private final List<ParameterDefinition> parameterDefinitions;
+    private List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
-        this.parameterDefinitions = parameterDefinitions;
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions != null) {
+            this.parameterDefinitions = parameterDefinitions;
+        } else {
+            this.parameterDefinitions = Collections.emptyList();
+        }
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions != null) {
+            this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+        } else {
+            this.parameterDefinitions = Collections.emptyList();
+        }
+    }
+
+    protected Object readResolve() {
+        if (parameterDefinitions == null) {
+            parameterDefinitions = Collections.emptyList();
+        }
+        return this;
     }
 
     @Deprecated
