@@ -2563,7 +2563,7 @@ public final class FilePath implements Serializable {
         this.urlFactory = urlFactory;
     }
 
-    UrlFactory getUrlFactory() {
+    private UrlFactory getUrlFactory() {
         if (urlFactory != null) {
             return urlFactory;
         } else {
