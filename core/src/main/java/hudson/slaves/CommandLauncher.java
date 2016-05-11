@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -182,7 +183,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     private static final Logger LOGGER = Logger.getLogger(CommandLauncher.class.getName());
 
-    @Extension
+    @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();

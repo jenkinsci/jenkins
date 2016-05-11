@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.util.LineEndingConversion;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import java.io.ObjectStreamException;
@@ -59,7 +60,7 @@ public class BatchFile extends CommandInterpreter {
         return new BatchFile(command);
     }
 
-    @Extension
+    @Extension @Symbol("batchFile")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @Override
         public String getHelpFile() {

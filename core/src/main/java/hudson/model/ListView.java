@@ -49,10 +49,12 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -107,6 +109,14 @@ public class ListView extends View implements DirectlyModifiableView {
     public ListView(String name, ViewGroup owner) {
         this(name);
         this.owner = owner;
+    }
+
+    /**
+     * Sets the columns of this view.
+     */
+    @DataBoundSetter
+    public void setColumns(List<ListViewColumn> columns) throws IOException {
+        this.columns.replaceBy(columns);
     }
 
     private Object readResolve() {
@@ -398,7 +408,7 @@ public class ListView extends View implements DirectlyModifiableView {
             this.includePattern = Pattern.compile(includeRegex);
     }
 
-    @Extension
+    @Extension @Symbol("list")
     public static class DescriptorImpl extends ViewDescriptor {
         @Override
         public String getDisplayName() {

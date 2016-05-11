@@ -30,6 +30,7 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
@@ -598,7 +599,7 @@ public class NodeProvisioner {
      *
      * @since 1.588
      */
-    @Extension
+    @Extension @Symbol("standard")
     public static class StandardStrategyImpl extends Strategy {
 
         /** {@inheritDoc} */

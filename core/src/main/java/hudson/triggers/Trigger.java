@@ -63,6 +63,7 @@ import javax.annotation.Nonnull;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
+import org.jenkinsci.Symbol;
 
 /**
  * Triggers a {@link Build}.
@@ -197,7 +198,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     /**
      * Runs every minute to check {@link TimerTrigger} and schedules build.
      */
-    @Extension
+    @Extension @Symbol("cron")
     public static class Cron extends PeriodicWork {
         private final Calendar cal = new GregorianCalendar();
 

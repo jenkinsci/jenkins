@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -175,7 +176,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
         }
 
-        @Extension
+        @Extension @Symbol("caseInsensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
             /**
@@ -303,7 +304,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return id1.compareTo(id2);
         }
 
-        @Extension
+        @Extension @Symbol("caseSensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
             /**

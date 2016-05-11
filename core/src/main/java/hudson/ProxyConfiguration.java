@@ -55,6 +55,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -306,7 +307,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         XSTREAM.alias("proxy", ProxyConfiguration.class);
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
         @Override
         public String getDisplayName() {

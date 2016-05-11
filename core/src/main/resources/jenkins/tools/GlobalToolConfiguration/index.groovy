@@ -35,7 +35,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
 
             f.bottomButtonBar {
                 f.submit(value:_("Save"))
-                f.apply()
+                f.apply(value:_("Apply"))
             }
         }
 

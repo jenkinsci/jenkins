@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015 Red Hat, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
+package jenkins.util;
+
+
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
 
 /**
- * Command line utility to print all arguments as provided.
- *
- * @author ogondza
+ * {@link javax.servlet.http.HttpSessionListener} {@link ExtensionPoint} for Jenkins.
+ * <p>
+ * Allows plugins to listen to {@link HttpSession} lifecycle events.
+ * 
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * @since TODO
  */
-public final class EchoCommand {
-    public static void main(String[] args) {
-        StringBuilder sb = new StringBuilder();
-        for (String a: args) {
-            if (sb.length() != 0) sb.append(' ');
-            sb.append(a);
-        }
-        System.out.println(sb.toString());
+public abstract class HttpSessionListener implements ExtensionPoint, javax.servlet.http.HttpSessionListener {
+
+    /**
+     * Get all of the {@link HttpSessionListener} implementations.
+     * @return All of the {@link HttpSessionListener} implementations.
+     */
+    public static ExtensionList<HttpSessionListener> all() {
+        return ExtensionList.lookup(HttpSessionListener.class);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sessionCreated(HttpSessionEvent httpSessionEvent) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
     }
 }

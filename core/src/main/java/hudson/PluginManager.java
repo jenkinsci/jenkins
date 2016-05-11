@@ -66,6 +66,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.bytecode.Transformer;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Reactor;
@@ -108,6 +109,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -452,6 +454,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     session.addAll(g.discoverTasks(session));
                 }
             });
+
+            // All plugins are loaded. Now we can figure out who depends on who.
+            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependant Plugins Graph", new Executable() {
+                @Override
+                public void run(Reactor reactor) throws Exception {
+                    resolveDependantPlugins();
+                }
+            });
         }});
     }
 
@@ -660,6 +670,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * TODO: revisit where/how to expose this. This is an experiment.
      */
     public void dynamicLoad(File arc) throws IOException, InterruptedException, RestartRequiredException {
+        dynamicLoad(arc, false);
+    }
+
+    /**
+     * Try the dynamicLoad, removeExisting to attempt to dynamic load disabled plugins
+     */
+    @Restricted(NoExternalUse.class)
+    public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
         LOGGER.info("Attempting to dynamic load "+arc);
         PluginWrapper p = null;
         String sn;
@@ -670,9 +688,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             p = strategy.createPluginWrapper(arc);
             sn = p.getShortName();
         }
-        if (getPlugin(sn)!=null)
-            throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
-
+        PluginWrapper pw = getPlugin(sn);
+        if (pw!=null) {
+            if (removeExisting) { // try to load disabled plugins
+                for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
+                    pw = i.next();
+                    if(sn.equals(pw.getShortName())) {
+                        i.remove();
+                        pw = null;
+                        break;
+                    }
+                }
+            } else {
+                throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+            }
+        }
         if (p == null) {
             p = strategy.createPluginWrapper(arc);
         }
@@ -1698,7 +1728,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * {@link AdministrativeMonitor} that checks if there are any plugins with cycle dependencies.
      */
-    @Extension
+    @Extension @Symbol("pluginCycleDependencies")
     public static final class PluginCycleDependenciesMonitor extends AdministrativeMonitor {
 
         private transient volatile boolean isActive = false;
@@ -1727,7 +1757,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * {@link AdministrativeMonitor} that informs the administrator about a required plugin update.
      * @since 1.491
      */
-    @Extension
+    @Extension @Symbol("pluginUpdate")
     public static final class PluginUpdateMonitor extends AdministrativeMonitor {
 
         private Map<String, PluginUpdateInfo> pluginsToBeUpdated = new HashMap<String, PluginManager.PluginUpdateMonitor.PluginUpdateInfo>();

@@ -13,7 +13,7 @@ var getItems = function(){
 
 var jRoot = $('head').attr('data-rooturl');
 
-$.when(getItems()).done(function(data){
+$.when(getItems()).done(function(data) {
   $(function() {
 
     //////////////////////////
@@ -87,7 +87,7 @@ $.when(getItems()).done(function(data){
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      var $items = $('<ul"/>').addClass('j-item-options');
+      var $items = $('<ul/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
       var description = '<p>' + category.description + '</p>';
@@ -107,23 +107,37 @@ $.when(getItems()).done(function(data){
 
     function drawItem(elem) {
       var desc = checkForLink(elem.description);
-      var $item = $(['<li class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
+      var $item = $(['<li tabindex="0" role="radio" aria-checked="false" class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
       elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
 
-      function setSelectState(e) {
+      function select(e) {
         e.preventDefault();
-        var $this = $(this).closest('li');
-        $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
-        $this.closest('.categories').find('.active').removeClass('active');
-        $this.addClass('active');
-        $this.find('input[type="radio"][name="mode"]').prop('checked', true);
+        $('li[role="radio"]').attr("aria-checked", "false");
+        $(this).find('input[type="radio"][name="mode"]').removeAttr('checked');
+        $(this).parents().find('.active').removeClass('active');
+
+        $(this).attr("aria-checked", "true");
+        $(this).find('input[type="radio"][name="mode"]').prop('checked', true);
+        $(this).addClass('active');
+
         $('input[type="text"][name="from"]', '#createItem').val('');
         cleanValidationMessages('.add-item-copy');
         if (isItemNameEmpty()) {
           activateValidationMessage('#itemname-required', '.add-item-name');
         }
       }
-      $item.click(setSelectState);
+
+      $item.click(select);
+
+      $item.keypress(function(e) {
+        switch (e.which) {
+          case 13:
+          case 32:
+            $(this).trigger('click');
+            e.stopPropagation();
+            break;
+        }
+      });
 
       return $item;
     }
@@ -180,14 +194,14 @@ $.when(getItems()).done(function(data){
     });
 
     // Init CopyFromField
-    $('input[name="from"]', '#createItem').focus(function() {
-      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
-      $('.categories').find('.active').removeClass('active');
-    });
-
     $('input[name="from"]', '#createItem').blur(function() {
       if (getCopyFromValue() === '') {
-        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+        $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
+      } else {
+        $('.categories').find('li[role="radio"]').attr("aria-checked", "false");
+        $('#createItem').find('input[type="radio"][name="mode"]').removeAttr('checked');
+        $('.categories').find('.active').removeClass('active');
+        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
       }
     });
 

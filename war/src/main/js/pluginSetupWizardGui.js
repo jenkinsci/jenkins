@@ -104,7 +104,7 @@ var createPluginSetupWizard = function(appendTarget) {
 			return options.fn();
 		}
 	});
-
+	
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
 	var errorPanel = require('./templates/errorPanel.hbs');
 	var loadingPanel = require('./templates/loadingPanel.hbs');
@@ -165,6 +165,19 @@ var createPluginSetupWizard = function(appendTarget) {
 			html: true,
 			title: text
 		}).tooltip('show');
+	});
+	
+	// handle clicking links that might not get highlighted due to position on the page
+	$wizard.on('click', '.nav>li>a', function(){
+		var $li = $(this).parent();
+		var activateClicked = function() {
+			if(!$li.is('.active')) {
+				$li.parent().find('>li').removeClass('active');
+				$li.addClass('active');
+			}
+		};
+		setTimeout(activateClicked, 150); // this is the scroll time
+		setTimeout(activateClicked, 250); // this should combat timing issues
 	});
 
 	// localized messages
@@ -900,7 +913,7 @@ var createPluginSetupWizard = function(appendTarget) {
 								if (j.correlationId) {
 									selectedPluginNames.push(j.name);
 								}
-								setFailureStatus(j)
+								setFailureStatus(j);
 							}
 							showInstallProgress(data.state);
 						}));

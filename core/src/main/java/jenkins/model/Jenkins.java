@@ -236,6 +236,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -787,7 +788,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient final boolean oldJenkinsJVM;
 
     protected Jenkins(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
-        this(root,context,null);
+        this(root, context, null);
     }
 
     /**
@@ -923,28 +924,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             System.currentTimeMillis()-itemListenerStart,l.getClass().getName()));
             }
 
-            // All plugins are loaded. Now we can figure out who depends on who.
-            resolveDependantPlugins();
-
             if (LOG_STARTUP_PERFORMANCE)
                 LOGGER.info(String.format("Took %dms for complete Jenkins startup",
                         System.currentTimeMillis()-start));
         } finally {
             SecurityContextHolder.clearContext();
         }
-    }
-
-    private void resolveDependantPlugins() throws InterruptedException, ReactorException, IOException {
-        TaskGraphBuilder graphBuilder = new TaskGraphBuilder();
-
-        graphBuilder.add("Resolving Dependant Plugins Graph", new Executable() {
-            @Override
-            public void run(Reactor reactor) throws Exception {
-                pluginManager.resolveDependantPlugins();
-            }
-        });
-
-        executeReactor(null, graphBuilder);
     }
 
     /**
@@ -1188,7 +1173,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the SCM descriptor by name. Primarily used for making them web-visible.
      */
     public Descriptor<SCM> getScm(String shortClassName) {
-        return findDescriptor(shortClassName,SCM.all());
+        return findDescriptor(shortClassName, SCM.all());
     }
 
     /**
@@ -1332,7 +1317,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link SecurityRealm} descriptors by name. Primarily used for making them web-visible.
      */
     public Descriptor<SecurityRealm> getSecurityRealms(String shortClassName) {
-        return findDescriptor(shortClassName,SecurityRealm.all());
+        return findDescriptor(shortClassName, SecurityRealm.all());
     }
 
     /**
@@ -1557,7 +1542,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Deprecated
     public List<Project> getProjects() {
-        return Util.createSubList(items.values(),Project.class);
+        return Util.createSubList(items.values(), Project.class);
     }
 
     /**
@@ -1601,6 +1586,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         viewGroupMixIn.addView(v);
     }
 
+    /**
+     * Completely replaces views.
+     *
+     * <p>
+     * This operation is NOT provided as an atomic operation, but rather
+     * the sole purpose of this is to define a setter for this to help
+     * introspecting code, such as system-config-dsl plugin
+     */
+    // even if we want to offer this atomic operation, CopyOnWriteArrayList
+    // offers no such operation
+    public void setViews(Collection<View> views) throws IOException {
+        BulkChange bc = new BulkChange(this);
+        try {
+            this.views.clear();
+            for (View v : views) {
+                addView(v);
+            }
+        } finally {
+            bc.commit();
+        }
+    }
+
     public boolean canDelete(View view) {
         return viewGroupMixIn.canDelete(view);
     }
@@ -1610,7 +1617,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public void onViewRenamed(View view, String oldName, String newName) {
-        viewGroupMixIn.onViewRenamed(view,oldName,newName);
+        viewGroupMixIn.onViewRenamed(view, oldName, newName);
     }
 
     /**
@@ -2847,11 +2854,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                 // initialize views by inserting the default view if necessary
                 // this is both for clean Jenkins and for backward compatibility.
-                if(views.size()==0 || primaryView==null) {
+                if(views.size()==0) {
                     View v = new AllView(Messages.Hudson_ViewName());
                     setViewOwner(v);
                     views.add(0,v);
                     primaryView = v.getViewName();
+                }
+                if (primaryView==null) {
+                    primaryView = views.get(0).getViewName();
                 }
 
                 if (useSecurity!=null && !useSecurity) {
