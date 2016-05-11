@@ -174,11 +174,11 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccess() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(5));
 
         CLICommandInvoker.Result result = command
@@ -198,8 +198,8 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccessEvenABuildIsSpecifiedTwice() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
@@ -219,8 +219,8 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccessEvenLastBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
         CLICommandInvoker.Result result = command
@@ -240,12 +240,12 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccessEvenMiddleBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         project.getBuildByNumber(2).delete();
         project.getBuildByNumber(5).delete();
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(4));
@@ -267,9 +267,9 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccessEvenFirstBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         project.getBuildByNumber(1).delete();
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
 
@@ -290,11 +290,11 @@ public class DeleteBuildsCommandTest {
 
     @Test public void deleteBuildsManyShouldSuccessEvenTheFirstAndLastBuildDoesNotExist() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
-        project.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
+        j.buildAndAssertSuccess(project);
         project.getBuildByNumber(1).delete();
         project.getBuildByNumber(3).delete();
         project.getBuildByNumber(5).delete();
