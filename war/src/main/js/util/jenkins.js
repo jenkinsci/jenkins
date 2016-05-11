@@ -192,18 +192,22 @@ exports.loadTranslations = function(bundleName, handler, onError) {
 /**
  * Runs a connectivity test, calls handler with a boolean whether there is sufficient connectivity to the internet
  */
-exports.testConnectivity = function(handler) {
+exports.testConnectivity = function(siteId, handler) {
 	// check the connectivity api
 	var testConnectivity = function() {
-		exports.get('/updateCenter/connectionStatus?siteId=default', function(response) {
+		exports.get('/updateCenter/connectionStatus?siteId=' + siteId, function(response) {
+			if(response.status !== 'ok') {
+				handler(false, true, response.message);
+			}
+			
 			var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
 			if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
 				setTimeout(testConnectivity, 100);
 			}
 			else {
 				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || response.data.internet !== 'OK') {
-					// no connectivity
-					handler(false);
+					// no connectivity, but not fatal
+					handler(false, false);
 				}
 				else {
 					handler(true);

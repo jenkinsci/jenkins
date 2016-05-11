@@ -48,6 +48,7 @@ import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.InitReactorRunner;
+import jenkins.MissingDependencyException;
 import jenkins.RestartRequiredException;
 import jenkins.YesNoMaybe;
 import jenkins.install.InstallState;
@@ -414,6 +415,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 try {
                                     p.resolvePluginDependencies();
                                     strategy.load(p);
+                                } catch (MissingDependencyException e) {
+                                    failedPlugins.add(new FailedPlugin(p.getShortName(), e));
+                                    activePlugins.remove(p);
+                                    plugins.remove(p);
+                                    LOGGER.log(Level.SEVERE, "Failed to install {0}: {1}", new Object[] { p.getShortName(), e.getMessage() });
+                                    return;
                                 } catch (IOException e) {
                                     failedPlugins.add(new FailedPlugin(p.getShortName(), e));
                                     activePlugins.remove(p);
