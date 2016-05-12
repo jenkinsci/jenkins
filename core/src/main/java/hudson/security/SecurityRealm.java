@@ -49,6 +49,8 @@ import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -494,6 +496,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * @since TODO
      */
+    @Restricted(DoNotUse.class)
     public static String getFrom() {
         String from = null, returnValue = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
@@ -503,10 +506,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (request != null
                 && request.getSession(false) != null) {
             from = (String) request.getSession().getAttribute("from");
-        } else {
-            if (request != null) {
-                from = request.getParameter("from");
-            }
+        } else if (request != null) {
+            from = request.getParameter("from");
         }
 
         // If entry point was not found, try to deduce it from the request URI
@@ -514,18 +515,18 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (from == null
                 && request != null
                 && request.getRequestURI() != null
-                && request.getRequestURI().compareTo("/loginError") != 0
-                && request.getRequestURI().compareTo("/login") != 0) {
+                && request.getRequestURI().equals("/loginError")
+                && request.getRequestURI().equals("/login")) {
 
                 from = request.getRequestURI();
         }
 
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
-        from.trim();
         if (StringUtils.isBlank(from)) {
             from = "/";
         }
+        from.trim();
 
         // Encode the return value
         try {
