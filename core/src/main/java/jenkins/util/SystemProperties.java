@@ -24,33 +24,34 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 
 /**
- * Centralizes calls to <code>System.getProperty()</code> and related calls.
+ * Centralizes calls to {@link System#getProperty()} and related calls.
  * This allows us to get values not just from environment variables but also from
- * the <code>ServletContext</code>, so properties like <code>hudson.DNSMultiCast.disabled</code>
- * can be set in <code>context.xml</code> and the app server's boot script does not
+ * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
+ * can be set in {@code context.xml} and the app server's boot script does not
  * have to be changed.
  *
  * <p>This should be used to obtain hudson/jenkins "app"-level parameters
- * (e.g. <code>hudson.DNSMultiCast.disabled</code>), but not for system parameters
- * (e.g. <code>os.name</code>).
+ * (e.g. {@code hudson.DNSMultiCast.disabled}), but not for system parameters
+ * (e.g. {@code os.name}).
  *
  * <p>If you run multiple instances of Jenkins in the same virtual machine and wish
- * to obtain properties from <code>context.xml</code>, make sure these Jenkins instances use
+ * to obtain properties from {@code context.xml}, make sure these Jenkins instances use
  * different ClassLoaders. Tomcat, for example, does this automatically. If you do
  * not use different ClassLoaders, the values of properties specified in
- * <code>context.xml</code> is undefined.
+ * {@code context.xml} is undefined.
  *
- * <p>Property access is logged on <code>Level.CONFIG</code>. Note that some properties
+ * <p>Property access is logged on {@link Level#CONFIG}. Note that some properties
  * may be accessed by Jenkins before logging is configured properly, so early access to
  * some properties may not be logged.
  *
- * <p>While it looks like it on first glance, this cannot be mapped to <code>EnvVars.java</code>
- * because <code>EnvVars.java</code> is only for build variables, not Jenkins itself variables.
+ * <p>While it looks like it on first glance, this cannot be mapped to {@link EnvVars},
+ * because {@link EnvVars} is only for build variables, not Jenkins itself variables.
  *
  * @author Johannes Ernst
  * @since TODO
@@ -74,19 +75,18 @@ public class SystemProperties {
 
     /**
      * Gets the system property indicated by the specified key.
-     * This behaves just like <code>System.getProperty(String)</code>, except that it
-     * also consults the <code>ServletContext</code>'s "init" parameters.
+     * This behaves just like {@link System#getProperty(java.lang.String)}, except that it
+     * also consults the {@link ServletContext}'s "init" parameters.
      * 
      * @param      key   the name of the system property.
      * @return     the string value of the system property,
-     *             or <code>null</code> if there is no property with that key.
+     *             or {@code null} if there is no property with that key.
      *
-     * @exception  SecurityException  if a security manager exists and its
-     *             <code>checkPropertyAccess</code> method doesn't allow
-     *              access to the specified system property.
-     * @exception  NullPointerException if <code>key</code> is
-     *             <code>null</code>.
-     * @exception  IllegalArgumentException if <code>key</code> is empty.
+     * @exception  SecurityException if a security manager exists and its
+     *             {@link SecurityManager#checkPropertyAccess(java.lang.String)} method doesn't allow
+     *             accessing to the specified system property.
+     * @exception  NullPointerException if {@code key} is {@code null}.
+     * @exception  IllegalArgumentException if {@code key} is empty.
      */
     @CheckForNull
     public static String getString(String key) {
@@ -112,20 +112,19 @@ public class SystemProperties {
 
     /**
      * Gets the system property indicated by the specified key, or a default value.
-     * This behaves just like <code>System.getProperty(String,String)</code>, except
-     * that it also consults the <code>ServletContext</code>'s "init" parameters.
+     * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
+     * that it also consults the {@link ServletContext}'s "init" parameters.
      * 
      * @param      key   the name of the system property.
      * @param      def   a default value.
      * @return     the string value of the system property,
-     *             or <code>null</code> if there is no property with that key.
+     *             or {@code null} if there is no property with that key.
      *
      * @exception  SecurityException  if a security manager exists and its
-     *             <code>checkPropertyAccess</code> method doesn't allow
+     *             {@link SecurityManager#checkPropertyAccess(java.lang.String)} method doesn't allow
      *              access to the specified system property.
-     * @exception  NullPointerException if <code>key</code> is
-     *             <code>null</code>.
-     * @exception  IllegalArgumentException if <code>key</code> is empty.
+     * @exception  NullPointerException if {@code key} is {@code null}.
+     * @exception  IllegalArgumentException if {@code key} is empty.
      */
     @CheckForNull
     public static String getString(String key, @CheckForNull String def) {
@@ -155,11 +154,11 @@ public class SystemProperties {
       * Returns {@code true} if the system property
       * named by the argument exists and is equal to the string
       * {@code "true"}. If the system property does not exist, return
-      * {@code "false"}. if a property by this name exists in the <code>ServletContext</code>
+      * {@code "false"}. if a property by this name exists in the {@link ServletContext}
       * and is equal to the string {@code "true"}.
       * 
-      * This behaves just like <code>Boolean.getBoolean(String)</code>, except that it
-      * also consults the <code>ServletContext</code>'s "init" parameters.
+      * This behaves just like {@link Boolean#getBoolean(java.lang.String)}, except that it
+      * also consults the {@link ServletContext}'s "init" parameters.
       * 
       * @param   name   the system property name.
       * @return  the {@code boolean} value of the system property.
@@ -172,12 +171,12 @@ public class SystemProperties {
       * Returns {@code true} if the system property
       * named by the argument exists and is equal to the string
       * {@code "true"}, or a default value. If the system property does not exist, return
-      * {@code "true"} if a property by this name exists in the <code>ServletContext</code>
+      * {@code "true"} if a property by this name exists in the {@link ServletContext}
       * and is equal to the string {@code "true"}. If that property does not
       * exist either, return the default value.
       * 
-      * This behaves just like <code>Boolean.getBoolean(String)</code> with a default
-      * value, except that it also consults the <code>ServletContext</code>'s "init" parameters.
+      * This behaves just like {@link Boolean#getBoolean(java.lang.String)} with a default
+      * value, except that it also consults the {@link ServletContext}'s "init" parameters.
       * 
       * @param   name   the system property name.
       * @param   def   a default value.
@@ -196,8 +195,8 @@ public class SystemProperties {
       * Determines the integer value of the system property with the
       * specified name.
       * 
-      * This behaves just like <code>Integer.getInteger(String)</code>, except that it
-      * also consults the <code>ServletContext</code>'s "init" parameters.
+      * This behaves just like {@link Integer#getInteger(java.lang.String)}, except that it
+      * also consults the {@link ServletContext}'s "init" parameters.
       * 
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
