@@ -78,6 +78,7 @@ public class SystemProperties {
      * Gets the system property indicated by the specified key.
      * This behaves just like {@link System#getProperty(java.lang.String)}, except that it
      * also consults the {@link ServletContext}'s "init" parameters.
+     * {@link ServletContext} check will be skipped if the context is not initialized.
      * 
      * @param      key   the name of the system property.
      * @return     the string value of the system property,
@@ -114,6 +115,7 @@ public class SystemProperties {
      * Gets the system property indicated by the specified key, or a default value.
      * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
      * that it also consults the {@link ServletContext}'s "init" parameters.
+     * {@link ServletContext} check will be skipped if the context is not initialized.
      * 
      * @param      key   the name of the system property.
      * @param      def   a default value.
@@ -157,6 +159,7 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
+      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name   the system property name.
       * @return  the {@code boolean} value of the system property.
@@ -175,6 +178,7 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)} with a default
       * value, except that it also consults the {@link ServletContext}'s "init" parameters.
+      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name   the system property name.
       * @param   def   a default value.
@@ -195,6 +199,7 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Integer#getInteger(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
+      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
