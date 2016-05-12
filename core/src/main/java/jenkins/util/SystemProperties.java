@@ -92,8 +92,8 @@ public class SystemProperties {
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
-                return value;
             }
+            return value;
         }
         
         value = tryGetValueFromContext(key);
@@ -127,8 +127,8 @@ public class SystemProperties {
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
-                return value;
             }
+            return value;
         } 
         
         value = tryGetValueFromContext(key);
