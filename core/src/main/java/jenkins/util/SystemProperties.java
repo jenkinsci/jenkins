@@ -28,6 +28,7 @@ import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Centralizes calls to {@link System#getProperty()} and related calls.
@@ -82,9 +83,6 @@ public class SystemProperties {
      * @return     the string value of the system property,
      *             or {@code null} if there is no property with that key.
      *
-     * @exception  SecurityException if a security manager exists and its
-     *             {@link SecurityManager#checkPropertyAccess(java.lang.String)} method doesn't allow
-     *             accessing to the specified system property.
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.
      */
@@ -94,20 +92,20 @@ public class SystemProperties {
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
-            }
-        } else if (theContext != null) {
-            value = theContext.getInitParameter(key);
-            if (value != null) {
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[] {key, value});
-                }
-            }
-        } else {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
+                return value;
             }
         }
-        return value;
+        
+        value = tryGetValueFromContext(key);
+        if (value != null) {
+            LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            return value;
+        }
+        
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.log(Level.CONFIG, "Property (not found): {0} => {1}", new Object[] {key, value});
+        }
+        return null;
     }
 
     /**
@@ -120,9 +118,6 @@ public class SystemProperties {
      * @return     the string value of the system property,
      *             or {@code null} if there is no property with that key.
      *
-     * @exception  SecurityException  if a security manager exists and its
-     *             {@link SecurityManager#checkPropertyAccess(java.lang.String)} method doesn't allow
-     *              access to the specified system property.
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.
      */
@@ -132,22 +127,21 @@ public class SystemProperties {
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
+                return value;
             }
-        } else if (theContext != null) {
-            value = theContext.getInitParameter(key);
-            if (value != null) {
-                if(LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[] {key, value});
-                }
-            }
+        } 
+        
+        value = tryGetValueFromContext(key);
+        if (value != null) {
+            LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            return value;
         }
-        if (value == null) {
-            value = def;
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (default): {0} => {1}", new Object[] {key, value});
-            }
+        
+        value = def;
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.log(Level.CONFIG, "Property (default): {0} => {1}", new Object[] {key, value});
         }
-        return value;        
+        return value;
     }
 
     /**
@@ -239,5 +233,21 @@ public class SystemProperties {
      */
     public static void initialize(ServletContext context) {
         theContext = context;
+    }
+    
+    @CheckForNull
+    private static String tryGetValueFromContext(String key) {
+        if (StringUtils.isNotBlank(key) && theContext != null) {
+            try {
+                String value = theContext.getInitParameter(key);
+                if (value != null) {
+                    return value;
+                }
+            } catch (SecurityException ex) {
+                // Log exception and go on
+                LOGGER.log(Level.CONFIG, "Access to the property {0} is prohibited", key);
+            }
+        }
+        return null;
     }
 }
