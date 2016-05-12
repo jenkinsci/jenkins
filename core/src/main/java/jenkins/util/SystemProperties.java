@@ -98,7 +98,9 @@ public class SystemProperties {
         
         value = tryGetValueFromContext(key);
         if (value != null) {
-            LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            }
             return value;
         }
         
@@ -133,7 +135,9 @@ public class SystemProperties {
         
         value = tryGetValueFromContext(key);
         if (value != null) {
-            LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            }
             return value;
         }
         
@@ -220,7 +224,9 @@ public class SystemProperties {
                 return Integer.decode(v);
             } catch (NumberFormatException e) {
                 // Ignore, fallback to default
-                LOGGER.log(Level.CONFIG, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
+                }
             }
         }
         return def;
