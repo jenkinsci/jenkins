@@ -2391,7 +2391,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getEntryID(Run entry) {
             return "tag:" + "hudson.dev.java.net,"
                 + entry.getTimestamp().get(Calendar.YEAR) + ":"
-                + entry.getParent().getName()+':'+entry.getId();
+                + entry.getParent().getFullName()+':'+entry.getId();
         }
 
         public String getEntryDescription(Run entry) {
