@@ -515,8 +515,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         if (from == null
                 && request != null
                 && request.getRequestURI() != null
-                && request.getRequestURI().equals("/loginError")
-                && request.getRequestURI().equals("/login")) {
+                && !request.getRequestURI().equals("/loginError")
+                && !request.getRequestURI().equals("/login")) {
 
                 from = request.getRequestURI();
         }
