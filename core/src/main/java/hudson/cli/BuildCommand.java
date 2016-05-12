@@ -143,9 +143,10 @@ public class BuildCommand extends CLICommand {
 
         if (checkSCM) {
             SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
-            if (item != null && !item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges()) {
+            if (item == null)
+                throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
+            if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges())
                 return 0;
-            }
         }
 
         if (!job.isBuildable()) {
