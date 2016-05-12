@@ -45,6 +45,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -201,7 +202,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return "my-views";
     }
 
-    @Extension
+    @Extension @Symbol("myView")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
         @Override
@@ -242,7 +243,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.getInstance().getMyViewsTabBar();
     }
     
-    @Extension
+    @Extension @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
 		public String getDisplayName() {

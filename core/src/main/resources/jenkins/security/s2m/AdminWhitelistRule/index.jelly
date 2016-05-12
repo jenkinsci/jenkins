@@ -26,14 +26,14 @@ THE SOFTWARE.
 <l:layout title="${%Whitelist}" permission="${app.RUN_SCRIPTS}">
   <st:include page="sidepanel.jelly" it="${app}"/>
   <l:main-panel>
-    <h1>${%Slave &#8594; Master Access Control}</h1>
+    <h1>${%Agent &#8594; Master Access Control}</h1>
 
     <p>
-      Jenkins master is now more strict about what commands its slaves can send to the master.
+      Jenkins master is now more strict about what commands its agents can send to the master.
       Unfortunately, this prevents some plugins from functioning correctly, as those plugins do not
-      specify which commands are open for slaves to execute and which ones are not.
+      specify which commands are open for agents to execute and which ones are not.
       While plugin developers work on updating this,
-      as an administrator, you can mark commands as OK for slaves to execute (aka "whitelisting".)
+      as an administrator, you can mark commands as OK for agents to execute (aka "whitelisting".)
     </p>
     <div class="warning" style="margin:1em">
       Please see <a href="http://jenkins-ci.org/security-144">the discussion of this feature</a> to
@@ -41,8 +41,8 @@ THE SOFTWARE.
     </div>
     <j:if test="${it.masterKillSwitch}">
       <div class="warning" style="margin:1em">
-        The slave &#8594; master access control subsystem is currently disabled.
-        This is unsafe if you have slaves from other less trusted people.
+        The agent &#8594; master access control subsystem is currently disabled.
+        This is unsafe if you have agents from other less trusted people.
         You can put it back on from <a href="${rootURL}/configureSecurity">Global Security Configuration UI</a>
       </div>
     </j:if>
@@ -50,7 +50,7 @@ THE SOFTWARE.
     <form method="post" action="submit">
       <h2>Currently Whitelisted Commands</h2>
       <p>
-        The following commands are currently whitelisted for slaves to execute them on the master.
+        The following commands are currently whitelisted for agents to execute them on the master.
         Type in any fully-qualified class names to white list them:
       </p>
       <textarea id="whitelist" name="whitelist" style="width:100%; height:5em">${it.whitelisted.read()}</textarea>
@@ -60,8 +60,8 @@ THE SOFTWARE.
       <j:if test="${!empty(rejectedList)}">
         <h2>Currently Rejected Commands</h2>
         <p>
-          Slaves have attempted to use the following functionalities but the plugins that implement them
-          did not specify whether they are usable from slaves or not. Check ones you want to whitelist:
+          Agents have attempted to use the following functionalities but the plugins that implement them
+          did not specify whether they are usable from agents or not. Check ones you want to whitelist:
         </p>
         <ul style="list-style:none">
           <j:forEach var="r" items="${rejectedList}">
@@ -86,7 +86,7 @@ THE SOFTWARE.
 
       <h2>File Access Rules</h2>
       <p>
-        The following rules control which part of <tt>$JENKINS_HOME</tt> can be access from slaves:
+        The following rules control which part of <tt>$JENKINS_HOME</tt> can be access from agents:
       </p>
       <textarea id="filePathRules" name="filePathRules" style="width:100%; height:5em">${it.filePathRules.read()}</textarea>
       <p>

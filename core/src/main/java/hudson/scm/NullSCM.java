@@ -32,6 +32,7 @@ import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -58,7 +59,7 @@ public class NullSCM extends SCM {
         return NullChangeLogParser.INSTANCE;
     }
 
-    @Extension(ordinal = Integer.MAX_VALUE)
+    @Extension(ordinal = Integer.MAX_VALUE) @Symbol("none")
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
             super(null);

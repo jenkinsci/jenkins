@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Blocks slaves from writing to files on the master by default (and also provide the kill switch.)
+ * Blocks agents from writing to files on the master by default (and also provide the kill switch.)
  */
 @Restricted(DoNotUse.class) // impl
 @Extension public class DefaultFilePathFilter extends ChannelConfigurator {
@@ -54,7 +54,7 @@ import java.util.logging.Logger;
         new ReflectiveFilePathFilter() {
             protected boolean op(String op, File f) throws SecurityException {
                 if (BYPASS) {
-                    LOGGER.log(Level.FINE, "slave allowed to {0} {1}", new Object[] {op, f});
+                    LOGGER.log(Level.FINE, "agent allowed to {0} {1}", new Object[] {op, f});
                     return true;
                 } else {
                     return false;

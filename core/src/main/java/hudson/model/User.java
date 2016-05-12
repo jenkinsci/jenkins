@@ -52,7 +52,10 @@ import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jenkinsci.Symbol;
 import org.springframework.dao.DataAccessException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -74,6 +77,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -152,9 +156,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Nonnull
     public static IdStrategy idStrategy() {
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return IdStrategy.CASE_INSENSITIVE;
-        }
         SecurityRealm realm = j.getSecurityRealm();
         if (realm == null) {
             return IdStrategy.CASE_INSENSITIVE;
@@ -343,7 +344,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is used to avoid null {@link User} instance.
      */
     public static @Nonnull User getUnknown() {
-        return get(UKNOWN_USERNAME);
+        return getById(UKNOWN_USERNAME, true);
     }
 
     /**
@@ -477,6 +478,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Gets the {@link User} object by its id or full name.
+     * Use {@link #getById} when you know you have an ID.
      */
     public static @Nonnull User get(String idOrFullName) {
         return get(idOrFullName,true);
@@ -504,7 +506,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
         // Since we already know this is a name, we can just call getOrCreate with the name directly.
         String id = a.getName();
-        return getOrCreate(id, id, true);
+        return getById(id, true);
+    }
+
+    /**
+     * Gets the {@link User} object by its <code>id</code>
+     *
+     * @param id
+     *            the id of the user to retrieve and optionally create if it does not exist.
+     * @param create
+     *            If <code>true</code>, this method will never return <code>null</code> for valid input (by creating a
+     *            new {@link User} object if none exists.) If <code>false</code>, this method will return
+     *            <code>null</code> if {@link User} object with the given id doesn't exist.
+     * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
+     *         and the user does not exist.
+     */
+    public static @Nullable User getById(String id, boolean create) {
+        return getOrCreate(id, id, create);
     }
 
     private static volatile long lastScanned;
@@ -907,11 +925,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     
     public Object getDynamic(String token) {
         for(Action action: getTransientActions()){
-            if(action.getUrlName().equals(token))
+            if(Objects.equals(action.getUrlName(), token))
                 return action;
         }
         for(Action action: getPropertyActions()){
-            if(action.getUrlName().equals(token))
+            if(Objects.equals(action.getUrlName(), token))
                 return action;
         }
         return null;
@@ -981,7 +999,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Resolve user ID from full name
      */
-    @Extension
+    @Extension @Symbol("fullName")
     public static class FullNameIdResolver extends CanonicalIdResolver {
 
         @Override
@@ -996,6 +1014,58 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         public int getPriority() {
             return -1; // lower than default
         }
+    }
+
+
+    /**
+     * Tries to verify if an ID is valid.
+     * If so, we do not want to even consider users who might have the same full name.
+     */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
+
+        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE = Boolean.parseBoolean(System.getProperty(User.class.getName() + ".SECURITY_243_FULL_DEFENSE", "true"));
+
+        private static final ThreadLocal<Boolean> resolving = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return false;
+            }
+        };
+
+        @Override
+        public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
+            User existing = getById(idOrFullName, false);
+            if (existing != null) {
+                return existing.getId();
+            }
+            if (SECURITY_243_FULL_DEFENSE) {
+                Jenkins j = Jenkins.getInstance();
+                if (j != null) {
+                    if (!resolving.get()) {
+                        resolving.set(true);
+                        try {
+                            return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
+                        } catch (UsernameNotFoundException x) {
+                            LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                        } catch (DataAccessException x) {
+                            LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
+                        } finally {
+                            resolving.set(false);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public int getPriority() {
+            // should always come first so that ID that are ids get mapped correctly
+            return Integer.MAX_VALUE;
+        }
+
     }
 
     /**

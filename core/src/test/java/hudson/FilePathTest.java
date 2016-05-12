@@ -342,7 +342,7 @@ public class FilePathTest {
     }
             
     /**
-     * Checks that big files (>8GB) can be archived and then unpacked.
+     * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
      * The actual file size limit is 8589934591 bytes.
      * @throws Exception test failure

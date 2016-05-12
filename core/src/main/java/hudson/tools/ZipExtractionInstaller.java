@@ -41,6 +41,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -86,7 +88,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
         }
     }
 
-    @Extension
+    @Extension @Symbol("zip")
     public static class DescriptorImpl extends ToolInstallerDescriptor<ZipExtractionInstaller> {
 
         public String getDisplayName() {

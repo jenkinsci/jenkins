@@ -128,7 +128,7 @@ import org.jenkinsci.remoting.RoleSensitive;
  *
  * <p>
  * Unlike {@link File}, which always implies a file path on the current computer,
- * {@link FilePath} represents a file path on a specific slave or the master.
+ * {@link FilePath} represents a file path on a specific agent or the master.
  *
  * Despite that, {@link FilePath} can be used much like {@link File}. It exposes
  * a bunch of operations (and we should add more operations as long as they are
@@ -192,19 +192,19 @@ public final class FilePath implements Serializable {
     /**
      * When this {@link FilePath} represents the remote path,
      * this field is always non-null on master (the field represents
-     * the channel to the remote slave.) When transferred to a slave via remoting,
+     * the channel to the remote agent.) When transferred to a agent via remoting,
      * this field reverts back to null, since it's transient.
      *
      * When this {@link FilePath} represents a path on the master,
-     * this field is null on master. When transferred to a slave via remoting,
+     * this field is null on master. When transferred to a agent via remoting,
      * this field becomes non-null, representing the {@link Channel}
      * back to the master.
      *
-     * This is used to determine whether we are running on the master or the slave.
+     * This is used to determine whether we are running on the master or the agent.
      */
     private transient VirtualChannel channel;
 
-    // since the platform of the slave might be different, can't use java.io.File
+    // since the platform of the agent might be different, can't use java.io.File
     private final String remote;
 
     /**
@@ -260,7 +260,7 @@ public final class FilePath implements Serializable {
             return base.remote+'/'+rel.replace('\\','/');
         } else {
             // need this replace, see Slave.getWorkspaceFor and AbstractItem.getFullName, nested jobs on Windows
-            // slaves will always have a rel containing at least one '/' character. JENKINS-13649
+            // agents will always have a rel containing at least one '/' character. JENKINS-13649
             return base.remote+'\\'+rel.replace('/','\\');
         }
     }
@@ -803,14 +803,14 @@ public final class FilePath implements Serializable {
                 listener.getLogger().println(message);
 
             if (isRemote()) {
-                // First try to download from the slave machine.
+                // First try to download from the agent machine.
                 try {
                     act(new Unpack(archive));
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
                     if (listener != null) {
-                        x.printStackTrace(listener.error("Failed to download " + archive + " from slave; will retry from master"));
+                        x.printStackTrace(listener.error("Failed to download " + archive + " from agent; will retry from master"));
                     }
                 }
             }
@@ -1134,7 +1134,7 @@ public final class FilePath implements Serializable {
      * @since 1.571
      */
     public @CheckForNull Computer toComputer() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
             for (Computer c : j.getComputers()) {
                 if (getChannel()==c.getChannel()) {

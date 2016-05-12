@@ -242,7 +242,7 @@ public class JenkinsTest {
         j.submit(f);
 
         // build a dummy project
-        MavenModuleSet m = j.createMavenProject();
+        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
         m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
         MavenModuleSetBuild b = m.scheduleBuild2(0).get();
 

@@ -26,16 +26,17 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import org.jenkinsci.Symbol;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 200)
+@Extension(ordinal = Integer.MAX_VALUE - 200) @Symbol("configure")
 public class ConfigureLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.png";
+        return "gear2.png";
     }
 
     public String getDisplayName() {

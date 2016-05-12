@@ -124,11 +124,11 @@ public class CopyJobCommandTest {
             }
         });
         copyJobCommand.setTransportAuth(User.get("alice").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
         copyJobCommand.setTransportAuth(User.get("bob").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
         copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
         copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));

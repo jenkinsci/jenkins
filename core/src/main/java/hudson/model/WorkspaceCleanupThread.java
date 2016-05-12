@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.FilePath;
 import jenkins.util.SystemProperties;
 import hudson.Util;
+import hudson.slaves.WorkspaceList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,13 +38,14 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
+import org.jenkinsci.Symbol;
 
 /**
- * Clean up old left-over workspaces from slaves.
+ * Clean up old left-over workspaces from agents.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("workspaceCleanup")
 public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     public WorkspaceCleanupThread() {
         super("Workspace clean-up");
@@ -90,6 +92,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
                         ws.deleteRecursive();
+                        WorkspaceList.tempDir(ws).deleteRecursive();
                     } catch (IOException x) {
                         x.printStackTrace(listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     } catch (InterruptedException x) {

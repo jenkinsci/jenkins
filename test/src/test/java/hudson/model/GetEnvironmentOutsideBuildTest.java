@@ -16,6 +16,7 @@ import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * Tests that getEnvironment() calls outside of builds are safe.
@@ -51,8 +52,8 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     }
 
     private MavenModuleSet createSimpleMavenProject() throws Exception {
-        MavenModuleSet project = createMavenProject();
-        MavenInstallation mi = configureMaven3();
+        MavenModuleSet project = jenkins.createProject(MavenModuleSet.class, "mms");
+        MavenInstallation mi = ToolInstallations.configureMaven3();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
         project.setMaven(mi.getName());
@@ -78,7 +79,7 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     }
 
     public void testMatrix() throws Exception {
-        MatrixProject createMatrixProject = createMatrixProject();
+        MatrixProject createMatrixProject = jenkins.createProject(MatrixProject.class, "mp");
 
         assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
     }

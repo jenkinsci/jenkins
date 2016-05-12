@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import net.sf.json.JSONObject;
@@ -72,7 +73,9 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
         return new BooleanParameterValue(getName(), defaultValue, getDescription());
     }
 
-    @Extension
+    // unlike all the other ParameterDescriptors, using 'booleanParam' as the primary
+    // to avoid picking the Java reserved word "boolean" as the primary identifier
+    @Extension @Symbol({"booleanParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

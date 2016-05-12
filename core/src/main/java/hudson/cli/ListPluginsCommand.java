@@ -47,7 +47,7 @@ public class ListPluginsCommand extends CLICommand {
     public String name;
 
     protected int run() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         PluginManager pluginManager = h.getPluginManager();
 
         if (this.name != null) {
@@ -57,7 +57,7 @@ public class ListPluginsCommand extends CLICommand {
                 printPlugin(plugin, plugin.getShortName().length(), plugin.getDisplayName().length());
             }
             else {
-                stderr.println(String.format("No plugin with the name '%s' found", this.name));
+                throw new IllegalArgumentException("No plugin with the name '" + name + "' found");
             }
         }
         else {

@@ -25,7 +25,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("TCP port for JNLP slave agents"), field:"slaveAgentPort") {
+                f.entry (title:_("TCP port for JNLP agents"), field:"slaveAgentPort") {
                     f.serverTcpPort()
                 }
 

@@ -53,6 +53,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -249,7 +250,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
     }
 
-    @Extension
+    @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();

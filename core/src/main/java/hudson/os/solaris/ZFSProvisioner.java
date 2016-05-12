@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.Serializable;
 
+import org.jenkinsci.Symbol;
 import org.jvnet.solaris.libzfs.LibZFS;
 import org.jvnet.solaris.libzfs.ZFSFileSystem;
 
@@ -59,7 +60,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
                 ZFSFileSystem fs = libzfs.getFileSystemByMountPoint(f);
                 if(fs!=null)    return fs.getName();
 
-                // TODO: for now, only support slaves that are already on ZFS.
+                // TODO: for now, only support agents that are already on ZFS.
                 throw new IOException("Not on ZFS");
             }
         });
@@ -111,7 +112,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         throw new UnsupportedOperationException();
     }
 
-    @Extension
+    @Extension @Symbol("zfs")
     public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
         public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             // TODO

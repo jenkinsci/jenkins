@@ -71,6 +71,9 @@ public final class WorkUnit {
 
     public void setExecutor(@CheckForNull Executor e) {
         executor = e;
+        if (e != null) {
+            context.future.addExecutor(e);
+        }
     }
 
     /**

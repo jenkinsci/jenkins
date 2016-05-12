@@ -35,7 +35,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.CauseOfBlockage;
-import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -73,7 +72,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
- * Base type of Jenkins slaves (although in practice, you probably extend {@link Slave} to define a new slave type).
+ * Base type of Jenkins agents (although in practice, you probably extend {@link Slave} to define a new agent type).
  *
  * <p>
  * As a special case, {@link Jenkins} extends from here.
@@ -84,10 +83,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  * <p>
  * There is no URL binding for {@link Node}. {@link Computer} and {@link TransientComputerActionFactory} must
- * be used to associate new {@link Action}s to slaves.
+ * be used to associate new {@link Action}s to agents.
  *
  * @author Kohsuke Kawaguchi
- * @see NodeMonitor
  * @see NodeDescriptor
  * @see Computer
  */
@@ -97,7 +95,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
     /**
-     * Newly copied slaves get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
+     * Newly copied agents get this flag set, so that Jenkins doesn't try to start/remove this node until its configuration
      * is saved once.
      */
     protected volatile transient boolean holdOffLaunchUntilSave;
@@ -130,7 +128,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
         // for all other cases we do not know where to persist the node record and hence we follow the default
         // no-op of a Saveable.NOOP
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             jenkins.updateNode(this);
         }
@@ -143,7 +141,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      "" if this is master
      */
     @Exported(visibility=999)
-    public abstract @Nonnull String getNodeName();
+    @Nonnull
+    public abstract String getNodeName();
 
     /**
      * When the user clones a {@link Node}, Hudson uses this method to change the node name right after
@@ -196,7 +195,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *      this method can return null if there's no {@link Computer} object for this node,
      *      such as when this node has no executors at all.
      */
-    public final @CheckForNull Computer toComputer() {
+    @CheckForNull
+    public final Computer toComputer() {
         AbstractCIBase ciBase = Jenkins.getInstance();
         return ciBase.getComputer(this);
     }
@@ -206,7 +206,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *
      * This is just a convenience method for {@link Computer#getChannel()} with null check.
      */
-    public final @CheckForNull VirtualChannel getChannel() {
+    @CheckForNull
+    public final VirtualChannel getChannel() {
         Computer c = toComputer();
         return c==null ? null : c.getChannel();
     }
@@ -218,7 +219,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     protected abstract Computer createComputer();
 
     /**
-     * Returns {@code true} if the node is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * Returns {@code true} if the node is accepting tasks. Needed to allow agents programmatic suspension of task
      * scheduling that does not overlap with being offline. Called by {@link Computer#isAcceptingTasks()}.
      * This method is distinct from {@link Computer#isAcceptingTasks()} as sometimes the {@link Node} concrete
      * class may not have control over the {@link hudson.model.Computer} concrete class associated with it.
@@ -283,7 +284,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * {@link LabelFinder} extension point.
      *
      * This method has a side effect of updating the hudson-wide set of labels
-     * and should be called after events that will change that - e.g. a slave
+     * and should be called after events that will change that - e.g. a agent
      * connecting.
      */
     @Exported
@@ -501,7 +502,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public abstract NodeDescriptor getDescriptor();
 
     /**
-     * Estimates the clock difference with this slave.
+     * Estimates the clock difference with this agent.
      *
      * @return
      *      always non-null.
@@ -526,7 +527,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public abstract Callable<ClockDifference,IOException> getClockDifferenceCallable();
 
     /**
-     * Constants that control how Hudson allocates jobs to slaves.
+     * Constants that control how Hudson allocates jobs to agents.
      */
     public enum Mode {
         NORMAL(Messages._Node_Mode_NORMAL()),

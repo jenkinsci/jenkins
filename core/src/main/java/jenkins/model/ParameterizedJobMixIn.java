@@ -177,6 +177,10 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             delay = new TimeDuration(asJob().getQuietPeriod());
         }
 
+        if (!asJob().isBuildable()) {
+            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR, new IOException(asJob().getFullName() + " is not buildable"));
+        }
+
         // if a build is parameterized, let that take over
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
         if (pp != null && !req.getMethod().equals("POST")) {
@@ -192,9 +196,6 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return;
         }
 
-        if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR, new IOException(asJob().getFullName() + " is not buildable"));
-        }
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(asJob(), delay.getTime(), getBuildCause(asJob(), req)).getItem();
         if (item != null) {

@@ -36,6 +36,8 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -578,13 +580,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 BindInterceptor oldInterceptor = req.getBindInterceptor();
                 try {
                     NewInstanceBindInterceptor interceptor;
-                    if ((oldInterceptor instanceof NewInstanceBindInterceptor)) {
+                    if (oldInterceptor instanceof NewInstanceBindInterceptor) {
                         interceptor = (NewInstanceBindInterceptor) oldInterceptor;
                     } else {
                         interceptor = new NewInstanceBindInterceptor(oldInterceptor);
                         req.setBindInterceptor(interceptor);
                     }
-                    interceptor.processed.put(formData, null);
+                    interceptor.processed.put(formData, true);
                     return verifyNewInstance(req.bindJSON(clazz, formData));
                 } finally {
                     req.setBindInterceptor(oldInterceptor);
@@ -592,12 +594,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
             throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (IllegalAccessException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
     }
 
@@ -612,7 +610,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     private static class NewInstanceBindInterceptor extends BindInterceptor {
 
         private final BindInterceptor oldInterceptor;
-        private final Map<JSONObject,Void> processed = new IdentityHashMap<>();
+        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
 
         NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
             LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
@@ -628,7 +626,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
-            if (processed.containsKey(json)) {
+            if (Boolean.TRUE.equals(processed.put(json, true))) {
                 LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
                 return false;
             }
@@ -807,7 +805,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public String getGlobalConfigPage() {
         return getViewPage(clazz, getPossibleViewNames("global"), null);
     }
-    
+
+    /**
+     * Define the global configuration category the global config of this Descriptor is in.
+     *
+     * @return never null, always the same value for a given instance of {@link Descriptor}.
+     *
+     * @since TODO, used to be in {@link GlobalConfiguration} before that.
+     */
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
+    }
+
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }

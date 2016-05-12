@@ -28,6 +28,9 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
 
     protected int run() throws Exception {
     	Run run = job.getBuildByNumber(number);
+        if (run == null)
+            throw new IllegalArgumentException("No such build #"+number);
+
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {

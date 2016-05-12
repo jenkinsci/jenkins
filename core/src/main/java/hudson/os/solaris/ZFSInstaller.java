@@ -272,9 +272,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                     JavaVMArguments args = JavaVMArguments.current();
                     args.setSystemProperty(ZFSInstaller.class.getName()+".migrate",datasetName);
                     Daemon.selfExec(args);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.SEVERE, "Restart failed",e);
-                } catch (IOException e) {
+                } catch (InterruptedException | IOException e) {
                     LOGGER.log(Level.SEVERE, "Restart failed",e);
                 }
             }

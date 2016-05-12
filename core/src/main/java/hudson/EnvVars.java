@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  *
  * <p>
  * In Jenkins, often we need to build up "environment variable overrides"
- * on master, then to execute the process on slaves. This causes a problem
+ * on master, then to execute the process on agents. This causes a problem
  * when working with variables like <tt>PATH</tt>. So to make this work,
  * we introduce a special convention <tt>PATH+FOO</tt> &mdash; all entries
  * that starts with <tt>PATH+</tt> are merged and prepended to the inherited
@@ -134,7 +134,7 @@ public class EnvVars extends TreeMap<String,String> {
             String v = get(realKey);
             if(v==null) v=value;
             else {
-                // we might be handling environment variables for a slave that can have different path separator
+                // we might be handling environment variables for a agent that can have different path separator
                 // than the master, so the following is an attempt to get it right.
                 // it's still more error prone that I'd like.
                 char ch = platform==null ? File.pathSeparatorChar : platform.pathSeparator;
@@ -421,8 +421,8 @@ public class EnvVars extends TreeMap<String,String> {
      * variables only when you access this from the master.
      *
      * <p>
-     * If you access this field from slaves, then this is the environment
-     * variable of the slave agent.
+     * If you access this field from agents, then this is the environment
+     * variable of the agent agent.
      */
     public static final Map<String,String> masterEnvVars = initMaster();
 

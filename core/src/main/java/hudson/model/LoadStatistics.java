@@ -32,6 +32,7 @@ import hudson.model.queue.Tasks;
 import hudson.util.ColorPalette;
 import hudson.util.NoOverlapCategoryAxis;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -381,7 +382,7 @@ public abstract class LoadStatistics {
     /**
      * Periodically update the load statistics average.
      */
-    @Extension
+    @Extension @Symbol("loadStatistics")
     public static class LoadStatisticsUpdater extends PeriodicWork {
         public long getRecurrencePeriod() {
             return CLOCK;
@@ -391,7 +392,7 @@ public abstract class LoadStatistics {
             Jenkins j = Jenkins.getInstance();
             List<Queue.BuildableItem> bis = j.getQueue().getBuildableItems();
 
-            // update statistics on slaves
+            // update statistics on agents
             for( Label l : j.getLabels() ) {
                 l.loadStatistics.updateCounts(l.loadStatistics.computeSnapshot(bis));
             }
@@ -422,7 +423,7 @@ public abstract class LoadStatistics {
         private static final long serialVersionUID = 1L;
 
         /**
-         * The total number of executors that Jenkins currently knows, this includes all off-line slaves.
+         * The total number of executors that Jenkins currently knows, this includes all off-line agents.
          */
         private final int definedExecutors;
         /**
@@ -468,7 +469,7 @@ public abstract class LoadStatistics {
         }
 
         /**
-          * The total number of executors that Jenkins currently knows, this includes all off-line slaves.
+          * The total number of executors that Jenkins currently knows, this includes all off-line agents.
           */
         @Exported
         public int getDefinedExecutors() {
