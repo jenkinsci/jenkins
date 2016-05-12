@@ -23,6 +23,7 @@
  */
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -52,12 +53,13 @@ import javax.servlet.ServletContext;
  * because <code>EnvVars.java</code> is only for build variables, not Jenkins itself variables.
  *
  * @author Johannes Ernst
- * @since 1.639
+ * @since TODO
  */
 public class SystemProperties {
     /**
      * The ServletContext to get the "init" parameters from.
      */
+    @CheckForNull
     private static ServletContext theContext;
 
     /**
@@ -86,6 +88,7 @@ public class SystemProperties {
      *             <code>null</code>.
      * @exception  IllegalArgumentException if <code>key</code> is empty.
      */
+    @CheckForNull
     public static String getString(String key) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
@@ -124,7 +127,8 @@ public class SystemProperties {
      *             <code>null</code>.
      * @exception  IllegalArgumentException if <code>key</code> is empty.
      */
-    public static String getString(String key, String def) {
+    @CheckForNull
+    public static String getString(String key, @CheckForNull String def) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
@@ -151,7 +155,7 @@ public class SystemProperties {
       * Returns {@code true} if the system property
       * named by the argument exists and is equal to the string
       * {@code "true"}. If the system property does not exist, return
-      * {@code "true"} if a property by this name exists in the <code>ServletContext</code>
+      * {@code "false"}. if a property by this name exists in the <code>ServletContext</code>
       * and is equal to the string {@code "true"}.
       * 
       * This behaves just like <code>Boolean.getBoolean(String)</code>, except that it
@@ -198,6 +202,7 @@ public class SystemProperties {
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
       */
+    @CheckForNull
     public static Integer getInteger(String name) {
         return getInteger(name, null);
     }
@@ -221,6 +226,8 @@ public class SystemProperties {
             try {
                 return Integer.decode(v);
             } catch (NumberFormatException e) {
+                // Ignore, fallback to default
+                LOGGER.log(Level.CONFIG, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
             }
         }
         return def;
