@@ -83,7 +83,7 @@ public class JSONSignatureValidator {
             // this is for computing a signature
             Signature sig = Signature.getInstance("SHA1withRSA");
             if (certs.isEmpty()) {
-                return FormValidation.error("No certificate found in " + name + ". Canot verify the signature");
+                return FormValidation.error("No certificate found in " + name + ". Cannot verify the signature");
             } else {    
                 sig.initVerify(certs.get(0));
             }
