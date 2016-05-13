@@ -2,7 +2,6 @@
 <l:html norefresh="true" title="${it.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:main-panel>
     <div class="plugin-setup-wizard-container"></div>
-    <script src="${resURL}/${j.installWizardPath}.js" type="text/javascript"/>
-    <link rel="stylesheet" href="${resURL}/${j.installWizardPath}.css" type="text/css" />
+    <st:adjunct includes="${j.installWizardPath}" />
   </l:main-panel>
 </l:html>
