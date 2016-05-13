@@ -251,7 +251,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             return createDefaultUpdateCenter(config);
         }
         
-        LOGGER.log(Level.INFO, "Using the custom update center: {0}", requiredClassName);
+        LOGGER.log(Level.FINE, "Using the custom update center: {0}", requiredClassName);
         try {
             final Class<?> clazz = Class.forName(requiredClassName).asSubclass(UpdateCenter.class);
             if (!UpdateCenter.class.isAssignableFrom(clazz)) {
