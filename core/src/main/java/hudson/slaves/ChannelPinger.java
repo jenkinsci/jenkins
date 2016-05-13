@@ -108,8 +108,13 @@ public class ChannelPinger extends ComputerListener {
         final PingThread t = new PingThread(channel, interval * 60 * 1000) {
             protected void onDead(Throwable cause) {
                 try {
-                    for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
-                        pfa.onPingFailure(channel,cause);
+                    try {
+                        for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
+                            pfa.onPingFailure(channel,cause);
+                        }
+                    }
+                    catch (Exception e) {
+                        LOGGER.log(WARNING,"Failed to analyze ping failure on channel " + channel.getName());
                     }
                     if (isInClosed.get()) {
                         LOGGER.log(FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
