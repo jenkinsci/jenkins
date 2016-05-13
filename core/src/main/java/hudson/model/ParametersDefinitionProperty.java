@@ -66,22 +66,22 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
-    private List<ParameterDefinition> parameterDefinitions;
+    private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(@CheckForNull List<ParameterDefinition> parameterDefinitions) {
-        this.parameterDefinitions = (parameterDefinitions != null) ? parameterDefinitions : Collections.<ParameterDefinition>emptyList();
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new IllegalArgumentException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(@CheckForNull ParameterDefinition... parameterDefinitions) {
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
         this(parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : null);
     }
 
-    protected Object readResolve() {
-        if (parameterDefinitions == null) {
-            parameterDefinitions = Collections.emptyList();
-        }
-        return this;
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
     }
 
     @Deprecated
@@ -105,11 +105,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     public List<String> getParameterDefinitionNames() {
         return new AbstractList<String>() {
             public String get(int index) {
-                if (parameterDefinitions.get(index) != null) {
-                    return parameterDefinitions.get(index).getName();
-                } else {
-                    return null;
-                }
+                return parameterDefinitions.get(index).getName();
             }
 
             public int size() {
