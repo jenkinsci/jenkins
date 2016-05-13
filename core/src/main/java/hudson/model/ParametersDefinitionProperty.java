@@ -77,7 +77,10 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
-        this(parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : null);
+        if (parameterDefinitions == null) {
+            throw new IllegalArgumentException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
     }
 
     private Object readResolve() {
