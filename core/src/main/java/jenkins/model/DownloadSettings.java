@@ -34,6 +34,8 @@ import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
@@ -92,6 +94,7 @@ public final class DownloadSettings extends GlobalConfiguration {
 
     @Extension @Symbol("updateCenterCheck")
     public static final class DailyCheck extends AsyncPeriodicWork {
+        private static final Logger LOGGER = Logger.getLogger(DailyCheck.class.getName());
 
         public DailyCheck() {
             super("Download metadata");
@@ -122,7 +125,11 @@ public final class DownloadSettings extends GlobalConfiguration {
                 final long now = System.currentTimeMillis();
                 for (Downloadable d : Downloadable.all()) {
                     if (d.getDue() <= now) {
-                        d.updateNow();
+                        try {
+                            d.updateNow();
+                        } catch(Exception e) {
+                            LOGGER.log(Level.WARNING, String.format("Unable to update downloadable [%s]", d.getId()), e);
+                        }
                     }
                 }
                 return;
