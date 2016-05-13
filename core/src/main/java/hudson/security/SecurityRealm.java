@@ -489,9 +489,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     public static final SecurityRealm NO_AUTHENTICATION = new None();
 
     /**
-     * Perform a calculation where we should go back after sucessfull login
+     * Perform a calculation where we should go back after successful login
      *
-     * @return Encoded URI where we should go back after sucessfull login
+     * @return Encoded URI where we should go back after successful login
      *         or "/" if no way back or an issue occurred
      *
      * @since TODO
