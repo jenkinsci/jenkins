@@ -29,6 +29,7 @@ import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
+import hudson.model.DownloadService.Downloadable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
@@ -116,8 +117,17 @@ public final class DownloadSettings extends GlobalConfiguration {
                 }
             }
             if (!due) {
+                // JENKINS-32886: downloadables like the tool installer data may have never been tried if the plugin
+                // was installed "after a restart", so let's give them a try here.
+                final long now = System.currentTimeMillis();
+                for (Downloadable d : Downloadable.all()) {
+                    if (d.getDue() <= now) {
+                        d.updateNow();
+                    }
+                }
                 return;
             }
+            // This checks updates of the update sites and downloadables.
             HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
