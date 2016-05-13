@@ -5,19 +5,20 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^3.9.0",
-    "handlebars": "^3.0.3",
-    "hbsfy": "^2.4.1",
-    "jenkins-handlebars-rt": "^1.0.1",
     "@jenkins-cd/js-builder": "0.0.32",
     "@jenkins-cd/js-test": "1.1.2",
-    "@jenkins-cd/js-modules": "0.0.5",
     "jshint": "^2.9.2",
     "gulp-jshint": "^2.0.0"
   },
   "dependencies": {
-    "bootstrap-detached": "^3.3.5-v1",
-    "jenkins-js-modules": "^1.5.0",
+    "bootstrap-detached": "^3.3.4-v6",
+    "@jenkins-cd/js-modules": "0.0.5",
     "jquery-detached": "^2.1.4-v2",
-    "window-handle": "^1.0.0"
+    "window-handle": "^1.0.0",
+    "handlebars": "^4.0.5",
+    "moment": "^2.10.6"
+  },
+  "jenkinscd" : {
+    "extDependencies": ["bootstrap-detached", "handlebars", "moment"]
   }
 }
