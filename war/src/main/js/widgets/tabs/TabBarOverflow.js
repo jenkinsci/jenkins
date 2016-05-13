@@ -263,22 +263,28 @@ TabBarOverflow.prototype.onTabActivate = function(activatedTab) {
         return;
     }
 
-    if (this.activeTabIndex === 0 || lastActiveTab === undefined) {
-        // First time activating a tab. Just "slide back" to that tab i.e. show it
-        // and all tabs "forward" of it.
-        this.slideBackward(this.activeTabIndex);
-    } else {
-        // We need to decide if we want to "slide forward" or "slide backward".
-        // We do that based on what the last active tab was and if it was to the
-        // left (backward) or to the right (forward) of the newly activated tab.
-
-        if (this.activeTabIndex < lastActiveTab) {
-            // The newly activated tab it to the left (backward).
+    try {
+        if (this.activeTabIndex === 0 || lastActiveTab === undefined) {
+            // First time activating a tab. Just "slide back" to that tab i.e. show it
+            // and all tabs "forward" of it.
             this.slideBackward(this.activeTabIndex);
-        } else if (this.activeTabIndex > lastActiveTab) {
-            this.slideForward(this.activeTabIndex);
         } else {
-            // Do nothing
+            // We need to decide if we want to "slide forward" or "slide backward".
+            // We do that based on what the last active tab was and if it was to the
+            // left (backward) or to the right (forward) of the newly activated tab.
+
+            if (this.activeTabIndex < lastActiveTab) {
+                // The newly activated tab it to the left (backward).
+                this.slideBackward(this.activeTabIndex);
+            } else if (this.activeTabIndex > lastActiveTab) {
+                this.slideForward(this.activeTabIndex);
+            } else {
+                // Do nothing
+            }
         }
+    } finally {
+        // Toggle the overflow button visibility, making sure
+        // it is hidden if all tabs are visible.
+        this.toggleOverflowBtn();
     }
 };
