@@ -53,6 +53,7 @@ import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
 
 /**
@@ -84,7 +85,7 @@ public class InstallUtil {
         }
         
         // Support a 3-state flag for running or disabling the setup wizard
-        String shouldRunFlag = System.getProperty("jenkins.install.runSetupWizard");
+        String shouldRunFlag = SystemProperties.getString("jenkins.install.runSetupWizard");
         boolean shouldRun = "true".equalsIgnoreCase(shouldRunFlag);
         boolean shouldNotRun = "false".equalsIgnoreCase(shouldRunFlag);
         

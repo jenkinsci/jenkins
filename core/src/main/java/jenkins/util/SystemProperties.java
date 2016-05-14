@@ -24,11 +24,14 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Centralizes calls to {@link System#getProperty()} and related calls.
@@ -57,6 +60,8 @@ import org.apache.commons.lang.StringUtils;
  * @author Johannes Ernst
  * @since TODO
  */
+//TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
+@Restricted(NoExternalUse.class)
 public class SystemProperties {
     /**
      * The ServletContext to get the "init" parameters from.
@@ -120,12 +125,11 @@ public class SystemProperties {
      * @param      key   the name of the system property.
      * @param      def   a default value.
      * @return     the string value of the system property,
-     *             or {@code null} if there is no property with that key.
+     *             or {@code null} if the the property is missing and the default value is {@code null}.
      *
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.
      */
-    @CheckForNull
     public static String getString(String key, @CheckForNull String def) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
@@ -215,11 +219,13 @@ public class SystemProperties {
       * 
       * This behaves just like <code>Integer.getInteger(String,Integer)</code>, except that it
       * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
-      * return the default value.
+      * return the default value. 
       * 
       * @param   name property name.
       * @param   def   a default value.
       * @return  the {@code Integer} value of the property.
+      *          If the property is missing, return the default value.
+      *          Result may be {@code null} only if the default value is {@code null}.
       */
     public static Integer getInteger(String name, Integer def) {
         String v = getString(name);
