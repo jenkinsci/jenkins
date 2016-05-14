@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
@@ -145,7 +146,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 
-    private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+    private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
@@ -207,6 +208,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Connection status has not started yet.
          */
         PRECHECK,
+        /**
+         * Connection status check has been skipped.
+         * As example, it may happen if there is no connection check URL defined for the site.
+         * @since TODO
+         */
+        SKIPPED,
         /**
          * Connection status is being checked at this time.
          */
@@ -282,6 +289,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -1432,6 +1440,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
                     });
+                } else {
+                    LOGGER.log(WARNING, "Update site '{0}' does not declare the connection check URL. "
+                            + "Skipping the network availability check.", site.getId());
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.SKIPPED);
                 }
 
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
@@ -2138,7 +2150,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *      Use {@link UpdateSite#neverUpdate}
      */
     @Deprecated
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();
 

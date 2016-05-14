@@ -29,6 +29,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
+import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.slaves.CommandLauncher;
@@ -558,7 +559,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Determines the workspace root file name for those who really really need the shortest possible path name.
      */
-    private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
+    private static final String WORKSPACE_ROOT = SystemProperties.getString(Slave.class.getName()+".workspaceRoot","workspace");
 
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.

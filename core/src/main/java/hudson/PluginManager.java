@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
@@ -238,6 +239,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -557,9 +559,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
 
                 if (dependencyURL != null) {
-                    dependencySet.add(dependencyURL);
                     // And transitive deps...
                     addDependencies(dependencyURL, fromPath, dependencySet);
+                    // And then add the current plugin 
+                    dependencySet.add(dependencyURL);
                 }
             }
         }
@@ -879,7 +882,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Creates a hudson.PluginStrategy, looking at the corresponding system property.
      */
     protected PluginStrategy createPluginStrategy() {
-		String strategyName = System.getProperty(PluginStrategy.class.getName());
+		String strategyName = SystemProperties.getString(PluginStrategy.class.getName());
 		if (strategyName != null) {
 			try {
 				Class<?> klazz = getClass().getClassLoader().loadClass(strategyName);
@@ -1404,6 +1407,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
             FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
             if (v.kind != FormValidation.Kind.OK) {
@@ -1701,7 +1705,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     private static final Logger LOGGER = Logger.getLogger(PluginManager.class.getName());
 
-    public static boolean FAST_LOOKUP = !Boolean.getBoolean(PluginManager.class.getName()+".noFastLookup");
+    public static boolean FAST_LOOKUP = !SystemProperties.getBoolean(PluginManager.class.getName()+".noFastLookup");
 
     public static final Permission UPLOAD_PLUGINS = new Permission(Jenkins.PERMISSIONS, "UploadPlugins", Messages._PluginManager_UploadPluginsPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);
     public static final Permission CONFIGURE_UPDATECENTER = new Permission(Jenkins.PERMISSIONS, "ConfigureUpdateCenter", Messages._PluginManager_ConfigureUpdateCenterPermission_Description(),Jenkins.ADMINISTER,PermissionScope.JENKINS);

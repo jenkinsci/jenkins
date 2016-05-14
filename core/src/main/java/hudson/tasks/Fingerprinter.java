@@ -29,6 +29,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -83,7 +84,7 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Kohsuke Kawaguchi
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer, SimpleBuildStep {
-    public static boolean enableFingerprintsInDependencyGraph = Boolean.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
+    public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
     
     /**
      * Comma-separated list of files/directories to be fingerprinted.

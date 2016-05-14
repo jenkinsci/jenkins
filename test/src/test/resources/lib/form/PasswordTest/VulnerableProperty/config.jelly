@@ -1,8 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
-Matthew R. Harrah, Alan Harder
+Copyright 2016 CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"><b>${%login}</b></a>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry field="secret" title="secret">
+        <f:password/>
+    </f:entry>
 </j:jelly>

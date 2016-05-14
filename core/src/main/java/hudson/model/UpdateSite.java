@@ -60,6 +60,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -341,9 +342,11 @@ public class UpdateSite {
     }
 
     /**
-     * Returns an "always up" server for Internet connectivity testing, or null if we are going to skip the test.
+     * Gets a URL for the Internet connection check.
+     * @return  an "always up" server for Internet connectivity testing, or {@code null} if we are going to skip the test.
      */
     @Exported
+    @CheckForNull
     public String getConnectionCheckUrl() {
         Data dt = getData();
         if(dt==null)    return "http://www.google.com/";
@@ -912,6 +915,6 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

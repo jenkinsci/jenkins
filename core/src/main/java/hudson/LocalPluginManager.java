@@ -24,6 +24,7 @@
 
 package hudson;
 
+import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class LocalPluginManager extends PluginManager {
     @Override
     protected Collection<String> loadBundledPlugins() {
         // this is used in tests, when we want to override the default bundled plugins with .jpl (or .hpl) versions
-        if (System.getProperty("hudson.bundled.plugins") != null) {
+        if (SystemProperties.getString("hudson.bundled.plugins") != null) {
             return Collections.emptySet();
         }
 

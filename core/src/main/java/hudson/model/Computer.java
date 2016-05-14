@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -1280,7 +1281,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
-            return System.getProperty("host.name");
+            return SystemProperties.getString("host.name");
         }
         private static final long serialVersionUID = 1L;
     }
@@ -1707,7 +1708,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
+    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
