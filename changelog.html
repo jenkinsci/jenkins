@@ -98,8 +98,25 @@ Upcoming changes</a>
     (new <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">system property</a>)
     (<a href="https://github.com/jenkinsci/jenkins/pull/2297">pull 2297</a>)
   <li class=bug>
-    Tool installers now follow http redirects properly (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23507">issue 23507</a>)
-
+    Tool installers now follow http redirects properly. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23507">issue 23507</a>)
+  <li class=bug>
+    Remoting, scalability: Ensure that the unexporter cleans up whatever it can each GC sweep.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34213">issue 34213</a>)
+  <li class=bug>
+    Remoting: Force class load on UserRequest to prevent deadlocks on Windows nodes agents in the case of multiple classloaders.
+    (Controlled by <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">hudson.remoting.RemoteClassLoader.force</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19445">issue 19445</a>)
+  <li class=rfe>
+    Remoting: Allow Jenkins admins to adjust the socket timeout.
+    (Controlled by <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">hudson.remoting.Engine.socketTimeout</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34808">issue 34808</a>)
+  <li class=rfe>
+    Remoting: Allow disabling the remoting protocols individually. 
+    Allows working around compatibility issues like 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-34121">JENKINS-34121</a>.
+    (Controlled by <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">PROTOCOL_CLASS_NAME.disabled</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34819">issue 34819</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.3>What's new in 2.3</a> (2016/05/11)</h3>
