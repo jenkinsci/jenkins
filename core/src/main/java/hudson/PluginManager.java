@@ -311,11 +311,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         this.rootDir = rootDir;
         if(!rootDir.exists())
             rootDir.mkdirs();
-        String workDir = System.getProperty(PluginManager.class.getName()+".workDir");
-        if (workDir == null && context != null) {
-            workDir = context.getInitParameter(PluginManager.class.getName() + ".workDir");
-        }
-        this.workDir = workDir == null ? null : new File(workDir);
+        String workDir = SystemProperties.getString(PluginManager.class.getName()+".workDir");
+        this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
 
         strategy = createPluginStrategy();
 
