@@ -136,11 +136,19 @@ var createPluginSetupWizard = function(appendTarget) {
 			success.apply(this, arguments);
 		};
 	};
+	
+	var pluginList;
+	var allPluginNames;
+	var selectedPluginNames;
+	
+	// Initialize the plugin manager after connectivity checks
+	pluginManager.init(handleGenericError(function() {
+	  pluginList = pluginManager.plugins();
+	  allPluginNames = pluginManager.pluginNames();
+	  selectedPluginNames = pluginManager.recommendedPluginNames();
+	}));
 
 	// state variables for plugin data, selected plugins, etc.:
-	var pluginList = pluginManager.plugins();
-	var allPluginNames = pluginManager.pluginNames();
-	var selectedPluginNames = pluginManager.recommendedPluginNames();
 	var visibleDependencies = {};
 	var categories = [];
 	var availablePlugins = {};
@@ -900,7 +908,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				}
 				return;
 			}
-
+			
 			// check for updates when first loaded...
 			pluginManager.installStatus(handleGenericError(function(data) {
 				var jobs = data.jobs;
