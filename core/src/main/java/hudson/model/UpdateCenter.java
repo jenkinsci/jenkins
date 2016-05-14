@@ -158,7 +158,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * @since 1.483 - public property
      * @since TODO - configurable via system property
      */
-    public static final String ID_DEFAULT = System.getProperty(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
+    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
@@ -251,7 +251,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Nonnull
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
-        String requiredClassName = System.getProperty(UpdateCenter.class.getName()+".className", null);
+        String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
             // Use the defaul Update Center
             LOGGER.log(Level.FINE, "Using the default Update Center implementation");
