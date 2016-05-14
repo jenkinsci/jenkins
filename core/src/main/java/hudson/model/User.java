@@ -1025,7 +1025,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Restricted(NoExternalUse.class)
     public static class UserIDCanonicalIdResolver extends User.CanonicalIdResolver {
 
-        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE = Boolean.parseBoolean(System.getProperty(User.class.getName() + ".SECURITY_243_FULL_DEFENSE", "true"));
+        private static /* not final */ boolean SECURITY_243_FULL_DEFENSE = 
+                SystemProperties.getBoolean(User.class.getName() + ".SECURITY_243_FULL_DEFENSE", true);
 
         private static final ThreadLocal<Boolean> resolving = new ThreadLocal<Boolean>() {
             @Override

@@ -53,6 +53,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.util.SystemProperties;
 
 /**
  * Records the parameter values used for a build.
@@ -302,7 +303,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private boolean isSafeParameter(String name) {
         if (safeParameters == null) {
-            String paramNames = System.getProperty(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+            String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
             if (paramNames != null) {
                 safeParameters = Arrays.asList(paramNames.split(","));
             } else {
