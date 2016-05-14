@@ -50,6 +50,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
 import hudson.Util;
@@ -4616,7 +4617,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || SystemProperties.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;

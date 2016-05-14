@@ -125,6 +125,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
@@ -172,6 +173,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class Queue extends ResourceController implements Saveable {
 
     /**
+
      * Items that are waiting for its quiet period to pass.
      *
      * <p>

@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
@@ -1634,9 +1635,9 @@ public class Util {
     /**
      * On Unix environment that cannot run "ln", set this to true.
      */
-    public static boolean NO_SYMLINK = Boolean.getBoolean(Util.class.getName()+".noSymLink");
+    public static boolean NO_SYMLINK = SystemProperties.getBoolean(Util.class.getName()+".noSymLink");
 
-    public static boolean SYMLINK_ESCAPEHATCH = Boolean.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
+    public static boolean SYMLINK_ESCAPEHATCH = SystemProperties.getBoolean(Util.class.getName()+".symlinkEscapeHatch");
 
     /**
      * The number of times we will attempt to delete files/directory trees
