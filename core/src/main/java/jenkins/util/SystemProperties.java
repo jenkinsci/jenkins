@@ -74,9 +74,9 @@ public class SystemProperties implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(SystemProperties.class.getName());
 
     /**
-     * This class should never be instantiated.
+     * Public for the servlet container.
      */
-    private SystemProperties() {}
+    public SystemProperties() {}
 
     /**
      * Called by the servlet container to initialize the {@link ServletContext}.
