@@ -30,6 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Centralizes calls to {@link System#getProperty()} and related calls.
@@ -58,6 +60,8 @@ import org.apache.commons.lang.StringUtils;
  * @author Johannes Ernst
  * @since TODO
  */
+//TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
+@Restricted(NoExternalUse.class)
 public class SystemProperties {
     /**
      * The ServletContext to get the "init" parameters from.
