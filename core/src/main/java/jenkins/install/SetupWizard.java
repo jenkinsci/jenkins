@@ -210,6 +210,7 @@ public class SetupWizard {
 
     /*package*/ static void completeUpgrade(Jenkins jenkins) throws IOException {
         setCurrentLevel(Jenkins.getVersion());
+        //TODO: restore when https://github.com/jenkinsci/jenkins/pull/2281 gets merged
         // jenkins.getInstallState().proceedToNextState();
     }
     
@@ -257,16 +258,16 @@ public class SetupWizard {
             if (InstallState.UPGRADE.equals(Jenkins.getInstance().getInstallState())) {
                 JSONArray initialPluginData = getPlatformPluginUpdates();
                 if(initialPluginData != null) {
-                    return hudson.util.HttpResponses.okJSON(initialPluginData);
+                    return HttpResponses.okJSON(initialPluginData);
                 }
             } else {
                 JSONArray initialPluginData = getPlatformPluginList();
                 if(initialPluginData != null) {
-                    return hudson.util.HttpResponses.okJSON(initialPluginData);
+                    return HttpResponses.okJSON(initialPluginData);
                 }
             }
         }
-        return hudson.util.HttpResponses.okJSON();
+        return HttpResponses.okJSON();
     }
     
     /**
