@@ -1,5 +1,6 @@
 package jenkins.install;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
@@ -26,7 +27,9 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.BulkChange;
 import hudson.FilePath;
+import hudson.ProxyConfiguration;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
 import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -35,8 +38,21 @@ import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
 import hudson.util.VersionNumber;
+import java.io.File;
+import java.net.HttpRetryException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Iterator;
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import static org.apache.commons.io.FileUtils.readFileToString;
+import org.apache.commons.io.IOUtils;
+import static org.apache.commons.lang.StringUtils.defaultIfBlank;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -51,7 +67,7 @@ public class SetupWizard {
      */
     public static String initialSetupAdminUserName = "admin";
 
-    private final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
 
     private final Jenkins jenkins;
 
@@ -192,6 +208,168 @@ public class SetupWizard {
         }
     }
 
+    /*package*/ static void completeUpgrade(Jenkins jenkins) throws IOException {
+        setCurrentLevel(Jenkins.getVersion());
+        //TODO: restore when https://github.com/jenkinsci/jenkins/pull/2281 gets merged
+        // jenkins.getInstallState().proceedToNextState();
+    }
+    
+    /*package*/ static void setCurrentLevel(VersionNumber v) throws IOException {
+        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString());
+    }
+    
+    /**
+     * File that captures the state of upgrade.
+     *
+     * This file records the version number that the installation has upgraded to.
+     */
+    /*package*/ static File getUpdateStateFile() {
+        return new File(Jenkins.getInstance().getRootDir(),"jenkins.install.UpgradeWizard.state");
+    }
+    
+    /**
+     * What is the version the upgrade wizard has run the last time and upgraded to?.
+     * If {@link #getUpdateStateFile()} is missing, presumes the baseline is 1.0
+     * @return Current baseline. {@code null} if it cannot be retrieved.
+     */
+    @Restricted(NoExternalUse.class)
+    @CheckForNull
+    public static VersionNumber getCurrentLevel() {
+        VersionNumber from = new VersionNumber("1.0");
+        File state = getUpdateStateFile();
+        if (state.exists()) {
+            try {
+                from = new VersionNumber(defaultIfBlank(readFileToString(state), "1.0").trim());
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
+                return null;
+            }
+        }
+        return from;
+    }
+    
+    /**
+     * Returns the initial plugin list in JSON format
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doPlatformPluginList() throws IOException {
+        jenkins.install.SetupWizard setupWizard = Jenkins.getInstance().getSetupWizard();
+        if (setupWizard != null) {
+            if (InstallState.UPGRADE.equals(Jenkins.getInstance().getInstallState())) {
+                JSONArray initialPluginData = getPlatformPluginUpdates();
+                if(initialPluginData != null) {
+                    return HttpResponses.okJSON(initialPluginData);
+                }
+            } else {
+                JSONArray initialPluginData = getPlatformPluginList();
+                if(initialPluginData != null) {
+                    return HttpResponses.okJSON(initialPluginData);
+                }
+            }
+        }
+        return HttpResponses.okJSON();
+    }
+    
+    /**
+     * Provides the list of platform plugin updates from the last time
+     * the upgrade was run.
+     * @return {@code null} if the version range cannot be retrieved.
+     */
+    @CheckForNull
+    /*package*/ JSONArray getPlatformPluginUpdates() {
+        final VersionNumber version = getCurrentLevel();
+        if (version == null) {
+            return null;
+        }
+        return getPlatformPluginsForUpdate(version, Jenkins.getVersion());
+    }
+    
+    /**
+     * Gets the suggested plugin list from the update sites, falling back to a local version
+     * @return JSON array with the categorized plugon list
+     */
+    @CheckForNull
+    /*package*/ JSONArray getPlatformPluginList() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        JSONArray initialPluginList = null;
+        updateSiteList: for (UpdateSite updateSite : Jenkins.getInstance().getUpdateCenter().getSiteList()) {
+            String updateCenterJsonUrl = updateSite.getUrl();
+            String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            try {
+                URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
+                
+                try {
+                    if(connection instanceof HttpURLConnection) {
+                        int responseCode = ((HttpURLConnection)connection).getResponseCode();
+                        if(HttpURLConnection.HTTP_OK != responseCode) {
+                            throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
+                        }
+                    }
+                    
+                    String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
+                    initialPluginList = JSONArray.fromObject(initialPluginJson);
+                    break updateSiteList;
+                } catch(Exception e) {
+                    // not found or otherwise unavailable
+                    LOGGER.log(Level.FINE, e.getMessage(), e);
+                    continue updateSiteList;
+                }
+            } catch(Exception e) {
+                LOGGER.log(Level.FINE, e.getMessage(), e);
+            }
+        }
+        if (initialPluginList == null) {
+            // fall back to local file
+            try {
+                ClassLoader cl = getClass().getClassLoader();
+                URL localPluginData = cl.getResource("jenkins/install/platform-plugins.json");
+                String initialPluginJson = IOUtils.toString(localPluginData.openStream(), "utf-8");
+                initialPluginList =  JSONArray.fromObject(initialPluginJson);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+        return initialPluginList;
+    }
+
+    /**
+     * Get the platform plugins added in the version range
+     */
+    /*package*/ JSONArray getPlatformPluginsForUpdate(VersionNumber from, VersionNumber to) {
+        JSONArray pluginCategories = JSONArray.fromObject(getPlatformPluginList().toString());
+        for (Iterator<?> categoryIterator = pluginCategories.iterator(); categoryIterator.hasNext();) {
+            Object category = categoryIterator.next();
+            if (category instanceof JSONObject) {
+                JSONObject cat = (JSONObject)category;
+                JSONArray plugins = cat.getJSONArray("plugins");
+                
+                nextPlugin: for (Iterator<?> pluginIterator = plugins.iterator(); pluginIterator.hasNext();) {
+                    Object pluginData = pluginIterator.next();
+                    if (pluginData instanceof JSONObject) {
+                        JSONObject plugin = (JSONObject)pluginData;
+                        if (plugin.has("added")) {
+                            String sinceVersion = plugin.getString("added");
+                            if (sinceVersion != null) {
+                                VersionNumber v = new VersionNumber(sinceVersion);
+                                if(v.compareTo(to) <= 0 && v.compareTo(from) > 0) {
+                                    plugin.put("suggested", false);
+                                    continue nextPlugin;
+                                }
+                            }
+                        }
+                    }
+                    
+                    pluginIterator.remove();
+                }
+                
+                if (plugins.isEmpty()) {
+                    categoryIterator.remove();
+                }
+            }
+        }
+        return pluginCategories;
+    }
+
     /**
      * Gets the file used to store the initial admin password
      */
@@ -211,6 +389,11 @@ public class SetupWizard {
     static void completeSetup(Jenkins jenkins) {
         jenkins.setInstallState(InstallState.INITIAL_SETUP_COMPLETED);
         InstallUtil.saveLastExecVersion();
+        try {
+            completeUpgrade(jenkins);
+        } catch(IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot update the upgrade status", ex);
+        }
         // Also, clean up the setup wizard if it's completed
         jenkins.setSetupWizard(null);
     }

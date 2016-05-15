@@ -9,10 +9,6 @@ var getJQuery = function() {
     return $;
 };
 
-var pluginList = jsTest.requireSrcModule('api/plugins');
-
-pluginList.recommendedPlugins = ['subversion'];
-
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
     var counter = 0;
@@ -98,8 +94,43 @@ var ajaxMocks = function(responseMappings) {
             }
         },
         '/jenkins/pluginManager/installPlugins': {
+          status: 'ok',
+          data: 'RANDOM_UUID_1234'
+        },
+        '/jenkins/setupWizard/platformPluginList': {
         status: 'ok',
-        data: 'RANDOM_UUID_1234'
+        data: [
+        {
+         "category":"Stuff",
+         "plugins": [
+             { "name": "mailer" },
+             { "name": "junit" },
+             { "name": "workflow-aggregator", "added": "2.0" },
+         ]
+        },
+        {
+         "category":"Source Code Management",
+         "plugins": [
+             { "name": "git" },
+             { "name": "subversion", "suggested": true }
+         ]
+        },
+        {
+         "category":"User Management and Security",
+         "plugins": [            
+             { "name": "matrix-auth" },
+             { "name": "pam-auth" },
+             { "name": "ldap" }
+         ]
+        },
+        {
+         "category":"Notifications and Publishing",
+         "plugins": [
+             { "name": "email-ext" },
+             { "name": "ssh" }
+         ]
+        }
+        ]
         }
     };
 
