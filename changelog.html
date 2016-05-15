@@ -80,6 +80,12 @@ Upcoming changes</a>
   <li class=rfe>
     Add the JOB_BASE_NAME environment variable to builds (job name without path).
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25164">issue 25164</a>)
+  <li class=rfe>
+    Allow overriding Jenkins <code>UpdateCenter</code> by a custom implementation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34733">issue 34733</a>)
+  <li class=rfe>
+    Allow overriding Jenkins <code>PluginManager</code> by a custom implementation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34681">issue 34681</a>)
   <li class=bug>
     Prevent hanging of the Installation Wizard if the default Update Site ID cannot be resolved.
     In such case an error message will be displayed.
@@ -95,6 +101,12 @@ Upcoming changes</a>
     Plugin Manager was building incorrect list of bundled plugins for nested dependencies.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34748">issue 34748</a>)
   <li class=bug>
+    Prevent fatal failure of the updates check <code>PeriodicWork</code> if update site certificate is missing.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34745">issue 34745</a>)
+  <li class=bug>
+    Allow starting non-<code>AbstractProject</code> (e.g. Pipeline) jobs from CLI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28071">issue 28071</a>)
+  <li class=bug>
     Disable JSESSIONID in URLs when running in the JBoss web container.
     It prevents Error 404 due to invalid links starting from Jenkins 1.556.
     More info: <a href="https://issues.jboss.org/browse/WFLY-4782">WFLY-4782</a>
@@ -106,9 +118,13 @@ Upcoming changes</a>
     Prevent <code>NoSuchMethodException</code> in <code>loginLink.jelly</code>
     when attempting to start a job using REST API.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31618">issue 31618</a>)
-    <li class=bug>
-      Make <code>ToolInstallers</code> to follow HTTP 30x redirects.
-      (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23507">issue 23507</a>)
+  <li class=bug>
+    Make <code>ToolInstallers</code> to follow HTTP 30x redirects.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23507">issue 23507</a>)
+  <li class=bug>
+    Prevent <code>NullPointerException</code> in the parameter definition job property
+    if it gets initialized incorrectly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34370">issue 34370</a>)
   <li class=rfe>
     Internal: CLI commands <code>disconnect-node</code> and <code>reload-configuration</code> were extracted from the core to CLI.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34328">issue 34328</a> and
