@@ -227,13 +227,22 @@ public class SetupWizard {
     }
     
     /**
-     * What is the version the upgrade wizard has run the last time and upgraded to?
+     * What is the version the upgrade wizard has run the last time and upgraded to?.
+     * If {@link #getUpdateStateFile()} is missing, presumes the baseline is 1.0
+     * @return Current baseline. {@code null} if it cannot be retrieved.
      */
-    public static VersionNumber getCurrentLevel() throws IOException {
+    @Restricted(NoExternalUse.class)
+    @CheckForNull
+    public static VersionNumber getCurrentLevel() {
         VersionNumber from = new VersionNumber("1.0");
         File state = getUpdateStateFile();
         if (state.exists()) {
-            from = new VersionNumber(defaultIfBlank(readFileToString(state), "1.0").trim());
+            try {
+                from = new VersionNumber(defaultIfBlank(readFileToString(state), "1.0").trim());
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
+                return null;
+            }
         }
         return from;
     }
@@ -262,14 +271,16 @@ public class SetupWizard {
     
     /**
      * Provides the list of platform plugin updates from the last time
-     * the upgrade was run
+     * the upgrade was run.
+     * @return {@code null} if the version range cannot be retrieved.
      */
+    @CheckForNull
     /*package*/ JSONArray getPlatformPluginUpdates() {
-        try {
-            return getPlatformPluginsForUpdate(getCurrentLevel(), Jenkins.getVersion());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        final VersionNumber version = getCurrentLevel();
+        if (version == null) {
+            return null;
         }
+        return getPlatformPluginsForUpdate(version, Jenkins.getVersion());
     }
     
     /**
