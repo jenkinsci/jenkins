@@ -29,6 +29,8 @@ import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -62,7 +64,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties {
+public class SystemProperties implements ServletContextListener {
+    // this class implements ServletContextListener and is declared in WEB-INF/web.xml
+
     /**
      * The ServletContext to get the "init" parameters from.
      */
@@ -75,15 +79,22 @@ public class SystemProperties {
     private static final Logger LOGGER = Logger.getLogger(SystemProperties.class.getName());
 
     /**
-     * This class should never be instantiated.
+     * Public for the servlet container.
      */
-    private SystemProperties() {}
+    public SystemProperties() {}
+
+    /**
+     * Called by the servlet container to initialize the {@link ServletContext}.
+     */
+    @Override
+    public void contextInitialized(ServletContextEvent event) {
+        theContext = event.getServletContext();
+    }
 
     /**
      * Gets the system property indicated by the specified key.
      * This behaves just like {@link System#getProperty(java.lang.String)}, except that it
      * also consults the {@link ServletContext}'s "init" parameters.
-     * {@link ServletContext} check will be skipped if the context is not initialized.
      * 
      * @param      key   the name of the system property.
      * @return     the string value of the system property,
@@ -120,7 +131,6 @@ public class SystemProperties {
      * Gets the system property indicated by the specified key, or a default value.
      * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
      * that it also consults the {@link ServletContext}'s "init" parameters.
-     * {@link ServletContext} check will be skipped if the context is not initialized.
      * 
      * @param      key   the name of the system property.
      * @param      def   a default value.
@@ -163,7 +173,6 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
-      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name   the system property name.
       * @return  the {@code boolean} value of the system property.
@@ -182,7 +191,6 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)} with a default
       * value, except that it also consults the {@link ServletContext}'s "init" parameters.
-      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name   the system property name.
       * @param   def   a default value.
@@ -203,7 +211,6 @@ public class SystemProperties {
       * 
       * This behaves just like {@link Integer#getInteger(java.lang.String)}, except that it
       * also consults the {@link ServletContext}'s "init" parameters.
-      * {@link ServletContext} check will be skipped if the context is not initialized.
       * 
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
@@ -243,15 +250,6 @@ public class SystemProperties {
         return def;
     }
 
-    /**
-     * Invoked by WebAppMain, tells us where to get the "init" parameters from.
-     * 
-     * @param context the <code>ServletContext</code> obtained from <code>contextInitialized</code>
-     */
-    public static void initialize(ServletContext context) {
-        theContext = context;
-    }
-    
     @CheckForNull
     private static String tryGetValueFromContext(String key) {
         if (StringUtils.isNotBlank(key) && theContext != null) {
@@ -266,5 +264,10 @@ public class SystemProperties {
             }
         }
         return null;
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent event) {
+        // nothing to do
     }
 }

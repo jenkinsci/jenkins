@@ -121,8 +121,6 @@ public class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            SystemProperties.initialize( event.getServletContext() );
-
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
             home.mkdirs();
