@@ -24,7 +24,7 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
     @Override
     public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         // attempt to authenticate as API token
-        User u = User.get(username);
+        User u = User.getById(username, true);
         ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         if (t!=null && t.matchesPassword(password)) {
             try {
@@ -38,7 +38,6 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 throw new ServletException(x);
             }
         }
-
         return null;
     }
 

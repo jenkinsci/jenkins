@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.2-SNAPSHOT</version>
+  <version>2.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -179,7 +179,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.57</version>
+        <version>2.59</version>
       </dependency>
 
       <dependency>
@@ -577,7 +577,7 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.9</version>
+	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>

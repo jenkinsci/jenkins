@@ -192,18 +192,27 @@ exports.loadTranslations = function(bundleName, handler, onError) {
 /**
  * Runs a connectivity test, calls handler with a boolean whether there is sufficient connectivity to the internet
  */
-exports.testConnectivity = function(handler) {
+exports.testConnectivity = function(siteId, handler) {
 	// check the connectivity api
 	var testConnectivity = function() {
-		exports.get('/updateCenter/connectionStatus?siteId=default', function(response) {
+		exports.get('/updateCenter/connectionStatus?siteId=' + siteId, function(response) {
+			if(response.status !== 'ok') {
+				handler(false, true, response.message);
+			}
+			
+			// Define statuses, which need additional check iteration via async job on the Jenkins master
+			// Statuses like "OK" or "SKIPPED" are considered as fine.
 			var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
 			if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
 				setTimeout(testConnectivity, 100);
 			}
 			else {
-				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || response.data.internet !== 'OK') {
-					// no connectivity
-					handler(false);
+				// Update site should be always reachable, but we do not require the internet connection
+				// if it's explicitly skipped by the update center
+				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || 
+							(response.data.internet !== 'OK' && response.data.internet !== 'SKIPPED')) {
+					// no connectivity, but not fatal
+					handler(false, false);
 				}
 				else {
 					handler(true);

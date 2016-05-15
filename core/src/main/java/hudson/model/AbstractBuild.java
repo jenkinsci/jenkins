@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
 import hudson.model.Fingerprint.RangeSet;
@@ -106,7 +107,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
      */
-    private static final boolean upstreamCulprits = Boolean.getBoolean("hudson.upstreamCulprits");
+    private static final boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
 
     /**
      * Name of the agent this project was built on.
@@ -127,7 +128,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     /**
      * SCM used for this build.
-     * Maybe null, for historical reason, in which case CVS is assumed.
      */
     private ChangeLogParser scm;
 
@@ -597,9 +597,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             AbstractProject<?, ?> project = build.getProject();
 
             for (int retryCount=project.getScmCheckoutRetryCount(); ; retryCount--) {
-                // for historical reasons, null in the scm field means CVS, so we need to explicitly set this to something
-                // in case check out fails and leaves a broken changelog.xml behind.
-                // see http://www.nabble.com/CVSChangeLogSet.parse-yields-SAXParseExceptions-when-parsing-bad-*AccuRev*-changelog.xml-files-td22213663.html
                 build.scm = NullChangeLogParser.INSTANCE;
 
                 try {
@@ -870,20 +867,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     public ChangeLogSet<? extends Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
-                // for historical reason, null means CVS.
-                try {
-                    Class<?> c = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.scm.CVSChangeLogParser");
-                    scm = (ChangeLogParser)c.newInstance();
-                } catch (ClassNotFoundException e) {
-                    // if CVS isn't available, fall back to something non-null.
-                    scm = NullChangeLogParser.INSTANCE;
-                } catch (InstantiationException e) {
-                    scm = NullChangeLogParser.INSTANCE;
-                    throw (Error)new InstantiationError().initCause(e);
-                } catch (IllegalAccessException e) {
-                    scm = NullChangeLogParser.INSTANCE;
-                    throw (Error)new IllegalAccessError().initCause(e);
-                }
+                scm = NullChangeLogParser.INSTANCE;                
             }
         }
 

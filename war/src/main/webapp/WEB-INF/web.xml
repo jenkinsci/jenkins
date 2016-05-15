@@ -159,6 +159,9 @@ THE SOFTWARE.
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>
   </listener>
+  <listener>
+    <listener-class>jenkins.JenkinsHttpSessionListener</listener-class>
+  </listener>
 
   <!--
     HUDSON-1235 suggests containers interpret '*' as "all roles defined in web.xml"

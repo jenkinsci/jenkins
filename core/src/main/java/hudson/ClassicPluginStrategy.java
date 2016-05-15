@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
 import hudson.PluginWrapper.Dependency;
@@ -878,7 +879,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
     }
 
-    public static boolean useAntClassLoader = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
+    public static boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".useAntClassLoader");
     private static final Logger LOGGER = Logger.getLogger(ClassicPluginStrategy.class.getName());
-    public static boolean DISABLE_TRANSFORMER = Boolean.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
+    public static boolean DISABLE_TRANSFORMER = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName()+".noBytecodeTransformer");
 }

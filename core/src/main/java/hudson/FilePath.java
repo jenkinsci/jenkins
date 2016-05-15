@@ -25,6 +25,8 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
+import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Launcher.LocalLauncher;
@@ -71,6 +73,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
 import javax.annotation.CheckForNull;
@@ -91,6 +95,7 @@ import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -188,6 +193,11 @@ import org.jenkinsci.remoting.RoleSensitive;
  * @see VirtualFile
  */
 public final class FilePath implements Serializable {
+    /**
+     * Maximum http redirects we will follow. This defaults to the same number as Firefox/Chrome tolerates.
+     */
+    private static final int MAX_REDIRECTS = 20;
+
     /**
      * When this {@link FilePath} represents the remote path,
      * this field is always non-null on master (the field represents
@@ -755,6 +765,10 @@ public final class FilePath implements Serializable {
      * @since 1.299
      */
     public boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message) throws IOException, InterruptedException {
+        return installIfNecessaryFrom(archive, listener, message, MAX_REDIRECTS);
+    }
+
+    private boolean installIfNecessaryFrom(@Nonnull URL archive, @CheckForNull TaskListener listener, @Nonnull String message, int maxRedirects) throws InterruptedException, IOException {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
@@ -777,14 +791,28 @@ public final class FilePath implements Serializable {
                 }
             }
 
-            if (lastModified != 0 && con instanceof HttpURLConnection) {
+            if (con instanceof HttpURLConnection) {
                 HttpURLConnection httpCon = (HttpURLConnection) con;
                 int responseCode = httpCon.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                    return false;
-                } else if (responseCode != HttpURLConnection.HTTP_OK) {
-                    listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to server error: " + responseCode + " " + httpCon.getResponseMessage());
-                    return false;
+                if (responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                        || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                    // follows redirect
+                    if (maxRedirects > 0) {
+                        String location = httpCon.getHeaderField("Location");
+                        listener.getLogger().println("Following redirect " + archive.toExternalForm() + " -> " + location);
+                        return installIfNecessaryFrom(getUrlFactory().newURL(location), listener, message, maxRedirects - 1);
+                    } else {
+                        listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to too many redirects.");
+                        return false;
+                    }
+                }
+                if (lastModified != 0) {
+                    if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                        return false;
+                    } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                        listener.getLogger().println("Skipping installation of " + archive + " to " + remote + " due to server error: " + responseCode + " " + httpCon.getResponseMessage());
+                        return false;
+                    }
                 }
             }
 
@@ -2354,7 +2382,7 @@ public final class FilePath implements Serializable {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
-    public static int VALIDATE_ANT_FILE_MASK_BOUND = Integer.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
@@ -2518,6 +2546,31 @@ public final class FilePath implements Serializable {
                 return Math.min(idx1,idx2);
             }
         });
+    }
+
+    private static final UrlFactory DEFAULT_URL_FACTORY = new UrlFactory();
+
+    @Restricted(NoExternalUse.class)
+    static class UrlFactory {
+        public URL newURL(String location) throws MalformedURLException {
+            return new URL(location);
+        }
+    }
+
+    private UrlFactory urlFactory;
+
+    @VisibleForTesting
+    @Restricted(NoExternalUse.class)
+    void setUrlFactory(UrlFactory urlFactory) {
+        this.urlFactory = urlFactory;
+    }
+
+    private UrlFactory getUrlFactory() {
+        if (urlFactory != null) {
+            return urlFactory;
+        } else {
+            return DEFAULT_URL_FACTORY;
+        }
     }
 
     /**
