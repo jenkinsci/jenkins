@@ -285,9 +285,10 @@ public class SetupWizard {
     
     /**
      * Gets the suggested plugin list from the update sites, falling back to a local version
+     * @return JSON array with the categorized plugon list
      */
     @CheckForNull
-    public JSONArray getPlatformPluginList() {
+    /*package*/ JSONArray getPlatformPluginList() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.getInstance().getUpdateCenter().getSiteList()) {
