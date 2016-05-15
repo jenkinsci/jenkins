@@ -3,11 +3,13 @@
 -->
 <?jelly escape-by-default='true'?>
 <l:html norefresh="true" title="${it.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
   <l:main-panel>
+
+    <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
+
     <style type="text/css">
-      @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css);
-      @import url(https://fonts.googleapis.com/css?family=Roboto:400,300,500,900,700);
-      
+
       #main-panel {
           margin: 0;
           padding: 0;
