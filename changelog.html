@@ -86,6 +86,9 @@ Upcoming changes</a>
   <li class=rfe>
     Allow overriding Jenkins <code>PluginManager</code> by a custom implementation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34681">issue 34681</a>)
+  <li class=rfe>
+    Installation Wizard: Allow altering the list of suggested plugins from update sites.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34833">issue 34833</a>)
   <li class=bug>
     Prevent hanging of the Installation Wizard if the default Update Site ID cannot be resolved.
     In such case an error message will be displayed.
@@ -103,6 +106,9 @@ Upcoming changes</a>
   <li class=bug>
     Prevent fatal failure of the updates check <code>PeriodicWork</code> if update site certificate is missing.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34745">issue 34745</a>)
+  <li class=bug>
+    Pick up missing <code>Downloadable</code> items on restart if all update centers are up to date.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32886">issue 32886</a>)
   <li class=bug>
     Allow starting non-<code>AbstractProject</code> (e.g. Pipeline) jobs from CLI.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28071">issue 28071</a>)
@@ -125,6 +131,10 @@ Upcoming changes</a>
     Prevent <code>NullPointerException</code> in the parameter definition job property
     if it gets initialized incorrectly.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34370">issue 34370</a>)
+  <li class=bug>
+    Bundle <code>Font Awesome</code> and <code>Google Fonts: Roboto</code> dependencies 
+    to prevent failures in the offline mode.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34628">issue 34628</a>)
   <li class=rfe>
     Internal: CLI commands <code>disconnect-node</code> and <code>reload-configuration</code> were extracted from the core to CLI.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34328">issue 34328</a> and
