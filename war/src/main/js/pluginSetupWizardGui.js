@@ -5,6 +5,8 @@
 // Require modules here, make sure they get browserify'd/bundled
 var jquery = require('jquery-detached');
 var bootstrap = require('bootstrap-detached');
+var handlebars = require('handlebars');
+var fs = require('fs');
 var jenkins = require('./util/jenkins');
 var pluginManager = require('./api/pluginManager');
 var securityConfig = require('./api/securityConfig');
@@ -106,18 +108,18 @@ var createPluginSetupWizard = function(appendTarget) {
 	});
 	
 	// Include handlebars templates here - explicitly require them and they'll be available by hbsfy as part of the bundle process
-	var errorPanel = require('./templates/errorPanel.hbs');
-	var loadingPanel = require('./templates/loadingPanel.hbs');
-	var welcomePanel = require('./templates/welcomePanel.hbs');
-	var progressPanel = require('./templates/progressPanel.hbs');
-	var pluginSuccessPanel = require('./templates/successPanel.hbs');
-	var pluginSelectionPanel = require('./templates/pluginSelectionPanel.hbs');
-	var setupCompletePanel = require('./templates/setupCompletePanel.hbs');
-	var proxyConfigPanel = require('./templates/proxyConfigPanel.hbs');
-	var firstUserPanel = require('./templates/firstUserPanel.hbs');
-	var offlinePanel = require('./templates/offlinePanel.hbs');
-	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
-	var incompleteInstallationPanel = require('./templates/incompleteInstallationPanel.hbs');
+	var errorPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/errorPanel.hbs', 'utf8'));
+	var loadingPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/loadingPanel.hbs', 'utf8'));
+	var welcomePanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/welcomePanel.hbs', 'utf8'));
+	var progressPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/progressPanel.hbs', 'utf8'));
+	var pluginSuccessPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/successPanel.hbs', 'utf8'));
+	var pluginSelectionPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/pluginSelectionPanel.hbs', 'utf8'));
+	var setupCompletePanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/setupCompletePanel.hbs', 'utf8'));
+	var proxyConfigPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/proxyConfigPanel.hbs', 'utf8'));
+	var firstUserPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/firstUserPanel.hbs', 'utf8'));
+	var offlinePanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/offlinePanel.hbs', 'utf8'));
+	var pluginSetupWizard = handlebars.compile(fs.readFileSync(__dirname + '/./templates/pluginSetupWizard.hbs', 'utf8'));
+	var incompleteInstallationPanel = handlebars.compile(fs.readFileSync(__dirname + '/./templates/incompleteInstallationPanel.hbs', 'utf8'));
 
 	// wrap calls with this method to handle generic errors returned by the plugin manager
 	var handleGenericError = function(success) {

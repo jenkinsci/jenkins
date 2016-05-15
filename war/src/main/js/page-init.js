@@ -3,7 +3,7 @@
  */
 
 var $ = require('jquery-detached').getJQuery();
-var jsModules = require('jenkins-js-modules');
+var jsModules = require('@jenkins-cd/js-modules');
 
 $(function() {
     loadScripts();
