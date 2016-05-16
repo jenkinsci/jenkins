@@ -10,6 +10,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -151,6 +152,97 @@ public class ParametersActionTest2 {
 
     @Test
     @Issue("SECURITY-170")
+    public void whitelistedParameterByOverride() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        String name = p.getFullName();
+        p.addProperty(new ParametersDefinitionProperty(Arrays.<ParameterDefinition>asList(
+                new StringParameterDefinition("foo", "foo"),
+                new StringParameterDefinition("bar", "bar"))));
+
+        try {
+            ParametersAction action = new TestParametersAction(
+                    new StringParameterValue("foo", "baz"),
+                    new StringParameterValue("bar", "bar"),
+                    new StringParameterValue("whitelisted1", "x"),
+                    new StringParameterValue("whitelisted2", "y"),
+                    new StringParameterValue("whitelisted3", "y"));
+            FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), action));
+
+            assertTrue("whitelisted1 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
+            assertTrue("whitelisted2 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
+            assertFalse("whitelisted3 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            p = null;
+            build = null;
+            j.jenkins.reload();
+            //Test again after reload
+            p = j.jenkins.getItemByFullName(name, FreeStyleProject.class);
+            build = p.getLastBuild();
+            assertTrue("whitelisted1 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
+            assertTrue("whitelisted2 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
+            assertFalse("whitelisted3 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+        } finally {
+            System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        }
+    }
+
+    @Test
+    @Issue("SECURITY-170")
+    public void whitelistedParameterSameAfterChange() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        String name = p.getFullName();
+        p.addProperty(new ParametersDefinitionProperty(Arrays.<ParameterDefinition>asList(
+                new StringParameterDefinition("foo", "foo"),
+                new StringParameterDefinition("bar", "bar"))));
+
+        try {
+            System.setProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, "whitelisted1,whitelisted2");
+            FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
+                    new StringParameterValue("foo", "baz"),
+                    new StringParameterValue("bar", "bar"),
+                    new StringParameterValue("whitelisted1", "x"),
+                    new StringParameterValue("whitelisted2", "y"),
+                    new StringParameterValue("whitelisted3", "z"),
+                    new StringParameterValue("whitelisted4", "w")
+            )));
+            assertTrue("whitelisted1 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
+            assertTrue("whitelisted2 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
+            assertFalse("whitelisted3 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            assertFalse("whitelisted4 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted4"));
+
+            System.setProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, "whitelisted3,whitelisted4");
+            p = null;
+            build = null;
+            j.jenkins.reload();
+            p = j.jenkins.getItemByFullName(name, FreeStyleProject.class);
+            build = p.getLastBuild();
+            assertTrue("whitelisted1 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted1"));
+            assertTrue("whitelisted2 parameter is listed in getParameters",
+                       hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted2"));
+            assertFalse("whitelisted3 parameter is listed in getParameters",
+                        hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted3"));
+            assertFalse("whitelisted4 parameter is listed in getParameters",
+                        hasParameterWithName(build.getAction(ParametersAction.class), "whitelisted4"));
+
+        } finally {
+            System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        }
+    }
+
+
+
+    @Test
+    @Issue("SECURITY-170")
     public void nonParameterizedJob() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
@@ -192,6 +284,17 @@ public class ParametersActionTest2 {
             }
         }
         return false;
+    }
+
+    public static class TestParametersAction extends ParametersAction {
+        public TestParametersAction(ParameterValue... parameters) {
+            super(parameters);
+        }
+
+        @Override
+        protected Collection<String> getAdditionalSafeParameters() {
+            return Arrays.asList("whitelisted1", "whitelisted2");
+        }
     }
 
     public static class ParametersCheckBuilder extends Builder {

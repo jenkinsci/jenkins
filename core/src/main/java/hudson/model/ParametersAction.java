@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +75,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".safeParameters";
 
-    private transient List<String> safeParameters;
+    private Set<String> safeParameters;
 
     private final List<ParameterValue> parameters;
 
@@ -203,7 +204,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
         if(overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters);
+            loadSafeParameters();
+            parametersAction.safeParameters = this.safeParameters;
+            return parametersAction;
         }
         List<ParameterValue> combinedParameters = newArrayList(overrides);
         Set<String> names = newHashSet();
@@ -220,7 +224,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             }
         }
 
-        return new ParametersAction(combinedParameters);
+        ParametersAction parametersAction = new ParametersAction(combinedParameters);
+        loadSafeParameters();
+        parametersAction.safeParameters = this.safeParameters;
+        return parametersAction;
     }
 
     /*
@@ -231,9 +238,23 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters);
+            loadSafeParameters();
+            parametersAction.safeParameters = this.safeParameters;
+            return parametersAction;
         }
-        return createUpdated(overrides.parameters);
+        ParametersAction parametersAction = createUpdated(overrides.parameters);
+        Set<String> safe = new TreeSet<>();
+        if (parametersAction.safeParameters != null) {
+            //loadSafeParameters() should have been called by createUpdated
+            safe.addAll(this.safeParameters);
+        }
+        overrides.loadSafeParameters();
+        if (overrides.safeParameters != null) {
+            safe.addAll(overrides.safeParameters);
+        }
+        parametersAction.safeParameters = safe;
+        return parametersAction;
     }
 
     private Object readResolve() {
@@ -302,15 +323,37 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     private boolean isSafeParameter(String name) {
+        loadSafeParameters();
+        return safeParameters.contains(name);
+    }
+
+    /**
+     * Combines the contents of {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}
+     * and {@link #getAdditionalSafeParameters()} into {@link #safeParameters}.
+     * @since TODO
+     */
+    private void loadSafeParameters() {
         if (safeParameters == null) {
             String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+            safeParameters = new TreeSet<>();
             if (paramNames != null) {
-                safeParameters = Arrays.asList(paramNames.split(","));
-            } else {
-                safeParameters = Collections.emptyList();
+                safeParameters.addAll(Arrays.asList(paramNames.split(",")));
             }
+            safeParameters.addAll(getAdditionalSafeParameters());
         }
-        return safeParameters.contains(name);
+    }
+
+    /**
+     * Provides a list of parameter names considered safe by the class overriding this action.
+     * Plugins can extend this when scheduling a build with the built in parameters it has.
+     * Whatever the user provides in {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME} or
+     * {@link #KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME} still counts.
+     *
+     * @return an additional list of safe parameter names
+     * @since TODO
+     */
+    protected Collection<String> getAdditionalSafeParameters() {
+        return Collections.emptyList();
     }
 
     private static final Logger LOGGER = Logger.getLogger(ParametersAction.class.getName());
