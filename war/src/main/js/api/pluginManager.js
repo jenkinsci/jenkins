@@ -7,18 +7,49 @@ var jenkins = require('../util/jenkins');
 // TODO: Get plugin info (plugins + recommended plugin list) from update center.
 // For now, we statically store them in the wizard.
 
-var plugins = require('./plugins.js');
-plugins.names =[];
-for (var i = 0; i < plugins.availablePlugins.length; i++) {
-    var pluginCategory = plugins.availablePlugins[i];
-    var categoryPlugins = pluginCategory.plugins;
-    for (var ii = 0; ii < categoryPlugins.length; ii++) {
-        var pluginName = categoryPlugins[ii].name;
-        if (plugins.names.indexOf(pluginName) === -1) {
-            plugins.names.push(pluginName);
-        }
-    }
-}
+//Get plugin info (plugins + recommended plugin list) from update centers.
+var plugins;
+ 
+exports.initialPluginList = function(handler) {
+ jenkins.get('/setupWizard/platformPluginList', function(response) {
+   if(response.status !== 'ok') {
+     handler.call({ isError: true, data: response.data });
+     return;
+   }
+
+   handler.call({ isError: false }, response.data);
+ }, {
+   timeout: pluginManagerErrorTimeoutMillis,
+   error: function(xhr, textStatus, errorThrown) {
+     handler.call({ isError: true, errorMessage: errorThrown });
+   }
+ });
+};
+ 
+// Call this to initialize the plugin list
+exports.init = function(handler) {
+	exports.initialPluginList(function(initialPluginCategories) {
+		plugins = {};
+		plugins.names = [];
+		plugins.recommendedPlugins = [];
+		plugins.availablePlugins = initialPluginCategories;
+		for (var i = 0; i < initialPluginCategories.length; i++) {
+			var pluginCategory = initialPluginCategories[i];
+			var categoryPlugins = pluginCategory.plugins;
+			for (var ii = 0; ii < categoryPlugins.length; ii++) {
+				var plugin = categoryPlugins[ii];
+				var pluginName = plugin.name;
+				if (plugins.names.indexOf(pluginName) === -1) {
+					plugins.names.push(pluginName);
+					if (plugin.suggested) {
+						plugins.recommendedPlugins.push(pluginName);
+					}
+				}
+			}
+		}
+		handler();
+	});
+}; 
 
 // default 10 seconds for AJAX responses to return before triggering an error condition
 var pluginManagerErrorTimeoutMillis = 10 * 1000;
@@ -200,3 +231,4 @@ exports.restartJenkins = function(handler) {
 		}
 	});
 };
+

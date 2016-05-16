@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
+import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
@@ -1284,6 +1285,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * <p>
      * This property supports two names for a compatibility reason.
      */
-    public static boolean enabled = !Boolean.getBoolean(ProcessTreeKiller.class.getName()+".disable")
-                                 && !Boolean.getBoolean(ProcessTree.class.getName()+".disable");
+    public static boolean enabled = !SystemProperties.getBoolean(ProcessTreeKiller.class.getName()+".disable")
+                                 && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

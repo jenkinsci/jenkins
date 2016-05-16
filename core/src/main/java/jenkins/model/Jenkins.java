@@ -50,6 +50,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
 import hudson.Util;
@@ -311,6 +312,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
+import org.kohsuke.stapler.WebMethod;
 
 /**
  * Root object of the system.
@@ -754,10 +756,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
     @CLIResolver
-    @Nullable // TODO replace with non-null once Jenkins 2.0+
+    @Nonnull
     public static Jenkins getInstance() {
-        // TODO throw an IllegalStateException in Jenkins 2.0+
-        return HOLDER.getInstance();
+        Jenkins instance = HOLDER.getInstance();
+        if (instance == null) {
+            if(!Boolean.getBoolean(Jenkins.class.getName()+".disableExceptionOnNullInstance")) {
+                // TODO: remove that second block around 2.20 (that is: ~20 versions to battle test it)
+                // See https://github.com/jenkinsci/jenkins/pull/2297#issuecomment-216710150
+                throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+            }
+        }
+        return instance;
     }
 
     /**
@@ -767,7 +776,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private transient final String secretKey;
 
-    private transient final UpdateCenter updateCenter = new UpdateCenter();
+    private transient final UpdateCenter updateCenter = UpdateCenter.createUpdateCenter(null);
 
     /**
      * True if the user opted out from the statistics tracking. We'll never send anything if this is true.
@@ -856,7 +865,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
 
             if (pluginManager==null)
-                pluginManager = new LocalPluginManager(this);
+                pluginManager = PluginManager.createDefault(this);
             this.pluginManager = pluginManager;
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
@@ -2626,8 +2635,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets the user of the given name.
      *
-     * @return the user of the given name, if that person exists or the invoker {@link #hasPermission} on {@link #ADMINISTER}; else null
-     * @see User#get(String,boolean)
+     * @return the user of the given name (which may or may not be an id), if that person exists or the invoker {@link #hasPermission} on {@link #ADMINISTER}; else null
+     * @see User#get(String,boolean), {@link User#getById(String, boolean)}
      */
     public @CheckForNull User getUser(String name) {
         return User.get(name,hasPermission(ADMINISTER));
@@ -3685,7 +3694,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Reloads the configuration.
      */
-    @CLIMethod(name="reload-configuration")
     @RequirePOST
     public synchronized HttpResponse doReload() throws IOException {
         checkPermission(ADMINISTER);
@@ -4502,6 +4510,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             Jenkins.getInstance().doConfigExecutorsSubmit(req, rsp);
         }
 
+        @WebMethod(name="config.xml")
+        @Override
+        public void doConfigDotXml(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            throw HttpResponses.status(SC_BAD_REQUEST);
+        }
+
         @Override
         public boolean hasPermission(Permission permission) {
             // no one should be allowed to delete the master.
@@ -4603,7 +4617,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
 
-        if(ver.equals(UNCOMPUTED_VERSION) || Boolean.getBoolean("hudson.script.noCache"))
+        if(ver.equals(UNCOMPUTED_VERSION) || SystemProperties.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
             RESOURCE_PATH = "/static/"+SESSION_HASH;

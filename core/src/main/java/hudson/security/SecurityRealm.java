@@ -48,6 +48,9 @@ import static org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices.ACEGI
 import org.acegisecurity.userdetails.UserDetailsService;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -62,6 +65,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -483,6 +487,56 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * Singleton constant that represents "no authentication."
      */
     public static final SecurityRealm NO_AUTHENTICATION = new None();
+
+    /**
+     * Perform a calculation where we should go back after successful login
+     *
+     * @return Encoded URI where we should go back after successful login
+     *         or "/" if no way back or an issue occurred
+     *
+     * @since TODO
+     */
+    @Restricted(DoNotUse.class)
+    public static String getFrom() {
+        String from = null, returnValue = null;
+        final StaplerRequest request = Stapler.getCurrentRequest();
+
+        // Try to obtain a return point either from the Session
+        // or from the QueryParameter in this order
+        if (request != null
+                && request.getSession(false) != null) {
+            from = (String) request.getSession().getAttribute("from");
+        } else if (request != null) {
+            from = request.getParameter("from");
+        }
+
+        // If entry point was not found, try to deduce it from the request URI
+        // except pages related to login process
+        if (from == null
+                && request != null
+                && request.getRequestURI() != null
+                && !request.getRequestURI().equals("/loginError")
+                && !request.getRequestURI().equals("/login")) {
+
+                from = request.getRequestURI();
+        }
+
+        // If deduced entry point isn't deduced yet or the content is a blank value
+        // use the root web point "/" as a fallback
+        if (StringUtils.isBlank(from)) {
+            from = "/";
+        }
+        from.trim();
+
+        // Encode the return value
+        try {
+            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
+        } catch (UnsupportedEncodingException e) { }
+
+        // Return encoded value or at least "/" in the case exception occurred during encode()
+        // or if the encoded content is blank value
+        return StringUtils.isBlank(returnValue) ? "/" : returnValue;
+    }
 
     private static class None extends SecurityRealm {
         public SecurityComponents createSecurityComponents() {

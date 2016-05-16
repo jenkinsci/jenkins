@@ -29,6 +29,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.trilead.ssh2.crypto.Base64;
+import jenkins.util.SystemProperties;
 import jenkins.model.Jenkins;
 import hudson.Util;
 import jenkins.security.CryptoConfidentialKey;
@@ -40,6 +41,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.regex.Pattern;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Glorified {@link String} that uses encryption in the persisted form, to avoid accidental exposure of a secret.
@@ -127,6 +131,14 @@ public final class Secret implements Serializable {
             throw new Error(e); // impossible
         }
     }
+
+    /**
+     * Pattern matching a possible output of {@link #getEncryptedValue}.
+     * Basically, any Base64-encoded value.
+     * You must then call {@link #decrypt} to eliminate false positives.
+     */
+    @Restricted(NoExternalUse.class)
+    public static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("[A-Za-z0-9+/]+={0,2}");
 
     /**
      * Reverse operation of {@link #getEncryptedValue()}. Returns null
@@ -223,7 +235,7 @@ public final class Secret implements Serializable {
      * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
      * @see #getCipher(String)
      */
-    private static final String PROVIDER = System.getProperty(Secret.class.getName()+".provider");
+    private static final String PROVIDER = SystemProperties.getString(Secret.class.getName()+".provider");
 
     /**
      * For testing only. Override the secret key so that we can test this class without {@link Jenkins}.

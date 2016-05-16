@@ -31,6 +31,7 @@ import hudson.util.TimeUnit2;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import jenkins.security.SlaveToMasterCallable;
 import org.jenkinsci.Symbol;
 
@@ -100,7 +101,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
 
 
     // disabled by default until proven in the production
-    public boolean enabled = Boolean.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
+    public boolean enabled = SystemProperties.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
 
     private static final PingCommand PING_COMMAND = new PingCommand();
     private static final class PingCommand extends SlaveToMasterCallable<Void,RuntimeException> {

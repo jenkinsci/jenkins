@@ -136,11 +136,19 @@ var createPluginSetupWizard = function(appendTarget) {
 			success.apply(this, arguments);
 		};
 	};
+	
+	var pluginList;
+	var allPluginNames;
+	var selectedPluginNames;
+	
+	// Initialize the plugin manager after connectivity checks
+	pluginManager.init(handleGenericError(function() {
+	  pluginList = pluginManager.plugins();
+	  allPluginNames = pluginManager.pluginNames();
+	  selectedPluginNames = pluginManager.recommendedPluginNames();
+	}));
 
 	// state variables for plugin data, selected plugins, etc.:
-	var pluginList = pluginManager.plugins();
-	var allPluginNames = pluginManager.pluginNames();
-	var selectedPluginNames = pluginManager.recommendedPluginNames();
 	var visibleDependencies = {};
 	var categories = [];
 	var availablePlugins = {};
@@ -889,12 +897,18 @@ var createPluginSetupWizard = function(appendTarget) {
 		translations = localizations;
 
 		// check for connectivity
-		jenkins.testConnectivity(handleGenericError(function(isConnected) {
+		//TODO: make the Update Center ID configurable
+		var siteId = 'default';
+		jenkins.testConnectivity(siteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
 			if(!isConnected) {
-				setPanel(offlinePanel);
+				if (isFatal) { // We cannot continue, show error
+					setPanel(errorPanel, { errorMessage: 'Default update site connectivity check failed with fatal error: ' + errorMessage + '. If you see this issue for the custom Jenkins WAR bundle, consider setting the correct value of the hudson.model.UpdateCenter.defaultUpdateSiteId system property (requires Jenkins restart). Otherwise please create a bug in Jenkins JIRA.' });
+				} else { // The update center is offline, no problem
+					setPanel(offlinePanel);
+				}
 				return;
 			}
-
+			
 			// check for updates when first loaded...
 			pluginManager.installStatus(handleGenericError(function(data) {
 				var jobs = data.jobs;

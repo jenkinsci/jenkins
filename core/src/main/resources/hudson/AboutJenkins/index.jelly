@@ -34,7 +34,8 @@ THE SOFTWARE.
         <div class="col-md-24">
           <h1 version="${app.VERSION}">${%about(app.VERSION)}</h1>
           <p>${%blurb}</p>
-          <p>${%dependencies}</p>
+          <h2>${%dependencies}</h2>
+          <h3>Mavenized dependencies</h3>
           <j:set var="uri" value="${it.licensesURL}"/>
           <j:choose>
             <j:when test="${uri != null}">
@@ -46,7 +47,12 @@ THE SOFTWARE.
               <p>${%No information recorded}</p>
             </j:otherwise>
           </j:choose>
-          <p>${%plugin.dependencies}</p>
+          <h3>${%static.dependencies}</h3>
+          <ul>
+            <li><a href="http://fontawesome.io">Font Awesome</a>, created by <a href="https://twitter.com/davegandy">Dave Gandy</a>. <a href="http://scripts.sil.org/OFL">SIL OFL 1.1 License</a> and <a href="http://opensource.org/licenses/mit-license.html">MIT License</a></li>
+            <li><a href="https://www.google.com/fonts/specimen/Roboto">Google Fonts: Roboto</a>, created by <a href="https://plus.google.com/110879635926653430880/about">Christian Robertson</a>. <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License, version 2.0</a></li>
+          </ul>
+          <h2>${%plugin.dependencies}</h2>
           <ul>
             <j:forEach var="p" items="${app.pluginManager.plugins}"> <!-- TODO sort -->
             <li>
