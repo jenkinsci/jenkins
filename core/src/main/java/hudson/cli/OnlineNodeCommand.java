@@ -57,10 +57,7 @@ public class OnlineNodeCommand extends CLICommand {
     protected int run() throws Exception {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
-
-        final HashSet<String> hs = new HashSet<String>();
-        hs.addAll(nodes);
-
+        final HashSet<String> hs = new HashSet<String>(nodes);
         List<String> names = null;
 
         for (String node_s : hs) {
@@ -68,7 +65,6 @@ public class OnlineNodeCommand extends CLICommand {
 
             try {
                 computer = jenkins.getComputer(node_s);
-
                 if (computer == null) {
                     if (names == null) {
                         names = new ArrayList<String>();
@@ -100,6 +96,5 @@ public class OnlineNodeCommand extends CLICommand {
             throw new AbortException("Error occured while performing this command, see previous stderr output.");
         }
         return 0;
-
     }
 }
