@@ -24,7 +24,7 @@ import org.jvnet.hudson.test.ToolInstallations;
  * @author kutzi
  */
 @Issue("JENKINS-11592")
-public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
+public class GetEnvironmentOutsideMavenBuildTest extends HudsonTestCase {
 
     private int oldExecNum;
 
@@ -51,21 +51,25 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
         assertNotNull(Jenkins.getInstance().toComputer());
     }
 
+    private MavenModuleSet createSimpleMavenProject() throws Exception {
+        MavenModuleSet project = jenkins.createProject(MavenModuleSet.class, "mms");
+        MavenInstallation mi = ToolInstallations.configureMaven3();
+        project.setScm(new ExtractResourceSCM(getClass().getResource(
+                "/simple-projects.zip")));
+        project.setMaven(mi.getName());
+        project.setGoals("validate");
+        return project;
+    }
+
     private void whenJenkinsMasterHasNoExecutors() throws IOException {
         Jenkins.getInstance().setNumExecutors(0);
         assertNull(Jenkins.getInstance().toComputer());
     }
 
-    public void testFreestyle() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+    public void testMaven() throws Exception {
+        MavenModuleSet m = createSimpleMavenProject();
 
-        assertGetEnvironmentCallOutsideBuildWorks(project);
-    }
-
-    public void testMatrix() throws Exception {
-        MatrixProject createMatrixProject = jenkins.createProject(MatrixProject.class, "mp");
-
-        assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
+        assertGetEnvironmentCallOutsideBuildWorks(m);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

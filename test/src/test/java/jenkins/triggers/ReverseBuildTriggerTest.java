@@ -37,7 +37,7 @@ import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.tasks.BuildTrigger;
-import hudson.tasks.BuildTriggerTest;
+import hudson.tasks.MavenBuildTriggerTest;
 import hudson.triggers.Trigger;
 
 import java.util.Arrays;
@@ -82,7 +82,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
-    /** @see BuildTriggerTest#testDownstreamProjectSecurity */
+    /** @see MavenBuildTriggerTest#testDownstreamProjectSecurity */
     @Test public void upstreamProjectSecurity() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
