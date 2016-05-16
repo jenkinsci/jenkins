@@ -56,7 +56,16 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    Do not throw exceptions if <code>Jenkins.getInstance()</code> returns <code>null</code> instance.
+    It was causing failures on Jenkins agents in the case of unexpected API usage by agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34857">issue 34857</a>, regression in 2.4)
+  <li class=rfe>
+    Replace <code>jenkins.model.Jenkins.disableExceptionOnNullInstance</code> by
+    <code>jenkins.model.Jenkins.enableExceptionOnNullInstance<code> to address the
+    behavior change.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34857">issue 34857</a>)
+    jenkins/model/Jenkins.
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.4>What's new in 2.4</a> (2016/05/15)</h3>
