@@ -26,10 +26,8 @@ package hudson.model;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
-import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -38,7 +36,6 @@ import hudson.init.Initializer;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.util.Iterators.reverse;
 
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.AbstractQueueTask;
@@ -65,7 +62,6 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -294,6 +290,11 @@ public class Queue extends ResourceController implements Saveable {
         public Void call() throws Exception {
             maintain();
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return "Periodic Jenkins queue maintenance";
         }
     });
 
