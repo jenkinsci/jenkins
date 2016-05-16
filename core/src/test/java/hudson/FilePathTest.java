@@ -38,9 +38,11 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -342,7 +344,7 @@ public class FilePathTest {
     }
             
     /**
-     * Checks that big files (>8GB) can be archived and then unpacked.
+     * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
      * The actual file size limit is 8589934591 bytes.
      * @throws Exception test failure
@@ -635,6 +637,28 @@ public class FilePathTest {
         String log = baos.toString();
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
+    }
+
+    @Issue("JENKINS-23507")
+    @Test public void installIfNecessaryFollowsRedirects() throws Exception{
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+        FilePath.UrlFactory urlFactory = mock(FilePath.UrlFactory.class);
+        d.setUrlFactory(urlFactory);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final HttpURLConnection con2 = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_MOVED_TEMP);
+        URL url2 = someUrlToZipFile(con2);
+        String someUrl = url2.toExternalForm();
+        when(con.getHeaderField("Location")).thenReturn(someUrl);
+        when(urlFactory.newURL(someUrl)).thenReturn(url2);
+        when(con2.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(con2.getInputStream()).thenReturn(someZippedContent());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String message = "going ahead";
+        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {

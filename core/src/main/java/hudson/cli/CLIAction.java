@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import hudson.model.UnprotectedRootAction;
 import jenkins.model.Jenkins;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
@@ -51,7 +52,7 @@ import hudson.remoting.Channel;
  *
  * @author ogondza
  */
-@Extension
+@Extension @Symbol("cli")
 @Restricted(NoExternalUse.class)
 public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
@@ -71,14 +72,14 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         jenkins.checkPermission(Jenkins.READ);
 
         // Strip trailing slash
         final String commandName = req.getRestOfPath().substring(1);
         CLICommand command = CLICommand.clone(commandName);
         if (command == null) {
-            rsp.sendError(HttpServletResponse.SC_NOT_FOUND, "No such command " + commandName);
+            rsp.sendError(HttpServletResponse.SC_NOT_FOUND, "No such command");
             return;
         }
 
@@ -112,7 +113,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
                 FullDuplexHttpChannel server;
                 if(req.getHeader("Side").equals("download")) {
-                    duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    duplexChannels.put(uuid,server=new FullDuplexHttpChannel(uuid, !Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
                         @Override
                         protected void main(Channel channel) throws IOException, InterruptedException {
                             // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()

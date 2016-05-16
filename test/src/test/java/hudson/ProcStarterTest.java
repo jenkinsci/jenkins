@@ -40,7 +40,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Contains tests for {@link ProcStarter} class.
- * @author Oleg Nenashev <nenashev@synopsys.com>, Synopsys Inc.
+ * @author Oleg Nenashev, Synopsys Inc.
  * @since 1.568
  */
 public class ProcStarterTest {

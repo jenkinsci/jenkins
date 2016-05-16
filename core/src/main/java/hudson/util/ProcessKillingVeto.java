@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
  * 
  * @since TODO
  * 
- * @author Daniel Weber <daniel.weber.dev@gmail.com>
+ * @author <a href="mailto:daniel.weber.dev@gmail.com">Daniel Weber</a>
  */
 public abstract class ProcessKillingVeto implements ExtensionPoint {
 
@@ -74,9 +74,10 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      *         list if Jenkins is not available, never null.
      */
     public static List<ProcessKillingVeto> all() {
-        Jenkins jenkins = Jenkins.getInstance();
+        // check if we are a thread running on the master JVM or a thread running in a remote JVM
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins == null)
-            return Collections.emptyList();
+            return Collections.emptyList(); // we are remote, no body gets to veto
         return jenkins.getExtensionList(ProcessKillingVeto.class);
     }
 

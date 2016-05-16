@@ -45,7 +45,7 @@ public abstract class CommandDuringBuild extends CLICommand {
     protected Run getCurrentlyBuilding() throws CmdLineException {
         Run r = optCurrentlyBuilding();
         if (r==null)
-            throw new CmdLineException("This CLI command works only when invoked from inside a build");
+            throw new IllegalStateException("This CLI command works only when invoked from inside a build");
         return r;
     }
 
@@ -55,29 +55,30 @@ public abstract class CommandDuringBuild extends CLICommand {
     protected Run optCurrentlyBuilding() throws CmdLineException {
         try {
             CLICommand c = CLICommand.getCurrent();
-            if (c==null)    throw new IllegalStateException("Not executing a CLI command");
+            if (c==null)
+                throw new IllegalStateException("Not executing a CLI command");
             String[] envs = c.checkChannel().call(new GetCharacteristicEnvironmentVariables());
 
             if (envs[0]==null || envs[1]==null)
                 return null;
 
-            Job j = Jenkins.getInstance().getItemByFullName(envs[0],Job.class);
-            if (j==null)    throw new CmdLineException("No such job: "+envs[0]);
+            Job j = Jenkins.getActiveInstance().getItemByFullName(envs[0],Job.class);
+            if (j==null)
+                throw new IllegalArgumentException("No such job: "+envs[0]);
 
             try {
                 Run r = j.getBuildByNumber(Integer.parseInt(envs[1]));
-                if (r==null)    throw new CmdLineException("No such build #"+envs[1]+" in "+envs[0]);
+                if (r==null)
+                    throw new IllegalArgumentException("No such build #"+envs[1]+" in "+envs[0]);
                 if (!r.isBuilding()) {
-                    throw new CmdLineException(r + " is not currently being built");
+                    throw new IllegalStateException(r + " is not currently being built");
                 }
                 return r;
             } catch (NumberFormatException e) {
-                throw new CmdLineException("Invalid build number: "+envs[1]);
+                throw new IllegalArgumentException("Invalid build number: "+envs[1]);
             }
-        } catch (IOException e) {
-            throw new CmdLineException("Failed to identify the build being executed",e);
-        } catch (InterruptedException e) {
-            throw new CmdLineException("Failed to identify the build being executed",e);
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalArgumentException("Failed to identify the build being executed",e);
         }
     }
 

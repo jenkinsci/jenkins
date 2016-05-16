@@ -369,6 +369,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("JOB_BASE_NAME", getName());
         return env;
     }
 
@@ -848,7 +849,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     public File getBuildDir() {
-        Jenkins j = Jenkins.getInstance();
+        // we use the null check variant so that people can write true unit tests with a mock ItemParent
+        // and without a JenkinsRule. Such tests are of limited utility as there is a high risk of hitting
+        // some code that needs the singleton, but for persistence migration test cases it makes sense to permit
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return new File(getRootDir(), "builds");
         }

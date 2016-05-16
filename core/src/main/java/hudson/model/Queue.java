@@ -125,6 +125,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
@@ -172,13 +173,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class Queue extends ResourceController implements Saveable {
 
     /**
-     * Defines the refresh period for of the internal cache ({@link #itemsView}).
-     * Data should be defined in milliseconds, default value - 1000;
-     * @since 1.577
-     */
-    private static int CACHE_REFRESH_PERIOD = Integer.getInteger(Queue.class.getName() + ".cacheRefreshPeriod", 1000);
 
-    /**
      * Items that are waiting for its quiet period to pass.
      *
      * <p>
@@ -217,41 +212,6 @@ public class Queue extends ResourceController implements Saveable {
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
     private final Cache<Long,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
-
-    private final CachedItemList itemsView = new CachedItemList();
-
-    /**
-     * Maintains a copy of {@link Queue#getItems()}
-     *
-     * @see Queue#getApproximateItemsQuickly()
-     */
-    private class CachedItemList {
-        /**
-         * The current cached value.
-         */
-        @CopyOnWrite
-        private volatile List<Item> itemsView = Collections.emptyList();
-        /**
-         * When does the cache info expire?
-         */
-        private final AtomicLong expires = new AtomicLong();
-
-        List<Item> get() {
-            long t = System.currentTimeMillis();
-            long d = expires.get();
-            if (t>d) {// need to refresh the cache
-                long next = t+CACHE_REFRESH_PERIOD;
-                if (expires.compareAndSet(d,next)) {
-                    // avoid concurrent cache update via CAS.
-                    // if the getItems() lock is contended,
-                    // some threads will end up serving stale data,
-                    // but that's OK.
-                    itemsView = ImmutableList.copyOf(getItems());
-                }
-            }
-            return itemsView;
-        }
-    }
 
     /**
      * Data structure created for each idle {@link Executor}.
@@ -493,7 +453,6 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Wipes out all the items currently in the queue, as if all of them are cancelled at once.
      */
-    @CLIMethod(name="clear-queue")
     public void clear() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         lock.lock();
@@ -864,9 +823,11 @@ public class Queue extends ResourceController implements Saveable {
      * This method is primarily added to make UI threads run faster.
      *
      * @since 1.483
+     * @deprecated Use {@link #getItems()} directly. As of 1.607 the approximation is no longer needed.
      */
+    @Deprecated
     public List<Item> getApproximateItemsQuickly() {
-        return itemsView.get();
+        return Arrays.asList(getItems());
     }
 
     public Item getItem(long id) {
@@ -1221,7 +1182,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.592
      */
     public static void withLock(Runnable runnable) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             runnable.run();
@@ -1242,7 +1204,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.592
      */
     public static <V, T extends Throwable> V withLock(hudson.remoting.Callable<V, T> callable) throws T {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             return callable.call();
@@ -1262,7 +1225,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.592
      */
     public static <V> V withLock(java.util.concurrent.Callable<V> callable) throws Exception {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             return callable.call();
@@ -1279,7 +1243,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.618
      */
     public static boolean tryWithLock(Runnable runnable) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         if (queue == null) {
             runnable.run();
@@ -1295,7 +1260,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.618
      */
     public static Runnable wrapWithLock(Runnable runnable) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? runnable : new LockedRunnable(runnable);
     }
@@ -1307,7 +1273,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.618
      */
     public static <V, T extends Throwable> hudson.remoting.Callable<V, T> wrapWithLock(hudson.remoting.Callable<V, T> callable) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? callable : new LockedHRCallable<>(callable);
     }
@@ -1319,7 +1286,8 @@ public class Queue extends ResourceController implements Saveable {
      * @since 1.618
      */
     public static <V> java.util.concurrent.Callable<V> wrapWithLock(java.util.concurrent.Callable<V> callable) {
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getInstanceOrNull();
+        // TODO confirm safe to assume non-null and use getInstance()
         final Queue queue = jenkins == null ? null : jenkins.getQueue();
         return queue == null ? callable : new LockedJUCCallable<V>(callable);
     }
@@ -2518,7 +2486,7 @@ public class Queue extends ResourceController implements Saveable {
             Label label = getAssignedLabel();
             List<Node> allNodes = jenkins.getNodes();
             if (allNodes.isEmpty())
-                label = null;    // no master/slave. pointless to talk about nodes
+                label = null;    // no master/agent. pointless to talk about nodes
 
             if (label != null) {
                 Set<Node> nodes = label.getNodes();

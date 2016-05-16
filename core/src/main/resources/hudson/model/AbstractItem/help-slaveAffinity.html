@@ -1,17 +1,15 @@
 <div>
-  Sometimes a project can only be successfully built on a particular slave
-  (or master).  If so, this option forces Jenkins to always build this project
-  on a specific computer.
-
-  If there is a group of machines that the job can be built on, you can specify
-  that label as the node to tie on, which will cause Jenkins to build the
-  project on any of the machines with that label.
-
+  By default, builds of this project may be executed on any build agents that
+  are available and configured to accept new builds.
   <p>
-  Otherwise, uncheck the box so that Jenkins can schedule builds on available
-  nodes, which results in faster turn-around time.
-
+  When this option is checked, you have the possibility to ensure that builds of
+  this project only occur on a certain agent, or set of agents.
   <p>
-  This option is also useful when you'd like to make sure that a project can
-  be built on a particular node.
+  For example, if your project should only be built on a certain operating
+  system, or on machines that have a certain set of tools installed, or even one
+  specific machine, you can restrict this project to only execute on agents that
+  that meet those criteria.
+  <p>
+  The help text for the <i>Label Expression</i> field, shown when this option is
+  checked, provides more detailed information on how to specify agent criteria.
 </div>

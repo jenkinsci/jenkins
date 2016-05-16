@@ -6,6 +6,8 @@ import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlOption;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import hudson.matrix.MatrixProject;
+import hudson.maven.MavenModuleSet;
 import hudson.model.Item;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,12 +34,12 @@ public class ListScmBrowsersTest {
 
     @Test
     public void selectBoxesUnique_MavenProject() throws Exception {
-        check(j.createMavenProject());
+        check(j.jenkins.createProject(MavenModuleSet.class, "p"));
     }
 
     @Test
     public void selectBoxesUnique_MatrixProject() throws Exception {
-        check(j.createMatrixProject());
+        check(j.jenkins.createProject(MatrixProject.class, "p"));
     }
 
     private void check(Item p) throws IOException, SAXException {

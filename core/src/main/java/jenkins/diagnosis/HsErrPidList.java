@@ -24,13 +24,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 
 /**
  * Finds crash dump reports and show them in the UI.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(optional=true) // TODO why would an extension using a built-in extension point need to be marked optional?
+@Extension(optional=true) @Symbol("hsErrPid")
+// TODO why would an extension using a built-in extension point need to be marked optional?
 public class HsErrPidList extends AdministrativeMonitor {
     /**
      * hs_err_pid files that we think belong to us.

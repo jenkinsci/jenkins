@@ -12,6 +12,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.GrantedAuthorityImpl;
 import org.acegisecurity.userdetails.UserDetails;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
@@ -100,7 +101,9 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         @Override
         protected void loggedIn(@Nonnull String username) {
             try {
-                User u = User.get(username);
+                // user should have been created but may not have been saved for some realms
+                // but as this is a callback of a successful login we can safely create the user.
+                User u = User.getById(username, true);
                 LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
                 if (o==null)
                     u.addProperty(o=new LastGrantedAuthoritiesProperty());
@@ -132,7 +135,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
              */
 
 //            try {
-//                User u = User.get(username,false,Collections.emptyMap());
+//                User u = User.getById(username,false);
 //                LastGrantedAuthoritiesProperty o = u.getProperty(LastGrantedAuthoritiesProperty.class);
 //                if (o!=null)
 //                    o.invalidate();
@@ -146,7 +149,7 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         }
     }
 
-    @Extension
+    @Extension @Symbol("lastGrantedAuthorities")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         @Override
         public boolean isEnabled() {

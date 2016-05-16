@@ -28,6 +28,7 @@ import hudson.ExtensionListView;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -223,7 +224,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      * Fires the {@link #onFinalized(Run)} event.
      */
     public static void fireFinalized(Run r) {
-        if (Jenkins.getInstance() == null) {
+        if (Jenkins.getInstanceOrNull() == null) { // TODO use !Functions.isExtensionsAvailable() once JENKINS-33377
             return;
         }
         for (RunListener l : all()) {

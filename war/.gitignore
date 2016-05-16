@@ -1,2 +1,10 @@
 work
 /rebel.xml
+
+# Node
+node/
+node_modules/
+npm-debug.log
+
+# Generated JavaScript Bundles
+jsbundles

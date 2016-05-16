@@ -35,7 +35,6 @@ import org.junit.Test
 import org.jvnet.hudson.test.Issue
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder
 import org.jvnet.hudson.test.JenkinsRule
-import org.jvnet.hudson.test.RandomlyFails
 import org.jvnet.hudson.test.TestBuilder
 import org.jvnet.hudson.test.TestExtension
 import org.kohsuke.stapler.StaplerRequest
@@ -159,7 +158,7 @@ public class BuildCommandTest {
         }
     }
 
-    @RandomlyFails("Started test0 #1")
+    // TODO randomly fails: Started test0 #1
     @Test void consoleOutput() {
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
@@ -174,7 +173,7 @@ public class BuildCommandTest {
         }
     }
 
-    @RandomlyFails("Started test0 #1")
+    // TODO randomly fails: Started test0 #1
     @Test void consoleOutputWhenBuildSchedulingRefused() {
         def p = j.createFreeStyleProject()
         def cli = new CLI(j.URL)
@@ -201,8 +200,8 @@ public class BuildCommandTest {
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("the-project");
 
-        assertThat(result, failedWith(-1));
-        assertThat(result.stderr(), containsString("Cannot build the-project because it is disabled."));
+        assertThat(result, failedWith(4));
+        assertThat(result.stderr(), containsString("ERROR: Cannot build the-project because it is disabled."));
         assertNull("Project should not be built", project.getBuildByNumber(1));
     }
 
@@ -213,8 +212,8 @@ public class BuildCommandTest {
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("new-one");
 
-        assertThat(result, failedWith(-1));
-        assertThat(result.stderr(), containsString("Cannot build new-one because its configuration has not been saved."));
+        assertThat(result, failedWith(4));
+        assertThat(result.stderr(), containsString("ERROR: Cannot build new-one because its configuration has not been saved."));
         assertNull("Project should not be built", newOne.getBuildByNumber(1));
     }
 
@@ -257,8 +256,8 @@ public class BuildCommandTest {
         // Create CLI & run command
         def invoker = new CLICommandInvoker(j, new BuildCommand());
         def result = invoker.invokeWithArgs("foo","-p","string=value");
-        assertThat(result, failedWith(-1));
-        assertThat(result.stderr(), containsString("No default value for the parameter \'FOO\'."));
+        assertThat(result, failedWith(2));
+        assertThat(result.stderr(), containsString("ERROR: No default value for the parameter \'FOO\'."));
         
         Thread.sleep(5000); // Give the job 5 seconds to be submitted
         assertNull("Build should not be scheduled", j.jenkins.getQueue().getItem(project));

@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.PluginManager;
@@ -57,20 +58,20 @@ public class InstallPluginCommand extends CLICommand {
     @Argument(metaVar="SOURCE",required=true,usage="If this points to a local file, that file will be installed. " +
             "If this is an URL, Jenkins downloads the URL and installs that as a plugin." +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like \"findbugs\")," +
-            "and the plugin will be installed from the update center")
+            "and the plugin will be installed from the update center.")
     public List<String> sources = new ArrayList<String>();
 
-    @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically.)")
+    @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
     public String name;
 
-    @Option(name="-restart",usage="Restart Jenkins upon successful installation")
+    @Option(name="-restart",usage="Restart Jenkins upon successful installation.")
     public boolean restart;
 
     @Option(name="-deploy",usage="Deploy plugins right away without postponing them until the reboot.")
     public boolean dynamicLoad;
 
     protected int run() throws Exception {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         h.checkPermission(PluginManager.UPLOAD_PLUGINS);
         PluginManager pm = h.getPluginManager();
 
@@ -113,8 +114,11 @@ public class InstallPluginCommand extends CLICommand {
             if (p!=null) {
                 stdout.println(Messages.InstallPluginCommand_InstallingFromUpdateCenter(source));
                 Throwable e = p.deploy(dynamicLoad).get().getError();
-                if (e!=null)
-                    throw new IOException("Failed to install plugin "+source,e);
+                if (e!=null) {
+                    AbortException myException = new AbortException("Failed to install plugin " + source);
+                    myException.initCause(e);
+                    throw myException;
+                }
                 continue;
             }
 
@@ -137,7 +141,7 @@ public class InstallPluginCommand extends CLICommand {
                 }
             }
 
-            return 1;
+            throw new AbortException("Error occurred, see previous output.");
         }
 
         if (restart)
@@ -150,6 +154,6 @@ public class InstallPluginCommand extends CLICommand {
     }
 
     private File getTargetFile() {
-        return new File(Jenkins.getInstance().getPluginManager().rootDir,name+".jpi");
+        return new File(Jenkins.getActiveInstance().getPluginManager().rootDir,name+".jpi");
     }
 }

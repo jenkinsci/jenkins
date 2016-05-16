@@ -24,6 +24,7 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -38,7 +39,7 @@ public class DefaultMyViewsTabBar extends MyViewsTabBar {
     public DefaultMyViewsTabBar() {
     }
 
-    @Extension
+    @Extension @Symbol("standard")
     public static class DescriptorImpl extends MyViewsTabBarDescriptor {
         @Override
         public String getDisplayName() {

@@ -69,12 +69,22 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+    }
+
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
     }
 
     @Deprecated
@@ -163,7 +173,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
                 getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
-            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
                 url = req.getContextPath()+'/'+item.getUrl();
             rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
         } else

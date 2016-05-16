@@ -48,6 +48,7 @@ import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -176,7 +177,7 @@ public class SCMTrigger extends Trigger<Item> {
         return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    @Extension
+    @Extension @Symbol("scm")
     public static class DescriptorImpl extends TriggerDescriptor {
 
         private static ThreadFactory threadFactory() {

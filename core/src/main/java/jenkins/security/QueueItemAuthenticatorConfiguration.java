@@ -7,6 +7,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  * @since 1.520
  */
-@Extension
+@Extension @Symbol("queueItemAuthenticator")
 public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
     private final DescribableList<QueueItemAuthenticator,QueueItemAuthenticatorDescriptor> authenticators
         = new DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor>(this);

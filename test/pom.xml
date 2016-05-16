@@ -28,18 +28,17 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.643-SNAPSHOT</version>
+    <version>2.4-SNAPSHOT</version>
   </parent>
 
-  <artifactId>jenkins-test-harness</artifactId>
+  <artifactId>test</artifactId>
 
-  <name>Test harness for Jenkins and plugins</name>
-  <description>Unit test harness (src/main) and Unit tests for Jenkins core (src/test)</description>
+  <name>Tests for Jenkins core</name>
+  <description>Functional tests for Jenkins core</description>
 
   <properties>
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
-    <ignore.random.failures>false</ignore.random.failures>
     <jacocoSurefireArgs /><!-- empty by default -->
   </properties>
 
@@ -59,6 +58,24 @@ THE SOFTWARE.
           <artifactId>sshd</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-test-harness</artifactId>
+      <version>2.7</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-war</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-test-harness-tools</artifactId>
+      <version>2.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -87,20 +104,11 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.2</version>
-    </dependency>
-    <dependency>
+    <dependency> <!-- TODO seems to be used only by PluginManagerTest -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>subversion</artifactId>
       <version>1.45</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mailer</artifactId>
-      <version>1.10</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -111,6 +119,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
       <version>1.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -121,18 +130,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
       <version>1.2-beta-4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mortbay.jetty</groupId>
-      <artifactId>jetty</artifactId>
-      <version>6.1.26</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>test-annotations</artifactId>
-      <version>${test-annotations.version}</version>
-      <!-- in this module we need this as a compile scope, whereas in the parent it's test -->
-      <scope>compile</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
@@ -140,38 +138,18 @@ THE SOFTWARE.
       <version>1.7</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
+      <artifactId>hamcrest-core</artifactId>
       <version>1.3</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sourceforge.htmlunit</groupId>
-      <artifactId>htmlunit</artifactId>
-      <version>2.18</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>embedded-rhino-debugger</artifactId>
-      <version>1.2</version>
       <exclusions>
         <exclusion>
-          <groupId>org.jvnet.hudson</groupId>
-          <artifactId>htmlunit-core-js</artifactId>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -190,16 +168,6 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-insane</artifactId>
-      <version>RELEASE72</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.stephenc.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <version>1.3.9-1</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.geb</groupId>
@@ -233,15 +201,14 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx256m -XX:MaxPermSize=128m</argLine>
+          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -XX:MaxPermSize=128m</argLine>
           <systemPropertyVariables>
               <!-- use AntClassLoader that supports predictable file handle release -->
               <hudson.ClassicPluginStrategy.useAntClassLoader>true</hudson.ClassicPluginStrategy.useAntClassLoader>
               <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
               <buildDirectory>${project.build.directory}</buildDirectory>
-              <ignore.random.failures>${ignore.random.failures}</ignore.random.failures>
           </systemPropertyVariables>
-          <reuseForks>true</reuseForks>
+          <reuseForks>false</reuseForks>
           <forkCount>${concurrency}</forkCount>
         </configuration>
       </plugin>
@@ -258,16 +225,6 @@ THE SOFTWARE.
               <goal>testCompile</goal>
             </goals>
           </execution>
-          <execution>
-            <id>preset-packager</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>execute</goal>
-            </goals>
-            <configuration>
-              <source>${pom.basedir}/src/main/preset-data/package.groovy</source>
-            </configuration>
-          </execution>
         </executions>
         <dependencies>
           <dependency>
@@ -281,15 +238,7 @@ THE SOFTWARE.
             <artifactId>ant-launcher</artifactId>
             <version>1.8.0</version>
           </dependency>
-          <dependency>
-            <groupId>org.codehaus.gmaven.runtime</groupId>
-            <artifactId>gmaven-runtime-2.0</artifactId>
-            <version>1.5-jenkins-1</version>
-          </dependency>
         </dependencies>
-        <configuration>
-          <providerSelection>2.0</providerSelection>
-        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -310,6 +259,7 @@ THE SOFTWARE.
       </activation>
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
       </properties>
     </profile>
     <profile>

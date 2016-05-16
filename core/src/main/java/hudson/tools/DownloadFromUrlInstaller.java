@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.net.URL;
 
@@ -126,8 +127,92 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             Downloadable.all().add(createDownloadable());
         }
 
-        protected Downloadable createDownloadable() {
+        /**
+         * function that creates a {@link Downloadable}.
+         * @return a downloadable object
+         */
+        public Downloadable createDownloadable() {
+            if (this instanceof DownloadFromUrlInstaller.DescriptorImpl) {
+                final DownloadFromUrlInstaller.DescriptorImpl delegate = (DownloadFromUrlInstaller.DescriptorImpl)this;
+                return new Downloadable(getId()) {
+                    public JSONObject reduce(List<JSONObject> jsonList) {
+                        if (isDefaultSchema(jsonList)) {
+                            return delegate.reduce(jsonList);
+                        } else {
+                            //if it's not default schema fall back to the super class implementation
+                            return super.reduce(jsonList);
+                        }
+                    }
+                };
+            }
             return new Downloadable(getId());
+        }
+
+        /**
+         * this function checks is the update center tool has the default schema
+         * @param jsonList the list of Update centers json files
+         * @return true if the schema is the default one (id, name, url), false otherwise
+         */
+        private boolean isDefaultSchema(List<JSONObject> jsonList) {
+            JSONObject jsonToolInstallerList = jsonList.get(0);
+            ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolInstallerList, ToolInstallerList.class);
+
+            if (toolInstallerList != null) {
+                ToolInstallerEntry[] entryList = toolInstallerList.list;
+                ToolInstallerEntry sampleEntry = entryList[0];
+                if (sampleEntry != null) {
+                    if (sampleEntry.id != null && sampleEntry.name != null && sampleEntry.url != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private JSONObject reduce(List<JSONObject> jsonList) {
+            List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
+            //collect all tool installers objects from the multiple json objects
+            for (JSONObject jsonToolList : jsonList) {
+                ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
+                reducedToolEntries.addAll(Arrays.asList(toolInstallerList.list));
+            }
+
+            while (Downloadable.hasDuplicates(reducedToolEntries, "id")) {
+                List<ToolInstallerEntry> tmpToolInstallerEntries = new LinkedList<>();
+                //we need to skip the processed entries
+                boolean processed[] = new boolean[reducedToolEntries.size()];
+                for (int i = 0; i < reducedToolEntries.size(); i++) {
+                    if (processed[i] == true) {
+                        continue;
+                    }
+                    ToolInstallerEntry data1 = reducedToolEntries.get(i);
+                    boolean hasDuplicate = false;
+                    for (int j = i + 1; j < reducedToolEntries.size(); j ++) {
+                        ToolInstallerEntry data2 = reducedToolEntries.get(j);
+                        //if we found a duplicate we choose the first one
+                        if (data1.id.equals(data2.id)) {
+                            hasDuplicate = true;
+                            processed[j] = true;
+                            tmpToolInstallerEntries.add(data1);
+                            //after the first duplicate has been found we break the loop since the duplicates are
+                            //processed two by two
+                            break;
+                        }
+                    }
+                    //if no duplicate has been found we just insert the entry in the tmp list
+                    if (!hasDuplicate) {
+                        tmpToolInstallerEntries.add(data1);
+                    }
+                }
+                reducedToolEntries = tmpToolInstallerEntries;
+            }
+
+            ToolInstallerList toolInstallerList = new ToolInstallerList();
+            toolInstallerList.list = new ToolInstallerEntry[reducedToolEntries.size()];
+            reducedToolEntries.toArray(toolInstallerList.list);
+            JSONObject reducedToolEntriesJsonList = JSONObject.fromObject(toolInstallerList);
+            //return the list with no duplicates
+            return reducedToolEntriesJsonList;
         }
 
         /**
