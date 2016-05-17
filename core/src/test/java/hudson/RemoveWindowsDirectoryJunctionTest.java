@@ -19,7 +19,7 @@ public class RemoveWindowsDirectoryJunctionTest {
 
     @Before
     public void windowsOnly() {
-       assumeTrue(File.pathSeparatorChar==';');
+       assumeTrue(Functions.isWindows());
     }
 
     @Test
