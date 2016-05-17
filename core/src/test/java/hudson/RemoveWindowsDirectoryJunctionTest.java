@@ -41,9 +41,12 @@ public class RemoveWindowsDirectoryJunctionTest {
     }
 
     private File makeJunction(File baseDir, File pointToDir) throws Exception {
-       File junc = new File(baseDir, "testJunction");
-       Process p = Runtime.getRuntime().exec("cmd.exe /C \"mklink /J " + junc.getPath() + " " + pointToDir.getPath() + "\"");
-       p.waitFor();
+       File junc = new File(baseDir, "test Junction");
+       String cmd = "mklink /J \"" + junc.getPath() + "\" \"" + pointToDir.getPath() + "\"";
+       ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", cmd);
+       pb.inheritIO();
+       Process p = pb.start();
+       assertTrue("Running mklink failed (cmd=" + cmd + ")", p.waitFor() == 0);
        return junc;
     }
     
