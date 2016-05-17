@@ -25,18 +25,17 @@ public class RemoveWindowsDirectoryJunctionTest {
     @Test
     @Issue("JENKINS-2995")
     public void testJunctionIsRemovedButNotContents() throws Exception {
-        TemporaryFolder dir1 = new TemporaryFolder(tmp.getRoot());
-        dir1.create();
-        File dir1Root = dir1.getRoot();
-        File f1 = dir1.newFile();
-        File j1 = makeJunction(tmp.getRoot(), dir1Root);
+        File subdir1 = tmp.newFolder("notJunction");
+        File f1 = new File(subdir1, "testfile1.txt");
+        assertTrue("Unable to create temporary file in notJunction directory", f1.createNewFile());
+        File j1 = makeJunction(tmp.getRoot(), subdir1);
         print(tmp.getRoot());
-        print(dir1Root);
+        print(subdir1);
         print(j1);
         Util.deleteRecursive(j1);
-        print(dir1Root);
+        print(subdir1);
         print(tmp.getRoot());
-        assertTrue(f1.exists());
+        assertTrue("Contents of Windows Junction should not be removed", f1.exists());
     }
 
     private File makeJunction(File baseDir, File pointToDir) throws Exception {
