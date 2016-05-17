@@ -26,13 +26,8 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.BulkChange;
+import hudson.*;
 
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.ExtensionPoint;
-import hudson.PermalinkList;
-import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.Range;
@@ -684,9 +679,37 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    @Override public void delete() throws IOException, InterruptedException {
+    @Override
+    public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
+        if (this instanceof TopLevelItem) {
+            cleanupWorkspaces((TopLevelItem) this);
+        }
+    }
+
+    /**
+     * Clean out workspaces for attached agents (best efforts, as they may not always be online)
+     * There is also hudson.model.WorkspaceCleanupThread to catch ones that were missed.
+     */
+    private void cleanupWorkspaces(TopLevelItem item) {
+        Jenkins j = Jenkins.getInstance();
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(j);
+        nodes.addAll(j.getNodes());
+        Logger log = Logger.getLogger(Job.class.getName());
+        for (Node node : nodes) {
+            FilePath ws = node.getWorkspaceFor(item);
+            if (ws != null) {
+                try {
+                            ws.deleteRecursive();
+                        } catch (IOException e) {
+                            log.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
+                        } catch (InterruptedException e) {
+                            log.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
+                        }
+                }
+        }
     }
 
     /**
