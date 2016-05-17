@@ -26,8 +26,14 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.*;
 
+import hudson.BulkChange;
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.ExtensionPoint;
+import hudson.FilePath;
+import hudson.PermalinkList;
+import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Fingerprint.Range;
