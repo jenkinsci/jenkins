@@ -81,6 +81,7 @@ public class ProcessTreeKillerTest {
 
     @Test
     public void doNotKillProcessWithCookie() throws Exception {
+        Assume.assumeFalse("This test does not involve windows", Functions.isWindows());
         ProcessTree.enabled = true;
         SpawnBuilder spawner = new SpawnBuilder();
 
