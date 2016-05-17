@@ -29,10 +29,12 @@ public class RemoveWindowsDirectoryJunctionTest {
         File f1 = new File(subdir1, "testfile1.txt");
         assertTrue("Unable to create temporary file in notJunction directory", f1.createNewFile());
         File j1 = makeJunction(tmp.getRoot(), subdir1);
+        System.out.println("Before Util.deleteRecursive(j1)");
         print(tmp.getRoot());
         print(subdir1);
         print(j1);
         Util.deleteRecursive(j1);
+        System.out.println("After Util.deleteRecursive(j1)");
         print(subdir1);
         print(tmp.getRoot());
         assertTrue("Contents of Windows Junction should not be removed", f1.exists());
@@ -46,10 +48,10 @@ public class RemoveWindowsDirectoryJunctionTest {
     }
     
     private void print(File d) {
-        System.out.println(d.getPath());
+        System.out.println("  '" + d.getPath() + "'");
         String[] c = d.list();
         for (String s : c) {
-            System.out.println("   '" + s + "'");
+            System.out.println("    '" + s + "'");
         }
     }
 }
