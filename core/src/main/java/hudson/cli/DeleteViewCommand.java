@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.cli.handlers.ViewOptionHandler;
 import hudson.model.ViewGroup;
@@ -43,8 +44,6 @@ public class DeleteViewCommand extends CLICommand {
 
     @Argument(usage="View names to delete", required=true, multiValued=true)
     private List<String> views;
-
-    private static final Logger LOGGER = Logger.getLogger(DeleteViewCommand.class.getName());
 
     @Override
     public String getShortDescription() {
@@ -67,42 +66,37 @@ public class DeleteViewCommand extends CLICommand {
             View view = null;
 
             try {
-                try {
-                    view = voh.getView(view_s);
-                    if (view == null) {
-                        stderr.println("user is missing the View/Read permission");
-                        errorOccurred = true;
-                        continue;
-                    }
-                    view.checkPermission(View.DELETE);
-                } catch (Exception e) {
-                    stderr.println(e.getMessage());
-                    errorOccurred = true;
-                    continue;
+                view = voh.getView(view_s);
+
+                if (view == null) {
+                    throw new IllegalArgumentException("View name is empty");
                 }
+
+                view.checkPermission(View.DELETE);
 
                 ViewGroup group = view.getOwner();
                 if (!group.canDelete(view)) {
-                    stderr.format("%s does not allow to delete '%s' view\n",
+                    throw new IllegalStateException(String.format("%s does not allow to delete '%s' view",
                             group.getDisplayName(),
-                            view.getViewName()
-                    );
-                    errorOccurred = true;
-                    continue;
+                            view.getViewName()));
                 }
 
                 group.deleteView(view);
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during deletion of view '%s': %s",
-                        view == null ? "(null)" : view.getViewName(),
-                        e.getMessage());
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = String.format(view_s + ": " + e.getMessage());
                 stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
                 errorOccurred = true;
-                //noinspection UnnecessaryContinue
                 continue;
             }
         }
-        return errorOccurred ? -1 : 0;
+
+        if (errorOccurred) {
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
+        return 0;
     }
 }

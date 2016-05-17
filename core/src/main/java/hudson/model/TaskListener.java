@@ -37,7 +37,7 @@ import java.io.Serializable;
 /**
  * Receives events that happen during some lengthy operation
  * that has some chance of failures, such as a build, SCM change polling,
- * slave launch, and so on.
+ * agent launch, and so on.
  *
  * <p>
  * This interface is implemented by Hudson core and passed to extension points so that

@@ -25,9 +25,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <j:invokeStatic var="from" className="java.net.URLEncoder" method="encode">
-    <j:arg value="${if (request.session.attribute('from')!=null) request.session.getAttribute('from');  else if (request.getParameter('from')!=null) request.getParameter('from'); else if (request.requestURI=='/loginError' || request.requestURI=='/login') '/'; else request.requestURI;}"/>
-    <j:arg value="UTF-8"/>
-  </j:invokeStatic>
-  <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${from}"><b>${%login}</b></a>
+  <a href="${rootURL}/${app.securityRealm.loginUrl}?from=${app.securityRealm.from}"><b>${%login}</b></a>
 </j:jelly>

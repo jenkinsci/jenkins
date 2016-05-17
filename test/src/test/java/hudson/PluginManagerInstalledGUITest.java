@@ -33,12 +33,13 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
+import org.jvnet.hudson.test.TestPluginManager;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,10 +50,28 @@ import java.util.Set;
 public class PluginManagerInstalledGUITest {
 
     @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    public JenkinsRule jenkinsRule = new JenkinsRule() {
+        @Override
+        public PluginManager getPluginManager() {
+            try {
+                return new TestPluginManager() {
+                    @Override
+                    protected Collection<String> loadBundledPlugins() throws Exception {
+                        try {
+                            return super.loadBundledPlugins();
+                        } finally {
+                            installResourcePlugin("tasks.jpi");
+                        }
+                    }
+                };
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+                return null;
+            }
+        }
+    };
     
     @Test
-    @WithPlugin("tasks.jpi")
     public void test_enable_disable_uninstall() throws IOException, SAXException {
         InstalledPlugins installedPlugins = new InstalledPlugins();
         

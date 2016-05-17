@@ -22,95 +22,6 @@
  * THE SOFTWARE.
  */
 
-/* General page layout */
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0 0 40px 0;
-}
-
-#header {
-  background-color: #000000;
-  height: 40px;
-}
-
-#header div {
-  display: inline-block;
-  height: inherit;
-}
-#header .logo {
-  margin-left: 16px;
-}
-
-#jenkins-home-link {
-  position: absolute;
-  height: 40px;
-}
-
-#jenkins-head-icon {
-  position: absolute;
-  bottom: 0px;
-}
-#jenkins-name-icon {
-  position: absolute;
-  bottom: 3px;
-  left: 32px;
-}
-
-#header .searchbox, #header .login {
-  float: right;
-  padding: 6px 11px;
-}
-
-#breadcrumbBar, #footer-container, .top-sticker-inner {
-  background-color: #f6faf2;
-}
-
-#page-body.clear:after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
-#side-panel {
-  padding: 15px 15px 40px 15px;
-  float: left;
-  width: 320px;
-}
-
-#main-panel {
-  padding: 15px 15px 40px 15px;
-  margin-left: 320px;
-}
-
-@media (max-width: 750px) {
-  #side-panel {
-    width: 100%;
-    float: none;
-    padding-bottom: 20px;
-  }
-
-  #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (min-width: 1170px) {
-  #side-panel {
-    width: 360px;
-  }
-
-  #main-panel {
-    margin-left: 360px;
-  }
-}
-
 /* task */
 
 #tasks {
@@ -129,36 +40,27 @@ body {
   margin-bottom: 20px;
 }
 
-/* footer */
-
-footer {
-  padding: 11px 0;
-  background-color: #f6faf2;
-  border-top: 1px solid #d3d7cf;
-  border-bottom: 1px solid #f6faf2;
-  width: 100%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  clear: both;
-  font-size: 12px;
-  text-align: right;
-}
-
-footer span {
-  margin-left: 15px;
-  line-height: 14px;
-}
-
-
 /* Fonts etc */
 
 body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
@@ -355,7 +257,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;  
 }
 
 pre.console {
@@ -567,7 +469,7 @@ div.pane-header {
 }
 
 div.pane-header .collapse {
-	float: right;
+  float: right;
   margin-left: 3px;
 }
 
@@ -703,11 +605,68 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 div.behavior-loading {
-    position: absolute; width: 80%; height:100%;
+    position: absolute;
+    left:0; right:0;
+    width:100%;
+    height:100%;
     background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
+}
+
+.config div.behavior-loading{
+    background: rgba(255,255,255,.85);
+    left: 0;
+    width:100%;
+    right: 0;
+    top: 15px;
+    bottom: 0px;
+    height: 100%;
+    width: auto;
+    min-height: 100%;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    font-size: 1.5em;
+    z-index: 99;
+    opacity: 1;
+    color: #999;
+    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+}
+
+.behavior-loading:before {
+  content:' ';
+  display:block;
+  width: 100px;
+  height: 100px;
+  margin: 200px auto 25px;
+  background-color: rgba(0,0,0,.15);
+  border:5px solid rgba(0,0,0,.33);
+  position:relative;
+  z-index:2;
+  border-radius: 100%;
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+  box-shaodw:#fff 0 0 0 10px
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
 }
 
 LABEL.attach-previous {
@@ -1124,14 +1083,25 @@ table.parameters > tbody:hover {
 }
 .build-row-cell .build-badge {
   display: inline-block;
-  padding: 2px;
-  width: 70%;
   text-align: right;
+  width: 70%;
+  padding: 2px 0;
 }
-.build-row-cell .build-badge span:after {
-    content: " ";
-    font-size: 0%;
+.build-row-cell .build-badge > span {
+  display: inline-block;
+  max-width: 256px;
+  padding: 0 1px;
+  overflow: hidden;
 }
+.build-row-cell .build-badge > span + span {
+  margin: 0 0 0 2px !important;
+}
+@media (min-width: 1170px) {
+  .build-row-cell .build-badge > span {
+    max-width: 296px;
+  }
+}
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
@@ -1338,6 +1308,12 @@ TABLE.fingerprint-in-build TD {
   opacity: 0.2;
 }
 
+#plugins tr.has-dependants-but-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
 #plugins tr.has-disabled-dependency .enable input {
   opacity: 0.4;
 }
@@ -1442,7 +1418,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-	color: inherit;
+  color: inherit;
 }
 
 DIV.yahooTree td {
@@ -1690,7 +1666,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    // TODO does not work: font-size: 70%;
+    font-size: 70%;
 }
 
 .logrecord-metadata-new {
@@ -1703,38 +1679,41 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
-	border-collapse: collapse;
+  border: 1px #BBBBBB solid;
+  border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
-	font-weight: bold;
+  background: #f0f0f0;
+  font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  padding: 3px;
 }
 td#matrix-title {
-	padding: 3px;
+  padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
-	font-weight: bold;
-	background: #f0f0f0;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  font-weight: bold;
+  background: #f0f0f0;
+  padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
-	text-align: center;
+  border: 1px #BBBBBB solid;
+  text-align: center;
 }
 
 /* ========================= legend.jelly ================== */
 table#legend-table td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 /* ========================= Button styles ================= */
-
+.btn-box {
+  display:block; 
+  margin-top:2em
+}
 #disable-project {
     margin-top: 6px;
 }
@@ -1758,7 +1737,7 @@ table#legend-table td {
     border-style: none;
     border-color: transparent;
 }
-
+#jenkins .yui-button .btn,
 #jenkins .yui-button button {
   font-size: 12px;
   padding: 3px 20px;
@@ -1777,6 +1756,7 @@ table#legend-table td {
     padding-right: 35px;
 }
 
+#jenkins .yui-button .btn:hover,
 #jenkins .yui-button button:hover,
 #jenkins .yui-button .hover
 {
@@ -1784,6 +1764,7 @@ table#legend-table td {
     border: 1px solid #c0c0c0;
 }
 
+#jenkins .yui-button .btn:active,
 #jenkins .yui-button button:active,
 #jenkins .yui-button .active {
     background-color: #bbb;
@@ -1791,6 +1772,7 @@ table#legend-table td {
     border: 1px solid #bbb;
 }
 
+#jenkins .yui-button .btn.disabled,
 #jenkins .yui-button button[disabled],
 #jenkins .yui-button button[disabled]:hover,
 #jenkins .yui-button button[disabled]:active,
@@ -1801,19 +1783,20 @@ table#legend-table td {
 }
 
 /* Color overrides */
+#jenkins .yui-button.primary .btn,
 #jenkins .yui-button.primary button {
     background-color: #4b758b;
     color: #eee;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:hover,
 #jenkins .yui-button.primary button:hover,
 #jenkins .yui-button.primary .hover
 {
     background-color: #3f6275;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:active,
 #jenkins .yui-button.primary button:active,
 #jenkins .yui-button.primary .active
 {
@@ -1874,4 +1857,25 @@ table#legend-table td {
     color: #8a6d3b;
     background-color: #fcf8e3;
     border-color: #faebcc;
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xlg {
+    width: 48px;
+    height: 48px;
 }

@@ -37,7 +37,7 @@ import org.apache.tools.ant.util.DeweyDecimal;
 
 /**
  * Extension point to allow control over how {@link Computer}s are "launched",
- * meaning how they get connected to their slave agent program.
+ * meaning how they get connected to their agent program.
  *
  * <h2>Associated View</h2>
  * <dl>
@@ -54,17 +54,17 @@ import org.apache.tools.ant.util.DeweyDecimal;
 public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {
     /**
      * Returns true if this {@link ComputerLauncher} supports
-     * programatic launch of the slave agent in the target {@link Computer}.
+     * programatic launch of the agent in the target {@link Computer}.
      */
     public boolean isLaunchSupported() {
         return true;
     }
 
     /**
-     * Launches the slave agent for the given {@link Computer}.
+     * Launches the agent for the given {@link Computer}.
      *
      * <p>
-     * If the slave agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
+     * If the agent is launched successfully, {@link SlaveComputer#setChannel(InputStream, OutputStream, TaskListener, Channel.Listener)}
      * should be invoked in the end to notify Hudson of the established connection.
      * The operation could also fail, in which case there's no need to make any callback notification,
      * (except to notify the user of the failure through {@link StreamTaskListener}.)

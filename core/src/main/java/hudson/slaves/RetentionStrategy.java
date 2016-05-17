@@ -32,6 +32,7 @@ import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -48,7 +49,7 @@ import java.util.logging.Logger;
 public abstract class RetentionStrategy<T extends Computer> extends AbstractDescribableImpl<RetentionStrategy<?>> implements ExtensionPoint {
 
     /**
-     * This method will be called periodically to allow this strategy to decide what to do with it's owning slave.
+     * This method will be called periodically to allow this strategy to decide what to do with it's owning agent.
      *
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide what action to take.
@@ -59,11 +60,11 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
     public abstract long check(T c);
 
     /**
-     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
+     * This method is called to determine whether manual launching of the agent is allowed at this point in time.
      * @param c {@link Computer} for which this strategy is assigned. This computer may be online or offline.
      *          This object also exposes a bunch of properties that the callee can use to decide if manual launching is
      * allowed at this time.
-     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
     public boolean isManualLaunchAllowed(T c) {
         return true;
@@ -85,7 +86,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
     /**
      * Called when a new {@link Computer} object is introduced (such as when Hudson started, or when
-     * a new slave is added.)
+     * a new agent is added.)
      *
      * <p>
      * The default implementation of this method delegates to {@link #check(Computer)},
@@ -164,7 +165,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension(ordinal=100)
+        @Extension(ordinal=100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
@@ -180,12 +181,12 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         private static final Logger logger = Logger.getLogger(Demand.class.getName());
 
         /**
-         * The delay (in minutes) for which the slave must be in demand before tring to launch it.
+         * The delay (in minutes) for which the agent must be in demand before tring to launch it.
          */
         private final long inDemandDelay;
 
         /**
-         * The delay (in minutes) for which the slave must be idle before taking it offline.
+         * The delay (in minutes) for which the agent must be idle before taking it offline.
          */
         private final long idleDelay;
 
@@ -276,7 +277,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension
+        @Extension @Symbol("demand")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             @Override
             public String getDisplayName() {

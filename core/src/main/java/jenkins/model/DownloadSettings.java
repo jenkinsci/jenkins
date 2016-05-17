@@ -29,12 +29,16 @@ import hudson.Main;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.DownloadService;
+import hudson.model.DownloadService.Downloadable;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -46,7 +50,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * @see DownloadService
  */
 @Restricted(NoExternalUse.class) // no clear reason for this to be an API
-@Extension public final class DownloadSettings extends GlobalConfiguration {
+@Extension @Symbol("downloadSettings")
+public final class DownloadSettings extends GlobalConfiguration {
 
     public static DownloadSettings get() {
         return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
@@ -87,7 +92,9 @@ import org.kohsuke.stapler.StaplerRequest;
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
     }
 
-    @Extension public static final class DailyCheck extends AsyncPeriodicWork {
+    @Extension @Symbol("updateCenterCheck")
+    public static final class DailyCheck extends AsyncPeriodicWork {
+        private static final Logger LOGGER = Logger.getLogger(DailyCheck.class.getName());
 
         public DailyCheck() {
             super("Download metadata");
@@ -113,8 +120,21 @@ import org.kohsuke.stapler.StaplerRequest;
                 }
             }
             if (!due) {
+                // JENKINS-32886: downloadables like the tool installer data may have never been tried if the plugin
+                // was installed "after a restart", so let's give them a try here.
+                final long now = System.currentTimeMillis();
+                for (Downloadable d : Downloadable.all()) {
+                    if (d.getDue() <= now) {
+                        try {
+                            d.updateNow();
+                        } catch(Exception e) {
+                            LOGGER.log(Level.WARNING, String.format("Unable to update downloadable [%s]", d.getId()), e);
+                        }
+                    }
+                }
                 return;
             }
+            // This checks updates of the update sites and downloadables.
             HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());

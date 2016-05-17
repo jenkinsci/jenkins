@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
 */
-public final class AbortException extends IOException {
+public class AbortException extends IOException {
     public AbortException() {
     }
 

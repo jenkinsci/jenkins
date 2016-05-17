@@ -25,6 +25,7 @@
 
 package hudson.model;
 
+import hudson.ClassicPluginStrategy;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -58,6 +60,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -339,9 +342,11 @@ public class UpdateSite {
     }
 
     /**
-     * Returns an "always up" server for Internet connectivity testing, or null if we are going to skip the test.
+     * Gets a URL for the Internet connection check.
+     * @return  an "always up" server for Internet connectivity testing, or {@code null} if we are going to skip the test.
      */
     @Exported
+    @CheckForNull
     public String getConnectionCheckUrl() {
         Data dt = getData();
         if(dt==null)    return "http://www.google.com/";
@@ -466,7 +471,17 @@ public class UpdateSite {
                 core = null;
             }
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
-                plugins.put(e.getKey(),new Plugin(sourceId, e.getValue()));
+                Plugin p = new Plugin(sourceId, e.getValue());
+                // JENKINS-33308 - include implied dependencies for older plugins that may need them
+                List<PluginWrapper.Dependency> implicitDeps = ClassicPluginStrategy.getImpliedDependencies(p.name, p.requiredCore);
+                if(!implicitDeps.isEmpty()) {
+                    for(PluginWrapper.Dependency dep : implicitDeps) {
+                        if(!p.dependencies.containsKey(dep.shortName)) {
+                            p.dependencies.put(dep.shortName, dep.version);
+                        }
+                    }
+                }
+                plugins.put(e.getKey(), p);
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
@@ -611,7 +626,7 @@ public class UpdateSite {
         public final String[] categories;
 
         /**
-         * Dependencies of this plugin.
+         * Dependencies of this plugin, a name -&gt; version mapping.
          */
         @Exported
         public final Map<String,String> dependencies = new HashMap<String,String>();
@@ -633,10 +648,8 @@ public class UpdateSite {
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
             for(Object jo : o.getJSONArray("dependencies")) {
                 JSONObject depObj = (JSONObject) jo;
-                // Make sure there's a name attribute, that that name isn't maven-plugin - we ignore that one -
-                // and that the optional value isn't true.
-                if (get(depObj,"name")!=null
-                    && !get(depObj,"name").equals("maven-plugin")) {
+                // Make sure there's a name attribute and that the optional value isn't true.
+                if (get(depObj,"name")!=null) {
                     if (get(depObj, "optional").equals("false")) {
                         dependencies.put(get(depObj, "name"), get(depObj, "version"));
                     } else {
@@ -719,6 +732,10 @@ public class UpdateSite {
                 // If the dependency plugin is installed, is the version we depend on newer than
                 // what's installed? If so, upgrade.
                 else if (current.isOlderThan(requiredVersion)) {
+                    deps.add(depPlugin);
+                }
+                // JENKINS-34494 - or if the plugin is disabled, this will allow us to enable it
+                else if (!current.isEnabled()) {
                     deps.add(depPlugin);
                 }
             }
@@ -814,18 +831,50 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
+            return deploy(dynamicLoad, null);
+        }
+
+        /**
+         * Schedules the installation of this plugin.
+         *
+         * <p>
+         * This is mainly intended to be called from the UI. The actual installation work happens
+         * asynchronously in another thread.
+         *
+         * @param dynamicLoad
+         *      If true, the plugin will be dynamically loaded into this Jenkins. If false,
+         *      the plugin will only take effect after the reboot.
+         *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
+         * @param correlationId A correlation ID to be set on the job.
+         */
+        @Restricted(NoExternalUse.class)
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
-                    LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
                     dep.deploy(dynamicLoad);
                 } else {
-                    LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
                 }
             }
-            return uc.addJob(uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad));
+            PluginWrapper pw = getInstalled();
+            if(pw != null) { // JENKINS-34494 - check for this plugin being disabled
+                Future<UpdateCenterJob> enableJob = null;
+                if(!pw.isEnabled()) {
+                    UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
+                    job.setCorrelationId(correlationId);
+                    enableJob = uc.addJob(job);
+                }
+                if(pw.getVersionNumber().equals(new VersionNumber(version))) {
+                    return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, null, this));
+                }
+            }
+            UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            job.setCorrelationId(correlationId);
+            return uc.addJob(job);
         }
 
         /**
@@ -866,6 +915,6 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

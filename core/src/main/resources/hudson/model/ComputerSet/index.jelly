@@ -68,7 +68,7 @@ THE SOFTWARE.
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.CONFIGURE)}">
               <a href="${rootURL}/${c.url}configure">
-                <l:icon class="icon-setting icon-lg" tooltip="${%Configure}"/>
+                <l:icon class="icon-gear2 icon-lg" tooltip="${%Configure}"/>
               </a>
             </j:if>
           </td>

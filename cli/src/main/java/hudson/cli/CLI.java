@@ -131,13 +131,7 @@ public class CLI {
             try {
                 _channel = connectViaHttp(url);
             } catch (IOException e2) {
-                try { // Java 7: e.addSuppressed(e2);
-                    Throwable.class.getMethod("addSuppressed", Throwable.class).invoke(e, e2);
-                } catch (NoSuchMethodException _ignore) {
-                    // Java 6
-                } catch (Exception _huh) {
-                    LOGGER.log(Level.SEVERE, null, _huh);
-                }
+                e.addSuppressed(e2);
                 throw e;
             }
         }

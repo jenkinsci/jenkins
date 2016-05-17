@@ -6,6 +6,7 @@ import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -29,7 +30,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.494
  */
-@Extension
+@Extension @Symbol("location")
 public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}

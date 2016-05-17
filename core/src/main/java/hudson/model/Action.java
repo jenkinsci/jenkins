@@ -25,6 +25,8 @@ package hudson.model;
 
 import hudson.Functions;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
  * (more specifically {@link Actionable} objects, which most interesting {@link ModelObject}s are.)
@@ -90,15 +92,17 @@ public interface Action extends ModelObject {
      * @see Functions#isAnonymous()
      * @see Functions#getIconFilePath(Action)
      */
-    String getIconFileName();
+    @CheckForNull String getIconFileName();
 
     /**
      * Gets the string to be displayed.
      *
      * The convention is to capitalize the first letter of each word,
-     * such as "Test Result". 
+     * such as "Test Result".
+     *
+     * @return Can be null in case the action is hidden.
      */
-    String getDisplayName();
+    @CheckForNull String getDisplayName();
 
     /**
      * Gets the URL path name.
@@ -124,5 +128,5 @@ public interface Action extends ModelObject {
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
      */
-    String getUrlName();
+    @CheckForNull String getUrlName();
 }

@@ -80,6 +80,7 @@ public class ViewOptionHandlerTest {
 
         PowerMockito.mockStatic(Jenkins.class);
         PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
+        PowerMockito.when(Jenkins.getActiveInstance()).thenReturn(jenkins);
         when(jenkins.getView("outer")).thenReturn(outer);
         when(jenkins.getDisplayName()).thenReturn("Jenkins");
     }
@@ -116,7 +117,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "No view named missing_view inside view Jenkins",
-                parseFailedWith(CmdLineException.class, "missing_view")
+                parseFailedWith(IllegalArgumentException.class, "missing_view")
         );
 
         verifyZeroInteractions(setter);
@@ -126,7 +127,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "No view named missing_view inside view outer",
-                parseFailedWith(CmdLineException.class, "outer/missing_view")
+                parseFailedWith(IllegalArgumentException.class, "outer/missing_view")
         );
 
         verifyZeroInteractions(setter);
@@ -136,7 +137,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "No view named missing_view inside view nested",
-                parseFailedWith(CmdLineException.class, "outer/nested/missing_view")
+                parseFailedWith(IllegalArgumentException.class, "outer/nested/missing_view")
         );
 
         verifyZeroInteractions(setter);
@@ -146,10 +147,34 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "inner view can not contain views",
-                parseFailedWith(CmdLineException.class, "outer/nested/inner/missing")
+                parseFailedWith(IllegalStateException.class, "outer/nested/inner/missing")
         );
 
         verifyZeroInteractions(setter);
+    }
+
+    @Test public void reportEmptyViewNameRequestAsNull() throws Exception {
+        assertEquals(handler.getView(""), null);
+        verifyZeroInteractions(setter);
+    }
+
+    @Test public void reportViewSpaceNameRequestAsIAE() throws Exception {
+        try {
+            assertEquals(handler.getView(" "), null);
+            fail("No exception thrown. Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertEquals("No view named   inside view Jenkins", e.getMessage());
+            verifyZeroInteractions(setter);
+        }
+    }
+
+    @Test public void reportNullViewAsNPE() throws Exception {
+        try {
+            handler.getView(null);
+            fail("No exception thrown. Expected NullPointerException");
+        } catch (NullPointerException e) {
+            verifyZeroInteractions(setter);
+        }
     }
 
     @Test public void refuseToReadOuterView() throws Exception {
@@ -158,7 +183,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "Access denied for: outer",
-                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
         );
 
         verify(outer).checkPermission(View.READ);
@@ -174,7 +199,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "Access denied for: nested",
-                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
         );
 
         verify(nested).checkPermission(View.READ);
@@ -189,7 +214,7 @@ public class ViewOptionHandlerTest {
 
         assertEquals(
                 "Access denied for: inner",
-                parseFailedWith(CmdLineException.class, "outer/nested/inner")
+                parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
         );
 
         verify(inner).checkPermission(View.READ);

@@ -49,7 +49,7 @@ public class CreateViewCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
 
-        final Jenkins jenkins = Jenkins.getInstance();
+        final Jenkins jenkins = Jenkins.getActiveInstance();
         jenkins.checkPermission(View.CREATE);
 
         View newView;
@@ -57,16 +57,12 @@ public class CreateViewCommand extends CLICommand {
 
             newView = View.createViewFromXML(viewName, stdin);
         } catch (Failure ex) {
-
-            stderr.format("Invalid view name: %s\n", ex.getMessage());
-            return -1;
+            throw new IllegalArgumentException("Invalid view name: " + ex.getMessage());
         }
 
         final String newName = newView.getViewName();
         if (jenkins.getView(newName) != null) {
-
-            stderr.format("View '%s' already exists\n", newName);
-            return -1;
+            throw new IllegalStateException("View '" + newName + "' already exists");
         }
 
         jenkins.addView(newView);

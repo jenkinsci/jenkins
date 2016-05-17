@@ -61,9 +61,9 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Configure permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
     }
 
     @Test public void updateViewShouldModifyViewConfiguration() throws Exception {
@@ -94,8 +94,8 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("not_created")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view named not_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: No view named not_created inside view Jenkins"));
     }
 }

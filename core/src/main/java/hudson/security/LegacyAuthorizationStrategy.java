@@ -27,6 +27,7 @@ import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
@@ -54,7 +55,7 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
         return Collections.singleton("admin");
     }
 
-    @Extension
+    @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();

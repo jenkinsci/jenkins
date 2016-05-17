@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
@@ -57,7 +58,7 @@ public class ChannelPinger extends ComputerListener {
     private int pingInterval = 5;
 
     public ChannelPinger() {
-        String interval = System.getProperty(SYS_PROPERTY_NAME);
+        String interval = SystemProperties.getString(SYS_PROPERTY_NAME);
         if (interval != null) {
             try {
                 pingInterval = Integer.valueOf(interval);
@@ -74,7 +75,7 @@ public class ChannelPinger extends ComputerListener {
 
     public void install(Channel channel) {
         if (pingInterval < 1) {
-            LOGGER.fine("Slave ping is disabled");
+            LOGGER.fine("Agent ping is disabled");
             return;
         }
 

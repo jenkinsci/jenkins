@@ -99,7 +99,7 @@ public class SlaveComputer extends Computer {
     private Boolean isUnix;
     /**
      * Effective {@link ComputerLauncher} that hides the details of
-     * how we launch a slave agent on this computer.
+     * how we launch a agent agent on this computer.
      *
      * <p>
      * This is normally the same as {@link Slave#getLauncher()} but
@@ -162,7 +162,7 @@ public class SlaveComputer extends Computer {
     @Override
     @OverrideMustInvoke(When.ANYTIME)
     public boolean isAcceptingTasks() {
-        // our boolean flag is an override on any additional programmatic reasons why this slave might not be
+        // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.
         return acceptingTasks && super.isAcceptingTasks();
     }
@@ -175,13 +175,13 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Allows suspension of tasks being accepted by the slave computer. While this could be called by a
+     * Allows suspension of tasks being accepted by the agent computer. While this could be called by a
      * {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy}, such usage
      * can result in fights between multiple actors calling setting differential values. A better approach
      * is to override {@link hudson.slaves.RetentionStrategy#isAcceptingTasks(hudson.model.Computer)} if the
      * {@link hudson.slaves.RetentionStrategy} needs to control availability.
      *
-     * @param acceptingTasks {@code true} if the slave can accept tasks.
+     * @param acceptingTasks {@code true} if the agent can accept tasks.
      */
     public void setAcceptingTasks(boolean acceptingTasks) {
         this.acceptingTasks = acceptingTasks;
@@ -249,7 +249,7 @@ public class SlaveComputer extends Computer {
                     try {
                         for (ComputerListener cl : ComputerListener.all())
                             cl.preLaunch(SlaveComputer.this, taskListener);
-
+                        offlineCause = null;
                         launcher.launch(SlaveComputer.this, taskListener);
                     } catch (AbortException e) {
                         taskListener.error(e.getMessage());
@@ -266,7 +266,7 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null) {
+                    if (channel==null && offlineCause == null) {
                         offlineCause = new OfflineCause.LaunchFailed();
                         for (ComputerListener cl : ComputerListener.all())
                             cl.onLaunchFailure(SlaveComputer.this, taskListener);
@@ -274,7 +274,7 @@ public class SlaveComputer extends Computer {
                 }
 
                 if (channel==null)
-                    throw new IOException("Slave failed to connect, even though the launcher didn't report it. See the log output for details.");
+                    throw new IOException("Agent failed to connect, even though the launcher didn't report it. See the log output for details.");
                 return null;
             }
         });
@@ -350,7 +350,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Creates a {@link Channel} from the given stream and sets that to this slave.
+     * Creates a {@link Channel} from the given stream and sets that to this agent.
      *
      * @param in
      *      Stream connected to the remote "slave.jar". It's the caller's responsibility to do
@@ -426,11 +426,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Returns the remote FS root absolute path or {@code null} if the slave is off-line. The absolute path may change
+     * Returns the remote FS root absolute path or {@code null} if the agent is off-line. The absolute path may change
      * between connections if the connection method does not provide a consistent working directory and the node's
      * remote FS is specified as a relative path.
      *
-     * @return the remote FS root absolute path or {@code null} if the slave is off-line.
+     * @return the remote FS root absolute path or {@code null} if the agent is off-line.
      * @since 1.606
      */
     @CheckForNull
@@ -575,7 +575,7 @@ public class SlaveComputer extends Computer {
         } finally {
             SecurityContextHolder.setContext(old);
         }
-        log.println("Slave successfully connected and online");
+        log.println("Agent successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
 
@@ -644,11 +644,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Serves jar files for JNLP slave agents.
+     * Serves jar files for JNLP agents.
      *
      * @deprecated since 2008-08-18.
      *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
-     *      but it's left here for now just in case some old JNLP slave agents request it.
+     *      but it's left here for now just in case some old JNLP agents request it.
      */
     @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
@@ -669,7 +669,7 @@ public class SlaveComputer extends Computer {
         try {
             Util.deleteRecursive(getLogDir());
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Unable to delete slave logs", ex);
+            logger.log(Level.WARNING, "Unable to delete agent logs", ex);
         }
     }
 
@@ -706,7 +706,7 @@ public class SlaveComputer extends Computer {
         super.setNode(node);
         launcher = grabLauncher(node);
 
-        // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
+        // maybe the configuration was changed to relaunch the agent, so try to re-launch now.
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
         if(constructed!=null) {
@@ -740,7 +740,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Get the slave version
+     * Get the agent version
      */
     public String getSlaveVersion() throws IOException, InterruptedException {
         return channel.call(new SlaveVersion());
@@ -794,7 +794,7 @@ public class SlaveComputer extends Computer {
      */
     static final class LogHolder {
         /**
-         * This field is used on each slave node to record log records on the slave.
+         * This field is used on each agent to record logs on the agent.
          */
         static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
     }
@@ -827,18 +827,18 @@ public class SlaveComputer extends Computer {
 
     /**
      * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from slave (more precisely,
-     * it only works from the remoting request-handling thread in slaves, which means if you've started
-     * separate thread on slaves, that'll fail.)
+     * This method can be called from any thread on the master, or from agent (more precisely,
+     * it only works from the remoting request-handling thread in agents, which means if you've started
+     * separate thread on agents, that'll fail.)
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
      * @since 1.362
      */
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstance()!=null)
+        if (Jenkins.getInstanceOrNull()!=null) // check if calling thread is on master or on slave
             return FilePath.localChannel;
 
-        // if this method is called from within the slave computation thread, this should work
+        // if this method is called from within the agent computation thread, this should work
         Channel c = Channel.current();
         if (c!=null && Boolean.TRUE.equals(c.getProperty("slave")))
             return c;

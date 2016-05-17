@@ -23,6 +23,7 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import jenkins.model.Jenkins;
@@ -42,8 +43,6 @@ public class DeleteJobCommand extends CLICommand {
     @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
     private List<String> jobs;
 
-    private static final Logger LOGGER = Logger.getLogger(DeleteJobCommand.class.getName());
-
     @Override
     public String getShortDescription() {
 
@@ -54,12 +53,7 @@ public class DeleteJobCommand extends CLICommand {
     protected int run() throws Exception {
 
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getInstance();
-
-        if (jenkins == null) {
-            stderr.println("The Jenkins instance has not been started, or was already shut down!");
-            return -1;
-        }
+        final Jenkins jenkins = Jenkins.getActiveInstance();
 
         final HashSet<String> hs = new HashSet<String>();
         hs.addAll(jobs);
@@ -71,31 +65,26 @@ public class DeleteJobCommand extends CLICommand {
                 job = (AbstractItem) jenkins.getItemByFullName(job_s);
 
                 if(job == null) {
-                    stderr.format("No such job '%s'\n", job_s);
-                    errorOccurred = true;
-                    continue;
+                    throw new IllegalArgumentException("No such job '" + job_s + "'");
                 }
 
-                try {
-                    job.checkPermission(AbstractItem.DELETE);
-                } catch (Exception e) {
-                    stderr.println(e.getMessage());
-                    errorOccurred = true;
-                    continue;
-                }
-
+                job.checkPermission(AbstractItem.DELETE);
                 job.delete();
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during deletion of job '%s': %s",
-                        job == null ? "(null)" : job.getFullName(),
-                        e.getMessage());
+                if(hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = String.format(job_s + ": " + e.getMessage());
                 stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
                 errorOccurred = true;
-                //noinspection UnnecessaryContinue
                 continue;
             }
         }
-        return errorOccurred ? -1 : 0;
+
+        if (errorOccurred) {
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
+        return 0;
     }
 }

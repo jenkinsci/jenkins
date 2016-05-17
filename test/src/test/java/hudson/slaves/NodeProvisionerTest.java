@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 import org.jvnet.hudson.test.SleepBuilder;
 
 /**
@@ -85,7 +84,7 @@ public class NodeProvisionerTest {
     /**
      * Scenario: schedule a build and see if one slave is provisioned.
      */
-    @RandomlyFails("fragile")
+    // TODO fragile
     @Test public void autoProvision() throws Exception {
         BulkChange bc = new BulkChange(r.jenkins);
         try {
@@ -107,7 +106,7 @@ public class NodeProvisionerTest {
     /**
      * Scenario: we got a lot of jobs all of the sudden, and we need to fire up a few nodes.
      */
-    @RandomlyFails("fragile")
+    // TODO fragile
     @Test public void loadSpike() throws Exception {
         BulkChange bc = new BulkChange(r.jenkins);
         try {
@@ -126,7 +125,7 @@ public class NodeProvisionerTest {
     /**
      * Scenario: make sure we take advantage of statically configured slaves.
      */
-    @RandomlyFails("fragile")
+    // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
         BulkChange bc = new BulkChange(r.jenkins);
         try {
@@ -147,7 +146,7 @@ public class NodeProvisionerTest {
     /**
      * Scenario: loads on one label shouldn't translate to load on another label.
      */
-    @RandomlyFails("fragile")
+    // TODO fragile
     @Test public void labels() throws Exception {
         BulkChange bc = new BulkChange(r.jenkins);
         try {

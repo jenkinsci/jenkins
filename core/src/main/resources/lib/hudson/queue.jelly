@@ -28,7 +28,7 @@ THE SOFTWARE.
     Displays the build queue as &lt;l:pane>
 
     <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.approximateItemsQuickly},
+      Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>

@@ -34,6 +34,7 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,35 +48,62 @@ public class CauseAction implements FoldableAction, RunAction2 {
     @Deprecated
     // there can be multiple causes, so this is deprecated
     private transient Cause cause;
-	
-    private List<Cause> causes = new ArrayList<Cause>();
+
+    /** @deprecated JENKINS-33467 inefficient */
+    @Deprecated
+    private transient List<Cause> causes;
+
+    private Map<Cause,Integer> causeBag = new LinkedHashMap<>();
 
     public CauseAction(Cause c) {
-   		this.causes.add(c);
+   		this.causeBag.put(c, 1);
    	}
+
+    private void addCause(Cause c) {
+        synchronized (causeBag) {
+            Integer cnt = causeBag.get(c);
+            causeBag.put(c, cnt == null ? 1 : cnt + 1);
+        }
+    }
+    private void addCauses(Collection<? extends Cause> causes) {
+        for (Cause cause : causes) {
+            addCause(cause);
+        }
+    }
 
     public CauseAction(Cause... c) {
    		this(Arrays.asList(c));
    	}
 
     public CauseAction(Collection<? extends Cause> causes) {
-   		this.causes.addAll(causes);
+   		addCauses(causes);
    	}
 
    	public CauseAction(CauseAction ca) {
-   		this.causes.addAll(ca.causes);
+   		addCauses(ca.getCauses());
    	}
-   	
+
+    /**
+     * Lists all causes of this build.
+     * Note that the current implementation does not preserve insertion order of duplicates.
+     * @return an immutable list;
+     *         to create an action with multiple causes use either of the constructors that support this;
+     *         to append causes retroactively to a build you must create a new {@link CauseAction} and replace the old
+     */
 	@Exported(visibility=2)
 	public List<Cause> getCauses() {
-		return causes;
+		List<Cause> r = new ArrayList<>();
+        for (Map.Entry<Cause,Integer> entry : causeBag.entrySet()) {
+            r.addAll(Collections.nCopies(entry.getValue(), entry.getKey()));
+        }
+        return Collections.unmodifiableList(r);
 	}
 
     /**
      * Finds the cause of the specific type.
      */
     public <T extends Cause> T findCause(Class<T> type) {
-        for (Cause c : causes)
+        for (Cause c : causeBag.keySet())
             if (type.isInstance(c))
                 return type.cast(c);
         return null;
@@ -99,14 +127,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
      * @return Map of Cause to number of occurrences of that Cause
      */
     public Map<Cause,Integer> getCauseCounts() {
-        Map<Cause,Integer> result = new LinkedHashMap<Cause,Integer>();
-        for (Cause c : causes) {
-            if (c != null) {
-                Integer i = result.get(c);
-                result.put(c, i == null ? 1 : i.intValue() + 1);
-            }
-        }
-        return result;
+        return Collections.unmodifiableMap(causeBag);
     }
 
     /**
@@ -115,12 +136,14 @@ public class CauseAction implements FoldableAction, RunAction2 {
      */
     @Deprecated
     public String getShortDescription() {
-        if(causes.isEmpty())    return "N/A";
-        return causes.get(0).getShortDescription();
+        if (causeBag.isEmpty()) {
+            return "N/A";
+        }
+        return causeBag.keySet().iterator().next().getShortDescription();
     }
 
     @Override public void onLoad(Run<?,?> owner) {
-        for (Cause c : causes) {
+        for (Cause c : causeBag.keySet()) {
             if (c != null) {
                 c.onLoad(owner);
             }
@@ -131,7 +154,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
      * When hooked up to build, notify {@link Cause}s.
      */
     @Override public void onAttached(Run<?,?> owner) {
-        for (Cause c : causes) {
+        for (Cause c : causeBag.keySet()) {
             if (c != null) {
                 c.onAddedTo(owner);
             }
@@ -141,7 +164,7 @@ public class CauseAction implements FoldableAction, RunAction2 {
     public void foldIntoExisting(hudson.model.Queue.Item item, Task owner, List<Action> otherActions) {
         CauseAction existing = item.getAction(CauseAction.class);
         if (existing!=null) {
-            existing.causes.addAll(this.causes);
+            existing.addCauses(getCauses());
             return;
         }
         // no CauseAction found, so add a copy of this one
@@ -153,9 +176,19 @@ public class CauseAction implements FoldableAction, RunAction2 {
         @Override protected void callback(CauseAction ca, UnmarshallingContext context) {
             // if we are being read in from an older version
             if (ca.cause != null) {
-                if (ca.causes == null) ca.causes = new ArrayList<Cause>();
-                ca.causes.add(ca.cause);
+                if (ca.causeBag == null) {
+                    ca.causeBag = new LinkedHashMap<>();
+                }
+                ca.addCause(ca.cause);
                 OldDataMonitor.report(context, "1.288");
+                ca.cause = null;
+            } else if (ca.causes != null) {
+                if (ca.causeBag == null) {
+                    ca.causeBag = new LinkedHashMap<>();
+                }
+                ca.addCauses(ca.causes);
+                OldDataMonitor.report(context, "1.653");
+                ca.causes = null;
             }
         }
     }

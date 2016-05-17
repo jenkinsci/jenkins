@@ -76,7 +76,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-218")
     public void probeSpring1() throws Exception {
-        probe(Payload.Spring1, -1);
+        probe(Payload.Spring1, 1);
     }
     
     private void probe(Payload payload, int expectedResultCode) throws Exception {
