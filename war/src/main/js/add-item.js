@@ -40,18 +40,6 @@ $.when(getItems()).done(function(data) {
       return newDesc;
     }
 
-    function getItemTypeSelected() {
-      var item = $('input[type="radio"][name="mode"]:checked', '#createItem').val();
-      if (item === "copy") {
-        return undefined;
-      }
-      return item;
-    }
-
-    function getItemCopyFromSelected() {
-      return $('input[type="radio"][name="mode"][value="copy"]:checked', '#createItem').val();
-    }
-
     function getCopyFromValue() {
       return $('input[type="text"][name="from"]', '#createItem').val();
     }
@@ -59,6 +47,14 @@ $.when(getItems()).done(function(data) {
     function isItemNameEmpty() {
       var itemName = $('input[name="name"]', '#createItem').val();
       return (itemName === '') ? true : false;
+    }
+
+    function getFieldValidationStatus(fieldId) {
+      return $('#' + fieldId).data('valid');
+    }
+
+    function setFieldValidationStatus(fieldId, status) {
+      $('#' + fieldId).data('valid', status);
     }
 
     function activateValidationMessage(messageId, context, message) {
@@ -107,19 +103,39 @@ $.when(getItems()).done(function(data) {
     function enableSubmit(status) {
       var btn = $('form .footer .btn-decorator button[type=submit]');
       if (status === true) {
-        btn.removeClass('disabled');
+        if (btn.hasClass('disabled')) {
+          btn.removeClass('disabled');
+          btn.attr('disabled', false);
+        }
+        btn.focus();
       } else {
-        btn.addClass('disabled');
+        if (!btn.hasClass('disabled')) {
+          btn.addClass('disabled');
+          btn.attr('disabled', true);
+        }
       }
     }
 
-    function isSubmitEnabled() {
-      var btn = $('form .footer .btn-decorator button[type=submit]');
-      if (btn.hasClass('disabled')) {
-        return false;
+    function getFormValidationStatus() {
+      if (getFieldValidationStatus('name') && (getFieldValidationStatus('items') || getFieldValidationStatus('from'))) {
+          return true;
       }
-      return true;
+      return false;
     }
+
+    function cleanItemSelection() {
+      $('.categories').find('li[role="radio"]').attr("aria-checked", "false");
+      $('#createItem').find('input[type="radio"][name="mode"]').removeAttr('checked');
+      $('.categories').find('.active').removeClass('active');
+      setFieldValidationStatus('items', false);
+    }
+
+    function cleanCopyFromOption() {
+      $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
+      $('input[type="text"][name="from"]', '#createItem').val('');
+      setFieldValidationStatus('from', false);
+    }
+
 
     //////////////////////////////////
     // Draw functions
@@ -151,18 +167,21 @@ $.when(getItems()).done(function(data) {
 
       function select(e) {
         e.preventDefault();
-        $('li[role="radio"]').attr("aria-checked", "false");
-        $(this).find('input[type="radio"][name="mode"]').removeAttr('checked');
-        $(this).parents().find('.active').removeClass('active');
+        cleanCopyFromOption();
+        cleanItemSelection();
 
         $(this).attr("aria-checked", "true");
         $(this).find('input[type="radio"][name="mode"]').prop('checked', true);
         $(this).addClass('active');
 
-        $('input[type="text"][name="from"]', '#createItem').val('');
-        cleanValidationMessages('.add-item-copy');
-        if (isItemNameEmpty()) {
+        setFieldValidationStatus('items', true);
+        if (!getFieldValidationStatus('name')) {
           activateValidationMessage('#itemname-required', '.add-item-name');
+          $('input[name="name"][type="text"]', '#createItem').focus();
+        } else {
+          if (getFormValidationStatus()) {
+            enableSubmit(true);
+          }
         }
       }
 
@@ -225,7 +244,10 @@ $.when(getItems()).done(function(data) {
           } else {
             cleanValidationMessages('.add-item-name');
             showInputHelp('.add-item-name');
-            enableSubmit(true);
+            setFieldValidationStatus('name', true);
+            if (getFormValidationStatus()) {
+              enableSubmit(true);
+            }
           }
         });
       }
@@ -236,29 +258,35 @@ $.when(getItems()).done(function(data) {
       if (getCopyFromValue() === '') {
         $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
       } else {
-        $('.categories').find('li[role="radio"]').attr("aria-checked", "false");
-        $('#createItem').find('input[type="radio"][name="mode"]').removeAttr('checked');
-        $('.categories').find('.active').removeClass('active');
+        cleanItemSelection();
         $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
+        setFieldValidationStatus('from', true);
+        if (!getFieldValidationStatus('name')) {
+          activateValidationMessage('#itemname-required', '.add-item-name');
+          setTimeout(function() {
+            $('input[name="name"][type="text"]', '#createItem').focus();
+          }, 400);
+        } else {
+          if (getFormValidationStatus()) {
+            enableSubmit(true);
+          }
+        }
       }
     });
 
     // Client-side validation
     $("#createItem").submit(function(event) {
-      if (isSubmitEnabled()) {
-        if (isItemNameEmpty()) {
+      if (!getFormValidationStatus()) {
+        event.preventDefault();
+        if (!getFieldValidationStatus('name')) {
           activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
-          event.preventDefault();
         } else {
-          if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
+          if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
             activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
-            event.preventDefault();
           }
         }
-      } else {
-        event.preventDefault();
       }
     });
 
