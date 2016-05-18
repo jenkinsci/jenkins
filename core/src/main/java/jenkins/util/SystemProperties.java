@@ -249,6 +249,51 @@ public class SystemProperties implements ServletContextListener {
         }
         return def;
     }
+    
+    /**
+      * Determines the long value of the system property with the
+      * specified name.
+      * 
+      * This behaves just like {@link Long#getLong(java.lang.String)}, except that it
+      * also consults the {@link ServletContext}'s "init" parameters.
+      * 
+      * @param   name property name.
+      * @return  the {@code Integer} value of the property.
+      */
+    @CheckForNull
+    public static Long getLong(String name) {
+        return getLong(name, null);
+    }
+    
+    /**
+      * Determines the integer value of the system property with the
+      * specified name, or a default value.
+      * 
+      * This behaves just like <code>Long.getLong(String,Integer)</code>, except that it
+      * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+      * return the default value. 
+      * 
+      * @param   name property name.
+      * @param   def   a default value.
+      * @return  the {@code Integer} value of the property.
+      *          If the property is missing, return the default value.
+      *          Result may be {@code null} only if the default value is {@code null}.
+      */
+    public static Long getLong(String name, Long def) {
+        String v = getString(name);
+       
+        if (v != null) {
+            try {
+                return Long.decode(v);
+            } catch (NumberFormatException e) {
+                // Ignore, fallback to default
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
+                }
+            }
+        }
+        return def;
+    }
 
     @CheckForNull
     private static String tryGetValueFromContext(String key) {
