@@ -111,7 +111,9 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      */
     public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
-        safeParameters.addAll(additionalSafeParameters);
+        if (additionalSafeParameters != null) {
+            safeParameters.addAll(additionalSafeParameters);
+        }
     }
     
     public ParametersAction(ParameterValue... parameters) {
@@ -244,9 +246,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             }
         }
 
-        ParametersAction parametersAction = new ParametersAction(combinedParameters);
-        parametersAction.safeParameters = this.safeParameters;
-        return parametersAction;
+        return new ParametersAction(combinedParameters, this.safeParameters);
     }
 
     /*
@@ -257,14 +257,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            ParametersAction parametersAction = new ParametersAction(parameters);
-            parametersAction.safeParameters = this.safeParameters;
+            ParametersAction parametersAction = new ParametersAction(parameters, this.safeParameters);
             return parametersAction;
         }
         ParametersAction parametersAction = createUpdated(overrides.parameters);
         Set<String> safe = new TreeSet<>();
-        if (parametersAction.safeParameters != null) {
-            //loadSafeParameters() should have been called by createUpdated
+        if (parametersAction.safeParameters != null && this.safeParameters != null) {
             safe.addAll(this.safeParameters);
         }
         if (overrides.safeParameters != null) {
@@ -277,6 +275,9 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     private Object readResolve() {
         if (build != null)
             OldDataMonitor.report(build, "1.283");
+        if (safeParameters == null) {
+            safeParameters = Collections.emptySet();
+        }
         return this;
     }
 
