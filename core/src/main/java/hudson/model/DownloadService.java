@@ -489,7 +489,7 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
     public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
