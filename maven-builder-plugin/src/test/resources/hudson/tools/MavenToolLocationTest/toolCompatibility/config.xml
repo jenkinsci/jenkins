@@ -25,14 +25,9 @@
         <hudson.tools.ToolLocationNodeProperty>
           <locations>
             <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
-              <type>hudson.tasks.Ant$DescriptorImpl</type>
-              <name>Ant 1</name>
-              <home>D:\dev\apache-ant-1.7.1</home>
-            </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
-            <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
-              <type>hudson.model.JDK$DescriptorImpl</type>
-              <name>1.6</name>
-              <home>C:\Program Files\Java\jdk1.6.0_11</home>
+              <type>hudson.tasks.Maven$DescriptorImpl</type>
+              <name>Maven 1</name>
+              <home>D:\dev\apache-maven-2.0.9</home>
             </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
           </locations>
         </hudson.tools.ToolLocationNodeProperty>

@@ -616,9 +616,9 @@ THE SOFTWARE.
     </dependency>
     <!-- Should be removed after splitting maven-builder-plugin see JENKINS-26462 -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>maven-builder</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>maven-builder-plugin</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

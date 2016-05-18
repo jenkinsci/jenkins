@@ -26,11 +26,6 @@ public class ToolLocationTest {
     @Test
     @LocalData
     public void toolCompatibility() {
-        Maven.MavenInstallation[] maven = j.jenkins.getDescriptorByType(Maven.DescriptorImpl.class).getInstallations();
-        assertEquals(maven.length, 1);
-        assertEquals(maven[0].getHome(), "bar");
-        assertEquals(maven[0].getName(), "Maven 1");
-
         Ant.AntInstallation[] ant = j.jenkins.getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         assertEquals(ant.length, 1);
         assertEquals(ant[0].getHome(), "foo");

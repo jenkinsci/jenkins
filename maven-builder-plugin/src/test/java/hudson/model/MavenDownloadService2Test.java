@@ -37,7 +37,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
 
 @Issue("SECURITY-163")
-public class DownloadService2Test {
+public class MavenDownloadService2Test {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
@@ -50,11 +50,11 @@ public class DownloadService2Test {
 
     @WithoutJenkins
     @Test public void loadJSONHTML() throws Exception {
-        assertRoots("[data, signature, version]", "hudson.tools.JDKInstaller.json.html"); // anomalous format
+        assertRoots("[list, signature]", "hudson.tasks.Maven.MavenInstaller.json.html"); // format used by most tools
     }
 
     private static void assertRoots(String expected, String file) throws Exception {
-        URL resource = DownloadService2Test.class.getResource(file);
+        URL resource = MavenDownloadService2Test.class.getResource(file);
         assertNotNull(file, resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSONHTML(resource));
         @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
