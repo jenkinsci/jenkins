@@ -46,7 +46,9 @@ import hudson.search.SearchIndexBuilder;
 import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.security.ACL;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.LogRotator;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.ChartUtil;
 import hudson.util.ColorPalette;
@@ -69,6 +71,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.HexStringConfidentialKey;
+import jenkins.util.Timer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -100,6 +103,8 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -160,6 +165,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     private transient Integer cachedBuildHealthReportsBuildNumber = null;
     private transient List<HealthReport> cachedBuildHealthReports = null;
+
+    private Logger logger = Logger.getLogger(Job.class.getName());
 
     boolean keepDependencies;
 
@@ -689,10 +696,26 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
+        scheduleNodeCleanup();
+    }
+
+    /**
+     * There may be a bit of work in cleaning up node workspaces.
+     * This can be scheduled to run in the background.
+     */
+    private void scheduleNodeCleanup() {
         if (this instanceof TopLevelItem) {
-            cleanupWorkspaces((TopLevelItem) this);
+            final TopLevelItem toDelete = (TopLevelItem) this;
+            ScheduledExecutorService ex = Timer.get();
+            ex.schedule(new SafeTimerTask() {
+                                @Override
+                                protected void doRun() throws Exception {
+                                    cleanupWorkspaces(toDelete);
+                                }},
+                                0, TimeUnit.SECONDS);
         }
     }
+
 
     /**
      * Clean out workspaces for attached agents (best efforts, as they may not always be online)
@@ -703,16 +726,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         List<Node> nodes = new ArrayList<>();
         nodes.add(j);
         nodes.addAll(j.getNodes());
-        Logger log = Logger.getLogger(Job.class.getName());
         for (Node node : nodes) {
             FilePath ws = node.getWorkspaceFor(item);
             if (ws != null) {
                 try {
                             ws.deleteRecursive();
+                            WorkspaceList.tempDir(ws).deleteRecursive();
                         } catch (IOException e) {
-                            log.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
+                            logger.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
                         } catch (InterruptedException e) {
-                            log.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
+                            logger.log(Level.FINE, "Unable to clean out workspace for deleted job", e);
                         }
                 }
         }
@@ -1279,7 +1302,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
-            Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
+            logger.log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
     }

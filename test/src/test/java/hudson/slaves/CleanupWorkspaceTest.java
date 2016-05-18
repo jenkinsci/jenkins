@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright (c) 2016, Michael Neale, CloudBees Inc
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +25,10 @@
 package hudson.slaves;
 
 import hudson.model.*;
-import hudson.model.Messages;
-import hudson.model.Queue.BuildableItem;
-import hudson.model.Queue.Task;
-import hudson.model.queue.CauseOfBlockage;
-import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.HudsonTestCase;
 
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class CleanupWorkspaceTest extends HudsonTestCase {
     @Override
@@ -57,6 +50,7 @@ public class CleanupWorkspaceTest extends HudsonTestCase {
         project.delete();
 
         //after deleting workspaces should be gone:
+        Thread.sleep(500);
         assertFalse(slave.getWorkspaceFor(project).exists());
     }
 
