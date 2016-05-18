@@ -160,12 +160,15 @@ public class ParametersActionTest2 {
                 new StringParameterDefinition("bar", "bar"))));
 
         try {
-            ParametersAction action = new TestParametersAction(
-                    new StringParameterValue("foo", "baz"),
-                    new StringParameterValue("bar", "bar"),
-                    new StringParameterValue("whitelisted1", "x"),
-                    new StringParameterValue("whitelisted2", "y"),
-                    new StringParameterValue("whitelisted3", "y"));
+            ParametersAction action = new ParametersAction(
+                    Arrays.<ParameterValue>asList(
+                        new StringParameterValue("foo", "baz"),
+                        new StringParameterValue("bar", "bar"),
+                        new StringParameterValue("whitelisted1", "x"),
+                        new StringParameterValue("whitelisted2", "y"),
+                        new StringParameterValue("whitelisted3", "y")
+                                                 ),
+                    Arrays.asList("whitelisted1", "whitelisted2"));
             FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), action));
 
             assertTrue("whitelisted1 parameter is listed in getParameters",
@@ -286,16 +289,6 @@ public class ParametersActionTest2 {
         return false;
     }
 
-    public static class TestParametersAction extends ParametersAction {
-        public TestParametersAction(ParameterValue... parameters) {
-            super(parameters);
-        }
-
-        @Override
-        protected Collection<String> getAdditionalSafeParameters() {
-            return Arrays.asList("whitelisted1", "whitelisted2");
-        }
-    }
 
     public static class ParametersCheckBuilder extends Builder {
 
