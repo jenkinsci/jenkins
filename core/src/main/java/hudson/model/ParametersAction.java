@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +75,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".safeParameters";
 
-    private transient List<String> safeParameters;
+    private Set<String> safeParameters;
 
     private final List<ParameterValue> parameters;
 
@@ -90,6 +91,29 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     public ParametersAction(List<ParameterValue> parameters) {
         this.parameters = parameters;
+        String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        safeParameters = new TreeSet<>();
+        if (paramNames != null) {
+            safeParameters.addAll(Arrays.asList(paramNames.split(",")));
+        }
+    }
+
+    /**
+     * Constructs a new action with additional safe parameters.
+     * The additional safe parameters should be only those considered safe to override the environment
+     * and what is declared in the project config in addition to those specified by the user in
+     * {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}.
+     * See <a href="https://issues.jenkins-ci.org/browse/SECURITY-170">SECURITY-170</a>
+     *
+     * @param parameters the parameters
+     * @param additionalSafeParameters additional safe parameters
+     * @since TODO
+     */
+    public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
+        this(parameters);
+        if (additionalSafeParameters != null) {
+            safeParameters.addAll(additionalSafeParameters);
+        }
     }
     
     public ParametersAction(ParameterValue... parameters) {
@@ -203,7 +227,9 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
         if(overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters);
+            parametersAction.safeParameters = this.safeParameters;
+            return parametersAction;
         }
         List<ParameterValue> combinedParameters = newArrayList(overrides);
         Set<String> names = newHashSet();
@@ -220,7 +246,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             }
         }
 
-        return new ParametersAction(combinedParameters);
+        return new ParametersAction(combinedParameters, this.safeParameters);
     }
 
     /*
@@ -231,14 +257,27 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters, this.safeParameters);
+            return parametersAction;
         }
-        return createUpdated(overrides.parameters);
+        ParametersAction parametersAction = createUpdated(overrides.parameters);
+        Set<String> safe = new TreeSet<>();
+        if (parametersAction.safeParameters != null && this.safeParameters != null) {
+            safe.addAll(this.safeParameters);
+        }
+        if (overrides.safeParameters != null) {
+            safe.addAll(overrides.safeParameters);
+        }
+        parametersAction.safeParameters = safe;
+        return parametersAction;
     }
 
     private Object readResolve() {
         if (build != null)
             OldDataMonitor.report(build, "1.283");
+        if (safeParameters == null) {
+            safeParameters = Collections.emptySet();
+        }
         return this;
     }
 
@@ -302,14 +341,6 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     private boolean isSafeParameter(String name) {
-        if (safeParameters == null) {
-            String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
-            if (paramNames != null) {
-                safeParameters = Arrays.asList(paramNames.split(","));
-            } else {
-                safeParameters = Collections.emptyList();
-            }
-        }
         return safeParameters.contains(name);
     }
 
