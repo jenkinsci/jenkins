@@ -160,6 +160,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
 
+    public static final String LEGACY_ID_DEFAULT = "default";
+
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
 
@@ -845,7 +847,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
+        UpdateSite defaultSite = new UpdateSite(LEGACY_ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
