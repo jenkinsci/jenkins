@@ -250,6 +250,11 @@ $.when(getItems()).done(function(data) {
             }
           }
         });
+      } else {
+        enableSubmit(false);
+        setFieldValidationStatus('name', false);
+        cleanValidationMessages('.add-item-name');
+        activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
 
