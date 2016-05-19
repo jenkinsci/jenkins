@@ -105,13 +105,13 @@ $.when(getItems()).done(function(data) {
       if (status === true) {
         if (btn.hasClass('disabled')) {
           btn.removeClass('disabled');
-          btn.attr('disabled', false);
+          btn.prop('disabled', false);
         }
         btn.focus();
       } else {
         if (!btn.hasClass('disabled')) {
           btn.addClass('disabled');
-          btn.attr('disabled', true);
+          btn.prop('disabled', true);
         }
       }
     }
