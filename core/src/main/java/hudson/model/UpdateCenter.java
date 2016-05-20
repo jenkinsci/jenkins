@@ -153,14 +153,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = Integer.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
 
+    public static final String PREDEFINED_UPDATE_SITE_ID = "default";
+
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
      * @since 1.483 - public property
      * @since TODO - configurable via system property
      */
-    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
-
-    public static final String PREDEFINED_UPDATE_SITE_ID = "default";
+    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", PREDEFINED_UPDATE_SITE_ID);
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
@@ -875,7 +875,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         }
     }
 
-    public UpdateSite createDefaultUpdateSite() {
+    protected UpdateSite createDefaultUpdateSite() {
         return new UpdateSite(PREDEFINED_UPDATE_SITE_ID, config.getUpdateCenterUrl() + "update-center.json");
     }
 
