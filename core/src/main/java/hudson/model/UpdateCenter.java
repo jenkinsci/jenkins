@@ -1502,23 +1502,38 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             try {
-                plugin.getInstalled().enable();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
-                error = e;
-            }
-            
-            if (dynamicLoad) {
-                try {
-                    // remove the existing, disabled inactive plugin to force a new one to load
-                    pm.dynamicLoad(getDestination(), true);
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
-                    error = e;
-                    requiresRestart = true;
+                PluginWrapper installed = plugin.getInstalled();
+                synchronized(installed) {
+                    if (!installed.isEnabled()) {
+                        try {
+                            installed.enable();
+                        } catch (IOException e) {
+                            LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
+                            error = e;
+                            status = new Failure(e);
+                        }
+                        
+                        if (dynamicLoad) {
+                            try {
+                                // remove the existing, disabled inactive plugin to force a new one to load
+                                pm.dynamicLoad(getDestination(), true);
+                            } catch (Exception e) {
+                                LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
+                                error = e;
+                                requiresRestart = true;
+                                status = new Failure(e);
+                            }
+                        } else {
+                            requiresRestart = true;
+                        }
+                    }
                 }
-            } else {
+                status = new Success();
+            } catch(Throwable e) {
+                LOGGER.log(Level.SEVERE, "An unexpected error occurred while attempting to enable " + plugin.getDisplayName(), e);
+                error = e;
                 requiresRestart = true;
+                status = new Failure(e);
             }
         }
     }
@@ -1529,6 +1544,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public class NoOpJob extends EnableJob {
         public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
             super(site, auth, plugin, false);
+        }
+        @Override
+        public void run() {
+            // do nothing
+            status = new Success();
         }
     }
     
