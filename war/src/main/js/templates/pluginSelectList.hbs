@@ -1,0 +1,33 @@
+{{#each categorizedPlugins}}
+<h2 id="{{id @key}}" class="expanded">{{@key}} {{pluginCountForCategory @key}}</h2>
+<div class="plugins-for-category">
+  {{#each this}}
+  <div class="plugin {{id plugin.name}} {{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}} {{#ifVisibleDependency plugin.name}}show-dependencies{{/ifVisibleDependency}}" id="row-{{plugin.name}}">
+    {{#hasDependencies plugin.name}}
+      <div class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}">
+        {{../../../translations.installWizard_installIncomplete_dependenciesLabel}}<span class="badge">{{dependencyCount ../plugin.name}}</span>
+      </div>
+    {{/hasDependencies}}
+    <label>
+      <span class="title">
+        <input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
+        {{plugin.title}}
+        <a href="{{plugin.website}}" target="_blank">{{../../translations.installWizard_websiteLinkLabel}}</a>
+      </span>
+      <span class="description">
+        {{{plugin.excerpt}}}
+      </span>
+      {{#hasDependencies plugin.name}}
+        <div class="dep-list">
+          {{#eachDependency ../plugin.name}}
+          <a class="dep badge" href="{{website}}" target="_blank">
+          {{title}}
+          </a>
+          {{/eachDependency}}
+        </div>
+      {{/hasDependencies}}
+    </label>
+  </div>
+  {{/each}}
+</div>
+{{/each}}

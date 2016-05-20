@@ -2,6 +2,12 @@
 @import (css) '../css/icomoon/css/icomoon.css';
 @import (css) '../css/google-fonts/roboto/css/roboto.css';
 
+.bootstrap-3 * {
+    // simple reset
+    margin: initial;
+    padding: initial;
+}
+
 .plugin-setup-wizard() {
     position: fixed;
     top: 0;
@@ -276,7 +282,6 @@
             .plugin-list {
                 position: relative;
                 padding: 10px;
-                margin: 0 -15px;
                 clear: both;
                 @media screen and (min-width: 768px) {
                     max-height: 100%;
@@ -472,7 +477,7 @@
             }
 
             .nav{
-              margin:5px -5px;
+              margin:5px 0px;
             }
 
             li {
@@ -763,6 +768,10 @@
             padding: 0;
             margin: 0;
         }
+    }
+    
+    .alert {
+        font-size: initial;
     }
 }
 
