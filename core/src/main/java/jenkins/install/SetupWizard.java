@@ -18,6 +18,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -485,6 +486,7 @@ public class SetupWizard extends PageDecorator {
             if (request instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest)request;
                 if((req.getContextPath() + "/").equals(req.getRequestURI())) {
+                    Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";

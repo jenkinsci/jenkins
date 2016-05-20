@@ -40,6 +40,7 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateCenter.DownloadJob;
 import hudson.model.UpdateCenter.InstallationJob;
+import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.util.CyclicGraphDetector;
@@ -61,6 +62,8 @@ import jenkins.util.xml.RestrictiveEntityResolver;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -1319,6 +1322,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
         final Jenkins jenkins = Jenkins.getInstance();
         final UpdateCenter updateCenter = jenkins.getUpdateCenter();
+        final Authentication currentAuth = Jenkins.getAuthentication();
 
         if (!Jenkins.getInstance().getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
@@ -1348,7 +1352,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
+                        ACL.impersonate(currentAuth, new Runnable() {
+                            @Override
+                            public void run() {
+                                InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
+                            }
+                        });
                     }
                 }
             }.start();
