@@ -597,7 +597,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * TCP agent port.
      * 0 for random, -1 to disable.
      */
-    private int slaveAgentPort = Integer.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
+    private int slaveAgentPort = SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
 
     /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.
@@ -762,7 +762,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static Jenkins getInstance() {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
-            if(Boolean.getBoolean(Jenkins.class.getName()+".enableExceptionOnNullInstance")) {
+            if(SystemProperties.getBoolean(Jenkins.class.getName()+".enableExceptionOnNullInstance")) {
                 // TODO: remove that second block around 2.20 (that is: ~20 versions to battle test it)
                 // See https://github.com/jenkinsci/jenkins/pull/2297#issuecomment-216710150
                 throw new IllegalStateException("Jenkins has not been started, or was already shut down");
