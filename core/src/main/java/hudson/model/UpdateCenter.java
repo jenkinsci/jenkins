@@ -1528,12 +1528,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         }
                     }
                 }
-                status = new Success();
             } catch(Throwable e) {
                 LOGGER.log(Level.SEVERE, "An unexpected error occurred while attempting to enable " + plugin.getDisplayName(), e);
                 error = e;
                 requiresRestart = true;
                 status = new Failure(e);
+            }
+            if(status instanceof Pending) {
+                status = new Success();
             }
         }
     }
