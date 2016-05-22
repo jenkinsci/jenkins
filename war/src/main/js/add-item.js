@@ -296,7 +296,7 @@ $.when(getItems()).done(function(data) {
               event.preventDefault();
             }
           }
-        } 
+        }
       }
     });
 
