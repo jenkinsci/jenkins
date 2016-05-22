@@ -56,7 +56,47 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="major rfe">
+    Adapt the Setup Wizard GUI to provide a similar user experience when upgrading Jenkins. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33663">issue 33663</a>)
+  <!--TODO: add a links to the Extension points when Wiki get's updated-->
+  <li class="rfe">
+    Improve extensibility of the Setup Wizard GUI: 
+    <code>InstallState</code> and <code>InstallStateFilter</code> extension points. 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2281">PR 2281</a> as supplimentary change for 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-33663">issue 33663</a>)
+  <li class="rfe">
+    Improve User Experience in the New Item form. Submit button is always visible. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34244">issue 34244</a>)
+  <li class="rfe">
+    Allow passing a list of safe job parameters in <code>ParametersAction</code>.
+    It simplifies fixing of <a href="https://wiki.jenkins-ci.org/display/JENKINS/Plugins+affected+by+fix+for+SECURITY-170">plugins affected by SECURITY-170 fix</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2353">PR 2353</a>)
+  <li class="rfe">
+    Added Symbol annotations for 
+    <code>ParametersDefinition</code> and <code>BuildDiscarder/code> properties. 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2358">PR 2358</a>)
+  <li class="rfe">
+    Extended the <code>online-node</code> CLI command for accepting multiple agents. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34531">issue 34531</a>)
+  <li class="bug">
+    Listed Parameters should reflect what was used when the build ran (filtering of unsafe parameters).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34858">issue 34858</a>)
+  <li class="bug">
+    Scalability: Fix performance issues in the XML unmarshalling code.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34888">issue 34888</a>)
+  <li class="bug">
+    Support the legacy icon size specification approach in the Status Ball visualization.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25220">issue 25220</a>, regression in 1.586)
+  <li class="bug">
+    Migrate the leftover system properties to the new engine introduced in 2.4.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34854">issue 34854</a>)
+  <li class="bug">
+    Do not show warnings abot a missing Tool Installer if it is present in at least one Update Site.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34880">issue 34880</a>)
+  <li class="rfe">
+    Internal: CLI command <code>connect-node</code> was extracted from the core to CLI. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31417">issue 31417</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.5>What's new in 2.5</a> (2016/05/16)</h3>
