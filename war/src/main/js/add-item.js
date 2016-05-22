@@ -107,7 +107,6 @@ $.when(getItems()).done(function(data) {
           btn.removeClass('disabled');
           btn.prop('disabled', false);
         }
-        btn.focus();
       } else {
         if (!btn.hasClass('disabled')) {
           btn.addClass('disabled');
@@ -290,11 +289,6 @@ $.when(getItems()).done(function(data) {
           if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
             activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
-          } else {
-            if (!($('#itemname-invalid').hasClass('input-message-disabled'))) {
-              $('input[name="name"][type="text"]', '#createItem').focus();
-              event.preventDefault();
-            }
           }
         }
       }
