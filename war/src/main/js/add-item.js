@@ -1,5 +1,6 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $ = require('jquery-detached').getJQuery();
+var $remodal = require('remodal-detached').getRemodal();
 
 var getItems = function() {
   var d = $.Deferred();
