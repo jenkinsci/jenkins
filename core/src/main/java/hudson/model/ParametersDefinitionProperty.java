@@ -44,6 +44,7 @@ import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -218,6 +219,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     @Extension
+    @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
