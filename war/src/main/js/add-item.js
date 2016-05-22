@@ -234,7 +234,7 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').blur(function() {
+    $('input[name="name"]', '#createItem').on('keyup blur', function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
@@ -290,8 +290,13 @@ $.when(getItems()).done(function(data) {
           if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
             activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
+          } else {
+            if (!($('#itemname-invalid').hasClass('input-message-disabled'))) {
+              $('input[name="name"][type="text"]', '#createItem').focus();
+              event.preventDefault();
+            }
           }
-        }
+        } 
       }
     });
 
