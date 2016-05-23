@@ -315,11 +315,11 @@ public class MavenTest {
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
     }
 
-    @Test public void doPassBuildVariablesOptinally() throws Exception {
+    @Test public void doPassBuildVariablesOptionally() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptinally.xml")));
+        p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
         String log = j.buildAndAssertSuccess(p).getLog();
         assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables());
         assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
