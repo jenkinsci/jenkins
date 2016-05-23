@@ -16,8 +16,6 @@
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-builder": "0.0.40",
     "jenkins-js-test": "^1.0.0",
-    "jshint": "^2.9.2",
-    "gulp-jshint": "^2.0.0",
     "gulp-less": "^3.1.0"
   },
   "dependencies": {
