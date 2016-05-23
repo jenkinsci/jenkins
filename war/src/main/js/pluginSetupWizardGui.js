@@ -427,7 +427,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 	
 	// Define actions
-	var showInstallProgress = function(state) {
+	var showInstallProgress = function() {
 		// check for installing plugins that failed
 		if(failedPluginNames.length > 0) {
 			setPanel(pluginSuccessPanel, { installingPlugins : installingPlugins, failedPlugins: true });
@@ -525,7 +525,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				}
 
 				// keep polling while install is running
-				if(complete < total || data.state == 'INITIAL_PLUGINS_INSTALLING') {
+				if(complete < total || data.state === 'INITIAL_PLUGINS_INSTALLING') {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
 					setTimeout(updateStatus, 250);
@@ -795,7 +795,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 		
 		try {
-			if(JSON.parse(data).status == 'ok') {
+			if(JSON.parse(data).status === 'ok') {
 				showStatePanel();
 				return;
 			}
@@ -950,7 +950,8 @@ var createPluginSetupWizard = function(appendTarget) {
 	
 	// Process extensions
 	var extensionTranslationOverrides = [];
-	if ('undefined' != typeof(setupWizardExtensions)) {
+	/* globals setupWizardExtensions: true */
+	if ('undefined' !== typeof(setupWizardExtensions)) {
 		$.each(setupWizardExtensions, function() {
 			this.call(self, {
 				'$': $,
