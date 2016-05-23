@@ -1,4 +1,5 @@
-function onSetupWizardInitialized(wizard) {
+/* globals onSetupWizardInitialized: true */
+onSetupWizardInitialized(function(wizard) {
 	var jenkins = wizard.jenkins; // wizard-provided jenkins api
 	var pluginManager = wizard.pluginManager;
 
@@ -36,7 +37,4 @@ function onSetupWizardInitialized(wizard) {
 	wizard.translationOverride(function(translations) {
 		translations.installWizard_installing_title = translations.installWizard_upgrading_title;
 	});
-}
-
-/* globals wizard: true */
-onSetupWizardInitialized(wizard);
+});
