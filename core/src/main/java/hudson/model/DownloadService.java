@@ -403,7 +403,7 @@ public class DownloadService extends PageDecorator {
                     jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Could not load json from " + site, e );
+                    LOGGER.log(Level.FINE, "Could not load json from " + site, e );
                     continue;
                 }
                 JSONObject o = JSONObject.fromObject(jsonString);
@@ -489,7 +489,7 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
     public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");

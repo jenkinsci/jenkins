@@ -670,7 +670,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     protected void loadDetachedPlugins() {
         InstallState installState = Jenkins.getActiveInstance().getInstallState();
-        if (installState == InstallState.UPGRADE) {
+        if (InstallState.UPGRADE.equals(installState)) {
             VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
@@ -1199,9 +1199,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     public void doInstallPluginsDone() {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
-        if(InstallState.INITIAL_PLUGINS_INSTALLING.equals(j.getInstallState())) {
-            Jenkins.getInstance().setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
-        }
+        InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
     }
 
     /**
@@ -1313,20 +1311,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             installJobs.add(jobFuture);
         }
 
-        if (Jenkins.getActiveInstance().getInstallState() == InstallState.NEW) {
-            trackInitialPluginInstall(installJobs);
-        }
+        trackInitialPluginInstall(installJobs);
 
         return installJobs;
     }
 
     private void trackInitialPluginInstall(@Nonnull final List<Future<UpdateCenter.UpdateCenterJob>> installJobs) {
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.getInstance();
         final UpdateCenter updateCenter = jenkins.getUpdateCenter();
 
-        updateCenter.persistInstallStatus();
-        if (jenkins.getInstallState() == InstallState.NEW) {
+        if (!Jenkins.getInstance().getInstallState().isSetupComplete()) {
             jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING);
+            updateCenter.persistInstallStatus();
             new Thread() {
                 @Override
                 public void run() {
@@ -1352,7 +1348,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        jenkins.setInstallState(InstallState.INITIAL_PLUGINS_INSTALLING.getNextState());
+                        InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
                     }
                 }
             }.start();

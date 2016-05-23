@@ -65,8 +65,8 @@ public class SetupWizardTest {
     
     @Before 
     public void initSetupWizard() throws IOException, InterruptedException {
-        final SetupWizard wizard = new SetupWizard(j.jenkins);
-        j.jenkins.setSetupWizard(wizard);
+        final SetupWizard wizard = j.jenkins.getSetupWizard();
+        wizard.init(true);
         
         // Retrieve admin credentials
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();

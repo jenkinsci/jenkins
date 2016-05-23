@@ -61,13 +61,6 @@ public class SystemPropertiesTest {
     }
     
     @Test
-    public void shouldInitializeFromContext() throws Exception {
-        ServletContext c = j.jenkins.servletContext;
-        assertThat("System property should assign the value", 
-                SystemProperties.getString("install-wizard-path"), equalTo("jsbundles/pluginSetupWizard"));
-    }
-    
-    @Test
     public void shouldUseSystemPropertyAsAHighPriority() throws Exception {
         ServletContext c = j.jenkins.servletContext;
         System.setProperty("install-wizard-path", "myVal2");
