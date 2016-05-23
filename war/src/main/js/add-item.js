@@ -19,6 +19,23 @@ $.when(getItems()).done(function(data) {
     //////////////////////////
     // helper functions...
 
+    function isDrawableCategory(category) {
+      if (category.items.length >= 2) {
+        return true;
+      }
+      return false;
+    }
+
+    function isDrawableCategories(categories) {
+      var cont = 0;
+      for (var i = 0; i < categories.length; i++) {
+        if (isDrawableCategory(categories.get(i))) {
+          cont++;
+        }
+      }
+      if (cont > = )
+    }
+
     function parseResponseFromCheckJobName(data) {
       var html = $.parseHTML(data);
       var element = html[0];

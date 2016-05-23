@@ -47,7 +47,7 @@ THE SOFTWARE.
               </div>
             </div>
 
-            <div class="categories flat" role="radiogroup" aria-labelledby="Items" />
+            <div class="categories" role="radiogroup" aria-labelledby="Items" />
 
             <j:if test="${!empty(app.itemMap)}">
               <div class="item-copy">
