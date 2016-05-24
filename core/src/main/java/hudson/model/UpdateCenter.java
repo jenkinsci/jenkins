@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
@@ -78,6 +79,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -128,25 +130,37 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * and plugins, and to use alternate strategies for downloading, installing
  * and updating components. See the Javadocs for {@link UpdateCenterConfiguration}
  * for more information.
- *
+ * <p>
+ * <b>Extending Update Centers</b>. The update center in {@code Jenkins} can be replaced by defining a
+ * System Property (<code>hudson.model.UpdateCenter.className</code>). See {@link #createUpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
+ * This className should be available on early startup, so it cannot come only from a library 
+ * (e.g. Jenkins module or Extra library dependency in the WAR file project).
+ * Plugins cannot be used for such purpose.
+ * In order to be correctly instantiated, the class definition must have two constructors: 
+ * {@link #UpdateCenter()} and {@link #UpdateCenter(hudson.model.UpdateCenter.UpdateCenterConfiguration)}.
+ * If the class does not comply with the requirements, a fallback to the default UpdateCenter will be performed.
+ * 
  * @author Kohsuke Kawaguchi
  * @since 1.220
  */
 @ExportedBean
 public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster {
 
-    private static final String UPDATE_CENTER_URL = System.getProperty(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
+    private static final String UPDATE_CENTER_URL = SystemProperties.getString(UpdateCenter.class.getName()+".updateCenterUrl","http://updates.jenkins-ci.org/");
 
     /**
      * Read timeout when downloading plugins, defaults to 1 minute
      */
-    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = Integer.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
+    private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = SystemProperties.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
+
+    public static final String PREDEFINED_UPDATE_SITE_ID = "default";
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
-     * @since 1.483
+     * @since 1.483 - public property
+     * @since TODO - configurable via system property
      */
-    public static final String ID_DEFAULT = "default";
+    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", PREDEFINED_UPDATE_SITE_ID);
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
@@ -197,6 +211,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          */
         PRECHECK,
         /**
+         * Connection status check has been skipped.
+         * As example, it may happen if there is no connection check URL defined for the site.
+         * @since TODO
+         */
+        SKIPPED,
+        /**
          * Connection status is being checked at this time.
          */
         CHECKING,
@@ -224,8 +244,54 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     UpdateCenter(@Nonnull UpdateCenterConfiguration configuration) {
         configure(configuration);
     }
+    
+    /**
+     * Creates an update center.
+     * @param config Requested configuration. May be {@code null} if defaults should be used
+     * @return Created Update center. {@link UpdateCenter} by default, but may be overridden
+     * @since TODO
+     */
+    @Nonnull
+    public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
+        String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
+        if (requiredClassName == null) {
+            // Use the defaul Update Center
+            LOGGER.log(Level.FINE, "Using the default Update Center implementation");
+            return createDefaultUpdateCenter(config);
+        }
+        
+        LOGGER.log(Level.FINE, "Using the custom update center: {0}", requiredClassName);
+        try {
+            final Class<?> clazz = Class.forName(requiredClassName).asSubclass(UpdateCenter.class);
+            if (!UpdateCenter.class.isAssignableFrom(clazz)) {
+                LOGGER.log(Level.SEVERE, "The specified custom Update Center {0} is not an instance of {1}. Falling back to default.",
+                        new Object[] {requiredClassName, UpdateCenter.class.getName()});
+                return createDefaultUpdateCenter(config);
+            }
+            final Class<? extends UpdateCenter> ucClazz = clazz.asSubclass(UpdateCenter.class);
+            final Constructor<? extends UpdateCenter> defaultConstructor = ucClazz.getConstructor();
+            final Constructor<? extends UpdateCenter> configConstructor = ucClazz.getConstructor(UpdateCenterConfiguration.class);
+            LOGGER.log(Level.FINE, "Using the constructor {0} Update Center configuration for {1}",
+                    new Object[] {config != null ? "with" : "without", requiredClassName});
+            return config != null ? configConstructor.newInstance(config) : defaultConstructor.newInstance();
+        } catch(ClassCastException e) {
+            // Should never happen
+            LOGGER.log(WARNING, "UpdateCenter class {0} does not extend hudson.model.UpdateCenter. Using default.", requiredClassName);
+        } catch(NoSuchMethodException e) {
+            LOGGER.log(WARNING, String.format("UpdateCenter class {0} does not define one of the required constructors. Using default", requiredClassName), e);
+        } catch(Exception e) {
+            LOGGER.log(WARNING, String.format("Unable to instantiate custom plugin manager [%s]. Using default.", requiredClassName), e);
+        }
+        return createDefaultUpdateCenter(config);
+    }
+    
+    @Nonnull
+    private static UpdateCenter createDefaultUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
+        return config != null ? new UpdateCenter(config) : new UpdateCenter();
+    }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -290,7 +356,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Get the current connection status.
      * <p>
-     * Supports a "siteId" request parameter, defaulting to "default" for the default
+     * Supports a "siteId" request parameter, defaulting to {@link #ID_DEFAULT} for the default
      * update site.
      *
      * @return The current connection status.
@@ -301,6 +367,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         try {
             String siteId = request.getParameter("siteId");
             if (siteId == null) {
+                siteId = ID_DEFAULT;
+            } else if (siteId.equals("default")) {
+                // If the request explicitly requires the default ID, ship it
                 siteId = ID_DEFAULT;
             }
             ConnectionCheckJob checkJob = getConnectionCheckJob(siteId);
@@ -334,7 +403,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 }
                 return HttpResponses.okJSON(checkJob.connectionStates);
             } else {
-                return HttpResponses.errorJSON(String.format("Unknown site '%s'.", siteId));
+                return HttpResponses.errorJSON(String.format("Cannot check connection status of the update site with ID='%s'"
+                        + ". This update center cannot be resolved", siteId));
             }
         } catch (Exception e) {
             return HttpResponses.errorJSON(String.format("ERROR: %s", e.getMessage()));
@@ -463,7 +533,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * Alias for {@link #getById}.
+     * @param id ID of the update site to be retrieved
+     * @return Discovered {@link UpdateSite}. {@code null} if it cannot be found
      */
+    @CheckForNull
     public UpdateSite getSite(String id) {
         return getById(id);
     }
@@ -488,7 +561,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Gets {@link UpdateSite} by its ID.
      * Used to bind them to URL.
+     * @param id ID of the update site to be retrieved
+     * @return Discovered {@link UpdateSite}. {@code null} if it cannot be found
      */
+    @CheckForNull
     public UpdateSite getById(String id) {
         for (UpdateSite s : sites) {
             if (s.getId().equals(id)) {
@@ -502,8 +578,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Gets the {@link UpdateSite} from which we receive updates for <tt>jenkins.war</tt>.
      *
      * @return
-     *      null if no such update center is provided.
+     *      {@code null} if no such update center is provided.
      */
+    @CheckForNull
     public UpdateSite getCoreSource() {
         for (UpdateSite s : sites) {
             Data data = s.getData();
@@ -527,6 +604,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
+     * @return Discovered {@link Plugin}. {@code null} if it cannot be found
      */
     public @CheckForNull Plugin getPlugin(String artifactId) {
         for (UpdateSite s : sites) {
@@ -769,7 +847,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
@@ -777,21 +854,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to load "+file, e);
             }
+            boolean defaultSiteExists = false;
             for (UpdateSite site : sites) {
                 // replace the legacy site with the new site
                 if (site.isLegacyDefault()) {
                     sites.remove(site);
-                    sites.add(defaultSite);
-                    break;
+                } else if (ID_DEFAULT.equals(site.getId())) {
+                    defaultSiteExists = true;
                 }
+            }
+            if (!defaultSiteExists) {
+                sites.add(createDefaultUpdateSite());
             }
         } else {
             if (sites.isEmpty()) {
                 // If there aren't already any UpdateSources, add the default one.
                 // to maintain compatibility with existing UpdateCenterConfiguration, create the default one as specified by UpdateCenterConfiguration
-                sites.add(defaultSite);
+                sites.add(createDefaultUpdateSite());
             }
         }
+    }
+
+    protected UpdateSite createDefaultUpdateSite() {
+        return new UpdateSite(PREDEFINED_UPDATE_SITE_ID, config.getUpdateCenterUrl() + "update-center.json");
     }
 
     private XmlFile getConfigFile() {
@@ -1364,6 +1449,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                             connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.OK);
                         }
                     });
+                } else {
+                    LOGGER.log(WARNING, "Update site '{0}' does not declare the connection check URL. "
+                            + "Skipping the network availability check.", site.getId());
+                    connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.SKIPPED);
                 }
 
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.CHECKING);
@@ -1422,23 +1511,40 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         @Override
         public void run() {
             try {
-                plugin.getInstalled().enable();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
-                error = e;
-            }
-            
-            if (dynamicLoad) {
-                try {
-                    // remove the existing, disabled inactive plugin to force a new one to load
-                    pm.dynamicLoad(getDestination(), true);
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
-                    error = e;
-                    requiresRestart = true;
+                PluginWrapper installed = plugin.getInstalled();
+                synchronized(installed) {
+                    if (!installed.isEnabled()) {
+                        try {
+                            installed.enable();
+                        } catch (IOException e) {
+                            LOGGER.log(Level.SEVERE, "Failed to enable " + plugin.getDisplayName(), e);
+                            error = e;
+                            status = new Failure(e);
+                        }
+                        
+                        if (dynamicLoad) {
+                            try {
+                                // remove the existing, disabled inactive plugin to force a new one to load
+                                pm.dynamicLoad(getDestination(), true);
+                            } catch (Exception e) {
+                                LOGGER.log(Level.SEVERE, "Failed to dynamically load " + plugin.getDisplayName(), e);
+                                error = e;
+                                requiresRestart = true;
+                                status = new Failure(e);
+                            }
+                        } else {
+                            requiresRestart = true;
+                        }
+                    }
                 }
-            } else {
+            } catch(Throwable e) {
+                LOGGER.log(Level.SEVERE, "An unexpected error occurred while attempting to enable " + plugin.getDisplayName(), e);
+                error = e;
                 requiresRestart = true;
+                status = new Failure(e);
+            }
+            if(status instanceof Pending) {
+                status = new Success();
             }
         }
     }
@@ -1449,6 +1555,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public class NoOpJob extends EnableJob {
         public NoOpJob(UpdateSite site, Authentication auth, @Nonnull Plugin plugin) {
             super(site, auth, plugin, false);
+        }
+        @Override
+        public void run() {
+            // do nothing
+            status = new Success();
         }
     }
     
@@ -2042,12 +2153,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     @Restricted(NoExternalUse.class)
     public static void updateDefaultSite() {
+        final UpdateSite site = Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT);
+        if (site == null) {
+            LOGGER.log(Level.SEVERE, "Upgrading Jenkins. Cannot retrieve the default Update Site ''{0}''. "
+                    + "Plugin installation may fail.", UpdateCenter.ID_DEFAULT);
+            return;
+        }
         try {
             // Need to do the following because the plugin manager will attempt to access
-            // $JENKINS_HOME/updates/default.json. Needs to be up to date.
-            Jenkins.getInstance().getUpdateCenter().getSite(UpdateCenter.ID_DEFAULT).updateDirectlyNow(true);
+            // $JENKINS_HOME/updates/$ID_DEFAULT.json. Needs to be up to date.
+            site.updateDirectlyNow(true);
         } catch (Exception e) {
-            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update default UpdateSite. Plugin upgrades may fail.", e);
+            LOGGER.log(WARNING, "Upgrading Jenkins. Failed to update the default Update Site '" + UpdateCenter.ID_DEFAULT +
+                    "'. Plugin upgrades may fail.", e);
         }
     }
 
@@ -2063,7 +2181,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *      Use {@link UpdateSite#neverUpdate}
      */
     @Deprecated
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
     public static final XStream2 XSTREAM = new XStream2();
 

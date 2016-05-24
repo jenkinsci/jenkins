@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.3-SNAPSHOT</version>
+    <version>2.7-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -42,7 +42,7 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
     <node.version>4.0.0</node.version>
-    <npm.version>2.13.1</npm.version>
+    <npm.version>3.8.9</npm.version>
   </properties>
 
   <dependencies>

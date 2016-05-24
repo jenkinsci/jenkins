@@ -1,7 +1,6 @@
 /**
  * Jenkins first-run install wizard
  */
-
 // Require modules here, make sure they get browserify'd/bundled
 var jquery = require('jquery-detached');
 var bootstrap = require('bootstrap-detached');
@@ -118,6 +117,9 @@ var createPluginSetupWizard = function(appendTarget) {
 	var offlinePanel = require('./templates/offlinePanel.hbs');
 	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
 	var incompleteInstallationPanel = require('./templates/incompleteInstallationPanel.hbs');
+	var pluginSelectList = require('./templates/pluginSelectList.hbs');
+	
+	Handlebars.registerPartial('pluginSelectList', pluginSelectList);
 
 	// wrap calls with this method to handle generic errors returned by the plugin manager
 	var handleGenericError = function(success) {
@@ -136,11 +138,12 @@ var createPluginSetupWizard = function(appendTarget) {
 			success.apply(this, arguments);
 		};
 	};
-
+	
+	var pluginList;
+	var allPluginNames;
+	var selectedPluginNames;
+	
 	// state variables for plugin data, selected plugins, etc.:
-	var pluginList = pluginManager.plugins();
-	var allPluginNames = pluginManager.pluginNames();
-	var selectedPluginNames = pluginManager.recommendedPluginNames();
 	var visibleDependencies = {};
 	var categories = [];
 	var availablePlugins = {};
@@ -151,7 +154,9 @@ var createPluginSetupWizard = function(appendTarget) {
 	$wizard.appendTo(appendTarget);
 	var $container = $wizard.find('.modal-content');
 	var currentPanel;
-
+	
+	var self = this;
+	
 	// show tooltips; this is done here to work around a bootstrap/prototype incompatibility
 	$(document).on('mouseenter', '*[data-tooltip]', function() {
 		var $tip = $bs(this);
@@ -188,15 +193,45 @@ var createPluginSetupWizard = function(appendTarget) {
 		// any decorations after DOM replacement go here
 		}
 	];
+	
+	var getJenkinsVersionFull = function() {
+		var version = $('body').attr('data-version');
+		if(!version) {
+			return '';
+		}
+		return version;
+	};
+
+	var getJenkinsVersion = function() {
+		return getJenkinsVersionFull().replace(/(\d[.]\d).*/,'$1');
+	};
 
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
-	var setPanel = function(panel, data, oncomplete) {
+	var setPanel = function(panel, data, onComplete) {
 		var decorate = function($base) {
 			for(var i = 0; i < decorations.length; i++) {
 				decorations[i]($base);
 			}
 		};
-		var html = panel($.extend({translations: translations, baseUrl: jenkins.baseUrl}, data));
+		var oncomplete = function() {
+			var $content = $('*[data-load-content]');
+			if($content.length > 0) {
+				$content.each(function() {
+					var $el = $(this);
+					jenkins.get($el.attr('data-load-content'), function(data) {
+						$el.html(data);
+						if(onComplete) {
+							onComplete();
+						}
+					}, { dataType: 'html' });
+				});
+			} else {
+				if(onComplete) {
+					onComplete();
+				}
+			}
+		};
+		var html = panel($.extend({translations: translations, baseUrl: jenkins.baseUrl, jenkinsVersion: getJenkinsVersion() }, data));
 		if(panel === currentPanel) { // just replace id-marked elements
 			var $upd = $(html);
 			$upd.find('*[id]').each(function() {
@@ -210,9 +245,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				}
 			});
 
-			if(oncomplete) {
-				oncomplete();
-			}
+			oncomplete();
 		}
 		else {
 			var append = function() {
@@ -232,12 +265,10 @@ var createPluginSetupWizard = function(appendTarget) {
 					if($modalFooter.length === 0) {
 						$modalFooter = $('<div class="modal-footer"></div>').appendTo($container);
 					}
-					$modalFooter.prepend('<div class="jenkins-version">'+translations.installWizard_jenkinsVersionTitle+' '+$('body').attr('data-version')+'</div>');
+					$modalFooter.prepend('<div class="jenkins-version">'+translations.installWizard_jenkinsVersionTitle+' '+getJenkinsVersionFull()+'</div>');
 				}
 				
-				if(oncomplete) {
-					oncomplete();
-				}
+				oncomplete();
 			};
 			var $modalBody = $container.find('.modal-body');
 			if($modalBody.length > 0) {
@@ -329,7 +360,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		setPanel(function() { return progressPanel(arguments); }, { installingPlugins : [] });
 
 		pluginManager.installPlugins(pluginNames, handleGenericError(function() {
-			showInstallProgress();
+			showStatePanel();
 		}));
 	};
 	
@@ -358,20 +389,49 @@ var createPluginSetupWizard = function(appendTarget) {
 			installPlugins(pluginManager.recommendedPluginNames());
 		});
 	};
-
+	
+	var enableButtonsAfterFrameLoad = function() {
+		$('iframe[src]').load(function() {
+			$('button').prop({disabled:false});
+		});
+	};
+	
+	var setupFirstUser = function() {
+		setPanel(firstUserPanel, {}, enableButtonsAfterFrameLoad);
+	};
+	
+	// used to handle displays based on current Jenkins install state
+	var stateHandlers = {
+		DEFAULT: function() {
+			setPanel(welcomePanel);
+			// focus on default
+			$('.install-recommended').focus();
+		},
+		CREATE_ADMIN_USER: function() { setupFirstUser(); },
+		RUNNING: function() { setPanel(setupCompletePanel); },
+		INITIAL_SETUP_COMPLETED: function() { setPanel(setupCompletePanel); },
+		INITIAL_PLUGINS_INSTALLING: function() { showInstallProgress(); }
+	};
+	var showStatePanel = function(state) {
+		if (!state) {
+			pluginManager.installStatus(handleGenericError(function(data) {
+				showStatePanel(data.state);
+			}));
+			return;
+		}
+		if(state in stateHandlers) {
+			stateHandlers[state]();
+		} else {
+			stateHandlers.DEFAULT();
+		}
+	};
+	
 	// Define actions
 	var showInstallProgress = function(state) {
 		// check for installing plugins that failed
 		if(failedPluginNames.length > 0) {
 			setPanel(pluginSuccessPanel, { installingPlugins : installingPlugins, failedPlugins: true });
 			return;
-		}
-		
-		if(state) {
-			if(/CREATE_ADMIN_USER/.test(state)) {
-				setupFirstUser();
-				return;
-			}
 		}
 
 		initInstallingPluginList();
@@ -465,7 +525,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				}
 
 				// keep polling while install is running
-				if(complete < total) {
+				if(complete < total || data.state == 'INITIAL_PLUGINS_INSTALLING') {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
 					setTimeout(updateStatus, 250);
@@ -473,7 +533,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				else {
 					// mark complete
 					$('.progress-bar').css({width: '100%'});
-					showInstallProgress('CREATE_ADMIN_USER'); // this temporary, changed in another PR
+					showStatePanel(data.state);
 				}
 			}));
 		};
@@ -502,9 +562,8 @@ var createPluginSetupWizard = function(appendTarget) {
 			oncomplete();
 		}));
 	};
-
-	// load the custom plugin panel, will result in an AJAX call to get the plugin data
-	var loadCustomPluginPanel = function() {
+	
+	var loadPluginCategories = function(oncomplete) {
 		loadPluginData(function() {
 			categories = [];
 			for(var i = 0; i < pluginList.length; i++) {
@@ -531,6 +590,13 @@ var createPluginSetupWizard = function(appendTarget) {
 					});
 				}
 			}
+			oncomplete();
+		});
+	};
+
+	// load the custom plugin panel, will result in an AJAX call to get the plugin data
+	var loadCustomPluginPanel = function() {
+		loadPluginCategories(function(){
 			setPanel(pluginSelectionPanel, pluginSelectionPanelData(), function() {
 				$bs('.plugin-selector .plugin-list').scrollspy({ target: '.plugin-selector .categories' });
 			});
@@ -562,7 +628,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// refreshes the plugin selection panel; call this if anything changes to ensure everything is kept in sync
 	var refreshPluginSelectionPanel = function() {
-		setPanel(pluginSelectionPanel, pluginSelectionPanelData());
+		setPanel(currentPanel, pluginSelectionPanelData());
 		if(lastSearch !== '') {
 			searchForPlugins(lastSearch, false);
 		}
@@ -721,45 +787,45 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 	};
 	
-	var enableButtonsAfterFrameLoad = function() {
-		$('iframe[src]').load(function() {
-			$('button').prop({disabled:false});
-		});
-	};
-	
-	var setupFirstUser = function() {
-		setPanel(firstUserPanel, {}, enableButtonsAfterFrameLoad);
+	var handleStaplerSubmit = function(data) {
+		if(data.status && data.status > 200) {
+			// Nothing we can really do here
+			setPanel(errorPanel, { errorMessage: data.statusText });
+			return;
+		}
+		
+		try {
+			if(JSON.parse(data).status == 'ok') {
+				showStatePanel();
+				return;
+			}
+		} catch(e) {
+			// ignore JSON parsing issues, this may be HTML
+		}
+		// we get 200 OK
+		var $page = $(data);
+		var $errors = $page.find('.error');
+		if($errors.length > 0) {
+			var $main = $page.find('#main-panel').detach();
+			if($main.length > 0) {
+				data = data.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+			}
+			var doc = $('iframe[src]').contents()[0];
+			doc.open();
+			doc.write(data);
+			doc.close();
+		}
+		else {
+			showStatePanel();
+		}
 	};
 	
 	// call to submit the firstuser
 	var saveFirstUser = function() {
 		$('button').prop({disabled:true});
-		var handleSubmit = function(data) {
-			if(data.status && data.status > 200) {
-				// Nothing we can really do here
-				setPanel(errorPanel, { errorMessage: data.statusText });
-				return;
-			}
-			// we get 200 OK
-			var $page = $(data);
-			var $errors = $page.find('.error');
-			if($errors.length > 0) {
-				var $main = $page.find('#main-panel').detach();
-				if($main.length > 0) {
-					data = data.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
-				}
-				var doc = $('iframe[src]').contents()[0];
-				doc.open();
-				doc.write(data);
-				doc.close();
-			}
-			else {
-				setPanel(setupCompletePanel);
-			}
-		};
-		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleSubmit, handleSubmit);
+		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
 	};
-	
+
 	var skipFirstUser = function() {
 		$('button').prop({disabled:true});
 		setPanel(setupCompletePanel, {message: translations.installWizard_firstUserSkippedMessage});
@@ -777,6 +843,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		});
 	};
 	
+	
 	// push failed plugins to retry
 	var retryFailedPlugins = function() {
 		var failedPlugins = failedPluginNames;
@@ -789,7 +856,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		pluginManager.installPluginsDone(function(){
 			pluginManager.installStatus(handleGenericError(function(data) {
 				failedPluginNames = [];
-				showInstallProgress(data.state);
+				showStatePanel(data.state);
 			}));
 		});
 	};
@@ -856,7 +923,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.toggle-dependency-list': toggleDependencyList,
 		'.install-recommended': installDefaultPlugins,
 		'.install-custom': loadCustomPluginPanel,
-		'.install-home': function() { setPanel(welcomePanel); },
+		'.install-home': function() { showStatePanel(); },
 		'.install-selected': function() { installPlugins(selectedPluginNames); },
 		'.toggle-install-details': toggleInstallDetails,
 		'.install-done': finishInstallation,
@@ -877,23 +944,55 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.continue-with-failed-plugins': continueWithFailedPlugins,
 		'.start-over': startOver
 	};
-	for(var cls in actions) {
-		bindClickHandler(cls, actions[cls]);
-	}
 
 	// do this so the page isn't blank while doing connectivity checks and other downloads
 	setPanel(loadingPanel);
-
-	// kick off to get resource bundle
-	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', handleGenericError(function(localizations) {
-		translations = localizations;
-
+	
+	// Process extensions
+	var extensionTranslationOverrides = [];
+	if ('undefined' != typeof(setupWizardExtensions)) {
+		$.each(setupWizardExtensions, function() {
+			this.call(self, {
+				'$': $,
+				'$wizard': $wizard,
+				jenkins: jenkins,
+				pluginManager: pluginManager,
+				setPanel: setPanel,
+				addActions: function(pluginActions) { $.extend(actions, pluginActions); },
+				addStateHandlers: function(pluginStateHandlers) { $.extend(stateHandlers, pluginStateHandlers); },
+				translationOverride: function(it) { extensionTranslationOverrides.push(it); },
+				setSelectedPluginNames: function(pluginNames) { selectedPluginNames = pluginNames.slice(0); },
+				showStatePanel: showStatePanel,
+				installPlugins: installPlugins,
+				pluginSelectionPanelData: pluginSelectionPanelData,
+				loadPluginCategories: loadPluginCategories
+			});
+		});
+	}
+	
+	for(var cls in actions) {
+		bindClickHandler(cls, actions[cls]);
+	}
+	
+	var showInitialSetupWizard = function() {
 		// check for connectivity
-		jenkins.testConnectivity(handleGenericError(function(isConnected) {
+		//TODO: make the Update Center ID configurable
+		var siteId = 'default';
+		jenkins.testConnectivity(siteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
 			if(!isConnected) {
-				setPanel(offlinePanel);
+				if (isFatal) { // We cannot continue, show error
+					setPanel(errorPanel, { errorMessage: 'Default update site connectivity check failed with fatal error: ' + errorMessage + '. If you see this issue for the custom Jenkins WAR bundle, consider setting the correct value of the hudson.model.UpdateCenter.defaultUpdateSiteId system property (requires Jenkins restart). Otherwise please create a bug in Jenkins JIRA.' });
+				} else { // The update center is offline, no problem
+					setPanel(offlinePanel);
+				}
 				return;
 			}
+			
+			// Initialize the plugin manager after connectivity checks
+			pluginManager.init(handleGenericError(function() {
+				pluginList = pluginManager.plugins();
+				allPluginNames = pluginManager.pluginNames();
+				selectedPluginNames = pluginManager.recommendedPluginNames();
 
 			// check for updates when first loaded...
 			pluginManager.installStatus(handleGenericError(function(data) {
@@ -915,10 +1014,10 @@ var createPluginSetupWizard = function(appendTarget) {
 								}
 								setFailureStatus(j);
 							}
-							showInstallProgress(data.state);
+							showStatePanel(data.state);
 						}));
 					} else {
-						showInstallProgress(data.state);
+						showStatePanel(data.state);
 					}
 					return;
 				}
@@ -971,14 +1070,24 @@ var createPluginSetupWizard = function(appendTarget) {
 
 					// finally,  show the installer
 					// If no active install, by default, we'll show the welcome screen
-					setPanel(welcomePanel);
+					showStatePanel();
 
-					// focus on default
-					$('.install-recommended').focus();
-
+				}));
 				}));
 			}));
 		}));
+	};
+	
+	// kick off to get resource bundle
+	jenkins.loadTranslations('jenkins.install.pluginSetupWizard', handleGenericError(function(localizations) {
+		translations = localizations;
+		
+		// process any translation overrides
+		$.each(extensionTranslationOverrides, function() {
+			this(translations);
+		});
+		
+		showInitialSetupWizard();
 	}));
 };
 

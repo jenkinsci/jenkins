@@ -25,6 +25,7 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.remoting.ChannelBuilder;
 import jenkins.ReflectiveFilePathFilter;
 import jenkins.security.ChannelConfigurator;
@@ -44,7 +45,7 @@ import java.util.logging.Logger;
     /**
      * Escape hatch to disable this check completely.
      */
-    public static boolean BYPASS = Boolean.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
+    public static boolean BYPASS = SystemProperties.getBoolean(DefaultFilePathFilter.class.getName()+".allow");
 
     private static final Logger LOGGER = Logger.getLogger(DefaultFilePathFilter.class.getName());
 

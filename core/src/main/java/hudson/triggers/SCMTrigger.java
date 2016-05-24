@@ -80,6 +80,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import static java.util.logging.Level.*;
 import jenkins.model.RunAction2;
+import jenkins.util.SystemProperties;
 
 
 /**
@@ -664,5 +665,5 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    public static long STARVATION_THRESHOLD =Long.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
+    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
 }

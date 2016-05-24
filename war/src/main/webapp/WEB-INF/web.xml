@@ -45,11 +45,6 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </servlet>
 
-  <context-param>
-      <param-name>install-wizard-path</param-name>
-      <param-value>jsbundles/pluginSetupWizard</param-value>
-  </context-param>
-
   <servlet-mapping>
     <servlet-name>Stapler</servlet-name>
     <url-pattern>/*</url-pattern>
@@ -156,6 +151,10 @@ THE SOFTWARE.
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <listener>
+    <!-- Must be before WebAppMain in order to initialize the context before the first use of this class. -->
+    <listener-class>jenkins.util.SystemProperties</listener-class>
+  </listener>
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>
   </listener>

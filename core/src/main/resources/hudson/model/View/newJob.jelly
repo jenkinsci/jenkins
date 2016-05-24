@@ -39,7 +39,7 @@ THE SOFTWARE.
             <div class="header">
               <div class="add-item-name">
                 <label for="name">${%ItemName.label}</label>
-                <input name="name" id="name" type="text" tabindex="0" />
+                <input name="name" id="name" data-valid="false" type="text" tabindex="0" />
                 <div class="input-help">&#187; ${%ItemName.help}</div>
                 <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
                 <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
@@ -47,7 +47,7 @@ THE SOFTWARE.
               </div>
             </div>
 
-            <div class="categories flat" role="radiogroup" aria-labelledby="Items" />
+            <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
 
             <j:if test="${!empty(app.itemMap)}">
               <div class="item-copy">
@@ -59,7 +59,7 @@ THE SOFTWARE.
                   </div>
                   <label>${%CopyOption.label}</label>
                   <j:set var="descriptor" value="${it.descriptor}" />
-                  <s:textbox id="from" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+                  <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
                 </div>
               </div>
             </j:if>
