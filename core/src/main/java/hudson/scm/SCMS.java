@@ -38,7 +38,9 @@ import javax.servlet.ServletException;
  * List of all installed SCMs.
  * 
  * @author Kohsuke Kawaguchi
+ * @deprecated No longer contains anything nondeprecated.
  */
+@Deprecated
 public class SCMS {
     /**
      * List of all installed SCMs.
@@ -53,7 +55,9 @@ public class SCMS {
      *
      * @param target
      *      The project for which this SCM is configured to.
+     * @deprecated Suffices to use {@link StaplerRequest#bindJSON(java.lang.Class, net.sf.json.JSONObject)}
      */
+    @Deprecated
     public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, ServletException {
         String scm = req.getParameter("scm");
         if(scm==null)   return new NullSCM();
