@@ -84,10 +84,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
-    /**
-     * Stores {@link AutoBrowserHolder}. Lazily created.
-     */
-    private transient AutoBrowserHolder autoBrowserHolder;
 
     /**
      * Expose {@link SCM} to the remote API.
@@ -124,17 +120,13 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      * @see #guessBrowser
-     * @see SCMDescriptor#isBrowserReusable
      */
     @Exported(name="browser")
     public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
-        if(autoBrowserHolder==null)
-            autoBrowserHolder = new AutoBrowserHolder(this);
-        return autoBrowserHolder.get();
-
+        return guessBrowser();
     }
 
     /**

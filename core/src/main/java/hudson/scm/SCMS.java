@@ -60,7 +60,6 @@ public class SCMS {
 
         int scmidx = Integer.parseInt(scm);
         SCMDescriptor<?> d = SCM._for(target).get(scmidx);
-        d.generation++;
         return d.newInstance(req, req.getSubmittedForm().getJSONObject("scm"));
     }
 
