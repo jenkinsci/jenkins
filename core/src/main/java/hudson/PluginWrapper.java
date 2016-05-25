@@ -534,6 +534,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null || !dependency.isActive()) {
                 missingDependencies.add(d.toString());
+            }
         }
         if (!missingDependencies.isEmpty())
             throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
