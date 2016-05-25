@@ -68,8 +68,10 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -80,8 +82,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-
-import javax.annotation.CheckForNull;
 
 /**
  * Build by using Maven.
@@ -145,11 +145,11 @@ public class Maven extends Builder {
     /**
      * Skip injecting build variables as properties into maven process.
      *
-     * Defaults to false to mimic the legacy behavior.
+     * Defaults to false unless user requests otherwise. Old configurations are set to true to mimic the legacy behaviour.
      *
      * @since TODO
      */
-    private boolean doNotInjectBuildVariables = false;
+    private @Nonnull Boolean injectBuildVariables;
 
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
@@ -170,7 +170,7 @@ public class Maven extends Builder {
     }
     
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
-        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, true);
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, false);
     }
 
     @DataBoundConstructor
@@ -183,7 +183,7 @@ public class Maven extends Builder {
         this.usePrivateRepository = usePrivateRepository;
         this.settings = settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
         this.globalSettings = globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
-        this.doNotInjectBuildVariables = !injectBuildVariables;
+        this.injectBuildVariables = injectBuildVariables;
     }
 
     public String getTargets() {
@@ -222,7 +222,7 @@ public class Maven extends Builder {
 
     @Restricted(NoExternalUse.class) // Exposed for view
     public boolean isInjectBuildVariables() {
-        return !doNotInjectBuildVariables;
+        return injectBuildVariables;
     }
 
     /**
@@ -235,6 +235,13 @@ public class Maven extends Builder {
                 return i;
         }
         return null;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        if (injectBuildVariables == null) {
+            injectBuildVariables = true;
+        }
+        return this;
     }
 
     /**

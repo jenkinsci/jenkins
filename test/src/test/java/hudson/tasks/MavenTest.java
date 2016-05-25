@@ -335,5 +335,7 @@ public class MavenTest {
 
         log = j.buildAndAssertSuccess(p).getLog();
         assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+
+        assertFalse(new Maven("", "").isInjectBuildVariables());
     }
 }
