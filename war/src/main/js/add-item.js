@@ -1,6 +1,12 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $ = require('jquery-detached').getJQuery();
 
+// Minimum number of item by category to draw the category
+var MIN_ITEM = 3;
+
+// Minimum number of drawable categories to draw a categorized listing
+var MIN_CATEGORIES = 1;
+
 var getItems = function() {
   var d = $.Deferred();
   $.get('itemCategories?depth=3').done(
@@ -20,20 +26,21 @@ $.when(getItems()).done(function(data) {
     // helper functions...
 
     function isDrawableCategory(category) {
-      if (category.items.length >= 2) {
+      if (category.items.length >= MIN_ITEM) {
         return true;
       }
       return false;
     }
 
     function isDrawableCategories(categories) {
-      var cont = 0;
-      for (var i = 0; i < categories.length; i++) {
-        if (isDrawableCategory(categories.get(i))) {
+      var cont = 0, i = 0;
+      while (i < categories.length && (categories.length - i) >= MIN_CATEGORIES) {
+        if (isDrawableCategory(categories[i])) {
           cont++;
         }
+        i++;
       }
-      if (cont > = )
+      return cont >= MIN_CATEGORIES ? true : false;
     }
 
     function parseResponseFromCheckJobName(data) {
@@ -157,8 +164,11 @@ $.when(getItems()).done(function(data) {
     //////////////////////////////////
     // Draw functions
 
-    function drawCategory(category) {
+    function drawCategory(category, flat) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
+      if (!flat) {
+        $category.addClass('flat');
+      }
       var $items = $('<ul/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
@@ -241,10 +251,10 @@ $.when(getItems()).done(function(data) {
     // The main panel content is hidden by default via an inline style. We're ready to remove that now.
     $('#add-item-panel').removeAttr('style');
 
-    // Render all categories
+    // Process the category listing
     var $categories = $('div.categories');
     $.each(data.categories, function(i, elem) {
-      drawCategory(elem).appendTo($categories);
+      drawCategory(elem, isDrawableCategory(elem)).appendTo($categories);
     });
 
     // Focus
@@ -317,5 +327,7 @@ $.when(getItems()).done(function(data) {
 
     // Do sticky the form buttons
     doSticky();
+
+    console.log(isDrawableCategories(data.categories));
   });
 });
