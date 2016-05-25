@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Red Hat, Inc.
+ * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
+import org.acegisecurity.AccessDeniedException;
 import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
-
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,21 +42,29 @@ import java.util.logging.Logger;
  * @since TODO
  */
 @Extension
-public class OnlineNodeCommand extends CLICommand {
+public class ConnectNodeCommand extends CLICommand {
 
-    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comama-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
+
+    @Option(name="-f", usage="Cancel any currently pending connect operation and retry from scratch")
+    public boolean force = false;
+
+    private static final Logger LOGGER = Logger.getLogger(ConnectNodeCommand.class.getName());
 
     @Override
     public String getShortDescription() {
-        return Messages.OnlineNodeCommand_ShortDescription();
+        return Messages.ConnectNodeCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
         boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
-        final HashSet<String> hs = new HashSet<String>(nodes);
+
+        final HashSet<String> hs = new HashSet<String>();
+        hs.addAll(nodes);
+
         List<String> names = null;
 
         for (String node_s : hs) {
@@ -65,34 +72,34 @@ public class OnlineNodeCommand extends CLICommand {
 
             try {
                 computer = jenkins.getComputer(node_s);
-                if (computer == null) {
-                    if (names == null) {
+
+                if(computer == null) {
+                    if(names == null) {
                         names = new ArrayList<String>();
-                        for (Computer c : jenkins.getComputers()) {
-                            if (!c.getName().isEmpty()) {
+                        for (Computer c : jenkins.getComputers())
+                            if (!c.getName().isEmpty())
                                 names.add(c.getName());
-                            }
-                        }
                     }
                     String adv = EditDistance.findNearest(node_s, names);
                     throw new IllegalArgumentException(adv == null ?
                             hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(node_s) :
                             hudson.model.Messages.Computer_NoSuchSlaveExists(node_s, adv));
                 }
-                computer.cliOnline();
+
+                computer.cliConnect(force);
             } catch (Exception e) {
                 if (hs.size() == 1) {
                     throw e;
                 }
 
-                final String errorMsg = node_s + ": " + e.getMessage();
+                final String errorMsg = String.format(node_s + ": " + e.getMessage());
                 stderr.println(errorMsg);
                 errorOccurred = true;
                 continue;
             }
         }
 
-        if (errorOccurred){
+        if (errorOccurred) {
             throw new AbortException("Error occured while performing this command, see previous stderr output.");
         }
         return 0;

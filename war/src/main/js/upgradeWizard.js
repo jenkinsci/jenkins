@@ -1,12 +1,12 @@
+/* globals onSetupWizardInitialized: true */
 onSetupWizardInitialized(function(wizard) {
-	var $ = wizard.$; // jQuery
 	var jenkins = wizard.jenkins; // wizard-provided jenkins api
 	var pluginManager = wizard.pluginManager;
-	
+
 	var upgradePanel = require('./templates/upgradePanel.hbs');
 	var upgradeSuccessPanel = require('./templates/upgradeSuccessPanel.hbs');
 	var upgradeSkippedPanel = require('./templates/upgradeSkippedPanel.hbs');
-	
+
 	wizard.addActions({
 		'.skip-recommended-plugins': function() {
 			wizard.setPanel(upgradeSkippedPanel);
@@ -15,7 +15,7 @@ onSetupWizardInitialized(function(wizard) {
 			jenkins.goTo('/setupWizard/installState/UPGRADE/hideUpgradeWizard');
 		}
 	});
-	
+
 	wizard.addStateHandlers({
 		UPGRADE: function() {
 			wizard.loadPluginCategories(function(){

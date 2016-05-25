@@ -161,7 +161,7 @@ public class InstallUtil {
                 return InstallState.TEST;
             }
             
-            if (Boolean.getBoolean("hudson.Main.development")) {
+            if (SystemProperties.getBoolean("hudson.Main.development")) {
                 return InstallState.DEVELOPMENT;
             }
         }

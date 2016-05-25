@@ -448,10 +448,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * CLI command to reconnect this node.
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
+     *
+     * @param force
+     *      If true cancel any currently pending connect operation and retry from scratch
      */
-    @CLIMethod(name="connect-node")
-    public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         connect(force).get();
     }
