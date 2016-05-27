@@ -2,7 +2,7 @@
 var $ = require('jquery-detached').getJQuery();
 
 // Minimum number of item by category to draw the category
-var MIN_ITEM = 3;
+var MIN_ITEM = 6;
 
 // Minimum number of drawable categories to draw a categorized listing
 var MIN_CATEGORIES = 1;
@@ -166,7 +166,7 @@ $.when(getItems()).done(function(data) {
 
     function drawCategory(category, flat) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      if (!flat) {
+      if (flat) {
         $category.addClass('flat');
       }
       var $items = $('<ul/>').addClass('j-item-options');
@@ -253,9 +253,16 @@ $.when(getItems()).done(function(data) {
 
     // Process the category listing
     var $categories = $('div.categories');
-    $.each(data.categories, function(i, elem) {
-      drawCategory(elem, isDrawableCategory(elem)).appendTo($categories);
-    });
+    if (isDrawableCategories(data.categories)) {
+      $.each(data.categories, function(i, elem) {
+        drawCategory(elem, isDrawableCategory(elem)).appendTo($categories);
+      });
+    } else {
+      $categories.addClass('flat');
+      $.each(data.categories, function(i, elem) {
+        drawCategory(elem, false).appendTo($categories);
+      });
+    }
 
     // Focus
     $("#add-item-panel").find("#name").focus();
