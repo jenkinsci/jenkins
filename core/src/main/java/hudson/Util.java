@@ -343,7 +343,6 @@ public class Util {
          *  both as symlinks, let's use that function and always call it before calling down to the
          *  NIO2 API.
          *
-         *  This is tracked as JENKINS-29956.
          */
         if (Functions.isWindows()) {
             try {
