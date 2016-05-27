@@ -299,42 +299,42 @@
         position:relative;
       }  
       .repeatable-delete {
-        position:absolute;
-        top:-2px;
-        right:35px;
-        height:18px;
-        width:32px;
-        .border-radius-bottom(3px);
-        overflow:hidden;
+        position: absolute;
+        top: -3px;
+        right: 40px;
+        height: 20px;
+        width: 30px;
         
-        button{
-          padding:0;
-          margin:0;
-          text-indent:999em;
+        button {
+          text-align: center;
+          text-indent: -9999px;
+          width: 30px !important;
+          height: 20px !important;
+          padding: 0 !important;
+          margin: 0 !important;
           background-color: @danger;
           color: @light-backgrond;
           border: 1px solid @danger-line;
         }
-        button:focus,
-        button:hover{
+
+        button:focus, button:hover {
           background-color: @danger-dark;
-          border-color:@danger-dark-line;
-          color:@brightest;
+          border-color: @danger-dark-line;
+          color: @brightest;
         }
-        button:before{
+
+        button:before {
           content: 'X';
           font-weight: bold;
-          text-indent: 0;
-          display: block;
           position: absolute;
-          left: 0;
-          right: 0;
-          top: 0;
-          bottom: 0;
+          display: block;
+          left: 0px;
+          top: 0px;
+          width: 30px;
           text-align: center;
           font-size: 12px;
-          line-height: 18px;
-        }  
+          text-indent: 0;
+        }
 
       }
     }
