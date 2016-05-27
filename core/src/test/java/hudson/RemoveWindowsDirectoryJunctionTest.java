@@ -40,7 +40,7 @@ public class RemoveWindowsDirectoryJunctionTest {
        ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/C", cmd);
        pb.inheritIO();
        Process p = pb.start();
-       assertTrue("Running mklink failed (cmd=" + cmd + ")", p.waitFor() == 0);
+       assertEquals("Running mklink failed (cmd=" + cmd + ")", 0, p.waitFor());
        return junc;
     }
 }
