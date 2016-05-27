@@ -3,17 +3,17 @@
 <div class="plugins-for-category">
   {{#each this}}
   <div class="plugin {{id plugin.name}} {{#inSelectedPlugins plugin.name}}selected{{/inSelectedPlugins}} {{#ifVisibleDependency plugin.name}}show-dependencies{{/ifVisibleDependency}}" id="row-{{plugin.name}}">
-    {{#hasDependencies plugin.name}}
-      <a href="javascript:return false" class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}" title="{{../plugin.title}} {{../../../translations.installWizard_installIncomplete_dependenciesLabel}}">
-        <span class="badge">{{dependencyCount ../plugin.name}}</span>
-      </a>
-    {{/hasDependencies}}
     <label>
       <span class="title">
         <input type="checkbox" id="chk-{{plugin.name}}" name="{{plugin.name}}" value="{{searchTerm}}" {{#inSelectedPlugins plugin.name}}checked="checked"{{/inSelectedPlugins}}/>
         {{plugin.title}}
         <a href="{{plugin.website}}" target="_blank" class="website-link" title="{{plugin.title}} {{../../translations.installWizard_websiteLinkLabel}}"></a>
       </span>
+      {{#hasDependencies plugin.name}}
+        <a href="#" class="btn btn-link toggle-dependency-list" type="button" data-plugin-name="{{../plugin.name}}" title="{{../plugin.title}} {{../../../translations.installWizard_installIncomplete_dependenciesLabel}}">
+          <span class="badge">{{dependencyCount ../plugin.name}}</span>
+        </a>
+      {{/hasDependencies}}
       <span class="description">
         {{{plugin.excerpt}}}
       </span>

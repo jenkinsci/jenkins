@@ -353,7 +353,7 @@
 					&.selected label {
 						background: #dff0d8;
 						margin: 4px -7px;
-						padding: 6px 0 6px 26px;
+						padding: 6px 1px 6px 26px;
 						border-radius: 2px;
 						border: 1px solid #C2E0A9;
 						color: #3c763d;
@@ -491,7 +491,13 @@
 								background: @badge-color;
 								color: #fff;
 							}
+							outline: none;
 						}
+					}
+					
+					&.selected .toggle-dependency-list {
+						top: -1px;
+						right: -1px;
 					}
 					
 					.dep-list {
@@ -577,7 +583,7 @@
                         background: #337ab7;
                     }
 
-                    &:hover {
+                    &:hover, &:focus {
                       background:rgba(100,200,255,.1);
                       box-shadow:inset -200px 0 200px -200px rgba(100,200,255,.33);
                         color: #337ab7;

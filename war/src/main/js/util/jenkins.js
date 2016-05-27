@@ -193,12 +193,13 @@ exports.loadTranslations = function(bundleName, handler, onError) {
 			}
 			throw 'Unable to load localization data: ' + res.message;
 		}
-		
+
 		var translations = res.data;
-		
-		if('undefined' !== typeof(Proxy)) {
+
+		/* globals Proxy: true */
+		if('undefined' !== typeof Proxy) {
 			translations = new Proxy(translations, {
-				get: function(target, property, receiver) {
+				get: function(target, property) {
 					if(property in target) {
 						return target[property];
 					}

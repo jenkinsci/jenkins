@@ -153,12 +153,14 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     private static final int PLUGIN_DOWNLOAD_READ_TIMEOUT = SystemProperties.getInteger(UpdateCenter.class.getName()+".pluginDownloadReadTimeoutSeconds", 60) * 1000;
 
+    public static final String PREDEFINED_UPDATE_SITE_ID = "default";
+
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
      * @since 1.483 - public property
      * @since TODO - configurable via system property
      */
-    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", "default");
+    public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", PREDEFINED_UPDATE_SITE_ID);
 
     @Restricted(NoExternalUse.class)
     public static final String ID_UPLOAD = "_upload";
@@ -845,7 +847,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Loads the data from the disk into this object.
      */
     public synchronized void load() throws IOException {
-        UpdateSite defaultSite = new UpdateSite(ID_DEFAULT, config.getUpdateCenterUrl() + "update-center.json");
         XmlFile file = getConfigFile();
         if(file.exists()) {
             try {
@@ -853,21 +854,29 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to load "+file, e);
             }
+            boolean defaultSiteExists = false;
             for (UpdateSite site : sites) {
                 // replace the legacy site with the new site
                 if (site.isLegacyDefault()) {
                     sites.remove(site);
-                    sites.add(defaultSite);
-                    break;
+                } else if (ID_DEFAULT.equals(site.getId())) {
+                    defaultSiteExists = true;
                 }
+            }
+            if (!defaultSiteExists) {
+                sites.add(createDefaultUpdateSite());
             }
         } else {
             if (sites.isEmpty()) {
                 // If there aren't already any UpdateSources, add the default one.
                 // to maintain compatibility with existing UpdateCenterConfiguration, create the default one as specified by UpdateCenterConfiguration
-                sites.add(defaultSite);
+                sites.add(createDefaultUpdateSite());
             }
         }
+    }
+
+    protected UpdateSite createDefaultUpdateSite() {
+        return new UpdateSite(PREDEFINED_UPDATE_SITE_ID, config.getUpdateCenterUrl() + "update-center.json");
     }
 
     private XmlFile getConfigFile() {
