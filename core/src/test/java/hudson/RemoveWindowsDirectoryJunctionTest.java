@@ -30,6 +30,7 @@ public class RemoveWindowsDirectoryJunctionTest {
         assertTrue("Unable to create temporary file in notJunction directory", f1.createNewFile());
         File j1 = makeJunction(tmp.getRoot(), subdir1);
         Util.deleteRecursive(j1);
+        assertFalse("Windows Junction should have been removed", j1.exists());
         assertTrue("Contents of Windows Junction should not be removed", f1.exists());
     }
 
