@@ -74,7 +74,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
         public List<Descriptor<ComputerLauncher>> getApplicableDescriptors() {
             List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
             for (Descriptor<ComputerLauncher> d : Functions.getComputerLauncherDescriptors()) {
-                if (DelegatingComputerLauncher.class.isInstance(d))  continue;
+                if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;
                 r.add(d);
             }
             return r;
