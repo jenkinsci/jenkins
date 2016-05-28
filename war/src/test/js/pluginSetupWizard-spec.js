@@ -366,7 +366,14 @@ describe("pluginSetupWizard.js", function () {
             {
                 status: 'ok',
                 data: {
-                    state: 'INSTALLING_PLUGINS',
+                    state: 'NEW',
+                    jobs: []
+                }
+            },
+            {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_PLUGINS_INSTALLING',
                     jobs: [
                       {
                           name: 'subversion',
@@ -376,20 +383,21 @@ describe("pluginSetupWizard.js", function () {
                       }
                   ]
                 }
-            }])
+            }
+            ])
         };
         test(function($) {
             var goButton = $('.install-recommended');
             expect(goButton.size()).toBe(1);
 
             // validate a call to installPlugins with our defaults
-        setTimeout(function() {
+            setTimeout(function() {
                 expect($('.install-done').is(':visible')).toBe(false);
 
-                expect($('.save-first-user').is(':visible')).toBe(true);
+                expect($('.installing-panel').is(':visible')).toBe(true);
 
                 done();
-        }, 500);
+            }, 1);
 
             goButton.click();
         }, ajaxMappings);

@@ -45,11 +45,6 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </servlet>
 
-  <context-param>
-      <param-name>install-wizard-path</param-name>
-      <param-value>jsbundles/pluginSetupWizard</param-value>
-  </context-param>
-
   <servlet-mapping>
     <servlet-name>Stapler</servlet-name>
     <url-pattern>/*</url-pattern>

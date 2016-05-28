@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 
 /**
  * Master-side implementation for JNLP3-connect protocol.
@@ -127,8 +128,9 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
 
     static {
         String propName = JnlpSlaveAgentProtocol3.class.getName() + ".enabled";
-        if (System.getProperties().containsKey(propName))
-            ENABLED = Boolean.getBoolean(propName);
+        String propertyString = SystemProperties.getString(propName);
+        if (propertyString != null)
+            ENABLED = SystemProperties.getBoolean(propName);
         else {
             byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
             ENABLED = (hash%10)==0;

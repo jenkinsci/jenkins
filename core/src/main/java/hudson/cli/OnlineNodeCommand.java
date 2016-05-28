@@ -24,13 +24,18 @@
 
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
 
 import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -40,29 +45,56 @@ import java.util.logging.Logger;
 @Extension
 public class OnlineNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NAME", usage="Agent name, or empty string for master")
-    public String computerName;
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    private List<String> nodes;
 
     @Override
     public String getShortDescription() {
-
         return Messages.OnlineNodeCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
-
+        boolean errorOccurred = false;
         final Jenkins jenkins = Jenkins.getActiveInstance();
+        final HashSet<String> hs = new HashSet<String>(nodes);
+        List<String> names = null;
 
-        Computer computer = jenkins.getComputer(computerName);
+        for (String node_s : hs) {
+            Computer computer = null;
 
-        if (computer == null) {
-            throw new IllegalArgumentException(hudson.model.Messages.Computer_NoSuchSlaveExists(computerName, null));
-        } else {
-            computer.cliOnline();
+            try {
+                computer = jenkins.getComputer(node_s);
+                if (computer == null) {
+                    if (names == null) {
+                        names = new ArrayList<String>();
+                        for (Computer c : jenkins.getComputers()) {
+                            if (!c.getName().isEmpty()) {
+                                names.add(c.getName());
+                            }
+                        }
+                    }
+                    String adv = EditDistance.findNearest(node_s, names);
+                    throw new IllegalArgumentException(adv == null ?
+                            hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(node_s) :
+                            hudson.model.Messages.Computer_NoSuchSlaveExists(node_s, adv));
+                }
+                computer.cliOnline();
+            } catch (Exception e) {
+                if (hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = node_s + ": " + e.getMessage();
+                stderr.println(errorMsg);
+                errorOccurred = true;
+                continue;
+            }
         }
 
+        if (errorOccurred){
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
         return 0;
     }
-
 }

@@ -4,9 +4,6 @@
 
 var jenkins = require('../util/jenkins');
 
-// TODO: Get plugin info (plugins + recommended plugin list) from update center.
-// For now, we statically store them in the wizard.
-
 //Get plugin info (plugins + recommended plugin list) from update centers.
 var plugins;
  
@@ -231,4 +228,3 @@ exports.restartJenkins = function(handler) {
 		}
 	});
 };
-

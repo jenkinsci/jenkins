@@ -169,6 +169,15 @@ exports.initHandlebars = function() {
 
 	Handlebars.registerHelper('id', exports.idIfy);
 
+	Handlebars.registerHelper('replace', function() {
+		var val = arguments[0];
+		// second, through second to last - options is last
+		for (var i = 1; i < arguments.length - 1; i++) {
+			val = val.replace('{' + (i-1) + '}', arguments[i]);
+		}
+		return val;
+	});
+
 	return Handlebars;
 };
 
@@ -185,7 +194,24 @@ exports.loadTranslations = function(bundleName, handler, onError) {
 			throw 'Unable to load localization data: ' + res.message;
 		}
 
-		handler(res.data);
+		var translations = res.data;
+
+		/* globals Proxy: true */
+		if('undefined' !== typeof Proxy) {
+			translations = new Proxy(translations, {
+				get: function(target, property) {
+					if(property in target) {
+						return target[property];
+					}
+					if(debug) {
+						console.log('"' + property + '" not found in translation bundle.');
+					}
+					return property;
+				}
+			});
+		}
+
+		handler(translations);
 	});
 };
 
@@ -233,9 +259,11 @@ exports.getWindow = function($form) {
 	$(top.document).find('iframe').each(function() {
 		var windowFrame = this.contentWindow;
 		var $f = $(this).contents().find('form');
-		if($f.length > 0 && $form[0] === $f[0]) {
-			wnd = windowFrame;
-		}
+		$f.each(function() {
+			if($form[0] === this) {
+				wnd = windowFrame;
+			}
+		});
 	});
 	return wnd;
 };
