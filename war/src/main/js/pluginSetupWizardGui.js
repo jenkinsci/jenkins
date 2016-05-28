@@ -262,7 +262,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				for (var i = focusPath.length-1; i >= 0; i--) {
 					e = e.children[focusPath[i]];
 				}
-				if (document.activeElement != e) {
+				if (document.activeElement !== e) {
 					e.focus();
 				}
 			} catch (ex) {
