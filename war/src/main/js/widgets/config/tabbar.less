@@ -300,24 +300,29 @@
       }  
       .repeatable-delete {
         position: absolute;
-        top: -3px;
+        top: -4px;
         right: 40px;
         height: 20px;
         width: 30px;
-        
+
         button {
           text-align: center;
           text-indent: -9999px;
           width: 30px !important;
-          height: 20px !important;
+          height: 18px !important;
           padding: 0 !important;
           margin: 0 !important;
+          .border-radius-top(0) !important;
           background-color: @danger;
           color: @light-backgrond;
           border: 1px solid @danger-line;
+          line-height: 12px !important;
+          display: inline-block;
+          font-size: 8px;
         }
 
-        button:focus, button:hover {
+        button:focus,
+        button:hover {
           background-color: @danger-dark;
           border-color: @danger-dark-line;
           color: @brightest;
@@ -329,8 +334,9 @@
           position: absolute;
           display: block;
           left: 0;
-          top: 0;
+          top: 2;
           width: 30px;
+          height: 16px;
           text-align: center;
           font-size: 12px;
           text-indent: 0;
