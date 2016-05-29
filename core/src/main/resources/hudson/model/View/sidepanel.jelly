@@ -20,7 +20,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+THE SOFTWARE.title
 -->
 
 <!--
@@ -33,6 +33,8 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
+    <l:js src="jsbundles/add-item.js" />
+    <l:css src="jsbundles/add-item.css" />
   </l:header>
   <l:side-panel>
     <l:tasks>
@@ -42,6 +44,9 @@ THE SOFTWARE.
         <!-- made overridable for ViewGroup that doesn't allow modifications -->
         <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
+
+      <l:task href="#modal" icon="icon-new-package icon-md" title="New Item Popup"/>
+      <st:include page="popup.jelly" it="${it.owner}" optional="true" />
 
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
