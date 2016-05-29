@@ -56,7 +56,35 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  
+  <li class="bug">
+    Prevent stack overflow when using classes with complex generic type arguments 
+    (e.g. <code>hudson.model.Run</code> or <code>hudson.model.Job</code>).
+    Regression in Groovy 2.4, 
+    see <a href="https://issues.apache.org/jira/browse/GROOVY-7826">GROOVY-7826</a> for more info.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34751">issue 34751</a>)
+  <li class="bug">
+    Do not invoke <code>PingFailureAnalyzer</code> for agent=>master ping failures.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35190">issue 35190</a>)
+  <li class="bug">
+    Fix keyboard navigation in setup wizard.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33947">issue 33947</a>)
+  <li class="bug">
+    Cleanup of Javascript issues discovered by the JSHint static analyis tool.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35020">issue 35020</a>)
+  <li class="bug">
+    <code>DelegatingComputerLauncher</code> now accepts child classes in its hooks
+    (pre-offline, pre-connect, etc.).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35198">issue 35198</a>)
+  <li class="rfe">
+    Internal: Activate JSHint in Jenkins js-builder component during the core build.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34438">issue 34438</a>)
+  <li class="rfe">
+    Internal: Add symbol annotation for <code>SystemInfoLink</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2375">PR #2375</a>)
+  <li class="bug">
+    Internal: NodeJS build was malfunctional on Win x64.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35201">issue 35201</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.6>What's new in 2.6</a> (2016/05/22)</h3>
