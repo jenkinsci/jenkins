@@ -617,7 +617,7 @@ THE SOFTWARE.
       <activation><os><family>windows</family><arch>amd64</arch></os></activation>
       <properties>
         <node.download.file>win-x64/node.exe</node.download.file>
-        <node.download.classifier>/x64</node.download.classifier>
+        <node.download.classifier>/win-x64</node.download.classifier>
       </properties>
     </profile>
     <profile>
