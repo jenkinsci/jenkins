@@ -953,6 +953,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Nonnull
     @Restricted(NoExternalUse.class)
     public InstallState getInstallState() {
+        if (installState == null || installState.name() == null) {
+            return InstallState.UNKNOWN;
+        }
         return installState;
     }
 
