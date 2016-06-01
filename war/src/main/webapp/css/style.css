@@ -1891,3 +1891,28 @@ body.no-sticker #bottom-sticker {
     width: 48px;
     height: 48px;
 }
+
+
+
+html.remodal-is-locked{overflow:hidden;-ms-touch-action:none;touch-action:none}.remodal,[data-remodal-id]{display:none}.remodal-overlay{position:fixed;z-index:9999;top:-5000px;right:-5000px;bottom:-5000px;left:-5000px;display:none;background:rgba(43,46,56,.9)}.remodal-wrapper{position:fixed;z-index:10000;top:0;right:0;bottom:0;left:0;display:none;overflow:auto;text-align:center;-webkit-overflow-scrolling:touch;padding:10px 10px 0}.remodal-wrapper:after{display:inline-block;height:100%;margin-left:-.05em;content:""}.remodal-overlay,.remodal-wrapper{-webkit-backface-visibility:hidden;backface-visibility:hidden}.remodal{position:relative;outline:0;-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;-ms-text-size-adjust:100%;text-size-adjust:100%;-webkit-box-sizing:border-box;box-sizing:border-box;margin-bottom:10px;padding:35px;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);color:#2b2e38;background:#fff}.remodal-cancel,.remodal-close,.remodal-confirm{overflow:visible;margin:0;cursor:pointer;text-decoration:none;outline:0;border:0}.remodal-is-initialized{display:inline-block}.remodal-close,.remodal-close:before{position:absolute;top:0;left:0;display:block;width:35px}.remodal-bg.remodal-is-opened,.remodal-bg.remodal-is-opening{-webkit-filter:blur(3px);filter:blur(3px)}.remodal-overlay.remodal-is-closing,.remodal-overlay.remodal-is-opening{-webkit-animation-duration:.3s;animation-duration:.3s;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.remodal-overlay.remodal-is-opening{-webkit-animation-name:remodal-overlay-opening-keyframes;animation-name:remodal-overlay-opening-keyframes}.remodal-overlay.remodal-is-closing{-webkit-animation-name:remodal-overlay-closing-keyframes;animation-name:remodal-overlay-closing-keyframes}.remodal.remodal-is-closing,.remodal.remodal-is-opening{-webkit-animation-duration:.3s;animation-duration:.3s;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.remodal.remodal-is-opening{-webkit-animation-name:remodal-opening-keyframes;animation-name:remodal-opening-keyframes}.remodal.remodal-is-closing{-webkit-animation-name:remodal-closing-keyframes;animation-name:remodal-closing-keyframes}.remodal,.remodal-wrapper:after{vertical-align:middle}.remodal-close{height:35px;padding:0;-webkit-transition:color .2s;transition:color .2s;color:#95979c;background:0 0}.remodal-close:focus,.remodal-close:hover{color:#2b2e38}.remodal-close:before{font-family:Arial,"Helvetica CY","Nimbus Sans L",sans-serif!important;font-size:25px;line-height:35px;content:"\00d7";text-align:center}.remodal-cancel,.remodal-confirm{font:inherit;display:inline-block;min-width:110px;padding:12px 0;-webkit-transition:background .2s;transition:background .2s;text-align:center;vertical-align:middle}.remodal-confirm{color:#fff;background:#81c784}.remodal-confirm:focus,.remodal-confirm:hover{background:#66bb6a}.remodal-cancel{color:#fff;background:#e57373}.remodal-cancel:focus,.remodal-cancel:hover{background:#ef5350}.remodal-cancel::-moz-focus-inner,.remodal-close::-moz-focus-inner,.remodal-confirm::-moz-focus-inner{padding:0;border:0}@-webkit-keyframes remodal-opening-keyframes{from{-webkit-transform:scale(1.05);transform:scale(1.05);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}@keyframes remodal-opening-keyframes{from{-webkit-transform:scale(1.05);transform:scale(1.05);opacity:0}to{-webkit-transform:none;transform:none;opacity:1}}@-webkit-keyframes remodal-closing-keyframes{from{-webkit-transform:scale(1);transform:scale(1);opacity:1}to{-webkit-transform:scale(.95);transform:scale(.95);opacity:0}}@keyframes remodal-closing-keyframes{from{-webkit-transform:scale(1);transform:scale(1);opacity:1}to{-webkit-transform:scale(.95);transform:scale(.95);opacity:0}}@-webkit-keyframes remodal-overlay-opening-keyframes{from{opacity:0}to{opacity:1}}@keyframes remodal-overlay-opening-keyframes{from{opacity:0}to{opacity:1}}@-webkit-keyframes remodal-overlay-closing-keyframes{from{opacity:1}to{opacity:0}}@keyframes remodal-overlay-closing-keyframes{from{opacity:1}to{opacity:0}}
+
+.remodal {
+  padding: 0;
+  text-align: left;
+}
+.remodal-wrapper {
+  padding: 10px 10px 0;
+}
+.remodal .container {
+  padding-right: 0;
+  padding-left: 0;
+  max-width: 800px;
+}
+.row .col-md-offset-2 {
+  margin-left: 0;
+}
+.row .col-md-20 {
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%
+}
