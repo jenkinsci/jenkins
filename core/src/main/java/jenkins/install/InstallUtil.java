@@ -50,11 +50,6 @@ import hudson.Functions;
 import hudson.Main;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.SecurityRealm;
-import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
@@ -193,7 +188,7 @@ public class InstallUtil {
             // Edge case: used Jenkins 1 but did not save the system config page,
             // the version is not persisted and returns 1.0, so try to check if
             // they actually did anything
-            if (!j.getItemMap().isEmpty() || !mayBeJenkins2SecurityDefaults(j) || !j.getNodes().isEmpty()) {
+            if (!j.getItemMap().isEmpty() || !j.getNodes().isEmpty()) {
                 return InstallState.UPGRADE;
             }
             
@@ -211,30 +206,6 @@ public class InstallUtil {
             // Last running version was the same as "this" running version.
             return InstallState.RESTART;
         }
-    }
-
-    /**
-     * This could be an upgrade, detect a non-default security realm for the stupid case
-     * where someone installed 1.x and did not save global config or create any items...
-     */
-    private static boolean mayBeJenkins2SecurityDefaults(Jenkins j) {
-        // may be called before security set up first
-        if(j.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION && !(j.getCrumbIssuer() instanceof DefaultCrumbIssuer)) { 
-            return true;
-        }
-        if(j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) { // might be called after a restart, setup isn't complete
-            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
-            if(securityRealm.getAllUsers().size() == 1 && securityRealm.getUser(SetupWizard.initialSetupAdminUserName) != null) {
-                AuthorizationStrategy authStrategy = j.getAuthorizationStrategy();
-                if(authStrategy instanceof FullControlOnceLoggedInAuthorizationStrategy) {
-                    // must have been using 2.0+ to set this, as it wasn't present in 1.x and the default is true, to _allow_ anon read
-                    if(!((FullControlOnceLoggedInAuthorizationStrategy)authStrategy).isAllowAnonymousRead()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**
