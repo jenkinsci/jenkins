@@ -2097,7 +2097,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+                    j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
             );
         }
 
