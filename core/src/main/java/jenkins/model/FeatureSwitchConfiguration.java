@@ -127,7 +127,7 @@ public class FeatureSwitchConfiguration extends GlobalConfiguration {
          * }</pre>
          */
         DEFER_EXECUTOR_CREATION(
-                "Defer executor creation for nodes which are not accepting task"
+                Messages.DeferExecutorCreation()
         );
         private String description;
 
