@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
@@ -53,6 +54,7 @@ import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -340,17 +342,24 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
-            
+
+            String host = testUrl;
+            try {
+                URL url = new URL(testUrl);
+                host = url.getHost();
+            } catch (MalformedURLException e) {
+                return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
+            }
+
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
                 method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
                 
                 HttpClient client = new HttpClient();
-                if (Util.fixEmptyAndTrim(name) != null) {
+                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = 
-                            new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+                    Credentials credentials = createCredentials(userName, password);
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
@@ -368,6 +377,27 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
             
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
+        }
+
+        private boolean isNoProxyHost(String host, String noProxyHost) {
+            if (host!=null && noProxyHost!=null) {
+                for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
+                    if (p.matcher(host).matches()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private Credentials createCredentials(String userName, String password) {
+            if (userName.indexOf('\\') >= 0){
+                final String domain = userName.substring(0, userName.indexOf('\\'));
+                final String user = userName.substring(userName.indexOf('\\') + 1);
+                return new NTCredentials(user, Secret.fromString(password).getPlainText(), domain, "");
+            } else {
+                return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+            }
         }
     }
 }
