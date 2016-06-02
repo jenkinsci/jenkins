@@ -63,6 +63,7 @@ import hudson.scm.PollingResult;
 import static hudson.scm.PollingResult.*;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
+import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.Permission;
@@ -1860,7 +1861,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
         authToken = BuildAuthorizationToken.create(req);
 
-        setScm(req.bindJSON(SCM.class, json.getJSONObject("scm")));
+        setScm(SCMS.parseSCM(req,this));
 
         for (Trigger t : triggers())
             t.stop();

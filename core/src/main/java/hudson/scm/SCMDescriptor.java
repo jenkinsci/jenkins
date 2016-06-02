@@ -53,7 +53,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * This is used to invalidate cache of {@link SCM#getEffectiveBrowser}. Due to the lack of synchronization and serialization,
      * this field doesn't really count the # of instances created to date,
      * but it's good enough for the cache invalidation.
-     * @deprecated No longer used.
+     * @deprecated No longer used by default.
      */
     @Deprecated
     public volatile int generation = 1;
@@ -104,7 +104,7 @@ public abstract class SCMDescriptor<T extends SCM> extends Descriptor<SCM> {
      * @return
      *      true if the two given SCM configurations are similar enough
      *      that they can reuse {@link RepositoryBrowser} between them.
-     * @deprecated No longer used. {@link SCM#getKey} could be used to implement similar features if needed.
+     * @deprecated No longer used by default. {@link SCM#getKey} could be used to implement similar features if needed.
      */
     @Deprecated
     public boolean isBrowserReusable(T x, T y) {

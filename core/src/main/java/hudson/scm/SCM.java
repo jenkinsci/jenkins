@@ -85,6 +85,15 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
+    /** JENKINS-35098: discouraged */
+    @SuppressWarnings("FieldMayBeFinal")
+    private static boolean useAutoBrowserHolder = Boolean.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
+    /**
+     * Stores {@link AutoBrowserHolder}. Lazily created.
+     * @deprecated Unused by default.
+     */
+    private transient AutoBrowserHolder autoBrowserHolder;
+
     /**
      * Expose {@link SCM} to the remote API.
      */
@@ -121,12 +130,20 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * controlled by this {@link SCM}.
      * @see #guessBrowser
      */
+    @SuppressWarnings("deprecation")
     @Exported(name="browser")
     public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
-        return guessBrowser();
+        if (useAutoBrowserHolder) {
+            if (autoBrowserHolder == null) {
+                autoBrowserHolder = new AutoBrowserHolder(this);
+            }
+            return autoBrowserHolder.get();
+        } else {
+            return guessBrowser();
+        }
     }
 
     /**
