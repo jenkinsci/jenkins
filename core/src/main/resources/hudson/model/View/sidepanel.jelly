@@ -35,6 +35,7 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
+    <style type="text/css" media="screen">@import "${rootURL}/samat.css";</style>
   </l:header>
   <l:side-panel>
     <l:tasks>
@@ -47,8 +48,8 @@ THE SOFTWARE.
 
       <l:task href="#modal" icon="icon-new-package icon-md" title="New Item Popup"/>
       <!-- <st:include page="popup.jelly" optional="true" /> -->
-
-      <st:include optional="true">
+<!-- 
+      <st:include optional="true"> -->
         <div class="remodal" data-remodal-id="modal">
           <div class="container" id="add-item-panel" style="display: none;">
             <div class="row">
@@ -84,7 +85,7 @@ THE SOFTWARE.
 
                   <div class="footer">
                     <div class="btn-decorator">
-                      <button type="submit" id="ok-button">OK</button>
+                      <button type="submit" id="ok-button">OK111</button>
                     </div>
                   </div>
                 </form>
@@ -92,7 +93,7 @@ THE SOFTWARE.
             </div>
           </div>
         </div>
-      </st:include>
+<!--       </st:include> -->
 
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
