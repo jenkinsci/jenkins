@@ -1093,25 +1093,7 @@ public class Queue extends ResourceController implements Saveable {
      * Returns true if this queue contains the said project.
      */
     public boolean contains(Task t) {
-        final Snapshot snapshot = this.snapshot;
-        for (Item item : snapshot.blockedProjects) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.buildables) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.pendings) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.waitingList) {
-            if (item.task.equals(t)) {
-                return true;
-            }
-        }
-        return false;
+        return getItem(t)!=null;
     }
 
     /**
