@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.0
  */
+@Restricted(NoExternalUse.class)
 public class ResourceBundleUtil {
 
     private static final Map<String, JSONObject> bundles = new ConcurrentHashMap<>();
@@ -52,7 +53,6 @@ public class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    @Restricted(NoExternalUse.class)
     public static @Nonnull JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
         return getBundle(baseName, Locale.getDefault());
     }
@@ -64,7 +64,6 @@ public class ResourceBundleUtil {
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    @Restricted(NoExternalUse.class)
     public static @Nonnull JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
         String bundleKey = baseName + ":" + locale.toString();
         JSONObject bundleJSON = bundles.get(bundleKey);
