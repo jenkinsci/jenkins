@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.6</version>
+    <version>2.9-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -114,7 +114,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.5.1</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -617,7 +617,7 @@ THE SOFTWARE.
       <activation><os><family>windows</family><arch>amd64</arch></os></activation>
       <properties>
         <node.download.file>win-x64/node.exe</node.download.file>
-        <node.download.classifier>/x64</node.download.classifier>
+        <node.download.classifier>/win-x64</node.download.classifier>
       </properties>
     </profile>
     <profile>
@@ -630,7 +630,11 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>node-download</id>
-      <activation><file><exists>package.json</exists></file></activation>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -736,7 +740,7 @@ THE SOFTWARE.
                   <goal>gulp</goal>
                 </goals>
                 <configuration>
-                  <arguments>lint bundle</arguments>
+                  <arguments>jshint bundle</arguments>
                 </configuration>
               </execution>
 

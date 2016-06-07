@@ -18,10 +18,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -155,7 +157,9 @@ public class SetupWizard extends PageDecorator {
             
             try {
                 PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
-                isUsingSecurityToken = true;
+                // if we're not using security defaults, we should not show the security token screen
+                // users will likely be sent to a login screen instead
+                isUsingSecurityToken = isUsingSecurityDefaults();
             } catch (ServletException e) {
                 throw new RuntimeException("Unable to add PluginServletFilter for the SetupWizard", e);
             }
@@ -174,15 +178,41 @@ public class SetupWizard extends PageDecorator {
      */
     public boolean isUsingSecurityToken() {
         try {
-            return isUsingSecurityToken // only ever show this if using the security token
+            return isUsingSecurityToken // only ever show the unlock page if using the security token
                     && !Jenkins.getInstance().getInstallState().isSetupComplete()
-                    && getInitialAdminPasswordFile().exists();
+                    && isUsingSecurityDefaults();
         } catch (Exception e) {
             // ignore
         }
         return false;
     }
-    
+
+    /**
+     * Determines if the security settings seem to match the defaults. Here, we only
+     * really care about and test for HudsonPrivateSecurityRealm and the user setup.
+     * Other settings are irrelevant.
+     */
+    /*package*/ boolean isUsingSecurityDefaults() {
+        Jenkins j = Jenkins.getInstance();
+        if (j.getSecurityRealm() instanceof HudsonPrivateSecurityRealm) {
+            HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
+            try {
+                if(securityRealm.getAllUsers().size() == 1) {
+                    HudsonPrivateSecurityRealm.Details details = securityRealm.loadUserByUsername(SetupWizard.initialSetupAdminUserName);
+                    FilePath iapf = getInitialAdminPasswordFile();
+                    if (iapf.exists()) {
+                        if (details.isPasswordCorrect(iapf.readToString().trim())) {
+                            return true;
+                        }
+                    }
+                }
+            } catch(UsernameNotFoundException | IOException | InterruptedException e) {
+                return false; // Not initial security setup if no transitional admin user / password found
+            }
+        }
+        return false;
+    }
+
     /**
      * Called during the initial setup to create an admin user
      */
@@ -456,6 +486,7 @@ public class SetupWizard extends PageDecorator {
             if (request instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest)request;
                 if((req.getContextPath() + "/").equals(req.getRequestURI())) {
+                    Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";

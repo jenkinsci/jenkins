@@ -233,6 +233,15 @@ var createPluginSetupWizard = function(appendTarget) {
 		};
 		var html = panel($.extend({translations: translations, baseUrl: jenkins.baseUrl, jenkinsVersion: getJenkinsVersion() }, data));
 		if(panel === currentPanel) { // just replace id-marked elements
+			var $focusedItem = $(document.activeElement);
+			var focusPath = [];
+			while ($focusedItem && $focusedItem.length > 0) {
+				focusPath.push($focusedItem.index());
+				$focusedItem = $focusedItem.parent();
+				if ($focusedItem.is('body')) {
+					break;
+				}
+			}
 			var $upd = $(html);
 			$upd.find('*[id]').each(function() {
 				var $el = $(this);
@@ -246,6 +255,19 @@ var createPluginSetupWizard = function(appendTarget) {
 			});
 
 			oncomplete();
+			
+			// try to refocus on the element that had focus
+			try {
+				var e = $('body')[0];
+				for (var i = focusPath.length-1; i >= 0; i--) {
+					e = e.children[focusPath[i]];
+				}
+				if (document.activeElement !== e) {
+					e.focus();
+				}
+			} catch (ex) {
+				// ignored, unable to restore focus
+			}
 		}
 		else {
 			var append = function() {
@@ -427,7 +449,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 	
 	// Define actions
-	var showInstallProgress = function(state) {
+	var showInstallProgress = function() {
 		// check for installing plugins that failed
 		if(failedPluginNames.length > 0) {
 			setPanel(pluginSuccessPanel, { installingPlugins : installingPlugins, failedPlugins: true });
@@ -525,7 +547,7 @@ var createPluginSetupWizard = function(appendTarget) {
 				}
 
 				// keep polling while install is running
-				if(complete < total || data.state == 'INITIAL_PLUGINS_INSTALLING') {
+				if(complete < total || data.state === 'INITIAL_PLUGINS_INSTALLING') {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
 					setTimeout(updateStatus, 250);
@@ -743,6 +765,38 @@ var createPluginSetupWizard = function(appendTarget) {
 		var val = $(this).val();
 		searchForPlugins(val, true);
 	});
+	
+	// handle keyboard up/down navigation between items in
+	// in the list, if we're focused somewhere inside
+	$wizard.on('keydown', '.plugin-list', function(e) {
+		var up = false;
+		switch(e.which) {
+			case 38: // up
+				up = true;
+			break;
+			case 40: // down
+			break;
+			default:
+				return; // ignore
+		}
+		var $plugin = $(e.target).closest('.plugin');
+		if ($plugin && $plugin.length > 0) {
+			var $allPlugins = $('.plugin-list .plugin:visible');
+			var idx = $allPlugins.index($plugin);
+			var next = idx + (up ? -1 : 1);
+			if(next >= 0 && next < $allPlugins.length) {
+				var $next = $($allPlugins[next]);
+				if ($next && $next.length > 0) {
+					var $chk = $next.find(':checkbox:first');
+					if ($chk && $chk.length > 0) {
+						e.preventDefault();
+						$chk.focus();
+						return;
+					}
+				}
+			}
+		}
+	});
 
 	// handle clearing the search
 	$wizard.on('click', '.clear-search', function() {
@@ -795,7 +849,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 		
 		try {
-			if(JSON.parse(data).status == 'ok') {
+			if(JSON.parse(data).status === 'ok') {
 				showStatePanel();
 				return;
 			}
@@ -950,7 +1004,8 @@ var createPluginSetupWizard = function(appendTarget) {
 	
 	// Process extensions
 	var extensionTranslationOverrides = [];
-	if ('undefined' != typeof(setupWizardExtensions)) {
+	/* globals setupWizardExtensions: true */
+	if ('undefined' !== typeof(setupWizardExtensions)) {
 		$.each(setupWizardExtensions, function() {
 			this.call(self, {
 				'$': $,

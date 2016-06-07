@@ -29,8 +29,10 @@ import javax.annotation.Nonnull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-
+import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
  *
@@ -75,7 +77,16 @@ public class InstallState implements ExtensionPoint {
      * Creating an admin user for an initial Jenkins install.
      */
     @Extension
-    public static final InstallState CREATE_ADMIN_USER = new InstallState("CREATE_ADMIN_USER", false);
+    public static final InstallState CREATE_ADMIN_USER = new InstallState("CREATE_ADMIN_USER", false) {
+        public void initializeState() {
+            Jenkins j = Jenkins.getInstance();
+            // Skip this state if not using the security defaults
+            // e.g. in an init script set up security already
+            if (!j.getSetupWizard().isUsingSecurityDefaults()) {
+                InstallUtil.proceedToNextStateFrom(this);
+            }
+        }
+    };
     
     /**
      * New Jenkins install. The user has kicked off the process of installing an
@@ -132,6 +143,8 @@ public class InstallState implements ExtensionPoint {
         }
     };
     
+    private static final Logger LOGGER = Logger.getLogger(InstallState.class.getName());
+    
     /**
      * Jenkins started in test mode (JenkinsRule).
      */
@@ -155,6 +168,23 @@ public class InstallState implements ExtensionPoint {
      * Process any initialization this install state requires
      */
     public void initializeState() {
+    }
+    
+    public Object readResolve() {
+        // If we get invalid state from the configuration, fallback to unknown
+        if (StringUtils.isBlank(name)) {
+            LOGGER.log(Level.WARNING, "Read install state with blank name: '{0}'. It will be ignored", name);
+            return UNKNOWN;
+        }
+        
+        InstallState state = InstallState.valueOf(name);
+        if (state == null) {
+            LOGGER.log(Level.WARNING, "Cannot locate an extension point for the state '{0}'. It will be ignored", name);
+            return UNKNOWN;
+        }
+        
+        // Otherwise we return the actual state
+        return state;
     }
 
     /**
