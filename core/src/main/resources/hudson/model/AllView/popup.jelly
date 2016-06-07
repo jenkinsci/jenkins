@@ -1,4 +1,4 @@
-<!-- <div class="remodal" data-remodal-id="modal">
+<div class="remodal" data-remodal-id="modal">
   <div class="container" id="add-item-panel" style="display: none;">
     <div class="row">
       <div class="col-md-offset-2 col-md-20">
@@ -41,16 +41,3 @@
     </div>
   </div>
 </div>
- -->
-
- 
- <div class="header">
-            <div class="add-item-name">
-              <label for="name">${%ItemName.label}</label>
-              <input name="name" id="name" type="text" tabindex="0" />
-              <div class="input-help">&#187; ${%ItemName.help}</div>
-              <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
-              <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
-              <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
-            </div>
-          </div>
