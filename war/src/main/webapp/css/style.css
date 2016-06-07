@@ -1908,10 +1908,10 @@ html.remodal-is-locked{overflow:hidden;-ms-touch-action:none;touch-action:none}.
   padding-left: 0;
   max-width: 800px;
 }
-.row .col-md-offset-2 {
+.remodal .col-md-offset-2 {
   margin-left: 0;
 }
-.row .col-md-20 {
+.remodal .col-md-20 {
   padding-left: 0;
   padding-right: 0;
   width: 100%
