@@ -27,6 +27,8 @@ import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import jenkins.I18n;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 
@@ -40,13 +42,13 @@ public class ResourceBundleUtilTest {
      */
     @Test
     public void test_known_locale() {
-        JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", Locale.GERMAN);
+        JSONObject bundle = I18n.getBundle("hudson.logging.Messages", Locale.GERMAN);
         Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
-        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt"));
+        bundle = I18n.getBundle("hudson.logging.Messages", new Locale("pt"));
         Assert.assertEquals("Inicializando registros de log", bundle.getString("LogRecorderManager.init"));
 
         // Test caching - should get the same bundle instance back...
-        Assert.assertTrue(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")) == bundle);
+        Assert.assertTrue(I18n.getBundle("hudson.logging.Messages", new Locale("pt")) == bundle);
     }
 
     /**
@@ -54,7 +56,7 @@ public class ResourceBundleUtilTest {
      */
     @Test
     public void test_unknown_locale() {
-        JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
+        JSONObject bundle = I18n.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
         Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
 
     }
@@ -64,6 +66,6 @@ public class ResourceBundleUtilTest {
      */
     @Test(expected = MissingResourceException.class)
     public void test_unknown_bundle() {
-        ResourceBundleUtil.getBundle("hudson.blah.Whatever");
+        I18n.getBundle("hudson.blah.Whatever", null);
     }
 }

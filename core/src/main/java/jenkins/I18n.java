@@ -24,15 +24,23 @@
 package jenkins;
 
 import hudson.Extension;
+import hudson.PluginWrapper;
 import hudson.model.RootAction;
 import hudson.util.HttpResponses;
-import jenkins.util.ResourceBundleUtil;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import javax.annotation.CheckForNull;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Internationalization REST (ish) API.
@@ -104,10 +112,61 @@ public class I18n implements RootAction {
             } else if (language != null) {
                 locale = new Locale(language);
             }
-
-            return HttpResponses.okJSON(ResourceBundleUtil.getBundle(baseName, locale));
+            
+            JSONObject json = getBundle(baseName, locale);
+            
+            if (json != null) {
+                return HttpResponses.okJSON(json);
+            }
+            
+            return HttpResponses.error(HttpServletResponse.SC_NOT_FOUND, "No resource bundle found.");
         } catch (Exception e) {
             return HttpResponses.errorJSON(e.getMessage());
+        }
+    }
+    
+    /**
+     * Get a resource bundle from jenkins or a plugin
+     * @throws MissingResourceException when no bundle is found
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public static JSONObject getBundle(String baseName, Locale locale) throws MissingResourceException {
+        ResourceBundle bundle = loadBundle(baseName, locale, null);
+        
+        // if not found in Jenkins, load from the first plugin found
+        if (bundle == null) {
+            for (PluginWrapper plugin : Jenkins.getInstance().getPluginManager().getPlugins()) {
+                bundle = loadBundle(baseName, locale, plugin.classLoader);
+                if (bundle != null) {
+                    break;
+                }
+            }
+        }
+        
+        if (bundle != null) {
+            JSONObject json = new JSONObject();
+            for (String key : bundle.keySet()) {
+                json.put(key, bundle.getString(key));
+            }
+            
+            return json;
+        }
+        
+        throw new MissingResourceException(baseName, baseName, baseName);
+    }
+    
+    /**
+     * Try to load a resource
+     */
+    private static ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader classLoader) {
+        try {
+            if (classLoader == null) {
+                return ResourceBundle.getBundle(baseName, locale);
+            }
+            return ResourceBundle.getBundle(baseName, locale, classLoader);
+        } catch(MissingResourceException e) {
+            return null;
         }
     }
 }
