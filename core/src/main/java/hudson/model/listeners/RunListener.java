@@ -33,6 +33,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
+import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.Run.RunnerAbortedException;
@@ -106,6 +107,12 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      from breaking all the builds.
      */
     public void onFinalized(R r) {}
+
+    /**
+     * Called when a Run is entering execution.
+     * @param r
+     */
+    public void onInitialize(R r) {}
 
     /**
      * Called when a build is started (i.e. it was in the queue, and will now start running
@@ -206,6 +213,18 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         }
     }
 
+    public static void fireInitialize(Run r) {
+        for (RunListener l : all()) {
+            if(l.targetType.isInstance(r))
+                try {
+                    l.onInitialize(r);
+                } catch (Throwable e) {
+                    report(e);
+                }
+        }
+    }
+
+
     /**
      * Fires the {@link #onStarted(Run, TaskListener)} event.
      */
@@ -263,4 +282,5 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     }
 
     private static final Logger LOGGER = Logger.getLogger(RunListener.class.getName());
+
 }

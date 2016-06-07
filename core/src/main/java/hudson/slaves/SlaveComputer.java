@@ -204,6 +204,10 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    public TaskListener getListener() {
+        return taskListener;
+    }
+
     @Override
     public String getIcon() {
         Future<?> l = lastConnectActivity;
