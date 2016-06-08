@@ -59,6 +59,35 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.8>What's new in 2.8</a> (2016/06/05)</h3>
+<ul class=image>
+  <li class=bug>
+    Explicitly declare compatibility of Windows build agent service with .NET Framework 4.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2386">PR #2386</a>)
+  <li class=rfe>
+    API: Introduce new listener extension point for slave creation/update/deletion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33780">Issue 33780</a>)
+  <li class=rfe>
+    Lossless optimization sizes of PNG images in Jenkins.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2379">PR #2379</a>)
+  <li class=bug>
+    Fix the repeatable item delete button layout in Safari.
+    Addresses Build Steps and other such configuration items.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35178">Issue 35178</a>)
+  <li class=bug>
+    Installation Wizard: Do not offer creating new admin user if the security is preconfigured.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34881">Issue 34881</a>)
+  <li class=bug>
+    Prevent <code>NullPointerException</code> on startup after update from Jenkins 2.5.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35206">Issue 35206</a>)
+  <li class=bug>
+    Honor noProxy settings from "Manage Jenkins > Manage Plugins > Advanced".
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31915">Issue 31915</a>)
+  <li class=rfe>
+    Add <a href="http://hc.apache.org/httpclient-3.x/authentication.html#NTLM">NTLM support</a>
+    to the proxy validation logic.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1955">PR #1955</a>)
+</ul>
 <h3><a name=v2.7>What's new in 2.7</a> (2016/05/29)</h3>
 <ul class=image>
   
@@ -131,6 +160,9 @@ Upcoming changes</a>
   <li class="bug">
     Do not show warnings abot a missing Tool Installer if it is present in at least one Update Site.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34880">issue 34880</a>)
+  <li class="bug">
+    Prevent hanging of the installation wizard due to the plugin status update issue.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34708">issue 34708</a>)
   <li class="rfe">
     Internal: CLI command <code>connect-node</code> was extracted from the core to CLI. 
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31417">issue 31417</a>)
