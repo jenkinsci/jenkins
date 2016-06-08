@@ -299,10 +299,15 @@ public class Search {
 
         List<Tag> buf = new ArrayList<Tag>();
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
+        Set<String> suggestedPaths = new HashSet<String>();
 
         // sort them
-        for( SuggestedItem i : items)
-            buf.add(new Tag(i));
+        for(SuggestedItem i : items) {
+            if (!suggestedPaths.contains(i.getUrl())) {
+                suggestedPaths.add(i.getUrl());
+                buf.add(new Tag(i));
+            }
+        }
         Collections.sort(buf);
         items.clear();
         for (Tag t : buf)
