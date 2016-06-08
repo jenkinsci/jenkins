@@ -58,6 +58,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -87,7 +88,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     /** JENKINS-35098: discouraged */
     @SuppressWarnings("FieldMayBeFinal")
-    private static boolean useAutoBrowserHolder = Boolean.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
+    private static boolean useAutoBrowserHolder = SystemProperties.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
     /**
      * Stores {@link AutoBrowserHolder}. Lazily created.
      * @deprecated Unused by default.
