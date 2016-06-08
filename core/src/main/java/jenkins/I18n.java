@@ -40,6 +40,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -129,8 +130,16 @@ public class I18n implements RootAction {
      * Get a resource bundle from jenkins or a plugin
      * @throws MissingResourceException when no bundle is found
      */
-    @CheckForNull
-    @Restricted(NoExternalUse.class)
+    @Nonnull
+    public static JSONObject getBundle(String baseName) throws MissingResourceException {
+        return getBundle(baseName, null);
+    }
+    
+    /**
+     * Get a resource bundle from jenkins or a plugin
+     * @throws MissingResourceException when no bundle is found
+     */
+    @Nonnull
     public static JSONObject getBundle(String baseName, Locale locale) throws MissingResourceException {
         ResourceBundle bundle = loadBundle(baseName, locale, null);
         
@@ -161,6 +170,9 @@ public class I18n implements RootAction {
      */
     private static ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader classLoader) {
         try {
+            if (locale == null) {
+                return ResourceBundle.getBundle(baseName);
+            }
             if (classLoader == null) {
                 return ResourceBundle.getBundle(baseName, locale);
             }
