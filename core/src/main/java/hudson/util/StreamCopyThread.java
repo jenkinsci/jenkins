@@ -23,9 +23,13 @@
  */
 package hudson.util;
 
+import hudson.console.LineTransformationOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * {@link Thread} that copies {@link InputStream} to {@link OutputStream}.
@@ -34,16 +38,23 @@ import java.io.OutputStream;
  */
 public class StreamCopyThread extends Thread {
     private final InputStream in;
-    private final OutputStream out;
+    private final LineTransformationOutputStream out;
     private final boolean closeOut;
 
-    public StreamCopyThread(String threadName, InputStream in, OutputStream out, boolean closeOut) {
+    public StreamCopyThread(String threadName, InputStream in, final OutputStream out, boolean closeOut) {
         super(threadName);
         this.in = in;
         if (out == null) {
             throw new NullPointerException("out is null");
         }
-        this.out = out;
+
+        this.out = new LineTransformationOutputStream() {
+            @Override
+            protected void eol(byte[] b, int len) throws IOException {
+                String line = new String(b, 0, len, Charset.defaultCharset());
+                out.write(line.getBytes(StandardCharsets.UTF_8));
+            }
+        };
         this.closeOut = closeOut;
     }
 
@@ -63,6 +74,7 @@ public class StreamCopyThread extends Thread {
                 // it doesn't make sense not to close InputStream that's already EOF-ed,
                 // so there's no 'closeIn' flag.
                 in.close();
+                out.forceEol(); // last line in stream may not have eol termination character
                 if(closeOut)
                     out.close();
             }

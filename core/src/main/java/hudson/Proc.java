@@ -166,7 +166,7 @@ public abstract class Proc {
             latch.countDown();
         }
     }
-    
+
     /**
      * Locally launched process.
      */
@@ -211,7 +211,7 @@ public abstract class Proc {
         public LocalProc(String[] cmd,String[] env,InputStream in,OutputStream out,OutputStream err,File workDir) throws IOException {
             this( calcName(cmd),
                   stderr(environment(new ProcessBuilder(cmd),env).directory(workDir), err==null || err== SELFPUMP_OUTPUT),
-                  in, out, err );
+                  in, out, err);
         }
 
         private static ProcessBuilder stderr(ProcessBuilder pb, boolean redirectError) {
@@ -231,7 +231,7 @@ public abstract class Proc {
             return pb;
         }
 
-        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err ) throws IOException {
+        private LocalProc( String name, ProcessBuilder procBuilder, InputStream in, OutputStream out, OutputStream err) throws IOException {
             Logger.getLogger(Proc.class.getName()).log(Level.FINE, "Running: {0}", name);
             this.name = name;
             this.out = out;

@@ -212,6 +212,10 @@ public class SlaveComputer extends Computer {
         return super.getIcon();
     }
 
+    protected TaskListener getListener() {
+        return taskListener;
+    }
+
     /**
      * @deprecated since 2008-05-20.
      */

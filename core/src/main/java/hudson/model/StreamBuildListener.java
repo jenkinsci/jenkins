@@ -40,10 +40,13 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class StreamBuildListener extends StreamTaskListener implements BuildListener {
+
+    /** @deprecated charset is forced to UTF-8 */
     public StreamBuildListener(OutputStream out, Charset charset) {
         super(out, charset);
     }
 
+    /** @deprecated charset is forced to UTF-8 */
     public StreamBuildListener(File out, Charset charset) throws IOException {
         super(out, charset);
     }
@@ -52,12 +55,6 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
         super(w);
     }
 
-    /**
-     * @deprecated as of 1.349
-     *      The caller should use {@link #StreamBuildListener(OutputStream, Charset)} to pass in
-     *      the charset and output stream separately, so that this class can handle encoding correctly.
-     */
-    @Deprecated
     public StreamBuildListener(PrintStream w) {
         super(w);
     }
