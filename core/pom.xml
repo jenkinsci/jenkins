@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.7.1-SNAPSHOT</version>
+    <version>2.7</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -113,7 +113,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build2.7.1-SNAPSHOT-jenkins-8</version>
+      <version>build217-jenkins-8</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -215,7 +215,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>antlr</groupId>
       <artifactId>antlr</artifactId>
-      <version>2.7.1-SNAPSHOT.6</version>
+      <version>2.7.6</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
