@@ -39,7 +39,6 @@ public class WaitNodeOnlineCommand extends CLICommand {
 
     @Override
     public String getShortDescription() {
-
         return Messages.WaitNodeOnlineCommand_ShortDescription();
     }
 
