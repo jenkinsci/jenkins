@@ -98,32 +98,13 @@
   </dependencies>
   <profiles>
     <profile>
-      <id>doclint-java8-disable</id>
+      <id>disable-java8-doclint</id>
       <activation>
         <jdk>[1.8,)</jdk>
       </activation>
-      <build>
-        <plugins>
-          <!-- Will skip execution when tests are skipped. -->
-          <!-- See skip-javadoc-with-tests profile below. -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>javadoc</goal>
-                </goals>
-                <!-- As soon as possible but after required generate-sources phase -->
-                <phase>process-sources</phase>
-                <configuration>
-                  <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </properties>
     </profile>
   </profiles>
 </project>
