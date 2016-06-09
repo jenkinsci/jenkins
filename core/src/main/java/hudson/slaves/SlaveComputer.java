@@ -204,6 +204,10 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    /**
+     * Return the {@code TaskListener} for this SlaveComputer. Never null
+     * @since 2.9
+     */
     public TaskListener getListener() {
         return taskListener;
     }

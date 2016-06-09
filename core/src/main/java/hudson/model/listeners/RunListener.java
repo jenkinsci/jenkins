@@ -111,6 +111,8 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
     /**
      * Called when a Run is entering execution.
      * @param r
+     *      The started build.
+     * @since 2.9
      */
     public void onInitialize(R r) {}
 
@@ -213,6 +215,9 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
         }
     }
 
+    /**
+     * Fires the {@link #onInitialize(Run)} event.
+     */
     public static void fireInitialize(Run r) {
         for (RunListener l : all()) {
             if(l.targetType.isInstance(r))
