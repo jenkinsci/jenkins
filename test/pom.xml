@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.7</version>
+    <version>2.7.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -62,7 +62,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.7</version>
+      <version>2.7.1-SNAPSHOT</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -145,7 +145,7 @@ THE SOFTWARE.
     <dependency><!-- we exclude this transient dependency from htmlunit, which we actually need in the test -->
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
+      <version>2.7.1-SNAPSHOT.1</version>
       <exclusions>
         <exclusion>
           <groupId>xml-apis</groupId>
