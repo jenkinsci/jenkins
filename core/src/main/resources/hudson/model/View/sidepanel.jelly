@@ -33,7 +33,8 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
-    <!-- <style> @import url('/popup.css'); </style> -->
+
+    <l:css src="jsbundles/remodal.css" />
     <l:js src="jsbundles/add-item.js" />
     <l:css src="jsbundles/add-item.css" />
   </l:header>
