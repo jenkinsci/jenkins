@@ -1014,7 +1014,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
-    /*package*/ void removeExecutor(final Executor e) {
+    protected void removeExecutor(final Executor e) {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
