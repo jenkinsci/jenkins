@@ -406,9 +406,3 @@ html.remodal-is-locked {
 .lt-ie9 .remodal {
   width: 700px;
 }
-
-.new-job-popup {
-  max-width: 800px;
-  padding: 0;
-  text-align: left;
-}
