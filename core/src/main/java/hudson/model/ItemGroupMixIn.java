@@ -43,6 +43,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -271,7 +272,7 @@ public abstract class ItemGroupMixIn {
         dir.mkdirs();
         boolean success = false;
         try {
-            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(configXml));
+            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(new FileOutputStream(configXml)));
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
