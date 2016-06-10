@@ -54,14 +54,11 @@ public class SCMS {
      * @param target
      *      The project for which this SCM is configured to.
      */
+    @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, ServletException {
-        String scm = req.getParameter("scm");
-        if(scm==null)   return new NullSCM();
-
-        int scmidx = Integer.parseInt(scm);
-        SCMDescriptor<?> d = SCM._for(target).get(scmidx);
-        d.generation++;
-        return d.newInstance(req, req.getSubmittedForm().getJSONObject("scm"));
+        SCM scm = req.bindJSON(SCM.class, req.getSubmittedForm().getJSONObject("scm"));
+        scm.getDescriptor().generation++;
+        return scm;
     }
 
     /**
