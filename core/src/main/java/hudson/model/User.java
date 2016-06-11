@@ -88,6 +88,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Represents a user.
@@ -702,10 +703,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * prevent anyone from logging in as these users. Therefore, we prevent
      * saving a User with one of these ids.
      *
-     * @return true if the username or fullname is valid
+     * @param id ID to be checked
+     * @return {@code true} if the username or fullname is valid.
+     *      For {@code null} or blank IDs returns {@code false}.
      * @since 1.600
      */
-    public static boolean isIdOrFullnameAllowed(String id) {
+    public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
+        if (id == null || StringUtils.isBlank(id)) {
+            return false;
+        }
         for (String invalidId : ILLEGAL_PERSISTED_USERNAMES) {
             if (id.equalsIgnoreCase(invalidId))
                 return false;
