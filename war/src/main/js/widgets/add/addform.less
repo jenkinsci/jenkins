@@ -4,7 +4,7 @@
     position: relative;
     border: 1px solid #cccccc;
     border-bottom: none;
-    background: #eeeeee;
+    background: #f9f9f9;
     -webkit-border-top-left-radius: 3px;
     -moz-border-top-left-radius: 3px;
     border-top-left-radius: 3px;
@@ -19,46 +19,51 @@
     border: 1px solid #cccccc;
     border-top: none;
     background: #eeeeee;
-    height: 110px;
+    height: 80px;
 
-    .btn-decorator {
+    button {
+      padding: 3px 30px;
+      border-color: rgb(102, 153, 204);
+      border-radius: 3px;
+      border-width: 1px;
+      border-style: solid;
+      color: rgb(80, 80, 80);
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 27px;
       position: absolute;
-      bottom: 0px;
-      padding: 20px 30px;
-      width: auto;
-      border-top-right-radius: 10px;
-      border: 1px solid #aaccbb;
-      background: rgba(245, 249, 239, 0.75);
-      text-align: center;
-      z-index: 10;
+      bottom: 20px;
+    }
 
-      button[type=submit] {
-        padding: 5px 20px;
-        background-color: rgb(204, 221, 238);
-        border-color: rgb(102, 153, 204);
-        border-radius: 3px;
-        border-width: 1px;
-        border-style: solid;
-        color: rgb(80, 80, 80);
-        font-weight: bold;
-        font-size: 12px;
-        line-height: 27px;
-      }
+    button#cancel-button {
+      right: 230px;
+      background-color: #fff;
+    }
 
-      button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
-        background-color: rgb(68, 119, 136);
-        border-color: rgb(51, 85, 102);
-        color: rgb(238, 238, 238);
-        cursor: pointer;
-      }
+    button#cancel-button:hover {
+      cursor: pointer;
+      background-color: #eeeeee;
 
-      button[type=submit].disabled {
-        background-color: #ccc;
-        border-color: #aaa;
-        color: rgb(140, 140, 140);
-        cursor: auto;
-        opacity: 0.75;
-      }
+    }
+
+    button[type=submit] {
+      right: 50px;
+      background-color: rgb(204, 221, 238);
+    }
+    
+    button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
+      background-color: rgb(68, 119, 136);
+      border-color: rgb(51, 85, 102);
+      color: rgb(238, 238, 238);
+      cursor: pointer;
+    }
+
+    button[type=submit].disabled {
+      background-color: #ccc;
+      border-color: #aaa;
+      color: rgb(140, 140, 140);
+      cursor: auto;
+      opacity: 0.75;
     }
   }
 
@@ -67,10 +72,10 @@
 
     label {
       position: relative;
-      display: block;
+      display: inline-block;
       font-size: 22px;
       font-weight: bold;
-      padding-bottom: 10px;
+      padding: 11px 0px 11px 53px;
     }
   }
 
@@ -118,17 +123,22 @@
       color: #666;
       font-style: italic;
       font-size: 13px;
-      padding-top: 2px;
     }
 
     .input-validation-message {
       color: red;
-      padding-top: 2px;
       font-weight: bold;
     }
 
     .input-message-disabled {
       display: none;
+    }
+  }
+
+  .add-item-name {
+    .input-help, .input-validation-message {
+      padding-left: 57px;
+      position: absolute;
     }
   }
 
@@ -238,12 +248,28 @@
     padding: 5px 10px;
     border: 1px solid #999;
     width: 50%;
-    min-width: 300px;
+  }
+  input:focus {
+    border-color: #4D90FE;
+  }
+  .add-item-name {
+    input {
+      padding: 6px 15px;
+      float: right;
+    }
   }
 
   .categories {
     border: 1px solid #cccccc;
     background-color: #f9f9f9;
+    padding: 10px;
+
+    label[for=type] {
+      font-size: 22px;
+      padding: 25px 0px 10px 63px;
+      display: block;
+      font-weight: bold;
+    }
 
     .category {
       border-bottom: 1px solid #cccccc;
@@ -300,7 +326,7 @@
 .j-item-options {
 
   li:hover, li:focus {
-    border-color: #cccccc;
+    border-color: #4D90FE;
     background: rgba(255, 255, 255, 0.65);
     outline: 0;
   }
@@ -308,7 +334,7 @@
   li.active {
     cursor: text;
     background-color: #ffffff;
-    border-color: #6699cc;
+    border-color: #4D90FE;
     box-shadow: inset 999rem 0 #ffffff;
     -webkit-touch-callout: text;
     -webkit-user-select: text;

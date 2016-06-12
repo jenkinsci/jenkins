@@ -6,14 +6,15 @@
         <div class="add-item-name">
           <label for="name">${%ItemName.label}</label>
           <input name="name" id="name" type="text" tabindex="0" />
-          <div class="input-help">&#187; ${%ItemName.help}</div>
           <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
           <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
           <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
         </div>
       </div>
 
-      <div class="categories flat" role="radiogroup" aria-labelledby="Items" />
+      <div class="categories flat" role="radiogroup" aria-labelledby="Items" >
+        <label for="type">Choose an item type</label>
+      </div>
 
       <j:if test="${!empty(app.itemMap)}">
         <div class="item-copy">
@@ -31,9 +32,8 @@
       </j:if>
 
       <div class="footer">
-        <div class="btn-decorator">
-          <button type="submit" id="ok-button">OK</button>
-        </div>
+        <button id="cancel-button">Cancel</button>
+        <button type="submit" id="ok-button">Create Item</button>
       </div>
     </form>
   </div>
