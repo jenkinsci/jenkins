@@ -56,7 +56,39 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=bug>
+    Always send usage statistics over HTTPs to the new usage.jenkins.io hostname.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-35641">Issue 35641</a>)
+  <li class=bug>
+    Performance: Disable AutoBrowserHolder by default to improve the changelog rendering performance.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-35098">Issue 35098</a>)
+  <li class=bug>
+    Remoting 2.60: Make the channel reader tolerant against Socket timeouts.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-22722">Issue 22722</a>)
+  <li class=bug>
+    Remoting 2.60: Proper handling of the <code>no_proxy</code> environment variable.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-32326">Issue 32326</a>)
+  <li class=bug>
+    Remoting 2.60: Do not invoke PingFailureAnalyzer for agent=>master ping failures.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-35190">Issue 35190</a>)
+  <li class=bug>
+    Remoting 2.60: <code>hudson.Remoting.Engine#waitForServerToBack</code> now uses credentials for connection.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-31256">Issue 31256</a>) 
+  <li class=bug>
+    Remoting 2.60: Fix potential file handle leaks during the build agent (FKA slave) startup.
+    <a href="https://issues.jenkins-ci.org/JENKINS-35190">Issue 35190</a>) 
+  <li class=rfe>
+    Internal: Upgrade Groovy to 2.4.7 to finalize the fix in Jenkins 2.7.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-34751">Issue 34751</a>)
+  <li class=rfe>
+    API: Allow delegating <code>TaskListener</code> creation to build agent implementations.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-34923">Issue 34923</a>)
+  <li class=rfe>
+    API: Restrict external usages of </code>jenkins.util.ResourceBundleUtil</code>.
+    (<a href="https://issues.jenkins-ci.org/JENKINS-35381">Issue 35381</a>)
+  <li class=rfe>
+    API: Make it easier for <code>UpdateSite</code>s to tweak the </code>InstallationJob</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35402">Issue 35402</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.8>What's new in 2.8</a> (2016/06/05)</h3>
