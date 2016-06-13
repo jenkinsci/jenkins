@@ -301,7 +301,7 @@ public class Search {
         List<SuggestedItem> items = find(Mode.SUGGEST, index, tokenList, searchContext);
 
         // sort them
-        for(SuggestedItem i : items)
+        for( SuggestedItem i : items)
             buf.add(new Tag(i));
         Collections.sort(buf);
         items.clear();
