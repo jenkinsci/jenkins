@@ -916,7 +916,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                 LOGGER.fine((String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName())));
             }
-            sib.add(item.getUrl(), item.getDisplayName());
+            sib.add(item.getSearchUrl(), item.getDisplayName());
         }        
     }
     

@@ -473,7 +473,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     public String getSearchUrl() {
-        return getShortUrl();
+        return getUrl();
     }
 
     @Exported(visibility=999,name="url")
