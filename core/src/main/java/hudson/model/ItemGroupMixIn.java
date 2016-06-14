@@ -271,8 +271,10 @@ public abstract class ItemGroupMixIn {
         final File dir = configXml.getParentFile();
         dir.mkdirs();
         boolean success = false;
+        FileOutputStream fos = null;
         try {
-            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(new FileOutputStream(configXml)));
+            fos = new FileOutputStream(configXml);
+            XMLUtils.safeTransform((Source)new StreamSource(xml), new StreamResult(fos));
 
             // load it
             TopLevelItem result = Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<TopLevelItem,IOException>() {
@@ -306,6 +308,9 @@ public abstract class ItemGroupMixIn {
             if (!success) {
                 // if anything fails, delete the config file to avoid further confusion
                 Util.deleteRecursive(dir);
+            }
+            if (fos != null) {
+                fos.close();
             }
         }
     }

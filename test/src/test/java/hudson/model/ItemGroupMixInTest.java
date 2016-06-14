@@ -208,14 +208,12 @@ public class ItemGroupMixInTest {
     }
 
     @Test
+    @Issue("JENKINS-35638")
     public void createProjectFromXMLWithSpaces() throws IOException {
         final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-                "<!DOCTYPE project[\n" +
-                "  <!ENTITY foo SYSTEM \"file:///\">\n" +
-                "]>\n" +
                 "<project>\n" +
                 "  <actions/>\n" +
-                "  <description>&foo;</description>\n" +
+                "  <description>JENKINS-35638</description>\n" +
                 "  <keepDependencies>false</keepDependencies>\n" +
                 "  <properties/>\n" +
                 "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
@@ -227,8 +225,7 @@ public class ItemGroupMixInTest {
                 "</project>";
 
         Item foo = r.jenkins.createProjectFromXML("foo bar", new ByteArrayInputStream(xml.getBytes()));
-        // if no exception then JAXP is swallowing these - so there should be no entity in the description.
-        assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
+        assertNotNull(foo);
     }
 
 }
