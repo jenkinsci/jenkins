@@ -268,7 +268,7 @@ $.when(getItems()).done(function(data) {
             activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
           }
-        }
+        } 
       }
     });
 
