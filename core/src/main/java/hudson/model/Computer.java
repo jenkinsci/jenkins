@@ -1531,11 +1531,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {
-            List<String> names = new ArrayList<String>();
-            for (Computer c : h.getComputers())
-                if (c.getName().length()>0)
-                    names.add(c.getName());
-            throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
+            List<String> names = Util.getComputerNames();
+            String adv = EditDistance.findNearest(name, names);
+            throw new IllegalArgumentException(adv == null ?
+                    hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(name) :
+                    hudson.model.Messages.Computer_NoSuchSlaveExists(name, adv));
         }
         return item;
     }

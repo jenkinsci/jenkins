@@ -26,6 +26,7 @@ package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
@@ -67,12 +68,7 @@ public class OnlineNodeCommand extends CLICommand {
                 computer = jenkins.getComputer(node_s);
                 if (computer == null) {
                     if (names == null) {
-                        names = new ArrayList<String>();
-                        for (Computer c : jenkins.getComputers()) {
-                            if (!c.getName().isEmpty()) {
-                                names.add(c.getName());
-                            }
-                        }
+                        names = Util.getComputerNames();
                     }
                     String adv = EditDistance.findNearest(node_s, names);
                     throw new IllegalArgumentException(adv == null ?

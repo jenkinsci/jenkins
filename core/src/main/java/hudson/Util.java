@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import hudson.model.Computer;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -1622,6 +1624,21 @@ public class Util {
         Properties p = new Properties();
         p.load(new StringReader(properties));
         return p;
+    }
+
+    /**
+     * @return The list of strings of computer names (excluding master)
+     * @since TODO
+     */
+    @Nonnull
+    public static List<String> getComputerNames() {
+        final ArrayList<String> names = new ArrayList<String>();
+        for (Computer c : Jenkins.getActiveInstance().getComputers()) {
+            if (!c.getName().isEmpty()) {
+                names.add(c.getName());
+            }
+        }
+        return names;
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
