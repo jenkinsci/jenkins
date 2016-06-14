@@ -1531,7 +1531,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {
-            List<String> names = Util.getComputerNames();
+            List<String> names = ComputerSet.getComputerNames();
             String adv = EditDistance.findNearest(name, names);
             throw new IllegalArgumentException(adv == null ?
                     hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(name) :

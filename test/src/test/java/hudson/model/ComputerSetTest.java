@@ -23,6 +23,12 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 
 import hudson.cli.CLI;
@@ -75,5 +81,16 @@ public class ComputerSetTest {
         } finally {
             cli.close();
         }
+    }
+
+    @Test
+    public void getComputerNames() throws Exception {
+        assertThat(ComputerSet.getComputerNames(), is(empty()));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), hasSize(1));
+        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
+        j.createSlave("anAnotherNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), hasSize(2));
+        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 }

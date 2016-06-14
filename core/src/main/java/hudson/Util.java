@@ -23,12 +23,8 @@
  */
 package hudson;
 
-import hudson.model.Computer;
-import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
@@ -56,8 +52,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
@@ -72,7 +66,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
-import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -97,8 +90,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -1624,21 +1615,6 @@ public class Util {
         Properties p = new Properties();
         p.load(new StringReader(properties));
         return p;
-    }
-
-    /**
-     * @return The list of strings of computer names (excluding master)
-     * @since TODO
-     */
-    @Nonnull
-    public static List<String> getComputerNames() {
-        final ArrayList<String> names = new ArrayList<String>();
-        for (Computer c : Jenkins.getActiveInstance().getComputers()) {
-            if (!c.getName().isEmpty()) {
-                names.add(c.getName());
-            }
-        }
-        return names;
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
