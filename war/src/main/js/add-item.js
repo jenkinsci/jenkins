@@ -78,6 +78,28 @@ $.when(getItems()).done(function(data) {
       $('.input-help', context).removeClass('input-message-disabled');
     }
 
+    // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
+    function doSticky() {
+      var decorator = $('form .footer .btn-decorator');
+      var pos = decorator.offset();
+      var vpH = $(window).height();
+      if (pos.top >= vpH) {
+        decorator.css({position: 'fixed'});
+      }
+
+      $(window).scroll(function() {
+        var footer = $('form .footer');
+        var ref1 = decorator.offset().top + decorator.outerHeight();
+        var ref2 = footer.offset().top + footer.outerHeight();
+        var vpH = $(window).height();
+        if (ref2 > vpH + $(window).scrollTop()) {
+          decorator.css({position: 'fixed'});
+        } else if (ref2 - 1 <= ref1) {
+          decorator.css({position: 'absolute'});
+        }
+      });
+    }
+
     function enableSubmit(status) {
       var btn = $('form .footer .btn-decorator button[type=submit]');
       if (status === true) {
@@ -118,7 +140,7 @@ $.when(getItems()).done(function(data) {
     // Draw functions
 
     function drawCategory(category) {
-      var $category = $('<div/>').addClass('category row').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
+      var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
       var $items = $('<ul/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
@@ -139,7 +161,7 @@ $.when(getItems()).done(function(data) {
 
     function drawItem(elem) {
       var desc = checkForLink(elem.description);
-      var $item = $(['<li tabindex="0" role="radio" aria-checked="false" class="', cleanClassName(elem.class), ' col-sm-12"><label><input type="radio" name="mode" value="',
+      var $item = $(['<li tabindex="0" role="radio" aria-checked="false" class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
       elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
 
       function select(e) {
@@ -274,5 +296,8 @@ $.when(getItems()).done(function(data) {
 
     // Disable the submit button
     enableSubmit(false);
+
+    // Do sticky the form buttons
+    doSticky();
   });
 });
