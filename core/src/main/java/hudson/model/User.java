@@ -1049,7 +1049,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         try {
                             UserDetails userDetails = j.getSecurityRealm().loadUserByUsername(idOrFullName);
                             if (userDetails == null) {
-                                throw new IllegalStateException("hudson.security.SecurityRealm should never return null. "
+                                throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
                                         + j.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
                             }
                             return userDetails.getUsername();
