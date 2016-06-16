@@ -13,9 +13,32 @@ public abstract class WorkspaceListener implements ExtensionPoint {
     /**
      * Called after a workspace is deleted successfully.
      * @param project
+     * @deprecated as of TODO_BEFORE_MERGE Use {@link #afterDelete(Job)}.
      */
     public void afterDelete(AbstractProject project) {
-        
+        if (Util.isOverridden(WorkspaceListener.class, getClass(), "afterDelete", Job.class)) {
+            // old client calling newer implementation. forward the call.
+            afterDelete((Job) project);
+        } else {
+            // happens only if the subtype fails to override neither beforeUse method
+            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
+                    "deprecated afterDelete(AbstractProject) method. " +
+                    "Update the plugin to use afterDelete(Job) instead.");
+        }
+    }
+
+    /**
+     * Called after a workspace is deleted successfully.
+     * @param job
+     */
+    public void afterDelete(Job job) {
+        // this implementation is backward compatibility thunk in case subtypes only override the
+        // old signature (AbstractProject)
+
+        if (job instanceof AbstractProject) {
+            // maybe the plugin implements the old signature.
+            afterDelete((AbstractProject) job);
+        }
     }
 
     /**
