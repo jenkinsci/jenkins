@@ -709,6 +709,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
+        //TODO: StringUtils.isBlank() checks the null falue, but FindBugs is not smart enough. Remove it later
         if (id == null || StringUtils.isBlank(id)) {
             return false;
         }
