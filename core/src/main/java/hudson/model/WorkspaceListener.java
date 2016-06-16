@@ -15,7 +15,7 @@ public abstract class WorkspaceListener implements ExtensionPoint {
      * @param project
      * @deprecated as of TODO_BEFORE_MERGE Use {@link #afterDelete(Job)}.
      */
-    public void afterDelete(AbstractProject project) {
+    @Deprecated public void afterDelete(AbstractProject project) {
         if (Util.isOverridden(WorkspaceListener.class, getClass(), "afterDelete", Job.class)) {
             // old client calling newer implementation. forward the call.
             afterDelete((Job) project);
@@ -43,7 +43,7 @@ public abstract class WorkspaceListener implements ExtensionPoint {
      * @param listener
      * @deprecated as of TODO_BEFORE_MERGE Use {@link #beforeUse(Run, FilePath, BuildListener)}.
      */
-    public void beforeUse(AbstractBuild b, FilePath workspace, BuildListener listener) {
+    @Deprecated public void beforeUse(AbstractBuild b, FilePath workspace, BuildListener listener) {
         if (Util.isOverridden(WorkspaceListener.class, getClass(), "beforeUse", Run.class, FilePath.class, BuildListener.class)) {
             // old client calling newer implementation. forward the call.
             beforeUse((Run) b, workspace, listener);
