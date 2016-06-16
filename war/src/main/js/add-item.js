@@ -112,6 +112,7 @@ $.when(getItems()).done(function(data) {
           btn.addClass('disabled');
           btn.prop('disabled', true);
         }
+        btn.focus();
       }
     }
 
@@ -258,7 +259,7 @@ $.when(getItems()).done(function(data) {
     });
 
     // Init CopyFromField
-    $('input[name="from"]', '#createItem').blur(function() {
+    $('input[name="name"]', '#createItem').blur(function() {
       if (getCopyFromValue() === '') {
         $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
       } else {
@@ -290,7 +291,7 @@ $.when(getItems()).done(function(data) {
             activateValidationMessage('#itemtype-required', '.add-item-name');
             $('input[name="name"][type="text"]', '#createItem').focus();
           }
-        } 
+        }
       }
     });
 
