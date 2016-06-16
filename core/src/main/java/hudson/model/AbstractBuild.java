@@ -522,7 +522,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             node.getFileSystemProvisioner().prepareWorkspace(AbstractBuild.this,lease.path,listener);
 
             for (WorkspaceListener wl : WorkspaceListener.all()) {
-                wl.beforeUse(AbstractBuild.this, lease.path, listener);
+                wl.beforeUse((Run) AbstractBuild.this, lease.path, listener);
             }
 
             getProject().getScmCheckoutStrategy().preCheckout(AbstractBuild.this, launcher, this.listener);

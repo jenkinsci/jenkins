@@ -1931,7 +1931,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (ws!=null && getScm().processWorkspaceBeforeDeletion(this, ws, b.getBuiltOn())) {
             ws.deleteRecursive();
             for (WorkspaceListener wl : WorkspaceListener.all()) {
-                wl.afterDelete(this);
+                wl.afterDelete((Job) this);
             }
             return new HttpRedirect(".");
         } else {
