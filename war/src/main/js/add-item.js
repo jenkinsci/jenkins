@@ -107,7 +107,6 @@ $.when(getItems()).done(function(data) {
           btn.removeClass('disabled');
           btn.prop('disabled', false);
         }
-        btn.focus();
       } else {
         if (!btn.hasClass('disabled')) {
           btn.addClass('disabled');
@@ -234,7 +233,7 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').blur(function() {
+    $('input[name="name"]', '#createItem').on('keyup blur', function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
