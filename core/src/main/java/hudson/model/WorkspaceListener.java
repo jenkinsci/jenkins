@@ -63,10 +63,10 @@ public abstract class WorkspaceListener implements ExtensionPoint {
      * @param workspace
      *      The workspace being acquired by r
      * @param listener
-     *      Run's build listener
+     *      Run's listener
      * @since TODO_BEFORE_MERGE
      */
-    public void beforeUse(Run r, FilePath workspace, BuildListener listener) {
+    public void beforeUse(Run r, FilePath workspace, TaskListener listener) {
         // this implementation is backward compatibility thunk in case subtypes only override the
         // old signature (AbstractBuild,FilePath,BuildListener)
 
