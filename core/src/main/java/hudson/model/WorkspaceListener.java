@@ -50,7 +50,7 @@ public abstract class WorkspaceListener implements ExtensionPoint {
      * @deprecated as of TODO_BEFORE_MERGE Use {@link #beforeUse(Run, FilePath, BuildListener)}.
      */
     @Deprecated public void beforeUse(AbstractBuild b, FilePath workspace, BuildListener listener) {
-        if (Util.isOverridden(WorkspaceListener.class, getClass(), "beforeUse", Run.class, FilePath.class, BuildListener.class)) {
+        if (Util.isOverridden(WorkspaceListener.class, getClass(), "beforeUse", Run.class, FilePath.class, TaskListener.class)) {
             // old client calling newer implementation. forward the call.
             beforeUse((Run) b, workspace, listener);
         }
