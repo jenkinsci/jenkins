@@ -107,12 +107,12 @@ $.when(getItems()).done(function(data) {
           btn.removeClass('disabled');
           btn.prop('disabled', false);
         }
+        btn.focus();
       } else {
         if (!btn.hasClass('disabled')) {
           btn.addClass('disabled');
           btn.prop('disabled', true);
         }
-        btn.focus();
       }
     }
 
@@ -234,7 +234,7 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').on('keyup blur', function() {
+    $('input[name="name"]', '#createItem').blur(function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
@@ -259,7 +259,7 @@ $.when(getItems()).done(function(data) {
     });
 
     // Init CopyFromField
-    $('input[name="name"]', '#createItem').blur(function() {
+    $('input[name="from"]', '#createItem').blur(function() {
       if (getCopyFromValue() === '') {
         $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
       } else {
