@@ -19,11 +19,6 @@ public abstract class WorkspaceListener implements ExtensionPoint {
         if (Util.isOverridden(WorkspaceListener.class, getClass(), "afterDelete", Job.class)) {
             // old client calling newer implementation. forward the call.
             afterDelete((Job) project);
-        } else {
-            // happens only if the subtype fails to override neither beforeUse method
-            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
-                    "deprecated afterDelete(AbstractProject) method. " +
-                    "Update the plugin to use afterDelete(Job) instead.");
         }
     }
 
@@ -52,11 +47,6 @@ public abstract class WorkspaceListener implements ExtensionPoint {
         if (Util.isOverridden(WorkspaceListener.class, getClass(), "beforeUse", Run.class, FilePath.class, BuildListener.class)) {
             // old client calling newer implementation. forward the call.
             beforeUse((Run) b, workspace, listener);
-        } else {
-            // happens only if the subtype fails to override neither beforeUse method
-            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
-                    "deprecated beforeUse(AbstractBuild,FilePath,BuildListener) method. " +
-                    "Update the plugin to use beforeUse(Run,FilePath,BuildListener) instead.");
         }
     }
 
