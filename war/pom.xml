@@ -597,6 +597,14 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <id>node-classifier-linux-32</id>
+      <activation><os><family>Linux</family><arch>i386</arch></os></activation>
+      <properties>
+        <node.download.file>node-v${node.version}-linux-x86.tar.gz</node.download.file>
+        <node.download.classifier />
+      </properties>
+    </profile>
+    <profile>
       <id>node-classifier-mac</id>
       <activation><os><family>mac</family></os></activation>
       <properties>
