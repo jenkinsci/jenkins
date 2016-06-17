@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <t:summary icon="orange-square.png">
-  <h4>Build was started by</h4>   
+	<t:summary icon="orange-square.png">
+	<h4>${%Cause}</h4>
 	<style type="text/css">
 	div.tab:not(:target) div.content, div.tab:target div.show, div.tab div.hide {
 		display: none;
@@ -36,20 +36,20 @@ THE SOFTWARE.
 	</style>
 	<div class="tab" id="text1">
 		<div class="show">		
-			<a href="#text1">show details</a>
+			<a href="#text1">${%Show}</a>
 			<br> </br>
-		</div>
+			</div>
 		<div class="hide">
-			<a href="#">hide details</a>
+			<a href="#">${%Hide}</a>
 		</div>   
 		<div class="content">
-		    <j:forEach var="entry" items="${it.causeCounts.entrySet()}">    		
-				<st:include page="description.jelly" it="${entry.key}"/>
-				<j:if test="${entry.value > 1}">
-					<st:nbsp/>${%Ntimes(entry.value)}
-				</j:if>			
+				<j:forEach var="entry" items="${it.causeCounts.entrySet()}">    		
+					<st:include page="description.jelly" it="${entry.key}"/>
+					<j:if test="${entry.value > 1}">
+						<st:nbsp/>${%Ntimes(entry.value)}
+					</j:if>			
 		    </j:forEach>
 		</div>
-	 </div>	
-  </t:summary>
+	</div>	
+	</t:summary>
 </j:jelly>
