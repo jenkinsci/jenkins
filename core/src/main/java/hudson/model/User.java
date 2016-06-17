@@ -70,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -713,8 +714,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         if (id == null || StringUtils.isBlank(id)) {
             return false;
         }
+        final String trimmedId = id.trim();
         for (String invalidId : ILLEGAL_PERSISTED_USERNAMES) {
-            if (id.equalsIgnoreCase(invalidId))
+            if (trimmedId.equalsIgnoreCase(invalidId))
                 return false;
         }
         return true;
@@ -972,6 +974,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         return new ContextMenu().from(this,request,response);
+    }
+    
+    /**
+     * Gets list of Illegal usernames, for which users should not be created.
+     * Always includes users from {@link #ILLEGAL_PERSISTED_USERNAMES}
+     * @return List of usernames
+     */
+    @Restricted(NoExternalUse.class)
+    /*package*/ static Set<String> getIllegalPersistedUsernames() {
+        // TODO: This method is designed for further extensibility via system properties. To be extended in a follow-up issue
+        final Set<String> res = new HashSet<>();
+        res.addAll(Arrays.asList(ILLEGAL_PERSISTED_USERNAMES));
+        return res;
     }
 
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {

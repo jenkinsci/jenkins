@@ -43,4 +43,31 @@ public class UserTest {
         assertThat("Blank user IDs should not be allowed", User.isIdOrFullnameAllowed("      "), is(false));
     }
     
+    @Test
+    @Issue("JENKINS-35967")
+    public void shoudNotAllowIllegalRestrictedNamesInWrongCase() {
+        assertIdOrFullNameNotAllowed("system");
+        assertIdOrFullNameNotAllowed("System");
+        assertIdOrFullNameNotAllowed("SYSTEM");
+        assertIdOrFullNameNotAllowed("syStem");
+        assertIdOrFullNameNotAllowed("sYstEm");
+    }
+    
+    @Test
+    @Issue("JENKINS-35967")
+    public void shoudNotAllowIllegalRestrictedNamesEvenIfTrimmed() {
+        for (String username : User.getIllegalPersistedUsernames()) {
+            assertIdOrFullNameNotAllowed(username);
+            assertIdOrFullNameNotAllowed(" " + username);
+            assertIdOrFullNameNotAllowed(username + " ");
+            assertIdOrFullNameNotAllowed("      " + username + "    ");
+            assertIdOrFullNameNotAllowed("\t" + username + "\t");  
+        }
+    }
+    
+    private void assertIdOrFullNameNotAllowed(String id) {
+        assertThat("User ID or full name '" + id + "' should not be allowed", 
+                User.isIdOrFullnameAllowed(id), is(false));
+    }
+    
 }
