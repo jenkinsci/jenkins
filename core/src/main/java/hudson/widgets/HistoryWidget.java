@@ -24,23 +24,25 @@
 package hudson.widgets;
 
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.model.ModelObject;
 import hudson.model.Run;
-import hudson.util.Iterators;
 
+import jenkins.widgets.HistoryPageEntry;
+import jenkins.widgets.HistoryPageFilter;
+import org.apache.commons.collections.IteratorUtils;
 import org.kohsuke.stapler.Header;
-import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 /**
  * Displays the history of records (normally {@link Run}s) on the side panel.
@@ -73,6 +75,10 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
 
     public final Adapter<? super T> adapter;
 
+    final Long newerThan;
+    final Long olderThan;
+    final String searchString;
+
     /**
      * First transient build record. Everything >= this will be discarded when AJAX call is made.
      */
@@ -83,10 +89,14 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
      *      The parent model object that owns this widget.
      */
     public HistoryWidget(O owner, Iterable<T> baseList, Adapter<? super T> adapter) {
+	StaplerRequest currentRequest = Stapler.getCurrentRequest();
         this.adapter = adapter;
         this.baseList = baseList;
-        this.baseUrl = Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(),owner);
+        this.baseUrl = Functions.getNearestAncestorUrl(currentRequest,owner);
         this.owner = owner;
+        this.newerThan = getPagingParam(currentRequest, "newer-than");
+        this.olderThan = getPagingParam(currentRequest, "older-than");
+        this.searchString = currentRequest.getParameter("search");;
     }
 
     /**
@@ -105,11 +115,13 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         return firstTransientBuildKey;
     }
 
-    private Iterable<T> updateFirstTransientBuildKey(Iterable<T> source) {
+    private Iterable<HistoryPageEntry<T>> updateFirstTransientBuildKey(Iterable<HistoryPageEntry<T>> source) {
         String key=null;
-        for (T t : source)
-            if(adapter.isBuilding(t))
-                key = adapter.getKey(t);
+        for (HistoryPageEntry<T> t : source) {
+            if(adapter.isBuilding(t.getEntry())) {
+                key = adapter.getKey(t.getEntry());
+            }
+        }
         firstTransientBuildKey = key;
         return source;
     }
@@ -117,27 +129,61 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     /**
      * The records to be rendered this time.
      */
-    public Iterable<T> getRenderList() {
+    public Iterable<HistoryPageEntry<T>> getRenderList() {
         if(trimmed) {
-            List<T> lst;
-            if (baseList instanceof List) {
-                lst = (List<T>) baseList;
-                if(lst.size()>THRESHOLD)
-                    return updateFirstTransientBuildKey(lst.subList(0,THRESHOLD));
-                trimmed=false;
-                return updateFirstTransientBuildKey(lst);
+            List<HistoryPageEntry<T>> pageEntries = toPageEntries(baseList);
+            if(pageEntries.size() > THRESHOLD) {
+                return updateFirstTransientBuildKey(pageEntries.subList(0,THRESHOLD));
             } else {
-                lst = new ArrayList<T>(THRESHOLD);
-                Iterator<T> itr = baseList.iterator();
-                while(lst.size()<=THRESHOLD && itr.hasNext())
-                    lst.add(itr.next());
-                trimmed = itr.hasNext(); // if we don't have enough items in the base list, setting this to false will optimize the next getRenderList() invocation.
-                return updateFirstTransientBuildKey(lst);
+                trimmed=false;
+                return updateFirstTransientBuildKey(pageEntries);
             }
         } else {
-            // to prevent baseList's concrete type from getting picked up by <j:forEach> in view
-            return updateFirstTransientBuildKey(Iterators.wrap(baseList));
+                // to prevent baseList's concrete type from getting picked up by <j:forEach> in view
+            return updateFirstTransientBuildKey(toPageEntries(baseList));
         }
+    }
+
+    private List<HistoryPageEntry<T>> toPageEntries(Iterable<T> historyItemList) {
+        Iterator<T> iterator = historyItemList.iterator();
+
+        if (!iterator.hasNext()) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<HistoryPageEntry<T>> pageEntries = new ArrayList<HistoryPageEntry<T>>();
+        while (iterator.hasNext()) {
+	        pageEntries.add(new HistoryPageEntry<T>(iterator.next()));
+        }
+
+	return pageEntries;
+    }
+
+    /**
+     * Get a {@link jenkins.widgets.HistoryPageFilter} for rendering a page of queue items.
+     */
+    public HistoryPageFilter getHistoryPageFilter() {
+        HistoryPageFilter<T> historyPageFilter = newPageFilter();
+
+        historyPageFilter.add(IteratorUtils.toList(baseList.iterator()));
+        historyPageFilter.widget = this;
+        return historyPageFilter;
+    }
+
+    protected HistoryPageFilter<T> newPageFilter() {
+        HistoryPageFilter<T> historyPageFilter = new HistoryPageFilter<T>(THRESHOLD);
+
+        if (newerThan != null) {
+            historyPageFilter.setNewerThan(newerThan);
+        } else if (olderThan != null) {
+            historyPageFilter.setOlderThan(olderThan);
+        }
+
+        if (searchString != null) {
+            historyPageFilter.setSearchString(searchString);
+        }
+
+        return historyPageFilter;
     }
 
     public boolean isTrimmed() {
@@ -156,46 +202,48 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
      *      uses non-numbers as the build key.
      */
     public void doAjax( StaplerRequest req, StaplerResponse rsp,
-                  @Header("n") String n ) throws IOException, ServletException {
-
-        if (n==null)    throw HttpResponses.error(SC_BAD_REQUEST,new Exception("Missing the 'n' HTTP header"));
+		  @Header("n") String n ) throws IOException, ServletException {
 
         rsp.setContentType("text/html;charset=UTF-8");
 
         // pick up builds to send back
         List<T> items = new ArrayList<T>();
 
-        String nn=null; // we'll compute next n here
+        if (n != null) {
+            String nn=null; // we'll compute next n here
 
-        // list up all builds >=n.
-        for (T t : baseList) {
-            if(adapter.compare(t,n)>=0) {
-                items.add(t);
-                if(adapter.isBuilding(t))
+            // list up all builds >=n.
+            for (T t : baseList) {
+                if(adapter.compare(t,n)>=0) {
+                    items.add(t);
+                    if(adapter.isBuilding(t))
                     nn = adapter.getKey(t); // the next fetch should start from youngest build in progress
-            } else
-                break;
-        }
-
-        if (nn==null) {
-            if (items.isEmpty()) {
-                // nothing to report back. next fetch should retry the same 'n'
-                nn=n;
-            } else {
-                // every record fetched this time is frozen. next fetch should start from the next build
-                nn=adapter.getNextKey(adapter.getKey(items.get(0)));
+                } else
+                    break;
             }
+
+            if (nn==null) {
+                if (items.isEmpty()) {
+                    // nothing to report back. next fetch should retry the same 'n'
+                    nn=n;
+                } else {
+                    // every record fetched this time is frozen. next fetch should start from the next build
+                    nn=adapter.getNextKey(adapter.getKey(items.get(0)));
+                }
+            }
+
+            baseList = items;
+
+            rsp.setHeader("n",nn);
+            firstTransientBuildKey = nn; // all builds >= nn should be marked transient
         }
 
-        baseList = items;
-
-        rsp.setHeader("n",nn);
-        firstTransientBuildKey = nn; // all builds >= nn should be marked transient
-
-        req.getView(this,"ajaxBuildHistory.jelly").forward(req,rsp);
+        HistoryPageFilter page = getHistoryPageFilter();
+        updateFirstTransientBuildKey(page.runs);
+        req.getView(page,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    private static final int THRESHOLD = Integer.getInteger(HistoryWidget.class.getName()+".threshold",30);
+    static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName()+".threshold",30);
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;
@@ -213,5 +261,21 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         String getKey(T record);
         boolean isBuilding(T record);
         String getNextKey(String key);
+    }
+
+    private Long getPagingParam(@CheckForNull StaplerRequest currentRequest, @CheckForNull String name) {
+        if (currentRequest == null || name == null) {
+            return null;
+        }
+
+        String paramVal = currentRequest.getParameter(name);
+        if (paramVal == null) {
+            return null;
+        }
+        try {
+            return new Long(paramVal);
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
     }
 }

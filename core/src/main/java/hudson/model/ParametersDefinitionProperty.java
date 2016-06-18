@@ -35,15 +35,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import jenkins.model.Jenkins;
+import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -60,17 +64,28 @@ import org.kohsuke.stapler.export.ExportedBean;
  * The builds also need a {@code sidepanel.jelly}.
  */
 @ExportedBean(defaultVisibility=2)
-public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
+public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
     private final List<ParameterDefinition> parameterDefinitions;
 
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
+    @DataBoundConstructor
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+    }
+
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
     }
 
     @Deprecated
@@ -103,6 +118,7 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
         };
     }
 
+    @Nonnull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
         return Collections.<Action>singleton(this);
@@ -158,7 +174,7 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
                 getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
-            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
                 url = req.getContextPath()+'/'+item.getUrl();
             rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
         } else
@@ -203,31 +219,11 @@ public class ParametersDefinitionProperty extends JobProperty<Job<?, ?>>
     }
 
     @Extension
-    public static class DescriptorImpl extends JobPropertyDescriptor {
+    @Symbol("parameters")
+    public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);
-        }
-
-        @Override
-        public JobProperty<?> newInstance(StaplerRequest req,
-                                          JSONObject formData) throws FormException {
-            if (formData.isNullObject()) {
-                return null;
-            }
-
-            JSONObject parameterized = formData.getJSONObject("parameterized");
-
-            if (parameterized.isNullObject()) {
-            	return null;
-            }
-            
-            List<ParameterDefinition> parameterDefinitions = Descriptor.newInstancesFromHeteroList(
-                    req, parameterized, "parameter", ParameterDefinition.all());
-            if(parameterDefinitions.isEmpty())
-                return null;
-
-            return new ParametersDefinitionProperty(parameterDefinitions);
         }
 
         @Override

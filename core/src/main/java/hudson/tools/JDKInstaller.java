@@ -32,9 +32,9 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
+import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
@@ -42,6 +42,7 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -51,6 +52,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -70,6 +72,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -446,8 +449,7 @@ public class JDKInstaller extends ToolInstaller {
 
         HttpClient hc = new HttpClient();
         hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
-        Jenkins j = Jenkins.getInstance();
-        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        ProxyConfiguration jpc = Jenkins.getInstance().proxy;
         if(jpc != null) {
             hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
             if(jpc.getUserName() != null)
@@ -513,7 +515,7 @@ public class JDKInstaller extends ToolInstaller {
 
                     m = post;
                 } else {
-                    log.getLogger().println("Downloading " + m.getResponseContentLength() + "bytes");
+                    log.getLogger().println("Downloading " + m.getResponseContentLength() + " bytes");
 
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
                     File tmp = new File(cache.getPath()+".tmp");
@@ -670,8 +672,8 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFamilyList {
-        public int version;
         public JDKFamily[] data = new JDKFamily[0];
+        public int version;
 
         public boolean isEmpty() {
             for (JDKFamily f : data) {
@@ -699,6 +701,18 @@ public class JDKInstaller extends ToolInstaller {
 
     public static final class JDKRelease {
         /**
+         * the list of {@Link JDKFile}s
+         */
+        public JDKFile[] files;
+        /**
+         * the license path
+         */
+        public String licpath;
+        /**
+         * the license title
+         */
+        public String lictitle;
+        /**
          * This maps to the former product code, like "jdk-6u13-oth-JPR"
          */
         public String name;
@@ -706,7 +720,6 @@ public class JDKInstaller extends ToolInstaller {
          * This is human readable.
          */
         public String title;
-        public JDKFile[] files;
 
         /**
          * We used to use IDs like "jdk-6u13-oth-JPR@CDS-CDS_Developer", but Oracle switched to just "jdk-6u13-oth-JPR".
@@ -718,9 +731,9 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFile {
+        public String filepath;
         public String name;
         public String title;
-        public String filepath;
     }
 
     @Override
@@ -728,7 +741,7 @@ public class JDKInstaller extends ToolInstaller {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    @Extension
+    @Extension @Symbol("jdkInstaller")
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         private String username;
         private Secret password;
@@ -792,7 +805,7 @@ public class JDKInstaller extends ToolInstaller {
     /**
      * JDK list.
      */
-    @Extension
+    @Extension @Symbol("jdk")
     public static final class JDKList extends Downloadable {
         public JDKList() {
             super(JDKInstaller.class);
@@ -802,6 +815,123 @@ public class JDKInstaller extends ToolInstaller {
             JSONObject d = getData();
             if(d==null) return new JDKFamilyList();
             return (JDKFamilyList)JSONObject.toBean(d,JDKFamilyList.class);
+        }
+
+        /**
+         * @{inheritDoc}
+         */
+        @Override
+        public JSONObject reduce (List<JSONObject> jsonObjectList) {
+            List<JDKFamily> reducedFamilies = new LinkedList<>();
+            int version = 0;
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.registerPropertyExclusion(JDKFamilyList.class, "empty");
+            jsonConfig.setRootClass(JDKFamilyList.class);
+            //collect all JDKFamily objects from the multiple json objects
+            for (JSONObject jsonJdkFamilyList : jsonObjectList) {
+                JDKFamilyList jdkFamilyList = (JDKFamilyList)JSONObject.toBean(jsonJdkFamilyList, jsonConfig);
+                if (version == 0) {
+                    //we set as version the version of the first update center
+                    version = jdkFamilyList.version;
+                }
+                JDKFamily[] jdkFamilies = jdkFamilyList.data;
+                reducedFamilies.addAll(Arrays.asList(jdkFamilies));
+            }
+            //we  iterate on the list and reduce it until there are no more duplicates
+            //this could be made recursive
+            while (hasDuplicates(reducedFamilies, "name")) {
+                //create a temporary list to store the tmp result
+                List<JDKFamily> tmpReducedFamilies = new LinkedList<>();
+                //we need to skip the processed families
+                boolean processed [] = new boolean[reducedFamilies.size()];
+                for (int i = 0; i < reducedFamilies.size(); i ++ ) {
+                    if (processed [i] == true) {
+                        continue;
+                    }
+                    JDKFamily data1 = reducedFamilies.get(i);
+                    boolean hasDuplicate = false;
+                    for (int j = i + 1; j < reducedFamilies.size(); j ++ ) {
+                        JDKFamily data2 = reducedFamilies.get(j);
+                        //if we found a duplicate we need to merge the families
+                        if (data1.name.equals(data2.name)) {
+                            hasDuplicate = true;
+                            processed [j] = true;
+                            JDKFamily reducedData = reduceData(data1.name, new LinkedList<JDKRelease>(Arrays.asList(data1.releases)), new LinkedList<JDKRelease>(Arrays.asList(data2.releases)));
+                            tmpReducedFamilies.add(reducedData);
+                            //after the first duplicate has been found we break the loop since the duplicates are
+                            //processed two by two
+                            break;
+                        }
+                    }
+                    //if no duplicate has been found we just insert the whole family in the tmp list
+                    if (!hasDuplicate) {
+                        tmpReducedFamilies.add(data1);
+                    }
+                }
+                reducedFamilies = tmpReducedFamilies;
+            }
+            JDKFamilyList jdkFamilyList = new JDKFamilyList();
+            jdkFamilyList.version = version;
+            jdkFamilyList.data = new JDKFamily[reducedFamilies.size()];
+            reducedFamilies.toArray(jdkFamilyList.data);
+            JSONObject reducedJdkFamilyList = JSONObject.fromObject(jdkFamilyList, jsonConfig);
+            //return the list with no duplicates
+            return reducedJdkFamilyList;
+        }
+
+        private JDKFamily reduceData(String name, List<JDKRelease> releases1, List<JDKRelease> releases2) {
+            LinkedList<JDKRelease> reducedReleases = new LinkedList<>();
+            for (Iterator<JDKRelease> iterator = releases1.iterator(); iterator.hasNext(); ) {
+                JDKRelease release1 = iterator.next();
+                boolean hasDuplicate = false;
+                for (Iterator<JDKRelease> iterator2 = releases2.iterator(); iterator2.hasNext(); ) {
+                    JDKRelease release2 = iterator2.next();
+                    if (release1.name.equals(release2.name)) {
+                        hasDuplicate = true;
+                        JDKRelease reducedRelease = reduceReleases(release1, new LinkedList<JDKFile>(Arrays.asList(release1.files)), new LinkedList<JDKFile>(Arrays.asList(release2.files)));
+                        iterator2.remove();
+                        reducedReleases.add(reducedRelease);
+                        //we assume that in one release list there are no duplicates so we stop at the first one
+                        break;
+                    }
+                }
+                if (!hasDuplicate) {
+                    reducedReleases.add(release1);
+                }
+            }
+            reducedReleases.addAll(releases2);
+            JDKFamily reducedFamily = new JDKFamily();
+            reducedFamily.name = name;
+            reducedFamily.releases = new JDKRelease[reducedReleases.size()];
+            reducedReleases.toArray(reducedFamily.releases);
+            return reducedFamily;
+        }
+
+        private JDKRelease reduceReleases(JDKRelease release, List<JDKFile> files1, List<JDKFile> files2) {
+            LinkedList<JDKFile> reducedFiles = new LinkedList<>();
+            for (Iterator<JDKFile> iterator1 = files1.iterator(); iterator1.hasNext(); ) {
+                JDKFile file1 = iterator1.next();
+                for (Iterator<JDKFile> iterator2 = files2.iterator(); iterator2.hasNext(); ) {
+                    JDKFile file2 = iterator2.next();
+                    if (file1.name.equals(file2.name)) {
+                        iterator2.remove();
+                        //we assume the in one file list there are no duplicates so we break after we find the
+                        //first match
+                        break;
+                    }
+                }
+            }
+            reducedFiles.addAll(files1);
+            reducedFiles.addAll(files2);
+
+            JDKRelease jdkRelease = new JDKRelease();
+            jdkRelease.files = new JDKFile[reducedFiles.size()];
+            reducedFiles.toArray(jdkRelease.files);
+            jdkRelease.name = release.name;
+            jdkRelease.licpath = release.licpath;
+            jdkRelease.lictitle = release.lictitle;
+            jdkRelease.title = release.title;
+            return jdkRelease;
         }
     }
 

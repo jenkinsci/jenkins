@@ -27,12 +27,12 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import jenkins.management.Messages;
-import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-@Extension(ordinal = Integer.MAX_VALUE - 1000)
+@Extension(ordinal = Integer.MAX_VALUE - 1000) @Symbol("nodes")
 public class NodesLink extends ManagementLink {
 
     @Override

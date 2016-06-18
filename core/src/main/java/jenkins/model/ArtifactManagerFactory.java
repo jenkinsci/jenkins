@@ -45,7 +45,7 @@ public abstract class ArtifactManagerFactory extends AbstractDescribableImpl<Art
      * All configured factories are consulted in sequence; the first manager thus yielded (if any) will be stored in the build.
      * {@link StandardArtifactManager} is used as a fallback.
      * @param build a running (or recently completed) build ready for {@link ArtifactManager#archive}
-     * @return a manager, or null if this manager should not handle this kind of project, builds on this kind of slave, etc.
+     * @return a manager, or null if this manager should not handle this kind of project, builds on this kind of agent, etc.
      */
     public abstract @CheckForNull ArtifactManager managerFor(Run<?,?> build);
 

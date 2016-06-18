@@ -25,8 +25,23 @@ package hudson.model;
 
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import jenkins.model.item_category.ItemCategory;
 import org.acegisecurity.AccessDeniedException;
+import org.apache.commons.jelly.Script;
+import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * {@link Descriptor} for {@link TopLevelItem}s.
@@ -34,6 +49,9 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
+
+    private static final Logger LOGGER = Logger.getLogger(TopLevelItemDescriptor.class.getName());
+
     protected TopLevelItemDescriptor(Class<? extends TopLevelItem> clazz) {
         super(clazz);
     }
@@ -53,7 +71,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
      *
      * <p>
-     * This is useful for a workflow/company specific job type that wants to eliminate
+     * This is useful for a workflow/company specific item type that wants to eliminate
      * options that the user would see.
      *
      * @since 1.294
@@ -66,7 +84,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@link TopLevelItemDescriptor}s often may want to limit the scope within which they can be created.
      * This method allows the subtype of {@link TopLevelItemDescriptor}s to filter them out.
      *
-     * @since TODO
+     * @since 1.607
      */
     public boolean isApplicableIn(ItemGroup parent) {
         return true;
@@ -76,7 +94,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * Checks if this top level item is applicable within the specified item group.
      * <p>
      * This is just a convenience function.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkApplicableIn(ItemGroup parent) {
         if (!isApplicableIn(parent)) {
@@ -103,16 +121,100 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * {@inheritDoc}
      *
      * <p>
-     * Used as the caption when the user chooses what job type to create.
-     * The descriptor implementation also needs to have <tt>newJobDetail.jelly</tt>
+     * Used as the caption when the user chooses what item type to create.
+     * The descriptor implementation also needs to have <tt>newInstanceDetail.jelly</tt>
      * script, which will be used to render the text below the caption
-     * that explains the job type.
+     * that explains the item type.
      */
-    public abstract String getDisplayName();
+    @Override
+    public String getDisplayName() {
+        return super.getDisplayName();
+    }
+
+    /**
+     * A description of this kind of item type. This description can contain HTML code but it is recommend to use text plain
+     * in order to avoid how it should be represented.
+     *
+     * This method should be called in a thread where Stapler is associated, but it will return an empty string.
+     *
+     * @return A string, by default the value from newInstanceDetail view is taken.
+     *
+     * @since TODO
+     */
+    @Nonnull
+    public String getDescription() {
+        Stapler stapler = Stapler.getCurrent();
+        if (stapler != null) {
+            try {
+                WebApp webapp = WebApp.getCurrent();
+                MetaClass meta = webapp.getMetaClass(this);
+                Script s = meta.loadTearOff(JellyClassTearOff.class).findScript("newInstanceDetail");
+                if (s == null) {
+                    return "";
+                }
+                DefaultScriptInvoker dsi = new DefaultScriptInvoker();
+                StringWriter sw = new StringWriter();
+                XMLOutput xml = dsi.createXMLOutput(sw, true);
+                dsi.invokeScript(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), s, this, xml);
+                return sw.toString();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, null, e);
+                return "";
+            }
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Used to categorize this kind of item type. @see {@link ItemCategory}
+     *
+     * @return A string with the category identifier, {@link ItemCategory.UncategorizedCategory#getId()} by default.
+     *
+     * @since TODO
+     */
+    @Nonnull
+    public String getCategoryId() {
+        return ItemCategory.UncategorizedCategory.ID;
+    }
+
+    /**
+     * Represents a file path pattern to get the Item icon in different sizes.
+     *
+     * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
+     * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
+     *
+     * @see {@link FreeStyleProject.DescriptorImpl#getIconFilePathPattern()}
+     *
+     * @return A string or null if it is not defined.
+     *
+     * @since TODO
+     */
+    @CheckForNull
+    public String getIconFilePathPattern() {
+        return null;
+    }
+
+    /**
+     * An icon file path associated to a specific size.
+     *
+     * @param size A string with values that represent the common sizes: 16x16, 24x24, 32x32 or 48x48
+     *
+     * @return A string or null if it is not defined.
+     *
+     * @since TODO
+     */
+    @CheckForNull
+    public String getIconFilePath(String size) {
+        if (!StringUtils.isBlank(getIconFilePathPattern())) {
+            return getIconFilePathPattern().replace(":size", size);
+        }
+        return null;
+    }
 
     /**
      * @deprecated since 2007-01-19.
-     *      This is not a valid operation for {@link Job}s.
+     *      This is not a valid operation for {@link Item}s.
      */
     @Deprecated
     public TopLevelItem newInstance(StaplerRequest req) throws FormException {

@@ -46,12 +46,12 @@ THE SOFTWARE.
   </st:documentation>
   <j:set var="clazz" value="${attrs.clazz ?: attrs.descriptor.clazz.name}" />
   <f:invisibleEntry>
+    <input type="hidden" name="stapler-class" value="${clazz}" />  <!-- Legacy: Remove once plugins have been staged onto $class -->
     <j:choose>
-      <j:when test="${descriptor != null and descriptor.id != clazz}">
+      <j:when test="${attrs.descriptor != null and attrs.descriptor.id != clazz}">
         <input type="hidden" name="kind" value="${attrs.descriptor.id}" />
       </j:when>
       <j:otherwise>
-        <input type="hidden" name="stapler-class" value="${clazz}" />  <!-- Legacy: Remove once plugins have been staged onto $class -->
         <input type="hidden" name="$class" value="${clazz}" />
       </j:otherwise>
     </j:choose>

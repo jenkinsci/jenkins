@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.SlaveComputer;
+import hudson.util.ProcessKillingVeto.VetoCause;
 import hudson.util.ProcessTree.OSProcess;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 import hudson.util.ProcessTreeRemoting.IProcessTree;
@@ -56,7 +57,9 @@ import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
 import static com.sun.jna.Pointer.NULL;
+import jenkins.util.SystemProperties;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
@@ -228,6 +231,22 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         public abstract void killRecursively() throws InterruptedException;
 
         /**
+         * @return The first non-null {@link VetoCause} provided by a process killing veto extension for this OSProcess. 
+         * null if no one objects killing the process.
+         */
+        protected @CheckForNull VetoCause getVeto() {
+            for (ProcessKillingVeto vetoExtension : ProcessKillingVeto.all()) {
+                VetoCause cause = vetoExtension.vetoProcessKilling(this);
+                if (cause != null) {
+                    if (LOGGER.isLoggable(FINEST))
+                        LOGGER.finest("Killing of pid " + getPid() + " vetoed by " + vetoExtension.getClass().getName() + ": " + cause.getMessage());
+                    return cause;
+                }
+            }
+            return null;
+        }
+
+        /**
          * Gets the command-line arguments of this process.
          *
          * <p>
@@ -363,6 +382,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 }
 
                 public void kill() throws InterruptedException {
+                    if (getVeto() != null) 
+                        return;
                     proc.destroy();
                     killByKiller();
                 }
@@ -398,12 +419,18 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     }
 
                     public void killRecursively() throws InterruptedException {
+                        if (getVeto() != null) 
+                            return;
+                        
                         LOGGER.finer("Killing recursively "+getPid());
                         p.killRecursively();
                         killByKiller();
                     }
 
                     public void kill() throws InterruptedException {
+                        if (getVeto() != null) 
+                            return;
+
                         LOGGER.finer("Killing "+getPid());
                         p.kill();
                         killByKiller();
@@ -537,6 +564,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * Tries to kill this process.
          */
         public void kill() throws InterruptedException {
+            if (getVeto() != null) 
+                return;
             try {
                 int pid = getPid();
                 LOGGER.fine("Killing pid="+pid);
@@ -557,6 +586,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         public void killRecursively() throws InterruptedException {
+            // We kill individual processes of a tree, so handling vetoes inside #kill() is enough for UnixProcess es
             LOGGER.fine("Recursively killing pid="+getPid());
             for (OSProcess p : getChildren())
                 p.killRecursively();
@@ -1255,6 +1285,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * <p>
      * This property supports two names for a compatibility reason.
      */
-    public static boolean enabled = !Boolean.getBoolean(ProcessTreeKiller.class.getName()+".disable")
-                                 && !Boolean.getBoolean(ProcessTree.class.getName()+".disable");
+    public static boolean enabled = !SystemProperties.getBoolean(ProcessTreeKiller.class.getName()+".disable")
+                                 && !SystemProperties.getBoolean(ProcessTree.class.getName()+".disable");
 }

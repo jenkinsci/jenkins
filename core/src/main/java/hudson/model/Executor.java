@@ -54,6 +54,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -62,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
+import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -142,7 +144,34 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void interrupt() {
-        interrupt(Result.ABORTED);
+        if (Thread.currentThread() == this) {
+            // If you catch an InterruptedException the "correct" options are limited to one of two choices:
+            //   1. Propagate the exception;
+            //   2. Restore the Thread.currentThread().interrupted() flag
+            // The JVM locking support assumes such behaviour.
+            // Evil Jenkins overrides the interrupt() method so that when a different thread interrupts this thread
+            // we abort the build.
+            // but that causes JENKINS-28690 style deadlocks when the correctly written code does
+            //
+            // try {
+            //   ... some long running thing ...
+            // } catch (InterruptedException e) {
+            //   ... some tidy up
+            //   // restore interrupted flag
+            //   Thread.currentThread().interrupted();
+            // }
+            //
+            // What about why we do not set the Result.ABORTED on this branch?
+            // That is a good question to ask, the answer is that the only time a thread should be restoring
+            // its own interrupted flag is when that thread has already been interrupted by another thread
+            // as such we should assume that the result has already been applied. If that assumption were
+            // incorrect, then the Run.execute's catch (InterruptedException) block will either set the result
+            // or have been escaped - in which case the result of the run has been sealed anyway so it does not
+            // matter.
+            super.interrupt();
+        } else {
+            interrupt(Result.ABORTED);
+        }
     }
 
     void interruptForShutdown() {
@@ -205,7 +234,14 @@ public class Executor extends Thread implements ModelObject {
     }
 
     public Result abortResult() {
-        lock.readLock().lock();
+        // this method is almost always called as a result of the current thread being interrupted
+        // as a result we need to clean the interrupt flag so that the lock's lock method doesn't
+        // get confused and think it was interrupted while awaiting the lock
+        Thread.interrupted(); 
+        // we need to use a write lock as we may be repeatedly interrupted while processing and
+        // we need the same lock as used in void interrupt(Result,boolean,CauseOfInterruption...)
+        // JENKINS-28690
+        lock.writeLock().lock();
         try {
             Result r = interruptStatus;
             if (r == null) r =
@@ -213,7 +249,7 @@ public class Executor extends Thread implements ModelObject {
 
             return r;
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -397,10 +433,7 @@ public class Executor extends Thread implements ModelObject {
         } catch (InterruptedException e) {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
-        } catch(Exception e) {
-            causeOfDeath = e;
-            LOGGER.log(SEVERE, "Unexpected executor death", e);
-        } catch (Error e) {
+        } catch(Exception | Error e) {
             causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
@@ -430,7 +463,9 @@ public class Executor extends Thread implements ModelObject {
     }
 
     private void finish2() {
-        for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
+        for (RuntimeException e1 : owner.getTerminatedBy()) {
+            LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
+        }
         if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
             owner.removeExecutor(this);
         }
@@ -471,6 +506,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+    
+    /**
+     * Returns causes of interruption.
+     *
+     * @return Unmodifiable collection of causes of interruption.
+     * @since  1.617    
+     */
+    public @Nonnull Collection<CauseOfInterruption> getCausesOfInterruption() {
+        return Collections.unmodifiableCollection(causes);
     }
 
     /**
@@ -620,7 +665,7 @@ public class Executor extends Thread implements ModelObject {
      * @return null if the death is expected death or the thread {@link #isActive}.
      * @since 1.142
      */
-    public Throwable getCauseOfDeath() {
+    public @CheckForNull Throwable getCauseOfDeath() {
         return causeOfDeath;
     }
 
@@ -642,7 +687,7 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
-        if (d < 0) {
+        if (d <= 0) {
             return -1;
         }
 
@@ -910,8 +955,9 @@ public class Executor extends Thread implements ModelObject {
      *          or null if it could not be found (for example because the execution has already completed)
      * @since 1.607
      */
-    public static @CheckForNull Executor of(Executable executable) {
-        Jenkins jenkins = Jenkins.getInstance();
+    @CheckForNull
+    public static Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (jenkins == null) {
             return null;
         }

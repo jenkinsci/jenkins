@@ -34,6 +34,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
@@ -47,9 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static hudson.Util.fixEmpty;
 import javax.annotation.CheckForNull;
@@ -73,7 +72,8 @@ public class Hudson extends Jenkins {
     /** @deprecated Here only for compatibility. Use {@link Jenkins#getInstance} instead. */
     @Deprecated
     @CLIResolver
-    public static @CheckForNull Hudson getInstance() {
+    @Nonnull
+    public static Hudson getInstance() {
         return (Hudson)Jenkins.getInstance();
     }
 
@@ -108,7 +108,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Gets the slave node of the give name, hooked under this Hudson.
+     * Gets the agent of the give name, hooked under this Hudson.
      *
      * @deprecated
      *      Use {@link #getNode(String)}. Since 1.252.
@@ -131,7 +131,7 @@ public class Hudson extends Jenkins {
     }
 
     /**
-     * Updates the slave list.
+     * Updates the agent list.
      *
      * @deprecated
      *      Use {@link #setNodes(List)}. Since 1.252.

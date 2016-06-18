@@ -34,7 +34,6 @@ import hudson.model.Run;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.CopyOnWriteList;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 
 /**
  * Performs mark up on changelog messages to be displayed.

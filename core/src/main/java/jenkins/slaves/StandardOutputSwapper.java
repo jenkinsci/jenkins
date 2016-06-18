@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
@@ -74,5 +75,5 @@ public class StandardOutputSwapper extends ComputerListener {
     }
 
     private static final Logger LOGGER = Logger.getLogger(StandardOutputSwapper.class.getName());
-    public static boolean disabled = Boolean.getBoolean(StandardOutputSwapper.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(StandardOutputSwapper.class.getName()+".disabled");
 }

@@ -33,7 +33,7 @@ import org.jvnet.hudson.test.Issue;
 
 /**
  * Test for {@link FileParameterValue}.
- * @author Oleg Nenashev <o.v.nenashev@gmail.com>
+ * @author Oleg Nenashev
  */
 public class FileParameterValueTest {
     

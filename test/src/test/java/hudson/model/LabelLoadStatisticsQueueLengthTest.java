@@ -15,11 +15,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SleepBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;

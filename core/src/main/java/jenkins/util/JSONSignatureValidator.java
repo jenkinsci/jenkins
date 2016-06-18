@@ -82,7 +82,11 @@ public class JSONSignatureValidator {
 
             // this is for computing a signature
             Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
+            if (certs.isEmpty()) {
+                return FormValidation.error("No certificate found in %s. Cannot verify the signature", name);
+            } else {    
+                sig.initVerify(certs.get(0));
+            }
             SignatureOutputStream sos = new SignatureOutputStream(sig);
 
             // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
@@ -135,9 +139,6 @@ public class JSONSignatureValidator {
         // which isn't useful at all
         Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return anchors;
-        }
         for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
             if (cert.endsWith("/") || cert.endsWith(".txt"))  {
                 continue;       // skip directories also any text files that are meant to be documentation

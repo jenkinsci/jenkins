@@ -78,7 +78,7 @@ public class UnlabeledLoadStatistics extends LoadStatistics {
 
     @Override
     public int computeQueueLength() {
-        return Jenkins.getInstance().getQueue().countBuildableItemsFor(null);
+        return Jenkins.getInstance().getQueue().strictCountBuildableItemsFor(null);
     }
 
     @Override

@@ -36,13 +36,11 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
-import hudson.console.AnnotatedLargeText;
-import hudson.console.ConsoleLogFilter;
-import hudson.console.ConsoleNote;
-import hudson.console.ModelHyperlinkNote;
+import hudson.console.*;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
@@ -56,7 +54,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.BuildWrapper;
-import hudson.util.FlushProofOutputStream;
 import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
@@ -630,7 +627,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * When the build has started running in an executor.
      *
-     * For example, if a build is scheduled 1pm, and stayed in the queue for 1 hour (say, no idle slaves),
+     * For example, if a build is scheduled 1pm, and stayed in the queue for 1 hour (say, no idle agents),
      * then this method returns 2pm, which is the time the job moved from the queue to the building state.
      *
      * @see #getTimestamp()
@@ -1143,12 +1140,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
-    public static final int LIST_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.listCutoff", "16"));
+    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "16"));
 
     /**
      * Maximum number of artifacts to show in tree view before just showing a link.
      */
-    public static final int TREE_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+    public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
 
     // ..and then "too many"
 
@@ -1704,28 +1701,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-
-                    // don't do buffering so that what's written to the listener
-                    // gets reflected to the file immediately, which can then be
-                    // served to the browser immediately
-                    OutputStream logger = new FileOutputStream(getLogFile());
-                    RunT build = job.getBuild();
-
-                    // Global log filters
-                    for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-                        logger = filter.decorateLogger((AbstractBuild) build, logger);
-                    }
-
-                    // Project specific log filters
-                    if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-                        BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-                        for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                            logger = bw.decorateLogger((AbstractBuild) build, logger);
-                        }
-                    }
-
-                    listener = new StreamBuildListener(logger,charset);
-
+                    listener = createBuildListener(job, listener, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1806,14 +1782,36 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
             try {
                 getParent().logRotate();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-            }
+            } catch (Exception e) {
+		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+	    }
         } finally {
             onEndBuilding();
         }
+    }
+
+    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, StreamBuildListener listener, Charset charset) throws IOException, InterruptedException {
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        OutputStream logger = new FileOutputStream(getLogFile(), true);
+        RunT build = job.getBuild();
+
+        // Global log filters
+        for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
+            logger = filter.decorateLogger(build, logger);
+        }
+
+        // Project specific log filters
+        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
+            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+            for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                logger = bw.decorateLogger((AbstractBuild) build, logger);
+            }
+        }
+
+        listener = new StreamBuildListener(logger,charset);
+        return listener;
     }
 
     /**
@@ -1873,6 +1871,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         startTime = System.currentTimeMillis();
         if (runner!=null)
             RunnerStack.INSTANCE.push(runner);
+        RunListener.fireInitialize(this);
     }
 
     /**
@@ -1933,6 +1932,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
         int lineCount = 0;
         List<String> logLines = new LinkedList<String>();
+        if (maxLines == 0) {
+            return logLines;
+        }
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
         try {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -2086,19 +2088,13 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-        FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-        try{
-        	getLogText().writeLogTo(0,out);
-        } catch (IOException e) {
-			// see comment in writeLogTo() method
-			InputStream input = getLogInputStream();
-			try {
-				IOUtils.copy(input, out);
-			} finally {
-				IOUtils.closeQuietly(input);
-			}
-		} finally {
+        PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(rsp.getCompressedOutputStream(req));
+        InputStream input = getLogInputStream();
+        try {
+            IOUtils.copy(input, out);
+            out.flush();
+        } finally {
+            IOUtils.closeQuietly(input);
             IOUtils.closeQuietly(out);
         }
     }
@@ -2287,9 +2283,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             throw new IllegalArgumentException(x);
         }
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return null;
-        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;
@@ -2405,7 +2398,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getEntryID(Run entry) {
             return "tag:" + "hudson.dev.java.net,"
                 + entry.getTimestamp().get(Calendar.YEAR) + ":"
-                + entry.getParent().getName()+':'+entry.getId();
+                + entry.getParent().getFullName()+':'+entry.getId();
         }
 
         public String getEntryDescription(Run entry) {

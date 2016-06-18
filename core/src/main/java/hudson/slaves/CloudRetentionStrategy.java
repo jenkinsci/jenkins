@@ -23,11 +23,8 @@
  */
 package hudson.slaves;
 
-import hudson.model.Computer;
-import hudson.model.Node;
-import hudson.model.Queue;
-import jenkins.model.Jenkins;
 
+import jenkins.util.SystemProperties;
 import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -80,5 +77,5 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
 
     private static final Logger LOGGER = Logger.getLogger(CloudRetentionStrategy.class.getName());
 
-    public static boolean disabled = Boolean.getBoolean(CloudRetentionStrategy.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(CloudRetentionStrategy.class.getName()+".disabled");
 }

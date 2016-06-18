@@ -5,6 +5,7 @@
  */
 package hudson.security.csrf;
 
+import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class CrumbFilter implements Filter {
      * we cannot use Hudson to the CrumbIssuer into CrumbFilter eagerly.
      */
     public CrumbIssuer getCrumbIssuer() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         if(h==null)     return null;    // before Jenkins is initialized?
         return h.getCrumbIssuer();
     }
@@ -61,17 +62,11 @@ public class CrumbFilter implements Filter {
             String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
             String crumbSalt = crumbIssuer.getDescriptor().getCrumbSalt();
 
-            String crumb = httpRequest.getHeader(crumbFieldName);
             boolean valid = false;
+            String crumb = extractCrumbFromRequest(httpRequest, crumbFieldName);
             if (crumb == null) {
-                Enumeration<?> paramNames = request.getParameterNames();
-                while (paramNames.hasMoreElements()) {
-                    String paramName = (String) paramNames.nextElement();
-                    if (crumbFieldName.equals(paramName)) {
-                        crumb = request.getParameter(paramName);
-                        break;
-                    }
-                }
+                // compatibility for clients that hard-code the default crumb name up to Jenkins 1.TODO
+                extractCrumbFromRequest(httpRequest, ".crumb");
             }
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
@@ -80,8 +75,8 @@ public class CrumbFilter implements Filter {
                     LOGGER.log(Level.WARNING, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
-            // Multipart requests need to be handled by each handler.
-            if (valid || isMultipart(httpRequest)) {
+
+            if (valid) {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.log(Level.WARNING, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
@@ -92,33 +87,33 @@ public class CrumbFilter implements Filter {
         }
     }
 
+    private String extractCrumbFromRequest(HttpServletRequest httpRequest, String crumbFieldName) {
+        String crumb = httpRequest.getHeader(crumbFieldName);
+        if (crumb == null) {
+            Enumeration<?> paramNames = httpRequest.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String paramName = (String) paramNames.nextElement();
+                if (crumbFieldName.equals(paramName)) {
+                    crumb = httpRequest.getParameter(paramName);
+                    break;
+                }
+            }
+        }
+        return crumb;
+    }
+
     protected static boolean isMultipart(HttpServletRequest request) {
         if (request == null) {
             return false;
         }
 
-        String contentType = request.getContentType();
-        if (contentType == null) {
-            return false;
-        }
-
-        String[] parts = contentType.split(";");
-        if (parts.length == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < parts.length; i++) {
-            if ("multipart/form-data".equals(parts[i])) {
-                return true;
-            }
-        }
-
-        return false;
+        return MultipartFormDataParser.isMultiPartForm(request.getContentType());
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void destroy() {
     }
 

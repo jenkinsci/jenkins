@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.MavenModuleSet;
@@ -41,6 +45,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
+import java.net.HttpURLConnection;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -103,7 +108,7 @@ public class NodeTest {
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by someone@somewhere.com : original message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
@@ -111,7 +116,7 @@ public class NodeTest {
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
-        assertEquals("Disconnected by root@localhost : new message", cause.toString());
+        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
@@ -123,11 +128,13 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
+        label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
         for(int i =0; i< cloud.size(); i ++){
             TagCloud.Entry e = cloud.get(i);
-            if(e.item.equals(j.jenkins.getLabel("label1"))){
+            if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
             else{
@@ -249,14 +256,16 @@ public class NodeTest {
     public void testGetAssignedLabelWithJobs() throws Exception {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
-        MavenModuleSet mavenProject = j.createMavenProject();
+        MavenModuleSet mavenProject = j.jenkins.createProject(MavenModuleSet.class, "p");
         mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
         RunLoadCounter.prepare(mavenProject);
         j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
         Integer labelCount = RunLoadCounter.assertMaxLoads(mavenProject, 0, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return j.jenkins.getLabel("label1").getTiedJobCount();
+                final Label label = j.jenkins.getLabel("label1");
+                label.reset(); // Make sure cached value is not used
+                return label.getTiedJobCount();
             }
         });
 
@@ -290,16 +299,17 @@ public class NodeTest {
         final Node node2 = j.createOnlineSlave();
         node1.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p1");
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
-        MavenModuleSet project2 = j.createMavenProject();
-        project2.setAssignedLabel(j.jenkins.getLabel("label1"));
+        MavenModuleSet project2 = j.jenkins.createProject(MavenModuleSet.class, "p2");
+        project2.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
 
-        assertEquals("Two jobs should be tied to this label.",
-                2, j.jenkins.getLabel("label1").getTiedJobCount());
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Two jobs should be tied to this label.", 2, label.getTiedJobCount());
     }
 
     /**
@@ -311,13 +321,14 @@ public class NodeTest {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
-        project.setAssignedLabel(j.jenkins.getLabel("label1"));
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
+        final Label label = j.jenkins.getLabel("label1");
+        project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
         project.setAssignedLabel(null);
-        assertEquals("Label1 should have no tied jobs after the job label was removed.",
-                0, j.jenkins.getLabel("label1").getTiedJobCount());
+        label.reset(); // Make sure cached value is not used
+        assertEquals("Label1 should have no tied jobs after the job label was removed.", 0, label.getTiedJobCount());
     }
 
     /**
@@ -398,6 +409,22 @@ public class NodeTest {
 
         TagCloud<LabelAtom> cloud = n.getLabelCloud();
         assertThatCloudLabelDoesNotContain(cloud, "label1 label2", 0);
+    }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void masterComputerConfigDotXml() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        settings.setHttpMethod(HttpMethod.POST);
+        settings.setRequestBody("<hudson/>");
+        try {
+            Page page = wc.getPage(settings);
+            fail(page.getWebResponse().getContentAsString());
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, x.getStatusCode());
+        }
     }
 
     /**

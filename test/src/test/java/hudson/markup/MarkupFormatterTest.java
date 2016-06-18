@@ -67,11 +67,6 @@ public class MarkupFormatterTest {
         }
 
         @TestExtension
-        public static class DescriptorImpl extends MarkupFormatterDescriptor {
-            @Override
-            public String getDisplayName() {
-                return "dummy";
-            }
-        }
+        public static class DescriptorImpl extends MarkupFormatterDescriptor {}
     }
 }

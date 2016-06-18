@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -42,7 +43,7 @@ import java.util.regex.Pattern;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("fingerprintCleanup")
 public final class FingerprintCleanupThread extends AsyncPeriodicWork {
 
     public FingerprintCleanupThread() {

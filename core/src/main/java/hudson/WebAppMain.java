@@ -23,10 +23,12 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
+import hudson.security.ACL;
 import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
 import hudson.util.HudsonIsLoading;
@@ -40,6 +42,7 @@ import hudson.util.IncompatibleAntVersionDetected;
 import hudson.util.HudsonFailedToLoad;
 import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
+import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
@@ -89,6 +92,7 @@ public class WebAppMain implements ServletContextListener {
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
+        JenkinsJVMAccess._setJenkinsJVM(true);
         final ServletContext context = event.getServletContext();
         File home=null;
         try {
@@ -116,8 +120,6 @@ public class WebAppMain implements ServletContextListener {
             }
 
             installLogger();
-
-            markCookieAsHttpOnly(context);
 
             final FileAndDescription describedHomeDir = getHomeDir(event);
             home = describedHomeDir.file.getAbsoluteFile();
@@ -223,6 +225,11 @@ public class WebAppMain implements ServletContextListener {
                     boolean success = false;
                     try {
                         Jenkins instance = new Hudson(_home, context);
+
+                        // one last check to make sure everything is in order before we go live
+                        if (Thread.interrupted())
+                            throw new InterruptedException();
+
                         context.setAttribute(APP, instance);
 
                         BootFailure.getBootFailureFile(_home).delete();
@@ -236,7 +243,7 @@ public class WebAppMain implements ServletContextListener {
                     } catch (Exception e) {
                         new HudsonFailedToLoad(e).publish(context,_home);
                     } finally {
-                        Jenkins instance = Jenkins.getInstance();
+                        Jenkins instance = Jenkins.getInstanceOrNull();
                         if(!success && instance!=null)
                             instance.cleanUp();
                     }
@@ -244,38 +251,10 @@ public class WebAppMain implements ServletContextListener {
             };
             initThread.start();
         } catch (BootFailure e) {
-            e.publish(context,home);
-        } catch (Error e) {
+            e.publish(context, home);
+        } catch (Error | RuntimeException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
-        } catch (RuntimeException e) {
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
-            throw e;
-        }
-    }
-
-    /**
-     * Set the session cookie as HTTP only.
-     *
-     * @see <a href="https://www.owasp.org/index.php/HttpOnly">discussion of this topic in OWASP</a>
-     */
-    private void markCookieAsHttpOnly(ServletContext context) {
-        try {
-            Method m;
-            try {
-                m = context.getClass().getMethod("getSessionCookieConfig");
-            } catch (NoSuchMethodException x) { // 3.0+
-                LOGGER.log(Level.FINE, "Failed to set secure cookie flag", x);
-                return;
-            }
-            Object sessionCookieConfig = m.invoke(context);
-
-            // not exposing session cookie to JavaScript to mitigate damage caused by XSS
-            Class scc = Class.forName("javax.servlet.SessionCookieConfig");
-            Method setHttpOnly = scc.getMethod("setHttpOnly",boolean.class);
-            setHttpOnly.invoke(sessionCookieConfig,true);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to set HTTP-only cookie flag", e);
         }
     }
 
@@ -357,9 +336,9 @@ public class WebAppMain implements ServletContextListener {
 
         // next the system property
         for (String name : HOME_NAMES) {
-            String sysProp = System.getProperty(name);
+            String sysProp = SystemProperties.getString(name);
             if(sysProp!=null)
-                return new FileAndDescription(new File(sysProp.trim()),"System.getProperty(\""+name+"\")");
+                return new FileAndDescription(new File(sysProp.trim()),"SystemProperties.getProperty(\""+name+"\")");
         }
 
         // look at the env var next
@@ -391,21 +370,37 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        terminated = true;
-        Jenkins instance = Jenkins.getInstance();
-        if(instance!=null)
-            instance.cleanUp();
-        Thread t = initThread;
-        if (t!=null)
-            t.interrupt();
+        try {
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override
+                public void run() {
+                    terminated = true;
+                    Jenkins instance = Jenkins.getInstanceOrNull();
+                    if (instance != null)
+                        instance.cleanUp();
+                    Thread t = initThread;
+                    if (t != null && t.isAlive()) {
+                        LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
+                        t.interrupt();
+                    }
 
-        // Logger is in the system classloader, so if we don't do this
-        // the whole web app will never be undepoyed.
-        Logger.getLogger("").removeHandler(handler);
+                    // Logger is in the system classloader, so if we don't do this
+                    // the whole web app will never be undepoyed.
+                    Logger.getLogger("").removeHandler(handler);
+                }
+            });
+        } finally {
+            JenkinsJVMAccess._setJenkinsJVM(false);
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebAppMain.class.getName());
 
+    private static final class JenkinsJVMAccess extends JenkinsJVM {
+        private static void _setJenkinsJVM(boolean jenkinsJVM) {
+            JenkinsJVM.setJenkinsJVM(jenkinsJVM);
+        }
+    }
 
     private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }

@@ -36,6 +36,8 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -72,6 +74,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.beans.Introspector;
+import java.util.IdentityHashMap;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -293,8 +296,15 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
 
     /**
      * Human readable name of this kind of configurable object.
+     * Should be overridden for most descriptors, if the display name is visible somehow.
+     * As a fallback it uses {@link Class#getSimpleName} on {@link #clazz}, so for example {@code MyThing} from {@code some.pkg.MyThing.DescriptorImpl}.
+     * Historically some implementations returned null as a way of hiding the descriptor from the UI,
+     * but this is generally managed by an explicit method such as {@code isEnabled} or {@code isApplicable}.
      */
-    public abstract String getDisplayName();
+    @Nonnull
+    public String getDisplayName() {
+        return clazz.getSimpleName();
+    }
 
     /**
      * Uniquely identifies this {@link Descriptor} among all the other {@link Descriptor}s.
@@ -552,7 +562,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+    public T newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -567,17 +577,98 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 }
 
                 // new behavior as of 1.206
-                return verifyNewInstance(req.bindJSON(clazz,formData));
+                BindInterceptor oldInterceptor = req.getBindInterceptor();
+                try {
+                    NewInstanceBindInterceptor interceptor;
+                    if (oldInterceptor instanceof NewInstanceBindInterceptor) {
+                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+                    } else {
+                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                        req.setBindInterceptor(interceptor);
+                    }
+                    interceptor.processed.put(formData, true);
+                    return verifyNewInstance(req.bindJSON(clazz, formData));
+                } finally {
+                    req.setBindInterceptor(oldInterceptor);
+                }
             }
         } catch (NoSuchMethodException e) {
             throw new AssertionError(e); // impossible
-        } catch (InstantiationException e) {
+        } catch (InstantiationException | IllegalAccessException | RuntimeException e) {
             throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (IllegalAccessException e) {
-            throw new Error("Failed to instantiate "+clazz+" from "+formData,e);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to instantiate "+clazz+" from "+formData,e);
         }
+    }
+
+    /**
+     * Ensures that calls to {@link StaplerRequest#bindJSON(Class, JSONObject)} from {@link #newInstance(StaplerRequest, JSONObject)} recurse properly.
+     * {@code doConfigSubmit}-like methods will wind up calling {@code newInstance} directly
+     * or via {@link #newInstancesFromHeteroList(StaplerRequest, Object, Collection)},
+     * which consult any custom {@code newInstance} overrides for top-level {@link Describable} objects.
+     * But for nested describable objects Stapler would know nothing about {@code newInstance} without this trick.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static class NewInstanceBindInterceptor extends BindInterceptor {
+
+        private final BindInterceptor oldInterceptor;
+        private final Map<JSONObject,Boolean> processed = new IdentityHashMap<>();
+
+        NewInstanceBindInterceptor(BindInterceptor oldInterceptor) {
+            LOGGER.log(Level.FINER, "new interceptor delegating to {0}", oldInterceptor);
+            this.oldInterceptor = oldInterceptor;
+        }
+
+        private boolean isApplicable(Class type, JSONObject json) {
+            if (Modifier.isAbstract(type.getModifiers())) {
+                LOGGER.log(Level.FINER, "ignoring abstract {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (!Describable.class.isAssignableFrom(type)) {
+                LOGGER.log(Level.FINER, "ignoring non-Describable {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            if (Boolean.TRUE.equals(processed.put(json, true))) {
+                LOGGER.log(Level.FINER, "already processed {0} {1}", new Object[] {type.getName(), json});
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public Object instantiate(Class actualType, JSONObject json) {
+            if (isApplicable(actualType, json)) {
+                LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
+                try {
+                    return Jenkins.getActiveInstance().getDescriptor(actualType).newInstance(Stapler.getCurrentRequest(), json);
+                } catch (Exception x) {
+                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
+                    // so logging above will result in a duplicated stack trace.
+                    // However if they *are* then this is the only way to find errors in that newInstance.
+                    // Normally oldInterceptor.instantiate will just return DEFAULT, not actually do anything,
+                    // so we cannot try calling the default instantiation and then decide which problem to report.
+                }
+            }
+            return oldInterceptor.instantiate(actualType, json);
+        }
+
+        @Override
+        public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
+            if (jsonSource instanceof JSONObject) {
+                JSONObject json = (JSONObject) jsonSource;
+                if (isApplicable(targetTypeErasure, json)) {
+                    LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
+                    try {
+                        return Jenkins.getActiveInstance().getDescriptor(targetTypeErasure).newInstance(Stapler.getCurrentRequest(), json);
+                    } catch (Exception x) {
+                        LOGGER.log(Level.WARNING, "falling back to default instantiation " + targetTypeErasure.getName() + " " + json, x);
+                    }
+                }
+            } else {
+                LOGGER.log(Level.FINER, "ignoring non-object {0}", jsonSource);
+            }
+            return oldInterceptor.onConvert(targetType, targetTypeErasure, jsonSource);
+        }
+
     }
 
     /**
@@ -714,7 +805,18 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
     public String getGlobalConfigPage() {
         return getViewPage(clazz, getPossibleViewNames("global"), null);
     }
-    
+
+    /**
+     * Define the global configuration category the global config of this Descriptor is in.
+     *
+     * @return never null, always the same value for a given instance of {@link Descriptor}.
+     *
+     * @since TODO, used to be in {@link GlobalConfiguration} before that.
+     */
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);
+    }
+
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
         return getViewPage(clazz,Collections.singleton(pageName),defaultValue);
     }
@@ -918,17 +1020,29 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                 // Descriptors, so we prefer 'kind' if it's present.
                 String kind = jo.optString("kind", null);
                 if (kind != null) {
+                    // Only applies when Descriptor.getId is overridden.
+                    // Note that kind is only supported here,
+                    // *not* inside the StaplerRequest.bindJSON which is normally called by newInstance
+                    // (since Descriptor.newInstance is not itself available to Stapler).
+                    // If you merely override getId for some reason, but use @DataBoundConstructor on your Describable,
+                    // there is no problem; but you can only rely on newInstance being called at top level.
                     d = findById(descriptors, kind);
                 }
                 if (d == null) {
-                  kind = jo.getString("$class");
-                  d = findByDescribableClassName(descriptors, kind);
-                  if (d == null) d = findByClassName(descriptors, kind);
+                  kind = jo.optString("$class");
+                  if (kind != null) { // else we will fall through to the warning
+                      // This is the normal case.
+                      d = findByDescribableClassName(descriptors, kind);
+                      if (d == null) {
+                          // Deprecated system where stapler-class was the Descriptor class name (rather than Describable class name).
+                          d = findByClassName(descriptors, kind);
+                      }
+                  }
                 }
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
                 } else {
-                    LOGGER.warning("Received unexpected formData for descriptor " + kind);
+                    LOGGER.log(Level.WARNING, "Received unexpected form data element: {0}", jo);
                 }
             }
         }

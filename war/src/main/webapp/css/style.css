@@ -22,119 +22,22 @@
  * THE SOFTWARE.
  */
 
-/* General page layout */
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: white;
-  margin-right: auto;
-  margin-left: auto;
-}
-
-#header {
-  background-color: #000000;
-  height: 40px;
-}
-
-#header div {
-  display: inline-block;
-  height: inherit;
-}
-#header .logo {
-  margin-left: 16px;
-}
-
-#jenkins-home-link {
-  position: absolute;
-  height: 40px;
-}
-
-#jenkins-head-icon {
-  position: absolute;
-  bottom: 0px;
-}
-#jenkins-name-icon {
-  position: absolute;
-  bottom: 3px;
-  left: 32px;
-}
-
-#header .searchbox, #header .login {
-  float: right;
-  padding: 6px 11px;
-}
-
-#breadcrumbBar, #footer-container, .top-sticker-inner {
-  background-color: #f6faf2;
-}
-
-#side-panel {
-  z-index: 1;
-}
-#main-panel {
-  z-index: 0;
-}
-
-#side-panel, #main-panel {
-  margin: 0px;
-  padding: 0px;
-}
-
-.fixedGridLayout #side-panel, .fixedGridLayout #main-panel {
-  position: absolute;
-}
-
-.fixedGridLayout #side-panel {
-  float:left;
-  width: 360px;
-  margin-left: 15px;
-}
-
-.fixedGridLayout #main-panel {
-  padding-left: 370px;
-  margin-right: 15px;
-  width: 100%
-}
-
-#side-panel-content, #main-panel-content {
-  margin: 15px
-}
+/* task */
 
 #tasks {
   margin-bottom: 20px;
 }
 
-#side-panel-content .pane-frame {
-  margin-bottom: 15px;
+#tasks .task {
+  margin-bottom: 4px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
-#side-panel-content .task {
-  margin-bottom: 3px;
-}
-#side-panel-content .task-link {
-  font-size: 1.1em;
-  vertical-align: middle;
-}
+/* buildQueue */
 
-#footer-container {
-  width: 100%;
-  padding: 10px 0px;
-  border-top: 1px solid #d3d7cf;
-}
-#footer {
-  margin: 0px 15px 0px 15px;
-  text-align: right;
-  font-size: 8pt;
-}
-
-#footer span {
-  margin-left: 15px;
+#buildQueue {
+  margin-bottom: 20px;
 }
 
 /* Fonts etc */
@@ -143,14 +46,27 @@ body, table, form, input, td, th, p, textarea, select
 {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+  line-height:1.4em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@media (min-width:1600px){
+  body#jenkins.j-hide-left #main-panel{max-width:75%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:14px;}  
+}
+@media (min-width:2000px){
+  body#jenkins.j-hide-left #main-panel{max-width:85%}
+  body, table, form, input, td, th, p, textarea, select, #tasks .task
+    {font-size:15px;}  
+}
 body, table, form, td, th, p
 {
   color: #333;
 }
 
-FORM {
+form {
   margin: 0;
 }
 
@@ -341,7 +257,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;	
+    word-wrap: break-word;  
 }
 
 pre.console {
@@ -387,7 +303,6 @@ pre.console {
 /* tabBar */
 
 .tabBar {
-  clear: both;
   overflow: auto;
   position: relative;
   top: 1px;
@@ -492,11 +407,6 @@ pre.console {
 .main-table {
 }
 
-div.dashboard {
-  width: 100%;
-  clear:both;
-}
-
 /* pane */
 
 .pane-frame {
@@ -559,7 +469,7 @@ div.pane-header {
 }
 
 div.pane-header .collapse {
-	float: right;
+  float: right;
   margin-left: 3px;
 }
 
@@ -695,11 +605,68 @@ table.bigtable.pane > tbody > tr > td:last-child {
 }
 
 div.behavior-loading {
-    position: absolute; width: 80%; height:100%;
+    position: absolute;
+    left:0; right:0;
+    width:100%;
+    height:100%;
     background-color: #e4e4e4; text-align: center; font-size: 300%;
     opacity: 0.5;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     filter: alpha(opacity=50);
+}
+
+.config div.behavior-loading{
+    background: rgba(255,255,255,.85);
+    left: 0;
+    width:100%;
+    right: 0;
+    top: 15px;
+    bottom: 0px;
+    height: 100%;
+    width: auto;
+    min-height: 100%;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: alpha(opacity=100);
+    font-size: 1.5em;
+    z-index: 99;
+    opacity: 1;
+    color: #999;
+    text-shadow:#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px,#fff 0 0 5px
+}
+
+.behavior-loading:before {
+  content:' ';
+  display:block;
+  width: 100px;
+  height: 100px;
+  margin: 200px auto 25px;
+  background-color: rgba(0,0,0,.15);
+  border:5px solid rgba(0,0,0,.33);
+  position:relative;
+  z-index:2;
+  border-radius: 100%;
+  -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+  animation: sk-scaleout 1.0s infinite ease-in-out;
+  box-shaodw:#fff 0 0 0 10px
+}
+
+@-webkit-keyframes sk-scaleout {
+  0% { -webkit-transform: scale(0) }
+  100% {
+    -webkit-transform: scale(1.0);
+    opacity: 0;
+  }
+}
+
+@keyframes sk-scaleout {
+  0% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 100% {
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+    opacity: 0;
+  }
 }
 
 LABEL.attach-previous {
@@ -967,6 +934,89 @@ table.parameters > tbody:hover {
   float: right;
 }
 
+#buildHistoryPage {
+  position: relative;
+}
+
+#buildHistoryPage .build-search-row td {
+    position: relative;
+}
+#buildHistoryPage .build-search-row .clear {
+    position: absolute;
+    padding: 0px 4px;
+    cursor: pointer;
+    top: 7px;
+    right: 6px;
+    opacity: 0.5;
+}
+#buildHistoryPage .build-search-row .clear:hover {
+    background-color: #d3d3d3;
+    border: 1px solid #bbb;
+    top: 6px;
+    padding-right: 3px;
+    border-top-right-radius: 2px;
+}
+#buildHistoryPage .build-search-row input {
+    width: 100%;
+    padding-left: 5px;
+    padding-right: 20px;
+}
+#buildHistoryPage .build-search-row table {
+    width: 100%;
+}
+#buildHistoryPage .build-search-row .build-search-help {
+    width: 20px;
+}
+#buildHistoryPage .build-search-row .icon-help {
+    position: absolute;
+    cursor: pointer;
+    top: 6px;
+}
+
+#buildHistoryPageNav {
+  position: absolute;
+  right: -21px;
+  top: 41px;
+  border: 1px solid;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  visibility: hidden;
+}
+
+#buildHistoryPageNav .nav {
+  width: 16px;
+  height: 16px;
+  background: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+#buildHistoryPageNav.mouseOverSidePanel {
+  visibility: visible;
+  border-color: #f0f0f0 !important;
+}
+#buildHistoryPageNav.mouseOverSidePanelBuildHistory {
+  border-color: #bbb !important;
+}
+#buildHistoryPageNav:hover {
+  border-color: #bbb !important;
+}
+
+#buildHistoryPageNav .pageOne {
+  background-image: url(../images/16x16/go_top.png);
+}
+#buildHistoryPageNav .pageUp {
+  background-image: url(../images/16x16/go_up.png);
+}
+#buildHistoryPageNav .pageDown {
+  background-image: url(../images/16x16/go_down.png);
+}
+#buildHistoryPageNav .find {
+  background-image: url(../images/16x16/find.png);
+}
+
 .build-row {
   padding: 3px 4px 3px 4px;
 }
@@ -982,6 +1032,7 @@ table.parameters > tbody:hover {
 .build-row-cell .pane.build-name {
   width: 25%;
   font-weight: bold;
+  vertical-align: top;
 }
 .build-row-cell .pane.build-details {
   width: 50%;
@@ -1032,10 +1083,25 @@ table.parameters > tbody:hover {
 }
 .build-row-cell .build-badge {
   display: inline-block;
-  padding: 2px;
-  width: 70%;
   text-align: right;
+  width: 70%;
+  padding: 2px 0;
 }
+.build-row-cell .build-badge > span {
+  display: inline-block;
+  max-width: 256px;
+  padding: 0 1px;
+  overflow: hidden;
+}
+.build-row-cell .build-badge > span + span {
+  margin: 0 0 0 2px !important;
+}
+@media (min-width: 1170px) {
+  .build-row-cell .build-badge > span {
+    max-width: 296px;
+  }
+}
+
 .build-row .build-name-controls .pane.build-name,
 .build-row .build-details-controls .pane.build-details {
   width: 70%;
@@ -1064,9 +1130,12 @@ table.parameters > tbody:hover {
   border-left: 1px solid #cdcdcd;
 }
 
-.build-row-cell .pane.build-name .display-name,
+.build-row-cell .pane.build-name .display-name {
+  margin-left: 20px;
+}
+
 .build-row-cell .indent-multiline {
-  margin-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
 
 .build-row .build-row-cell {
@@ -1210,6 +1279,92 @@ TABLE.fingerprint-in-build TD {
   background-color: #e8eeee;
 }
 
+#plugins input.uninstall {
+  font-size: 11px;
+  padding: 3px 5px;
+  border-radius: 1px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  background-color: #4b758b;
+  color: #eee;
+  border: 1px solid #5788a1;
+}
+
+#plugins tr.has-dependants input.uninstall {
+  background-color: #e0e0e0;
+  border: 1px solid #cccccc;
+  color: #505050;
+  background-color: white;
+}
+
+#plugins tr.all-dependants-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
+#plugins tr.has-dependants input, #plugins tr.has-disabled-dependency .enable input {
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+#plugins tr.has-dependants-but-disabled .enable input {
+  pointer-events: auto;
+  opacity: 1.0;
+  visibility: visible;
+}
+
+#plugins tr.has-disabled-dependency .enable input {
+  opacity: 0.4;
+}
+
+#plugins tr.deleted input {
+  visibility: hidden !important;
+}
+
+#plugins .dependant-list, #plugins .dependency-list {
+  display: none;
+}
+
+#plugins .enable-state-info, #plugins .uninstall-state-info {
+    padding: 5px 20px;
+    max-width: 70%;
+    border: solid 1px #f0ad4e;
+    border-radius: 3px;
+    text-align: center;
+}
+
+#plugins .enable-state-info {
+    float: left;
+}
+
+#plugins .uninstall-state-info {
+    float: right;
+}
+
+#plugins .plugin-dependency-info .title, #plugins .plugin-dependency-info .subtitle {
+    opacity: 0.7;
+}
+#plugins .plugin-dependency-info .title {
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bolder;
+}
+
+#plugins .plugin-dependency-info span {
+    margin: 5px 5px 0px 0px;
+    background-color: #337ab7;
+    display: inline-block;
+    padding: .2em .6em .3em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+}
 
 /* ========================= repeatable elements ========================= */
 
@@ -1263,7 +1418,7 @@ DIV.to-be-removed { display: none; }
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
-	color: inherit;
+  color: inherit;
 }
 
 DIV.yahooTree td {
@@ -1511,7 +1666,7 @@ table.progress-bar.red td.progress-bar-done {
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-metadata {
-    // TODO does not work: font-size: 70%;
+    font-size: 70%;
 }
 
 .logrecord-metadata-new {
@@ -1524,38 +1679,41 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= matrix configuration table ================== */
 table#configuration-matrix {
-	border: 1px #BBBBBB solid;
-	border-collapse: collapse;
+  border: 1px #BBBBBB solid;
+  border-collapse: collapse;
 }
 tr.matrix-row {
-	background: #f0f0f0;
-	font-weight: bold;
+  background: #f0f0f0;
+  font-weight: bold;
 }
 td.matrix-header {
-	border: 1px #BBBBBB solid;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  padding: 3px;
 }
 td#matrix-title {
-	padding: 3px;
+  padding: 3px;
 }
 td.matrix-leftcolumn {
-	border: 1px #BBBBBB solid;
-	font-weight: bold;
-	background: #f0f0f0;
-	padding: 3px;
+  border: 1px #BBBBBB solid;
+  font-weight: bold;
+  background: #f0f0f0;
+  padding: 3px;
 }
 td.matrix-cell {
-	border: 1px #BBBBBB solid;
-	text-align: center;
+  border: 1px #BBBBBB solid;
+  text-align: center;
 }
 
 /* ========================= legend.jelly ================== */
 table#legend-table td {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 
 /* ========================= Button styles ================= */
-
+.btn-box {
+  display:block; 
+  margin-top:2em
+}
 #disable-project {
     margin-top: 6px;
 }
@@ -1571,6 +1729,7 @@ table#legend-table td {
   border-style: none;
   border-color: transparent;
   background: none;
+  text-decoration: none;
 }
 
 #jenkins .yui-button .first-child {
@@ -1578,7 +1737,7 @@ table#legend-table td {
     border-style: none;
     border-color: transparent;
 }
-
+#jenkins .yui-button .btn,
 #jenkins .yui-button button {
   font-size: 12px;
   padding: 3px 20px;
@@ -1597,6 +1756,7 @@ table#legend-table td {
     padding-right: 35px;
 }
 
+#jenkins .yui-button .btn:hover,
 #jenkins .yui-button button:hover,
 #jenkins .yui-button .hover
 {
@@ -1604,6 +1764,7 @@ table#legend-table td {
     border: 1px solid #c0c0c0;
 }
 
+#jenkins .yui-button .btn:active,
 #jenkins .yui-button button:active,
 #jenkins .yui-button .active {
     background-color: #bbb;
@@ -1611,6 +1772,7 @@ table#legend-table td {
     border: 1px solid #bbb;
 }
 
+#jenkins .yui-button .btn.disabled,
 #jenkins .yui-button button[disabled],
 #jenkins .yui-button button[disabled]:hover,
 #jenkins .yui-button button[disabled]:active,
@@ -1621,19 +1783,20 @@ table#legend-table td {
 }
 
 /* Color overrides */
+#jenkins .yui-button.primary .btn,
 #jenkins .yui-button.primary button {
     background-color: #4b758b;
     color: #eee;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:hover,
 #jenkins .yui-button.primary button:hover,
 #jenkins .yui-button.primary .hover
 {
     background-color: #3f6275;
     border: 1px solid #5788a1;
 }
-
+#jenkins .yui-button.primary .btn:active,
 #jenkins .yui-button.primary button:active,
 #jenkins .yui-button.primary .active
 {
@@ -1677,4 +1840,54 @@ table#legend-table td {
     background-color: #e5958c;
     color: #f8f8f8;
     border: 1px solid #e39280;
+}
+
+.i18n {
+    display: none;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+body.no-decoration #main-panel {
+    margin: 0 auto !important;
+}
+body.no-decoration #page-head,
+body.no-decoration #side-panel,
+body.no-decoration footer {
+    display: none;
+}
+body.no-sticker #bottom-sticker {
+    display: none;
+}
+
+/* see the Icon class for the definition of these CSS classes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-lg {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-xlg {
+    width: 48px;
+    height: 48px;
 }

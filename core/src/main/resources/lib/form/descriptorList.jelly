@@ -67,7 +67,7 @@ THE SOFTWARE.
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
     <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
       <j:if test="${attrs.field!=null}">
-        <tr>
+        <tr class="stapler-class-bag">
           <td>
             <input type="hidden" name="stapler-class-bag" value="true" />
           </td>

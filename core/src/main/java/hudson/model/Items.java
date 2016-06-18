@@ -182,15 +182,21 @@ public class Items {
      * Does the opposite of {@link #toNameList(Collection)}.
      */
     public static <T extends Item> List<T> fromNameList(ItemGroup context, @Nonnull String list, @Nonnull Class<T> type) {
-        Jenkins hudson = Jenkins.getInstance();
-
+        final Jenkins jenkins = Jenkins.getInstance();
+        
         List<T> r = new ArrayList<T>();
+        if (jenkins == null) {
+            return r;
+        }
+        
         StringTokenizer tokens = new StringTokenizer(list,",");
         while(tokens.hasMoreTokens()) {
             String fullName = tokens.nextToken().trim();
-            T item = hudson.getItem(fullName, context, type);
-            if(item!=null)
-                r.add(item);
+            if (StringUtils.isNotEmpty(fullName)) {
+                T item = jenkins.getItem(fullName, context, type);
+                if(item!=null)
+                    r.add(item);
+            }
         }
         return r;
     }
@@ -204,7 +210,7 @@ public class Items {
         String[] c = context.getFullName().split("/");
         String[] p = path.split("/");
 
-        Stack name = new Stack();
+        Stack<String> name = new Stack<String>();
         for (int i=0; i<c.length;i++) {
             if (i==0 && c[i].equals("")) continue;
             name.push(c[i]);
@@ -216,6 +222,11 @@ public class Items {
                 continue;
             }
             if (p[i].equals("..")) {
+                if (name.size() == 0) {
+                    throw new IllegalArgumentException(String.format(
+                            "Illegal relative path '%s' within context '%s'", path, context.getFullName()
+                    ));
+                }
                 name.pop();
                 continue;
             }

@@ -33,13 +33,14 @@ import hudson.tasks.BuildWrapperDescriptor;
 import java.io.IOException;
 import org.jvnet.hudson.test.Issue;
 import hudson.Launcher.DecoratedLauncher;
+import hudson.Launcher.ProcStarter;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * Contains tests for {@link ProcStarter} class.
- * @author Oleg Nenashev <nenashev@synopsys.com>, Synopsys Inc.
+ * @author Oleg Nenashev, Synopsys Inc.
  * @since 1.568
  */
 public class ProcStarterTest {
@@ -71,11 +72,6 @@ public class ProcStarterTest {
         @Override
         public boolean isApplicable(AbstractProject<?, ?> ap) {
             return true;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "testStub";
         }
     }
 

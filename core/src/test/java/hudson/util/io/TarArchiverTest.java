@@ -32,7 +32,10 @@ import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +79,7 @@ public class TarArchiverTest {
             e.mkdirs();
 
             // extract via the tar command
-            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("tar", "xvpf", tar.getAbsolutePath()).pwd(e).join());
+            run(e, "tar", "xvpf", tar.getAbsolutePath());
 
             assertEquals(0100755,e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
@@ -85,7 +88,7 @@ public class TarArchiverTest {
 
             // extract via the zip command
             e.deleteContents();
-            assertEquals(0, new LocalLauncher(new StreamTaskListener(System.out)).launch().cmds("unzip", zip.getAbsolutePath()).pwd(e).join());
+            run(e, "unzip", zip.getAbsolutePath());
             e = e.listDirectories().get(0);
 
             assertEquals(0100755, e.child("a.txt").mode());
@@ -95,6 +98,14 @@ public class TarArchiverTest {
             tar.delete();
             zip.delete();
             dir.deleteRecursive();
+        }
+    }
+
+    private static void run(FilePath dir, String... cmds) throws InterruptedException {
+        try {
+            assertEquals(0, new LocalLauncher(StreamTaskListener.fromStdout()).launch().cmds(cmds).pwd(dir).join());
+        } catch (IOException x) { // perhaps restrict to x.message.contains("Cannot run program")? or "error=2, No such file or directory"?
+            Assume.assumeNoException("failed to run " + Arrays.toString(cmds), x);
         }
     }
 

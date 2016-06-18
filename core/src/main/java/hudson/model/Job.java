@@ -26,6 +26,7 @@ package hudson.model;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.BulkChange;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -104,6 +105,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -147,6 +149,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     private transient volatile boolean holdOffBuildUntilUserSave;
 
+    /** @deprecated Replaced by {@link BuildDiscarderProperty} */
     private volatile BuildDiscarder logRotator;
 
     /**
@@ -160,7 +163,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     boolean keepDependencies;
 
     /**
-     * List of {@link UserProperty}s configured for this project.
+     * List of properties configured for this project.
      */
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
@@ -366,6 +369,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("JOB_BASE_NAME", getName());
         return env;
     }
 
@@ -424,15 +428,24 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Returns the configured build discarder for this job, or null if none.
+     * Returns the configured build discarder for this job, via {@link BuildDiscarderProperty}, or null if none.
      */
-    public BuildDiscarder getBuildDiscarder() {
-        return logRotator;
+    public synchronized BuildDiscarder getBuildDiscarder() {
+        BuildDiscarderProperty prop = _getProperty(BuildDiscarderProperty.class);
+        return prop != null ? prop.getStrategy() : /* settings compatibility */ logRotator;
     }
 
-    public void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        this.logRotator = bd;
-        save();
+    public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
+        BulkChange bc = new BulkChange(this);
+        try {
+            removeProperty(BuildDiscarderProperty.class);
+            if (bd != null) {
+                addProperty(new BuildDiscarderProperty(bd));
+            }
+            bc.commit();
+        } finally {
+            bc.abort();
+        }
     }
 
     /**
@@ -444,9 +457,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Deprecated
     public LogRotator getLogRotator() {
-        if (logRotator instanceof LogRotator)
-            return (LogRotator) logRotator;
-        return null;
+        BuildDiscarder buildDiscarder = getBuildDiscarder();
+        return buildDiscarder instanceof LogRotator ? (LogRotator) buildDiscarder : null;
     }
 
     /**
@@ -542,9 +554,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Gets all the job properties configured for this job.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Map<JobPropertyDescriptor, JobProperty<? super JobT>> getProperties() {
-        return Descriptor.toMap((Iterable) properties);
+        Map result = Descriptor.toMap((Iterable) properties);
+        if (logRotator != null) {
+            result.put(Jenkins.getActiveInstance().getDescriptorByType(BuildDiscarderProperty.DescriptorImpl.class), new BuildDiscarderProperty(logRotator));
+        }
+        return result;
     }
 
     /**
@@ -561,6 +577,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * this job.
      */
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
+        if (clazz == BuildDiscarderProperty.class && logRotator != null) {
+            return clazz.cast(new BuildDiscarderProperty(logRotator));
+        }
+        return _getProperty(clazz);
+    }
+
+    private <T extends JobProperty> T _getProperty(Class<T> clazz) {
         for (JobProperty p : properties) {
             if (clazz.isInstance(p))
                 return clazz.cast(p);
@@ -826,7 +849,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     public File getBuildDir() {
-        Jenkins j = Jenkins.getInstance();
+        // we use the null check variant so that people can write true unit tests with a mock ItemParent
+        // and without a JenkinsRule. Such tests are of limited utility as there is a high risk of hitting
+        // some code that needs the singleton, but for persistence migration test cases it makes sense to permit
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return new File(getRootDir(), "builds");
         }
@@ -1185,10 +1211,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         try {
             setDisplayName(json.optString("displayNameOrNull"));
 
-            if (json.optBoolean("logrotate"))
-                logRotator = req.bindJSON(BuildDiscarder.class, json.optJSONObject("buildDiscarder"));
-            else
-                logRotator = null;
+            logRotator = null;
 
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
             JSONObject jsonProperties = json.optJSONObject("properties");
@@ -1210,7 +1233,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
-            if (newName != null && !newName.equals(name)) {
+            if (validRename(name, newName)) {
+                newName = newName.trim();
                 // check this error early to avoid HTTP response splitting.
                 Jenkins.checkGoodName(newName);
                 namingStrategy.checkName(newName);
@@ -1229,6 +1253,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
+    }
+
+    private boolean validRename(String oldName, String newName) {
+        if (newName == null) {
+            return false;
+        }
+        boolean noChange = oldName.equals(newName);
+        boolean spaceAdded = oldName.equals(newName.trim());
+        return !noChange && !spaceAdded;
     }
 
     /**

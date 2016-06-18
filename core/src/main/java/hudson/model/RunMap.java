@@ -39,7 +39,6 @@ import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import jenkins.model.lazy.BuildReference;
-import jenkins.model.lazy.LazyBuildMixIn;
 import org.apache.commons.collections.comparators.ReverseComparator;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -186,7 +185,7 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
         // Defense against JENKINS-23152 and its ilk.
         File rootDir = r.getRootDir();
         if (rootDir.isDirectory()) {
-            throw new IllegalStateException(rootDir + " already existed; will not overwite with " + r);
+            throw new IllegalStateException(rootDir + " already existed; will not overwrite with " + r);
         }
         if (!r.getClass().getName().equals("hudson.matrix.MatrixRun")) { // JENKINS-26739: grandfathered in
             proposeNewNumber(r.getNumber());
@@ -230,6 +229,8 @@ public final class RunMap<R extends Run<?,R>> extends AbstractLazyLoadRunMap<R> 
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             } catch (InstantiationError e) {
+                LOGGER.log(Level.WARNING, "could not load " + d, e);
+            } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "could not load " + d, e);
             }
         }

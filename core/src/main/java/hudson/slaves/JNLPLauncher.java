@@ -27,6 +27,8 @@ import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import hudson.Util;
 import hudson.Extension;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -37,7 +39,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * If the slave needs to tunnel the connection to the master,
+     * If the agent needs to tunnel the connection to the master,
      * specify the "host:port" here. This can include the special
      * syntax "host:" and ":port" to indicate the default host/port
      * shall be used.
@@ -75,8 +77,18 @@ public class JNLPLauncher extends ComputerLauncher {
         // do nothing as we cannot self start
     }
 
-    @Extension
-    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new Descriptor<ComputerLauncher>() {
+    /**
+     * @deprecated as of 1.XXX
+     *      Use {@link Jenkins#getDescriptor(Class)}
+     */
+    public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
+
+    @Extension @Symbol("jnlp")
+    public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
+
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }

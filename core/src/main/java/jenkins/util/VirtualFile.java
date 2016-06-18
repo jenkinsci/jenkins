@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -161,7 +163,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Does case-insensitive comparison.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int compareTo(VirtualFile o) {
         return getName().compareToIgnoreCase(o.getName());
@@ -169,7 +171,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Compares according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final boolean equals(Object obj) {
         return obj instanceof VirtualFile && toURI().equals(((VirtualFile) obj).toURI());
@@ -177,7 +179,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Hashes according to {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final int hashCode() {
         return toURI().hashCode();
@@ -185,7 +187,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Displays {@link #toURI}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override public final String toString() {
         return toURI().toString();
@@ -297,13 +299,16 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {
-                String myPath = f.getCanonicalPath();
-                String rootPath = root.getCanonicalPath();
+                String myPath = f.toPath().toRealPath(new LinkOption[0]).toString();
+                String rootPath = root.toPath().toRealPath(new LinkOption[0]).toString();
                 if (!myPath.equals(rootPath) && !myPath.startsWith(rootPath + File.separatorChar)) {
                     return true;
                 }
             } catch (IOException x) {
                 Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "could not determine symlink status of " + f, x);
+            } catch (InvalidPathException x2) {
+                // if this cannot be converted to a path, it cannot be an illegal symlink, as it cannot exist
+                Logger.getLogger(VirtualFile.class.getName()).log(Level.FINE, "Could not convert " + f + " to path", x2);
             }
             return false;
         }

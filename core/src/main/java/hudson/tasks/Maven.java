@@ -62,6 +62,7 @@ import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -250,8 +251,6 @@ public class Maven extends Builder {
                 seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
             }
 
-            if(Functions.isWindows())
-                seed += ".bat";
             return seed;
         }
     }
@@ -388,7 +387,7 @@ public class Maven extends Builder {
     @Deprecated
     public static DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("maven")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
@@ -460,7 +459,7 @@ public class Maven extends Builder {
         /**
          * @deprecated since 2009-02-25.
          */
-        @Deprecated // kept for backward compatiblity - use getHome()
+        @Deprecated // kept for backward compatibility - use getHome()
         private transient String mavenHome;
 
         /**
@@ -585,12 +584,20 @@ public class Maven extends Builder {
         }
 
         private File getExeFile(String execName) {
-            if(File.separatorChar=='\\')
-                execName += ".bat";
-
             String m2Home = Util.replaceMacro(getHome(),EnvVars.masterEnvVars);
 
-            return new File(m2Home, "bin/" + execName);
+            if(Functions.isWindows()) {
+                File exeFile = new File(m2Home, "bin/" + execName + ".bat");
+
+                // since Maven 3.3 .bat files are replaced with .cmd
+                if (!exeFile.exists()) {
+                    return new File(m2Home, "bin/" + execName + ".cmd");
+                }
+
+                return exeFile;
+            } else {
+                return new File(m2Home, "bin/" + execName);
+            }
         }
 
         /**
@@ -599,9 +606,7 @@ public class Maven extends Builder {
         public boolean getExists() {
             try {
                 return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
-            } catch (IOException e) {
-                return false;
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 return false;
             }
         }
@@ -616,7 +621,7 @@ public class Maven extends Builder {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
             @Override
             public String getDisplayName() {
@@ -674,7 +679,7 @@ public class Maven extends Builder {
             super(id);
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
             public String getDisplayName() {
                 return Messages.InstallFromApache();

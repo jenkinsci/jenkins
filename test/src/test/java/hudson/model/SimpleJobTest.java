@@ -102,7 +102,7 @@ public class SimpleJobTest {
         TestBuild lastBuild = new TestBuild(project, Result.FAILURE, 50, previousBuild);
         runs.put(1, lastBuild);
 
-        // failed builds must not be used, if there are succesfulBuilds available.
+        // failed builds must not be used, if there are successfulBuilds available.
         assertEquals(1, project.getEstimatedDuration());
     }
     

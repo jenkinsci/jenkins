@@ -27,50 +27,51 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Config" norefresh="true" permission="${it.EXTENDED_READ}">
-    <st:include page="sidepanel.jelly" />
-    <f:breadcrumb-config-outline />
+
+  <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${it.displayName} Config">
+
+    <l:js src="jsbundles/config-scrollspy.js" />
+    <l:css src="jsbundles/config-scrollspy.css" />
+
     <l:main-panel>
-      <div class="behavior-loading">${%LOADING}</div>
-      <f:form method="post" action="configSubmit" name="config">
-        <j:set var="descriptor" value="${it.descriptor}" />
-        <j:set var="instance" value="${it}" />
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-20">
 
-        <j:if test="${it.isNameEditable()}">
-          <f:entry title="${%name(it.pronoun)}">
-            <f:textbox name="name" value="${it.name}" />
-          </f:entry>
-        </j:if>
-        <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
+          <div class="behavior-loading">${%LOADING}</div>
 
-        <j:if test="${it.supportsLogRotator()}">
-          <!-- log rotator -->
-          <f:optionalBlock name="logrotate"
-            help="/help/project-config/log-rotation.html"
-            title="${%Discard Old Builds}" checked="${it.buildDiscarder!=null}" inline="true">
-            <f:dropdownDescriptorSelector field="buildDiscarder" title="${%Strategy}"/>
-          </f:optionalBlock>
-        </j:if>
+          <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
+            <j:set var="descriptor" value="${it.descriptor}" />
+            <j:set var="instance" value="${it}" />
 
-        <!-- job property configurations. This should have been <f:descriptorList> -->
-        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it.getClass())}" forceRowSet="true" />
+            <j:if test="${it.isNameEditable()}">
+              <f:entry title="${%name(it.pronoun)}">
+                <f:textbox name="name" value="${it.name}" />
+              </f:entry>
+            </j:if>
+            <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+              <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+            </f:entry>
 
-        <!-- additional entries from derived classes -->
-        <st:include page="configure-entries.jelly" />
+            <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
 
-        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-          <f:bottomButtonBar>
-            <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-            <f:submit value="${%Save}"/>
-            <f:apply />
-          </f:bottomButtonBar>
-        </j:if>
-      </f:form>
-      <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
+            <!-- additional entries from derived classes -->
+            <st:include page="configure-entries.jelly" />
+
+            <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+              <f:bottomButtonBar>
+                <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
+                <f:submit value="${%Save}"/>
+                <f:apply value="${%Apply}"/>
+              </f:bottomButtonBar>
+            </j:if>
+          </f:form>
+          <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+            <st:adjunct includes="lib.form.confirm" />
+          </j:if>
+        </div>
+      </div>
+    </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

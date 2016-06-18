@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Alan Harder
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,12 +24,18 @@
  */
 package hudson;
 
+import hudson.model.Hudson;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.recipes.Recipe;
 
+import java.io.File;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Alan Harder
@@ -41,6 +47,26 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
         useLocalPluginManager = true;
         super.setUp();
     }
+
+    @Override
+    protected Hudson newHudson() throws Exception {
+        File home = homeLoader.allocate();
+        
+        for (Recipe.Runner r : recipes) {
+            r.decorateHome(this,home);
+        }
+        LocalPluginManager pluginManager = new LocalPluginManager(home) {
+            @Override
+            protected Collection<String> loadBundledPlugins() {
+                // Overriding so we can force loading of the detached plugins for testing
+                Set<String> names = new LinkedHashSet<>();
+                names.addAll(loadPluginsFromWar("/WEB-INF/plugins"));
+                names.addAll(loadPluginsFromWar("/WEB-INF/detached-plugins"));
+                return names;
+            }
+        };
+        return new Hudson(home, createWebServer(), pluginManager);
+     }
 
     /**
      * Test finding resources via DependencyClassLoader.
@@ -86,5 +112,20 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
             else
                 fail("disabled dependency should not be included");
         }
+    }
+
+    /**
+     * Test finding resources under masking.
+     * "foo1" plugin contains attribute of Mask-Classes: org.apache.http.
+     */
+    @LocalData
+    @Issue("JENKINS-27289")
+    public void testMaskResourceClassLoader() throws Exception {
+        PluginWrapper pw = jenkins.getPluginManager().getPlugin("foo1");
+        Class<?> clazz = pw.classLoader.loadClass("org.apache.http.impl.io.SocketInputBuffer");
+        ClassLoader cl = clazz.getClassLoader();
+        URL url = cl.getResource("org/apache/http/impl/io/SocketInputBuffer.class");
+        assertNotNull(url);
+        assertTrue("expected to find the class from foo1 plugin", url.toString().contains("plugins/foo1"));
     }
 }

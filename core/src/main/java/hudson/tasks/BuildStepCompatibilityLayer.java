@@ -41,6 +41,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.tasks.SimpleBuildStep;
 
+import javax.annotation.Nonnull;
+
 /**
  * Provides compatibility with {@link BuildStep} before 1.150
  * so that old plugin binaries can continue to function with new Hudson.
@@ -62,9 +64,10 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * @return Delegates to {@link SimpleBuildStep#perform(Run, FilePath, Launcher, TaskListener)} if possible, always returning true or throwing an error.
      */
+    @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         if (this instanceof SimpleBuildStep) {
             // delegate to the overloaded version defined in SimpleBuildStep
@@ -89,6 +92,7 @@ public abstract class BuildStepCompatibilityLayer implements BuildStep {
             return null;
     }
 
+    @Nonnull
     public Collection<? extends Action> getProjectActions(AbstractProject<?, ?> project) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(project);

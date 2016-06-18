@@ -30,15 +30,18 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -104,14 +107,92 @@ public class DescriptorTest {
         @Override public Builder newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
             return new BuilderImpl(id);
         }
-        @Override public String getDisplayName() {
-            return id;
-        }
         @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
     }
     @TestExtension("overriddenId") public static final BuildStepDescriptor<Builder> builderA = new DescriptorImpl("builder-a");
     @TestExtension("overriddenId") public static final BuildStepDescriptor<Builder> builderB = new DescriptorImpl("builder-b");
+
+    @Issue("JENKINS-28110")
+    @Test public void nestedDescribableOverridingId() throws Exception {
+        FreeStyleProject p = rule.createFreeStyleProject("p");
+        p.getBuildersList().add(new B1(Arrays.asList(new D1(), new D2())));
+        rule.configRoundtrip(p);
+        rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
+    }
+    public static abstract class D extends AbstractDescribableImpl<D> {
+        @Override public String toString() {return getDescriptor().getDisplayName();}
+    }
+    public static class D1 extends D {
+        @DataBoundConstructor public D1() {}
+        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
+            @Override public String getId() {return "D1-id";}
+        }
+    }
+    public static class D2 extends D {
+        @DataBoundConstructor public D2() {}
+        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
+            @Override public String getId() {return "D2-id";}
+        }
+    }
+    public static class B1 extends Builder {
+        public final List<D> ds;
+        @DataBoundConstructor public B1(List<D> ds) {
+            this.ds = ds;
+        }
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            listener.getLogger().println(ds);
+            return true;
+        }
+        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {}
+    }
+
+    @Ignore("never worked: TypePair.convertJSON looks for @DataBoundConstructor on D3 (Stapler does not grok Descriptor)")
+    @Issue("JENKINS-28110")
+    @Test public void nestedDescribableSharingClass() throws Exception {
+        FreeStyleProject p = rule.createFreeStyleProject("p");
+        p.getBuildersList().add(new B2(Arrays.asList(new D3("d3a"), new D3("d3b"))));
+        rule.configRoundtrip(p);
+        rule.assertLogContains("[d3a, d3b]", rule.buildAndAssertSuccess(p));
+    }
+    public static class D3 implements Describable<D3> {
+        private final String id;
+        D3(String id) {
+            this.id = id;
+        }
+        @Override public String toString() {
+            return id;
+        }
+        @Override public Descriptor<D3> getDescriptor() {
+            return Jenkins.getInstance().getDescriptorByName(id);
+        }
+    }
+    public static class D3D extends Descriptor<D3> {
+        private final String id;
+        public D3D(String id) {
+            super(D3.class);
+            this.id = id;
+        }
+        @Override public String getId() {
+            return id;
+        }
+        @Override public D3 newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
+            return new D3(id);
+        }
+    }
+    @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3a = new D3D("d3a");
+    @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3b = new D3D("d3b");
+    public static class B2 extends Builder {
+        public final List<D3> ds;
+        @DataBoundConstructor public B2(List<D3> ds) {
+            this.ds = ds;
+        }
+        @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            listener.getLogger().println(ds);
+            return true;
+        }
+        @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
+    }
 
 }

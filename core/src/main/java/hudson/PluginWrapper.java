@@ -24,9 +24,11 @@
  */
 package hudson;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import jenkins.MissingDependencyException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -40,7 +42,10 @@ import java.io.OutputStream;
 import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
@@ -57,13 +62,14 @@ import java.util.Enumeration;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a Jenkins plug-in and associated control information
  * for Jenkins to control {@link Plugin}.
  *
  * <p>
- * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatability),
+ * A plug-in is packaged into a jar file whose extension is <tt>".jpi"</tt> (or <tt>".hpi"</tt> for backward compatibility),
  * A plugin needs to have a special manifest entry to identify what it is.
  *
  * <p>
@@ -113,15 +119,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final File disableFile;
 
     /**
-     * Used to control the unpacking of the bundled plugin.
-     * If a pin file exists, Jenkins assumes that the user wants to pin down a particular version
-     * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
-     * by a bundled copy, to ensure consistency across upgrade/downgrade.
-     * @since 1.325
-     */
-    private final File pinFile;
-
-    /**
      * A .jpi file, an exploded plugin directory, or a .jpl file.
      */
     private final File archive;
@@ -149,6 +146,54 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Is this plugin bundled in jenkins.war?
      */
     /*package*/ boolean isBundled;
+
+    /**
+     * List of plugins that depend on this plugin.
+     */
+    private Set<String> dependants = Collections.emptySet();
+
+    /**
+     * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
+     * depends on the plugin e.g. UI support library bundle plugin.
+     */
+    private static Set<String> CORE_ONLY_DEPENDANT = ImmutableSet.copyOf(Arrays.asList("jenkins-core"));
+
+    /**
+     * Set the list of components that depend on this plugin.
+     * @param dependants The list of components that depend on this plugin.
+     */
+    public void setDependants(@Nonnull Set<String> dependants) {
+        this.dependants = dependants;
+    }
+
+    /**
+     * Get the list of components that depend on this plugin.
+     * @return The list of components that depend on this plugin.
+     */
+    public @Nonnull Set<String> getDependants() {
+        if (isBundled && dependants.isEmpty()) {
+            return CORE_ONLY_DEPENDANT;
+        } else {
+            return dependants;
+        }
+    }
+
+    /**
+     * Does this plugin have anything that depends on it.
+     * @return {@code true} if something (Jenkins core, or another plugin) depends on this
+     * plugin, otherwise {@code false}.
+     */
+    public boolean hasDependants() {
+        return (isBundled || !dependants.isEmpty());
+    }
+    
+    /**
+     * Does this plugin depend on any other plugins.
+     * @return {@code true} if this plugin depends on other plugins, otherwise {@code false}.
+     */
+    public boolean hasDependencies() {
+        return (dependencies != null && !dependencies.isEmpty());
+    }
 
     @ExportedBean
     public static final class Dependency {
@@ -206,7 +251,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
-        this.pinFile = new File(archive.getPath() + ".pinned");
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
@@ -218,6 +262,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -397,6 +442,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Enables this plugin next time Jenkins runs.
      */
     public void enable() throws IOException {
+        if (!disableFile.exists()) {
+            LOGGER.log(Level.FINEST, "Plugin {0} has been already enabled. Skipping the enable() operation", getShortName());
+            return;
+        }
         if(!disableFile.delete())
             throw new IOException("Failed to delete "+disableFile);
     }
@@ -470,14 +519,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
+        List<Dependency> missingDependencies = new ArrayList<>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
             if (parent.getPlugin(d.shortName) == null)
-                missingDependencies.add(d.toString());
+                missingDependencies.add(d);
         }
         if (!missingDependencies.isEmpty())
-            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+            throw new MissingDependencyException(this.shortName, missingDependencies);
 
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
@@ -522,8 +571,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
     
     @Exported
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinned() {
-        return pinFile.exists();
+        return false;
     }
 
     /**
@@ -585,16 +635,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
-        if (!isPinned())    return false;
-
-        Manifest bundled = Jenkins.getInstance().pluginManager.getBundledPluginManifest(getShortName());
-        if (bundled==null)  return false;
-
-        VersionNumber you = new VersionNumber(getVersionOf(bundled));
-        VersionNumber me = getVersionNumber();
-
-        return me.isOlderThan(you);
+        return false;
     }
 
 //
@@ -617,23 +660,33 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doPin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        new FileOutputStream(pinFile).close();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doUnpin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        pinFile.delete();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins jenkins = Jenkins.getActiveInstance();
+        
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         archive.delete();
+
+        // Redo who depends on who.
+        jenkins.getPluginManager().resolveDependantPlugins();
+
         return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
     }
 

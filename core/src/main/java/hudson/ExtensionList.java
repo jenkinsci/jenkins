@@ -84,6 +84,8 @@ public class ExtensionList<T> extends AbstractList<T> {
     @CopyOnWrite
     private volatile List<ExtensionComponent<T>> extensions;
 
+    private final List<ExtensionListListener> listeners = new CopyOnWriteArrayList<ExtensionListListener>();
+
     /**
      * Place to store manually registered instances with the per-Hudson scope.
      * {@link CopyOnWriteArrayList} is used here to support concurrent iterations and mutation.
@@ -130,10 +132,18 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     /**
+     * Add a listener to the extension list.
+     * @param listener The listener.
+     */
+    public void addListener(@Nonnull ExtensionListListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
      * Looks for the extension instance of the given type (subclasses excluded),
      * or return null.
      */
-    public <U extends T> U get(Class<U> type) {
+    public @CheckForNull <U extends T> U get(Class<U> type) {
         for (T ext : this)
             if(ext.getClass()==type)
                 return type.cast(ext);
@@ -183,7 +193,17 @@ public class ExtensionList<T> extends AbstractList<T> {
     }
 
     @Override
-    public synchronized boolean remove(Object o) {
+    public boolean remove(Object o) {
+        try {
+            return removeSync(o);
+        } finally {
+            if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    private synchronized boolean removeSync(Object o) {
         boolean removed = removeComponent(legacyInstances, o);
         if(extensions!=null) {
             List<ExtensionComponent<T>> r = new ArrayList<ExtensionComponent<T>>(extensions);
@@ -218,7 +238,17 @@ public class ExtensionList<T> extends AbstractList<T> {
      */
     @Override
     @Deprecated
-    public synchronized boolean add(T t) {
+    public boolean add(T t) {
+        try {
+            return addSync(t);
+        } finally {
+            if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    private synchronized boolean addSync(T t) {
         legacyInstances.add(new ExtensionComponent<T>(t));
         // if we've already filled extensions, add it
         if(extensions!=null) {
@@ -274,6 +304,7 @@ public class ExtensionList<T> extends AbstractList<T> {
      * Do not call from anywhere else.
      */
     public void refresh(ExtensionComponentSet delta) {
+        boolean fireOnChangeListeners = false;
         synchronized (getLoadLock()) {
             if (extensions==null)
                 return;     // not yet loaded. when we load it, we'll load everything visible by then, so no work needed
@@ -283,6 +314,20 @@ public class ExtensionList<T> extends AbstractList<T> {
                 List<ExtensionComponent<T>> l = Lists.newArrayList(extensions);
                 l.addAll(found);
                 extensions = sort(l);
+                fireOnChangeListeners = true;
+            }
+        }
+        if (fireOnChangeListeners) {
+            fireOnChangeListeners();
+        }
+    }
+
+    private void fireOnChangeListeners() {
+        for (ExtensionListListener listener : listeners) {
+            try {
+                listener.onChange();
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error firing ExtensionListListener.onChange().", e);
             }
         }
     }
@@ -345,14 +390,14 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Gets the extension list for a given type.
      * Normally calls {@link Jenkins#getExtensionList(Class)} but falls back to an empty list
-     * in case {@link Jenkins#getInstance} is null.
+     * in case {@link Jenkins#getInstanceOrNull()} is null.
      * Thus it is useful to call from {@code all()} methods which need to behave gracefully during startup or shutdown.
      * @param type the extension point type
      * @return some list
      * @since 1.572
      */
     public static @Nonnull <T> ExtensionList<T> lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j == null ? create((Jenkins) null, type) : j.getExtensionList(type);
     }
 

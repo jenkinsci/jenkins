@@ -25,7 +25,6 @@ package jenkins.model;
 
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Executor;
-import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;
@@ -70,7 +69,7 @@ public abstract class CauseOfInterruption implements Serializable {
     }
 
     /**
-     * Indicates that the build was interrupted from UI by an user.
+     * Indicates that the build was interrupted from UI.
      */
     public static final class UserInterruption extends CauseOfInterruption {
         private final String user;
@@ -111,33 +110,6 @@ public abstract class CauseOfInterruption implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-
-    /**
-     * Indicates that the build was interrupted as a result of another a problem.
-     *
-     * <p>
-     * This is a less specific (thus less desirable) {@link CauseOfInterruption}
-     * in case there's no suitable {@link CauseOfInterruption}. Use sparingly.
-     */
-    class ExceptionInterruption extends CauseOfInterruption {
-        private final Throwable cause;
-
-        public ExceptionInterruption(Throwable cause) {
-            this.cause = cause;
-        }
-
-        public Throwable getCause() {
-            return cause;
-        }
-
-        @Override
-        public String getShortDescription() {
-            return "Exception: "+ cause.getMessage();
-        }
-
-        private static final long serialVersionUID = 1L;
-    }
-
 
     private static final long serialVersionUID = 1L;
 }

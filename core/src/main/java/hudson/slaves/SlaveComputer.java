@@ -26,10 +26,9 @@ package hudson.slaves;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
-import hudson.remoting.ChannelBuilder;
-import hudson.util.IOUtils;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.console.ConsoleLogFilter;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.ExecutorListener;
@@ -39,24 +38,35 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
+import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.io.ReopenableFileOutputStream;
 import hudson.util.io.ReopenableRotatingFileOutputStream;
+import jenkins.model.Jenkins;
+import jenkins.security.ChannelConfigurator;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
+import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.apache.commons.io.FilenameUtils;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -74,17 +84,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import javax.annotation.CheckForNull;
-import jenkins.model.Jenkins;
-import static hudson.slaves.SlaveComputer.LogHolder.*;
-import jenkins.security.ChannelConfigurator;
-import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.HttpRedirect;
+import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 
 
 /**
@@ -99,7 +99,7 @@ public class SlaveComputer extends Computer {
     private Boolean isUnix;
     /**
      * Effective {@link ComputerLauncher} that hides the details of
-     * how we launch a slave agent on this computer.
+     * how we launch a agent agent on this computer.
      *
      * <p>
      * This is normally the same as {@link Slave#getLauncher()} but
@@ -138,8 +138,22 @@ public class SlaveComputer extends Computer {
     public SlaveComputer(Slave slave) {
         super(slave);
         this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
-        this.taskListener = new StreamTaskListener(log);
+        this.taskListener = new StreamTaskListener(decorate(this.log));
         assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
+    }
+
+    /**
+     * Uses {@link ConsoleLogFilter} to decorate logger.
+     */
+    private OutputStream decorate(OutputStream os) {
+        for (ConsoleLogFilter f : ConsoleLogFilter.all()) {
+            try {
+                os = f.decorateLogger(this,os);
+            } catch (IOException|InterruptedException e) {
+                LOGGER.log(Level.WARNING, "Failed to filter log with "+f, e);
+            }
+        }
+        return os;
     }
 
     /**
@@ -148,7 +162,7 @@ public class SlaveComputer extends Computer {
     @Override
     @OverrideMustInvoke(When.ANYTIME)
     public boolean isAcceptingTasks() {
-        // our boolean flag is an override on any additional programmatic reasons why this slave might not be
+        // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.
         return acceptingTasks && super.isAcceptingTasks();
     }
@@ -161,24 +175,19 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Allows suspension of tasks being accepted by the slave computer. While this could be called by a
+     * Allows suspension of tasks being accepted by the agent computer. While this could be called by a
      * {@linkplain hudson.slaves.ComputerLauncher} or a {@linkplain hudson.slaves.RetentionStrategy}, such usage
      * can result in fights between multiple actors calling setting differential values. A better approach
      * is to override {@link hudson.slaves.RetentionStrategy#isAcceptingTasks(hudson.model.Computer)} if the
      * {@link hudson.slaves.RetentionStrategy} needs to control availability.
      *
-     * @param acceptingTasks {@code true} if the slave can accept tasks.
+     * @param acceptingTasks {@code true} if the agent can accept tasks.
      */
     public void setAcceptingTasks(boolean acceptingTasks) {
         this.acceptingTasks = acceptingTasks;
     }
 
-    /**
-     * True if this computer is a Unix machine (as opposed to Windows machine).
-     *
-     * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
-     */
+    @Override
     public Boolean isUnix() {
         return isUnix;
     }
@@ -193,6 +202,14 @@ public class SlaveComputer extends Computer {
             logger.log(Level.WARNING, "found an unexpected kind of node {0} from {1} with nodeName={2}", new Object[] {node, this, nodeName});
             return null;
         }
+    }
+
+    /**
+     * Return the {@code TaskListener} for this SlaveComputer. Never null
+     * @since 2.9
+     */
+    public TaskListener getListener() {
+        return taskListener;
     }
 
     @Override
@@ -240,7 +257,7 @@ public class SlaveComputer extends Computer {
                     try {
                         for (ComputerListener cl : ComputerListener.all())
                             cl.preLaunch(SlaveComputer.this, taskListener);
-
+                        offlineCause = null;
                         launcher.launch(SlaveComputer.this, taskListener);
                     } catch (AbortException e) {
                         taskListener.error(e.getMessage());
@@ -257,7 +274,7 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null) {
+                    if (channel==null && offlineCause == null) {
                         offlineCause = new OfflineCause.LaunchFailed();
                         for (ComputerListener cl : ComputerListener.all())
                             cl.onLaunchFailure(SlaveComputer.this, taskListener);
@@ -265,7 +282,7 @@ public class SlaveComputer extends Computer {
                 }
 
                 if (channel==null)
-                    throw new IOException("Slave failed to connect, even though the launcher didn't report it. See the log output for details.");
+                    throw new IOException("Agent failed to connect, even though the launcher didn't report it. See the log output for details.");
                 return null;
             }
         });
@@ -341,7 +358,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Creates a {@link Channel} from the given stream and sets that to this slave.
+     * Creates a {@link Channel} from the given stream and sets that to this agent.
      *
      * @param in
      *      Stream connected to the remote "slave.jar". It's the caller's responsibility to do
@@ -417,11 +434,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Returns the remote FS root absolute path or {@code null} if the slave is off-line. The absolute path may change
+     * Returns the remote FS root absolute path or {@code null} if the agent is off-line. The absolute path may change
      * between connections if the connection method does not provide a consistent working directory and the node's
      * remote FS is specified as a relative path.
      *
-     * @return the remote FS root absolute path or {@code null} if the slave is off-line.
+     * @return the remote FS root absolute path or {@code null} if the agent is off-line.
      * @since 1.606
      */
     @CheckForNull
@@ -459,7 +476,7 @@ public class SlaveComputer extends Computer {
 
     /**
      * Sets up the connection through an existing channel.
-     *
+     * @param channel the channel to use; <strong>warning:</strong> callers are expected to have called {@link ChannelConfigurator} already
      * @since 1.444
      */
     public void setChannel(Channel channel, OutputStream launchLog, Channel.Listener listener) throws IOException, InterruptedException {
@@ -482,7 +499,15 @@ public class SlaveComputer extends Computer {
                     taskListener.getLogger().println("Connection terminated");
                 }
                 closeChannel();
-                launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                try {
+                    launcher.afterDisconnect(SlaveComputer.this, taskListener);
+                } catch (Throwable t) {
+                    LogRecord lr = new LogRecord(Level.SEVERE,
+                            "Launcher {0}'s afterDisconnect method propagated an exception when {1}'s connection was closed: {2}");
+                    lr.setThrown(t);
+                    lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
+                    logger.log(lr);
+                }
             }
         });
         if(listener!=null)
@@ -558,7 +583,7 @@ public class SlaveComputer extends Computer {
         } finally {
             SecurityContextHolder.setContext(old);
         }
-        log.println("Slave successfully connected and online");
+        log.println("Agent successfully connected and online");
         Jenkins.getInstance().getQueue().scheduleMaintenance();
     }
 
@@ -627,11 +652,11 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Serves jar files for JNLP slave agents.
+     * Serves jar files for JNLP agents.
      *
      * @deprecated since 2008-08-18.
      *      This URL binding is no longer used and moved up directly under to {@link jenkins.model.Jenkins},
-     *      but it's left here for now just in case some old JNLP slave agents request it.
+     *      but it's left here for now just in case some old JNLP agents request it.
      */
     @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
@@ -648,6 +673,12 @@ public class SlaveComputer extends Computer {
         super.kill();
         closeChannel();
         IOUtils.closeQuietly(log);
+
+        try {
+            Util.deleteRecursive(getLogDir());
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Unable to delete agent logs", ex);
+        }
     }
 
     public RetentionStrategy getRetentionStrategy() {
@@ -683,7 +714,7 @@ public class SlaveComputer extends Computer {
         super.setNode(node);
         launcher = grabLauncher(node);
 
-        // maybe the configuration was changed to relaunch the slave, so try to re-launch now.
+        // maybe the configuration was changed to relaunch the agent, so try to re-launch now.
         // "constructed==null" test is an ugly hack to avoid launching before the object is fully
         // constructed.
         if(constructed!=null) {
@@ -717,7 +748,7 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Get the slave version
+     * Get the agent version
      */
     public String getSlaveVersion() throws IOException, InterruptedException {
         return channel.call(new SlaveVersion());
@@ -771,7 +802,7 @@ public class SlaveComputer extends Computer {
      */
     static final class LogHolder {
         /**
-         * This field is used on each slave node to record log records on the slave.
+         * This field is used on each agent to record logs on the agent.
          */
         static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
     }
@@ -804,18 +835,18 @@ public class SlaveComputer extends Computer {
 
     /**
      * Obtains a {@link VirtualChannel} that allows some computation to be performed on the master.
-     * This method can be called from any thread on the master, or from slave (more precisely,
-     * it only works from the remoting request-handling thread in slaves, which means if you've started
-     * separate thread on slaves, that'll fail.)
+     * This method can be called from any thread on the master, or from agent (more precisely,
+     * it only works from the remoting request-handling thread in agents, which means if you've started
+     * separate thread on agents, that'll fail.)
      *
      * @return null if the calling thread doesn't have any trace of where its master is.
      * @since 1.362
      */
     public static VirtualChannel getChannelToMaster() {
-        if (Jenkins.getInstance()!=null)
+        if (Jenkins.getInstanceOrNull()!=null) // check if calling thread is on master or on slave
             return FilePath.localChannel;
 
-        // if this method is called from within the slave computation thread, this should work
+        // if this method is called from within the agent computation thread, this should work
         Channel c = Channel.current();
         if (c!=null && Boolean.TRUE.equals(c.getProperty("slave")))
             return c;
@@ -835,4 +866,6 @@ public class SlaveComputer extends Computer {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(SlaveComputer.class.getName());
 }

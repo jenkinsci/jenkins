@@ -25,7 +25,6 @@
 package jenkins.model.lazy;
 
 import hudson.Extension;
-import hudson.model.AbstractItem;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
@@ -33,7 +32,6 @@ import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
-import hudson.model.queue.SubTask;
 import hudson.widgets.BuildHistoryWidget;
 import hudson.widgets.HistoryWidget;
 import java.io.File;

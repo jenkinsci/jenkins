@@ -1,19 +1,32 @@
 [![][ButlerImage]][website] 
 
 # About
-In a nutshell, Jenkins CI is the leading open-source continuous integration server. Built with Java, it provides over 1000 plugins to support building and testing virtually any project.
+In a nutshell, Jenkins is the leading open-source automation server. 
+Built with Java, it provides over 1000 plugins to support automating virtually anything, 
+so that humans can actually spend their time doing things machines cannot.
+
+# What to Use Jenkins for and When to Use It
+
+Use Jenkins to automate your development workflow so you can focus on work that matters most. Jenkins is commonly used for:
+
+- Building projects
+- Running tests to detect bugs and other issues as soon as they are introduced
+- Static code analysis
+- Deployment
+
+Execute repetitive tasks, save time, and optimize your development process with Jenkins.
 
 # Downloads
 Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
 
 # Source
-Our latest and greatest source of Jenkins CI can be found on [GitHub]. Fork us!
+Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
 
 # Contributing to Jenkins
-For information on contributing to Jenkins, check out the [Contributing] and [Extend Jenkins] wiki pages over at the official [wiki]. They will help you get started with contributing to Jenkins.
+Follow [contributing](CONTRIBUTING.md) file.
 
 # News and Website
-All information about Jenkins CI can be found on our [website]. Follow us on Twitter [@jenkinsci].
+All information about Jenkins can be found on our [website]. Follow us on Twitter [@jenkinsci].
 
 # License
 Jenkins is **licensed** under the **[MIT License]**. The terms of the license are as follows:
@@ -40,12 +53,12 @@ Jenkins is **licensed** under the **[MIT License]**. The terms of the license ar
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 
-[ButlerImage]: http://jenkins-ci.org/sites/default/files/jenkins_logo.png
+[ButlerImage]: https://jenkins.io/sites/default/files/jenkins_logo.png
 [MIT License]: https://github.com/jenkinsci/jenkins/raw/master/LICENSE.txt
 [Mirrors]: http://mirrors.jenkins-ci.org
 [GitHub]: https://github.com/jenkinsci/jenkins
-[website]: http://jenkins-ci.org
-[@jenkinsci]: http://twitter.com/jenkinsci
+[website]: https://jenkins.io/
+[@jenkinsci]: https://twitter.com/jenkinsci
 [Contributing]: https://wiki.jenkins-ci.org/display/JENKINS/contributing
 [Extend Jenkins]: https://wiki.jenkins-ci.org/display/JENKINS/Extend+Jenkins
 [wiki]: https://wiki.jenkins-ci.org

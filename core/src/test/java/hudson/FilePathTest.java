@@ -38,9 +38,11 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,10 +60,12 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
@@ -340,7 +344,7 @@ public class FilePathTest {
     }
             
     /**
-     * Checks that big files (>8GB) can be archived and then unpacked.
+     * Checks that big files (greater than 8GB) can be archived and then unpacked.
      * This test is disabled by default due the impact on RAM.
      * The actual file size limit is 8589934591 bytes.
      * @throws Exception test failure
@@ -371,7 +375,7 @@ public class FilePathTest {
         // Decompress
         FilePath outDir = new FilePath(temp.newFolder(filePrefix + "_out"));
         final FilePath outFile = outDir.child(tempFile.getName());
-        tmpDirPath.child( filePrefix + ".tar").untar(outDir, TarCompression.NONE);
+        tmpDirPath.child(tarFile.getName()).untar(outDir, TarCompression.NONE);
         assertEquals("Result file after the roundtrip differs from the initial file",
                 new FilePath(tempFile).digest(), outFile.digest());
     }
@@ -464,7 +468,7 @@ public class FilePathTest {
     }
 
     @Test public void symlinkInTar() throws Exception {
-        if (Functions.isWindows())  return; // can't test on Windows
+        assumeFalse("can't test on Windows", Functions.isWindows());
 
         FilePath tmp = new FilePath(temp.getRoot());
             FilePath in = tmp.child("in");
@@ -537,6 +541,25 @@ public class FilePathTest {
             } catch (InterruptedException x) {
                 // good
             }
+    }
+    
+    @Issue("JENKINS-5253")
+    public void testValidateCaseSensitivity() throws Exception {
+        File tmp = Util.createTempDir();
+        try {
+            FilePath d = new FilePath(channels.french, tmp.getPath());
+            d.child("d1/d2/d3").mkdirs();
+            d.child("d1/d2/d3/f.txt").touch(0);
+            d.child("d1/d2/d3/f.html").touch(0);
+            d.child("d1/d2/f.txt").touch(0);
+            
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/d1/**/f.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+            assertEquals(Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive("**/D1/**/F.*"), d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, true));
+            assertEquals(null, d.validateAntFileMask("**/D1/**/F.*", FilePath.VALIDATE_ANT_FILE_MASK_BOUND, false));
+        } finally {
+            Util.deleteRecursive(tmp);
+        }
     }
    
     @Issue("JENKINS-15418")
@@ -616,6 +639,28 @@ public class FilePathTest {
         assertTrue(log, log.contains("504 Gateway Timeout"));
     }
 
+    @Issue("JENKINS-23507")
+    @Test public void installIfNecessaryFollowsRedirects() throws Exception{
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+        FilePath.UrlFactory urlFactory = mock(FilePath.UrlFactory.class);
+        d.setUrlFactory(urlFactory);
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        final HttpURLConnection con2 = mock(HttpURLConnection.class);
+        final URL url = someUrlToZipFile(con);
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_MOVED_TEMP);
+        URL url2 = someUrlToZipFile(con2);
+        String someUrl = url2.toExternalForm();
+        when(con.getHeaderField("Location")).thenReturn(someUrl);
+        when(urlFactory.newURL(someUrl)).thenReturn(url2);
+        when(con2.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(con2.getInputStream()).thenReturn(someZippedContent());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        String message = "going ahead";
+        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+    }
+
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {
@@ -658,5 +703,36 @@ public class FilePathTest {
             
             // test conflict subdir
             src.moveAllChildrenTo(dst);
+    }
+
+    @Issue("JENKINS-10629")
+    @Test
+    public void testEOFbrokenFlush() throws IOException, InterruptedException {
+        final File srcFolder = temp.newFolder("src");
+        // simulate magic structure with magic sizes:
+        // |- dir/pom.xml   (2049)
+        // |- pom.xml       (2049)
+        // \- small.tar     (1537)
+        final File smallTar = new File(srcFolder, "small.tar");
+        givenSomeContentInFile(smallTar, 1537);
+        final File dir = new File(srcFolder, "dir");
+        dir.mkdirs();
+        final File pomFile = new File(dir, "pom.xml");
+        givenSomeContentInFile(pomFile, 2049);
+        FileUtils.copyFileToDirectory(pomFile, srcFolder);
+
+        final File archive = temp.newFile("archive.tar");
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(srcFolder);
+        int tarred = tmpDirPath.tar(new FileOutputStream(archive), "**");
+        assertEquals("One file should have been compressed", 3, tarred);
+
+        // Decompress
+        final File dstFolder = temp.newFolder("dst");
+        dstFolder.mkdirs();
+        FilePath outDir = new FilePath(dstFolder);
+        // and now fail when flush is bad!
+        tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
     }
 }
