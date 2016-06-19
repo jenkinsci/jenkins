@@ -226,7 +226,7 @@ public class UpdateSite {
      * @param uc          the {@link UpdateCenter}.
      * @param dynamicLoad {@code true} if the plugin should be attempted to be dynamically loaded.
      * @return the {@link UpdateCenter.InstallationJob}.
-     * @since 2.9
+     * @since 2.9, 2.7.1
      */
     protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
         return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
