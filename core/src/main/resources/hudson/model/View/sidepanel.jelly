@@ -33,17 +33,15 @@ THE SOFTWARE.
     <link rel="alternate" title="Jenkins:${it.viewName} (all builds) (RSS 2.0)" href="${rootURL}/${it.url}rssAll?flavor=rss20" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds)" href="${rootURL}/${it.url}rssFailed" type="application/rss+xml" />
     <link rel="alternate" title="Jenkins:${it.viewName} (failed builds) (RSS 2.0)" href="${rootURL}/${it.url}rssFailed?flavor=rss20" type="application/rss+xml" />
-
-    <l:css src="jsbundles/remodal.css" />
-    <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/add-item.css" />
   </l:header>
   <l:side-panel>
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
-
-      <l:task href="#modal" icon="icon-new-package icon-md" title="${%NewJob(it.newPronoun)}"/>
-      <st:include page="popup.jelly" optional="true" />
+      
+      <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
+         <!-- made overridable for ViewGroup that doesn't allow modifications -->
+        <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
+      </st:include>
 
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
