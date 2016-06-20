@@ -37,9 +37,9 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <st:include page="tasks-top.jelly" it="${it.owner}" optional="true" />
-      
+
       <st:include page="tasks-new.jelly" it="${it.owner}" optional="true">
-         <!-- made overridable for ViewGroup that doesn't allow modifications -->
+        <!-- made overridable for ViewGroup that doesn't allow modifications -->
         <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 

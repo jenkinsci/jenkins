@@ -3041,4 +3041,3 @@ var notificationBar = {
             this.token = window.setTimeout(function(){self.hide();},this.DELAY);
     }
 };
-
