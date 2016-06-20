@@ -102,6 +102,9 @@ public class SuggestedItem {
     }
 
     private void getUrl(StringBuilder buf) {
+        if(parent!=null) {
+            parent.getUrl(buf);
+        }
         String f = item.getSearchUrl();
         if(f.startsWith("/")) {
             buf.setLength(0);

@@ -934,7 +934,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
             });
         
         // add the display name for each item in the search index
-        addDisplayNamesToSearchIndex(sib, getItems());
+        Collection<TopLevelItem> topLevelItems = getItems();
+        ItemGroup<? extends TopLevelItem> parent = getOwnerItemGroup();
+        Collection<TopLevelItem> result =new ArrayList<>();
+        Collection<? extends TopLevelItem> parentTopLevelItems = parent.getItems();
+        for (TopLevelItem topLevelItem : topLevelItems) {
+            if (parentTopLevelItems.contains(topLevelItem)) {
+                result.add(topLevelItem);
+            }
+        }
+        
+        addDisplayNamesToSearchIndex(sib, result);
 
         return sib;
     }

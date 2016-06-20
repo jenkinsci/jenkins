@@ -395,4 +395,44 @@ public class SearchTest {
         index.suggest(term, result);
         return result;
     }
+
+    @Issue("JENKINS-35459")
+    @Test
+    public void testProjectNameInAListView() throws Exception {
+        MockFolder myMockFolder = j.createFolder("folder");
+        FreeStyleProject freeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job");
+
+        ListView listView = new ListView("ListView", j.jenkins);
+        listView.setRecurse(true);
+        listView.add(myMockFolder);
+        listView.add(freeStyleProject);
+
+        j.jenkins.addView(listView);
+        j.jenkins.setPrimaryView(listView);
+
+        assertEquals(2, j.jenkins.getPrimaryView().getAllItems().size());
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo("search/suggest?query=" + freeStyleProject.getName(), "application/json");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        System.out.println(content);
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(1, jsonArray.size());
+
+        Page searchResult = j.createWebClient().goTo("search?q=" + freeStyleProject.getName());
+
+        assertNotNull(searchResult);
+        j.assertGoodStatus(searchResult);
+
+        URL resultUrl = searchResult.getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + freeStyleProject.getUrl()));
+    }
 }
