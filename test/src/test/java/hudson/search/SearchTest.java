@@ -427,7 +427,7 @@ public class SearchTest {
 
         assertEquals(1, jsonArray.size());
 
-        Page searchResult = j.createWebClient().goTo("search?q=" + freeStyleProject.getName());
+        Page searchResult = j.createWebClient().goTo("search?q=" + freeStyleProject.getFullName());
 
         assertNotNull(searchResult);
         j.assertGoodStatus(searchResult);
