@@ -29,6 +29,8 @@ import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
+import hudson.search.CollectionSearchIndex;
+import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
@@ -171,6 +173,20 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Override
     public List<TopLevelItem> getItems() {
+        return getItems(this.recurse);
+    }
+
+    /**
+     * Returns a read-only view of all {@link Job}s in this view.
+     *
+     * <p>
+     * This method returns a separate copy each time to avoid
+     * concurrent modification issue.
+     *
+     * @Param recurse false not to recurse in ItemGroups
+     *                true to recurse in ItemGroups
+     */
+    private List<TopLevelItem> getItems(boolean recurse) {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
 
@@ -193,7 +209,7 @@ public class ListView extends View implements DirectlyModifiableView {
             if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
             // Add if no status filter or filter matches enabled/disabled status:
             if(statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
+                    || ((AbstractProject)item).isDisabled() ^ statusFilter)
                 items.add(item);
         }
 
@@ -201,13 +217,32 @@ public class ListView extends View implements DirectlyModifiableView {
         Iterable<ViewJobFilter> jobFilters = getJobFilters();
         List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(parentItems);
         if (recurse) allItems = expand(allItems, new ArrayList<TopLevelItem>());
-    	for (ViewJobFilter jobFilter: jobFilters) {
-    		items = jobFilter.filter(items, allItems, this);
-    	}
+        for (ViewJobFilter jobFilter: jobFilters) {
+            items = jobFilter.filter(items, allItems, this);
+        }
         // for sanity, trim off duplicates
         items = new ArrayList<TopLevelItem>(new LinkedHashSet<TopLevelItem>(items));
-        
+
         return items;
+    }
+
+    @Override
+    public SearchIndexBuilder makeSearchIndex() {
+        SearchIndexBuilder sib = new SearchIndexBuilder().addAllAnnotations(this);
+        sib.add(new CollectionSearchIndex<TopLevelItem>() {// for jobs in the view
+            protected TopLevelItem get(String key) { return getItem(key); }
+            protected Collection<TopLevelItem> all() { return getItems(); }
+            @Override
+            protected String getName(TopLevelItem o) {
+                // return the name instead of the display for suggestion searching
+                return o.getName();
+            }
+        });
+
+        // add the display name for each item in the search index
+        addDisplayNamesToSearchIndex(sib, getItems(false));
+
+        return sib;
     }
 
     private List<TopLevelItem> expand(Collection<TopLevelItem> items, List<TopLevelItem> allItems) {

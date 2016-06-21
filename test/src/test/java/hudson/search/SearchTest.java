@@ -128,7 +128,6 @@ public class SearchTest {
 
         MockFolder myMockFolder = j.createFolder("my-folder-1");
         FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
-
         Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
 
         assertNotNull(result);
@@ -400,7 +399,7 @@ public class SearchTest {
     @Test
     public void testProjectNameInAListView() throws Exception {
         MockFolder myMockFolder = j.createFolder("folder");
-        FreeStyleProject freeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job");
+        FreeStyleProject freeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "myJob");
 
         ListView listView = new ListView("ListView", j.jenkins);
         listView.setRecurse(true);
@@ -427,7 +426,7 @@ public class SearchTest {
 
         assertEquals(1, jsonArray.size());
 
-        Page searchResult = j.createWebClient().goTo("search?q=" + freeStyleProject.getFullName());
+        Page searchResult = wc.goTo("search?q=" + myMockFolder.getName() + "%20" + freeStyleProject.getName());
 
         assertNotNull(searchResult);
         j.assertGoodStatus(searchResult);
