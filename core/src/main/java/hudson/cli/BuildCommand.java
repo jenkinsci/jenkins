@@ -46,6 +46,8 @@ import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
 
+import java.util.logging.Level;
+import jenkins.scm.SCMPollingDecisionHandler;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -148,6 +150,12 @@ public class BuildCommand extends CLICommand {
             SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
             if (item == null)
                 throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
+            // pre-emtively check for a polling veto
+            for (SCMPollingDecisionHandler handler : SCMPollingDecisionHandler.all()) {
+                if (!handler.shouldPoll(job)) {
+                    return 0;
+                }
+            }
             if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges())
                 return 0;
         }

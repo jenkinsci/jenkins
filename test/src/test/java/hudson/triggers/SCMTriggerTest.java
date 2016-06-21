@@ -27,8 +27,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Item;
 import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
 import hudson.model.AbstractBuild;
@@ -42,6 +44,9 @@ import hudson.model.Cause.UserCause;
 import hudson.scm.NullSCM;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.SCMTrigger.BuildAction;
+import java.util.HashSet;
+import java.util.Set;
+import jenkins.scm.SCMPollingDecisionHandler;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -52,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.List;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Alan Harder
@@ -79,6 +85,29 @@ public class SCMTriggerTest {
         checkoutStarted.block();
         assertFalse("SCM-poll after build has started should wait until that build finishes SCM-update", p.pollSCMChanges(StreamTaskListener.fromStdout()));
         build.get();  // let mock build finish
+    }
+
+    /**
+     * Make sure that SCMTrigger doesn't trigger another build when a build has just started,
+     * but not yet completed its SCM update.
+     */
+    @Test
+    @Issue("JENKINS-36123")
+    public void pollingExcludedByExtensionPoint() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        PollDecisionHandlerImpl handler =
+                ExtensionList.lookup(SCMPollingDecisionHandler.class).get(PollDecisionHandlerImpl.class);
+        handler.blacklist.add(p);
+
+        // used to coordinate polling and check out
+        final OneShotEvent checkoutStarted = new OneShotEvent();
+
+        p.setScm(new TestSCM(checkoutStarted));
+
+        assertFalse("SCM-poll with blacklist should report no changes", p.pollSCMChanges(StreamTaskListener.fromStdout()));
+        handler.blacklist.remove(p);
+        assertTrue("SCM-poll with blacklist removed should report changes", p.pollSCMChanges(StreamTaskListener.fromStdout()));
     }
 
     private static class TestSCM extends NullSCM {
@@ -143,5 +172,16 @@ public class SCMTriggerTest {
         List<BuildAction> ba = build.getActions(BuildAction.class);
 
         assertFalse("There should only be one BuildAction.", ba.size()!=1);
+    }
+
+    @TestExtension
+    public static class PollDecisionHandlerImpl extends SCMPollingDecisionHandler {
+
+        Set<Item> blacklist = new HashSet<>();
+
+        @Override
+        public boolean shouldPoll(Item item) {
+            return !blacklist.contains(item);
+        }
     }
 }

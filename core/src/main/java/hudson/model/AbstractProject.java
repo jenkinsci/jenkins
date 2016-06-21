@@ -114,6 +114,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.scm.SCMPollingDecisionHandler;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -1321,6 +1322,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         if (!isBuildable()) {
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
+        }
+        for (SCMPollingDecisionHandler handler : SCMPollingDecisionHandler.all()) {
+            if (!handler.shouldPoll(this)) {
+                listener.getLogger().println(Messages.AbstractProject_PollingVetoed(handler));
+                return NO_CHANGES;
+            }
         }
 
         R lb = getLastBuild();
