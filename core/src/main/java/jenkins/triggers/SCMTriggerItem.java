@@ -120,11 +120,10 @@ public interface SCMTriggerItem {
                 return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
             }
             @Override public PollingResult poll(TaskListener listener) {
-                for (SCMPollingDecisionHandler handler : SCMPollingDecisionHandler.all()) {
-                    if (!handler.shouldPoll(asItem())) {
-                        listener.getLogger().println(Messages.SCMTriggerItem_PollingVetoed(handler));
-                        return PollingResult.NO_CHANGES;
-                    }
+                SCMPollingDecisionHandler veto = SCMPollingDecisionHandler.firstVeto(asItem());
+                if (!veto.shouldPoll(asItem())) {
+                    listener.getLogger().println(Messages.SCMTriggerItem_PollingVetoed(veto));
+                    return PollingResult.NO_CHANGES;
                 }
                 return delegate.poll(listener);
             }

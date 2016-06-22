@@ -26,6 +26,8 @@ package jenkins.scm;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Item;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Extension point for deciding if particular job should be polled or not.
@@ -42,13 +44,29 @@ public abstract class SCMPollingDecisionHandler implements ExtensionPoint {
      *
      * @param item The item.
      */
-    public abstract boolean shouldPoll(Item item);
+    public abstract boolean shouldPoll(@Nonnull Item item);
 
     /**
      * All registered {@link SCMPollingDecisionHandler}s
      */
+    @Nonnull
     public static ExtensionList<SCMPollingDecisionHandler> all() {
         return ExtensionList.lookup(SCMPollingDecisionHandler.class);
+    }
+
+    /**
+     * Returns the first {@link SCMPollingDecisionHandler} that returns {@code false} from {@link #shouldPoll(Item)}
+     * @param item the item
+     * @return the first veto or {@code null} if there are no vetos
+     */
+    @CheckForNull
+    public static SCMPollingDecisionHandler firstVeto(@Nonnull Item item) {
+        for (SCMPollingDecisionHandler handler : all()) {
+            if (!handler.shouldPoll(item)) {
+                return handler;
+            }
+        }
+        return null;
     }
 
 }

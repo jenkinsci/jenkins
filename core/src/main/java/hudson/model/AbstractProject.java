@@ -1323,11 +1323,10 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
-        for (SCMPollingDecisionHandler handler : SCMPollingDecisionHandler.all()) {
-            if (!handler.shouldPoll(this)) {
-                listener.getLogger().println(Messages.AbstractProject_PollingVetoed(handler));
-                return NO_CHANGES;
-            }
+        SCMPollingDecisionHandler veto = SCMPollingDecisionHandler.firstVeto(this);
+        if (veto != null) {
+            listener.getLogger().println(Messages.AbstractProject_PollingVetoed(veto));
+            return NO_CHANGES;
         }
 
         R lb = getLastBuild();

@@ -88,8 +88,7 @@ public class SCMTriggerTest {
     }
 
     /**
-     * Make sure that SCMTrigger doesn't trigger another build when a build has just started,
-     * but not yet completed its SCM update.
+     * Make sure that SCMTrigger doesn't poll when there is a polling veto in place.
      */
     @Test
     @Issue("JENKINS-36123")
