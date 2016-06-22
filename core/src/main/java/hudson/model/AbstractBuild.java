@@ -983,9 +983,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * keys returned by {@link #getBuildVariables()} that should have their
      * values masked for display purposes.
      *
+     * @return Set of variable names. The method may return both empty set
+     *         or null if there is no such variables
      * @since 1.378
      */
-    public Set<String> getSensitiveBuildVariables() {
+    public @CheckForNull Set<String> getSensitiveBuildVariables() {
         Set<String> s = new HashSet<String>();
 
         ParametersAction parameters = getAction(ParametersAction.class);

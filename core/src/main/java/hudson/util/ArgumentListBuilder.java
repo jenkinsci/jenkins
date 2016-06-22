@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -175,7 +176,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *      names that do not exist in the set will be added unmasked.
      * @since 1.378
      */
-    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, Set<String> propsToMask) {
+    public ArgumentListBuilder addKeyValuePairs(String prefix, Map<String,String> props, @CheckForNull Set<String> propsToMask) {
         for (Entry<String,String> e : props.entrySet()) {
             addKeyValuePair(prefix, e.getKey(), e.getValue(), (propsToMask == null) ? false : propsToMask.contains(e.getKey()));
         }
@@ -213,7 +214,8 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      *      names that do not exist in the set will be added unmasked.
      * @since 1.378
      */
-    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver<String> vr, Set<String> propsToMask) throws IOException {
+    public ArgumentListBuilder addKeyValuePairsFromPropertyString(String prefix, String properties, VariableResolver<String> vr, 
+            @CheckForNull Set<String> propsToMask) throws IOException {
         if(properties==null)    return this;
 
         properties = Util.replaceMacro(properties, propertiesGeneratingResolver(vr));

@@ -310,7 +310,7 @@ public class Maven extends Builder {
                 }
             }
 
-            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+            final Set<String> sensitiveVars = build.getSensitiveBuildVariables();
 
             args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
             final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
