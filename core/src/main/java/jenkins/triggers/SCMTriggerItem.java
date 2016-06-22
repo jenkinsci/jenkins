@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.scm.SCMPollingDecisionHandler;
+import jenkins.scm.SCMDecisionHandler;
 
 /**
  * The item type accepted by {@link SCMTrigger}.
@@ -67,7 +67,7 @@ public interface SCMTriggerItem {
      * The implementation is responsible for ensuring mutual exclusion between polling and builds
      * if necessary.
      * <p>
-     * The implementation is responsible for checking the {@link SCMPollingDecisionHandler} before proceeding
+     * The implementation is responsible for checking the {@link SCMDecisionHandler} before proceeding
      * with the actual polling.
      */
     @Nonnull PollingResult poll(@Nonnull TaskListener listener);
@@ -120,7 +120,7 @@ public interface SCMTriggerItem {
                 return delegate.asProject().scheduleBuild2(quietPeriod, null, actions);
             }
             @Override public PollingResult poll(TaskListener listener) {
-                SCMPollingDecisionHandler veto = SCMPollingDecisionHandler.firstVeto(asItem());
+                SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(asItem());
                 if (!veto.shouldPoll(asItem())) {
                     listener.getLogger().println(Messages.SCMTriggerItem_PollingVetoed(veto));
                     return PollingResult.NO_CHANGES;

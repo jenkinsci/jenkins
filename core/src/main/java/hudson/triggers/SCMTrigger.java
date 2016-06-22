@@ -65,7 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
-import jenkins.scm.SCMPollingDecisionHandler;
+import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -549,9 +549,9 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
-            // we can pre-emtively check the SCMPollingDecisionHandler instances here
+            // we can pre-emtively check the SCMDecisionHandler instances here
             // note that job().poll(listener) should also check this
-            SCMPollingDecisionHandler veto = SCMPollingDecisionHandler.firstVeto(job);
+            SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {
                 try (StreamTaskListener listener = new StreamTaskListener(getLogFile())) {
                     listener.getLogger().println(

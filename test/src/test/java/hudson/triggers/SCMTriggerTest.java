@@ -46,7 +46,7 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.SCMTrigger.BuildAction;
 import java.util.HashSet;
 import java.util.Set;
-import jenkins.scm.SCMPollingDecisionHandler;
+import jenkins.scm.SCMDecisionHandler;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -96,7 +96,7 @@ public class SCMTriggerTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         PollDecisionHandlerImpl handler =
-                ExtensionList.lookup(SCMPollingDecisionHandler.class).get(PollDecisionHandlerImpl.class);
+                ExtensionList.lookup(SCMDecisionHandler.class).get(PollDecisionHandlerImpl.class);
         handler.blacklist.add(p);
 
         // used to coordinate polling and check out
@@ -174,7 +174,7 @@ public class SCMTriggerTest {
     }
 
     @TestExtension
-    public static class PollDecisionHandlerImpl extends SCMPollingDecisionHandler {
+    public static class PollDecisionHandlerImpl extends SCMDecisionHandler {
 
         Set<Item> blacklist = new HashSet<>();
 

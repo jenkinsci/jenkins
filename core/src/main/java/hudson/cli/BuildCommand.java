@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
@@ -42,12 +41,10 @@ import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
 
-import java.util.logging.Level;
-import jenkins.scm.SCMPollingDecisionHandler;
+import jenkins.scm.SCMDecisionHandler;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -151,7 +148,7 @@ public class BuildCommand extends CLICommand {
             if (item == null)
                 throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
             // pre-emtively check for a polling veto
-            if (SCMPollingDecisionHandler.firstVeto(job) != null) {
+            if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
                 return 0;
             }
             if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges())

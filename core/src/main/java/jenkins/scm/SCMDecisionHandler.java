@@ -26,47 +26,62 @@ package jenkins.scm;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Item;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Extension point for deciding if particular job should be polled or not.
- *
- * <p>
- * This handler is consulted every time someone tries to run a polling of an {@link Item}.
- * If any of the registered handlers returns false, the {@link Item} will not be polled.
+ * Extension point for various decisions about SCM operations for {@link Item} instances.
  *
  * @since TODO
  */
-public abstract class SCMPollingDecisionHandler implements ExtensionPoint {
+public abstract class SCMDecisionHandler implements ExtensionPoint {
     /**
-     * Returns whether the new item should be polled.
+     * This handler is consulted every time someone tries to run a polling of an {@link Item}.
+     * If any of the registered handlers returns false, the {@link Item} will not be polled.
      *
      * @param item The item.
      */
     public abstract boolean shouldPoll(@Nonnull Item item);
 
     /**
-     * All registered {@link SCMPollingDecisionHandler}s
+     * All registered {@link SCMDecisionHandler}s
      */
     @Nonnull
-    public static ExtensionList<SCMPollingDecisionHandler> all() {
-        return ExtensionList.lookup(SCMPollingDecisionHandler.class);
+    public static ExtensionList<SCMDecisionHandler> all() {
+        return ExtensionList.lookup(SCMDecisionHandler.class);
     }
 
     /**
-     * Returns the first {@link SCMPollingDecisionHandler} that returns {@code false} from {@link #shouldPoll(Item)}
+     * Returns the first {@link SCMDecisionHandler} that returns {@code false} from {@link #shouldPoll(Item)}
      * @param item the item
      * @return the first veto or {@code null} if there are no vetos
      */
     @CheckForNull
-    public static SCMPollingDecisionHandler firstVeto(@Nonnull Item item) {
-        for (SCMPollingDecisionHandler handler : all()) {
+    public static SCMDecisionHandler firstShouldPollVeto(@Nonnull Item item) {
+        for (SCMDecisionHandler handler : all()) {
             if (!handler.shouldPoll(item)) {
                 return handler;
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the {@link SCMDecisionHandler} instances that return {@code false} from {@link #shouldPoll(Item)}
+     * @param item the item
+     * @return the {@link SCMDecisionHandler} instances vetoing the polling of the specified item.
+     */
+    @Nonnull
+    public static List<SCMDecisionHandler> listShouldPollVetos(@Nonnull Item item) {
+        List<SCMDecisionHandler> result = new ArrayList<>();
+        for (SCMDecisionHandler handler : all()) {
+            if (!handler.shouldPoll(item)) {
+                result.add(handler);
+            }
+        }
+        return result;
     }
 
 }
