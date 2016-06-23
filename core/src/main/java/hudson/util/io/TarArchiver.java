@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
+import org.apache.commons.compress.utils.BoundedInputStream;
 
 
 /**
@@ -99,37 +100,25 @@ final class TarArchiver extends Archiver {
         tar.putArchiveEntry(te);
         try {
             if (!file.isDirectory()) {
-                FileInputStream in = new FileInputStream(file);
-                try {
+                // ensure we don't write more bytes than the declared when we created the entry
+                try (BoundedInputStream in = new BoundedInputStream(new FileInputStream(file), size)) {
                     int len;
-                    int read = 0;
                     while ((len = in.read(buf)) >= 0) {
-                        if (len + read <= size) { // ensure we don't write more bytes than the declared when we created
-                                                  // the entry
-                            tar.write(buf, 0, len);
-                            read += len;
-                        } else {
-                            tar.write(buf, 0, (int) size - read);
-                            break;
-                        }
+                        tar.write(buf, 0, len);
                     }
                 } catch (IOException e) {// log the exception in any case
-                    LOGGER.log(Level.SEVERE, "Error writing to tar file from: " + file, e);
-                    throw e;
-                } finally {
-                    in.close();
+                    IOException ioE = new IOException("Error writing to tar file from: " + file, e);
+                    ioE.addSuppressed(e);
+                    throw ioE;
                 }
             }
         } finally { // always close the entry
             tar.closeArchiveEntry();
         }
-
         entriesWritten++;
     }
 
     public void close() throws IOException {
         tar.close();
     }
-
-    private static final Logger LOGGER = Logger.getLogger(TarArchiver.class.getName());
 }
