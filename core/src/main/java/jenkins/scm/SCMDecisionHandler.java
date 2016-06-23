@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
 /**
  * Extension point for various decisions about SCM operations for {@link Item} instances.
  *
- * @since TODO
+ * @since 2.11
  */
 public abstract class SCMDecisionHandler implements ExtensionPoint {
     /**
