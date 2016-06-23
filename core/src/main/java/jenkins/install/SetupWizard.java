@@ -484,8 +484,12 @@ public class SetupWizard extends PageDecorator {
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
             // Force root requests to the setup wizard
             if (request instanceof HttpServletRequest) {
-                HttpServletRequest req = (HttpServletRequest)request;
-                if((req.getContextPath() + "/").equals(req.getRequestURI())) {
+                HttpServletRequest req = (HttpServletRequest) request;
+                String requestURI = req.getRequestURI();
+                if (requestURI.equals(req.getContextPath()) && !requestURI.endsWith("/")) {
+                    ((HttpServletResponse) response).sendRedirect(req.getContextPath() + "/");
+                    return;
+                } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
                     Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
                         public String getRequestURI() {
