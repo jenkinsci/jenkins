@@ -1,9 +1,11 @@
 package hudson.PluginWrapper
 
+import jenkins.model.Jenkins
+
 def l = namespace(lib.LayoutTagLib)
 def f = namespace(lib.FormTagLib)
 
-l.layout {
+l.layout(permission: Jenkins.ADMINISTER) {
     def title = _("title", my.shortName)
     l.header(title:title)
     l.main_panel {

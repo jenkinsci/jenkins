@@ -27,7 +27,6 @@ import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Computer;
-import hudson.model.ItemGroupMixIn;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;
@@ -35,6 +34,7 @@ import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
 import java.util.concurrent.Callable;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -140,6 +140,7 @@ public class Nodes implements Saveable {
             });
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             persistNode(node);
+            NodeListener.fireOnCreated(node);
         }
     }
 
@@ -200,6 +201,31 @@ public class Nodes implements Saveable {
     }
 
     /**
+     * Replace node of given name.
+     *
+     * @return {@code true} if node was replaced.
+     * @since TODO
+     */
+    public boolean replaceNode(final Node oldOne, final @Nonnull Node newOne) throws IOException {
+        if (oldOne == nodes.get(oldOne.getNodeName())) {
+            // use the queue lock until Nodes has a way of directly modifying a single node.
+            Queue.withLock(new Runnable() {
+                public void run() {
+                    Nodes.this.nodes.remove(oldOne.getNodeName());
+                    Nodes.this.nodes.put(newOne.getNodeName(), newOne);
+                    jenkins.updateComputerList();
+                    jenkins.trimLabels();
+                }
+            });
+            updateNode(newOne);
+            NodeListener.fireOnUpdated(oldOne, newOne);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Removes a node. If the node instance is not in the list of nodes, then this will be a no-op, even if
      * there is another instance with the same {@link Node#getNodeName()}.
      *
@@ -224,6 +250,8 @@ public class Nodes implements Saveable {
             });
             // no need for a full save() so we just do the minimum
             Util.deleteRecursive(new File(getNodesDir(), node.getNodeName()));
+
+            NodeListener.fireOnDeleted(node);
         }
     }
 

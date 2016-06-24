@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -67,7 +68,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             // DEFAULT_NAME took this value prior to 1.598.
             return true;
         }
-        return DEFAULT_NAME.equals(name);
+        return DEFAULT_NAME.equals(name) || name == null;
     }
 
     /**
@@ -166,7 +167,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
     }
 
-    @Extension
+    @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {

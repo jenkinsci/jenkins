@@ -25,18 +25,14 @@
 package hudson.util.io;
 
 import hudson.Functions;
-import hudson.org.apache.tools.tar.TarOutputStream;
 import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
-import org.apache.tools.tar.TarEntry;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 

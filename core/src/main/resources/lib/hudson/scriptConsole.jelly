@@ -58,7 +58,7 @@ THE SOFTWARE.
           </j:if>
         </j:when>
         <j:otherwise>
-          ${%It is not possible to run scripts when slave is offline.}
+          ${%It is not possible to run scripts when agent is offline.}
         </j:otherwise>
       </j:choose>
     </l:main-panel>

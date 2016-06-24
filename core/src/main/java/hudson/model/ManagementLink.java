@@ -33,6 +33,9 @@ import jenkins.model.Jenkins;
 import java.util.List;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 /**
  * Extension point to add icon to <tt>http://server/hudson/manage</tt> page.
  *
@@ -59,7 +62,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      *      This is useful for defining {@link ManagementLink} that only shows up under
      *      certain circumstances.
      */
-    public abstract String getIconFileName();
+    public abstract @CheckForNull String getIconFileName();
 
     /**
      * Returns a short description of what this link does. This text
@@ -79,7 +82,8 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
      * In case of {@link ManagementLink}, this value is put straight into the href attribute,
      * so relative paths are interpreted against the root {@link Jenkins} object.
      */
-    public abstract String getUrlName();
+    @Override
+    public abstract @CheckForNull String getUrlName();
 
     /**
      * Allows implementations to request that this link show a confirmation dialog, and use POST if confirmed.
@@ -101,16 +105,16 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     public static final List<ManagementLink> LIST = ExtensionListView.createList(ManagementLink.class);
 
     /**
-     * All regsitered instances.
+     * All registered instances.
      */
-    public static ExtensionList<ManagementLink> all() {
+    public static @Nonnull ExtensionList<ManagementLink> all() {
         return ExtensionList.lookup(ManagementLink.class);
     }
 
     /**
      * @return permission required for user to access this management link, in addition to {@link Jenkins#ADMINISTER}
      */
-    public Permission getRequiredPermission() {
+    public @CheckForNull Permission getRequiredPermission() {
         return null;
     }
 

@@ -1,0 +1,170 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2016, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
+Michelin, Romain Seguy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+  <st:documentation>
+    Outer-most tag for a normal (non-AJAX) HTML rendering.
+    This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
+    to form Jenkins's basic HTML layout.
+
+    <st:attribute name="title" use="required">
+      Title of the HTML page. Rendered into &lt;title> tag.
+    </st:attribute>
+    <st:attribute name="norefresh">
+      If non-null and not "false", auto refresh is disabled on this page.
+      This is necessary for pages that include forms.
+    </st:attribute>
+    <st:attribute name="css" deprecated="true">
+      specify path that starts from "/" for loading additional CSS stylesheet.
+      path is interprted as relative to the context root. e.g.,
+
+      {noformat}&lt;l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">{noformat}
+
+      This was originally added to allow plugins to load their stylesheets, but
+      *the use of thie attribute is discouraged now.*
+      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
+      in &lt;l:header/> tag.
+    </st:attribute>
+    <st:attribute name="permission">
+      If given, this page is only made available to users that has the specified permission.
+      (The permission will be checked against the "it" object.)
+    </st:attribute>
+  </st:documentation>
+<st:setHeader name="Expires" value="0" />
+<st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
+<st:setHeader name="X-Hudson-Theme" value="default" />
+<st:contentType value="text/html;charset=UTF-8" />
+
+  <j:new var="h" className="hudson.Functions" /><!-- instead of JSP functions -->
+${h.initPageVariables(context)}
+<!--
+  depending on what tags are used, we can later end up discovering that we needed a session,
+  but it's too late because the headers are already committed. so ensure we always have a session.
+  this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
+  which I suspect can end up creating sessions for wrong resource types (such as static resources.)
+-->
+<j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
+<j:set var="_" value="${request.getSession()}"/>
+<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
+  <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
+  <j:if test="${request.servletPath=='/' || request.servletPath==''}">
+    ${h.advertiseHeaders(response)}
+    <j:if test="${extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="httpHeaders.jelly" optional="true"/>
+      </j:forEach>
+    </j:if>
+  </j:if>
+<x:doctype name="html" />
+<html>
+  <head data-rooturl="${rootURL}" data-resurl="${resURL}" resURL="${resURL}">
+    ${h.checkPermission(it,permission)}
+
+    <j:if test="${isMSIE}">
+      <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    </j:if>
+
+    <title>${h.appendIfNotNull(title, ' [Jenkins]', 'Jenkins')}</title>
+    <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
+    <j:if test="${attrs.css!=null}">
+      <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
+    </j:if>
+    <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="mask-icon" href="${rootURL}/images/mask-icon.svg" color="black" />
+
+    <!-- are we running as an unit test? -->
+    <script>var isRunAsTest=${h.isUnitTest}; var rootURL="${rootURL}"; var resURL="${resURL}";</script>
+
+    <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
+
+    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
+    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype"
+                includes="org.kohsuke.stapler.bind"/>
+
+    <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
+    <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
+    <l:yui module="yahoo" />
+    <l:yui module="dom" />
+    <l:yui module="event" />
+    <j:if test="${h.yuiSuffix=='debug'}">
+      <l:yui module="logger" />
+    </j:if>
+    <l:yui module="animation" />
+    <l:yui module="dragdrop" />
+    <l:yui module="container" />
+    <l:yui module="connection" />
+    <l:yui module="datasource" />
+    <l:yui module="autocomplete" />
+    <l:yui module="menu" />
+    <l:yui module="element" />
+    <l:yui module="button" />
+    <l:yui module="storage" />
+    <!--l:yui module="editor" suffix="-beta" /-->
+
+    <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
+    <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
+
+    <j:if test="${extensionsAvailable}">
+      <script>
+          crumb.init("${h.getCrumbRequestField()}", "${h.getCrumb(request)}");
+      </script>
+    </j:if>
+
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
+    <link rel="stylesheet" href="${resURL}/scripts/yui/assets/skins/sam/skin.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
+    <link rel="stylesheet" href="${resURL}/scripts/yui/button/assets/skins/sam/button.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
+    <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
+
+    <l:hasPermission permission="${app.READ}">
+      <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
+    </l:hasPermission>
+    <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <j:set var="mode" value="header" />
+    <d:invokeBody />
+    <j:if test="${extensionsAvailable}">
+      <j:forEach var="pd" items="${h.pageDecorators}">
+        <st:include it="${pd}" page="header.jelly" optional="true" />
+      </j:forEach>
+    </j:if>
+    
+    <j:if test="${isMSIE}">
+      <script src="${resURL}/scripts/msie.js" type="text/javascript"/>
+    </j:if>
+
+  </head>
+  <body id="jenkins" class="yui-skin-sam jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+      <div id="main-panel" style="margin-left: 0;">
+         <j:set var="mode" value="main-panel" />
+         <d:invokeBody />
+      </div>
+  </body>
+</html>
+</j:jelly>

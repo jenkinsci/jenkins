@@ -45,7 +45,7 @@ THE SOFTWARE.
               ${%The project was renamed recently and no build was done under the new name.}
             </li>
             <li>
-              ${%The slave this project has run on for the last time was removed.}
+              ${%The agent this project has run on for the last time was removed.}
             </li>
             <li>
               ${%li3(it.workspace)}

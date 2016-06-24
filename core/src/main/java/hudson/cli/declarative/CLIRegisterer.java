@@ -23,6 +23,7 @@
  */
 package hudson.cli.declarative;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
@@ -33,9 +34,10 @@ import hudson.model.Hudson;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.model.Jenkins;
-import hudson.remoting.Channel;
 import hudson.security.CliAuthenticator;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.jvnet.hudson.annotation_indexer.Index;
@@ -57,6 +59,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import static java.util.logging.Level.SEVERE;
+
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -152,6 +157,40 @@ public class CLIRegisterer extends ExtensionFinder {
                             return parser;
                         }
 
+                        /**
+                         * Envelope an annotated CLI command
+                         *
+                         * @param args
+                         *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
+                         *      then "foo" is the sub-command and the argument list is ["bar","zot"].
+                         * @param locale
+                         *      Locale of the client (which can be different from that of the server.) Good behaving command implementation
+                         *      would use this locale for formatting messages.
+                         * @param stdin
+                         *      Connected to the stdin of the CLI client.
+                         * @param stdout
+                         *      Connected to the stdout of the CLI client.
+                         * @param stderr
+                         *      Connected to the stderr of the CLI client.
+                         * @return
+                         *      Exit code from the CLI command execution
+                         *
+                         *      <p>
+                         *      Jenkins standard exit codes from CLI:
+                         *      0 means everything went well.
+                         *      1 means further unspecified exception is thrown while performing the command.
+                         *      2 means CmdLineException is thrown while performing the command.
+                         *      3 means IllegalArgumentException is thrown while performing the command.
+                         *      4 mean IllegalStateException is thrown while performing the command.
+                         *      5 means AbortException is thrown while performing the command.
+                         *      6 means AccessDeniedException is thrown while performing the command.
+                         *      7 means BadCredentialsException is thrown while performing the command.
+                         *      8-15 are reserved for future usage
+                         *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
+                         *
+                         *      <p>
+                         *      Note: For details - see JENKINS-32273
+                         */
                         @Override
                         public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
                             this.stdout = stdout;
@@ -167,13 +206,13 @@ public class CLIRegisterer extends ExtensionFinder {
                                 try {
                                     // authentication
                                     CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-                                    new ClassParser().parse(authenticator,parser);
+                                    new ClassParser().parse(authenticator, parser);
 
                                     // fill up all the binders
                                     parser.parseArgument(args);
 
                                     Authentication auth = authenticator.authenticate();
-                                    if (auth== Jenkins.ANONYMOUS)
+                                    if (auth == Jenkins.ANONYMOUS)
                                         auth = loadStoredAuthentication();
                                     sc.setAuthentication(auth); // run the CLI with the right credential
                                     hudson.checkPermission(Jenkins.READ);
@@ -196,10 +235,40 @@ public class CLIRegisterer extends ExtensionFinder {
                                     sc.setAuthentication(old); // restore
                                 }
                             } catch (CmdLineException e) {
-                                stderr.println(e.getMessage());
-                                printUsage(stderr,parser);
-                                return 1;
-                            } catch (Exception e) {
+                                stderr.println("");
+                                stderr.println("ERROR: " + e.getMessage());
+                                printUsage(stderr, parser);
+                                return 2;
+                            } catch (IllegalStateException e) {
+                                stderr.println("");
+                                stderr.println("ERROR: " + e.getMessage());
+                                return 4;
+                            } catch (IllegalArgumentException e) {
+                                stderr.println("");
+                                stderr.println("ERROR: " + e.getMessage());
+                                return 3;
+                            } catch (AbortException e) {
+                                stderr.println("");
+                                stderr.println("ERROR: " + e.getMessage());
+                                return 5;
+                            } catch (AccessDeniedException e) {
+                                stderr.println("");
+                                stderr.println("ERROR: " + e.getMessage());
+                                return 6;
+                            } catch (BadCredentialsException e) {
+                                // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
+                                // do that to the server log instead
+                                String id = UUID.randomUUID().toString();
+                                LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
+                                stderr.println("");
+                                stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+                                return 7;
+                            } catch (Throwable e) {
+                                final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
+                                        getName());
+                                stderr.println("");
+                                stderr.println("ERROR: " + errorMsg);
+                                LOGGER.log(Level.WARNING, errorMsg, e);
                                 e.printStackTrace(stderr);
                                 return 1;
                             }
@@ -214,7 +283,7 @@ public class CLIRegisterer extends ExtensionFinder {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(SEVERE, "Failed to discvoer @CLIMethod",e);
+            LOGGER.log(SEVERE, "Failed to discover @CLIMethod",e);
         }
 
         return r;

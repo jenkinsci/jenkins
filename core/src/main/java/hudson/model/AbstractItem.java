@@ -30,7 +30,6 @@ import hudson.XmlFile;
 import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
@@ -41,6 +40,7 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
+import hudson.util.Secret;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -55,11 +55,14 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.stapler.StaplerRequest;
@@ -72,12 +75,16 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 
 /**
@@ -601,9 +608,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             throws IOException {
         if (req.getMethod().equals("GET")) {
             // read
-            checkPermission(EXTENDED_READ);
             rsp.setContentType("application/xml");
-            IOUtils.copy(getConfigFile().getFile(),rsp.getOutputStream());
+            writeConfigDotXml(rsp.getOutputStream());
             return;
         }
         if (req.getMethod().equals("POST")) {
@@ -614,6 +620,33 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
         // huh?
         rsp.sendError(SC_BAD_REQUEST);
+    }
+
+    static final Pattern SECRET_PATTERN = Pattern.compile(">(" + Secret.ENCRYPTED_VALUE_PATTERN + ")<");
+    /**
+     * Writes {@code config.xml} to the specified output stream.
+     * The user must have at least {@link #EXTENDED_READ}.
+     * If he lacks {@link #CONFIGURE}, then any {@link Secret}s detected will be masked out.
+     */
+    @Restricted(NoExternalUse.class)
+    public void writeConfigDotXml(OutputStream os) throws IOException {
+        checkPermission(EXTENDED_READ);
+        XmlFile configFile = getConfigFile();
+        if (hasPermission(CONFIGURE)) {
+            IOUtils.copy(configFile.getFile(), os);
+        } else {
+            String encoding = configFile.sniffEncoding();
+            String xml = FileUtils.readFileToString(configFile.getFile(), encoding);
+            Matcher matcher = SECRET_PATTERN.matcher(xml);
+            StringBuffer cleanXml = new StringBuffer();
+            while (matcher.find()) {
+                if (Secret.decrypt(matcher.group(1)) != null) {
+                    matcher.appendReplacement(cleanXml, ">********<");
+                }
+            }
+            matcher.appendTail(cleanXml);
+            org.apache.commons.io.IOUtils.write(cleanXml.toString(), os, encoding);
+        }
     }
 
     /**
@@ -699,8 +732,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
 
-    /* (non-Javadoc)
-     * @see hudson.model.AbstractModelObject#getSearchName()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public String getSearchName() {

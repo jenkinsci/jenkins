@@ -23,6 +23,10 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.maven.MavenModuleSet;
@@ -41,6 +45,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.OfflineCause.UserCause;
 import hudson.util.TagCloud;
+import java.net.HttpURLConnection;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -251,7 +256,7 @@ public class NodeTest {
     public void testGetAssignedLabelWithJobs() throws Exception {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
-        MavenModuleSet mavenProject = j.createMavenProject();
+        MavenModuleSet mavenProject = j.jenkins.createProject(MavenModuleSet.class, "p");
         mavenProject.setAssignedLabel(j.jenkins.getLabel("label1"));
         RunLoadCounter.prepare(mavenProject);
         j.assertBuildStatus(Result.FAILURE, mavenProject.scheduleBuild2(0).get());
@@ -294,12 +299,12 @@ public class NodeTest {
         final Node node2 = j.createOnlineSlave();
         node1.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p1");
         final Label label = j.jenkins.getLabel("label1");
         project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
 
-        MavenModuleSet project2 = j.createMavenProject();
+        MavenModuleSet project2 = j.jenkins.createProject(MavenModuleSet.class, "p2");
         project2.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project2.scheduleBuild2(0).get());
 
@@ -316,7 +321,7 @@ public class NodeTest {
         final Node node = j.createOnlineSlave();
         node.setLabelString("label1");
 
-        MavenModuleSet project = j.createMavenProject();
+        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
         final Label label = j.jenkins.getLabel("label1");
         project.setAssignedLabel(label);
         j.assertBuildStatus(Result.FAILURE, project.scheduleBuild2(0).get());
@@ -404,6 +409,22 @@ public class NodeTest {
 
         TagCloud<LabelAtom> cloud = n.getLabelCloud();
         assertThatCloudLabelDoesNotContain(cloud, "label1 label2", 0);
+    }
+
+    @Issue("SECURITY-281")
+    @Test
+    public void masterComputerConfigDotXml() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.assertFails("computer/(master)/config.xml", HttpURLConnection.HTTP_BAD_REQUEST);
+        WebRequest settings = new WebRequest(wc.createCrumbedUrl("computer/(master)/config.xml"));
+        settings.setHttpMethod(HttpMethod.POST);
+        settings.setRequestBody("<hudson/>");
+        try {
+            Page page = wc.getPage(settings);
+            fail(page.getWebResponse().getContentAsString());
+        } catch (FailingHttpStatusCodeException x) {
+            assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, x.getStatusCode());
+        }
     }
 
     /**

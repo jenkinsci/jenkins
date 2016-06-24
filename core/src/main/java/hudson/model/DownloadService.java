@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
@@ -38,8 +39,11 @@ import static hudson.util.TimeUnit2.DAYS;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.DownloadSettings;
@@ -302,6 +306,24 @@ public class DownloadService extends PageDecorator {
         }
 
         /**
+         * URLs to download from.
+         */
+        public List<String> getUrls() {
+            List<String> updateSites = new ArrayList<String>();
+            for (UpdateSite site : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+                String siteUrl = site.getUrl();
+                int baseUrlEnd = siteUrl.indexOf("update-center.json");
+                if (baseUrlEnd != -1) {
+                    String siteBaseUrl = siteUrl.substring(0, baseUrlEnd);
+                    updateSites.add(siteBaseUrl + "updates/" + url);
+                } else {
+                    LOGGER.log(Level.WARNING, "Url {0} does not look like an update center:", siteUrl);
+                }
+            }
+            return updateSites;
+        }
+
+        /**
          * How often do we retrieve the new image?
          *
          * @return
@@ -364,15 +386,6 @@ public class DownloadService extends PageDecorator {
         }
 
         private FormValidation load(String json, long dataTimestamp) throws IOException {
-            JSONObject o = JSONObject.fromObject(json);
-
-            if (signatureCheck) {
-                FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
-                if (e.kind!= Kind.OK) {
-                    return e;
-                }
-            }
-
             TextFile df = getDataFile();
             df.write(json);
             df.file.setLastModified(dataTimestamp);
@@ -382,7 +395,78 @@ public class DownloadService extends PageDecorator {
 
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
-            return load(loadJSONHTML(new URL(getUrl() + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), System.currentTimeMillis());
+            List<JSONObject> jsonList = new ArrayList<>();
+            boolean toolInstallerMetadataExists = false;
+            for (String site : getUrls()) {
+                String jsonString;
+                try {
+                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
+                    toolInstallerMetadataExists = true;
+                } catch (Exception e) {
+                    LOGGER.log(Level.FINE, "Could not load json from " + site, e );
+                    continue;
+                }
+                JSONObject o = JSONObject.fromObject(jsonString);
+                if (signatureCheck) {
+                    FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
+                    if (e.kind!= Kind.OK) {
+                        LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
+                        continue;
+                    }
+                }
+                jsonList.add(o);
+            }
+            if (jsonList.size() == 0 && toolInstallerMetadataExists) {
+                return FormValidation.warning("None of the tool installer metadata passed the signature check");
+            } else if (!toolInstallerMetadataExists) {
+                LOGGER.log(Level.WARNING, "No tool installer metadata found for " + id);
+                return FormValidation.ok();
+            }
+            JSONObject reducedJson = reduce(jsonList);
+            return load(reducedJson.toString(), System.currentTimeMillis());
+        }
+
+        /**
+         * Function that takes multiple JSONObjects and returns a single one.
+         * @param jsonList to be processed
+         * @return a single JSONObject
+         */
+        public JSONObject reduce(List<JSONObject> jsonList) {
+            return jsonList.get(0);
+        }
+
+        /**
+         * check if the list of update center entries has duplicates
+         * @param genericList list of entries coming from multiple update centers
+         * @param comparator the unique ID of an entry
+         * @param <T> the generic class
+         * @return true if the list has duplicates, false otherwise
+         */
+        public static <T> boolean hasDuplicates (List<T> genericList, String comparator) {
+            if (genericList.isEmpty()) {
+                return false;
+            }
+            Field field;
+            try {
+                field = genericList.get(0).getClass().getDeclaredField(comparator);
+            } catch (NoSuchFieldException e) {
+                LOGGER.warning("comparator: " + comparator + "does not exist for " + genericList.get(0).getClass() + ", " + e);
+                return false;
+            }
+            for (int i = 0; i < genericList.size(); i ++ ) {
+                T data1 = genericList.get(i);
+                for (int j = i + 1; j < genericList.size(); j ++ ) {
+                    T data2 = genericList.get(j);
+                    try {
+                        if (field.get(data1).equals(field.get(data2))) {
+                            return true;
+                        }
+                    } catch (IllegalAccessException e) {
+                        LOGGER.warning("could not access field: " + comparator + ", " + e);
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -405,10 +489,10 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
-    public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
@@ -416,6 +500,6 @@ public class DownloadService extends PageDecorator {
      * Should only be used when {@link DownloadSettings#isUseBrowser};
      * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
-    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
+    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

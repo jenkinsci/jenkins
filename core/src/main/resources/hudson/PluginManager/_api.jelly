@@ -31,7 +31,7 @@ THE SOFTWARE.
 
   <h2>Making sure all the needed plugins are installed</h2>
   <p>
-    Jenkins uses an XML format for representing most of complex objects internally (such as slaves, views, jobs, and builds.)
+    Jenkins uses an XML format for representing most of complex objects internally (such as agents, views, jobs, and builds.)
     As such, it has various APIs that send/receive those XMLs. For example, you can create a new job by POSTing its XML representation.
     Starting 1.482, Jenkins annotates these XMLs with additional information indicating what plugins have been used in them.
     This improves the portability of those XML files.

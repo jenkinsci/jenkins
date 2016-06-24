@@ -23,12 +23,14 @@
  */
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -48,11 +50,10 @@ public class HelpCommand extends CLICommand {
     }
 
     @Override
-    protected int run() {
-        if (!Jenkins.getInstance().hasPermission(Jenkins.READ)) {
-            stderr.println("You must authenticate to access this Jenkins.\n"
+    protected int run() throws Exception {
+        if (!Jenkins.getActiveInstance().hasPermission(Jenkins.READ)) {
+            throw new AccessDeniedException("You must authenticate to access this Jenkins.\n"
                     + "Use --username/--password/--password-file parameters or login command.");
-            return -1;
         }
 
         if (command != null)
@@ -76,12 +77,11 @@ public class HelpCommand extends CLICommand {
         return 0;
     }
 
-    private int showCommandDetails() {
+    private int showCommandDetails() throws Exception {
         CLICommand command = CLICommand.clone(this.command);
         if (command == null) {
-            stderr.format("No such command %s. Awailable commands are: ", this.command);
             showAllCommands();
-            return -1;
+            throw new AbortException(String.format("No such command %s. Available commands are above. ", this.command));
         }
 
         command.printUsage(stderr, command.getCmdLineParser());

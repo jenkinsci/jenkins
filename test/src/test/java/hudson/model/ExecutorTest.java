@@ -140,18 +140,25 @@ public class ExecutorTest {
         assertEquals(b.getResult(), Result.FAILURE);
         assertThat(log, containsString("Finished: FAILURE"));
         assertThat(log, containsString("Build step 'BlockingBuilder' marked build as failure"));
-        assertThat(log, containsString("Slave went offline during the build"));
+        assertThat(log, containsString("Agent went offline during the build"));
         assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your buil"));
     }
 
-    private Future<FreeStyleBuild> startBlockingBuild(FreeStyleProject p) throws Exception {
+    /**
+     * Start a project with an infinite build step
+     *
+     * @param project {@link FreeStyleProject} to start
+     * @return A {@link Future} object represents the started build
+     * @throws Exception if somethink wrong happened
+     */
+    public static Future<FreeStyleBuild> startBlockingBuild(FreeStyleProject project) throws Exception {
         final OneShotEvent e = new OneShotEvent();
 
-        p.getBuildersList().add(new BlockingBuilder(e));
+        project.getBuildersList().add(new BlockingBuilder(e));
 
-        Future<FreeStyleBuild> r = p.scheduleBuild2(0);
+        Future<FreeStyleBuild> r = project.scheduleBuild2(0);
         e.block();  // wait until we are safe to interrupt
-        assertTrue(p.getLastBuild().isBuilding());
+        assertTrue(project.getLastBuild().isBuilding());
 
         return r;
     }

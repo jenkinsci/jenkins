@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
@@ -37,6 +38,7 @@ import hudson.remoting.ChannelProperty;
 import hudson.security.CliAuthenticator;
 import hudson.security.SecurityRealm;
 import jenkins.security.MasterToSlaveCallable;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
@@ -194,7 +196,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * to an empty method.
      * You would however then have to consider {@link CliAuthenticator} and {@link #getTransportAuthentication},
      * so this is not really recommended.
-     * 
+     *
      * @param args
      *      Arguments to the sub command. For example, if the CLI is invoked like "java -jar cli.jar foo bar zot",
      *      then "foo" is the sub-command and the argument list is ["bar","zot"].
@@ -208,7 +210,23 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @param stderr
      *      Connected to the stderr of the CLI client.
      * @return
-     *      Exit code from the command.
+     *      Exit code from the CLI command execution
+     *
+     *      <p>
+     *      Jenkins standard exit codes from CLI:
+     *      0 means everything went well.
+     *      1 means further unspecified exception is thrown while performing the command.
+     *      2 means CmdLineException is thrown while performing the command.
+     *      3 means IllegalArgumentException is thrown while performing the command.
+     *      4 mean IllegalStateException is thrown while performing the command.
+     *      5 means AbortException is thrown while performing the command.
+     *      6 means AccessDeniedException is thrown while performing the command.
+     *      7 means BadCredentialsException is thrown while performing the command.
+     *      8-15 are reserved for future usage
+     *      16+ mean a custom CLI exit error code (meaning defined by the CLI command itself)
+     *
+     *      <p>
+     *      Note: For details - see JENKINS-32273
      */
     public int main(List<String> args, Locale locale, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         this.stdin = new BufferedInputStream(stdin);
@@ -219,42 +237,65 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         CmdLineParser p = getCmdLineParser();
 
         // add options from the authenticator
-        SecurityContext sc = SecurityContextHolder.getContext();
-        Authentication old = sc.getAuthentication();
-
-        CliAuthenticator authenticator = Jenkins.getInstance().getSecurityRealm().createCliAuthenticator(this);
-        sc.setAuthentication(getTransportAuthentication());
-        new ClassParser().parse(authenticator,p);
-
+        SecurityContext sc = null;
+        Authentication old = null;
         try {
+            sc = SecurityContextHolder.getContext();
+            old = sc.getAuthentication();
+
+            CliAuthenticator authenticator = Jenkins.getActiveInstance().getSecurityRealm().createCliAuthenticator(this);
+            sc.setAuthentication(getTransportAuthentication());
+            new ClassParser().parse(authenticator,p);
+
             p.parseArgument(args.toArray(new String[args.size()]));
             Authentication auth = authenticator.authenticate();
             if (auth==Jenkins.ANONYMOUS)
                 auth = loadStoredAuthentication();
             sc.setAuthentication(auth); // run the CLI with the right credential
             if (!(this instanceof LoginCommand || this instanceof HelpCommand))
-                Jenkins.getInstance().checkPermission(Jenkins.READ);
+                Jenkins.getActiveInstance().checkPermission(Jenkins.READ);
             return run();
         } catch (CmdLineException e) {
-            stderr.println(e.getMessage());
+            stderr.println("");
+            stderr.println("ERROR: " + e.getMessage());
             printUsage(stderr, p);
-            return -1;
+            return 2;
+        } catch (IllegalStateException e) {
+            stderr.println("");
+            stderr.println("ERROR: " + e.getMessage());
+            return 4;
+        } catch (IllegalArgumentException e) {
+            stderr.println("");
+            stderr.println("ERROR: " + e.getMessage());
+            return 3;
         } catch (AbortException e) {
             // signals an error without stack trace
-            stderr.println(e.getMessage());
-            return -1;
+            stderr.println("");
+            stderr.println("ERROR: " + e.getMessage());
+            return 5;
+        } catch (AccessDeniedException e) {
+            stderr.println("");
+            stderr.println("ERROR: " + e.getMessage());
+            return 6;
         } catch (BadCredentialsException e) {
             // to the caller, we can't reveal whether the user didn't exist or the password didn't match.
             // do that to the server log instead
             String id = UUID.randomUUID().toString();
-            LOGGER.log(Level.INFO, "CLI login attempt failed: "+id, e);
-            stderr.println("Bad Credentials. Search the server log for "+id+" for more details.");
-            return -1;
-        } catch (Exception e) {
+            LOGGER.log(Level.INFO, "CLI login attempt failed: " + id, e);
+            stderr.println("");
+            stderr.println("ERROR: Bad Credentials. Search the server log for " + id + " for more details.");
+            return 7;
+        } catch (Throwable e) {
+            final String errorMsg = String.format("Unexpected exception occurred while performing %s command.",
+                    getName());
+            stderr.println("");
+            stderr.println("ERROR: " + errorMsg);
+            LOGGER.log(Level.WARNING, errorMsg, e);
             e.printStackTrace(stderr);
-            return -1;
+            return 1;
         } finally {
-            sc.setAuthentication(old); // restore
+            if(sc != null)
+                sc.setAuthentication(old); // restore
         }
     }
 
@@ -343,13 +384,22 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * To execute CLI method from outside, use {@link #main(List, Locale, InputStream, PrintStream, PrintStream)}
      *
      * @return
-     *      0 to indicate a success, otherwise an error code.
-     * @throws AbortException
-     *      If the processing should be aborted. Hudson will report the error message
-     *      without stack trace, and then exits this command.
+     *      0 to indicate a success, otherwise a custom error code.
+     *      Error codes 1-15 shouldn;t be used in {@link #run()} as a custom error code.
      * @throws Exception
-     *      All the other exceptions cause the stack trace to be dumped, and then
-     *      the command exits with an error code.
+     *      If a further unspecified exception is thrown; means: Unknown and/or unexpected issue occurred
+     * @throws CmdLineException
+     *      If a wrong parameter specified, input value can't be decoded etc.
+     * @throws IllegalArgumentException
+     *      If the execution can't continue due to wrong input parameter (job doesn't exist etc.)
+     * @throws IllegalStateException
+     *      If the execution can't continue due to an incorect state of Jenkins, job, build etc.
+     * @throws AbortException
+     *      If the execution can't continue due to an other (rare, but foreseeable) issue
+     * @throws AccessDeniedException
+     *      If the caller doesn't have sufficent rights for requested action
+     * @throws BadCredentialsException
+     *      If bad credentials were provided to CLI
      */
     protected abstract int run() throws Exception;
 
@@ -418,7 +468,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
 
         public String call() throws IOException {
-            return System.getProperty(name);
+            return SystemProperties.getString(name);
         }
 
         private static final long serialVersionUID = 1L;
@@ -474,9 +524,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected CLICommand createClone() {
         try {
             return getClass().newInstance();
-        } catch (IllegalAccessException e) {
-            throw new AssertionError(e);
-        } catch (InstantiationException e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             throw new AssertionError(e);
         }
     }
@@ -486,7 +534,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     protected void registerOptionHandlers() {
         try {
-            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getInstance().pluginManager.uberClassLoader,Class.class)) {
+            for (Class c : Index.list(OptionHandlerExtension.class, Jenkins.getActiveInstance().pluginManager.uberClassLoader,Class.class)) {
                 Type t = Types.getBaseClass(c, OptionHandler.class);
                 CmdLineParser.registerHandler(Types.erasure(Types.getTypeArgument(t,0)), c);
             }
@@ -538,7 +586,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getActiveInstance();
         if (j!=null) {// only when running on the master
             cls.put(j.getPluginManager().uberClassLoader);
 

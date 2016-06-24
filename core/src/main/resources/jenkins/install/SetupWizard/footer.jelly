@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <j:if test="${!app.installState.setupComplete}">
+    <st:include it="${app.setupWizard}" page="wizard-ui" />
+  </j:if>
+</j:jelly>

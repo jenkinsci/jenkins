@@ -24,10 +24,12 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
+import jenkins.util.SystemProperties;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.slaves.CommandLauncher;
@@ -51,8 +53,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 
@@ -64,13 +68,14 @@ import jenkins.slaves.WorkspaceLocator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Information about a Hudson slave node.
+ * Information about a Hudson agent node.
  *
  * <p>
  * Ideally this would have been in the <tt>hudson.slaves</tt> package,
@@ -78,19 +83,24 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * <p>
  * TODO: move out more stuff to {@link DumbSlave}.
+ * 
+ * On Febrary, 2016 a general renaming was done internally: the "slave" term was replaced by
+ * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
+ * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
+ * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
     /**
-     * Name of this slave node.
+     * Name of this agent node.
      */
     protected String name;
 
     /**
      * Description of this node.
      */
-    private final String description;
+    private String description;
 
     /**
      * Path to the root of the workspace from the view point of this node, such as "/hudson", this need not
@@ -110,15 +120,15 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Job allocation strategy.
      */
-    private Mode mode;
+    private Mode mode = Mode.NORMAL;
 
     /**
-     * Slave availablility strategy.
+     * Agent availablility strategy.
      */
     private RetentionStrategy retentionStrategy;
 
     /**
-     * The starter that will startup this slave.
+     * The starter that will startup this agent.
      */
     private ComputerLauncher launcher;
 
@@ -136,7 +146,7 @@ public abstract class Slave extends Node implements Serializable {
     private transient volatile Set<Label> labels;
 
     /**
-     * Id of user which creates this slave {@link User}.
+     * Id of user which creates this agent {@link User}.
      */
     private String userId;
 
@@ -154,6 +164,16 @@ public abstract class Slave extends Node implements Serializable {
     	this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
 
+    public Slave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+        this.name = name;
+        this.remoteFS = remoteFS;
+        this.launcher = launcher;
+    }
+
+    /**
+     * @deprecated as of 1.XXX
+     *      Use {@link #Slave(String, String, ComputerLauncher)} and set the rest through setters.
+     */
     public Slave(@Nonnull String name, String nodeDescription, String remoteFS, int numExecutors,
                  Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws FormException, IOException {
         this.name = name;
@@ -170,7 +190,7 @@ public abstract class Slave extends Node implements Serializable {
          Slave node = (Slave) Jenkins.getInstance().getNode(name);
 
        if(node!=null){
-            this.userId= node.getUserId(); //slave has already existed
+            this.userId= node.getUserId(); //agent has already existed
         }
        else{
             User user = User.current();
@@ -187,7 +207,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Return id of user which created this slave
+     * Return id of user which created this agent
      *
      * @return id of user
      */
@@ -223,6 +243,11 @@ public abstract class Slave extends Node implements Serializable {
         this.name = name;
     }
 
+    @DataBoundSetter
+    public void setNodeDescription(String value) {
+        this.description = value;
+    }
+
     public String getNodeDescription() {
         return description;
     }
@@ -231,10 +256,16 @@ public abstract class Slave extends Node implements Serializable {
         return numExecutors;
     }
 
+    @DataBoundSetter
+    public void setNumExecutors(int n) {
+        this.numExecutors = n;
+    }
+
     public Mode getMode() {
         return mode;
     }
 
+    @DataBoundSetter
     public void setMode(Mode mode) {
         this.mode = mode;
     }
@@ -244,10 +275,16 @@ public abstract class Slave extends Node implements Serializable {
     	return nodeProperties;
     }
 
+    @DataBoundSetter
+    public void setNodeProperties(List<? extends NodeProperty<?>> properties) throws IOException {
+        nodeProperties.replaceBy(properties);
+    }
+
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
 
+    @DataBoundSetter
     public void setRetentionStrategy(RetentionStrategy availabilityStrategy) {
         this.retentionStrategy = availabilityStrategy;
     }
@@ -257,6 +294,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     @Override
+    @DataBoundSetter
     public void setLabelString(String labelString) throws IOException {
         this.label = Util.fixNull(labelString).trim();
         // Compute labels now.
@@ -297,7 +335,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Root directory on this slave where all the job workspaces are laid out.
+     * Root directory on this agent where all the job workspaces are laid out.
      * @return
      *      null if not connected.
      */
@@ -339,7 +377,16 @@ public abstract class Slave extends Node implements Serializable {
 
         public URL getURL() throws MalformedURLException {
             String name = fileName;
-            if (name.equals("hudson-cli.jar"))  name="jenkins-cli.jar";
+            
+            // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
+            if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
+                throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
+            }
+            
+            if (name.equals("hudson-cli.jar"))  {
+                name="jenkins-cli.jar";
+            }
+            
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
@@ -360,7 +407,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     /**
-     * Creates a launcher for the slave.
+     * Creates a launcher for the agent.
      *
      * @return
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
@@ -369,7 +416,7 @@ public abstract class Slave extends Node implements Serializable {
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
-            listener.error("Issue with creating launcher for slave " + name + ".");
+            listener.error("Issue with creating launcher for agent " + name + ".");
             return new Launcher.DummyLauncher(listener);
         } else {
             return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
@@ -426,7 +473,7 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         /**
-         * Performs syntactical check on the remote FS for slaves.
+         * Performs syntactical check on the remote FS for agents.
          */
         public FormValidation doCheckRemoteFS(@QueryParameter String value) throws IOException, ServletException {
             if(Util.fixEmptyAndTrim(value)==null)
@@ -512,5 +559,10 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Determines the workspace root file name for those who really really need the shortest possible path name.
      */
-    private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
+    private static final String WORKSPACE_ROOT = SystemProperties.getString(Slave.class.getName()+".workspaceRoot","workspace");
+
+    /**
+     * Provides a collection of file names, which are accessible via /jnlpJars link.
+     */
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

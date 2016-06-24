@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -45,11 +47,15 @@ import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
 import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.CauseOfBlockage;
+import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.ScheduleResult;
 import hudson.model.queue.SubTask;
 import hudson.security.ACL;
+import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.Permission;
+import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.DummyCloudImpl;
@@ -62,23 +68,6 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTrigger;
@@ -90,11 +79,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
-
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
-
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -106,10 +94,30 @@ import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.servlet.ServletHandler;
-import org.mortbay.jetty.servlet.ServletHolder;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -275,12 +283,12 @@ public class QueueTest {
 
 
         Server server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(new ServletHolder(new FileItemPersistenceTestServlet()),"/");
-        server.addHandler(handler);
+        server.setHandler(handler);
 
         server.start();
 
@@ -297,6 +305,7 @@ public class QueueTest {
         }
     }
 
+    @Issue("JENKINS-33467")
     @Test public void foldableCauseAction() throws Exception {
         final OneShotEvent buildStarted = new OneShotEvent();
         final OneShotEvent buildShouldComplete = new OneShotEvent();
@@ -340,14 +349,13 @@ public class QueueTest {
         StringBuilder causes = new StringBuilder();
         for (Cause c : ca.getCauses()) causes.append(c.getShortDescription() + "\n");
         assertEquals("Build causes should have all items, even duplicates",
-                "Started by user SYSTEM\nStarted by an SCM change\n"
-                + "Started by user SYSTEM\nStarted by timer\n"
+                "Started by user SYSTEM\nStarted by user SYSTEM\n"
+                + "Started by an SCM change\nStarted by an SCM change\nStarted by an SCM change\n"
+                + "Started by timer\nStarted by timer\n"
+                + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 1.2.3.4 with note: test\n"
                 + "Started by remote host 4.3.2.1 with note: test\n"
-                + "Started by an SCM change\n"
-                + "Started by remote host 1.2.3.4 with note: test\n"
-                + "Started by remote host 1.2.3.4 with note: foo\n"
-                + "Started by an SCM change\nStarted by timer\n",
+                + "Started by remote host 1.2.3.4 with note: foo\n",
                 causes.toString());
 
         // View for build should group duplicates
@@ -361,11 +369,12 @@ public class QueueTest {
                         + "Started by remote host 1.2.3.4 with note: test (2 times) "
                         + "Started by remote host 4.3.2.1 with note: test "
                         + "Started by remote host 1.2.3.4 with note: foo"));
+        System.out.println(new XmlFile(new File(build.getRootDir(), "build.xml")).asString());
     }
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
@@ -390,13 +399,13 @@ public class QueueTest {
         r.jenkins.clouds.add(cloud);
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
-        MatrixProject m = r.createMatrixProject();
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.setAxes(new AxisList(new LabelAxis("label", Arrays.asList("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getApproximateItemsQuickly().toString()).initCause(x);
+            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -562,18 +571,17 @@ public class QueueTest {
         FreeStyleBuild b = v.waitForStart();
         assertEquals(1,b.getNumber());
         assertTrue(b.isBuilding());
-        assertSame(p,b.getProject());
+        assertSame(p, b.getProject());
 
         ev.signal();    // let the build complete
         FreeStyleBuild b2 = r.assertBuildStatusSuccess(v);
-        assertSame(b,b2);
+        assertSame(b, b2);
     }
 
     /**
      * Make sure that the running build actually carries an credential.
      */
     @Test public void accessControl() throws Exception {
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -600,7 +608,6 @@ public class QueueTest {
         DumbSlave s1 = r.createSlave();
         DumbSlave s2 = r.createSlave();
 
-        r.configureUserRealm();
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
@@ -734,12 +741,10 @@ public class QueueTest {
             public void run() {
                    try {
                        Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       e.printStackTrace();
-                   } catch (ServletException e) {
+                   } catch (IOException | ServletException e) {
                        e.printStackTrace();
                    }
-                }
+            }
             }, 2, TimeUnit.SECONDS);
 
         try {
@@ -789,7 +794,7 @@ public class QueueTest {
      * and the flyweight task will be executed.
      */
     public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject();
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
         ));
@@ -804,7 +809,7 @@ public class QueueTest {
 
     @Test
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
-        MatrixProject matrixProject = r.createMatrixProject("downstream");
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
         matrixProject.setDisplayName("downstream");
         matrixProject.setAxes(new AxisList(
                 new Axis("axis", "a", "b")
@@ -890,5 +895,70 @@ public class QueueTest {
 
         @TestExtension("shouldBeAbleToBlockFlyWeightTaskOnLastMinute")
         public static class DescriptorImpl extends NodePropertyDescriptor {}
+    }
+
+    @Test
+    public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
+
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
+        str.add(Jenkins.READ, "bob");
+        str.add(Jenkins.READ, "alice");
+        str.add(Jenkins.READ, "james");
+        r.jenkins.setAuthorizationStrategy(str);
+
+        FreeStyleProject project = r.createFreeStyleProject("project");
+
+        Map<Permission, Set<String>> permissions = new HashMap<Permission, Set<String>>();
+        permissions.put(Item.READ, Collections.singleton("bob"));
+        permissions.put(Item.DISCOVER, Collections.singleton("james"));
+        AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
+        project.addProperty(prop1);
+        project.getBuildersList().add(new SleepBuilder(10));
+        project.scheduleBuild2(0);
+
+        JenkinsRule.WebClient webClient = r.createWebClient();
+        webClient.login("bob", "bob");
+        XmlPage p = webClient.goToXml("queue/api/xml");
+
+        //bob has permission on the project and will be able to see it in the queue together with information such as the URL and the name.
+        for (DomNode element: p.getFirstChild().getFirstChild().getChildNodes()){
+            if (element.getNodeName().equals("task")) {
+                for (DomNode child: ((DomElement) element).getChildNodes()) {
+                    if (child.getNodeName().equals("name")) {
+                        assertEquals(child.asText(), "project");
+                    } else if (child.getNodeName().equals("url")) {
+                        assertNotNull(child.asText());
+                    }
+                }
+            }
+        }
+        webClient = r.createWebClient();
+        webClient.login("alice");
+        XmlPage p2 = webClient.goToXml("queue/api/xml");
+        //alice does not have permission on the project and will not see it in the queue.
+        assertTrue(p2.getByXPath("/queue/node()").isEmpty());
+        webClient = r.createWebClient();
+        webClient.login("james");
+        XmlPage p3 = webClient.goToXml("queue/api/xml");
+
+        //james has DISCOVER permission on the project and will only be able to see the task name.
+        List projects = p3.getByXPath("/queue/discoverableItem/task/name/text()");
+        assertEquals(1, projects.size());
+        assertEquals("project", projects.get(0).toString());
+    }
+
+    //we force the project not to be executed so that it stays in the queue
+    @TestExtension("queueApiOutputShouldBeFilteredByUserPermission")
+    public static class MyQueueTaskDispatcher extends QueueTaskDispatcher {
+        @Override
+        public CauseOfBlockage canTake(Node node, Queue.BuildableItem item) {
+            return new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "blocked by canTake";
+                }
+            };
+        }
     }
 }

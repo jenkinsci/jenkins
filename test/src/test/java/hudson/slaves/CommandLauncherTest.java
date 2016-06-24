@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 
 public class CommandLauncherTest {
 
@@ -47,6 +46,7 @@ public class CommandLauncherTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
+    // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("false");
@@ -57,7 +57,7 @@ public class CommandLauncherTest {
         assertThat(log, not(containsString("ERROR: Process terminated with exit code 0")));
     }
 
-    @RandomlyFails("Sometimes gets `EOFException: unexpected stream termination` before then on CI builder; maybe needs to wait in a loop for a message to appear?")
+    // TODO Sometimes gets `EOFException: unexpected stream termination` before then on CI builder; maybe needs to wait in a loop for a message to appear?
     @Test
     public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());

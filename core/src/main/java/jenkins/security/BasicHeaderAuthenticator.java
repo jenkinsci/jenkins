@@ -2,7 +2,6 @@ package jenkins.security;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import javax.servlet.ServletException;

@@ -1,15 +1,30 @@
 <div>
-    Specify where Jenkins would store job workspaces on the master node.
-    (It has no effect on builds run on slaves.)
-    This value can include the following variables.
-
-    <ul>
-        <li><tt>${JENKINS_HOME}</tt> &mdash; Jenkins home directory.
-        <li><tt>${ITEM_ROOTDIR}</tt> &mdash; Root directory of a job for which the default workspace is allocated.
-        <li><tt>${ITEM_FULL_NAME}</tt> &mdash; '/'-separated job name, like "foo/bar".
-    </ul>
-
+    Specifies where Jenkins will store workspaces for builds that are executed
+    on the master.<br>
+    It has no effect on builds that are executed on agents.
     <p>
-    Changing this value allows you to put workspaces on SSD, SCSI, or even ram disks.
-    Default value is <tt>${ITEM_ROOTDIR}/workspace</tt>.
+    This value may include the following variables:
+    <ul>
+        <li><tt>${JENKINS_HOME}</tt> &mdash; Absolute path of the Jenkins home
+            directory
+        <li><tt>${ITEM_ROOTDIR}</tt> &mdash; Absolute path of the directory
+            where Jenkins stores the configuration and related metadata for a
+            given job
+        <li><tt>${ITEM_FULL_NAME}</tt> &mdash; The full name of a given job,
+            which may be slash-separated, e.g. <tt>foo/bar</tt> for the job
+            <tt>bar</tt> in folder <tt>foo</tt>
+    </ul>
+    The value should normally include <tt>${ITEM_ROOTDIR}</tt> or
+    <tt>${ITEM_FULL_NAME}</tt>, otherwise different jobs will end up sharing the
+    same workspace.
+    <p>
+    As builds tend to be disk I/O intensive, changing this value enables you to
+    put build workspaces on faster storage hardware, such as SSDs or even RAM
+    disks.
+    <p>
+    Any changes to this value will take effect as soon as this configuration
+    page is saved, but note that Jenkins will not automatically migrate any data
+    from the current workspace root directory.
+    <p>
+    The default value is <tt>${ITEM_ROOTDIR}/workspace</tt>.
 </div>

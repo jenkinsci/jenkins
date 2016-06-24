@@ -24,13 +24,18 @@
  */
 package hudson;
 
+import hudson.model.Hudson;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.LenientRunnable;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.recipes.Recipe;
 
+import java.io.File;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Alan Harder
@@ -42,6 +47,26 @@ public class ClassicPluginStrategyTest extends HudsonTestCase {
         useLocalPluginManager = true;
         super.setUp();
     }
+
+    @Override
+    protected Hudson newHudson() throws Exception {
+        File home = homeLoader.allocate();
+        
+        for (Recipe.Runner r : recipes) {
+            r.decorateHome(this,home);
+        }
+        LocalPluginManager pluginManager = new LocalPluginManager(home) {
+            @Override
+            protected Collection<String> loadBundledPlugins() {
+                // Overriding so we can force loading of the detached plugins for testing
+                Set<String> names = new LinkedHashSet<>();
+                names.addAll(loadPluginsFromWar("/WEB-INF/plugins"));
+                names.addAll(loadPluginsFromWar("/WEB-INF/detached-plugins"));
+                return names;
+            }
+        };
+        return new Hudson(home, createWebServer(), pluginManager);
+     }
 
     /**
      * Test finding resources via DependencyClassLoader.

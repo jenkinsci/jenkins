@@ -1,0 +1,365 @@
+/*
+ * Tab bar specific rules.
+ */
+
+.jenkins-config-widgets {
+  position: relative;
+  border:1px solid @solid-border;
+  border-bottom:none;
+  background:@light-backgrond;
+  min-height:2.5em;
+  .border-radius-top(@radius);
+  z-index:5;
+
+  nav:before, nav:after {
+    display: none;
+  }
+  
+  :hover .noTabs{
+    color:#bbb;
+  }
+  .noTabs:hover,
+  .showTabs:hover {
+    opacity: 0.8;
+    background:#bbb;
+    color:@light-backgrond;
+    text-shadow:none    
+  }
+
+  @find-container-width: 200px;
+  .find-container {
+    margin:0;
+    display:none;
+  }
+  
+  .showTabs,
+  .noTabs {
+    position: absolute;
+    border-radius: @radius;
+    right: 5px;
+    top: 5px;
+    cursor: pointer;
+    color: @solid-border;
+    text-shadow: @brightest 0 1px 2px;
+    font-size: 0.85em;
+    padding: 3px 7px;
+    display:none;
+  }
+
+  .form-config.tabBarFrame {
+    position: relative;
+    border-bottom: solid 1px @solid-border;
+
+    .config-section-activators {
+      margin: 0;
+      padding: 5px 0 0;
+      display: block;
+      list-style: none;
+    }
+
+    .tabBar {
+      .tab {
+        border: solid 1px transparent;
+        color: #999;
+        padding: 7px 10px;
+        .border-radius-top(5px);
+        cursor: pointer;
+        margin: 1px 0 0 10px;
+        text-decoration: none;
+      }
+      .tab:hover {
+        background:#bbb; color:@brightest;
+      }
+      .tab.active {
+        background: @bright;
+        color: #000;
+        font-weight: bold;
+        z-index: 2;
+        border:1px solid @solid-border;
+        border-bottom:1px solid @bright
+      }
+    }
+
+  }
+
+  .form-config.tabBarFrame.mouse-over {
+    .noTabs {
+      display: inline;
+    }
+    .noTabs:hover {
+      opacity: 0.8;
+    }
+  }
+
+}
+#jenkins{
+  .jenkins-config {
+    border:1px solid @solid-border;
+    padding:10px;
+    border-top:none;
+    background:@bright;
+    .border-radius-bottom(@radius);
+
+    .showTabs{
+      display:block;
+      text-align:right;
+
+    }
+
+    table.config-table {
+      .section-header-row {
+        background: none;
+        border-color: transparent
+      }
+      .section-header {
+        margin-top: 10px;
+      }
+    }
+
+    table {
+      border-collapse:collapse;
+
+      .bottom-sticker-edge {
+        display:none;
+      }
+      .bottom-sticker-inner{
+        padding: 20px 10px 25px 20px;
+        border-top-right-radius: 10px;
+        border: 1px solid @line-green;
+        background: @pale-green-trans;
+      }
+
+      .bottom-sticker,
+      #bottom-sticker{ 
+        width: auto;
+        margin-left: -10px;
+        overflow: hidden;
+        padding-bottom: 10px;
+        margin: 30px 30px -25px -15px;
+        z-index:9;
+        
+        .cover{
+          position:absolute;
+          top:0;
+          bottom:0;
+          left:0;
+          right:0;
+          z-index:2;
+        }
+        .yui-button.primary{
+          button{
+            background:@middle-blue;
+            border-color:@dark-blue;
+          }
+        }
+        .yui-button.yui-button-disabled{
+          button{
+            background:@light-backgrond;
+            border-color:@solid-border;
+            color:@solid-border;
+          }
+        }
+
+        .yui-button{
+          margin-right:10px;
+          
+          button{
+            padding:5px 20px;
+            background:@pale-blue;
+            border-color:@line-blue;
+          }
+        }
+      }
+
+      .section-header{
+        margin: 30px 0px 5px -10px;
+        font-size: 1.5em;
+        padding: 10px 15px;
+        border: none;
+        border-top: 1px solid #ddd;
+      }
+      .attach-previous {
+        margin-left:3px;
+      }
+      .validation-error-area td{
+        padding:0 5px;
+      }
+
+      .stapler-class-bag td {
+        padding: 0px;
+      }
+      
+      td.setting-name{
+        line-height:29px;
+      }
+      td.setting-main{
+        input[type='radio'],
+        input[type='checkbox']{
+          position:relative;
+          top:.33em;
+        }
+      }
+      td{
+        padding:5px;
+        
+        textarea.setting-input {
+          display:block;
+        }
+        
+        .yui-button button,
+        input[type='email'].setting-input,
+        input[type='password'].setting-input,
+        input[type='text'].setting-input{
+          height:@input-line-height;
+          line-height:@input-line-height;
+          padding:0 5px;
+          .border-radius(@radius);
+        }
+        .yui-button button{
+          padding:0 10px;
+          box-sizing:content-box;
+        }
+        
+        .yui-button button.hetero-list-add{
+          padding-right:25px;
+        }
+        
+        select:not([multiple]){
+          height:@input-line-height;
+          line-height:@input-line-height;
+        }
+        select{
+          border-radius:0;
+          background:@brightest;
+        }
+        .help{
+          background:@medium-translucent;
+        }
+        p,
+        .help,
+        .setting-description {
+          font-size:1em;
+          line-height:1.4;
+        } 
+      }
+      td[colspan="4"]:empty{
+        display:none
+      }
+      td.setting-help{
+        vertical-align:top;
+        padding:5px 10px 5px 5px
+      }
+      td.setting-leftspace:after {
+        content:' '; 
+        display:block; 
+        width:13px; 
+        height:1px;
+      }
+      .repeated-chunk,
+      tr[nameref^="rowSetStart"],
+      tr[nameref^="cb"],
+      tr[nameref^="radio-block"] {
+        background:@shade-hint; 
+        border-left:5px solid @shade
+      }
+      .hetero-list-container,
+      .repeated-container,
+      tr.optional-block-start,
+      tr.radio-block-start {
+        border-left:5px solid @shade; 
+        background:none;
+      }
+      tr.help-area {
+        background:none !important;
+        
+        td {
+          padding:0 5px
+        }
+      }
+      .CodeMirror {
+        background:@brightest;
+  
+      }
+      .CodeMirror-scroll {
+          border:1px solid @solid-border !important;
+      }
+      .repeated-container > .repeated-chunk {padding-top:15px;}
+      .repeated-chunk.hover{ 
+        border-color:@line-blue; 
+        box-shadow:0 2px 10px @shade, inset 0 200px 200px -200px @brightest; 
+        position:relative; 
+        z-index:2
+      }
+      .repeated-chunk.dragging{
+        position:static;
+      }
+      .repeated-chunk{
+        border:1px solid @shade;
+        margin:2px;
+        position:relative;
+      }  
+      .repeatable-delete {
+        position: absolute;
+        top: -4px;
+        right: 40px;
+        height: 20px;
+        width: 30px;
+
+        button {
+          text-align: center;
+          text-indent: -9999px;
+          width: 30px !important;
+          height: 18px !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          .border-radius-top(0) !important;
+          background-color: @danger;
+          color: @light-backgrond;
+          border: 1px solid @danger-line;
+          line-height: 12px !important;
+          display: inline-block;
+          font-size: 8px;
+        }
+
+        button:focus,
+        button:hover {
+          background-color: @danger-dark;
+          border-color: @danger-dark-line;
+          color: @brightest;
+        }
+
+        button:before {
+          content: 'X';
+          font-weight: bold;
+          position: absolute;
+          display: block;
+          left: 0;
+          top: 2;
+          width: 30px;
+          height: 16px;
+          text-align: center;
+          font-size: 12px;
+          text-indent: 0;
+        }
+
+      }
+    }
+
+    span.highlight {
+      background-color: #ffff00;
+    }
+  }
+}
+#ygddfdiv {
+  background:@light-backgrond;
+  border:1px solid @line-blue !important;
+  opacity:.5;
+}
+
+.yui-skin-sam .yuimenu {
+  z-index: 9999 !important
+}
+
+.yui-skin-sam .yui-button-disabled {
+  opacity: .75
+}

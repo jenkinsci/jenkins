@@ -89,6 +89,7 @@ THE SOFTWARE.
             readonly="${attrs.readonly}"
             codemirror-mode="${attrs['codemirror-mode']}"
             codemirror-config="${attrs['codemirror-config']}">
+    <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
     <st:out value="${value}" />
   </textarea>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">

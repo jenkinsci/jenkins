@@ -62,6 +62,7 @@ import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -250,8 +251,6 @@ public class Maven extends Builder {
                 seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
             }
 
-            if(Functions.isWindows())
-                seed += ".bat";
             return seed;
         }
     }
@@ -388,7 +387,7 @@ public class Maven extends Builder {
     @Deprecated
     public static DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("maven")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
@@ -607,9 +606,7 @@ public class Maven extends Builder {
         public boolean getExists() {
             try {
                 return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
-            } catch (IOException e) {
-                return false;
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 return false;
             }
         }
@@ -624,7 +621,7 @@ public class Maven extends Builder {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
             @Override
             public String getDisplayName() {
@@ -682,7 +679,7 @@ public class Maven extends Builder {
             super(id);
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
             public String getDisplayName() {
                 return Messages.InstallFromApache();

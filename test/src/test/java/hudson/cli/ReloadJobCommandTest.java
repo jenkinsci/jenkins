@@ -30,7 +30,6 @@ import hudson.model.Job;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,9 +67,9 @@ public class ReloadJobCommandTest {
                 .authorizedTo(Job.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Job/Configure permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Job/Configure permission"));
 
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
     }
@@ -87,9 +86,9 @@ public class ReloadJobCommandTest {
                 .authorizedTo(Job.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job \u2018aProject\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such job \u2018aProject\u2019 exists."));
 
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
     }
@@ -117,9 +116,9 @@ public class ReloadJobCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created");
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such job \u2018never_created\u2019 exists."));
     }
 
     @Test public void reloadJobShouldFailIfJobDoesNotExistButNearExists() throws Exception {
@@ -129,9 +128,9 @@ public class ReloadJobCommandTest {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("never_created1");
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?"));
+        assertThat(result.stderr(), containsString("ERROR: No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?"));
     }
 
     @Test public void reloadJobManyShouldSucceed() throws Exception {
@@ -162,7 +161,59 @@ public class ReloadJobCommandTest {
         assertThat(project3.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
     }
 
-    @Test public void reloadJobManyShouldFailIfAJobDoesNotExist() throws Exception {
+    @Test public void reloadJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
+
+        FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
+        project1.getBuildersList().add(new Shell("echo 1"));
+        FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
+        project2.getBuildersList().add(new Shell("echo 1"));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+
+        changeProjectOnTheDisc(project1, "echo 1", "echo 2");
+        changeProjectOnTheDisc(project2, "echo 1", "echo 2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .invokeWithArgs("never_created", "aProject1", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+    }
+
+    @Test public void reloadJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
+
+        FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
+        project1.getBuildersList().add(new Shell("echo 1"));
+        FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
+        project2.getBuildersList().add(new Shell("echo 1"));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+
+        changeProjectOnTheDisc(project1, "echo 1", "echo 2");
+        changeProjectOnTheDisc(project2, "echo 1", "echo 2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .invokeWithArgs("aProject1", "never_created", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+    }
+
+    @Test public void reloadJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
         project1.getBuildersList().add(new Shell("echo 1"));
@@ -179,9 +230,37 @@ public class ReloadJobCommandTest {
                 .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
-        assertThat(result, failedWith(1));
+        assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
+    }
+
+    @Test public void reloadJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
+
+        FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
+        project1.getBuildersList().add(new Shell("echo 1"));
+        FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
+        project2.getBuildersList().add(new Shell("echo 1"));
+
+        assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+        assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
+
+        changeProjectOnTheDisc(project1, "echo 1", "echo 2");
+        changeProjectOnTheDisc(project2, "echo 1", "echo 2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.CONFIGURE, Jenkins.READ)
+                .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created1: No such job \u2018never_created1\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created2: No such job \u2018never_created2\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));

@@ -1,7 +1,6 @@
 package hudson.init;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
-import org.jvnet.hudson.reactor.Task;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -12,6 +11,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
+ * Like {@link Initializer} but used during the shut down.
+ *
  * @author Kohsuke Kawaguchi
  */
 @Indexed

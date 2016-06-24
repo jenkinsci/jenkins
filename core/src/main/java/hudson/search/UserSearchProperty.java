@@ -6,6 +6,7 @@ import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 
@@ -32,7 +33,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
     }
     
 
-    @Extension
+    @Extension @Symbol("search")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
             return Messages.UserSearchProperty_DisplayName();

@@ -1,0 +1,40 @@
+<div class="modal-header closeable">
+  <h4 class="modal-title">{{translations.installWizard_installCustom_title}}</h4>
+</div>
+<div class="modal-body plugin-selector">
+  <div class="categories col-sm-3">
+  <ul class="nav">
+    {{#each categories}}
+    <li><a href="#{{id this}}" class="select-category">{{this}}</a></li>
+    {{/each}}
+  </ul>
+  </div>
+  <div class="plugins col-sm-9">
+    <div class="plugin-select-controls">
+      <span class="plugin-select-actions">
+        <a href="#" class="plugin-select-all">{{translations.installWizard_installCustom_selectAll}}</a>
+        <a href="#" class="plugin-select-none">{{translations.installWizard_installCustom_selectNone}}</a>
+        <a href="#" class="plugin-select-recommended">{{translations.installWizard_installCustom_selectRecommended}}</a>
+      </span>
+      <span class="plugin-search-controls">
+        <input type="text" name="searchbox" class="form-control" />
+        <a href="#" class="clear-search">&times;</a>
+      </span>
+      <span id="plugin-selected-info" class="plugin-selected-info" data-selected-plugins="{{#each selectedPlugins}}{{this}},{{/each}}">
+        <a href="#" class="plugin-show-selected">{{translations.installWizard_installCustom_selected}}</a> {{totalPluginCount}}
+      </span>
+    </div>
+        <div class="plugin-list">
+            <div class="plugin-list-description">{{{translations.installWizard_installCustom_pluginListDesc}}}</div>
+        {{> pluginSelectList}}
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-link install-home">
+    {{translations.installWizard_goBack}}
+  </button>
+  <button type="button" class="btn btn-primary install-selected">
+    {{translations.installWizard_goInstall}}
+  </button>
+</div>

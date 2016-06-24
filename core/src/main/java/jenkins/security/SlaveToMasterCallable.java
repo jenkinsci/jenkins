@@ -1,13 +1,11 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
-import org.jenkinsci.remoting.Role;
 import org.jenkinsci.remoting.RoleChecker;
 
-import java.util.Collection;
 
 /**
- * Convenient {@link Callable} that are meant to run on the master (sent by slave/CLI/etc).
+ * Convenient {@link Callable} that are meant to run on the master (sent by agent/CLI/etc).
  *
  * @author Kohsuke Kawaguchi
  * @since 1.THU

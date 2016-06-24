@@ -37,7 +37,9 @@ import jenkins.model.Jenkins;
  *
  * <p>
  * This class makes such tracking easy by hiding this logic.
+ * @deprecated Disabled by default: JENKINS-35098
  */
+@Deprecated
 final class AutoBrowserHolder {
     private int cacheGeneration;
     private RepositoryBrowser cache;

@@ -23,7 +23,6 @@
  */
 package hudson.model;
 
-import hudson.slaves.SlaveComputer;
 
 /**
  * A listener for task related events from executors.

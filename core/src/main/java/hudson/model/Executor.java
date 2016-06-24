@@ -433,10 +433,7 @@ public class Executor extends Thread implements ModelObject {
         } catch (InterruptedException e) {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
-        } catch(Exception e) {
-            causeOfDeath = e;
-            LOGGER.log(SEVERE, "Unexpected executor death", e);
-        } catch (Error e) {
+        } catch(Exception | Error e) {
             causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
@@ -466,7 +463,9 @@ public class Executor extends Thread implements ModelObject {
     }
 
     private void finish2() {
-        for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
+        for (RuntimeException e1 : owner.getTerminatedBy()) {
+            LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
+        }
         if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
             owner.removeExecutor(this);
         }
@@ -956,8 +955,9 @@ public class Executor extends Thread implements ModelObject {
      *          or null if it could not be found (for example because the execution has already completed)
      * @since 1.607
      */
-    public static @CheckForNull Executor of(Executable executable) {
-        Jenkins jenkins = Jenkins.getInstance();
+    @CheckForNull
+    public static Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (jenkins == null) {
             return null;
         }

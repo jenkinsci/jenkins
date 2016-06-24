@@ -61,6 +61,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -95,7 +96,7 @@ public class MavenTest {
     }
 
     @Test public void withNodeProperty() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -124,7 +125,7 @@ public class MavenTest {
     }
 
     @Test public void withParameter() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -158,7 +159,7 @@ public class MavenTest {
      * Simulates the addition of the new Maven via UI and makes sure it works.
      */
     @Test public void globalConfigAjax() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("configure");
+        HtmlPage p = j.createWebClient().goTo("configureTools");
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
         b.click();
@@ -270,7 +271,7 @@ public class MavenTest {
 
     @Issue("JENKINS-26684")
     @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
-        MavenInstallation maven = j.configureMaven3();
+        MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Maven("--help", maven.getName()));

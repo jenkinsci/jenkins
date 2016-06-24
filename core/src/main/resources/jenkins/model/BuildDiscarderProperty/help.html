@@ -1,0 +1,51 @@
+<div>
+  This determines when, if ever, build records for this project should be
+  discarded. Build records include the console output, archived artifacts, and
+  any other metadata related to a particular build.
+  <p>
+  Keeping fewer builds means less disk space will be used in the <i>Build Record
+  Root Directory</i>, which is specified on the <i>Configure System</i> screen.
+  <p>
+  <!-- TODO: Most/all of the following should be dynamic, showing info from the
+       `BuildDiscarder` implementations that are currently loaded -->
+  Jenkins offers two options for determining when builds should be discarded:
+  <ol>
+    <li>
+      Build age: discard builds if they reach a certain age; for example, seven
+      days old.
+    <li>
+      Build count: discard the oldest build if a certain number of builds
+      already exist.
+  </ol>
+  These two options can be active at the same time, so you can keep builds for
+  14 days, but only up to a limit of 50 builds, for example.  If either limit is
+  exceeded, then any builds beyond that limit will be discarded.
+  <p>
+  You can also ensure that important builds are kept forever, regardless of the
+  setting here &mdash; click the <i>Keep this build forever</i> button on the
+  build page.
+  <br>
+  The last stable and last successful build are also excluded from these rules.
+
+  <hr>
+
+  In the <i>Advanced</i> section, the same options can be specified, but
+  specifically for build <b>artifacts</b>.  If enabled, build artifacts will be
+  discarded for any builds which exceed the defined limits.  The builds
+  themselves will still be kept; only the associated artifacts, if any, will be
+  deleted.
+  <p>
+  For example, if a project builds some software and produces a large installer,
+  which is archived, you may wish to always keep the console log and information
+  about which source control commit was built, while for disk space reasons, you
+  may want to keep only the last three installers that were built.
+  <br>
+  This can make sense for projects where you can easily recreate the same
+  artifacts later by building the same source control commit again.
+
+  <hr>
+
+  Note that Jenkins does not discard items immediately when this configuration
+  is updated, or as soon as any of the configured values are exceeded; these
+  rules are evaluated each time that a build of this project completes.
+</div>

@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import jenkins.util.SystemProperties;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
 import hudson.remoting.Channel.Mode;
@@ -39,7 +40,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -154,7 +154,7 @@ abstract public class FullDuplexHttpChannel {
      * Set to true if the servlet container doesn't support chunked encoding.
      */
     @Restricted(NoExternalUse.class)
-    public static boolean DIY_CHUNKING = Boolean.getBoolean("hudson.diyChunking");
+    public static boolean DIY_CHUNKING = SystemProperties.getBoolean("hudson.diyChunking");
 
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.

@@ -47,7 +47,6 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
@@ -110,7 +109,7 @@ public class ListViewTest {
 
     @Issue("JENKINS-20415")
     @Test public void nonTopLevelItemGroup() throws Exception {
-        MatrixProject mp = j.createMatrixProject();
+        MatrixProject mp = j.jenkins.createProject(MatrixProject.class, "mp");
         mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
         assertEquals(2, mp.getItems().size());
         ListView v = new ListView("v");
