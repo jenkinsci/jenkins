@@ -418,7 +418,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Nonnull
     public static List<String> getComputerNames() {
         final ArrayList<String> names = new ArrayList<String>();
-        for (Computer c : Jenkins.getActiveInstance().getComputers()) {
+        for (Computer c : Jenkins.getInstance().getComputers()) {
             if (!c.getName().isEmpty()) {
                 names.add(c.getName());
             }
