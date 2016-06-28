@@ -35,6 +35,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.bouncycastle.asn1.bc.BCObjectIdentifiers.bc;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,8 +88,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void autoProvision() throws Exception {
-        BulkChange bc = new BulkChange(r.jenkins);
-        try {
+        try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(10);
 
 
@@ -98,8 +99,6 @@ public class NodeProvisionerTest {
 
             // since there's only one job, we expect there to be just one slave
             assertEquals(1,cloud.numProvisioned);
-        } finally {
-            bc.abort();
         }
     }
 
@@ -108,8 +107,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void loadSpike() throws Exception {
-        BulkChange bc = new BulkChange(r.jenkins);
-        try {
+        try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
 
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
@@ -117,8 +115,6 @@ public class NodeProvisionerTest {
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
             assertEquals(5,cloud.numProvisioned);
-        } finally {
-            bc.abort();
         }
     }
 
@@ -127,8 +123,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
-        BulkChange bc = new BulkChange(r.jenkins);
-        try {
+        try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             // add slaves statically upfront
             r.createSlave().toComputer().connect(false).get();
@@ -138,8 +133,6 @@ public class NodeProvisionerTest {
 
             // we should have used two static slaves, thus only 3 slaves should have been provisioned
             assertEquals(3,cloud.numProvisioned);
-        } finally {
-            bc.abort();
         }
     }
 
@@ -148,8 +141,7 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void labels() throws Exception {
-        BulkChange bc = new BulkChange(r.jenkins);
-        try {
+        try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             Label blue = r.jenkins.getLabel("blue");
             Label red = r.jenkins.getLabel("red");
@@ -175,8 +167,6 @@ public class NodeProvisionerTest {
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
                 assertFalse(bb.isDone());
-        } finally {
-            bc.abort();
         }
     }
 

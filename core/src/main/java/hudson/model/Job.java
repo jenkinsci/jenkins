@@ -436,15 +436,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             removeProperty(BuildDiscarderProperty.class);
             if (bd != null) {
                 addProperty(new BuildDiscarderProperty(bd));
             }
             bc.commit();
-        } finally {
-            bc.abort();
         }
     }
 
