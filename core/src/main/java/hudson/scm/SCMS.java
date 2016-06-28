@@ -56,7 +56,7 @@ public class SCMS {
      */
     @SuppressWarnings("deprecation")
     public static SCM parseSCM(StaplerRequest req, AbstractProject target) throws FormException, ServletException {
-        SCM scm = req.bindJSON(SCM.class, req.getSubmittedForm().getJSONObject("scm"));
+        SCM scm = SCM.all().newInstanceFromRadioList(req.getSubmittedForm().getJSONObject("scm"));
         scm.getDescriptor().generation++;
         return scm;
     }
