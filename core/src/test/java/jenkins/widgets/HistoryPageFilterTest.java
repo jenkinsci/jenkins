@@ -23,11 +23,7 @@
  */
 package jenkins.widgets;
 
-import hudson.model.Job;
-import hudson.model.MockItem;
-import hudson.model.ModelObject;
-import hudson.model.Result;
-import hudson.model.Run;
+import hudson.model.*;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
 import org.junit.Assert;
@@ -49,7 +45,7 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_empty_page() {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = new ArrayList<>();
 
         historyPageFilter.add(itemList);
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
@@ -64,15 +60,10 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_partial_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> runs = newRuns(1, 2);
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
 
-        itemList.addAll(newRuns(1, 2));
-        itemList.addAll(newQueueItems(3, 4));
-
-        // want to make sure the list items are ordered by id in descending order
-        Assert.assertEquals(HistoryPageEntry.getEntryId(1), HistoryPageEntry.getEntryId(itemList.get(0)));
-        historyPageFilter.add(itemList);
-        Assert.assertEquals(4, HistoryPageEntry.getEntryId(itemList.get(0)));
+        historyPageFilter.add(runs, queueItems);
 
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
         Assert.assertEquals(false, historyPageFilter.hasDownPage);
@@ -93,12 +84,10 @@ public class HistoryPageFilterTest {
     @Test
     public void test_latest_longer_list() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> runs = newRuns(1, 10);
+        List<Queue.Item> queueItems = newQueueItems(11, 12);
 
-        itemList.addAll(newRuns(1, 10));
-        itemList.addAll(newQueueItems(11, 12));
-
-        historyPageFilter.add(itemList);
+        historyPageFilter.add(runs, queueItems);
 
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
         Assert.assertEquals(true, historyPageFilter.hasDownPage);
@@ -117,9 +106,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 11L);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
@@ -137,9 +125,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 0L);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(true, historyPageFilter.hasUpPage);
@@ -154,9 +141,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_leaving_part_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 4L);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(true, historyPageFilter.hasUpPage);
@@ -175,9 +161,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_olderThan_mid_page() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, 8L);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(true, historyPageFilter.hasUpPage);
@@ -194,9 +179,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_gt_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 11L, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
@@ -211,9 +195,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_lt_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 0L, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(true, historyPageFilter.hasUpPage);
@@ -230,9 +213,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_oldest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 3L, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(true, historyPageFilter.hasUpPage);
@@ -251,9 +233,8 @@ public class HistoryPageFilterTest {
     @Test
     public void test_newerThan_near_newest() throws IOException {
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 8L, null);
-        List<ModelObject> itemList = new ArrayList<ModelObject>();
+        List<ModelObject> itemList = newRuns(1, 10);
 
-        itemList.addAll(newRuns(1, 10));
         historyPageFilter.add(itemList);
 
         Assert.assertEquals(false, historyPageFilter.hasUpPage);
@@ -264,8 +245,51 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
 
-    private List<ModelObject> newQueueItems(long startId, long endId) {
-        List<ModelObject> items = new ArrayList<ModelObject>();
+    /**
+     * Test newerThan (page up) mid range when there are queued builds that are new enough to
+     * not show up.
+     */
+    @Test
+    public void test_newerThan_doesntIncludeQueuedItems() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, 5L, null);
+        List<ModelObject> runs = newRuns(1, 10);
+        List<Queue.Item> queueItems = newQueueItems(11, 12);
+
+        historyPageFilter.add(runs, queueItems);
+
+        Assert.assertEquals(true, historyPageFilter.hasUpPage);
+        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertEquals(0, historyPageFilter.queueItems.size());
+        Assert.assertEquals(5, historyPageFilter.runs.size());
+
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.runs.get(0).getEntryId());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
+    }
+
+    /**
+     * Test that later items in the list that are not needed for display are not evaluated at all (for performance).
+     */
+    @Test
+    public void test_laterItemsNotEvaluated() throws IOException {
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        List<ModelObject> itemList = newRuns(6, 10);
+        for (int queueId = 5; queueId >= 1; queueId--) {
+            itemList.add(new ExplodingMockRun(queueId));
+        }
+
+        historyPageFilter.add(itemList);
+
+        Assert.assertEquals(false, historyPageFilter.hasUpPage);
+        Assert.assertEquals(true, historyPageFilter.hasDownPage);
+        Assert.assertEquals(5, historyPageFilter.runs.size());
+
+        Assert.assertEquals(HistoryPageEntry.getEntryId(10), historyPageFilter.newestOnPage);
+        Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
+    }
+
+    private List<Queue.Item> newQueueItems(long startId, long endId) {
+        List<Queue.Item> items = new ArrayList<>();
         for (long queueId = startId; queueId <= endId; queueId++) {
             items.add(new MockItem(queueId));
         }
@@ -273,15 +297,16 @@ public class HistoryPageFilterTest {
     }
 
     private List<ModelObject> newRuns(long startId, long endId) throws IOException {
-        List<ModelObject> runs = new ArrayList<ModelObject>();
-        for (long queueId = startId; queueId <= endId; queueId++) {
+        // Runs should be in reverse order, newest first.
+        List<ModelObject> runs = new ArrayList<>();
+        for (long queueId = endId; queueId >= startId; queueId--) {
             runs.add(new MockRun(queueId));
         }
         return runs;
     }
 
     private HistoryPageFilter<ModelObject> newPage(int maxEntries, Long newerThan, Long olderThan) {
-        HistoryPageFilter<ModelObject> pageFilter = new HistoryPageFilter<ModelObject>(maxEntries);
+        HistoryPageFilter<ModelObject> pageFilter = new HistoryPageFilter<>(maxEntries);
         if (newerThan != null) {
             pageFilter.setNewerThan(HistoryPageEntry.getEntryId(newerThan));
         } else if (olderThan != null) {
@@ -322,6 +347,25 @@ public class HistoryPageFilterTest {
         @Override
         public int getNumber() {
             return (int) queueId;
+        }
+    }
+
+    // A version of MockRun that will throw an exception if getQueueId or getNumber is called
+    private static class ExplodingMockRun extends MockRun {
+        public ExplodingMockRun(long queueId) throws IOException {
+            super(queueId);
+        }
+
+        @Override
+        public long getQueueId() {
+            Assert.fail("Should not get called");
+            return super.getQueueId();
+        }
+
+        @Override
+        public int getNumber() {
+            Assert.fail("Should not get called");
+            return super.getNumber();
         }
     }
 }
