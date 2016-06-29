@@ -64,6 +64,8 @@ import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -493,7 +495,8 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @Nonnull
-        public List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
+        @Restricted(NoExternalUse.class) // intedned for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
+        public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
                     Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(
                             ComputerLauncher.class);
@@ -509,7 +512,9 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @Nonnull
-        public List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
+        @SuppressWarnings("unchecked") // used by Jelly EL only
+        @Restricted(NoExternalUse.class) // used by Jelly EL only
+        public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
             return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
                     : DescriptorVisibilityFilter.apply(it, RetentionStrategy.all());
         }
@@ -521,9 +526,10 @@ public abstract class Slave extends Node implements Serializable {
          * @return the filtered list
          * @since 2.12
          */
-        @SuppressWarnings("unchecked")
         @Nonnull
-        public List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
+        @SuppressWarnings("unchecked") // used by Jelly EL only
+        @Restricted(NoExternalUse.class) // used by Jelly EL only
+        public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
             List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
             Collection<NodePropertyDescriptor> list =
                     (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);

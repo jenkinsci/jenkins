@@ -3,15 +3,16 @@ package hudson.model;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCMDescriptor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.ExtensionFilter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import jenkins.util.SystemProperties;
 
 /**
  * Hides {@link Descriptor}s from users.
@@ -76,16 +77,24 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.finer("Querying " + f + " for visibility of " + d + " in " + context);
                 }
-                if (contextClass != null && !f.filterType(contextClass, d)) {
-                    if (LOGGER.isLoggable(Level.CONFIG)) {
-                        LOGGER.config("Filter " + f + " hides " + d + " in contexts of type " + contextClass);
+                try {
+                    if (contextClass != null && !f.filterType(contextClass, d)) {
+                        if (LOGGER.isLoggable(Level.CONFIG)) {
+                            LOGGER.config("Filter " + f + " hides " + d + " in contexts of type " + contextClass);
+                        }
+                        continue OUTER; // veto-ed. not shown
                     }
-                    continue OUTER; // veto-ed. not shown
-                }
-                if (!f.filter(context,d)) {
-                    if (LOGGER.isLoggable(Level.CONFIG)) {
-                       LOGGER.config("Filter " + f + " hides " + d + " in context " + context);
+                    if (!f.filter(context, d)) {
+                        if (LOGGER.isLoggable(Level.CONFIG)) {
+                            LOGGER.config("Filter " + f + " hides " + d + " in context " + context);
+                        }
+                        continue OUTER; // veto-ed. not shown
                     }
+                } catch (Error e) {
+                    LOGGER.log(Level.WARNING, "Encountered error while processing filter " + f + " for context " + context, e);
+                    throw e;
+                } catch (Throwable e) {
+                    LOGGER.log(logLevelFor(f), "Uncaught exception from filter " + f + " for context " + context, e);
                     continue OUTER; // veto-ed. not shown
                 }
             }
@@ -107,15 +116,58 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.finer("Querying " + f + " for visibility of " + d + " in type " + contextClass);
                 }
-                if (contextClass != null && !f.filterType(contextClass, d)) {
-                    if (LOGGER.isLoggable(Level.CONFIG)) {
-                        LOGGER.config("Filter " + f + " hides " + d + " in contexts of type " + contextClass);
+                try {
+                    if (contextClass != null && !f.filterType(contextClass, d)) {
+                        if (LOGGER.isLoggable(Level.CONFIG)) {
+                            LOGGER.config("Filter " + f + " hides " + d + " in contexts of type " + contextClass);
+                        }
+                        continue OUTER; // veto-ed. not shown
                     }
+                } catch (Error e) {
+                    LOGGER.log(Level.WARNING,
+                            "Encountered error while processing filter " + f + " for contexts of type " + contextClass, e);
+                    throw e;
+                } catch (Throwable e) {
+                    LOGGER.log(logLevelFor(f), "Uncaught exception from filter " + f + " for context of type " + contextClass, e);
                     continue OUTER; // veto-ed. not shown
                 }
             }
             r.add(d);
         }
         return r;
+    }
+
+    /**
+     * Returns the {@link Level} to log an uncaught exception from a {@link DescriptorVisibilityFilter}. We
+     * need to suppress repeated exceptions as there can be many invocations of the {@link DescriptorVisibilityFilter}
+     * triggered by the UI and spamming the logs would be bad.
+     *
+     * @param f the {@link DescriptorVisibilityFilter}.
+     * @return the level to report uncaught exceptions at.
+     */
+    private static Level logLevelFor(DescriptorVisibilityFilter f) {
+        Long interval = SystemProperties.getLong(
+                DescriptorVisibilityFilter.class.getName() + ".badFilterLogWarningIntervalMinutes",
+                60L);
+        // the healthy path will never see this synchronized block
+        synchronized (ResourceHolder.BAD_FILTERS) {
+            Long lastTime = ResourceHolder.BAD_FILTERS.get(f);
+            if (lastTime == null || lastTime + TimeUnit.MINUTES.toMillis(interval) < System.currentTimeMillis()) {
+                ResourceHolder.BAD_FILTERS.put(f, System.currentTimeMillis());
+                return Level.WARNING;
+            } else {
+                return Level.FINE;
+            }
+        }
+    }
+
+    /**
+     * Lazy initialization singleton for the map of bad filters. Should never be instantiated in a healthy instance.
+     */
+    private static final class ResourceHolder {
+        /**
+         * The last time we complained in the logs about specific filters.
+         */
+        private static final WeakHashMap<DescriptorVisibilityFilter, Long> BAD_FILTERS = new WeakHashMap<>();
     }
 }
