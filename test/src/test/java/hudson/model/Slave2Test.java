@@ -59,7 +59,7 @@ import org.jvnet.hudson.test.TestExtension;
  * has an index.
  * @author Oleg Nenashev
  */
-public class SlaveTest2 {
+public class Slave2Test {
     
     @Rule
     public JenkinsRule rule = new JenkinsRule();
