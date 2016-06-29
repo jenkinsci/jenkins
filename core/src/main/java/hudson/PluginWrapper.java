@@ -209,10 +209,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
             this.shortName = s.substring(0,idx);
-            this.version = s.substring(idx+1);
-            
+            String version = s.substring(idx+1);
+
             boolean isOptional = false;
-            String[] osgiProperties = s.split(";");
+            String[] osgiProperties = version.split("[;]");
             for (int i = 1; i < osgiProperties.length; i++) {
                 String osgiProperty = osgiProperties[i].trim();
                 if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
@@ -220,6 +220,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 }
             }
             this.optional = isOptional;
+            if (isOptional) {
+                this.version = osgiProperties[0];
+            } else {
+                this.version = version;
+            }
         }
 
         @Override
