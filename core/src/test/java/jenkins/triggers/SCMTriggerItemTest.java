@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -20,6 +21,7 @@ import jenkins.scm.SCMDecisionHandler;
 public class SCMTriggerItemTest {
 
     @Test
+    @Issue("JENKINS-36232")
     @PrepareForTest(SCMDecisionHandler.class)
     public void noVetoDelegatesPollingToAnSCMedItem() {
         // given
