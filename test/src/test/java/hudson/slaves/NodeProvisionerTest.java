@@ -36,7 +36,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.bouncycastle.asn1.bc.BCObjectIdentifiers.bc;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
