@@ -96,8 +96,7 @@ public class SetupWizard extends PageDecorator {
             // difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
-                BulkChange bc = new BulkChange(jenkins);
-                try{
+                try (BulkChange bc = new BulkChange(jenkins)) {
                     HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                     jenkins.setSecurityRealm(securityRealm);
                     String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
@@ -130,8 +129,6 @@ public class SetupWizard extends PageDecorator {
                 
                     jenkins.save(); // !!
                     bc.commit();
-                } finally {
-                    bc.abort();
                 }
             }
     

@@ -2306,13 +2306,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @RequirePOST
     public @Nonnull HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             JSONObject json = req.getSubmittedForm();
             submit(json);
             bc.commit();
-        } finally {
-            bc.abort();
         }
         return FormApply.success(".");
     }
