@@ -33,8 +33,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
@@ -101,14 +99,15 @@ final class TarArchiver extends Archiver {
         try {
             if (!file.isDirectory()) {
                 // ensure we don't write more bytes than the declared when we created the entry
-                try (BoundedInputStream in = new BoundedInputStream(new FileInputStream(file), size)) {
+                
+                try (FileInputStream fin = new FileInputStream(file);
+                     BoundedInputStream in = new BoundedInputStream(fin, size)) {
                     int len;
                     while ((len = in.read(buf)) >= 0) {
                         tar.write(buf, 0, len);
                     }
                 } catch (IOException e) {// log the exception in any case
                     IOException ioE = new IOException("Error writing to tar file from: " + file, e);
-                    ioE.addSuppressed(e);
                     throw ioE;
                 }
             }
