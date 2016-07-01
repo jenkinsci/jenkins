@@ -23,15 +23,35 @@
  */
 package hudson.model;
 
+import hudson.DescriptorExtensionList;
+import hudson.ExtensionList;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.slaves.RetentionStrategy;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
+import java.util.HashSet;
+import java.util.Set;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
+
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * Tests for the {@link Slave} class.
@@ -95,5 +115,79 @@ public class Slave2Test {
         JenkinsRule.WebClient client = rule.createWebClient();
         assertEquals(200, client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getStatusCode());
         assertEquals(200, client.getPage(jnlpJar.getURL()).getWebResponse().getStatusCode());
+    }
+
+    @Test
+    @Issue("JENKINS-36280")
+    public void launcherFiltering() throws Exception {
+        DumbSlave.DescriptorImpl descriptor =
+                rule.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
+                rule.getInstance().getDescriptorList(ComputerLauncher.class);
+        assumeThat("we need at least two launchers to test this", descriptors.size(), not(anyOf(is(0), is(1))));
+        assertThat(descriptor.computerLauncherDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+
+        Descriptor<ComputerLauncher> victim = descriptors.iterator().next();
+        assertThat(descriptor.computerLauncherDescriptors(null), hasItem(victim));
+        DynamicFilter.descriptors().add(victim);
+        assertThat(descriptor.computerLauncherDescriptors(null), not(hasItem(victim)));
+        DynamicFilter.descriptors().remove(victim);
+        assertThat(descriptor.computerLauncherDescriptors(null), hasItem(victim));
+    }
+
+    @Test
+    @Issue("JENKINS-36280")
+    public void retentionFiltering() throws Exception {
+        DumbSlave.DescriptorImpl descriptor =
+                rule.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
+        assumeThat("we need at least two retention strategies to test this", descriptors.size(), not(anyOf(is(0), is(1))));
+        assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+
+        Descriptor<RetentionStrategy<?>> victim = descriptors.iterator().next();
+        assertThat(descriptor.retentionStrategyDescriptors(null), hasItem(victim));
+        DynamicFilter.descriptors().add(victim);
+        assertThat(descriptor.retentionStrategyDescriptors(null), not(hasItem(victim)));
+        DynamicFilter.descriptors().remove(victim);
+        assertThat(descriptor.retentionStrategyDescriptors(null), hasItem(victim));
+    }
+
+    @Test
+    @Issue("JENKINS-36280")
+    public void propertyFiltering() throws Exception {
+        DumbSlave.DescriptorImpl descriptor =
+                rule.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> descriptors = NodeProperty.all();
+        assumeThat("we need at least two node properties to test this", descriptors.size(), not(anyOf(is(0), is(1))));
+        assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
+
+        NodePropertyDescriptor victim = descriptors.iterator().next();
+        assertThat(descriptor.nodePropertyDescriptors(null), hasItem(victim));
+        DynamicFilter.descriptors().add(victim);
+        assertThat(descriptor.nodePropertyDescriptors(null), not(hasItem(victim)));
+        DynamicFilter.descriptors().remove(victim);
+        assertThat(descriptor.nodePropertyDescriptors(null), hasItem(victim));
+    }
+
+
+
+    @TestExtension
+    public static class DynamicFilter extends DescriptorVisibilityFilter {
+
+        private final Set<Descriptor> descriptors = new HashSet<>();
+
+        public static Set<Descriptor> descriptors() {
+            return ExtensionList.lookup(DescriptorVisibilityFilter.class).get(DynamicFilter.class).descriptors;
+        }
+
+        @Override
+        public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
+            return !descriptors.contains(descriptor);
+        }
+
+        @Override
+        public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+            return !descriptors.contains(descriptor);
+        }
     }
 }
