@@ -215,6 +215,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         hudson.model.BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
+        if (!asJob().isBuildable()) {
+            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR, new IOException(asJob().getFullName() + " is not buildable!"));
+        }
         if (pp != null) {
             pp.buildWithParameters(req, rsp, delay);
         } else {
