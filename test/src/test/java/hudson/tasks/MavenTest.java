@@ -45,9 +45,14 @@ import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
+import hudson.tools.ToolInstallation;
 import hudson.util.DescribableList;
 
+import java.io.IOException;
 import java.util.Collections;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -57,11 +62,14 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
+
+import org.apache.tools.ant.filters.TokenFilter.ContainsString;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -305,5 +313,29 @@ public class MavenTest {
         ));
 
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
+    }
+
+    @Test public void doPassBuildVariablesOptionally() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
+        String log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables());
+        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, false/*do not inject*/));
+
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertFalse("Build variables are not injected", log.contains("-DNAME=VALUE"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, true/*do inject*/));
+
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+
+        assertFalse(new Maven("", "").isInjectBuildVariables());
     }
 }
