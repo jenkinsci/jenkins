@@ -33,10 +33,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarConstants;
+import org.apache.commons.compress.utils.BoundedInputStream;
 
-import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
 
 /**
  * {@link FileVisitor} that creates a tar archive.
@@ -55,7 +57,7 @@ final class TarArchiver extends Archiver {
 
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
-        TarArchiveEntry e = new TarArchiveEntry(relativePath, LF_SYMLINK);
+        TarArchiveEntry e = new TarArchiveEntry(relativePath, TarConstants.LF_SYMLINK);
         try {
             int mode = IOUtils.mode(link);
             if (mode != -1) {
@@ -87,23 +89,31 @@ final class TarArchiver extends Archiver {
         int mode = IOUtils.mode(file);
         if (mode!=-1)   te.setMode(mode);
         te.setModTime(file.lastModified());
-        if(!file.isDirectory())
-            te.setSize(file.length());
-
-        tar.putArchiveEntry(te);
+        long size = 0;
 
         if (!file.isDirectory()) {
-            FileInputStream in = new FileInputStream(file);
-            try {
-                int len;
-                while((len=in.read(buf))>=0)
-                    tar.write(buf,0,len);
-            } finally {
-                in.close();
-            }
+            size = file.length();
+            te.setSize(size);
         }
-
-        tar.closeArchiveEntry();
+        tar.putArchiveEntry(te);
+        try {
+            if (!file.isDirectory()) {
+                // ensure we don't write more bytes than the declared when we created the entry
+                
+                try (FileInputStream fin = new FileInputStream(file);
+                     BoundedInputStream in = new BoundedInputStream(fin, size)) {
+                    int len;
+                    while ((len = in.read(buf)) >= 0) {
+                        tar.write(buf, 0, len);
+                    }
+                } catch (IOException e) {// log the exception in any case
+                    IOException ioE = new IOException("Error writing to tar file from: " + file, e);
+                    throw ioE;
+                }
+            }
+        } finally { // always close the entry
+            tar.closeArchiveEntry();
+        }
         entriesWritten++;
     }
 
