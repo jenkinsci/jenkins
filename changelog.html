@@ -57,9 +57,39 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=rfe>
-    Enable the DescriptorVisibilityFilters for ComputerLauncher, RetentionStrategy and NodeProperty
+    Enable the <code>DescriptorVisibilityFilter</code>s for ComputerLauncher, RetentionStrategy and NodeProperty.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36280">Issue 36280</a>)
-  <li class=>
+  <li class=rfe>
+    Before starting a process, ensure that its working directory exists.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36277">Issue 36277</a>)
+  <li class=bug>
+    Prevent <code>NullPointerException</code> during SCM polling if <code>SCMDecisionHandler</code> returns <code>null</code> veto.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36232">Issue 36232</a>, regression in 2.11)
+  <li class=bug>
+    Ensure that <code>SCMDescriptor.newInstance</code> overrides are honored when creating new SCM entries.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36043">Issue 36043</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-35906">Issue 35906</a>
+    , regression in 2.10)
+  <li class=bug>
+    Performance: Improve configuration page load times by removing the CodeMirror reloading cycle.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32027">Issue 32027</a>)
+  <li class=bug>
+    Fix optional plugin dependency version resolution.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21486">Issue 21486</a>, previous fix was reverted in Jenkins 2)
+  <li class=bug>
+    When creating a tar file, ensure that the final size does not exceed the value
+    in header in the case of growing files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20187">Issue 20187</a>)
+  <li class=bug>
+    Do not inject build variables into Maven process by default for new projects.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25416">Issue 25416</a>, 
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-28790">Issue 28790</a>)
+  <li class=rfe>
+    Update <code>BUILD_TAG</code> environment variable description to mention the replacement of slashes with dashes.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2417">PR #2417</a>)
+  <li class=rfe>
+    Internal API: Make <code>BulkChange</code> auto-closeable.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2428">PR #2428</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.11>What's new in 2.11</a> (2016/06/26)</h3>
