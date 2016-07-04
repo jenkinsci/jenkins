@@ -3465,7 +3465,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      */
     @RequirePOST
-    public HttpRedirect doQuietDown(boolean block, int timeout) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(ADMINISTER);
             isQuietingDown = true;
