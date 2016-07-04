@@ -87,10 +87,8 @@ public class ComputerSetTest {
     public void getComputerNames() throws Exception {
         assertThat(ComputerSet.getComputerNames(), is(empty()));
         j.createSlave("aNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), hasSize(1));
         assertThat(ComputerSet.getComputerNames(), contains("aNode"));
         j.createSlave("anAnotherNode", "", null);
-        assertThat(ComputerSet.getComputerNames(), hasSize(2));
         assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 }
