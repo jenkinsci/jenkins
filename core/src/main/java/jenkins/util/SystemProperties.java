@@ -24,8 +24,12 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.EnvVars;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -293,6 +297,30 @@ public class SystemProperties implements ServletContextListener {
             }
         }
         return def;
+    }
+    
+    /**
+     * Gets list of strings from the comma-separated system property string.
+     * Escaping of commas is not supported by the current implementation.
+     * @param propertyName property name
+     * @return List of strings. Returns empty list if the property is not defined or empty.
+     * @since TODO
+     */
+    @NonNull
+    public static List<String> getStringList(@NonNull String propertyName) {
+        final String rawString = SystemProperties.getString(propertyName);
+        if (rawString == null) {
+            return Collections.emptyList();
+        }
+        
+        final String[] values = rawString.split(",");
+        final List<String> res = new ArrayList<>(values.length);
+        for (String value : values) {
+            if (StringUtils.isNotBlank(value)) {
+                res.add(value);
+            }
+        }
+        return res;
     }
 
     @CheckForNull
