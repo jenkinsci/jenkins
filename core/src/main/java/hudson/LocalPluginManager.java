@@ -41,6 +41,14 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 public class LocalPluginManager extends PluginManager {
+    
+    private final static Set<String> ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS;
+    
+    static {
+        ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS = new HashSet<>(SystemProperties.getStringList(
+                LocalPluginManager.class.getName() + ".enforcedVersionPluginArtifactIDs"));
+    }
+    
     /**
      * Creates a new LocalPluginManager
      * @param context Servlet context. Provided for compatibility as {@code Jenkins.getInstance().servletContext} should be used.
@@ -84,6 +92,11 @@ public class LocalPluginManager extends PluginManager {
         } finally {
             loadDetachedPlugins();
         }
+    }
+
+    @Override
+    public Set<String> getEnforcedVersionPluginArtifactIDs() {
+        return ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS;
     }
 
     private static final Logger LOGGER = Logger.getLogger(LocalPluginManager.class.getName());

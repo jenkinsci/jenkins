@@ -887,27 +887,48 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     /**
      * Copies the bundled plugin from the given URL to the destination of the given file name (like 'abc.jpi'),
-     * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
+     * with a reasonable up-to-date check. 
+     * A convenience method to be used by the {@link #loadBundledPlugins()}.
+     * <p>
+     * By default, Plugin manager installs a new version only if the version to be copied is newer than the installed one.
+     * Particular plugin versions can be enforced via {@link #getEnforcedVersionPluginArtifactIDs()}.
+     * In such case the plugin will be always installed.
+     * @param src Source URL
+     * @param _fileName Name o
      */
-    protected void copyBundledPlugin(URL src, String fileName) throws IOException {
-        fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
+    protected void copyBundledPlugin(URL src, final String _fileName) throws IOException {
+        String fileName = _fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = src.openConnection().getLastModified();
         File file = new File(rootDir, fileName);
 
         // normalization first, if the old file exists.
         rename(new File(rootDir,legacyName),file);
-
-        // update file if:
-        //  - no file exists today
-        //  - bundled version and current version differs (by timestamp).
-        if (!file.exists() || file.lastModified() != lastModified) {
+        
+        String pluginName = fileName.replace(".jpi", "");
+        
+        // Copy if there is no file in the destination
+        boolean shouldBeCopied = false;
+        if (!file.exists()) {
+            shouldBeCopied = true;
+        } else {
+            boolean isVersionEnforced = getEnforcedVersionPluginArtifactIDs().contains(pluginName);
+            if (isVersionEnforced && file.lastModified() != lastModified) {
+                LOGGER.log(Level.INFO, "Version of bundled plugin {0} is enforced. The current version will be overriden", pluginName);
+                shouldBeCopied = true;
+            }
+            if (!isVersionEnforced && file.lastModified() < lastModified) {
+                LOGGER.log(Level.INFO, "PluginManager file defines a newer version of the plugin {0}. It will be upgraded", pluginName);
+                shouldBeCopied = true;
+            }
+        }
+        
+        // Copy if the plugin should be copied
+        if (shouldBeCopied) {
             FileUtils.copyURLToFile(src, file);
             file.setLastModified(src.openConnection().getLastModified());
-            // lastModified is set for two reasons:
-            // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
-            // - to make sure the value is not changed after each restart, so we can avoid
-            // unpacking the plugin itself in ClassicPluginStrategy.explode
+        } else {
+            LOGGER.log(Level.INFO, "Plugin {0} has been already installed && does not need an upgrade/downgrade. Skipping it", pluginName);
         }
 
         // Plugin pinning has been deprecated.
@@ -1015,6 +1036,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LOGGER.log(Level.INFO, "Skipping installation of the {0} bundled {1} plugin, because it is not a required plugin", 
                 new Object[] {pluginType, pluginName});
         return new CopyResult(url, fileName, false);
+    }
+    
+    /**
+     * Gets set of plugins, which must have a version provided by the plugin Manager.
+     * @return Set of plugin artifact IDs, 
+     * @since TODO
+     */
+    @Nonnull
+    public Set<String> getEnforcedVersionPluginArtifactIDs() {
+        return Collections.emptySet();
     }
 
     private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
