@@ -33,6 +33,8 @@ import javax.servlet.ServletContext;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -42,9 +44,12 @@ import java.util.logging.Logger;
  */
 public class LocalPluginManager extends PluginManager {
     
+    private final static Set<String> REQUIRED_PLUGINS_ARTIFACT_IDS;
     private final static Set<String> ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS;
     
     static {
+        REQUIRED_PLUGINS_ARTIFACT_IDS = new HashSet<>(SystemProperties.getStringList(
+                LocalPluginManager.class.getName() + ".requiredPluginArtifactIDs"));
         ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS = new HashSet<>(SystemProperties.getStringList(
                 LocalPluginManager.class.getName() + ".enforcedVersionPluginArtifactIDs"));
     }
@@ -99,5 +104,10 @@ public class LocalPluginManager extends PluginManager {
         return ENFORCED_VERSION_PLUGIN_ARTIFACT_IDS;
     }
 
+    @Override
+    public Set<String> getRequiredPluginArtifactIDs() {
+        return REQUIRED_PLUGINS_ARTIFACT_IDS;
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(LocalPluginManager.class.getName());
 }

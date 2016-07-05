@@ -993,7 +993,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     new Object[] {pluginType, pluginName});
             return null;
         }
-        if (!shouldBeInstalled) {
+        final Set<String> requiredPluginArtifactIDs = getRequiredPluginArtifactIDs();
+        if (!requiredPluginArtifactIDs.contains(pluginName) && !shouldBeInstalled) {
             // Is not a plugin, which is required for the installation. 
             // Let Plugin manager to make a decision regarding it.
             final CopyResult notRequiredInstallResult = handleNotRequiredBundledPlugin(url, fileName, pluginType);
@@ -1036,6 +1037,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LOGGER.log(Level.INFO, "Skipping installation of the {0} bundled {1} plugin, because it is not a required plugin", 
                 new Object[] {pluginType, pluginName});
         return new CopyResult(url, fileName, false);
+    }
+    
+    /**
+     * Gets set of plugins, which must be installed during the Jenkins instance startup.
+     * @return Set of plugin artifact IDs, 
+     * @since TODO
+     */
+    @Nonnull
+    public Set<String> getRequiredPluginArtifactIDs() {
+        return Collections.emptySet();
     }
     
     /**
