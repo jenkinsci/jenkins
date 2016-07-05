@@ -905,20 +905,20 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // normalization first, if the old file exists.
         rename(new File(rootDir,legacyName),file);
         
-        String pluginName = fileName.replace(".jpi", "");
+        String pluginArtifactId = fileName.replace(".jpi", "");
         
         // Copy if there is no file in the destination
         boolean shouldBeCopied = false;
         if (!file.exists()) {
             shouldBeCopied = true;
         } else {
-            boolean isVersionEnforced = getEnforcedVersionPluginArtifactIDs().contains(pluginName);
+            boolean isVersionEnforced = getEnforcedVersionPluginArtifactIDs().contains(pluginArtifactId);
             if (isVersionEnforced && file.lastModified() != lastModified) {
-                LOGGER.log(Level.INFO, "Version of bundled plugin {0} is enforced. The current version will be overriden", pluginName);
+                LOGGER.log(Level.INFO, "Version of bundled plugin {0} is enforced. The current version will be overriden", pluginArtifactId);
                 shouldBeCopied = true;
             }
             if (!isVersionEnforced && file.lastModified() < lastModified) {
-                LOGGER.log(Level.INFO, "PluginManager file defines a newer version of the plugin {0}. It will be upgraded", pluginName);
+                LOGGER.log(Level.INFO, "PluginManager file defines a newer version of the plugin {0}. It will be upgraded", pluginArtifactId);
                 shouldBeCopied = true;
             }
         }
@@ -928,7 +928,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             FileUtils.copyURLToFile(src, file);
             file.setLastModified(src.openConnection().getLastModified());
         } else {
-            LOGGER.log(Level.INFO, "Plugin {0} has been already installed && does not need an upgrade/downgrade. Skipping it", pluginName);
+            LOGGER.log(Level.INFO, "Plugin {0} has been already installed && does not need an upgrade/downgrade. Skipping it", pluginArtifactId);
         }
 
         // Plugin pinning has been deprecated.
@@ -984,17 +984,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(Level.WARNING, "Got empty plugin file name from the plugin path: {0}. Cannot install", url);
             return null;
         }
-        String pluginName = fileName.replace(".hpi", "").replace(".jpi", "");
+        String pluginArtifactId = fileName.replace(".hpi", "").replace(".jpi", "");
         
         // Check if it should be copied
         if (copiedPlugins.contains(url)) {
             // Ignore. Already copied.
             LOGGER.log(Level.INFO, "Skipping installation of {0} plugin {1}, because it has been already installed",
-                    new Object[] {pluginType, pluginName});
+                    new Object[] {pluginType, pluginArtifactId});
             return null;
         }
         final Set<String> requiredPluginArtifactIDs = getRequiredPluginArtifactIDs();
-        if (!requiredPluginArtifactIDs.contains(pluginName) && !shouldBeInstalled) {
+        if (!requiredPluginArtifactIDs.contains(pluginArtifactId) && !shouldBeInstalled) {
             // Is not a plugin, which is required for the installation. 
             // Let Plugin manager to make a decision regarding it.
             final CopyResult notRequiredInstallResult = handleNotRequiredBundledPlugin(url, fileName, pluginType);
@@ -1006,7 +1006,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         
         // Finally install the bundled plugin
         LOGGER.log(Level.INFO, "Installing the bundled {1} plugin {0} to Jenkins", 
-                new Object[] {pluginName, pluginType});
+                new Object[] {pluginArtifactId, pluginType});
         
         try {
             names.add(fileName);
@@ -1024,7 +1024,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Extensions can alter the behavior for such plugins.
      * @param url URL of the plugin file to be handled.
      * @param fileName Plugin file name
-     * @param pluginType plugin type String
+     * @param pluginType Plugin type String
      * @return Result of the custom plugin handling.
      *         {@code null} If the plugin should be installed
      * @since TODO
@@ -1033,9 +1033,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected CopyResult handleNotRequiredBundledPlugin(@Nonnull URL url, @Nonnull String fileName, 
             @Nonnull String pluginType) {
         // Default behavior - skip the plugin installation
-        String pluginName = fileName.replace(".hpi", "").replace(".jpi", "");
+        String pluginArtifactId = fileName.replace(".hpi", "").replace(".jpi", "");
         LOGGER.log(Level.INFO, "Skipping installation of the {0} bundled {1} plugin, because it is not a required plugin", 
-                new Object[] {pluginType, pluginName});
+                new Object[] {pluginType, pluginArtifactId});
         return new CopyResult(url, fileName, false);
     }
     
