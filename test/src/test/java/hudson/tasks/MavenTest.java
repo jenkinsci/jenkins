@@ -222,7 +222,9 @@ public class MavenTest {
         final Entry envVar = new Entry("GLOBAL_PATH", "D:\\Jenkins");
 
         FreeStyleProject project = j.createFreeStyleProject();
-        project.getBuildersList().add(new Maven("--help",null,null,properties,null));
+        // This test implements legacy behavior, when Build Variables are injected by default
+        project.getBuildersList().add(new Maven("--help", null, null, properties, null,
+                false, null, null, true));
         project.addProperty(new ParametersDefinitionProperty(parameter));
         j.jenkins.getNodeProperties().replaceBy(Collections.singleton(
                 new EnvironmentVariablesNodeProperty(envVar)
