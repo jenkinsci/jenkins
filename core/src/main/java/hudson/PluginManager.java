@@ -571,58 +571,37 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
-        Set<String> names = new HashSet();
+        final Set<String> names = new HashSet<>();
+        
+        final ServletContext _context = Jenkins.getInstance().servletContext;
+        final Set<String> _plugins = Util.fixNull(_context.getResourcePaths(fromPath));
+        final Set<URL> copiedPlugins = new HashSet<>();
+        final Set<URL> dependenciesOfNotInstalledPlugins = new HashSet<>();
+        final Set<URL> dependenciesOfInstalledPlugins = new HashSet<>();
 
-        ServletContext context = Jenkins.getActiveInstance().servletContext;
-        Set<String> plugins = Util.fixNull((Set<String>) context.getResourcePaths(fromPath));
-        Set<URL> copiedPlugins = new HashSet<>();
-        Set<URL> dependencies = new HashSet<>();
-
-        for( String pluginPath : plugins) {
-            String fileName = pluginPath.substring(pluginPath.lastIndexOf('/')+1);
-            if(fileName.length()==0) {
-                // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
-                // I suspect some containers are returning directory names.
+        for( String pluginPath : _plugins) {
+            CopyResult result = copyBundledPluginIfNotInstalled(pluginPath, false, false, names, copiedPlugins);
+            if (result == null) {
+                // Not a bundled plugin, no need to process dependencies
                 continue;
             }
             try {
-                URL url = context.getResource(pluginPath);
-                if (filter != null && url != null) {
-                    if (!filter.accept(new File(url.getFile()).getParentFile(), fileName)) {
-                        continue;
-                    }
-                }
-
-                names.add(fileName);
-                copyBundledPlugin(url, fileName);
-                copiedPlugins.add(url);
-                try {
-                    addDependencies(url, fromPath, dependencies);
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to resolve dependencies for the bundled plugin " + fileName, e);
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to extract the bundled plugin "+fileName,e);
+                addDependencies(result.getUrl(), fromPath, result.isInstalled() ? dependenciesOfInstalledPlugins : dependenciesOfNotInstalledPlugins);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to resolve dependencies for the bundled plugin " + result.getFileName(), e);
             }
         }
 
-        // Copy dependencies. These are not detached plugins, but are required by them.
-        for (URL dependency : dependencies) {
-            if (copiedPlugins.contains(dependency)) {
-                // Ignore. Already copied.
-                continue;
-            }
-
-            String fileName = new File(dependency.getFile()).getName();
-            try {
-                names.add(fileName);
-                copyBundledPlugin(dependency, fileName);
-                copiedPlugins.add(dependency);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to extract the bundled dependency plugin " + fileName, e);
-            }
+        // Process dependencies. These are not detached plugins, but are required by them.
+        for (URL dependency : dependenciesOfNotInstalledPlugins) {
+            // We do not require installation of such dependencies, but we let Plugin manager to make decisions
+            copyBundledPluginIfNotInstalled(dependency, false, true, names, copiedPlugins);
         }
-
+        for (URL dependency : dependenciesOfInstalledPlugins) {
+            // Installation of these dependencies is required
+            copyBundledPluginIfNotInstalled(dependency, true, true, names, copiedPlugins);
+        }
+        
         return names;
     }
 
@@ -933,6 +912,109 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         // Plugin pinning has been deprecated.
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+    }
+    
+    /**
+     * Copies a plugin if it has not been installed yet.
+     * If the plugin is not required, it will be skipped
+     * @param pluginPath Path to the plugin
+     * @param copiedPlugins Set of already copied plugins. Can be modified within the method
+     * @param names Set of plugin names. Can be modified within the method
+     * @param shouldBeBundled Indicates that it is a dependency of the required plugin
+     * @return Result if it has been already installed. Null otherwise
+     */
+    @CheckForNull
+    private CopyResult copyBundledPluginIfNotInstalled(String pluginPath, boolean shouldBeBundled, boolean isDependency, 
+            Set<String> names, Set<URL> copiedPlugins) {
+        ServletContext _context = Jenkins.getInstance().servletContext;
+        final URL url;
+        try {
+            url = _context.getResource(pluginPath);
+        } catch(MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, "Cannot retrieve {0} {1} plugin URL from the plugin path: {2}",
+                    new Object[] {shouldBeBundled ? "required" : "optional", 
+                        isDependency ? "dependency" : "root", pluginPath});
+            return null;
+        }
+        return copyBundledPluginIfNotInstalled(url, shouldBeBundled, isDependency , names, copiedPlugins);
+    }
+    
+    /**
+     * Copies a plugin if it has not been installed yet.
+     * If the plugin is not required by Jenkins, the decision regarding installation will be passed
+     * to {@link #handleNotRequiredBundledPlugin(java.net.URL, java.lang.String)}.
+     * @param url URL of the plugin
+     * @param copiedPlugins Set of already copied plugins. Can be modified within the method
+     * @param names Set of plugin names. Can be modified within the method
+     * @param shouldBeInstalled Indicates that it is a dependency of the required plugin
+     * @return Result if it has been installed to Jenkins or processed in different way. 
+     *         {@code null} otherwise.
+     */
+    @CheckForNull
+    private CopyResult copyBundledPluginIfNotInstalled(URL url, boolean shouldBeInstalled, boolean isDependency, 
+            Set<String> names, Set<URL> copiedPlugins) {
+        
+        final String pluginType = isDependency ? "dependency" : (shouldBeInstalled ? "required" : "optional");
+        
+        String fileName = new File(url.getFile()).getName();
+        if(fileName.length()==0) {
+            // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
+            // I suspect some containers are returning directory names.
+            LOGGER.log(Level.WARNING, "Got empty plugin file name from the plugin path: {0}. Cannot install", url);
+            return null;
+        }
+        String pluginName = fileName.replace(".hpi", "").replace(".jpi", "");
+        
+        // Check if it should be copied
+        if (copiedPlugins.contains(url)) {
+            // Ignore. Already copied.
+            LOGGER.log(Level.INFO, "Skipping installation of {0} plugin {1}, because it has been already installed",
+                    new Object[] {pluginType, pluginName});
+            return null;
+        }
+        if (!shouldBeInstalled) {
+            // Is not a plugin, which is required for the installation. 
+            // Let Plugin manager to make a decision regarding it.
+            final CopyResult notRequiredInstallResult = handleNotRequiredBundledPlugin(url, fileName, pluginType);
+            if (notRequiredInstallResult != null) {
+                // Plugin manager has processed the plugin, no need to do anything
+                return notRequiredInstallResult;
+            }
+        }
+        
+        // Finally install the bundled plugin
+        LOGGER.log(Level.INFO, "Installing the bundled {1} plugin {0} to Jenkins", 
+                new Object[] {pluginName, pluginType});
+        
+        try {
+            names.add(fileName);
+            copyBundledPlugin(url, fileName);
+            copiedPlugins.add(url);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to extract the bundled " + pluginType + " plugin " + fileName, e);
+            return null;
+        }
+        return new CopyResult(url, fileName, true);
+    }
+    
+    /**
+     * Performs handling of the bundled plugin, which installation is not required.
+     * Extensions can alter the behavior for such plugins.
+     * @param url URL of the plugin file to be handled.
+     * @param fileName Plugin file name
+     * @param pluginType plugin type String
+     * @return Result of the custom plugin handling.
+     *         {@code null} If the plugin should be installed
+     * @since TODO
+     */
+    @CheckForNull
+    protected CopyResult handleNotRequiredBundledPlugin(@Nonnull URL url, @Nonnull String fileName, 
+            @Nonnull String pluginType) {
+        // Default behavior - skip the plugin installation
+        String pluginName = fileName.replace(".hpi", "").replace(".jpi", "");
+        LOGGER.log(Level.INFO, "Skipping installation of the {0} bundled {1} plugin, because it is not a required plugin", 
+                new Object[] {pluginType, pluginName});
+        return new CopyResult(url, fileName, false);
     }
 
     private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
@@ -1920,5 +2002,48 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
 
+    }
+    
+    /**
+     * Stores info about copy operations.
+     * @since TODO
+     */
+    protected static class CopyResult {
+        final URL url;
+        final String fileName;
+        final boolean installed;
+
+        public CopyResult(@Nonnull URL url, @Nonnull String fileName, boolean isInstalled) {
+            this.url = url;
+            this.fileName = fileName;
+            this.installed = isInstalled;
+        }
+
+        /**
+         * Name of the plugin file, which has been copied.
+         * @return Name of the plugin file
+         */
+        @Nonnull 
+        public String getFileName() {
+            return fileName;
+        }
+
+        /**
+         * Indicates that Plugin manager has installed this plugin to Jenkins.
+         * @return {@code true} if the plugin has been installed to Jenkins.
+         *         {@code false} means that the plugin installation has been handled in a different way.
+         */
+        public boolean isInstalled() {
+            return installed;
+        }
+
+        /**
+         * Gets URL of the plugin, which has been installed.
+         * @return Plugin {@link URL}
+         */
+        @Nonnull 
+        public URL getUrl() {
+            return url;
+        }
     }
 }
