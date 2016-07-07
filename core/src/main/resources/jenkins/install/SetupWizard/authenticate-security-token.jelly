@@ -1,7 +1,9 @@
 <?jelly escape-by-default='true'?>
 <l:html norefresh="true" title="${app.instance.displayName}" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:main-panel>
+    <l:main-panel>
+    <st:include page="client-scripts" />
     <form action="${app.instance.securityRealm.authenticationGatewayUrl}" method="POST">
+        <input type="hidden" name="from" value="${request.getParameter('from')}" />
         <div class="plugin-setup-wizard bootstrap-3">
           <div class="modal fade in" style="display: block;">
             <div class="modal-dialog">
@@ -27,7 +29,7 @@
                     </j:if>
                     <div class="form-group ${error ? 'has-error' : ''}">
                     <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
-                    <input name="j_username" value="${j.setupWizard.initialSetupAdminUserName}" type="hidden"/>
+                    <input name="j_username" value="${app.setupWizard.initialSetupAdminUserName}" type="hidden"/>
                     <input id="security-token" class="form-control" type="password" name="j_password"/>
                     </div>
                     

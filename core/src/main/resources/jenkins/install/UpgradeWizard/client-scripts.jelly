@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <j:if test="${it.due}">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <j:if test="${!app.installState.setupComplete and app.installState.name() == 'UPGRADE'}">
     <style>
       #upgrade-fragment {
         background: url(${rootURL}/images/jenkins.png) no-repeat 5% -63px;
@@ -50,15 +50,23 @@
         background:#900;
         color:#fff;
       }
+      #upgrade-snooze b {
+        border-bottom: 2px solid #fff;
+        width: 14px;
+        height: 13px;
+        margin-bottom: 0;
+        display: inline-block;
+        text-indent: -9000px;
+      }
     </style>
     <div style="display:none">
       <div id="upgrade-fragment">
-        <a id="upgrade-snooze" class="post" href="${rootURL}/${it.url}/snooze">
-          x
+        <a id="upgrade-snooze" class="post" href="${rootURL}/installState/snooze">
+          <b>%{Snooze}</b>
         </a>
         <div id="upgrade-notice">
           <j:whitespace>${%msg.before}</j:whitespace> 
-          <f:link href="${rootURL}/${it.url}/upgrade" post="true">${%msg.link}</f:link>
+          <f:link href="${rootURL}/setupWizard/installState/UPGRADE/showUpgradeWizard" post="true">${%msg.link}</f:link>
           <j:whitespace>${%msg.after}</j:whitespace>
         </div>
       </div>
@@ -70,5 +78,9 @@
         $('page-body').insert({ top: e });
       })();
     </script>
+    <j:if test="${app.installState.showUpgradeWizard}">
+      <div class="plugin-setup-wizard-container"></div>
+      <script src="${resURL}/jsbundles/upgradeWizard.js" type="text/javascript"/>
+    </j:if>
   </j:if>
 </j:jelly>

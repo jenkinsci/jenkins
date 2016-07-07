@@ -25,10 +25,11 @@
 package hudson.model;
 
 import com.google.common.collect.ImmutableSet;
+import hudson.DescriptorExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.Launcher.RemoteLauncher;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.slaves.CommandLauncher;
@@ -43,7 +44,6 @@ import hudson.slaves.SlaveComputer;
 import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,21 +52,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-
-import javax.servlet.ServletException;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
-
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -487,6 +486,63 @@ public abstract class Slave extends Node implements Serializable {
 
             return FormValidation.ok();
         }
+
+        /**
+         * Returns the list of {@link ComputerLauncher} descriptors appropriate to the supplied {@link Slave}.
+         *
+         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @return the filtered list
+         * @since 2.12
+         */
+        @Nonnull
+        @Restricted(NoExternalUse.class) // intedned for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
+        public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
+            DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
+                    Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(
+                            ComputerLauncher.class);
+            return it == null ? DescriptorVisibilityFilter.applyType(clazz, all)
+                    : DescriptorVisibilityFilter.apply(it, all);
+        }
+
+        /**
+         * Returns the list of {@link RetentionStrategy} descriptors appropriate to the supplied {@link Slave}.
+         *
+         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @return the filtered list
+         * @since 2.12
+         */
+        @Nonnull
+        @SuppressWarnings("unchecked") // used by Jelly EL only
+        @Restricted(NoExternalUse.class) // used by Jelly EL only
+        public final List<Descriptor<RetentionStrategy<?>>> retentionStrategyDescriptors(@CheckForNull Slave it) {
+            return it == null ? DescriptorVisibilityFilter.applyType(clazz, RetentionStrategy.all())
+                    : DescriptorVisibilityFilter.apply(it, RetentionStrategy.all());
+        }
+
+        /**
+         * Returns the list of {@link NodePropertyDescriptor} appropriate to the supplied {@link Slave}.
+         *
+         * @param it the {@link Slave} or {@code null} to assume the slave is of type {@link #clazz}.
+         * @return the filtered list
+         * @since 2.12
+         */
+        @Nonnull
+        @SuppressWarnings("unchecked") // used by Jelly EL only
+        @Restricted(NoExternalUse.class) // used by Jelly EL only
+        public final List<NodePropertyDescriptor> nodePropertyDescriptors(@CheckForNull Slave it) {
+            List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
+            Collection<NodePropertyDescriptor> list =
+                    (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+            for (NodePropertyDescriptor npd : it == null
+                    ? DescriptorVisibilityFilter.applyType(clazz, list)
+                    : DescriptorVisibilityFilter.apply(it, list)) {
+                if (npd.isApplicable(clazz)) {
+                    result.add(npd);
+                }
+            }
+            return result;
+        }
+
     }
 
 
@@ -558,7 +614,7 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Determines the workspace root file name for those who really really need the shortest possible path name.
      */
-    private static final String WORKSPACE_ROOT = System.getProperty(Slave.class.getName()+".workspaceRoot","workspace");
+    private static final String WORKSPACE_ROOT = SystemProperties.getString(Slave.class.getName()+".workspaceRoot","workspace");
 
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.

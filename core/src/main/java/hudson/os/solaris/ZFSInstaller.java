@@ -28,6 +28,7 @@ import com.sun.akuma.JavaVMArguments;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
@@ -280,7 +281,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
     @Extension
     public static AdministrativeMonitor init() {
-        String migrationTarget = System.getProperty(ZFSInstaller.class.getName() + ".migrate");
+        String migrationTarget = SystemProperties.getString(ZFSInstaller.class.getName() + ".migrate");
         if(migrationTarget!=null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             StreamTaskListener listener = new StreamTaskListener(new ForkOutputStream(System.out, out));
@@ -434,5 +435,5 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
     /**
      * Escape hatch in case JNI calls fatally crash, like in HUDSON-3733.
      */
-    public static boolean disabled = Boolean.getBoolean(ZFSInstaller.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(ZFSInstaller.class.getName()+".disabled");
 }

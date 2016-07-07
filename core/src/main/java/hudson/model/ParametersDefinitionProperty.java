@@ -44,6 +44,7 @@ import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -69,12 +70,22 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+    }
+
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
     }
 
     @Deprecated
@@ -208,6 +219,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     @Extension
+    @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {

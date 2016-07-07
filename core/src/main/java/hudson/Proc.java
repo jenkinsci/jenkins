@@ -237,6 +237,9 @@ public abstract class Proc {
             this.out = out;
             this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
+            if (procBuilder.directory() != null && !procBuilder.directory().exists()) {
+                throw new IOException(String.format("Process working directory '%s' doesn't exist!", procBuilder.directory().getAbsolutePath()));
+            }
             this.proc = procBuilder.start();
 
             InputStream procInputStream = proc.getInputStream();

@@ -114,6 +114,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
+import jenkins.scm.SCMDecisionHandler;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -1322,6 +1323,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             listener.getLogger().println(Messages.AbstractProject_Disabled());
             return NO_CHANGES;
         }
+        SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(this);
+        if (veto != null) {
+            listener.getLogger().println(Messages.AbstractProject_PollingVetoed(veto));
+            return NO_CHANGES;
+        }
 
         R lb = getLastBuild();
         if (lb==null) {
@@ -2098,7 +2104,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 }
             }
             return FormValidation.okWithMarkup(Messages.AbstractProject_LabelLink(
-                    j.getRootUrl(), l.getUrl(), l.getNodes().size(), l.getClouds().size())
+                    j.getRootUrl(), Util.escape(l.getName()), l.getUrl(), l.getNodes().size(), l.getClouds().size())
             );
         }
 

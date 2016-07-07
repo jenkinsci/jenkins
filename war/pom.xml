@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.13-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -42,7 +42,7 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
     <node.version>4.0.0</node.version>
-    <npm.version>2.13.1</npm.version>
+    <npm.version>3.8.9</npm.version>
   </properties>
 
   <dependencies>
@@ -114,7 +114,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>windows-slave-installer</artifactId>
-      <version>1.5.1</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
@@ -597,6 +597,14 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
+      <id>node-classifier-linux-32</id>
+      <activation><os><family>Linux</family><arch>i386</arch></os></activation>
+      <properties>
+        <node.download.file>node-v${node.version}-linux-x86.tar.gz</node.download.file>
+        <node.download.classifier />
+      </properties>
+    </profile>
+    <profile>
       <id>node-classifier-mac</id>
       <activation><os><family>mac</family></os></activation>
       <properties>
@@ -617,7 +625,7 @@ THE SOFTWARE.
       <activation><os><family>windows</family><arch>amd64</arch></os></activation>
       <properties>
         <node.download.file>win-x64/node.exe</node.download.file>
-        <node.download.classifier>/x64</node.download.classifier>
+        <node.download.classifier>/win-x64</node.download.classifier>
       </properties>
     </profile>
     <profile>
@@ -630,7 +638,11 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>node-download</id>
-      <activation><file><exists>package.json</exists></file></activation>
+      <activation>
+        <file>
+          <exists>package.json</exists>
+        </file>
+      </activation>
       <build>
         <plugins>
           <plugin>
@@ -736,7 +748,7 @@ THE SOFTWARE.
                   <goal>gulp</goal>
                 </goals>
                 <configuration>
-                  <arguments>lint bundle</arguments>
+                  <arguments>jshint bundle</arguments>
                 </configuration>
               </execution>
 

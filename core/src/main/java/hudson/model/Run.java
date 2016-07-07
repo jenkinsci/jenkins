@@ -36,6 +36,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
@@ -45,6 +46,7 @@ import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Executables;
+import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -103,6 +105,7 @@ import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -1137,12 +1140,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
-    public static final int LIST_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.listCutoff", "16"));
+    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "16"));
 
     /**
      * Maximum number of artifacts to show in tree view before just showing a link.
      */
-    public static final int TREE_CUTOFF = Integer.parseInt(System.getProperty("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+    public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
 
     // ..and then "too many"
 
@@ -1698,28 +1701,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-
-                    // don't do buffering so that what's written to the listener
-                    // gets reflected to the file immediately, which can then be
-                    // served to the browser immediately
-                    OutputStream logger = new FileOutputStream(getLogFile());
-                    RunT build = job.getBuild();
-
-                    // Global log filters
-                    for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-                        logger = filter.decorateLogger(build, logger);
-                    }
-
-                    // Project specific log filters
-                    if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-                        BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-                        for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                            logger = bw.decorateLogger((AbstractBuild) build, logger);
-                        }
-                    }
-
-                    listener = new StreamBuildListener(logger,charset);
-
+                    listener = createBuildListener(job, listener, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1808,6 +1790,30 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
+    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, StreamBuildListener listener, Charset charset) throws IOException, InterruptedException {
+        // don't do buffering so that what's written to the listener
+        // gets reflected to the file immediately, which can then be
+        // served to the browser immediately
+        OutputStream logger = new FileOutputStream(getLogFile(), true);
+        RunT build = job.getBuild();
+
+        // Global log filters
+        for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
+            logger = filter.decorateLogger(build, logger);
+        }
+
+        // Project specific log filters
+        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
+            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+            for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                logger = bw.decorateLogger((AbstractBuild) build, logger);
+            }
+        }
+
+        listener = new StreamBuildListener(logger,charset);
+        return listener;
+    }
+
     /**
      * Makes sure that {@code lastSuccessful} and {@code lastStable} legacy links in the project’s root directory exist.
      * Normally you do not need to call this explicitly, since {@link #execute} does so,
@@ -1865,6 +1871,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         startTime = System.currentTimeMillis();
         if (runner!=null)
             RunnerStack.INSTANCE.push(runner);
+        RunListener.fireInitialize(this);
     }
 
     /**
@@ -2299,13 +2306,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     @RequirePOST
     public @Nonnull HttpResponse doConfigSubmit( StaplerRequest req ) throws IOException, ServletException, FormException {
         checkPermission(UPDATE);
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             JSONObject json = req.getSubmittedForm();
             submit(json);
             bc.commit();
-        } finally {
-            bc.abort();
         }
         return FormApply.success(".");
     }
@@ -2391,7 +2395,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         public String getEntryID(Run entry) {
             return "tag:" + "hudson.dev.java.net,"
                 + entry.getTimestamp().get(Calendar.YEAR) + ":"
-                + entry.getParent().getName()+':'+entry.getId();
+                + entry.getParent().getFullName()+':'+entry.getId();
         }
 
         public String getEntryDescription(Run entry) {

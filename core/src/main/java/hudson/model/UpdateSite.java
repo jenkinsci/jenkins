@@ -60,6 +60,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -215,6 +216,20 @@ public class UpdateSite {
 
     public FormValidation doVerifySignature() throws IOException {
         return verifySignature(getJSONObject());
+    }
+
+    /**
+     * Extension point to allow implementations of {@link UpdateSite} to create a custom
+     * {@link UpdateCenter.InstallationJob}.
+     *
+     * @param plugin      the plugin to create the {@link UpdateCenter.InstallationJob} for.
+     * @param uc          the {@link UpdateCenter}.
+     * @param dynamicLoad {@code true} if the plugin should be attempted to be dynamically loaded.
+     * @return the {@link UpdateCenter.InstallationJob}.
+     * @since 2.9
+     */
+    protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
     }
 
     /**
@@ -434,7 +449,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals(UpdateCenter.ID_DEFAULT) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
+        return id.equals(UpdateCenter.PREDEFINED_UPDATE_SITE_ID) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
@@ -871,7 +886,7 @@ public class UpdateSite {
                     return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, null, this));
                 }
             }
-            UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            UpdateCenter.InstallationJob job = createInstallationJob(this, uc, dynamicLoad);
             job.setCorrelationId(correlationId);
             return uc.addJob(job);
         }
@@ -914,6 +929,6 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

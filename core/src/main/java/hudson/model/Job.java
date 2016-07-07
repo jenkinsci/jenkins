@@ -369,6 +369,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("JOB_BASE_NAME", getName());
         return env;
     }
 
@@ -435,15 +436,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             removeProperty(BuildDiscarderProperty.class);
             if (bd != null) {
                 addProperty(new BuildDiscarderProperty(bd));
             }
             bc.commit();
-        } finally {
-            bc.abort();
         }
     }
 
