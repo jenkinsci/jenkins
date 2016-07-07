@@ -34,9 +34,6 @@ import hudson.tasks.BuildWrappers;
 import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter;
 import hudson.tasks.Publisher;
-import hudson.tasks.Maven;
-import hudson.tasks.Maven.ProjectWithMaven;
-import hudson.tasks.Maven.MavenInstallation;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import hudson.util.DescribableList;
@@ -63,7 +60,7 @@ import jenkins.triggers.SCMTriggerItem;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
-    extends AbstractProject<P,B> implements SCMTriggerItem, Saveable, ProjectWithMaven, BuildableItemWithBuildWrappers {
+    extends AbstractProject<P,B> implements SCMTriggerItem, Saveable, BuildableItemWithBuildWrappers {
 
     /**
      * List of active {@link Builder}s configured for this project.
@@ -212,12 +209,6 @@ public abstract class Project<P extends Project<P,B>,B extends Build<P,B>>
     @Override
     public boolean isFingerprintConfigured() {
         return getPublishersList().get(Fingerprinter.class)!=null;
-    }
-
-    public MavenInstallation inferMavenInstallation() {
-        Maven m = getBuildersList().get(Maven.class);
-        if (m!=null)    return m.getMaven();
-        return null;
     }
 
 //

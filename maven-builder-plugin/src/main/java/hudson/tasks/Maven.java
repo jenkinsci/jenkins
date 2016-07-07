@@ -701,6 +701,7 @@ public class Maven extends Builder {
      * to use the consistent Maven installation attached to the project.
      *
      * @since 1.235
+     * @deprecated Use WithMaven extension point
      */
     public interface ProjectWithMaven {
         /**
