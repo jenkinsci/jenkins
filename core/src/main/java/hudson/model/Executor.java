@@ -115,10 +115,6 @@ public class Executor extends Thread implements ModelObject {
     @GuardedBy("lock")
     private WorkUnit workUnit;
 
-    private Throwable causeOfDeath;
-
-    private boolean induceDeath;
-
     @GuardedBy("lock")
     private boolean started;
 
@@ -338,8 +334,6 @@ public class Executor extends Thread implements ModelObject {
         ACL.impersonate(ACL.SYSTEM);
 
         try {
-            if (induceDeath)        throw new ThreadDeath();
-
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
@@ -434,7 +428,6 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
         } catch(Exception | Error e) {
-            causeOfDeath = e;
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
@@ -466,9 +459,7 @@ public class Executor extends Thread implements ModelObject {
         for (RuntimeException e1 : owner.getTerminatedBy()) {
             LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
         }
-        if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
-            owner.removeExecutor(this);
-        }
+        owner.removeExecutor(this);
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
@@ -483,13 +474,6 @@ public class Executor extends Thread implements ModelObject {
             finish2();
         }
         asynchronousExecution = null;
-    }
-
-    /**
-     * For testing only. Simulate a fatal unexpected failure.
-     */
-    public void killHard() {
-        induceDeath = true;
     }
 
     /**
@@ -606,7 +590,7 @@ public class Executor extends Thread implements ModelObject {
      * on-demand creation of executor threads. Callers should use
      * this method instead of {@link #isAlive()}, which would be incorrect for
      * non-started threads or running {@link AsynchronousExecution}.
-     * @return True if the executor is available for tasks
+     * @return true if the executor is available for tasks (usually true)
      * @since 1.536
      */
     public boolean isActive() {
@@ -660,13 +644,11 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * If this thread dies unexpectedly, obtain the cause of the failure.
-     *
-     * @return null if the death is expected death or the thread {@link #isActive}.
-     * @since 1.142
+     * @deprecated no longer used
      */
+    @Deprecated
     public @CheckForNull Throwable getCauseOfDeath() {
-        return causeOfDeath;
+        return null;
     }
 
     /**
@@ -870,14 +852,10 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Throws away this executor and get a new one.
+     * @deprecated now a no-op
      */
-    @RequirePOST
+    @Deprecated
     public HttpResponse doYank() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if (isActive())
-            throw new Failure("Can't yank a live executor");
-        owner.removeExecutor(this);
         return HttpResponses.redirectViaContextPath("/");
     }
 

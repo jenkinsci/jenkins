@@ -520,7 +520,7 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
-    private static class TestTask extends AbstractQueueTask {
+    static class TestTask extends AbstractQueueTask {
         private final AtomicInteger cnt;
         TestTask(AtomicInteger cnt) {
             this.cnt = cnt;
