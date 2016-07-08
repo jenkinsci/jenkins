@@ -62,7 +62,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.7</version>
+      <version>2.13-SNAPSHOT</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -185,6 +185,13 @@ THE SOFTWARE.
       <artifactId>commons-collections4</artifactId>
       <version>4.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+      <type>jar</type>
     </dependency>
   </dependencies>
 

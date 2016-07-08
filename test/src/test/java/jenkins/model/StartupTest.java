@@ -23,50 +23,26 @@
  */
 package jenkins.model;
 
-import hudson.util.RingBufferLogHandler;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class StartupTest {
 
-    private static final Logger logger = Logger.getLogger("");
-
-    private static final RingBufferLogHandler handler = new RingBufferLogHandler() {
-        @Override
-        public synchronized void publish(LogRecord record) {
-            if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-                super.publish(record);
-            }
-        }
-    };
-
-    @BeforeClass
-    public static void logging() {
-        logger.addHandler(handler);
-    }
+    @ClassRule
+    public static LoggerRule logs = new LoggerRule().record("", Level.WARNING);
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
     @Test
     public void noWarnings() throws Exception {
-        Formatter f = new SimpleFormatter();
-        List<String> warnings = new ArrayList<>();
-        for (LogRecord lr : handler.getView()) {
-            warnings.add(f.format(lr).trim());
-        }
-        assertEquals(Collections.emptyList(), warnings);
+        assertEquals(Collections.emptyList(), logs.getRecordsFormatted());
     }
 
 }
