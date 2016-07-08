@@ -24,6 +24,7 @@
 package hudson.security;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -38,13 +39,14 @@ public class ACLContext implements AutoCloseable {
     /**
      * The previous context.
      */
+    @Nonnull
     private final SecurityContext previousContext;
 
     /**
      * Private constructor to ensure only instance creation is from {@link ACL#as(Authentication)}.
-     * @param previousContext
+     * @param previousContext the previous context
      */
-    ACLContext(SecurityContext previousContext) {
+    ACLContext(@Nonnull SecurityContext previousContext) {
         this.previousContext = previousContext;
     }
 
@@ -52,7 +54,7 @@ public class ACLContext implements AutoCloseable {
      * Accessor for the previous context.
      * @return the previous context.
      */
-    @CheckForNull
+    @Nonnull
     public SecurityContext getPreviousContext() {
         return previousContext;
     }
