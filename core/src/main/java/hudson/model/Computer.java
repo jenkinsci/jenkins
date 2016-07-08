@@ -1039,9 +1039,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns true if any of the executors are {@linkplain Executor#isActive active}.
      *
-     * Note that if an executor dies, we'll leave it in {@link #executors} until
-     * the administrator yanks it out, so that we can see why it died.
-     *
      * @since 1.509
      */
     protected boolean isAlive() {
