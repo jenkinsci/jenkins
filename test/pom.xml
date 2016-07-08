@@ -82,7 +82,7 @@ THE SOFTWARE.
       <artifactId>maven-plugin</artifactId>
       <version>${maven-plugin.version}</version>
       <exclusions>
-        <exclusion>
+        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
         </exclusion>
@@ -185,13 +185,6 @@ THE SOFTWARE.
       <artifactId>commons-collections4</artifactId>
       <version>4.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5</version>
-      <scope>test</scope>
-      <type>jar</type>
     </dependency>
   </dependencies>
 
