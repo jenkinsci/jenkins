@@ -35,14 +35,14 @@ import org.jvnet.hudson.test.LoggerRule;
 public class StartupTest {
 
     @ClassRule
-    public static LoggerRule logs = new LoggerRule().record("", Level.WARNING);
+    public static LoggerRule logs = new LoggerRule().record("", Level.WARNING).capture(100);
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
     @Test
     public void noWarnings() throws Exception {
-        assertEquals(Collections.emptyList(), logs.getRecordsFormatted());
+        assertEquals(Collections.emptyList(), logs.getMessages());
     }
 
 }
