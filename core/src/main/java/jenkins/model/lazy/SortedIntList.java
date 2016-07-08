@@ -83,6 +83,10 @@ class SortedIntList extends AbstractList<Integer> {
         return size;
     }
 
+    public int max() {
+        return size > 0 ? data[size - 1] : 0;
+    }
+
     @Override
     public boolean add(Integer i) {
         return add(i.intValue());
