@@ -88,6 +88,7 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Represents a user.
@@ -702,10 +703,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * prevent anyone from logging in as these users. Therefore, we prevent
      * saving a User with one of these ids.
      *
-     * @return true if the username or fullname is valid
+     * @param id ID to be checked
+     * @return {@code true} if the username or fullname is valid.
+     *      For {@code null} or blank IDs returns {@code false}.
      * @since 1.600
      */
-    public static boolean isIdOrFullnameAllowed(String id) {
+    public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
+        //TODO: StringUtils.isBlank() checks the null falue, but FindBugs is not smart enough. Remove it later
+        if (id == null || StringUtils.isBlank(id)) {
+            return false;
+        }
         for (String invalidId : ILLEGAL_PERSISTED_USERNAMES) {
             if (id.equalsIgnoreCase(invalidId))
                 return false;
@@ -1047,7 +1054,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                     if (!resolving.get()) {
                         resolving.set(true);
                         try {
-                            return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
+                            UserDetails userDetails = j.getSecurityRealm().loadUserByUsername(idOrFullName);
+                            if (userDetails == null) {
+                                throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
+                                        + j.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
+                            }
+                            return userDetails.getUsername();
                         } catch (UsernameNotFoundException x) {
                             LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
                         } catch (DataAccessException x) {

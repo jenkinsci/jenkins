@@ -46,14 +46,6 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.jelly.XMLOutput;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -72,15 +64,23 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.RunAction2;
+import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.jelly.XMLOutput;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import static java.util.logging.Level.*;
-import jenkins.model.RunAction2;
-import jenkins.util.SystemProperties;
+import static java.util.logging.Level.WARNING;
 
 
 /**
@@ -549,6 +549,23 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
+            // we can pre-emtively check the SCMDecisionHandler instances here
+            // note that job().poll(listener) should also check this
+            SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
+            if (veto != null) {
+                try (StreamTaskListener listener = new StreamTaskListener(getLogFile())) {
+                    listener.getLogger().println(
+                            "Skipping polling on " + DateFormat.getDateTimeInstance().format(new Date())
+                                    + " due to veto from " + veto);
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to record SCM polling for " + job, e);
+                }
+
+                LOGGER.log(Level.FINE, "Skipping polling for {0} due to veto from {1}",
+                        new Object[]{job.getFullDisplayName(), veto}
+                );
+                return;
+            }
 
             String threadName = Thread.currentThread().getName();
             Thread.currentThread().setName("SCM polling for "+job);
@@ -616,7 +633,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * @deprecated
-         *      Use {@link #SCMTrigger.SCMTriggerCause(String)}.
+         *      Use {@link SCMTrigger.SCMTriggerCause#SCMTriggerCause(String)}.
          */
         @Deprecated
         public SCMTriggerCause() {

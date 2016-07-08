@@ -23,13 +23,19 @@
  */
 package hudson.slaves;
 
-import hudson.Functions;
+import hudson.RestrictedSince;
 import hudson.model.Descriptor;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Convenient base implementation of {@link ComputerLauncher} that allows
@@ -70,11 +76,30 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
         /**
          * Returns the applicable nested computer launcher types.
          * The default implementation avoids all delegating descriptors, as that creates infinite recursion.
+         * @since 2.12
          */
+        public List<Descriptor<ComputerLauncher>> applicableDescriptors(@CheckForNull Slave it,
+                                                                        @Nonnull Slave.SlaveDescriptor itDescriptor) {
+            List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
+            for (Descriptor<ComputerLauncher> d : itDescriptor.computerLauncherDescriptors(it)) {
+                if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;
+                r.add(d);
+            }
+            return r;
+        }
+        /**
+         * Returns the applicable nested computer launcher types.
+         * The default implementation avoids all delegating descriptors, as that creates infinite recursion.
+         * @deprecated use {@link #applicableDescriptors(Slave, Slave.SlaveDescriptor)}
+         */
+        @Deprecated
+        @Restricted(DoNotUse.class)
+        @RestrictedSince("2.12")
         public List<Descriptor<ComputerLauncher>> getApplicableDescriptors() {
             List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
-            for (Descriptor<ComputerLauncher> d : Functions.getComputerLauncherDescriptors()) {
-                if (DelegatingComputerLauncher.class.isInstance(d))  continue;
+            for (Descriptor<ComputerLauncher> d :
+                    Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class)) {
+                if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;
                 r.add(d);
             }
             return r;

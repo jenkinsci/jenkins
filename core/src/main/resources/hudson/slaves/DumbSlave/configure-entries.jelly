@@ -47,9 +47,10 @@ THE SOFTWARE.
   <f:slave-mode name="mode" node="${it}" />
 
   <!-- TODO: should be packaged as a tag -->
+  <j:set var="itDescriptor" value="${descriptor}"/>
   <f:dropdownList name="slave.launcher" title="${%Launch method}"
                   help="${descriptor.getHelpFile('launcher')}">
-    <j:forEach var="d" items="${h.getComputerLauncherDescriptors()}">
+    <j:forEach var="d" items="${descriptor.computerLauncherDescriptors(it)}">
       <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
                            selected="${it.launcher.descriptor==d}"
                            title="${d.displayName}">
@@ -63,10 +64,11 @@ THE SOFTWARE.
   </f:dropdownList>
 
   <!-- pointless to show this if there's only one option, which is the default -->
-  <j:if test="${h.getRetentionStrategyDescriptors().size() gt 1}">
+  <j:set var="retentionStrategies" value="${descriptor.retentionStrategyDescriptors(it)}"/>
+  <j:if test="${retentionStrategies.size() gt 1}">
     <f:dropdownList name="slave.retentionStrategy" title="${%Availability}"
                     help="/help/system-config/master-slave/availability.html">
-      <j:forEach var="d" items="${h.getRetentionStrategyDescriptors()}">
+      <j:forEach var="d" items="${retentionStrategies}">
         <j:if test="${d != null}">
           <f:dropdownListBlock value="${d.clazz.name}" name="${d.displayName}"
                                selected="${it.retentionStrategy.descriptor==d}"
@@ -82,6 +84,8 @@ THE SOFTWARE.
     </f:dropdownList>
   </j:if>
 
-  <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
+  <f:descriptorList title="${%Node Properties}"
+                    descriptors="${descriptor.nodePropertyDescriptors(it)}"
+                    field="nodeProperties" />
   
 </j:jelly>
