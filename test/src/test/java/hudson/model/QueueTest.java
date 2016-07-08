@@ -687,7 +687,6 @@ public class QueueTest {
         if(project2.getLastBuild()!=null)
             return;
         Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        e.doYank(); //restart executor
         while(!e.isIdle()){ //executor should take project2 from queue
             Thread.sleep(1000);
         }
