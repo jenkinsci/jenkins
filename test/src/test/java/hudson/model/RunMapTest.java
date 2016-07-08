@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.model.queue.QueueTaskFuture;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import static org.junit.Assert.*;
@@ -12,6 +13,7 @@ import org.jvnet.hudson.test.SleepBuilder;
 public class RunMapTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
+    // TODO https://github.com/jenkinsci/jenkins/pull/2438: @Rule public LoggerRule logs = new LoggerRule();
 
     /**
      * Makes sure that reloading the project while a build is in progress won't clobber that in-progress build.
@@ -40,6 +42,40 @@ public class RunMapTest {
         b1 = p.getBuildByNumber(1);
         assertSame(b1.getNextBuild(), b2);
         assertSame(b2.getPreviousBuild(), b1);
+    }
+
+    @Issue("JENKINS-27530")
+    @Test public void reloadWhileBuildIsInQueue() throws Exception {
+        //logs.record(Queue.class, Level.FINE);
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        p.getBuildersList().add(new SleepBuilder(9999999));
+        r.jenkins.setNumExecutors(1);
+        assertEquals(1, p.scheduleBuild2(0).waitForStart().number);
+        p.scheduleBuild2(0);
+        // Note that the bug does not reproduce simply from p.doReload(), since in that case Job identity remains intact:
+        r.jenkins.reload();
+        p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+        FreeStyleBuild b1 = p.getLastBuild();
+        assertEquals(1, b1.getNumber());
+        /* Currently fails since Run.project is final. But anyway that is not the problem:
+        assertEquals(p, b1.getParent());
+        */
+        Queue.Item[] items = Queue.getInstance().getItems();
+        assertEquals(1, items.length);
+        assertEquals(p, items[0].task); // the real issue: assignBuildNumber was being called on the wrong Job
+        QueueTaskFuture<Queue.Executable> b2f = items[0].getFuture();
+        b1.getExecutor().interrupt();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b1));
+        FreeStyleBuild b2 = (FreeStyleBuild) b2f.waitForStart();
+        assertEquals(2, b2.getNumber());
+        assertEquals(p, b2.getParent());
+        b2.getExecutor().interrupt();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b2));
+        FreeStyleBuild b3 = p.scheduleBuild2(0).waitForStart();
+        assertEquals(3, b3.getNumber());
+        assertEquals(p, b3.getParent());
+        b3.getExecutor().interrupt();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(b3));
     }
 
     /**
