@@ -245,9 +245,10 @@ $.when(getItems()).done(function(data) {
             showInputHelp('.add-item-name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
-              if (event.type == 'blur') { 
+              if (event.type === 'blur') { 
                 enableSubmit(true);
-              } else if (event.type == 'keyup') {
+              } else if (event.type === 'keyup') {
+                var btn = $('form .footer .btn-decorator button[type=submit]');
                 if (btn.hasClass('disabled')) {
                   btn.removeClass('disabled');
                   btn.prop('disabled', false);
