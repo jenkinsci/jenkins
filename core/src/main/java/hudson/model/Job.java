@@ -1213,6 +1213,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
             JSONObject jsonProperties = json.optJSONObject("properties");
             if (jsonProperties != null) {
+            	//This handles the situation when Parameterized build checkbox is checked but no parameters are selected. User will be redirected to an error page with proper error message.
+            	Jenkins.checkForEmptyParameters(jsonProperties);
               t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
             } else {
               t.clear();
