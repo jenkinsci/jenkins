@@ -53,7 +53,7 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
-      Available values: two-column (by default) or one-column (full-width size).
+      Available values: two-column (by default), one-column (full-width size) or full-screen.
     </st:attribute>
   </st:documentation>
 <st:setHeader name="Expires" value="0" />
@@ -69,9 +69,14 @@ ${h.initPageVariables(context)}
   this also allows us to configure HttpSessionContextIntegrationFilter not to create sessions,
   which I suspect can end up creating sessions for wrong resource types (such as static resources.)
 -->
+
 <j:if test="${attrs.type==null}">
   <j:set var="layoutType" value="two-column"/>
 </j:if>
+<j:if test="${attrs.type!=null}">
+  <j:set var="layoutType" value="${attrs.type}"/>
+</j:if>
+
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
 <j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
@@ -168,7 +173,9 @@ ${h.initPageVariables(context)}
     <script src="${resURL}/jsbundles/page-init.js" type="text/javascript"/>
 
   </head>
-  <body id="jenkins" class="yui-skin-sam jenkins-${h.version} ${layoutType}" data-version="${h.version}" data-model-type="${it.class.name}">
+  <body id="jenkins" class="yui-skin-sam ${layoutType} jenkins-${h.version}" data-version="${h.version}" data-model-type="${it.class.name}">
+
+    <j:if test="${layoutType!='full-screen'}">
     <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
     <a href="#skip2content" class="skiplink">Skip to content</a>
 
@@ -234,6 +241,7 @@ ${h.initPageVariables(context)}
         </l:breadcrumbBar>
       </div>
     </div>
+    </j:if>
 
     <div id="page-body" class="clear">
       <j:if test="${layoutType=='two-column'}">
@@ -259,6 +267,7 @@ ${h.initPageVariables(context)}
       </div>
     </div>
 
+    <j:if test="${layoutType!='full-screen'}">
     <footer>
       <div class="container-fluid">
         <div class="row">
@@ -278,6 +287,7 @@ ${h.initPageVariables(context)}
         </div>
       </div>
     </footer>
+    </j:if>
 
   </body>
 </html>

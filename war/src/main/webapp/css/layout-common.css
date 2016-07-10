@@ -95,6 +95,14 @@ body.two-column #main-panel {
   margin-left: 320px;
 }
 
+body.full-screen {
+  padding: 0;
+}
+
+body.full-screen #main-panel {
+  padding: 0;
+}
+
 @media (max-width: 970px) {
   body.two-column #side-panel {
     width: 100%;
