@@ -26,12 +26,13 @@ package jenkins.model;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import net.sf.json.JSONException;
+import hudson.model.Descriptor;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * Tests of {@link GlobalSCMRetryCountConfiguration}.
@@ -46,16 +47,22 @@ public class GlobalSCMRetryCountConfigurationTest {
     public void shouldExceptOnNullScmRetryCount() throws Exception {
         try {
             JSONObject json = new JSONObject();
-            j.getInstance().setScmCheckoutRetryCount(5);
+            GlobalSCMRetryCountConfiguration gc = (GlobalSCMRetryCountConfiguration)
+                    GlobalConfiguration.all().getDynamic("jenkins.model.GlobalSCMRetryCountConfiguration");
+
+            json.element("scmCheckoutRetryCount", 5);
+            gc.configure(Stapler.getCurrentRequest(), json);
             assertThat("Wrong value, it should be equal to 5",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(5));
 
-            j.getInstance().setScmCheckoutRetryCount(3);
+            json.element("scmCheckoutRetryCount", 3);
+            gc.configure(Stapler.getCurrentRequest(), json);
             assertThat("Wrong value, it should be equal to 3",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
 
-            j.jenkins.setScmCheckoutRetryCount(json.getInt(null));
-        } catch (JSONException e) {
+            JSONObject emptyJson = new JSONObject();
+            gc.configure(Stapler.getCurrentRequest(), emptyJson);
+        } catch (Descriptor.FormException e) {
             assertThat("Scm Retry count value changed! This shouldn't happen.",
                     j.getInstance().getScmCheckoutRetryCount(), equalTo(3));
         }
