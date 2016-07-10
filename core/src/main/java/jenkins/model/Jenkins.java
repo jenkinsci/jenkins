@@ -4836,8 +4836,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static void checkForEmptyParameters(JSONObject jsonProperties) throws FormException{
         JSONObject parameterDefinitionProperty = jsonProperties.getJSONObject("hudson-model-ParametersDefinitionProperty");
 		if ((parameterDefinitionProperty.getBoolean("specified") == true)&& !parameterDefinitionProperty.has("parameterDefinitions")) {
-		    throw new FormException(Messages.Hudson_NoParamsSpecified(),"parameterDefinitions");
-		}
+		   throw new FormException(Messages.Hudson_NoParamsSpecified(),"parameterDefinitions");
+        }
     }
 
 }
