@@ -31,8 +31,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.IOException;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * No {@link SCM}.
@@ -40,6 +40,10 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class NullSCM extends SCM {
+
+    @DataBoundConstructor
+    public NullSCM() {}
+
     @Override public SCMRevisionState calcRevisionsFromBuild(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         return null;
     }
@@ -58,7 +62,7 @@ public class NullSCM extends SCM {
         return NullChangeLogParser.INSTANCE;
     }
 
-    @Extension(ordinal = Integer.MAX_VALUE)
+    @Extension(ordinal = Integer.MAX_VALUE) @Symbol("none")
     public static class DescriptorImpl extends SCMDescriptor<NullSCM> {
         public DescriptorImpl() {
             super(null);
@@ -68,9 +72,5 @@ public class NullSCM extends SCM {
             return Messages.NullSCM_DisplayName();
         }
 
-        @Override
-        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new NullSCM();
-        }
     }
 }

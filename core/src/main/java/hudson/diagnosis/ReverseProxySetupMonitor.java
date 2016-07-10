@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -48,7 +49,7 @@ import org.kohsuke.stapler.Stapler;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("reverseProxy")
 public class ReverseProxySetupMonitor extends AdministrativeMonitor {
 
     private static final Logger LOGGER = Logger.getLogger(ReverseProxySetupMonitor.class.getName());

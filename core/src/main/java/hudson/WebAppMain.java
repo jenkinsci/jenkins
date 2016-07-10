@@ -23,10 +23,12 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
 import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
+import hudson.security.ACL;
 import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
 import hudson.util.HudsonIsLoading;
@@ -223,6 +225,11 @@ public class WebAppMain implements ServletContextListener {
                     boolean success = false;
                     try {
                         Jenkins instance = new Hudson(_home, context);
+
+                        // one last check to make sure everything is in order before we go live
+                        if (Thread.interrupted())
+                            throw new InterruptedException();
+
                         context.setAttribute(APP, instance);
 
                         BootFailure.getBootFailureFile(_home).delete();
@@ -244,7 +251,7 @@ public class WebAppMain implements ServletContextListener {
             };
             initThread.start();
         } catch (BootFailure e) {
-            e.publish(context,home);
+            e.publish(context, home);
         } catch (Error | RuntimeException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
@@ -329,9 +336,9 @@ public class WebAppMain implements ServletContextListener {
 
         // next the system property
         for (String name : HOME_NAMES) {
-            String sysProp = System.getProperty(name);
+            String sysProp = SystemProperties.getString(name);
             if(sysProp!=null)
-                return new FileAndDescription(new File(sysProp.trim()),"System.getProperty(\""+name+"\")");
+                return new FileAndDescription(new File(sysProp.trim()),"SystemProperties.getProperty(\""+name+"\")");
         }
 
         // look at the env var next
@@ -364,19 +371,24 @@ public class WebAppMain implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent event) {
         try {
-            terminated = true;
-            Jenkins instance = Jenkins.getInstanceOrNull();
-            if(instance!=null)
-                instance.cleanUp();
-            Thread t = initThread;
-            if (t != null && t.isAlive()) {
-                LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
-                t.interrupt();
-            }
+            ACL.impersonate(ACL.SYSTEM, new Runnable() {
+                @Override
+                public void run() {
+                    terminated = true;
+                    Jenkins instance = Jenkins.getInstanceOrNull();
+                    if (instance != null)
+                        instance.cleanUp();
+                    Thread t = initThread;
+                    if (t != null && t.isAlive()) {
+                        LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
+                        t.interrupt();
+                    }
 
-            // Logger is in the system classloader, so if we don't do this
-            // the whole web app will never be undepoyed.
-            Logger.getLogger("").removeHandler(handler);
+                    // Logger is in the system classloader, so if we don't do this
+                    // the whole web app will never be undepoyed.
+                    Logger.getLogger("").removeHandler(handler);
+                }
+            });
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);
         }

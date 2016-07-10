@@ -3,6 +3,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.model.*;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -64,7 +65,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         }
     }
 
-    @Extension
+    @Extension @Symbol("hyperlinkToModels")
     public static class DescriptorImpl extends HyperlinkNote.DescriptorImpl {
         public String getDisplayName() {
             return "Hyperlinks to models";

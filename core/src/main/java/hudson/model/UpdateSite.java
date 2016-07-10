@@ -60,6 +60,7 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -218,6 +219,20 @@ public class UpdateSite {
     }
 
     /**
+     * Extension point to allow implementations of {@link UpdateSite} to create a custom
+     * {@link UpdateCenter.InstallationJob}.
+     *
+     * @param plugin      the plugin to create the {@link UpdateCenter.InstallationJob} for.
+     * @param uc          the {@link UpdateCenter}.
+     * @param dynamicLoad {@code true} if the plugin should be attempted to be dynamically loaded.
+     * @return the {@link UpdateCenter.InstallationJob}.
+     * @since 2.9
+     */
+    protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
+    }
+
+    /**
      * Verifies the signature in the update center data file.
      */
     private FormValidation verifySignature(JSONObject o) throws IOException {
@@ -341,9 +356,11 @@ public class UpdateSite {
     }
 
     /**
-     * Returns an "always up" server for Internet connectivity testing, or null if we are going to skip the test.
+     * Gets a URL for the Internet connection check.
+     * @return  an "always up" server for Internet connectivity testing, or {@code null} if we are going to skip the test.
      */
     @Exported
+    @CheckForNull
     public String getConnectionCheckUrl() {
         Data dt = getData();
         if(dt==null)    return "http://www.google.com/";
@@ -432,7 +449,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      */
     public boolean isLegacyDefault() {
-        return id.equals(UpdateCenter.ID_DEFAULT) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
+        return id.equals(UpdateCenter.PREDEFINED_UPDATE_SITE_ID) && url.startsWith("http://hudson-ci.org/") || url.startsWith("http://updates.hudson-labs.org/");
     }
 
     /**
@@ -731,6 +748,10 @@ public class UpdateSite {
                 else if (current.isOlderThan(requiredVersion)) {
                     deps.add(depPlugin);
                 }
+                // JENKINS-34494 - or if the plugin is disabled, this will allow us to enable it
+                else if (!current.isEnabled()) {
+                    deps.add(depPlugin);
+                }
             }
 
             for(Map.Entry<String,String> e : optionalDependencies.entrySet()) {
@@ -840,19 +861,32 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
          */
+        @Restricted(NoExternalUse.class)
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
-                    LOGGER.log(Level.WARNING, "Adding dependent install of " + dep.name + " for plugin " + name);
+                    LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
                     dep.deploy(dynamicLoad);
                 } else {
-                    LOGGER.log(Level.WARNING, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
+                    LOGGER.log(Level.INFO, "Dependent install of " + dep.name + " for plugin " + name + " already added, skipping");
                 }
             }
-            UpdateCenter.InstallationJob job = uc.new InstallationJob(this, UpdateSite.this, Jenkins.getAuthentication(), dynamicLoad);
+            PluginWrapper pw = getInstalled();
+            if(pw != null) { // JENKINS-34494 - check for this plugin being disabled
+                Future<UpdateCenterJob> enableJob = null;
+                if(!pw.isEnabled()) {
+                    UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
+                    job.setCorrelationId(correlationId);
+                    enableJob = uc.addJob(job);
+                }
+                if(pw.getVersionNumber().equals(new VersionNumber(version))) {
+                    return enableJob != null ? enableJob : uc.addJob(uc.new NoOpJob(UpdateSite.this, null, this));
+                }
+            }
+            UpdateCenter.InstallationJob job = createInstallationJob(this, uc, dynamicLoad);
             job.setCorrelationId(correlationId);
             return uc.addJob(job);
         }
@@ -895,6 +929,6 @@ public class UpdateSite {
     private static final Logger LOGGER = Logger.getLogger(UpdateSite.class.getName());
 
     // The name uses UpdateCenter for compatibility reason.
-    public static boolean neverUpdate = Boolean.getBoolean(UpdateCenter.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(UpdateCenter.class.getName()+".never");
 
 }

@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -66,7 +67,6 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -447,10 +447,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * CLI command to reconnect this node.
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
+     *
+     * @param force
+     *      If true cancel any currently pending connect operation and retry from scratch
      */
-    @CLIMethod(name="connect-node")
-    public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         connect(force).get();
     }
@@ -506,10 +509,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * CLI command to disconnects this node.
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
+     *
+     * @param cause
+     *      Record the note about why you are disconnecting this node
      */
-    @CLIMethod(name="disconnect-node")
-    public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliDisconnect(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
         disconnect(new ByCLI(cause)).get();
     }
@@ -523,6 +529,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         setTemporarilyOffline(true, new ByCLI(cause));
     }
 
+    /**
+     * @deprecated Implementation of CLI command "online-node" moved to {@link hudson.cli.OnlineNodeCommand}.
+     */
+    @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         setTemporarilyOffline(false, null);
@@ -1004,7 +1014,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
-    /*package*/ void removeExecutor(final Executor e) {
+    protected void removeExecutor(final Executor e) {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -1028,9 +1038,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns true if any of the executors are {@linkplain Executor#isActive active}.
-     *
-     * Note that if an executor dies, we'll leave it in {@link #executors} until
-     * the administrator yanks it out, so that we can see why it died.
      *
      * @since 1.509
      */
@@ -1273,7 +1280,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
-            return System.getProperty("host.name");
+            return SystemProperties.getString("host.name");
         }
         private static final long serialVersionUID = 1L;
     }
@@ -1400,7 +1407,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
@@ -1435,28 +1442,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Replaces the current {@link Node} by another one.
-     */
-    private void replaceBy(final Node newNode) throws ServletException, IOException {
-        final Jenkins app = Jenkins.getInstance();
-
-        // use the queue lock until Nodes has a way of directly modifying a single node.
-        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
-            public Void call() throws IOException {
-                List<Node> nodes = new ArrayList<Node>(app.getNodes());
-                Node node = getNode();
-                int i  = (node != null) ? nodes.indexOf(node) : -1;
-                if(i<0) {
-                    throw new IOException("This agent appears to be removed while you were editing the configuration");
-                }
-                nodes.set(i, newNode);
-                app.setNodes(nodes);
-                return null;
-            }
-        });
-    }
-
-    /**
      * Updates Job by its XML definition.
      *
      * @since 1.526
@@ -1464,7 +1449,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
     }
 
     /**
@@ -1700,7 +1685,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
+    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
     public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);

@@ -1,19 +1,19 @@
 // Initialize all modules by requiring them. Also makes sure they get bundled (see gulpfile.js).
 var $ = require('jquery-detached').getJQuery();
 
-var getItems = function(){
+var getItems = function() {
   var d = $.Deferred();
   $.get('itemCategories?depth=3').done(
-      function(data){
-        d.resolve(data);
-      }
+    function(data){
+      d.resolve(data);
+    }
   );
   return d.promise();
 }; 
 
 var jRoot = $('head').attr('data-rooturl');
 
-$.when(getItems()).done(function(data){
+$.when(getItems()).done(function(data) {
   $(function() {
 
     //////////////////////////
@@ -40,18 +40,6 @@ $.when(getItems()).done(function(data){
       return newDesc;
     }
 
-    function getItemTypeSelected() {
-      var item = $('input[type="radio"][name="mode"]:checked', '#createItem').val();
-      if (item === "copy") {
-        return undefined;
-      }
-      return item;
-    }
-
-    function getItemCopyFromSelected() {
-      return $('input[type="radio"][name="mode"][value="copy"]:checked', '#createItem').val();
-    }
-
     function getCopyFromValue() {
       return $('input[type="text"][name="from"]', '#createItem').val();
     }
@@ -59,6 +47,14 @@ $.when(getItems()).done(function(data){
     function isItemNameEmpty() {
       var itemName = $('input[name="name"]', '#createItem').val();
       return (itemName === '') ? true : false;
+    }
+
+    function getFieldValidationStatus(fieldId) {
+      return $('#' + fieldId).data('valid');
+    }
+
+    function setFieldValidationStatus(fieldId, status) {
+      $('#' + fieldId).data('valid', status);
     }
 
     function activateValidationMessage(messageId, context, message) {
@@ -82,12 +78,71 @@ $.when(getItems()).done(function(data){
       $('.input-help', context).removeClass('input-message-disabled');
     }
 
+    // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
+    function doSticky() {
+      var decorator = $('form .footer .btn-decorator');
+      var pos = decorator.offset();
+      var vpH = $(window).height();
+      if (pos.top >= vpH) {
+        decorator.css({position: 'fixed'});
+      }
+
+      $(window).scroll(function() {
+        var footer = $('form .footer');
+        var ref1 = decorator.offset().top + decorator.outerHeight();
+        var ref2 = footer.offset().top + footer.outerHeight();
+        var vpH = $(window).height();
+        if (ref2 > vpH + $(window).scrollTop()) {
+          decorator.css({position: 'fixed'});
+        } else if (ref2 - 1 <= ref1) {
+          decorator.css({position: 'absolute'});
+        }
+      });
+    }
+
+    function enableSubmit(status) {
+      var btn = $('form .footer .btn-decorator button[type=submit]');
+      if (status === true) {
+        if (btn.hasClass('disabled')) {
+          btn.removeClass('disabled');
+          btn.prop('disabled', false);
+        }
+        btn.focus();
+      } else {
+        if (!btn.hasClass('disabled')) {
+          btn.addClass('disabled');
+          btn.prop('disabled', true);
+        }
+      }
+    }
+
+    function getFormValidationStatus() {
+      if (getFieldValidationStatus('name') && (getFieldValidationStatus('items') || getFieldValidationStatus('from'))) {
+          return true;
+      }
+      return false;
+    }
+
+    function cleanItemSelection() {
+      $('.categories').find('li[role="radio"]').attr("aria-checked", "false");
+      $('#createItem').find('input[type="radio"][name="mode"]').removeAttr('checked');
+      $('.categories').find('.active').removeClass('active');
+      setFieldValidationStatus('items', false);
+    }
+
+    function cleanCopyFromOption() {
+      $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
+      $('input[type="text"][name="from"]', '#createItem').val('');
+      setFieldValidationStatus('from', false);
+    }
+
+
     //////////////////////////////////
     // Draw functions
 
     function drawCategory(category) {
       var $category = $('<div/>').addClass('category').attr('id', 'j-add-item-type-' + cleanClassName(category.id));
-      var $items = $('<ul"/>').addClass('j-item-options');
+      var $items = $('<ul/>').addClass('j-item-options');
       var $catHeader = $('<div class="header" />');
       var title = '<h2>' + category.name + '</h2>';
       var description = '<p>' + category.description + '</p>';
@@ -107,23 +162,40 @@ $.when(getItems()).done(function(data){
 
     function drawItem(elem) {
       var desc = checkForLink(elem.description);
-      var $item = $(['<li class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
+      var $item = $(['<li tabindex="0" role="radio" aria-checked="false" class="', cleanClassName(elem.class), '"><label><input type="radio" name="mode" value="',
       elem.class ,'"/> <span class="label">', elem.displayName, '</span></label></li>'].join('')).append(['<div class="desc">', desc, '</div>'].join('')).append(drawIcon(elem));
 
-      function setSelectState(e) {
+      function select(e) {
         e.preventDefault();
-        var $this = $(this).closest('li');
-        $this.closest('.categories').find('input[type="radio"][name="mode"]').removeAttr('checked');
-        $this.closest('.categories').find('.active').removeClass('active');
-        $this.addClass('active');
-        $this.find('input[type="radio"][name="mode"]').prop('checked', true);
-        $('input[type="text"][name="from"]', '#createItem').val('');
-        cleanValidationMessages('.add-item-copy');
-        if (isItemNameEmpty()) {
+        cleanCopyFromOption();
+        cleanItemSelection();
+
+        $(this).attr("aria-checked", "true");
+        $(this).find('input[type="radio"][name="mode"]').prop('checked', true);
+        $(this).addClass('active');
+
+        setFieldValidationStatus('items', true);
+        if (!getFieldValidationStatus('name')) {
           activateValidationMessage('#itemname-required', '.add-item-name');
+          $('input[name="name"][type="text"]', '#createItem').focus();
+        } else {
+          if (getFormValidationStatus()) {
+            enableSubmit(true);
+          }
         }
       }
-      $item.click(setSelectState);
+
+      $item.click(select);
+
+      $item.keypress(function(e) {
+        switch (e.which) {
+          case 13:
+          case 32:
+            $(this).trigger('click');
+            e.stopPropagation();
+            break;
+        }
+      });
 
       return $item;
     }
@@ -172,38 +244,61 @@ $.when(getItems()).done(function(data){
           } else {
             cleanValidationMessages('.add-item-name');
             showInputHelp('.add-item-name');
+            setFieldValidationStatus('name', true);
+            if (getFormValidationStatus()) {
+              enableSubmit(true);
+            }
           }
         });
       } else {
+        enableSubmit(false);
+        setFieldValidationStatus('name', false);
+        cleanValidationMessages('.add-item-name');
         activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
 
     // Init CopyFromField
-    $('input[name="from"]', '#createItem').focus(function() {
-      $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
-      $('.categories').find('.active').removeClass('active');
-    });
-
     $('input[name="from"]', '#createItem').blur(function() {
       if (getCopyFromValue() === '') {
-        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', false);
+        $('#createItem').find('input[type="radio"][value="copy"]').removeAttr('checked');
+      } else {
+        cleanItemSelection();
+        $('#createItem').find('input[type="radio"][value="copy"]').prop('checked', true);
+        setFieldValidationStatus('from', true);
+        if (!getFieldValidationStatus('name')) {
+          activateValidationMessage('#itemname-required', '.add-item-name');
+          setTimeout(function() {
+            $('input[name="name"][type="text"]', '#createItem').focus();
+          }, 400);
+        } else {
+          if (getFormValidationStatus()) {
+            enableSubmit(true);
+          }
+        }
       }
     });
 
     // Client-side validation
     $("#createItem").submit(function(event) {
-      if (isItemNameEmpty()) {
-        activateValidationMessage('#itemname-required', '.add-item-name');
-        $('input[name="name"][type="text"]', '#createItem').focus();
+      if (!getFormValidationStatus()) {
         event.preventDefault();
-      } else {
-        if (getItemTypeSelected() === undefined && getItemCopyFromSelected() === undefined) {
-          activateValidationMessage('#itemtype-required', '.add-item-name');
+        if (!getFieldValidationStatus('name')) {
+          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
-          event.preventDefault();
+        } else {
+          if (!getFieldValidationStatus('items') && !getFieldValidationStatus('from'))  {
+            activateValidationMessage('#itemtype-required', '.add-item-name');
+            $('input[name="name"][type="text"]', '#createItem').focus();
+          }
         }
       }
     });
+
+    // Disable the submit button
+    enableSubmit(false);
+
+    // Do sticky the form buttons
+    doSticky();
   });
 });

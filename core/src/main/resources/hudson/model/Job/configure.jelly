@@ -27,41 +27,51 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.displayName} Config" cssclass="main-panel-only" norefresh="true" permission="${it.EXTENDED_READ}">
+
+  <l:layout norefresh="true" type="one-column" permission="${it.EXTENDED_READ}" title="${it.displayName} Config">
+
+    <l:js src="jsbundles/config-scrollspy.js" />
+    <l:css src="jsbundles/config-scrollspy.css" />
+
     <l:main-panel>
-      <l:js src="jsbundles/config-scrollspy.js" />
-      <l:css src="jsbundles/config-scrollspy.css" />
+    <div class="container">
+      <div class="row">
+        <div class="col-md-offset-2 col-md-20">
 
-      <div class="behavior-loading">${%LOADING}</div>
-      <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
-        <j:set var="descriptor" value="${it.descriptor}" />
-        <j:set var="instance" value="${it}" />
+          <div class="behavior-loading">${%LOADING}</div>
 
-        <j:if test="${it.isNameEditable()}">
-          <f:entry title="${%name(it.pronoun)}">
-            <f:textbox name="name" value="${it.name}" />
-          </f:entry>
-        </j:if>
-        <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-        </f:entry>
+          <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
+            <j:set var="descriptor" value="${it.descriptor}" />
+            <j:set var="instance" value="${it}" />
 
-        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
+            <j:if test="${it.isNameEditable()}">
+              <f:entry title="${%name(it.pronoun)}">
+                <f:textbox name="name" value="${it.name}" />
+              </f:entry>
+            </j:if>
+            <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+              <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+            </f:entry>
 
-        <!-- additional entries from derived classes -->
-        <st:include page="configure-entries.jelly" />
+            <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
 
-        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-          <f:bottomButtonBar>
-            <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-            <f:submit value="${%Save}"/>
-            <f:apply value="${%Apply}"/>
-          </f:bottomButtonBar>
-        </j:if>
-      </f:form>
-      <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-        <st:adjunct includes="lib.form.confirm" />
-      </j:if>
+            <!-- additional entries from derived classes -->
+            <st:include page="configure-entries.jelly" />
+
+            <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+              <f:bottomButtonBar>
+                <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
+                <f:submit value="${%Save}"/>
+                <f:apply value="${%Apply}"/>
+              </f:bottomButtonBar>
+            </j:if>
+          </f:form>
+          <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+            <st:adjunct includes="lib.form.confirm" />
+          </j:if>
+        </div>
+      </div>
+    </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

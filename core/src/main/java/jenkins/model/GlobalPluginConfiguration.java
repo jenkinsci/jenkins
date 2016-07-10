@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.Plugin;
 import hudson.StructuredForm;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
@@ -17,7 +18,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=100) // historically this was placed above general configuration from arbitrary descriptors
+@Extension(ordinal=100) @Symbol("plugin") // historically this was placed above general configuration from arbitrary descriptors
 public class GlobalPluginConfiguration  extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {

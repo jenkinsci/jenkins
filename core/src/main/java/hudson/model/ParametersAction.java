@@ -32,9 +32,13 @@ import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
+import jenkins.model.RunAction2;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,11 +46,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.util.SystemProperties;
 
 /**
  * Records the parameter values used for a build.
@@ -57,9 +65,21 @@ import javax.annotation.Nonnull;
  * that were specified when scheduling.
  */
 @ExportedBean
-public class ParametersAction implements Action, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
+public class ParametersAction implements RunAction2, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
+
+    @Restricted(NoExternalUse.class)
+    public static final String KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
+            ".keepUndefinedParameters";
+
+    @Restricted(NoExternalUse.class)
+    public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
+            ".safeParameters";
+
+    private Set<String> safeParameters;
 
     private final List<ParameterValue> parameters;
+
+    private List<String> parameterDefinitionNames;
 
     /**
      * @deprecated since 1.283; kept to avoid warnings loading old build data, but now transient.
@@ -67,8 +87,33 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     @Deprecated
     private transient AbstractBuild<?, ?> build;
 
+    private transient Run<?, ?> run;
+
     public ParametersAction(List<ParameterValue> parameters) {
         this.parameters = parameters;
+        String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        safeParameters = new TreeSet<>();
+        if (paramNames != null) {
+            safeParameters.addAll(Arrays.asList(paramNames.split(",")));
+        }
+    }
+
+    /**
+     * Constructs a new action with additional safe parameters.
+     * The additional safe parameters should be only those considered safe to override the environment
+     * and what is declared in the project config in addition to those specified by the user in
+     * {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}.
+     * See <a href="https://issues.jenkins-ci.org/browse/SECURITY-170">SECURITY-170</a>
+     *
+     * @param parameters the parameters
+     * @param additionalSafeParameters additional safe parameters
+     * @since TODO
+     */
+    public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
+        this(parameters);
+        if (additionalSafeParameters != null) {
+            safeParameters.addAll(additionalSafeParameters);
+        }
     }
     
     public ParametersAction(ParameterValue... parameters) {
@@ -76,7 +121,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             BuildWrapper w = p.createBuildWrapper(build);
             if(w!=null) result.add(w);
@@ -84,7 +129,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public void buildEnvVars(AbstractBuild<?,?> build, EnvVars env) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             p.buildEnvironment(build, env); 
         }
@@ -106,9 +151,9 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
      * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
      */
     public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
-        VariableResolver[] resolvers = new VariableResolver[parameters.size()+1];
+        VariableResolver[] resolvers = new VariableResolver[getParameters().size()+1];
         int i=0;
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             resolvers[i++] = p.createVariableResolver(build);
         }
@@ -119,12 +164,12 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
     
     public Iterator<ParameterValue> iterator() {
-        return parameters.iterator();
+        return getParameters().iterator();
     }
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return Collections.unmodifiableList(parameters);
+        return Collections.unmodifiableList(filter(parameters));
     }
 
     public ParameterValue getParameter(String name) {
@@ -137,7 +182,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     }
 
     public Label getAssignedLabel(SubTask task) {
-        for (ParameterValue p : parameters) {
+        for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             Label l = p.getAssignedLabel(task);
             if (l!=null)    return l;
@@ -182,7 +227,9 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     @Nonnull
     public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
         if(overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters);
+            parametersAction.safeParameters = this.safeParameters;
+            return parametersAction;
         }
         List<ParameterValue> combinedParameters = newArrayList(overrides);
         Set<String> names = newHashSet();
@@ -199,7 +246,7 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
             }
         }
 
-        return new ParametersAction(combinedParameters);
+        return new ParametersAction(combinedParameters, this.safeParameters);
     }
 
     /*
@@ -210,14 +257,93 @@ public class ParametersAction implements Action, Iterable<ParameterValue>, Queue
     @Nonnull
     public ParametersAction merge(@CheckForNull ParametersAction overrides) {
         if (overrides == null) {
-            return new ParametersAction(parameters);
+            ParametersAction parametersAction = new ParametersAction(parameters, this.safeParameters);
+            return parametersAction;
         }
-        return createUpdated(overrides.getParameters());
+        ParametersAction parametersAction = createUpdated(overrides.parameters);
+        Set<String> safe = new TreeSet<>();
+        if (parametersAction.safeParameters != null && this.safeParameters != null) {
+            safe.addAll(this.safeParameters);
+        }
+        if (overrides.safeParameters != null) {
+            safe.addAll(overrides.safeParameters);
+        }
+        parametersAction.safeParameters = safe;
+        return parametersAction;
     }
 
     private Object readResolve() {
         if (build != null)
             OldDataMonitor.report(build, "1.283");
+        if (safeParameters == null) {
+            safeParameters = Collections.emptySet();
+        }
         return this;
     }
+
+    @Override
+    public void onAttached(Run<?, ?> r) {
+        ParametersDefinitionProperty p = r.getParent().getProperty(ParametersDefinitionProperty.class);
+        if (p != null) {
+            this.parameterDefinitionNames = p.getParameterDefinitionNames();
+        } else {
+            this.parameterDefinitionNames = Collections.emptyList();
+        }
+        this.run = r;
+    }
+
+    @Override
+    public void onLoad(Run<?, ?> r) {
+        this.run = r;
+    }
+
+    private List<? extends ParameterValue> filter(List<ParameterValue> parameters) {
+        if (this.run == null) {
+            return parameters;
+        }
+
+        if (this.parameterDefinitionNames == null) {
+            return parameters;
+        }
+
+        if (SystemProperties.getBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME)) {
+            return parameters;
+        }
+
+        List<ParameterValue> filteredParameters = new ArrayList<ParameterValue>();
+
+        for (ParameterValue v : this.parameters) {
+            if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
+                filteredParameters.add(v);
+            } else {
+                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}`=true to allow "
+                        + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
+                        + "even though it represents a security breach",
+                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
+            }
+        }
+
+        return filteredParameters;
+    }
+
+    /**
+     * Returns all parameters.
+     *
+     * Be careful in how you process them. It will return parameters even not being defined as
+     * {@link ParametersDefinitionProperty} in the job, so any external
+     * caller could inject any parameter (using any key) here. <strong>Treat it as untrusted data</strong>.
+     *
+     * @return all parameters defined here.
+     * @since TODO
+     */
+    public List<ParameterValue> getAllParameters() {
+        return Collections.unmodifiableList(parameters);
+    }
+
+    private boolean isSafeParameter(String name) {
+        return safeParameters.contains(name);
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(ParametersAction.class.getName());
+
 }

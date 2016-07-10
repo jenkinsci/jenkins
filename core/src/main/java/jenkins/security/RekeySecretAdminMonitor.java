@@ -10,6 +10,7 @@ import hudson.util.VersionNumber;
 import jenkins.management.AsynchronousAdministrativeMonitor;
 import jenkins.model.Jenkins;
 import jenkins.util.io.FileBoolean;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("rekeySecret")
 public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor implements StaplerProxy {
 
     /**

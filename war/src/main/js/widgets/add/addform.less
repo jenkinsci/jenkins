@@ -23,14 +23,14 @@
 
     .btn-decorator {
       position: absolute;
-      bottom: -1px;
-      left: -1px;
+      bottom: 0px;
       padding: 20px 30px;
       width: auto;
       border-top-right-radius: 10px;
       border: 1px solid #aaccbb;
       background: rgba(245, 249, 239, 0.75);
       text-align: center;
+      z-index: 10;
 
       button[type=submit] {
         padding: 5px 20px;
@@ -43,6 +43,21 @@
         font-weight: bold;
         font-size: 12px;
         line-height: 27px;
+      }
+
+      button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
+        background-color: rgb(68, 119, 136);
+        border-color: rgb(51, 85, 102);
+        color: rgb(238, 238, 238);
+        cursor: pointer;
+      }
+
+      button[type=submit].disabled {
+        background-color: #ccc;
+        border-color: #aaa;
+        color: rgb(140, 140, 140);
+        cursor: auto;
+        opacity: 0.75;
       }
     }
   }
@@ -255,6 +270,7 @@
 
   .categories.flat {
     .category {
+      padding: 0 10px;
       border-bottom: none;
 
       .header {
@@ -263,11 +279,11 @@
     }
 
     .category:first-child {
-      padding-bottom: 0;
+      padding: 10px 10px 0 10px;
     }
 
     .category:last-child {
-      padding-top: 0;
+      padding: 0 10px 10px 10px;
     }
   }
 
@@ -286,6 +302,7 @@
   li:hover, li:focus {
     border-color: #cccccc;
     background: rgba(255, 255, 255, 0.65);
+    outline: 0;
   }
 
   li.active {

@@ -169,6 +169,15 @@ exports.initHandlebars = function() {
 
 	Handlebars.registerHelper('id', exports.idIfy);
 
+	Handlebars.registerHelper('replace', function() {
+		var val = arguments[0];
+		// second, through second to last - options is last
+		for (var i = 1; i < arguments.length - 1; i++) {
+			val = val.replace('{' + (i-1) + '}', arguments[i]);
+		}
+		return val;
+	});
+
 	return Handlebars;
 };
 
@@ -185,25 +194,51 @@ exports.loadTranslations = function(bundleName, handler, onError) {
 			throw 'Unable to load localization data: ' + res.message;
 		}
 
-		handler(res.data);
+		var translations = res.data;
+
+		/* globals Proxy: true */
+		if('undefined' !== typeof Proxy) {
+			translations = new Proxy(translations, {
+				get: function(target, property) {
+					if(property in target) {
+						return target[property];
+					}
+					if(debug) {
+						console.log('"' + property + '" not found in translation bundle.');
+					}
+					return property;
+				}
+			});
+		}
+
+		handler(translations);
 	});
 };
 
 /**
  * Runs a connectivity test, calls handler with a boolean whether there is sufficient connectivity to the internet
  */
-exports.testConnectivity = function(handler) {
+exports.testConnectivity = function(siteId, handler) {
 	// check the connectivity api
 	var testConnectivity = function() {
-		exports.get('/updateCenter/connectionStatus?siteId=default', function(response) {
+		exports.get('/updateCenter/connectionStatus?siteId=' + siteId, function(response) {
+			if(response.status !== 'ok') {
+				handler(false, true, response.message);
+			}
+			
+			// Define statuses, which need additional check iteration via async job on the Jenkins master
+			// Statuses like "OK" or "SKIPPED" are considered as fine.
 			var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
 			if(uncheckedStatuses.indexOf(response.data.updatesite) >= 0  || uncheckedStatuses.indexOf(response.data.internet) >= 0) {
 				setTimeout(testConnectivity, 100);
 			}
 			else {
-				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || response.data.internet !== 'OK') {
-					// no connectivity
-					handler(false);
+				// Update site should be always reachable, but we do not require the internet connection
+				// if it's explicitly skipped by the update center
+				if(response.status !== 'ok' || response.data.updatesite !== 'OK' || 
+							(response.data.internet !== 'OK' && response.data.internet !== 'SKIPPED')) {
+					// no connectivity, but not fatal
+					handler(false, false);
 				}
 				else {
 					handler(true);
@@ -224,9 +259,11 @@ exports.getWindow = function($form) {
 	$(top.document).find('iframe').each(function() {
 		var windowFrame = this.contentWindow;
 		var $f = $(this).contents().find('form');
-		if($f.length > 0 && $form[0] === $f[0]) {
-			wnd = windowFrame;
-		}
+		$f.each(function() {
+			if($form[0] === this) {
+				wnd = windowFrame;
+			}
+		});
 	});
 	return wnd;
 };

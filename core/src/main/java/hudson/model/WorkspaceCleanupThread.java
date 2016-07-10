@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.slaves.WorkspaceList;
 import java.io.IOException;
@@ -37,13 +38,14 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
+import org.jenkinsci.Symbol;
 
 /**
  * Clean up old left-over workspaces from agents.
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("workspaceCleanup")
 public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     public WorkspaceCleanupThread() {
         super("Workspace clean-up");
@@ -145,15 +147,15 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     /**
      * Can be used to disable workspace clean up.
      */
-    public static boolean disabled = Boolean.getBoolean(WorkspaceCleanupThread.class.getName()+".disabled");
+    public static boolean disabled = SystemProperties.getBoolean(WorkspaceCleanupThread.class.getName()+".disabled");
 
     /**
      * How often the clean up should run. This is final as Jenkins will not reflect changes anyway.
      */
-    public static final int recurrencePeriodHours = Integer.getInteger(WorkspaceCleanupThread.class.getName()+".recurrencePeriodHours", 24);
+    public static final int recurrencePeriodHours = SystemProperties.getInteger(WorkspaceCleanupThread.class.getName()+".recurrencePeriodHours", 24);
 
     /**
      * Number of days workspaces should be retained.
      */
-    public static int retainForDays = Integer.getInteger(WorkspaceCleanupThread.class.getName()+".retainForDays", 30);
+    public static int retainForDays = SystemProperties.getInteger(WorkspaceCleanupThread.class.getName()+".retainForDays", 30);
 }

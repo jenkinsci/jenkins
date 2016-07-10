@@ -3,13 +3,20 @@
   "version": "1.0.0",
   "description": "Jenkins User Interface",
   "license": "MIT",
+  "author": {
+    "name": "Tom Fennelly",
+    "email": "tom.fennelly@gmail.com",
+    "url": "https://github.com/tfennelly"
+  },
+  "private": true,
   "devDependencies": {
     "gulp": "^3.9.0",
     "handlebars": "^3.0.3",
     "hbsfy": "^2.4.1",
     "jenkins-handlebars-rt": "^1.0.1",
     "jenkins-js-builder": "0.0.40",
-    "jenkins-js-test": "^1.0.0"
+    "jenkins-js-test": "^1.0.0",
+    "gulp-less": "^3.1.0"
   },
   "dependencies": {
     "bootstrap-detached": "^3.3.5-v1",

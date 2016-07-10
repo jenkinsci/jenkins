@@ -1,5 +1,6 @@
 package jenkins.util.xml;
 
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -83,7 +84,7 @@ public final class XMLUtils {
             // for some reason we could not convert source
             // this applies to DOMSource and StAXSource - and possibly 3rd party implementations...
             // a DOMSource can already be compromised as it is parsed by the time it gets to us.
-            if (Boolean.getBoolean(DISABLED_PROPERTY_NAME)) {
+            if (SystemProperties.getBoolean(DISABLED_PROPERTY_NAME)) {
                 LOGGER.log(Level.WARNING,  "XML external entity (XXE) prevention has been disabled by the system " +
                         "property {0}=true Your system may be vulnerable to XXE attacks.", DISABLED_PROPERTY_NAME);
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -107,7 +108,7 @@ public final class XMLUtils {
      * @return The XML {@link Document}.
      * @throws SAXException Error parsing the XML stream data e.g. badly formed XML.
      * @throws IOException Error reading from the steam.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull Document parse(@Nonnull Reader stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
@@ -129,7 +130,7 @@ public final class XMLUtils {
      * @return The parsed document.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws IOException Error reading from the file.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull Document parse(@Nonnull File file, @Nonnull String encoding) throws SAXException, IOException {
         if (!file.exists() || !file.isFile()) {
@@ -161,7 +162,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the file.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file) throws IOException, SAXException, XPathExpressionException {
         return getValue(xpath, file, Charset.defaultCharset().toString());
@@ -177,7 +178,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the file.
      * @throws SAXException Error parsing the XML file data e.g. badly formed XML.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static @Nonnull String getValue(@Nonnull String xpath, @Nonnull File file, @Nonnull String fileDataEncoding) throws IOException, SAXException, XPathExpressionException {
         Document document = parse(file, fileDataEncoding);
@@ -191,7 +192,7 @@ public final class XMLUtils {
      * @return The data value. An empty {@link String} is returned when the expression does not evaluate
      * to anything in the document.
      * @throws XPathExpressionException Invalid XPath expression.
-     * @since FIXME
+     * @since 2.0
      */
     public static String getValue(String xpath, Document document) throws XPathExpressionException {
         XPath xPathProcessor = XPathFactory.newInstance().newXPath();

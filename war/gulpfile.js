@@ -23,6 +23,15 @@ builder.bundle('src/main/js/pluginSetupWizard.js')
     .inDir('src/main/webapp/jsbundles');
 
 //
+// Bundle the Upgrade Wizard.
+//
+builder.bundle('src/main/js/upgradeWizard.js')
+    .withExternalModuleMapping('jquery-detached', 'core-assets/jquery-detached:jquery2')
+    .withExternalModuleMapping('bootstrap', 'core-assets/bootstrap:bootstrap3')
+    .withExternalModuleMapping('handlebars', 'core-assets/handlebars:handlebars3')
+    .inDir('src/main/webapp/jsbundles');
+
+//
 // Bundle the Config Tab Bar.
 // See https://github.com/jenkinsci/js-builder#bundling
 //

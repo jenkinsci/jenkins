@@ -58,6 +58,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -84,8 +85,13 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    /** JENKINS-35098: discouraged */
+    @SuppressWarnings("FieldMayBeFinal")
+    private static boolean useAutoBrowserHolder = SystemProperties.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
     /**
      * Stores {@link AutoBrowserHolder}. Lazily created.
+     * @deprecated Unused by default.
      */
     private transient AutoBrowserHolder autoBrowserHolder;
 
@@ -124,17 +130,21 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      * @see #guessBrowser
-     * @see SCMDescriptor#isBrowserReusable
      */
+    @SuppressWarnings("deprecation")
     @Exported(name="browser")
     public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
-        if(autoBrowserHolder==null)
-            autoBrowserHolder = new AutoBrowserHolder(this);
-        return autoBrowserHolder.get();
-
+        if (useAutoBrowserHolder) {
+            if (autoBrowserHolder == null) {
+                autoBrowserHolder = new AutoBrowserHolder(this);
+            }
+            return autoBrowserHolder.get();
+        } else {
+            return guessBrowser();
+        }
     }
 
     /**

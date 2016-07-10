@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
@@ -402,7 +403,7 @@ public class DownloadService extends PageDecorator {
                     jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Could not load json from " + site, e );
+                    LOGGER.log(Level.FINE, "Could not load json from " + site, e );
                     continue;
                 }
                 JSONObject o = JSONObject.fromObject(jsonString);
@@ -488,10 +489,10 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
-    public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
@@ -499,6 +500,6 @@ public class DownloadService extends PageDecorator {
      * Should only be used when {@link DownloadSettings#isUseBrowser};
      * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
-    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
+    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

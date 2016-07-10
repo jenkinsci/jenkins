@@ -204,6 +204,14 @@ public class SlaveComputer extends Computer {
         }
     }
 
+    /**
+     * Return the {@code TaskListener} for this SlaveComputer. Never null
+     * @since 2.9
+     */
+    public TaskListener getListener() {
+        return taskListener;
+    }
+
     @Override
     public String getIcon() {
         Future<?> l = lastConnectActivity;
@@ -249,7 +257,7 @@ public class SlaveComputer extends Computer {
                     try {
                         for (ComputerListener cl : ComputerListener.all())
                             cl.preLaunch(SlaveComputer.this, taskListener);
-
+                        offlineCause = null;
                         launcher.launch(SlaveComputer.this, taskListener);
                     } catch (AbortException e) {
                         taskListener.error(e.getMessage());
@@ -266,7 +274,7 @@ public class SlaveComputer extends Computer {
                         throw e;
                     }
                 } finally {
-                    if (channel==null) {
+                    if (channel==null && offlineCause == null) {
                         offlineCause = new OfflineCause.LaunchFailed();
                         for (ComputerListener cl : ComputerListener.all())
                             cl.onLaunchFailure(SlaveComputer.this, taskListener);

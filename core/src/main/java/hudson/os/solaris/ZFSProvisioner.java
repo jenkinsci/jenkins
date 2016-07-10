@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.Serializable;
 
+import org.jenkinsci.Symbol;
 import org.jvnet.solaris.libzfs.LibZFS;
 import org.jvnet.solaris.libzfs.ZFSFileSystem;
 
@@ -111,7 +112,7 @@ public class ZFSProvisioner extends FileSystemProvisioner implements Serializabl
         throw new UnsupportedOperationException();
     }
 
-    @Extension
+    @Extension @Symbol("zfs")
     public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
         public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
             // TODO

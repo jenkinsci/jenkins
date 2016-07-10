@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
 
@@ -126,6 +124,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
         extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, OnMaster {
 
+    private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
+
     /**
      * Next build number. Kept in a separate file because this is the only
      * information that gets updated often. This allows the rest of the
@@ -206,24 +206,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
-                // try to infer the value of the next build number from the existing build records. See JENKINS-11563
-                File[] folders = buildDir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        return file.isDirectory() && file.getName().matches("[0-9]+");
-                    }
-                });
-
-                if (folders == null || folders.length == 0) {
-                    this.nextBuildNumber = 1;
+                LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
+                if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
+                    // allow LazyBuildMixIn.onLoad to fix it
                 } else {
-                    Collection<Integer> foldersInt = Collections2.transform(Arrays.asList(folders), new Function<File, Integer>() {
-                        public Integer apply(File file) {
-                            return Integer.parseInt(file.getName());
-                        }
-                    });
-                    this.nextBuildNumber = Collections.max(foldersInt) + 1;
+                    RunT lB = getLastBuild();
+                    synchronized (this) {
+                        this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
+                    }
+                    saveNextBuildNumber();
                 }
-                saveNextBuildNumber();
             }
         } else {
             // From the old Hudson, or doCreateItem. Create this file now.
@@ -369,6 +361,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("JOB_BASE_NAME", getName());
         return env;
     }
 
@@ -435,15 +428,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             removeProperty(BuildDiscarderProperty.class);
             if (bd != null) {
                 addProperty(new BuildDiscarderProperty(bd));
             }
             bc.commit();
-        } finally {
-            bc.abort();
         }
     }
 
@@ -1249,7 +1239,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
-            Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
+            LOGGER.log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
     }

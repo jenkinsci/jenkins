@@ -1,26 +1,35 @@
 <div class="modal-header">
-	<h4 class="modal-title">{{translations.installWizard_pluginsInstalled_title}}</h4>
+    <h4 class="modal-title">{{translations.installWizard_welcomePanel_title}}</h4>
 </div>
 <div class="modal-body">
-	<div class="jumbotron welcome-panel success-panel">
-		<h1>{{translations.installWizard_pluginsInstalled_banner}}</h1>
+    <div class="jumbotron welcome-panel success-panel">
+        <h1>{{translations.installWizard_pluginInstallFailure_title}}</h1>
 
-		{{#if restartRequired}}
-		<p>{{translations.installWizard_installComplete_message}} {{translations.installWizard_installComplete_restartRequiredMessage}}</p>
-		<button type="button" class="btn btn-primary install-done-restart">
-			{{translations.installWizard_installComplete_restartLabel}}
-		</button>
-		{{else}}
-		<p>{{translations.installWizard_installComplete_message}}</p>
-		<button type="button" class="btn btn-primary install-done">
-			{{translations.installWizard_installComplete_finishButtonLabel}}
-		</button>
-		{{/if}}
-	</div>
+        {{#if failedPlugins}}
+        <p>{{translations.installWizard_pluginInstallFailure_message}}</p>
+        <button type="button" class="btn btn-primary retry-failed-plugins">
+            {{translations.installWizard_retry}}
+        </button>
+        {{/if}}
+    </div>
 
-	<div class="selected-plugin-progress success-panel">
-		{{#each installingPlugins}}
-		<div class="selected-plugin {{installStatus}}" data-name="{{id name}}">{{title}}</div>
-		{{/each}}
-	</div>
+    <div class="selected-plugin-progress success-panel">
+        {{#each installingPlugins}}
+        <div class="selected-plugin {{installStatus}}" data-name="{{id name}}">{{title}}</div>
+        {{/each}}
+    </div>
+</div>
+<div class="modal-footer">
+    {{#if failedPlugins}}
+    <button type="button" class="btn btn-link continue-with-failed-plugins">
+        {{translations.installWizard_continue}}
+    </button>
+    <button type="button" class="btn btn-primary retry-failed-plugins">
+        {{translations.installWizard_retry}}
+    </button>
+    {{else}}
+    <button type="button" class="btn btn-primary continue-with-failed-plugins">
+        {{translations.installWizard_continue}}
+    </button>
+    {{/if}}
 </div>

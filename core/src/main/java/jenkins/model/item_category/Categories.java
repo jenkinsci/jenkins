@@ -45,6 +45,8 @@ import java.util.List;
  * It is a logic representation of a set of {@link Category}.
  *
  * This class is not thread-safe.
+ *
+ * @since 2.0
  */
 @ExportedBean
 @Restricted(NoExternalUse.class)

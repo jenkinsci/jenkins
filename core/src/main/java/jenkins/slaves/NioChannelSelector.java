@@ -1,6 +1,7 @@
 package jenkins.slaves;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.init.Terminator;
 import hudson.model.Computer;
 import org.jenkinsci.remoting.nio.NioChannelHub;
@@ -46,7 +47,7 @@ public class NioChannelSelector {
     /**
      * Escape hatch to disable use of NIO.
      */
-    public static boolean DISABLED = Boolean.getBoolean(NioChannelSelector.class.getName()+".disabled");
+    public static boolean DISABLED = SystemProperties.getBoolean(NioChannelSelector.class.getName()+".disabled");
 
     private static final Logger LOGGER = Logger.getLogger(NioChannelSelector.class.getName());
 }

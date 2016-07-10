@@ -31,7 +31,9 @@ import hudson.util.TimeUnit2;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import jenkins.security.SlaveToMasterCallable;
+import org.jenkinsci.Symbol;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -46,7 +48,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  * @since 1.325
  */
-@Extension
+@Extension @Symbol("connectionActivityMonitor")
 public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     public ConnectionActivityMonitor() {
         super("Connection Activity monitoring to agents");
@@ -88,18 +90,18 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     /**
      * Time till initial ping
      */
-    private static final long TIME_TILL_PING = Long.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(3));
+    private static final long TIME_TILL_PING = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(3));
 
-    private static final long FREQUENCY = Long.getLong(ConnectionActivityMonitor.class.getName()+".frequency",TimeUnit2.SECONDS.toMillis(10));
+    private static final long FREQUENCY = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".frequency",TimeUnit2.SECONDS.toMillis(10));
 
     /**
      * When do we abandon the effort and cut off?
      */
-    private static final long TIMEOUT = Long.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(4));
+    private static final long TIMEOUT = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(4));
 
 
     // disabled by default until proven in the production
-    public boolean enabled = Boolean.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
+    public boolean enabled = SystemProperties.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
 
     private static final PingCommand PING_COMMAND = new PingCommand();
     private static final class PingCommand extends SlaveToMasterCallable<Void,RuntimeException> {

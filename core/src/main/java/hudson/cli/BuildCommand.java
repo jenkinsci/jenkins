@@ -25,22 +25,26 @@ package hudson.cli;
 
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
+import hudson.model.CauseAction;
+import hudson.model.Job;
+import hudson.model.Run;
 import hudson.model.ParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.ParameterDefinition;
 import hudson.Extension;
 import hudson.AbortException;
+import hudson.model.Queue;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.scm.PollingResult.Change;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
+
+import jenkins.scm.SCMDecisionHandler;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -54,6 +58,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
+import jenkins.triggers.SCMTriggerItem;
 
 /**
  * Builds a job, and optionally waits until its completion.
@@ -68,7 +74,7 @@ public class BuildCommand extends CLICommand {
     }
 
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true)
-    public AbstractProject<?,?> job;
+    public Job<?,?> job;
 
     @Option(name="-f", usage="Follow the build progress. Like -s only interrupts are not passed through to the build.")
     public boolean follow = false;
@@ -138,14 +144,20 @@ public class BuildCommand extends CLICommand {
         }
 
         if (checkSCM) {
-            if (job.poll(new StreamTaskListener(stdout, getClientCharset())).change == Change.NONE) {
+            SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
+            if (item == null)
+                throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
+            // pre-emtively check for a polling veto
+            if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
                 return 0;
             }
+            if (!item.poll(new StreamTaskListener(stdout, getClientCharset())).hasChanges())
+                return 0;
         }
 
         if (!job.isBuildable()) {
             String msg = Messages.BuildCommand_CLICause_CannotBuildUnknownReasons(job.getFullDisplayName());
-            if (job.isDisabled()) {
+            if (job instanceof AbstractProject<?, ?> && ((AbstractProject<?, ?>)job).isDisabled()) {
                 msg = Messages.BuildCommand_CLICause_CannotBuildDisabled(job.getFullDisplayName());
             } else if (job.isHoldOffBuildUntilSave()){
                 msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
@@ -153,13 +165,14 @@ public class BuildCommand extends CLICommand {
             throw new IllegalStateException(msg);
         }
 
-        QueueTaskFuture<? extends AbstractBuild> f = job.scheduleBuild2(0, new CLICause(Jenkins.getAuthentication().getName()), a);
+        Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication().getName())), a);
+        QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
         
         if (wait || sync || follow) {
             if (f == null) {
                 throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
             }
-            AbstractBuild b = f.waitForStart();    // wait for the start
+            Run<?,?> b = f.waitForStart();    // wait for the start
             stdout.println("Started "+b.getFullDisplayName());
             stdout.flush();
 

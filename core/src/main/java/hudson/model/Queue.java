@@ -26,10 +26,8 @@ package hudson.model;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
-import hudson.CopyOnWrite;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -38,7 +36,6 @@ import hudson.init.Initializer;
 import static hudson.init.InitMilestone.JOB_LOADED;
 import static hudson.util.Iterators.reverse;
 
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.labels.LabelAssignmentAction;
 import hudson.model.queue.AbstractQueueTask;
@@ -65,7 +62,6 @@ import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -125,6 +121,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
@@ -172,6 +169,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class Queue extends ResourceController implements Saveable {
 
     /**
+
      * Items that are waiting for its quiet period to pass.
      *
      * <p>
@@ -295,6 +293,11 @@ public class Queue extends ResourceController implements Saveable {
             maintain();
             return null;
         }
+
+        @Override
+        public String toString() {
+            return "Periodic Jenkins queue maintenance";
+        }
     });
 
     private transient final ReentrantLock lock = new ReentrantLock();
@@ -339,6 +342,11 @@ public class Queue extends ResourceController implements Saveable {
     public void load() {
         lock.lock();
         try { try {
+            // Clear items, for the benefit of reloading.
+            waitingList.clear();
+            blockedProjects.clear();
+            buildables.clear();
+            pendings.clear();
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
@@ -1090,25 +1098,7 @@ public class Queue extends ResourceController implements Saveable {
      * Returns true if this queue contains the said project.
      */
     public boolean contains(Task t) {
-        final Snapshot snapshot = this.snapshot;
-        for (Item item : snapshot.blockedProjects) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.buildables) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.pendings) {
-            if (item.task.equals(t))
-                return true;
-        }
-        for (Item item : snapshot.waitingList) {
-            if (item.task.equals(t)) {
-                return true;
-            }
-        }
-        return false;
+        return getItem(t)!=null;
     }
 
     /**
@@ -1390,7 +1380,7 @@ public class Queue extends ResourceController implements Saveable {
         lock.lock();
         try { try {
 
-            LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
+            LOGGER.log(Level.FINE, "Queue maintenance started on {0} with {1}", new Object[] {this, snapshot});
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
@@ -2799,6 +2789,11 @@ public class Queue extends ResourceController implements Saveable {
             this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
             this.buildables = new ArrayList<BuildableItem>(buildables);
             this.pendings = new ArrayList<BuildableItem>(pendings);
+        }
+
+        @Override
+        public String toString() {
+            return "Queue.Snapshot{waitingList=" + waitingList + ";blockedProjects=" + blockedProjects + ";buildables=" + buildables + ";pendings=" + pendings + "}";
         }
     }
     

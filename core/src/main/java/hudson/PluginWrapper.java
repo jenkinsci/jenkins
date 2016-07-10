@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import jenkins.MissingDependencyException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -208,10 +209,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
             this.shortName = s.substring(0,idx);
-            this.version = s.substring(idx+1);
-            
+            String version = s.substring(idx+1);
+
             boolean isOptional = false;
-            String[] osgiProperties = s.split(";");
+            String[] osgiProperties = version.split("[;]");
             for (int i = 1; i < osgiProperties.length; i++) {
                 String osgiProperty = osgiProperties[i].trim();
                 if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
@@ -219,6 +220,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 }
             }
             this.optional = isOptional;
+            if (isOptional) {
+                this.version = osgiProperties[0];
+            } else {
+                this.version = version;
+            }
         }
 
         @Override
@@ -261,6 +267,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -440,6 +447,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Enables this plugin next time Jenkins runs.
      */
     public void enable() throws IOException {
+        if (!disableFile.exists()) {
+            LOGGER.log(Level.FINEST, "Plugin {0} has been already enabled. Skipping the enable() operation", getShortName());
+            return;
+        }
         if(!disableFile.delete())
             throw new IOException("Failed to delete "+disableFile);
     }
@@ -513,14 +524,14 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
+        List<Dependency> missingDependencies = new ArrayList<>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
             if (parent.getPlugin(d.shortName) == null)
-                missingDependencies.add(d.toString());
+                missingDependencies.add(d);
         }
         if (!missingDependencies.isEmpty())
-            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+            throw new MissingDependencyException(this.shortName, missingDependencies);
 
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
@@ -656,6 +667,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     @Deprecated
     public HttpResponse doPin() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
@@ -664,6 +676,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     @Deprecated
     public HttpResponse doUnpin() throws IOException {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
         LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();

@@ -32,7 +32,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config">
-        <f:entry title="${%Name}" help="/help/system-config/master-slave/name.html">
+        <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
           <f:textbox name="name" value="${request.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
         </f:entry>
 

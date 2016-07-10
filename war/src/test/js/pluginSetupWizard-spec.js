@@ -9,10 +9,6 @@ var getJQuery = function() {
     return $;
 };
 
-var pluginList = jsTest.requireSrcModule('api/plugins');
-
-pluginList.recommendedPlugins = ['subversion'];
-
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
     var counter = 0;
@@ -98,8 +94,43 @@ var ajaxMocks = function(responseMappings) {
             }
         },
         '/jenkins/pluginManager/installPlugins': {
+          status: 'ok',
+          data: 'RANDOM_UUID_1234'
+        },
+        '/jenkins/setupWizard/platformPluginList': {
         status: 'ok',
-        data: 'RANDOM_UUID_1234'
+        data: [
+        {
+         "category":"Stuff",
+         "plugins": [
+             { "name": "mailer" },
+             { "name": "junit" },
+             { "name": "workflow-aggregator", "added": "2.0" },
+         ]
+        },
+        {
+         "category":"Source Code Management",
+         "plugins": [
+             { "name": "git" },
+             { "name": "subversion", "suggested": true }
+         ]
+        },
+        {
+         "category":"User Management and Security",
+         "plugins": [            
+             { "name": "matrix-auth" },
+             { "name": "pam-auth" },
+             { "name": "ldap" }
+         ]
+        },
+        {
+         "category":"Notifications and Publishing",
+         "plugins": [
+             { "name": "email-ext" },
+             { "name": "ssh" }
+         ]
+        }
+        ]
         }
     };
 
@@ -335,7 +366,14 @@ describe("pluginSetupWizard.js", function () {
             {
                 status: 'ok',
                 data: {
-                    state: 'INSTALLING_PLUGINS',
+                    state: 'NEW',
+                    jobs: []
+                }
+            },
+            {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_PLUGINS_INSTALLING',
                     jobs: [
                       {
                           name: 'subversion',
@@ -345,20 +383,21 @@ describe("pluginSetupWizard.js", function () {
                       }
                   ]
                 }
-            }])
+            }
+            ])
         };
         test(function($) {
             var goButton = $('.install-recommended');
             expect(goButton.size()).toBe(1);
 
             // validate a call to installPlugins with our defaults
-        setTimeout(function() {
+            setTimeout(function() {
                 expect($('.install-done').is(':visible')).toBe(false);
 
-                expect($('.save-first-user').is(':visible')).toBe(true);
+                expect($('.installing-panel').is(':visible')).toBe(true);
 
                 done();
-        }, 500);
+            }, 1);
 
             goButton.click();
         }, ajaxMappings);

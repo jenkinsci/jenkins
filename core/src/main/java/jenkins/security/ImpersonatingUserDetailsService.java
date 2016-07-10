@@ -39,7 +39,7 @@ public class ImpersonatingUserDetailsService implements UserDetailsService {
 
     protected UserDetails attemptToImpersonate(String username, RuntimeException e) {
         // this backend cannot tell if the user name exists or not. so substitute by what we know
-        User u = User.get(username, false, emptyMap());
+        User u = User.getById(username, false);
         if (u!=null) {
             LastGrantedAuthoritiesProperty p = u.getProperty(LastGrantedAuthoritiesProperty.class);
             if (p!=null)
