@@ -4831,13 +4831,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * but no parameters are selected. User will be redirected to an error page
      * with proper error message.
      * @param jsonProperties
+     * @throws FormException 
      */
-    public static void checkForEmptyParameters(JSONObject jsonProperties){
+    public static void checkForEmptyParameters(JSONObject jsonProperties) throws FormException{
     	JSONObject parameterDefinitionProperty = jsonProperties
 				.getJSONObject("hudson-model-ParametersDefinitionProperty");
 		if ((parameterDefinitionProperty.getBoolean("specified") == true)
 				&& !parameterDefinitionProperty.has("parameterDefinitions")) {
-			throw new Failure(Messages.Hudson_NoParamsSpecified());
+			throw new FormException(Messages.Hudson_NoParamsSpecified(),"parameterDefinitions");
 			
 		}
     }
