@@ -32,7 +32,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 /**
  * A {@link AutoCloseable} that captures the previous {@link SecurityContext} and restores it on {@link #close()}
  *
- * @since FIXME
+ * @since 2.14
  */
 public class ACLContext implements AutoCloseable {
 

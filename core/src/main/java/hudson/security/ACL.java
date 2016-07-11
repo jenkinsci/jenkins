@@ -231,13 +231,13 @@ public abstract class ACL {
      * <p>
      * This makes impersonation much easier within code as it can now be used using the try with resources construct:
      * <pre>
-     *     try (ACL.Context _ = ACL.as(auth)) {
+     *     try (ACLContext _ = ACL.as(auth)) {
      *        ...
      *     }
      * </pre>
      * @param auth the new authentication.
      * @return the previous authentication context
-     * @since FIXME
+     * @since 2.14
      */
     @Nonnull
     public static ACLContext as(@Nonnull Authentication auth) {
@@ -253,14 +253,14 @@ public abstract class ACL {
      * <p>
      * This makes impersonation much easier within code as it can now be used using the try with resources construct:
      * <pre>
-     *     try (ACL.Context _ = ACL.as(auth)) {
+     *     try (ACLContext _ = ACL.as(auth)) {
      *        ...
      *     }
      * </pre>
      *
      * @param user the user to impersonate.
      * @return the previous authentication context
-     * @since FIXME
+     * @since 2.14
      */
     @Nonnull
     public static ACLContext as(@CheckForNull User user) {
