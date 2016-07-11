@@ -70,6 +70,10 @@ public final class UserDetailsCache {
         if (EXPIRE_AFTER_WRITE_SEC == null || EXPIRE_AFTER_WRITE_SEC <= 0) {
             //just in case someone is trying to trick us
             EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
+            if (EXPIRE_AFTER_WRITE_SEC <= 0) {
+                //The property could also be set to a negative value
+                EXPIRE_AFTER_WRITE_SEC = (int)TimeUnit.MINUTES.toSeconds(2);
+            }
         }
         detailsCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
         existanceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
@@ -168,14 +172,14 @@ public final class UserDetailsCache {
                 Jenkins jenkins = Jenkins.getInstance();
                 UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername(idOrFullName);
                 if (userDetails == null) {
-                    existanceCache.put(this.idOrFullName, false);
+                    existanceCache.put(this.idOrFullName, Boolean.FALSE);
                     throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
                                                    + jenkins.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
                 }
-                existanceCache.put(this.idOrFullName, true);
+                existanceCache.put(this.idOrFullName, Boolean.TRUE);
                 return userDetails;
             } catch (UsernameNotFoundException e) {
-                existanceCache.put(this.idOrFullName, false);
+                existanceCache.put(this.idOrFullName, Boolean.FALSE);
                 throw e;
             } catch (DataAccessException e) {
                 existanceCache.put(this.idOrFullName, null); //TODO verify this is the correct way
