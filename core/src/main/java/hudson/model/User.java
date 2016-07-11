@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -81,6 +82,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -1049,24 +1051,17 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 return existing.getId();
             }
             if (SECURITY_243_FULL_DEFENSE) {
-                Jenkins j = Jenkins.getInstance();
-                if (j != null) {
-                    if (!resolving.get()) {
-                        resolving.set(true);
-                        try {
-                            UserDetails userDetails = j.getSecurityRealm().loadUserByUsername(idOrFullName);
-                            if (userDetails == null) {
-                                throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
-                                        + j.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
-                            }
-                            return userDetails.getUsername();
-                        } catch (UsernameNotFoundException x) {
-                            LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
-                        } catch (DataAccessException x) {
-                            LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
-                        } finally {
-                            resolving.set(false);
-                        }
+                if (!resolving.get()) {
+                    resolving.set(true);
+                    try {
+                        UserDetails userDetails = UserDetailsCache.get().loadUserByUsername(idOrFullName);
+                        return userDetails.getUsername();
+                    } catch (UsernameNotFoundException x) {
+                        LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                    } catch (DataAccessException | ExecutionException x) {
+                        LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
+                    } finally {
+                        resolving.set(false);
                     }
                 }
             }
