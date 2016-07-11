@@ -45,15 +45,6 @@ THE SOFTWARE.
               ${name}
             </td>
             <j:choose>
-              <j:when test="${!e.active}">
-                <td class="pane">
-                  <a href="${rootURL}/${c.url}${url}/causeOfDeath">
-                    <div class="error">${%Dead} (!)</div>
-                  </a>
-                </td>
-                <td class="pane"/>
-                <td class="pane"/>
-              </j:when>
               <j:when test="${e.idle}">
                 <td class="pane">
                   <j:choose>

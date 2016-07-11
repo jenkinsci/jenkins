@@ -342,6 +342,11 @@ public class Queue extends ResourceController implements Saveable {
     public void load() {
         lock.lock();
         try { try {
+            // Clear items, for the benefit of reloading.
+            waitingList.clear();
+            blockedProjects.clear();
+            buildables.clear();
+            pendings.clear();
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
@@ -1375,7 +1380,7 @@ public class Queue extends ResourceController implements Saveable {
         lock.lock();
         try { try {
 
-            LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
+            LOGGER.log(Level.FINE, "Queue maintenance started on {0} with {1}", new Object[] {this, snapshot});
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
@@ -2784,6 +2789,11 @@ public class Queue extends ResourceController implements Saveable {
             this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
             this.buildables = new ArrayList<BuildableItem>(buildables);
             this.pendings = new ArrayList<BuildableItem>(pendings);
+        }
+
+        @Override
+        public String toString() {
+            return "Queue.Snapshot{waitingList=" + waitingList + ";blockedProjects=" + blockedProjects + ";buildables=" + buildables + ";pendings=" + pendings + "}";
         }
     }
     
