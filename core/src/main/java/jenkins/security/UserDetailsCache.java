@@ -27,6 +27,7 @@ import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.security.UserMayOrMayNotExistException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.userdetails.UserDetails;
@@ -61,6 +62,10 @@ public final class UserDetailsCache {
     private final Cache<String, UserDetails> detailsCache;
     private final Cache<String, Boolean> existanceCache;
 
+    /**
+     * Constructor intended to be instantiated by Jenkins only.
+     */
+    @Restricted(NoExternalUse.class)
     public UserDetailsCache() {
         if (EXPIRE_AFTER_WRITE_SEC == null || EXPIRE_AFTER_WRITE_SEC <= 0) {
             //just in case someone is trying to trick us
@@ -70,20 +75,45 @@ public final class UserDetailsCache {
         existanceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
     }
 
+    /**
+     * The singleton instance registered in Jenkins.
+     * @return the cache
+     */
     public static UserDetailsCache get() {
         return ExtensionList.lookup(UserDetailsCache.class).get(UserDetailsCache.class);
     }
 
+    /**
+     * Gets the cached UserDetails for the given username.
+     * Similar to {@link #loadUserByUsername(String)} except it doesn't perform the actual lookup if there is a cache miss.
+     *
+     * @param idOrFullName the username
+     *
+     * @return {@code null} if the cache doesn't contain any data for the key or the user details cached for the key.
+     * @throws UsernameNotFoundException if a previous lookup resulted in the same
+     */
     @CheckForNull
     public UserDetails getCached(String idOrFullName) throws UsernameNotFoundException {
         Boolean exists = existanceCache.getIfPresent(idOrFullName);
         if (exists != null && !exists) {
-            throw new UsernameNotFoundException(String.format("\"%s\" does not exist", idOrFullName));
+            throw new UserMayOrMayNotExistException(String.format("\"%s\" does not exist", idOrFullName));
         } else {
             return detailsCache.getIfPresent(idOrFullName);
         }
     }
 
+    /**
+     * Locates the user based on the username, by first looking in the cache and then delegate to
+     * {@link hudson.security.SecurityRealm#loadUserByUsername(String)}.
+     *
+     * @param idOrFullName the username
+     * @return the details
+     *
+     * @throws UsernameNotFoundException (normally a {@link hudson.security.UserMayOrMayNotExistException})
+     *              if the user could not be found or the user has no GrantedAuthority
+     * @throws DataAccessException if user could not be found for a repository-specific reason
+     * @throws ExecutionException if anything else went wrong in the cache lookup/retrieval
+     */
     @Nonnull
     public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, DataAccessException, ExecutionException {
         Boolean exists = existanceCache.getIfPresent(idOrFullName);
@@ -121,6 +151,10 @@ public final class UserDetailsCache {
         detailsCache.invalidate(idOrFullName);
     }
 
+    /**
+     * Callable that performs the actual lookup if there is a cache miss.
+     * @see #loadUserByUsername(String)
+     */
     private class Retriever implements Callable<UserDetails> {
         private final String idOrFullName;
 
