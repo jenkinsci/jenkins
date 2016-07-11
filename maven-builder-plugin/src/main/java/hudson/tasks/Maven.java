@@ -735,6 +735,7 @@ public class Maven extends Builder {
      * @since 1.235
      * @deprecated Use WithMaven extension point
      */
+    @Deprecated
     public interface ProjectWithMaven {
         /**
          * Gets the {@link MavenInstallation} associated with the project.
