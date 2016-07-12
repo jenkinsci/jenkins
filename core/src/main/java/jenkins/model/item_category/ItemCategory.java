@@ -30,6 +30,8 @@ import hudson.ExtensionPoint;
 import hudson.model.TopLevelItemDescriptor;
 
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A category for {@link hudson.model.Item}s.
@@ -38,6 +40,7 @@ import javax.annotation.Nonnull;
  */
 public abstract class ItemCategory implements ExtensionPoint {
 
+    @Restricted(NoExternalUse.class)
     public static int MIN_TOSHOW = 1;
 
     /**
