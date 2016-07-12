@@ -495,10 +495,10 @@ public class QueueTest {
         assertThat("The cycle should have been defanged and chain3 executed", queue.getItem(chain3), nullValue());
     }
 
-    private static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
+    public static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
         Executor exec;
         private final Label assignedLabel;
-        TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
+        public TestFlyweightTask(AtomicInteger cnt, Label assignedLabel) {
             super(cnt);
             this.assignedLabel = assignedLabel;
         }

@@ -3457,11 +3457,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
-    @CLIMethod(name="quiet-down")
+    /**
+     * Quiet down Jenkins - preparation for a restart
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     */
     @RequirePOST
-    public HttpRedirect doQuietDown(
-            @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
-            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(ADMINISTER);
             isQuietingDown = true;
@@ -3478,7 +3481,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new HttpRedirect(".");
     }
 
-    @CLIMethod(name="cancel-quiet-down")
+    /**
+     * Cancel previous quiet down Jenkins - preparation for a restart
+     */
     @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
