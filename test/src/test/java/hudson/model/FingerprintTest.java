@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
@@ -140,36 +141,27 @@ public class FingerprintTest {
         setupProjectMatrixAuthStrategy(Jenkins.READ);
         setJobPermissionsOnce(project1, "user1", Item.READ, Item.DISCOVER);
         setJobPermissionsOnce(project2, "user2", Item.READ, Item.DISCOVER);
-        
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                Fingerprint.BuildPtr original = fp.getOriginal();
-                assertThat("user1 should be able to see the origin", fp.getOriginal(), notNullValue());
-                assertEquals("user1 should be able to see the origin's project name", project1.getName(), original.getName());
-                assertEquals("user1 should be able to see the origin's build number", build.getNumber(), original.getNumber());
-                assertEquals("Only one usage should be visible to user1", 1, fp._getUsages().size());
-                assertEquals("Only project1 should be visible to user1", project1.getFullName(), fp._getUsages().get(0).name);
-            }
-        });
-        
-        ACL.impersonate(user2.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertThat("user2 should be unable to see the origin", fp.getOriginal(), nullValue());
-                assertEquals("Only one usage should be visible to user2", 1, fp._getUsages().size());
-                assertEquals("Only project2 should be visible to user2", project2.getFullName(), fp._getUsages().get(0).name);
-            }
-        });
-        
-        ACL.impersonate(user3.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                Fingerprint.BuildPtr original = fp.getOriginal();
-                assertThat("user3 should be unable to see the origin", fp.getOriginal(), nullValue());
-                assertEquals("All usages should be invisible for user3", 0, fp._getUsages().size());
-            }
-        });
+
+        try (ACLContext _ = ACL.as(user1)) {
+            Fingerprint.BuildPtr original = fp.getOriginal();
+            assertThat("user1 should be able to see the origin", fp.getOriginal(), notNullValue());
+            assertEquals("user1 should be able to see the origin's project name", project1.getName(), original.getName());
+            assertEquals("user1 should be able to see the origin's build number", build.getNumber(), original.getNumber());
+            assertEquals("Only one usage should be visible to user1", 1, fp._getUsages().size());
+            assertEquals("Only project1 should be visible to user1", project1.getFullName(), fp._getUsages().get(0).name);
+        }
+
+        try (ACLContext _ = ACL.as(user2)) {
+            assertThat("user2 should be unable to see the origin", fp.getOriginal(), nullValue());
+            assertEquals("Only one usage should be visible to user2", 1, fp._getUsages().size());
+            assertEquals("Only project2 should be visible to user2", project2.getFullName(), fp._getUsages().get(0).name);
+        }
+
+        try (ACLContext _ = ACL.as(user3)) {
+            Fingerprint.BuildPtr original = fp.getOriginal();
+            assertThat("user3 should be unable to see the origin", fp.getOriginal(), nullValue());
+            assertEquals("All usages should be invisible for user3", 0, fp._getUsages().size());
+        }
     }
     
     @Test
@@ -182,17 +174,14 @@ public class FingerprintTest {
         // Init Users and security
         User user1 = User.get("user1");   
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
-        
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                Fingerprint.BuildPtr original = fingerprint.getOriginal();
-                assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
-                assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
-                assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
-                assertEquals("Usage ref in fingerprint should be visible to user1", 1, fingerprint._getUsages().size());
-            }
-        });
+
+        try (ACLContext _ = ACL.as(user1)) {
+            Fingerprint.BuildPtr original = fingerprint.getOriginal();
+            assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
+            assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
+            assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
+            assertEquals("Usage ref in fingerprint should be visible to user1", 1, fingerprint._getUsages().size());
+        }
     }
     
     @Test
@@ -209,20 +198,17 @@ public class FingerprintTest {
         folder.setPermissions("user1", Item.READ);
         
         // Ensure we can read the original from user account
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertTrue("Test framework issue: User1 should be able to read the folder", folder.hasPermission(Item.READ));
-                
-                Fingerprint.BuildPtr original = fingerprint.getOriginal();
-                assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
-                assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
-                assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
-                assertEquals("user1 should be able to see the job", 1, fingerprint._getUsages().size());
-                
-                assertThat("User should be unable do retrieve the job due to the missing read", original.getJob(), nullValue());
-            }
-        });
+        try (ACLContext _ = ACL.as(user1)) {
+            assertTrue("Test framework issue: User1 should be able to read the folder", folder.hasPermission(Item.READ));
+
+            Fingerprint.BuildPtr original = fingerprint.getOriginal();
+            assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
+            assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
+            assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
+            assertEquals("user1 should be able to see the job", 1, fingerprint._getUsages().size());
+
+            assertThat("User should be unable do retrieve the job due to the missing read", original.getJob(), nullValue());
+        }
     }
     
     @Test
@@ -237,14 +223,11 @@ public class FingerprintTest {
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.DISCOVER);
         
         // Ensure we can read the original from user account
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertFalse("Test framework issue: User1 should be unable to read the folder", folder.hasPermission(Item.READ));         
-                assertThat("user1 should be unable to see the origin", fingerprint.getOriginal(), nullValue());
-                assertEquals("No jobs should be visible to user1", 0, fingerprint._getUsages().size());
-            }
-        });
+        try (ACLContext _ = ACL.as(user1)) {
+            assertFalse("Test framework issue: User1 should be unable to read the folder", folder.hasPermission(Item.READ));
+            assertThat("user1 should be unable to see the origin", fingerprint.getOriginal(), nullValue());
+            assertEquals("No jobs should be visible to user1", 0, fingerprint._getUsages().size());
+        }
     }
     
     /**
@@ -264,14 +247,11 @@ public class FingerprintTest {
         User user1 = User.get("user1");  
         setupProjectMatrixAuthStrategy(Jenkins.READ, Item.READ, Item.DISCOVER);
         project.delete();
-        
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertThat("user1 should be unable to see the origin", fp.getOriginal(), nullValue());
-                assertEquals("No jobs should be visible to user1", 0, fp._getUsages().size());
-            }
-        });
+
+        try (ACLContext _ = ACL.as(user1)) {
+            assertThat("user1 should be unable to see the origin", fp.getOriginal(), nullValue());
+            assertEquals("No jobs should be visible to user1", 0, fp._getUsages().size());
+        }
     }
     
     @Test
@@ -285,18 +265,15 @@ public class FingerprintTest {
         User user1 = User.get("user1"); 
         setupProjectMatrixAuthStrategy(Jenkins.ADMINISTER);
         project.delete();
-        
-        ACL.impersonate(user1.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                Fingerprint.BuildPtr original = fingerprint.getOriginal();
-                assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
-                assertThat("Job has been deleted, so Job reference shoud return null", fingerprint.getOriginal().getJob(), nullValue());
-                assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
-                assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
-                assertEquals("user1 should be able to see the job in usages", 1, fingerprint._getUsages().size());  
-            }
-        });
+
+        try (ACLContext _ = ACL.as(user1)) {
+            Fingerprint.BuildPtr original = fingerprint.getOriginal();
+            assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
+            assertThat("Job has been deleted, so Job reference shoud return null", fingerprint.getOriginal().getJob(), nullValue());
+            assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
+            assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
+            assertEquals("user1 should be able to see the job in usages", 1, fingerprint._getUsages().size());
+        }
     }
     
     @Nonnull

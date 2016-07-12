@@ -24,6 +24,7 @@
 package hudson;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.security.ACLContext;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -1352,12 +1353,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     }
                     updateCenter.persistInstallStatus();
                     if(!failures) {
-                        ACL.impersonate(currentAuth, new Runnable() {
-                            @Override
-                            public void run() {
-                                InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
-                            }
-                        });
+                        try (ACLContext _ = ACL.as(currentAuth)) {
+                            InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_PLUGINS_INSTALLING);
+                        }
                     }
                 }
             }.start();
