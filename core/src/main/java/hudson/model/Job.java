@@ -60,7 +60,8 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -1154,14 +1155,18 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 return new HealthReport(100, Messages._Job_BuildStability(Messages._Job_NoRecentBuildFailed()));
         }
         if (i != null && u.getNumber() <= i.getNumber()) {
-            int recentSuccessCount = _getRuns().subMap(u.getNumber() + 1, i.getNumber() + 1).size();
-            if (recentSuccessCount >= 5) {
-                return new HealthReport(100, Messages._Job_BuildStability(Messages._Job_NoRecentBuildFailed()));
-            } else {
-                // no need to load the intermediate builds, they're all successful, let's start iterating from
-                // the failure, which means we have counted the others already
-                totalCount = recentSuccessCount;
-                i = u;
+            SortedMap<Integer, ? extends RunT> runs = _getRuns();
+            if (runs instanceof RunMap) {
+                RunMap<RunT> runMap = (RunMap<RunT>) runs;
+                for (int index = i.getNumber(); index > u.getNumber() && totalCount < 5; index--) {
+                    if (runMap.diskContains(index)) {
+                        totalCount++;
+                    }
+                }
+                if (totalCount < 5) {
+                    // start loading from the first failure as we counted the rest
+                    i = u;
+                }
             }
         }
         while (totalCount < 5 && i != null) {
@@ -1350,7 +1355,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return run == that.run;
                     }
 
-                    public Color getColor() {
+                    public java.awt.Color getColor() {
                         // TODO: consider gradation. See
                         // http://www.javadrive.jp/java2d/shape/index9.html
                         Result r = run.getResult();
