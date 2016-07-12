@@ -4826,18 +4826,5 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             JenkinsJVM.setJenkinsJVM(jenkinsJVM);
         }
     }
-    /**
-     * This handles the situation when Parameterized build checkbox is checked 
-     * but no parameters are selected. User will be redirected to an error page
-     * with proper error message.
-     * @param jsonProperties
-     * @throws FormException 
-     */
-    public static void checkForEmptyParameters(JSONObject jsonProperties) throws FormException{
-        JSONObject parameterDefinitionProperty = jsonProperties.getJSONObject("hudson-model-ParametersDefinitionProperty");
-		if ((parameterDefinitionProperty.getBoolean("specified") == true)&& !parameterDefinitionProperty.has("parameterDefinitions")) {
-		   throw new FormException(Messages.Hudson_NoParamsSpecified(),"parameterDefinitions");
-        }
-    }
 
 }
