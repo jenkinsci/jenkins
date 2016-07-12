@@ -1105,7 +1105,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Deprecated
     public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
-        public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
+        public BecauseOfBuildInProgress(@Nonnull AbstractBuild<?, ?> build) {
             super(build);
         }
     }
@@ -1146,7 +1146,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
         if (isLogUpdated() && !isConcurrentBuild()) {
-            return new BlockedBecauseOfBuildInProgress(getLastBuild());
+            final R lastBuild = getLastBuild();
+            if (lastBuild != null) {
+                return new BlockedBecauseOfBuildInProgress(lastBuild);
+            } else {
+                // The build has been lost during the execution
+                // It may happen in the case of the quick deletion of build after isLogUpdated() call 
+                // or API implemetation glisthes in the plugins. Anyway, we should let the code go then
+                LOGGER.log(Level.FINEST, "Previous build instance has been during the non-concurrent cause creation. The build is not blocked anymore");
+            }
         }
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
