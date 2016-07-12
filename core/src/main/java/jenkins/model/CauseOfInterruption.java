@@ -31,6 +31,8 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.Serializable;
+import java.util.Collections;
+import javax.annotation.CheckForNull;
 
 /**
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
@@ -82,8 +84,9 @@ public abstract class CauseOfInterruption implements Serializable {
             this.user = userId;
         }
 
+        @CheckForNull
         public User getUser() {
-            return User.get(user);
+            return User.get(user, false, Collections.emptyMap());
         }
 
         public String getShortDescription() {
@@ -92,8 +95,10 @@ public abstract class CauseOfInterruption implements Serializable {
 
         @Override
         public void print(TaskListener listener) {
+            final User userInstance = getUser();
             listener.getLogger().println(
-                Messages.CauseOfInterruption_ShortDescription(ModelHyperlinkNote.encodeTo(getUser())));
+                Messages.CauseOfInterruption_ShortDescription(
+                        userInstance != null ? ModelHyperlinkNote.encodeTo(userInstance) : null));
         }
 
         @Override
