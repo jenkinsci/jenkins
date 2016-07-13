@@ -10,6 +10,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Util;
 import hudson.model.User;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.Scrambler;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
@@ -40,12 +41,9 @@ public class ApiTokenPropertyTest {
         final String token = t.getApiToken();
 
         // Make sure that user is able to get the token via the interface
-        ACL.impersonate(u.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("User is unable to get its own token", token, t.getApiToken());
-            }
-        });
+        try (ACLContext _ = ACL.as(u)) {
+            assertEquals("User is unable to get its own token", token, t.getApiToken());
+        }
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");
