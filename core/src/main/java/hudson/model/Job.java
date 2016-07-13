@@ -1159,7 +1159,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             if (runs instanceof RunMap) {
                 RunMap<RunT> runMap = (RunMap<RunT>) runs;
                 for (int index = i.getNumber(); index > u.getNumber() && totalCount < 5; index--) {
-                    if (runMap.diskContains(index)) {
+                    if (runMap.runExists(index)) {
                         totalCount++;
                     }
                 }

@@ -293,14 +293,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
-     * Checks if the disk index contains the specified build number.
+     * Checks if the the specified build exists.
      *
      * @param number the build number to probe.
-     * @return {@code true} if there is an on disk entry for the corresponding number, note that this does not mean that
-     * the corresponding build record will load.
-     * @since 2.14
+     * @return {@code true} if there is an run for the corresponding number, note that this does not mean that
+     * the corresponding record will load.
+     * @since FIXME
      */
-    public boolean diskContains(int number) {
+    public boolean runExists(int number) {
         return numberOnDisk.contains(number);
     }
 
