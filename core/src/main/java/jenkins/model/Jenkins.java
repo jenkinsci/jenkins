@@ -999,10 +999,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if(LOG_STARTUP_PERFORMANCE)
                         LOGGER.info(String.format("Took %dms for %s by %s",
                                 System.currentTimeMillis()-start, taskName, name));
+                } catch (Exception | Error x) {
+                    if (containsLinkageError(x)) {
+                        LOGGER.log(Level.WARNING, taskName + " failed perhaps due to plugin dependency issues", x);
+                    } else {
+                        throw x;
+                    }
                 } finally {
                     t.setName(name);
                     SecurityContextHolder.clearContext();
                 }
+            }
+            private boolean containsLinkageError(Throwable x) {
+                if (x instanceof LinkageError) {
+                    return true;
+                }
+                Throwable x2 = x.getCause();
+                return x2 != null && containsLinkageError(x2);
             }
         };
 
