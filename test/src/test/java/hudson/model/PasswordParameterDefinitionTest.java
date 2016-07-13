@@ -58,7 +58,7 @@ public class PasswordParameterDefinitionTest {
         p.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("secret", "s3cr3t", "")));
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                listener.getLogger().println("I heard about a " + build.getEnvironment(listener).get("secret"));
+                listener.getLogger().println("I heard about a " + build.getEnvironment(listener).get("secret") + "!");
                 return true;
             }
         });
@@ -69,7 +69,7 @@ public class PasswordParameterDefinitionTest {
         j.waitUntilNoActivity();
         FreeStyleBuild b1 = p.getLastBuild();
         assertEquals(1, b1.getNumber());
-        j.assertLogContains("I heard about a s3cr3t", j.assertBuildStatusSuccess(b1));
+        j.assertLogContains("I heard about a s3cr3t!", j.assertBuildStatusSuccess(b1));
         // Another control case: anyone can enter a different value.
         HtmlForm form = wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters");
         HtmlPasswordInput input = form.getInputByName("value");
@@ -78,13 +78,22 @@ public class PasswordParameterDefinitionTest {
         j.waitUntilNoActivity();
         FreeStyleBuild b2 = p.getLastBuild();
         assertEquals(2, b2.getNumber());
-        j.assertLogContains("I heard about a rumor", j.assertBuildStatusSuccess(b2));
+        j.assertLogContains("I heard about a rumor!", j.assertBuildStatusSuccess(b2));
         // Test case: anyone can use default value.
         j.submit(wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters"));
         j.waitUntilNoActivity();
         FreeStyleBuild b3 = p.getLastBuild();
         assertEquals(3, b3.getNumber());
-        j.assertLogContains("I heard about a s3cr3t", j.assertBuildStatusSuccess(b3));
+        j.assertLogContains("I heard about a s3cr3t!", j.assertBuildStatusSuccess(b3));
+        // Another control case: blank values.
+        form = wc.login("dev").getPage(p, "build?delay=0sec").getFormByName("parameters");
+        input = form.getInputByName("value");
+        input.setText("");
+        j.submit(form);
+        j.waitUntilNoActivity();
+        FreeStyleBuild b4 = p.getLastBuild();
+        assertEquals(4, b4.getNumber());
+        j.assertLogContains("I heard about a !", j.assertBuildStatusSuccess(b4));
     }
 
 }
