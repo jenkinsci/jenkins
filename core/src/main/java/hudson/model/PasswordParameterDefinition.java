@@ -66,6 +66,9 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     @Override
     public PasswordParameterValue createValue(StaplerRequest req, JSONObject jo) {
         PasswordParameterValue value = req.bindJSON(PasswordParameterValue.class, jo);
+        if (value.getValue().getPlainText().isEmpty()) {
+            value = new PasswordParameterValue(getName(), getDefaultValue());
+        }
         value.setDescription(getDescription());
         return value;
     }
