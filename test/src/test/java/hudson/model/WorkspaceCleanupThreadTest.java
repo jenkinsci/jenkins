@@ -33,20 +33,17 @@ import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jenkins.MasterToSlaveFileCallable;
 import static org.junit.Assert.*;
 
 import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.WithoutJenkins;
 
@@ -54,13 +51,7 @@ public class WorkspaceCleanupThreadTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    private static final Logger logger = Logger.getLogger(WorkspaceCleanupThread.class.getName());
-    @BeforeClass public static void logging() {
-        logger.setLevel(Level.ALL);
-        Handler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
-        logger.addHandler(handler);
-    }
+    @Rule public LoggerRule logs = new LoggerRule().record(WorkspaceCleanupThread.class, Level.ALL);
 
     @Test public void cleanUpSlaves() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
