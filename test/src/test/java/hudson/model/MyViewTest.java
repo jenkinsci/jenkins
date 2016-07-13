@@ -30,15 +30,12 @@ import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  *
@@ -49,19 +46,14 @@ public class MyViewTest {
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
+    @Rule
+    public LoggerRule logs = new LoggerRule();
+
     @Before
     public void setup() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
     
-    private static final Logger logger = Logger.getLogger(AbstractItem.class.getName());
-    @BeforeClass public static void logging() {
-        logger.setLevel(Level.ALL);
-        Handler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
-        logger.addHandler(handler);
-    }
-
     @Test
     public void testContains() throws IOException, Exception{
         
@@ -80,6 +72,7 @@ public class MyViewTest {
     
     @Test
     public void testDoCreateItem() throws IOException, Exception{
+        logs.record(AbstractItem.class, Level.ALL);
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
         HtmlPage newItemPage = rule.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob");

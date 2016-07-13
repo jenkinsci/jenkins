@@ -62,7 +62,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.7</version>
+      <version>2.13</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -82,7 +82,7 @@ THE SOFTWARE.
       <artifactId>maven-plugin</artifactId>
       <version>${maven-plugin.version}</version>
       <exclusions>
-        <exclusion>
+        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
         </exclusion>
