@@ -987,7 +987,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (is!=null && is.skipInitTask(task))  return;
 
                 ACL.impersonate(ACL.SYSTEM); // full access in the initialization thread
-                String taskName = task.getDisplayName();
+                String taskName = InitReactorRunner.getDisplayName(task);
 
                 Thread t = Thread.currentThread();
                 String name = t.getName();
@@ -3022,15 +3022,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
 
                 public void onTaskStarted(Task t) {
-                    LOGGER.log(level, "Started " + t.getDisplayName());
+                    LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
                 }
 
                 public void onTaskCompleted(Task t) {
-                    LOGGER.log(level, "Completed " + t.getDisplayName());
+                    LOGGER.log(level, "Completed {0}", InitReactorRunner.getDisplayName(t));
                 }
 
                 public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                    LOGGER.log(SEVERE, "Failed " + t.getDisplayName(), err);
+                    LOGGER.log(SEVERE, "Failed " + InitReactorRunner.getDisplayName(t), err);
                 }
 
                 public void onAttained(Milestone milestone) {
