@@ -1310,7 +1310,7 @@ function xor(a,b) {
 // used by editableDescription.jelly to replace the description field with a form
 function replaceDescription() {
     var d = document.getElementById("description");
-    $(d).down().next().innerHTML = "<div class='spinner-right'>loading...</div>";
+    $(d).down().innerHTML = "<div class='spinner-right'>loading...</div>";
     new Ajax.Request(
         "./descriptionForm",
         {
@@ -3041,3 +3041,9 @@ var notificationBar = {
             this.token = window.setTimeout(function(){self.hide();},this.DELAY);
     }
 };
+
+window.onload=function() {
+    if (location.search.slice(1) === "editDescription") {
+        window.onload = replaceDescription();
+    }
+}
