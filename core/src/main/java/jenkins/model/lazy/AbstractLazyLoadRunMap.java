@@ -41,10 +41,11 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 /**
  * {@link SortedMap} that keeps build records by their build numbers, in the descending order
@@ -289,6 +290,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
 
     public R get(int n) {
         return getByNumber(n);
+    }
+
+    /**
+     * Checks if the the specified build exists.
+     *
+     * @param number the build number to probe.
+     * @return {@code true} if there is an run for the corresponding number, note that this does not mean that
+     * the corresponding record will load.
+     * @since FIXME
+     */
+    public boolean runExists(int number) {
+        return numberOnDisk.contains(number);
     }
 
     /**
