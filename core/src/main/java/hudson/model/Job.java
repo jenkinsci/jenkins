@@ -1355,7 +1355,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                         return run == that.run;
                     }
 
-                    public java.awt.Color getColor() {
+                    public Color getColor() {
                         // TODO: consider gradation. See
                         // http://www.javadrive.jp/java2d/shape/index9.html
                         Result r = run.getResult();

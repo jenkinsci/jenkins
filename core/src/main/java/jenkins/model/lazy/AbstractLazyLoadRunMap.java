@@ -298,7 +298,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @param number the build number to probe.
      * @return {@code true} if there is an run for the corresponding number, note that this does not mean that
      * the corresponding record will load.
-     * @since FIXME
+     * @since 2.14
      */
     public boolean runExists(int number) {
         return numberOnDisk.contains(number);
