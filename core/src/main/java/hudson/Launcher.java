@@ -130,7 +130,7 @@ public abstract class Launcher {
      * @deprecated since 2008-11-16.
      *      See the javadoc for why this is inherently unreliable. If you are trying to
      *      figure out the current {@link Computer} from within a build, use
-     *      {@link Computer#currentComputer()}  
+     *      {@link FilePath#toComputer()} or {@link Computer#currentComputer()}.
      */
     @Deprecated
     public Computer getComputer() {
