@@ -7,6 +7,8 @@
       <Bug pattern="MS_SHOULD_BE_FINAL"/>
       <!-- Groovy generates this -->
       <Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS"/>
+      <!-- It's a real issue, but the code is flooded by it right now-->
+      <Bug pattern="DM_DEFAULT_ENCODING"/>
     </Or>
   </Match>
 
