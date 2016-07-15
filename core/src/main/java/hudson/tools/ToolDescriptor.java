@@ -59,6 +59,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * @return read-only list of installations;
      *      can be empty but never null.
      */
+    @SuppressWarnings("unchecked")
     public T[] getInstallations() {
         if (installations != null)
             return installations.clone();
