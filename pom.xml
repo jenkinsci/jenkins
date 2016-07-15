@@ -737,32 +737,7 @@ THE SOFTWARE.
         </executions>
       </plugin>
       
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <configuration>
-          <effort>Max</effort>
-          <threshold>High</threshold>
-          <!--Excludes file is located on the top level-->
-          <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
-          <failOnError>${findbugs.failOnError}</failOnError>
-        </configuration>
-        <executions>
-          <execution>
-            <id>findbugs</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>verify</phase>
-            <configuration>
-              <!--  Do not define excludeFilterFile here as it will force a plugin to provide a file -->
-              <!--  Instead we configure this in a profile -->
-              <xmlOutput>true</xmlOutput>
-              <findbugsXmlOutput>false</findbugsXmlOutput>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+      
     </plugins>
 
     <extensions>
@@ -801,7 +776,7 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>metrics</id>
-      <reporting>
+      <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -811,7 +786,7 @@ THE SOFTWARE.
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
     </profile>
     <profile>
       <id>debug</id>

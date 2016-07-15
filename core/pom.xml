@@ -805,6 +805,28 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>findbugs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <effort>Max</effort>
+              <threshold>High</threshold>
+              <!--Excludes file is located on the top level-->
+              <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+              <failOnError>${findbugs.failOnError}</failOnError>
+              <xmlOutput>true</xmlOutput>
+              <findbugsXmlOutput>false</findbugsXmlOutput>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -886,9 +908,6 @@ THE SOFTWARE.
         <!-- In the default profile we always fail the build if there FindBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
-      <reporting>
-        <!-- Do nothing -->
-      </reporting>
     </profile>
     <profile>
       <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
