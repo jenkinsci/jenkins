@@ -1150,10 +1150,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             if (lastBuild != null) {
                 return new BlockedBecauseOfBuildInProgress(lastBuild);
             } else {
-                // The build has been lost during the execution
-                // It may happen in the case of the quick deletion of build after isLogUpdated() call 
-                // or API implemetation glisthes in the plugins. Anyway, we should let the code go then
-                LOGGER.log(Level.FINEST, "Previous build instance has been during the non-concurrent cause creation. The build is not blocked anymore");
+                // The build has been likely deleted after the isLogUpdated() the after isLogUpdated() call 
+                // or API implemetation glitсhes in a plugin. Anyway, we should let the code go then
+                LOGGER.log(Level.FINE, "Previous build instance has been during the non-concurrent cause creation. The build is not blocked anymore");
             }
         }
         if (blockBuildWhenDownstreamBuilding()) {
