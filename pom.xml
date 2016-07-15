@@ -96,7 +96,7 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
 
