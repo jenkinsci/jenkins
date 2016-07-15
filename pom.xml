@@ -97,6 +97,7 @@ THE SOFTWARE.
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
@@ -732,6 +733,33 @@ THE SOFTWARE.
               <goal>generateTestStubs</goal>
               <goal>testCompile</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <configuration>
+          <effort>Max</effort>
+          <threshold>High</threshold>
+          <!--Excludes file is located on the top level-->
+          <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+          <failOnError>${findbugs.failOnError}</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <id>findbugs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <!--  Do not define excludeFilterFile here as it will force a plugin to provide a file -->
+              <!--  Instead we configure this in a profile -->
+              <xmlOutput>true</xmlOutput>
+              <findbugsXmlOutput>false</findbugsXmlOutput>
+            </configuration>
           </execution>
         </executions>
       </plugin>
