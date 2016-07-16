@@ -3042,6 +3042,7 @@ var notificationBar = {
     }
 };
 
+// trigger edit Description box if GET request received
 window.onload=function() {
     if (location.search.slice(1) === "editDescription") {
         replaceDescription();
