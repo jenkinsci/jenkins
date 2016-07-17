@@ -57,12 +57,35 @@ Upcoming changes</a>
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
   <li class=rfe>
+    Minor optimization in calculation of recent build stability health report.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36629">issue 36629</a>)
+  <li class=bug>
+    Underprivileged users were unable to use the default value of a password parameter.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36476">issue 36476</a>)
+  <li class=bug>
+    Allow keeping builds forever with custom build retention strategies.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26438">issue 26438</a>)
+  <li class=bug>
+    Properly handle exceptions during global configuration form submissions when <code>SCM Retry Count</code> field is empty.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36387">issue 36387</a>)
+  <li class=bug>
+    When a user aborts the build, this user may be restored after its deletion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36594">issue 36594</a>)
+  <li class=bug>
+    Prevent potential <code>NullPointerException</code> in the <code>BlockedBecauseOfBuildInProgress</code> build blockage cause visualization.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36592">issue 36592</a>)
+  <li class=rfe>
+    CLI commands <code>quiet-down</code> and <code>cancel-quiet-down</code> were extracted from the core to CLI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35423">issue 35423</a>)
+  <li class=rfe>
+    Developer API: Extract listing of computer names to the <code>ComputerSet#getComputerNames()</code> method.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35423">issue 35423</a>)
+  <li class=rfe>
     Developer API: Add a try with resources form of impersonation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36494">issue 36494</a>)
-  <li class=rfe>
-    Minor optimization in calculation of recent build stability health report
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36629">issue 36629</a>)
-  <li class=>
+  <li class=bug>
+    Developer API: Usage of <code>ItemCategory#MIN_TOSHOW</code> in external plugins is now restricted.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36593">issue 36593</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.13>What's new in 2.13</a> (2016/07/10)</h3>
