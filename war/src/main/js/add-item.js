@@ -176,6 +176,7 @@ $.when(getItems()).done(function(data) {
 
         setFieldValidationStatus('items', true);
         if (!getFieldValidationStatus('name')) {
+          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         } else {
           if (getFormValidationStatus()) {
@@ -233,7 +234,7 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').on('keyup blur', function(event) {
+    $('input[name="name"]', '#createItem').blur(function() {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
@@ -245,15 +246,7 @@ $.when(getItems()).done(function(data) {
             showInputHelp('.add-item-name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
-              if (event.type === 'blur') { 
-                enableSubmit(true);
-              } else if (event.type === 'keyup') {
-                var btn = $('form .footer .btn-decorator button[type=submit]');
-                if (btn.hasClass('disabled')) {
-                  btn.removeClass('disabled');
-                  btn.prop('disabled', false);
-                }
-              }
+              enableSubmit(true);
             }
           }
         });
@@ -261,7 +254,7 @@ $.when(getItems()).done(function(data) {
         enableSubmit(false);
         setFieldValidationStatus('name', false);
         cleanValidationMessages('.add-item-name');
-        showInputHelp('.add-item-name');
+        activateValidationMessage('#itemname-required', '.add-item-name');
       }
     });
 
