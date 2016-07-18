@@ -752,6 +752,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
+        UserDetailsCache.get().invalidate(strategy.keyFor(id));
     }
 
     /**
