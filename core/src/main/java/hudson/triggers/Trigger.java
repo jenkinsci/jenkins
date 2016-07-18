@@ -94,7 +94,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         } catch (ANTLRException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
-            LOGGER.log(Level.WARNING, "Failed to parse crontab spec: "+spec,e);
+            LOGGER.log(Level.WARNING, String.format("Failed to parse crontab spec %s in job %s", spec, project.getFullName()), e);
         }
     }
 
