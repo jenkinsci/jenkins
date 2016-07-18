@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Jesse Glick.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,41 +21,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package hudson.security;
 
-package jenkins.model;
-
-import hudson.model.Executor;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.queue.CauseOfBlockage;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
- * Indicates that a new build is blocked because the previous build is already in progress.
- * Useful for implementing {@link hudson.model.Queue.Task#getCauseOfBlockage} from a {@link Job} which supports {@link hudson.model.Queue.Task#isConcurrentBuild}.
- * @since 1.624
+ * A {@link AutoCloseable} that captures the previous {@link SecurityContext} and restores it on {@link #close()}
+ *
+ * @since 2.14
  */
-public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
-    
-    @Nonnull
-    private final Run<?, ?> build;
+public class ACLContext implements AutoCloseable {
 
     /**
-     * Creates a cause for the specified build.
-     * @param build Build, which is already in progress
+     * The previous context.
      */
-    public BlockedBecauseOfBuildInProgress(@Nonnull Run<?, ?> build) {
-        this.build = build;
+    @Nonnull
+    private final SecurityContext previousContext;
+
+    /**
+     * Private constructor to ensure only instance creation is from {@link ACL#as(Authentication)}.
+     * @param previousContext the previous context
+     */
+    ACLContext(@Nonnull SecurityContext previousContext) {
+        this.previousContext = previousContext;
     }
 
-    @Override public String getShortDescription() {
-        Executor e = build.getExecutor();
-        String eta = "";
-        if (e != null) {
-            eta = Messages.BlockedBecauseOfBuildInProgress_ETA(e.getEstimatedRemainingTime());
-        }
-        int lbn = build.getNumber();
-        return Messages.BlockedBecauseOfBuildInProgress_shortDescription(lbn, eta);
+    /**
+     * Accessor for the previous context.
+     * @return the previous context.
+     */
+    @Nonnull
+    public SecurityContext getPreviousContext() {
+        return previousContext;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void close() {
+        SecurityContextHolder.setContext(previousContext);
+    }
 }

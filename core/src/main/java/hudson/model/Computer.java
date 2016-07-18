@@ -1039,9 +1039,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Returns true if any of the executors are {@linkplain Executor#isActive active}.
      *
-     * Note that if an executor dies, we'll leave it in {@link #executors} until
-     * the administrator yanks it out, so that we can see why it died.
-     *
      * @since 1.509
      */
     protected boolean isAlive() {
@@ -1531,11 +1528,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {
-            List<String> names = new ArrayList<String>();
-            for (Computer c : h.getComputers())
-                if (c.getName().length()>0)
-                    names.add(c.getName());
-            throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
+            List<String> names = ComputerSet.getComputerNames();
+            String adv = EditDistance.findNearest(name, names);
+            throw new IllegalArgumentException(adv == null ?
+                    hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(name) :
+                    hudson.model.Messages.Computer_NoSuchSlaveExists(name, adv));
         }
         return item;
     }

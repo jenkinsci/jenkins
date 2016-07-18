@@ -49,6 +49,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -408,6 +409,21 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                 ComputerSet.initialize();
             }
         }, 10, TimeUnit.SECONDS);
+    }
+
+    /**
+     * @return The list of strings of computer names (excluding master)
+     * @since TODO
+     */
+    @Nonnull
+    public static List<String> getComputerNames() {
+        final ArrayList<String> names = new ArrayList<String>();
+        for (Computer c : Jenkins.getInstance().getComputers()) {
+            if (!c.getName().isEmpty()) {
+                names.add(c.getName());
+            }
+        }
+        return names;
     }
 
     private static final Logger LOGGER = Logger.getLogger(ComputerSet.class.getName());

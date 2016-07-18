@@ -15,27 +15,28 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.gargoylesoftware.htmlunit.util.UrlUtils;
+import hidden.jth.org.apache.http.Header;
+import hidden.jth.org.apache.http.HttpEntity;
+import hidden.jth.org.apache.http.HttpHost;
+import hidden.jth.org.apache.http.auth.AuthScheme;
+import hidden.jth.org.apache.http.auth.AuthScope;
+import hidden.jth.org.apache.http.auth.Credentials;
+import hidden.jth.org.apache.http.auth.UsernamePasswordCredentials;
+import hidden.jth.org.apache.http.client.AuthCache;
+import hidden.jth.org.apache.http.client.CredentialsProvider;
+import hidden.jth.org.apache.http.client.methods.CloseableHttpResponse;
+import hidden.jth.org.apache.http.client.methods.HttpGet;
+import hidden.jth.org.apache.http.client.protocol.HttpClientContext;
+import hidden.jth.org.apache.http.impl.auth.BasicScheme;
+import hidden.jth.org.apache.http.impl.client.BasicAuthCache;
+import hidden.jth.org.apache.http.impl.client.BasicCredentialsProvider;
+import hidden.jth.org.apache.http.impl.client.CloseableHttpClient;
+import hidden.jth.org.apache.http.impl.client.HttpClientBuilder;
 import hudson.Util;
 import hudson.model.User;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import jenkins.model.Jenkins;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,12 +69,9 @@ public class ApiTokenPropertyTest {
         final String token = t.getApiToken();
 
         // Make sure that user is able to get the token via the interface
-        ACL.impersonate(u.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("User is unable to get its own token", token, t.getApiToken());
-            }
-        });
+        try (ACLContext _ = ACL.as(u)) {
+            assertEquals("User is unable to get its own token", token, t.getApiToken());
+        }
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");

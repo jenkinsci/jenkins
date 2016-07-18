@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2016 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,37 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model;
+
+package hudson.cli;
 
 import hudson.Extension;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import jenkins.model.Jenkins;
 
-import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
- * Configures global SCM retry count default.
+ * Cancel previous quiet down Jenkins - preparation for a restart
  *
- * @author Kohsuke Kawaguchi
+ * @author pjanouse
+ * @since TODO
  */
-@Extension(ordinal=395) @Symbol("scmRetryCount")
-public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
-    public int getScmCheckoutRetryCount() {
-        return Jenkins.getInstance().getScmCheckoutRetryCount();
+@Extension
+public class CancelQuietDownCommand extends CLICommand {
+
+    private static final Logger LOGGER = Logger.getLogger(CancelQuietDownCommand.class.getName());
+
+    @Override
+    public String getShortDescription() {
+        return Messages.CancelQuietDownCommand_ShortDescription();
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        try {
-            // for compatibility reasons, this value is stored in Jenkins
-            Jenkins.getInstance().setScmCheckoutRetryCount(json.getInt("scmCheckoutRetryCount"));
-            return true;
-        } catch (IOException e) {
-            throw new FormException(e,"quietPeriod");
-        } catch (JSONException e) {
-            throw new FormException(e.getMessage(), "quietPeriod");
-        }
+    protected int run() throws Exception {
+        Jenkins.getActiveInstance().doCancelQuietDown();
+        return 0;
     }
 }

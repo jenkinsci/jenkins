@@ -154,6 +154,7 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
@@ -1779,7 +1780,7 @@ public class Functions {
             }
             return ((Secret) o).getEncryptedValue();
         }
-        if (getIsUnitTest()) {
+        if (getIsUnitTest() && !o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
             throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
         }
         return o.toString();
