@@ -59,7 +59,7 @@ public class OfflineNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final Jenkins jenkins = Jenkins.getInstance();
         final HashSet<String> hs = new HashSet<String>(nodes);
         List<String> names = null;
 
