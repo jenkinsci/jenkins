@@ -44,7 +44,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
-import hudson.LocalPluginManager;
 import hudson.Lookup;
 import hudson.Main;
 import hudson.Plugin;
@@ -239,7 +238,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -311,6 +309,7 @@ import java.util.logging.Logger;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
+import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
@@ -3458,11 +3457,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
-    @CLIMethod(name="quiet-down")
+    /**
+     * Quiet down Jenkins - preparation for a restart
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     */
     @RequirePOST
-    public HttpRedirect doQuietDown(
-            @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
-            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(ADMINISTER);
             isQuietingDown = true;
@@ -3479,7 +3481,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new HttpRedirect(".");
     }
 
-    @CLIMethod(name="cancel-quiet-down")
+    /**
+     * Cancel previous quiet down Jenkins - preparation for a restart
+     */
     @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
@@ -3714,10 +3718,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Reloads the configuration synchronously.
+     * Beware that this calls neither {@link ItemListener#onLoaded} nor {@link Initializer}s.
      */
     public void reload() throws IOException, InterruptedException, ReactorException {
+        queue.save();
         executeReactor(null, loadTasks());
         User.reload();
+        queue.load();
         servletContext.setAttribute("app", this);
     }
 

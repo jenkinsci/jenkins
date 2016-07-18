@@ -30,6 +30,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -441,13 +442,13 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     @Restricted(NoExternalUse.class)
-    @Extension public static final class Listener extends ItemListener {
-        @Override public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override public void run() {
-                    locationChanged(item, oldFullName, newFullName);
-                }
-            });
+    @Extension
+    public static final class Listener extends ItemListener {
+        @Override
+        public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                locationChanged(item, oldFullName, newFullName);
+            }
         }
         private void locationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.getInstance();
@@ -487,12 +488,11 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
-        @Override public void onDeleted(final Item item) {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override public void run() {
-                    deleted(item);
-                }
-            });
+        @Override
+        public void onDeleted(final Item item) {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                deleted(item);
+            }
         }
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.getInstance();

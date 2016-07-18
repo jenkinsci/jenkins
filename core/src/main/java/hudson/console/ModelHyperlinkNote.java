@@ -8,6 +8,7 @@ import org.jenkinsci.Symbol;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * {@link HyperlinkNote} that links to a {@linkplain ModelObject model object},
@@ -26,7 +27,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
         return " class='model-link'";
     }
 
-    public static String encodeTo(User u) {
+    public static String encodeTo(@Nonnull User u) {
         return encodeTo(u,u.getDisplayName());
     }
 

@@ -46,6 +46,7 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.model.queue.Tasks;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -412,11 +413,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         public static class ItemListenerImpl extends ItemListener {
             @Override
             public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-                ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                    @Override public void run() {
-                        locationChanged(item, oldFullName, newFullName);
-                    }
-                });
+                try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                    locationChanged(item, oldFullName, newFullName);
+                }
             }
             private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.

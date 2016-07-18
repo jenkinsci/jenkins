@@ -121,7 +121,7 @@ public interface SCMTriggerItem {
             }
             @Override public PollingResult poll(TaskListener listener) {
                 SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(asItem());
-                if (!veto.shouldPoll(asItem())) {
+                if (veto != null && !veto.shouldPoll(asItem())) {
                     listener.getLogger().println(Messages.SCMTriggerItem_PollingVetoed(veto));
                     return PollingResult.NO_CHANGES;
                 }

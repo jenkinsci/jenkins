@@ -26,12 +26,12 @@ package hudson.cli;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.model.ComputerSet;
 import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
@@ -73,12 +73,7 @@ public class DisconnectNodeCommand extends CLICommand {
 
                 if (computer == null) {
                     if (names == null) {
-                        names = new ArrayList<String>();
-                        for (Computer c : jenkins.getComputers()) {
-                            if (!c.getName().isEmpty()) {
-                                names.add(c.getName());
-                            }
-                        }
+                        names = ComputerSet.getComputerNames();
                     }
                     String adv = EditDistance.findNearest(node_s, names);
                     throw new IllegalArgumentException(adv == null ?

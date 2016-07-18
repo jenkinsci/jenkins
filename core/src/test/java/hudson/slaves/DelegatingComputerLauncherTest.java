@@ -65,7 +65,7 @@ public class DelegatingComputerLauncherTest {
 
         assertTrue("DelegatingComputerLauncher should filter out other DelegatingComputerLauncher instances " +
                    "from its descriptor's getApplicableDescriptors() method",
-                new DummyTwo.DummyTwoDescriptor().getApplicableDescriptors().isEmpty());
+                new DummyTwo.DummyTwoDescriptor().applicableDescriptors(null, new DumbSlave.DescriptorImpl()).isEmpty());
     }
 
 }

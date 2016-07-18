@@ -30,33 +30,24 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
 import hudson.model.Descriptor.FormException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.sf.json.JSONObject;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class JobPropertyTest {
 
-    private static final Logger logger = Logger.getLogger(Descriptor.class.getName());
-    @BeforeClass
-    public static void logging() {
-        logger.setLevel(Level.ALL);
-        Handler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
-        logger.addHandler(handler);
-    }
-
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logs = new LoggerRule();
 
     @Test
     @Issue("JENKINS-2398")
@@ -110,6 +101,7 @@ public class JobPropertyTest {
      */
     @Test
     public void configRoundtrip() throws Exception {
+        logs.record(Descriptor.class, Level.ALL);
         FreeStyleProject p = j.createFreeStyleProject();
         JobPropertyWithConfigImpl before = new JobPropertyWithConfigImpl("Duke");
         p.addProperty(before);
