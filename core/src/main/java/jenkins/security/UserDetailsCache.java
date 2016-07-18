@@ -182,7 +182,7 @@ public final class UserDetailsCache {
                 existanceCache.put(this.idOrFullName, Boolean.FALSE);
                 throw e;
             } catch (DataAccessException e) {
-                existanceCache.put(this.idOrFullName, null); //TODO verify this is the correct way
+                existanceCache.invalidate(this.idOrFullName);
                 throw e;
             }
         }
