@@ -264,8 +264,8 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
-                if (t !=null && t.spec != null && t.tabs != null) {
-                    if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
+                if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
+                    if (t !=null && t.spec != null && t.tabs != null) {
                         LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
                         if (t.tabs.check(cal)) {
@@ -280,9 +280,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                         } else {
                             LOGGER.log(Level.FINER, "did not trigger {0}", p);
                         }
+                    } else {
+                            LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
                     }
-                } else {
-                    LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
                 }
             }
         }
