@@ -581,6 +581,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         } finally {
             byNameLock.readLock().unlock();
+            UserDetailsCache.get().invalidateAll();
         }
     }
 
@@ -614,6 +615,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         } finally {
             byNameLock.writeLock().unlock();
+            UserDetailsCache.get().invalidateAll();
         }
     }
 
