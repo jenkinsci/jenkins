@@ -50,7 +50,6 @@ import static com.google.common.cache.CacheBuilder.newBuilder;
  * @since TODO
  */
 @Extension
-@Restricted(NoExternalUse.class) //TODO Keep for LTS, Remove when in weekly
 public final class UserDetailsCache {
 
     private static final String SYS_PROP_NAME = UserDetailsCache.class.getName() + ".EXPIRE_AFTER_WRITE_SEC";
