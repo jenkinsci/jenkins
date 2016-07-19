@@ -24,6 +24,7 @@
  */
 package hudson.model;
 
+import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
@@ -81,6 +82,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -578,6 +580,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         } finally {
             byNameLock.readLock().unlock();
+            UserDetailsCache.get().invalidateAll();
         }
     }
 
@@ -611,6 +614,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             }
         } finally {
             byNameLock.writeLock().unlock();
+            UserDetailsCache.get().invalidateAll();
         }
     }
 
@@ -743,6 +747,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         Util.deleteRecursive(new File(getRootDir(), strategy.filenameOf(id)));
+        UserDetailsCache.get().invalidate(strategy.keyFor(id));
     }
 
     /**
@@ -760,7 +765,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
-
+        String oldFullName = this.fullName;
         fullName = json.getString("fullName");
         description = json.getString("description");
 
@@ -785,6 +790,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         this.properties = props;
 
         save();
+
+        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
+            UserDetailsCache.get().invalidate(oldFullName);
+        }
 
         FormApply.success(".").generateResponse(req,rsp,this);
     }
@@ -1042,19 +1051,17 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 return existing.getId();
             }
             if (SECURITY_243_FULL_DEFENSE) {
-                Jenkins j = Jenkins.getInstance();
-                if (j != null) {
-                    if (!resolving.get()) {
-                        resolving.set(true);
-                        try {
-                            return j.getSecurityRealm().loadUserByUsername(idOrFullName).getUsername();
-                        } catch (UsernameNotFoundException x) {
-                            LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
-                        } catch (DataAccessException x) {
-                            LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
-                        } finally {
-                            resolving.set(false);
-                        }
+                if (!resolving.get()) {
+                    resolving.set(true);
+                    try {
+                        UserDetails userDetails = UserDetailsCache.get().loadUserByUsername(idOrFullName);
+                        return userDetails.getUsername();
+                    } catch (UsernameNotFoundException x) {
+                        LOGGER.log(Level.FINE, "not sure whether " + idOrFullName + " is a valid username or not", x);
+                    } catch (DataAccessException | ExecutionException x) {
+                        LOGGER.log(Level.FINE, "could not look up " + idOrFullName, x);
+                    } finally {
+                        resolving.set(false);
                     }
                 }
             }
