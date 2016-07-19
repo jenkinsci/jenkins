@@ -772,7 +772,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
-
+        String oldFullName = this.fullName;
         fullName = json.getString("fullName");
         description = json.getString("description");
 
@@ -797,6 +797,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         this.properties = props;
 
         save();
+
+        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
+            UserDetailsCache.get().invalidate(oldFullName);
+        }
 
         FormApply.success(".").generateResponse(req,rsp,this);
     }
