@@ -722,6 +722,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns the icon for this computer.
+     * 	 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
      * 
      * @see #getIconClassName()
      */
@@ -739,6 +741,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This class name will be added as a class tag to the html img tags where the icon should
      * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
      * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     * 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
      * 
      * @see #getIcon()
      */
