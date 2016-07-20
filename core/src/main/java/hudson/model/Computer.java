@@ -68,6 +68,8 @@ import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -721,6 +723,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * Returns the icon for this computer.
+     * 	 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * 
+     * @see #getIconClassName()
+     */
     @Exported
     public String getIcon() {
         if(isOffline())
@@ -729,6 +738,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return "computer.png";
     }
 
+    /**
+     * Returns the class name that will be used to lookup the icon.
+     * 
+     * This class name will be added as a class tag to the html img tags where the icon should
+     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
+     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     * 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * 
+     * @see #getIcon()
+     */
     @Exported
     public String getIconClassName() {
         if(isOffline())
