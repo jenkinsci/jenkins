@@ -75,13 +75,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        BulkChange bc = new BulkChange(Jenkins.getInstance());
-        try{
+        try (BulkChange bc = new BulkChange(Jenkins.getInstance())) {
             boolean result = configure(req, req.getSubmittedForm());
             LOGGER.log(Level.FINE, "security saved: "+result);
             Jenkins.getInstance().save();
             FormApply.success(req.getContextPath()+"/manage").generateResponse(req, rsp, null);
-        } finally {
             bc.commit();
         }
     }
