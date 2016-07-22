@@ -1030,10 +1030,9 @@ var createPluginSetupWizard = function(appendTarget) {
 	}
 	
 	var showInitialSetupWizard = function() {
-		// check for connectivity
-		//TODO: make the Update Center ID configurable
-		var siteId = 'default';
-		jenkins.testConnectivity(siteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
+		// check for connectivity to the configured default update site
+		/* globals defaultUpdateSiteId: true */
+		jenkins.testConnectivity(defaultUpdateSiteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
 			if(!isConnected) {
 				if (isFatal) { // We cannot continue, show error
 					setPanel(errorPanel, { errorMessage: 'Default update site connectivity check failed with fatal error: ' + errorMessage + '. If you see this issue for the custom Jenkins WAR bundle, consider setting the correct value of the hudson.model.UpdateCenter.defaultUpdateSiteId system property (requires Jenkins restart). Otherwise please create a bug in Jenkins JIRA.' });
