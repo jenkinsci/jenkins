@@ -36,7 +36,7 @@ THE SOFTWARE.
 
       <f:form method="post" action="configSubmit" name="viewConfig">
         <f:entry title="${%Name}">
-          <f:textbox name="name" value="${it.viewName}" />
+          <f:textbox name="name" value="${it.viewName}" autocomplete="on"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/view-config/description.html">
           <f:textarea name="description" field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>

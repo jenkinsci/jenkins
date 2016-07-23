@@ -94,7 +94,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         } catch (ANTLRException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
-            LOGGER.log(Level.FINE, "Failed to parse crontab spec: "+spec,e);
+            LOGGER.log(Level.WARNING, String.format("Failed to parse crontab spec %s in job %s", spec, project.getFullName()), e);
         }
     }
 
@@ -264,20 +264,24 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // Process all triggers, except SCMTriggers when synchronousPolling is set
         for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
-                if (! (t instanceof SCMTrigger && scmd.synchronousPolling)) {
-                    LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[] {p, t.spec.trim()});
+                if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
+                    if (t !=null && t.spec != null && t.tabs != null) {
+                        LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
-                    if (t.tabs.check(cal)) {
-                        LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
-                        try {
-                            t.run();
-                        } catch (Throwable e) {
-                            // t.run() is a plugin, and some of them throw RuntimeException and other things.
-                            // don't let that cancel the polling activity. report and move on.
-                            LOGGER.log(Level.WARNING, t.getClass().getName() + ".run() failed for " + p, e);
+                        if (t.tabs.check(cal)) {
+                            LOGGER.log(Level.CONFIG, "cron triggered {0}", p);
+                            try {
+                                t.run();
+                            } catch (Throwable e) {
+                                // t.run() is a plugin, and some of them throw RuntimeException and other things.
+                                // don't let that cancel the polling activity. report and move on.
+                                LOGGER.log(Level.WARNING, t.getClass().getName() + ".run() failed for " + p, e);
+                            }
+                        } else {
+                            LOGGER.log(Level.FINER, "did not trigger {0}", p);
                         }
                     } else {
-                        LOGGER.log(Level.FINER, "did not trigger {0}", p);
+                            LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
                     }
                 }
             }

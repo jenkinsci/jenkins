@@ -465,7 +465,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             if(p.isActive())
                                                 activePlugins.add(p);
                                         }
-                                    } catch (CycleDetectedException e) {
+                                    } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
                                         throw e;    // let Hudson fail
                                     }
