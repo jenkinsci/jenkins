@@ -320,7 +320,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getOverriddenAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission permission) {

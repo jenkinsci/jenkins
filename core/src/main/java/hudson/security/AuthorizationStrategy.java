@@ -68,6 +68,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * for all the other model objects eventually delegate.
      * <p>
      * IOW, this ACL will have the ultimate say on the access control.
+     *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link Jenkins#getACL()} instead.
      */
     public abstract @Nonnull ACL getRootACL();
 
@@ -80,6 +85,17 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
     	return getACL((Job)project);
     }
 
+    /**
+     * Returns the instance of {@link ACL} for a job.
+     *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link Job#getACL()} instead.
+     *
+     * @param project job
+     * @return ACL for the job.
+     */
     public @Nonnull ACL getACL(@Nonnull Job<?,?> project) {
     	return getRootACL();
     }
@@ -91,6 +107,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * The default implementation makes the view visible if any of the items are visible
      * or the view is configurable.
+     *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link View#getACL()} instead.
      *
      * @since 1.220
      */
@@ -117,6 +138,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * The default implementation returns {@link #getRootACL()}.
      *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link AbstractItem#getACL()} instead.
+     * 
      * @since 1.220
      */
     public @Nonnull ACL getACL(@Nonnull AbstractItem item) {
@@ -129,6 +155,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      *
      * <p>
      * The default implementation returns {@link #getRootACL()}.
+     *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link User#getACL()} instead.
      *
      * @since 1.221
      */
@@ -143,6 +174,11 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * The default implementation delegates to {@link #getACL(Node)}
      *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link Computer#getACL()} instead.
+     *
      * @since 1.220
      */
     public @Nonnull ACL getACL(@Nonnull Computer computer) {
@@ -156,12 +192,32 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * <p>
      * The default implementation returns {@link #getRootACL()}.
      *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link Cloud#getACL()} instead.
+     *
      * @since 1.252
      */
     public @Nonnull ACL getACL(@Nonnull Cloud cloud) {
         return getRootACL();
     }
 
+    /**
+     * Implementation can choose to provide different ACL for different {@link Node}s.
+     * This can be used as a basis for more fine-grained access control.
+     *
+     * <p>
+     * The default implementation returns {@link #getRootACL()}.
+     *
+     * <p>
+     * Plugins may define this method
+     * but should not call this method directly,
+     * and should call {@link Node#getACL()} instead.
+     *
+     * @param node
+     * @return
+     */
     public @Nonnull ACL getACL(@Nonnull Node node) {
         return getRootACL();
     }

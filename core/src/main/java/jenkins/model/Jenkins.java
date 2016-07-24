@@ -207,6 +207,7 @@ import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.security.OverriddenAuthorizationStrategy;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
@@ -384,6 +385,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * Never null.
      */
+    @Nonnull
     private volatile AuthorizationStrategy authorizationStrategy = AuthorizationStrategy.UNSECURED;
 
     /**
@@ -2426,15 +2428,40 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Override
     public ACL getACL() {
-        return authorizationStrategy.getRootACL();
+        return getOverriddenAuthorizationStrategy().getRootACL();
     }
 
     /**
+     * {@link AuthorizationStrategy} configured in Global Security page.
+     *
+     * Use {@code getACL()} methods provided by items to get {@link ACL}s
+     * (e.g. {@link #getACL()}, {@link Job#getACL()}).
+     *
      * @return
      *      never null.
      */
+    @Nonnull
     public AuthorizationStrategy getAuthorizationStrategy() {
         return authorizationStrategy;
+    }
+
+    /**
+     * {@link AuthorizationStrategy} extended with extensions.
+     *
+     * This method is used by Jenkins internally and you never need to use this.
+     * You should use {@link #getAuthorizationStrategy()} to access the {@link AuthorizationStrategy}
+     * configured in Global Security page.
+     * And you should get {@link ACL}s with {@code getACL()} provided by target items,
+     * like {@link #getACL()}, {@link Job#getACL()} and so on.
+     *
+     * @return never {@code null}
+     * @since TODO
+     */
+    @Nonnull
+    public AuthorizationStrategy getOverriddenAuthorizationStrategy() {
+        return new OverriddenAuthorizationStrategy(
+            getAuthorizationStrategy()
+        );
     }
 
     /**

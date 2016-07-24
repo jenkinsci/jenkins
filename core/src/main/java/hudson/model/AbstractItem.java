@@ -495,7 +495,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getOverriddenAuthorizationStrategy().getACL(this);
     }
 
     /**
