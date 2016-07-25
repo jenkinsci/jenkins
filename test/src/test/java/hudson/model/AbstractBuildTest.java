@@ -60,19 +60,19 @@ public class AbstractBuildTest {
     @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
-        ErrorneousJobProperty errorneousJobProperty = new ErrorneousJobProperty();
+        ErroneousJobProperty errorneousJobProperty = new ErroneousJobProperty();
         prj.addProperty(errorneousJobProperty);
         QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
         assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
         FreeStyleBuild build = future.get();
-        j.assertLogContains(ErrorneousJobProperty.ERROR_MESSAGE, build);
+        j.assertLogContains(ErroneousJobProperty.ERROR_MESSAGE, build);
         j.assertLogNotContains(ClassCastException.class.getName(), build);
     }
     
     /**
      * Job property, which always fails with an exception.
      */
-    public static class ErrorneousJobProperty extends JobProperty<FreeStyleProject> {
+    public static class ErroneousJobProperty extends JobProperty<FreeStyleProject> {
 
         public static final String ERROR_MESSAGE = "This publisher fails by design";
         
