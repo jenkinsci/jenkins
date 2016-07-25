@@ -9,6 +9,8 @@ var getJQuery = function() {
     return $;
 };
 
+defaultUpdateSiteId = 'default';
+
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
     var counter = 0;
