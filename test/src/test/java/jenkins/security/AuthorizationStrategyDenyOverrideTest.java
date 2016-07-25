@@ -373,7 +373,7 @@ public class AuthorizationStrategyDenyOverrideTest {
             if (!permission.equals(p.getId())) {
                 return false;
             }
-            if (!cloud.equals(item.getDisplayName())) {
+            if (!cloud.equals(item.name)) {
                 return false;
             }
             if (!Jenkins.getInstance().getSecurityRealm().getUserIdStrategy().equals(user, a.getName())) {
@@ -391,7 +391,7 @@ public class AuthorizationStrategyDenyOverrideTest {
         TestDenyCloud deny = j.jenkins.getExtensionList(AuthorizationStrategyDenyOverride.class).get(TestDenyCloud.class);
         deny.user = "developer";
         deny.permission = Cloud.PROVISION.getId();
-        deny.cloud = c.getDisplayName();
+        deny.cloud = c.name;
         assertFalse(c.getACL().hasPermission(User.get("developer").impersonate(), Cloud.PROVISION));
     }
 
