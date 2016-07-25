@@ -501,6 +501,25 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
+          <version>${findbugs-maven-plugin.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>High</threshold>
+            <!--Excludes file is located on the top level-->
+            <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+            <failOnError>${findbugs.failOnError}</failOnError>
+            <xmlOutput>true</xmlOutput>
+            <findbugsXmlOutput>false</findbugsXmlOutput>
+          </configuration>
+          <executions>
+            <execution>
+              <id>findbugs</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
