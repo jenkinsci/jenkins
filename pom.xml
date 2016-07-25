@@ -115,7 +115,7 @@ THE SOFTWARE.
         <enabled>true</enabled>
       </releases>
       <snapshots>
-        <enabled>false</enabled>
+        <enabled>true</enabled> <!-- TODO should we turn this back after merging JENKINS-36923? -->
       </snapshots>
     </repository>
   </repositories>
