@@ -9,6 +9,7 @@ var getJQuery = function() {
     return $;
 };
 
+/* globals defaultUpdateSiteId: true */
 defaultUpdateSiteId = 'default';
 
 // Iterates through all responses until the end and returns the last response repeatedly
