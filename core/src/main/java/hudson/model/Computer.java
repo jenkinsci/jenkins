@@ -1494,7 +1494,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Blocks until the node becomes online/offline.
      */
-    @CLIMethod(name="wait-node-online")
     public void waitUntilOnline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOnline())
@@ -1502,7 +1501,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    @CLIMethod(name="wait-node-offline")
     public void waitUntilOffline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOffline())
