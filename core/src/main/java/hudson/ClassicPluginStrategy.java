@@ -418,7 +418,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
             new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
             new DetachedPlugin("junit", "1.577.*", "1.0"),
-            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0-SNAPSHOT") // TODO remove -SNAPSHOT
+            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0-20160725.164257-1") // TODO remove -SNAPSHOT
     ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
