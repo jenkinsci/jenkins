@@ -32,7 +32,7 @@ THE SOFTWARE.
   <j:new var="h" className="hudson.Functions" />
 
   <Projects>
-    <j:forEach var="p" items="${it.items}">
+    <j:forEach var="p" items="${it.allItems}">
       <j:set var="lb" value="${p.lastCompletedBuild}"/>
       <j:if test="${lb!=null}">
         <Project  name="${p.displayName}"

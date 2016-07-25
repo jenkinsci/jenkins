@@ -80,6 +80,11 @@ public class AllView extends View {
     }
 
     @Override
+    public Collection<TopLevelItem> getAllItems() {
+        return Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class);
+    }
+
+    @Override
     public String getPostConstructLandingPage() {
         return ""; // there's no configuration page
     }
