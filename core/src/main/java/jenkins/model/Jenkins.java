@@ -2866,15 +2866,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     getAssignedLabels();
                 }
 
-                // initialize views by inserting the default view if necessary
-                // this is both for clean Jenkins and for backward compatibility.
-                if(views.size()==0) {
-                    View v = new AllView(Messages.Hudson_ViewName());
-                    setViewOwner(v);
-                    views.add(0,v);
-                    primaryView = v.getViewName();
+                // Make sure that the default view always exists
+                View allView = null;
+                for (View v : views) {
+                    if (v instanceof AllView) {
+                        allView = v;
+                    }
                 }
-                if (primaryView==null) {
+
+                if (allView == null) {
+                    allView = new AllView(Messages.Hudson_ViewName());
+                    setViewOwner(allView);
+                    views.add(0, allView);
+                    primaryView = allView.getViewName();
+                }
+                if (primaryView == null) {
                     primaryView = views.get(0).getViewName();
                 }
 
