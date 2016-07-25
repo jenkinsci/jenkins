@@ -61,7 +61,25 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.15>What's new in 2.15</a> (2016/07/24)</h3>
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    Tell browsers not to cache or try to autocomplete forms in Jenkins to prevent problems due to invalid data in form submissions.
+    From now on, only select form fields (e.g. job name) will offer autocompletion.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18435">issue 18435</a>)
+  <li class=rfe>
+    Add a cache for user information to fix performance regression due to SECURITY-243.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35493">issue 35493</a>)
+  <li class=bug>
+    Prevent null pointer exceptions when not entering a cron spec for a trigger.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36748">issue 36748</a>)
+  <li class=bug>
+    Defend against some fatal startup errors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36666">issue 36666</a>)
+  <li class=rfe>
+    Use the icon specified by the computer implementation on its overview page.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36775">issue 36775</a>)
+  <li class=rfe>
+    Internal: Extract the CLI command <tt>offline-node</tt> from core.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34468">issue 34468</a>)
 </ul>
 <h3><a name=v2.14>What's new in 2.14</a> (2016/07/17)</h3>
 <ul class=image>
