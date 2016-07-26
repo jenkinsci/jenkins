@@ -71,7 +71,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * is not permitted at the required length by the JCA policy.
      */
     @CheckForNull
-    public abstract KeyPair getKeyPair();
+    protected abstract KeyPair getKeyPair();
 
     /**
      * Shortcut to {@link KeyPair#getPublic()}.
@@ -80,7 +80,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      */
     @SuppressWarnings("unchecked")
     @CheckForNull
-    public PUB getPublicKey() {
+    protected PUB getPublicKey() {
         KeyPair keyPair = getKeyPair();
         return keyPair == null ? null : (PUB) keyPair.getPublic();
     }
@@ -92,7 +92,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      */
     @SuppressWarnings("unchecked")
     @CheckForNull
-    public PRIV getPrivateKey() {
+    protected PRIV getPrivateKey() {
         KeyPair keyPair = getKeyPair();
         return keyPair == null ? null : (PRIV) keyPair.getPrivate();
     }
@@ -104,7 +104,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * @return the certificate. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
     @CheckForNull
-    public abstract X509Certificate getCertificate();
+    protected abstract X509Certificate getCertificate();
 
     /**
      * Holds information about the paired keytypes that can be used to form the various identity keys.
