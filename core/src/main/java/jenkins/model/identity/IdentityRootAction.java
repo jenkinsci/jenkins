@@ -39,8 +39,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      */
     @Override
     public String getUrlName() {
-        return InstanceIdentityProvider.get(InstanceIdentityProvider.RSA) == null
-                ? null : "instance-identity";
+        return InstanceIdentityProvider.RSA.getKeyPair() == null ? null : "instance-identity";
     }
 
     /**
@@ -49,9 +48,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      * @return the PEM encoded public key.
      */
     public String getPublicKey() {
-        InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
-                InstanceIdentityProvider.get(InstanceIdentityProvider.RSA);
-        RSAPublicKey key = provider == null ? null : provider.getPublicKey();
+        RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {
             return null;
         }
@@ -75,9 +72,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      * @return the fingerprint of the public key.
      */
     public String getFingerprint() {
-        InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
-                InstanceIdentityProvider.get(InstanceIdentityProvider.RSA);
-        RSAPublicKey key = provider == null ? null : provider.getPublicKey();
+        RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         if (key == null) {
             return null;
         }

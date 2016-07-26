@@ -78,6 +78,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      *
      * @return the public key. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
+    @SuppressWarnings("unchecked")
     @CheckForNull
     public PUB getPublicKey() {
         KeyPair keyPair = getKeyPair();
@@ -89,6 +90,7 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      *
      * @return the private key. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
+    @SuppressWarnings("unchecked")
     @CheckForNull
     public PRIV getPrivateKey() {
         KeyPair keyPair = getKeyPair();
@@ -103,29 +105,6 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      */
     @CheckForNull
     public abstract X509Certificate getCertificate();
-
-    /**
-     * Gets the provider of the required identity type.
-     *
-     * @param type   the type of keys.
-     * @param <PUB>  the type of public key.
-     * @param <PRIV> the type of private key.
-     * @return the provider or {@code null} if no provider of the specified type is available.
-     */
-    @CheckForNull
-    @SuppressWarnings("unchecked")
-    public static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
-            @Nonnull KeyTypes<PUB, PRIV> type) {
-        for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
-            KeyPair keyPair = provider.getKeyPair();
-            if (keyPair != null
-                    && type.pubKeyType.isInstance(keyPair.getPublic())
-                    && type.privKeyType.isInstance(keyPair.getPrivate())) {
-                return (InstanceIdentityProvider<PUB, PRIV>) provider;
-            }
-        }
-        return null;
-    }
 
     /**
      * Holds information about the paired keytypes that can be used to form the various identity keys.
@@ -155,6 +134,29 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
         }
 
         /**
+         * Gets the provider of the required identity type.
+         *
+         * @param type   the type of keys.
+         * @param <PUB>  the type of public key.
+         * @param <PRIV> the type of private key.
+         * @return the provider or {@code null} if no provider of the specified type is available.
+         */
+        @CheckForNull
+        @SuppressWarnings("unchecked")
+        private static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
+                @Nonnull KeyTypes<PUB, PRIV> type) {
+            for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
+                KeyPair keyPair = provider.getKeyPair();
+                if (keyPair != null
+                        && type.pubKeyType.isInstance(keyPair.getPublic())
+                        && type.privKeyType.isInstance(keyPair.getPrivate())) {
+                    return (InstanceIdentityProvider<PUB, PRIV>) provider;
+                }
+            }
+            return null;
+        }
+
+        /**
          * Gets the interface for the public key.
          *
          * @return the interface for the public key.
@@ -170,6 +172,54 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
          */
         public Class<PRIV> getPrivateKeyClass() {
             return privKeyType;
+        }
+
+        /**
+         * Gets the {@link KeyPair} that comprises the instance identity.
+         *
+         * @return the {@link KeyPair} that comprises the instance identity. {@code null} could technically be
+         * returned in
+         * the event that a keypair could not be generated, for example if the specific key type of this provider
+         * is not permitted at the required length by the JCA policy.
+         */
+        @CheckForNull
+        public KeyPair getKeyPair() {
+            InstanceIdentityProvider<PUB, PRIV> provider = get(this);
+            return provider == null ? null : provider.getKeyPair();
+        }
+
+        /**
+         * Shortcut to {@link KeyPair#getPublic()}.
+         *
+         * @return the public key. {@code null} if {@link #getKeyPair()} is {@code null}.
+         */
+        @CheckForNull
+        public PUB getPublicKey() {
+            InstanceIdentityProvider<PUB, PRIV> provider = get(this);
+            return provider == null ? null : provider.getPublicKey();
+        }
+
+        /**
+         * Shortcut to {@link KeyPair#getPrivate()}.
+         *
+         * @return the private key. {@code null} if {@link #getKeyPair()} is {@code null}.
+         */
+        @CheckForNull
+        public PRIV getPrivateKey() {
+            InstanceIdentityProvider<PUB, PRIV> provider = get(this);
+            return provider == null ? null : provider.getPrivateKey();
+        }
+
+        /**
+         * Gets the self-signed {@link X509Certificate} that is associated with this identity. The certificate
+         * will must be currently valid. Repeated calls to this method may result in new certificates being generated.
+         *
+         * @return the certificate. {@code null} if {@link #getKeyPair()} is {@code null}.
+         */
+        @CheckForNull
+        public X509Certificate getCertificate() {
+            InstanceIdentityProvider<PUB, PRIV> provider = get(this);
+            return provider == null ? null : provider.getCertificate();
         }
     }
 

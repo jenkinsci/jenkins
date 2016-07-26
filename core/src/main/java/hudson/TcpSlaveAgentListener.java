@@ -116,9 +116,7 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @Nullable
     public String getIdentityPublicKey() {
-        InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
-                InstanceIdentityProvider.get(InstanceIdentityProvider.RSA);
-        RSAPublicKey key = provider == null ? null : provider.getPublicKey();
+        RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
         return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
     }
 
