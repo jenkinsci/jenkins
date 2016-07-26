@@ -29,8 +29,14 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /**
  * A source of instance identity.
@@ -41,6 +47,22 @@ import javax.annotation.Nullable;
  */
 public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV extends PrivateKey> implements
         ExtensionPoint {
+    /**
+     * RSA keys.
+     */
+    public static final KeyTypes<RSAPublicKey, RSAPrivateKey> RSA =
+            new KeyTypes<>(RSAPublicKey.class, RSAPrivateKey.class);
+    /**
+     * DSA keys.
+     */
+    public static final KeyTypes<DSAPublicKey, DSAPrivateKey> DSA =
+            new KeyTypes<>(DSAPublicKey.class, DSAPrivateKey.class);
+    /**
+     * EC keys
+     */
+    public static final KeyTypes<ECPublicKey, ECPrivateKey> EC =
+            new KeyTypes<>(ECPublicKey.class, ECPrivateKey.class);
+
     /**
      * Gets the {@link KeyPair} that comprises the instance identity.
      *
@@ -85,21 +107,70 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
     /**
      * Gets the provider of the required identity type.
      *
-     * @param keyType the type of private key.
-     * @param <PUB>   the type of public key.
-     * @param <PRIV>  the type of private key.
+     * @param type   the type of keys.
+     * @param <PUB>  the type of public key.
+     * @param <PRIV> the type of private key.
      * @return the provider or {@code null} if no provider of the specified type is available.
      */
     @CheckForNull
     @SuppressWarnings("unchecked")
     public static <PUB extends PublicKey, PRIV extends PrivateKey> InstanceIdentityProvider<PUB, PRIV> get(
-            Class<PRIV> keyType) {
+            @Nonnull KeyTypes<PUB, PRIV> type) {
         for (InstanceIdentityProvider provider : ExtensionList.lookup(InstanceIdentityProvider.class)) {
             KeyPair keyPair = provider.getKeyPair();
-            if (keyPair != null && keyType.isInstance(keyPair.getPrivate())) {
+            if (keyPair != null
+                    && type.pubKeyType.isInstance(keyPair.getPublic())
+                    && type.privKeyType.isInstance(keyPair.getPrivate())) {
                 return (InstanceIdentityProvider<PUB, PRIV>) provider;
             }
         }
         return null;
     }
+
+    /**
+     * Holds information about the paired keytypes that can be used to form the various identity keys.
+     *
+     * @param <PUB>  the type of public key.
+     * @param <PRIV> the type of private key.
+     */
+    public static final class KeyTypes<PUB extends PublicKey, PRIV extends PrivateKey> {
+        /**
+         * The interface for the public key.
+         */
+        private final Class<PUB> pubKeyType;
+        /**
+         * The interface for the private key.
+         */
+        private final Class<PRIV> privKeyType;
+
+        /**
+         * Constructor.
+         *
+         * @param pubKeyType  the interface for the public key.
+         * @param privKeyType the interface for the private key.
+         */
+        private KeyTypes(Class<PUB> pubKeyType, Class<PRIV> privKeyType) {
+            this.pubKeyType = pubKeyType;
+            this.privKeyType = privKeyType;
+        }
+
+        /**
+         * Gets the interface for the public key.
+         *
+         * @return the interface for the public key.
+         */
+        public Class<PUB> getPublicKeyClass() {
+            return pubKeyType;
+        }
+
+        /**
+         * Gets the interface for the private key.
+         *
+         * @return the interface for the private key.
+         */
+        public Class<PRIV> getPrivateKeyClass() {
+            return privKeyType;
+        }
+    }
+
 }

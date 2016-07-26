@@ -39,7 +39,8 @@ public class IdentityRootAction implements UnprotectedRootAction {
      */
     @Override
     public String getUrlName() {
-        return InstanceIdentityProvider.get(RSAPrivateKey.class) == null ? null : "instance-identity";
+        return InstanceIdentityProvider.get(InstanceIdentityProvider.RSA) == null
+                ? null : "instance-identity";
     }
 
     /**
@@ -49,7 +50,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      */
     public String getPublicKey() {
         InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
-                InstanceIdentityProvider.get(RSAPrivateKey.class);
+                InstanceIdentityProvider.get(InstanceIdentityProvider.RSA);
         RSAPublicKey key = provider == null ? null : provider.getPublicKey();
         if (key == null) {
             return null;
@@ -75,7 +76,7 @@ public class IdentityRootAction implements UnprotectedRootAction {
      */
     public String getFingerprint() {
         InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
-                InstanceIdentityProvider.get(RSAPrivateKey.class);
+                InstanceIdentityProvider.get(InstanceIdentityProvider.RSA);
         RSAPublicKey key = provider == null ? null : provider.getPublicKey();
         if (key == null) {
             return null;
