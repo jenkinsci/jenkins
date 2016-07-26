@@ -48,17 +48,15 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * the event that a keypair could not be generated, for example if the specific key type of this provider
      * is not permitted at the required length by the JCA policy.
      */
-    @Nullable
+    @CheckForNull
     public abstract KeyPair getKeyPair();
 
     /**
      * Shortcut to {@link KeyPair#getPublic()}.
      *
-     * @return the public key. {@code null} could technically be returned in the event that a keypair could not be
-     * generated, for example if the specific key type of this provider is not permitted at the required length by
-     * the JCA policy.
+     * @return the public key. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
-    @Nullable
+    @CheckForNull
     public PUB getPublicKey() {
         KeyPair keyPair = getKeyPair();
         return keyPair == null ? null : (PUB) keyPair.getPublic();
@@ -67,11 +65,9 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
     /**
      * Shortcut to {@link KeyPair#getPrivate()}.
      *
-     * @return the private key. {@code null} could technically be returned in the event that a keypair could not be
-     * generated, for example if the specific key type of this provider is not permitted at the required length by
-     * the JCA policy.
+     * @return the private key. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
-    @Nullable
+    @CheckForNull
     public PRIV getPrivateKey() {
         KeyPair keyPair = getKeyPair();
         return keyPair == null ? null : (PRIV) keyPair.getPrivate();
@@ -81,11 +77,9 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
      * Gets the self-signed {@link X509Certificate} that is associated with this identity. The certificate
      * will must be currently valid. Repeated calls to this method may result in new certificates being generated.
      *
-     * @return the certificate. {@code null} could technically be returned in the event that a keypair could not be
-     * generated, for example if the specific key type of this provider is not permitted at the required length by
-     * the JCA policy.
+     * @return the certificate. {@code null} if {@link #getKeyPair()} is {@code null}.
      */
-    @Nullable
+    @CheckForNull
     public abstract X509Certificate getCertificate();
 
     /**
