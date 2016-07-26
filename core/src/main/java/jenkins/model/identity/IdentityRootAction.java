@@ -2,11 +2,12 @@ package jenkins.model.identity;
 
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64;
-import org.jenkinsci.remoting.util.KeyUtils;
 
 /**
  * A simple root action that exposes the public key to users so that they do not need to search for the
@@ -76,6 +77,25 @@ public class IdentityRootAction implements UnprotectedRootAction {
         InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
                 InstanceIdentityProvider.get(RSAPrivateKey.class);
         RSAPublicKey key = provider == null ? null : provider.getPublicKey();
-        return key == null ? null : KeyUtils.fingerprint(key);
+        if (key == null) {
+            return null;
+        }
+        // TODO replace with org.jenkinsci.remoting.util.KeyUtils once JENKINS-36871 changes are merged
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.reset();
+            byte[] bytes = digest.digest(key.getEncoded());
+            StringBuilder result = new StringBuilder(Math.max(0, bytes.length * 3 - 1));
+            for (int i = 0; i < bytes.length; i++) {
+                if (i > 0) {
+                    result.append(':');
+                }
+                int b = bytes[i] & 0xFF;
+                result.append(Character.forDigit((b>>4)&0x0f, 16)).append(Character.forDigit(b&0xf, 16));
+            }
+            return result.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("JLS mandates MD5 support");
+        }
     }
 }

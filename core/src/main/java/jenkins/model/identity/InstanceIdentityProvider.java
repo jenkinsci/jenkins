@@ -30,6 +30,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 /**
  * A source of instance identity.
@@ -43,17 +44,21 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
     /**
      * Gets the {@link KeyPair} that comprises the instance identity.
      *
-     * @return the {@link KeyPair} that comprises the instance identity.
+     * @return the {@link KeyPair} that comprises the instance identity. {@code null} could technically be returned in
+     * the event that a keypair could not be generated, for example if the specific key type of this provider
+     * is not permitted at the required length by the JCA policy.
      */
-    @CheckForNull
+    @Nullable
     public abstract KeyPair getKeyPair();
 
     /**
      * Shortcut to {@link KeyPair#getPublic()}.
      *
-     * @return the public key.
+     * @return the public key. {@code null} could technically be returned in the event that a keypair could not be
+     * generated, for example if the specific key type of this provider is not permitted at the required length by
+     * the JCA policy.
      */
-    @CheckForNull
+    @Nullable
     public PUB getPublicKey() {
         KeyPair keyPair = getKeyPair();
         return keyPair == null ? null : (PUB) keyPair.getPublic();
@@ -62,21 +67,25 @@ public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV exten
     /**
      * Shortcut to {@link KeyPair#getPrivate()}.
      *
-     * @return the private key.
+     * @return the private key. {@code null} could technically be returned in the event that a keypair could not be
+     * generated, for example if the specific key type of this provider is not permitted at the required length by
+     * the JCA policy.
      */
-    @CheckForNull
+    @Nullable
     public PRIV getPrivateKey() {
         KeyPair keyPair = getKeyPair();
-        return keyPair == null ? null : (PRIV) keyPair.getPublic();
+        return keyPair == null ? null : (PRIV) keyPair.getPrivate();
     }
 
     /**
      * Gets the self-signed {@link X509Certificate} that is associated with this identity. The certificate
      * will must be currently valid. Repeated calls to this method may result in new certificates being generated.
      *
-     * @return the certificate.
+     * @return the certificate. {@code null} could technically be returned in the event that a keypair could not be
+     * generated, for example if the specific key type of this provider is not permitted at the required length by
+     * the JCA policy.
      */
-    @CheckForNull
+    @Nullable
     public abstract X509Certificate getCertificate();
 
     /**
