@@ -507,7 +507,6 @@ THE SOFTWARE.
             <threshold>High</threshold>
             <!--Excludes file is located on the top level-->
             <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
-            <failOnError>${findbugs.failOnError}</failOnError>
             <xmlOutput>true</xmlOutput>
             <findbugsXmlOutput>false</findbugsXmlOutput>
           </configuration>
