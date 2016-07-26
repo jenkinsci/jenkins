@@ -11,12 +11,12 @@
       </j:otherwise>
     </j:choose>
     <l:main-panel>
-      <h1><l:icon class="icon-help icon-xlg" tooltip="${%helpUrl}"/> ${%Instance Identity}</h1>
+      <h1><l:icon class="icon-help icon-xlg"/> ${%Instance Identity}</h1>
       <p>${%blurb}</p>
       <h2>${%Public Key}</h2>
-      <pre>${it.publicKey}</pre>
+      <pre id="key">${it.publicKey}</pre>
       <h2>${%Fingerprint}</h2>
-      <pre>${it.fingerprint}</pre>
+      <pre id="fingerprint">${it.fingerprint}</pre>
     </l:main-panel>
   </l:layout>
 </j:jelly>
