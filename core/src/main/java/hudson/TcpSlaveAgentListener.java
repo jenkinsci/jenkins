@@ -23,6 +23,11 @@
  */
 package hudson;
 
+import java.nio.charset.Charset;
+import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import javax.annotation.Nullable;
+import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
@@ -44,6 +49,7 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -102,6 +108,20 @@ public final class TcpSlaveAgentListener extends Thread {
     public int getAdvertisedPort() {
         return CLI_PORT != null ? CLI_PORT : getPort();
     }
+
+    /**
+     * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
+     * @return the Base64 encoded public key
+     * @since FIXME
+     */
+    @Nullable
+    public String getIdentityPublicKey() {
+        InstanceIdentityProvider<RSAPublicKey, RSAPrivateKey> provider =
+                InstanceIdentityProvider.get(RSAPrivateKey.class);
+        RSAPublicKey key = provider == null ? null : provider.getPublicKey();
+        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+    }
+
 
     @Override
     public void run() {

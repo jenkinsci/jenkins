@@ -34,6 +34,8 @@ THE SOFTWARE.
     if the host name is overriden, advertise that as well
   -->
   <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
+  <!-- publish the instance identity so that agents can verify match from discovery -->
+  <st:header name="X-Instance-Identity" value="${app.tcpSlaveAgentListener.identityPublicKey}" />
 
   Jenkins
 </j:jelly>
