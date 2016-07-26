@@ -29,6 +29,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
+
 import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -36,6 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -44,11 +47,16 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 
 import hudson.model.AbstractItem;
 import hudson.model.Computer;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.ListView;
 import hudson.model.Node;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
+import hudson.model.StringParameterValue;
 import hudson.model.User;
 import hudson.model.View;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -80,12 +88,14 @@ public class AuthorizationStrategyOverrideTest {
         auth.add(Jenkins.READ, "developer");
         auth.add(Item.READ, "developer");
         auth.add(Item.CONFIGURE, "developer");
+        auth.add(Item.BUILD, "developer");
         auth.add(View.READ, "developer");
         auth.add(View.CONFIGURE, "developer");
         auth.add(Computer.BUILD, "developer");
         auth.add(Cloud.PROVISION, "developer");
         auth.add(Jenkins.READ, "user");
         auth.add(Item.READ, "user");
+        auth.add(Item.BUILD, "user");
         auth.add(View.READ, "user");
         j.jenkins.setAuthorizationStrategy(auth);
     }
@@ -637,22 +647,84 @@ public class AuthorizationStrategyOverrideTest {
 
     @Test
     public void testNodeAllow() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        j.jenkins.setNumExecutors(0);
+        DumbSlave slave1 = j.createOnlineSlave();
+        DumbSlave slave2 = j.createOnlineSlave();
 
-        assertFalse(slave.getACL().hasPermission(User.get("user").impersonate(), Computer.BUILD));
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(
+            // a parameter not to builds merged in the queue.
+            new StringParameterDefinition("UNIQUE", "")
+        ));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(
+            new MockQueueItemAuthenticator(Collections.singletonMap(
+                p.getFullName(),
+                User.get("user").impersonate()
+            ))
+        );
+
         AuthorizationStrategyOverrideConfiguration.get().getOverrides().
-            add(new TestOverrideNode("user", slave.getNodeName(), Computer.BUILD.getId(), true));
-        assertTrue(slave.getACL().hasPermission(User.get("user").impersonate(), Computer.BUILD));
+        add(new TestOverrideNode("user", slave1.getNodeName(), Computer.BUILD.getId(), true));
+
+        final int NUM_BUILDS = 10;
+
+        for (int i = 0; i < NUM_BUILDS; ++i) {
+            p.scheduleBuild2(
+                0,
+                new ParametersAction(
+                    new StringParameterValue("UNIQUE", Integer.toString(i))
+                )
+            );
+        }
+        j.waitUntilNoActivity();
+        int buildnum = 0;
+        for (FreeStyleBuild b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+            j.assertBuildStatusSuccess(b);
+            assertEquals(slave1, b.getBuiltOn());
+            ++buildnum;
+        }
+        assertEquals(NUM_BUILDS, buildnum);
     }
 
     @Test
     public void testNodeDeny() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        j.jenkins.setNumExecutors(0);
+        DumbSlave slave1 = j.createOnlineSlave();
+        DumbSlave slave2 = j.createOnlineSlave();
 
-        assertTrue(slave.getACL().hasPermission(User.get("developer").impersonate(), Computer.BUILD));
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(
+            // a parameter not to builds merged in the queue.
+            new StringParameterDefinition("UNIQUE", "")
+        ));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(
+            new MockQueueItemAuthenticator(Collections.singletonMap(
+                p.getFullName(),
+                User.get("developer").impersonate()
+            ))
+        );
+
         AuthorizationStrategyOverrideConfiguration.get().getOverrides().
-            add(new TestOverrideNode("developer", slave.getNodeName(), Computer.BUILD.getId(), false));
-        assertFalse(slave.getACL().hasPermission(User.get("developer").impersonate(), Computer.BUILD));
+            add(new TestOverrideNode("developer", slave1.getNodeName(), Computer.BUILD.getId(), false));
+
+        final int NUM_BUILDS = 10;
+
+        for (int i = 0; i < NUM_BUILDS; ++i) {
+            p.scheduleBuild2(
+                0,
+                new ParametersAction(
+                    new StringParameterValue("UNIQUE", Integer.toString(i))
+                )
+            );
+        }
+        j.waitUntilNoActivity();
+        int buildnum = 0;
+        for (FreeStyleBuild b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
+            j.assertBuildStatusSuccess(b);
+            assertEquals(slave2, b.getBuiltOn());
+            ++buildnum;
+        }
+        assertEquals(NUM_BUILDS, buildnum);
     }
 
     /**
