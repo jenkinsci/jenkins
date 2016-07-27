@@ -93,8 +93,8 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * but should not call this method directly,
      * and should call {@link Job#getACL()} instead.
      *
-     * @param project job
-     * @return ACL for the job.
+     * @param project a job to test access controls
+     * @return access controls for the job
      */
     public @Nonnull ACL getACL(@Nonnull Job<?,?> project) {
     	return getRootACL();
@@ -112,6 +112,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Plugins may define this method
      * but should not call this method directly,
      * and should call {@link View#getACL()} instead.
+     *
+     * @param item a view to test access controls
+     * @return access controls for the view
      *
      * @since 1.220
      */
@@ -143,6 +146,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * but should not call this method directly,
      * and should call {@link AbstractItem#getACL()} instead.
      * 
+     * @param item an item to test access controls
+     * @return access controls for the item
+     *
      * @since 1.220
      */
     public @Nonnull ACL getACL(@Nonnull AbstractItem item) {
@@ -160,6 +166,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Plugins may define this method
      * but should not call this method directly,
      * and should call {@link User#getACL()} instead.
+     *
+     * @param user a user to test access controls
+     * @return access controls for the user
      *
      * @since 1.221
      */
@@ -179,6 +188,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * but should not call this method directly,
      * and should call {@link Computer#getACL()} instead.
      *
+     * @param computer a computer to test access controls
+     * @return access controls for the computer
+     *
      * @since 1.220
      */
     public @Nonnull ACL getACL(@Nonnull Computer computer) {
@@ -196,6 +208,9 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * Plugins may define this method
      * but should not call this method directly,
      * and should call {@link Cloud#getACL()} instead.
+     *
+     * @param cloud an cloud to test access controls
+     * @return access controls for the cloud
      *
      * @since 1.252
      */
@@ -215,8 +230,8 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
      * but should not call this method directly,
      * and should call {@link Node#getACL()} instead.
      *
-     * @param node
-     * @return
+     * @param node a node to test access controls
+     * @return access controls for the node
      */
     public @Nonnull ACL getACL(@Nonnull Node node) {
         return getRootACL();
