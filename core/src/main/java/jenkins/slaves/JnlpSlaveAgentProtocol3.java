@@ -39,8 +39,7 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
 
     @Override
     public String getName() {
-        if (ENABLED)    return "JNLP3-connect";
-        else            return "JNLP3-disabled";
+        return ENABLED ? "JNLP3-connect" : null;
     }
 
     @Override

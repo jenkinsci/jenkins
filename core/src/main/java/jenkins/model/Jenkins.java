@@ -4796,7 +4796,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "/signup",
         "/tcpSlaveAgentListener",
         "/federatedLoginService/",
-        "/securityRealm"
+        "/securityRealm",
+        "/instance-identity"
     );
 
     /**

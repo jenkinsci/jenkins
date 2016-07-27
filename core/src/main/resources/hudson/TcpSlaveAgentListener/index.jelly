@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:contentType value="text/plain;charset=UTF-8"/>
   <!--
     Publicize the TCP port number for JNLP agents so that they know where to conenct.
     Keep the legacy header for better backward compatibility
@@ -34,6 +35,8 @@ THE SOFTWARE.
     if the host name is overriden, advertise that as well
   -->
   <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
+  <!-- publish the instance identity so that agents can verify match from discovery -->
+  <st:header name="X-Instance-Identity" value="${app.tcpSlaveAgentListener.identityPublicKey}" />
 
   Jenkins
 </j:jelly>
