@@ -3594,7 +3594,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(Character.isISOControl(ch)) {
                 throw new Failure(Messages.Hudson_ControlCodeNotAllowed(toPrintableName(name)));
             }
-            if("?*/\\%!@#$^&|<>[]:;'".indexOf(ch)!=-1)
+            if("?*/\\%!@#$^&|<>[]:;".indexOf(ch)!=-1)
                 throw new Failure(Messages.Hudson_UnsafeChar(ch));
         }
 
