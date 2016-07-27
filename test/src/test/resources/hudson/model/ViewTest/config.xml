@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <views>
+    <hudson.model.MyView>
+      <owner class="hudson" reference="../../.."/>
+      <name>newView</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+    </hudson.model.MyView>
+ </views>
+ <primaryView>newView</primaryView> 
+</hudson>
