@@ -100,20 +100,32 @@ $.when(getItems()).done(function(data) {
       });
     }
 
-    function enableSubmit(status) {
+
+    function enableButton(status) {
       var btn = $('form .footer .btn-decorator button[type=submit]');
       if (status === true) {
         if (btn.hasClass('disabled')) {
           btn.removeClass('disabled');
           btn.prop('disabled', false);
         }
-        btn.focus();
       } else {
         if (!btn.hasClass('disabled')) {
           btn.addClass('disabled');
           btn.prop('disabled', true);
         }
       }
+    }
+
+    function focusButton(status) {
+      var btn = $('form .footer .btn-decorator button[type=submit]');
+      if (status === true) {
+        btn.focus();
+      }
+    }
+
+    function enableSubmit(status) {
+      enableButton(status);
+      focusButton(status);
     }
 
     function getFormValidationStatus() {
@@ -176,7 +188,6 @@ $.when(getItems()).done(function(data) {
 
         setFieldValidationStatus('items', true);
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         } else {
           if (getFormValidationStatus()) {
@@ -234,7 +245,7 @@ $.when(getItems()).done(function(data) {
     $("#add-item-panel").find("#name").focus();
 
     // Init NameField
-    $('input[name="name"]', '#createItem').blur(function() {
+    $('input[name="name"]', '#createItem').on('keyup blur', function(event) {
       if (!isItemNameEmpty()) {
         var itemName = $('input[name="name"]', '#createItem').val();
         $.get("checkJobName", { value: itemName }).done(function(data) {
@@ -246,7 +257,14 @@ $.when(getItems()).done(function(data) {
             showInputHelp('.add-item-name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
-              enableSubmit(true);
+              switch (event.type) {
+                case 'blur':
+                  enableSubmit(true);
+                  break;
+                case 'keyup':
+                  enableButton(true);
+                  break;
+              } 
             }
           }
         });
@@ -254,7 +272,7 @@ $.when(getItems()).done(function(data) {
         enableSubmit(false);
         setFieldValidationStatus('name', false);
         cleanValidationMessages('.add-item-name');
-        activateValidationMessage('#itemname-required', '.add-item-name');
+        showInputHelp('.add-item-name');
       }
     });
 
