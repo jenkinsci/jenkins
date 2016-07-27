@@ -102,12 +102,6 @@ THE SOFTWARE.
       <version>2.0</version>
     </dependency>
     <dependency>
-      <!-- TODO remove once bouncycastle-api plugin bundles bouncycastle -->
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-      <version>1.54</version>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
       <version>1.2</version>
@@ -409,6 +403,12 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
                   <version>1.2-beta-4</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>bouncycastle-api</artifactId>
+                  <version>2.16.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
