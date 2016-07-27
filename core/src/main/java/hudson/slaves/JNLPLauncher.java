@@ -99,7 +99,8 @@ public class JNLPLauncher extends ComputerLauncher {
 
     /**
      * Hides the JNLP launcher when the JNLP agent port is not enabled.
-     * @since FIXME
+     *
+     * @since 2.16
      */
     @Extension
     public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
