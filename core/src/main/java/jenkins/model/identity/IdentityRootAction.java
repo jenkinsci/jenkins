@@ -14,7 +14,7 @@ import org.apache.commons.codec.binary.Base64;
  * {@code X-Instance-Identity} response header, also exposes the fingerprint of the public key so that people
  * can verify a fingerprint of a master before connecting to it.
  *
- * @since FIXME
+ * @since 2.16
  */
 @Extension
 public class IdentityRootAction implements UnprotectedRootAction {

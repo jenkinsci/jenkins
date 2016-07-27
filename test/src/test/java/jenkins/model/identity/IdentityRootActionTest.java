@@ -30,28 +30,4 @@ public class IdentityRootActionTest {
         assertThat(p.getElementById("fingerprint").getTextContent(),
                 containsString(ExtensionList.lookup(UnprotectedRootAction.class).get(IdentityRootAction.class).getFingerprint()));
     }
-
-    @TestExtension // TODO remove once instance-identity with provider impl embedded in war
-    public static class ProviderImpl extends InstanceIdentityProvider<RSAPublicKey,RSAPrivateKey> {
-
-        private final KeyPair keyPair;
-
-        public ProviderImpl() throws NoSuchAlgorithmException, InvalidKeySpecException {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(1024);
-            this.keyPair = generator.generateKeyPair();
-        }
-
-        @Nullable
-        @Override
-        public KeyPair getKeyPair() {
-            return keyPair;
-        }
-
-        @Nullable
-        @Override
-        public X509Certificate getCertificate() {
-            return null;
-        }
-    }
 }

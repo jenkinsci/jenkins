@@ -43,28 +43,4 @@ public class TcpSlaveAgentListenerTest {
         Page p = r.createWebClient().goTo("tcpSlaveAgentListener", "text/plain");
         assertThat(p.getWebResponse().getResponseHeaderValue("X-Instance-Identity"), notNullValue());
     }
-
-    @TestExtension // TODO remove once instance-identity with provider impl embedded in war
-    public static class ProviderImpl extends InstanceIdentityProvider<RSAPublicKey,RSAPrivateKey> {
-
-        private final KeyPair keyPair;
-
-        public ProviderImpl() throws NoSuchAlgorithmException, InvalidKeySpecException {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(1024);
-            this.keyPair = generator.generateKeyPair();
-        }
-
-        @Nullable
-        @Override
-        public KeyPair getKeyPair() {
-            return keyPair;
-        }
-
-        @Nullable
-        @Override
-        public X509Certificate getCertificate() {
-            return null;
-        }
-    }
 }

@@ -45,7 +45,7 @@ import javax.annotation.Nonnull;
  *
  * @param <PUB>  the type of public key.
  * @param <PRIV> the type of private key.
- * @since FIXME
+ * @since 2.16
  */
 public abstract class InstanceIdentityProvider<PUB extends PublicKey, PRIV extends PrivateKey> implements
         ExtensionPoint {
