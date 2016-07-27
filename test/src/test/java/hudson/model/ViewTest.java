@@ -64,6 +64,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -504,6 +505,21 @@ public class ViewTest {
 
     private void assertCheckJobName(ViewGroup context, String name, FormValidation.Kind expected) {
         assertEquals(expected, context.getPrimaryView().doCheckJobName(name).kind);
+    }
+    
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewCreatedIfNoPrimary() throws Exception {
+        assertNotNull(j.getInstance().getView("All"));
+    }
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewNotCreatedIfPrimary() throws Exception {
+        assertNull(j.getInstance().getView("All"));
     }
 
 }
