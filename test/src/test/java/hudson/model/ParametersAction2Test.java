@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ParametersActionTest2 {
+public class ParametersAction2Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
