@@ -576,7 +576,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load(failedDependency.getLongName(), d.version));
+                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), d.version));
                     break;
                 } else {
                     dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
@@ -610,7 +610,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (!dependencyErrors.isEmpty()) {
             NOTICE.addPlugin(this);
             StringBuilder messageBuilder = new StringBuilder();
-            messageBuilder.append("Failed to load ").append(getLongName()).append(System.lineSeparator());
+            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
             for (Iterator<String> iterator = dependencyErrors.iterator(); iterator.hasNext(); ) {
                 String dependencyError = iterator.next();
                 messageBuilder.append(" - ").append(dependencyError);
