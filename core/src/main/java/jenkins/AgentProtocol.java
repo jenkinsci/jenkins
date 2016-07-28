@@ -22,6 +22,24 @@ import java.net.Socket;
  */
 public abstract class AgentProtocol implements ExtensionPoint {
     /**
+     * Allow experimental {@link AgentProtocol} implementations to declare being opt-in.
+     * @return {@code true} if the protocol requires explicit opt-in.
+     * @since FIXME
+     */
+    public boolean isOptIn() {
+        return false;
+    }
+    /**
+     * Allow essential {@link AgentProtocol} implementations (basically {@link TcpSlaveAgentListener.PingAgentProtocol})
+     * to be always enabled.
+     *
+     * @return {@code true} if the protocol can never be disbaled.
+     * @since FIXME
+     */
+    public boolean isRequired() {
+        return false;
+    }
+    /**
      * Protocol name.
      *
      * This is a short string that consists of printable ASCII chars. Sent by the client to select the protocol.

@@ -3,6 +3,7 @@ package hudson.security.GlobalSecurityConfiguration
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
+import jenkins.AgentProtocol
 import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
@@ -27,6 +28,20 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
                 f.entry (title:_("TCP port for JNLP agents"), field:"slaveAgentPort") {
                     f.serverTcpPort()
+                }
+                f.advanced(title: _("Agent protocols"), align:"left") {
+                    f.entry(title: _("Agent protocols")) {
+                        def agentProtocols = my.agentProtocols;
+                        for (AgentProtocol p: AgentProtocol.all()) {
+                            if (p.name != null && !p.required) {
+                                f.checkbox(name: "agentProtocol",
+                                        title: p.name,
+                                        checked:agentProtocols.contains(p.name),
+                                        json: p.name);
+                                br();
+                            }
+                        }
+                    }
                 }
 
                 f.entry (title:_("Disable remember me"), field: "disableRememberMe") {

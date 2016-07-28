@@ -26,6 +26,7 @@ package hudson;
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
+import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
@@ -50,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Listens to incoming TCP connections from JNLP agents and CLI.
@@ -127,20 +129,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since FIXME
      */
     public String getAgentProtocolNames() {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for (AgentProtocol p : AgentProtocol.all()) {
-            String name = p.getName();
-            if (name != null) {
-                if (first) {
-                    first = false;
-                } else {
-                    result.append(", ");
-                }
-                result.append(name);
-            }
-        }
-        return result.toString();
+        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
     }
 
     @Override
@@ -218,9 +207,13 @@ public final class TcpSlaveAgentListener extends Thread {
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
-                    if (p!=null)
-                        p.handle(this.s);
-                    else
+                    if (p!=null) {
+                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                            p.handle(this.s);
+                        } else {
+                            error(out, "Disabled protocol:" + s);
+                        }
+                    } else
                         error(out, "Unknown protocol:" + s);
                 } else {
                     error(out, "Unrecognized protocol: "+s);
@@ -266,6 +259,18 @@ public final class TcpSlaveAgentListener extends Thread {
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
             }
+        }
+
+        /**
+         * Allow essential {@link AgentProtocol} implementations (basically {@link PingAgentProtocol})
+         * to be always enabled.
+         *
+         * @return {@code true} if the protocol can never be disbaled.
+         * @since FIXME
+         */
+        @Override
+        public boolean isRequired() {
+            return true;
         }
 
         @Override

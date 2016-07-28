@@ -50,6 +50,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.AgentProtocol;
 import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
@@ -224,6 +225,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
@@ -597,6 +599,28 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * 0 for random, -1 to disable.
      */
     private int slaveAgentPort = SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
+
+    /**
+     * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
+     * are enabled by default).
+     *
+     * @since FIXME
+     */
+    private String disabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
+     *
+     * @since FIXME
+     */
+    private String enabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols}.
+     *
+     * @since FIXME
+     */
+    private transient Set<String> agentProtocols;
 
     /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.
@@ -1058,6 +1082,65 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
         launchTcpSlaveAgentListener();
+    }
+
+    /**
+     * Returns the enabled agent protocols.
+     *
+     * @return the enabled agent protocols.
+     * @since FIXME
+     */
+    public Set<String> getAgentProtocols() {
+        if (agentProtocols == null) {
+            // idempotent, so don't care if we do this concurrently, should all get same result
+            Set<String> result = new TreeSet<>();
+            Set<String> disabled = new TreeSet<>();
+            for (String p : StringUtils.split(StringUtils.defaultIfBlank(disabledAgentProtocols, ""), ",")) {
+                disabled.add(p.trim());
+            }
+            Set<String> enabled = new TreeSet<>();
+            for (String p : StringUtils.split(StringUtils.defaultIfBlank(enabledAgentProtocols, ""), ",")) {
+                enabled.add(p.trim());
+            }
+            for (AgentProtocol p : AgentProtocol.all()) {
+                String name = p.getName();
+                if (name != null && (p.isRequired()
+                        || (!disabled.contains(name) && (!p.isOptIn() || enabled.contains(name))))) {
+                    result.add(name);
+                }
+            }
+            agentProtocols = result;
+            return result;
+        }
+        return agentProtocols;
+    }
+
+    /**
+     * Sets the enabled agent protocols.
+     *
+     * @param protocols the enabled agent protocols.
+     * @since FIXME
+     */
+    public void setAgentProtocols(Set<String> protocols) {
+        Set<String> disabled = new TreeSet<>();
+        Set<String> enabled = new TreeSet<>();
+        for (AgentProtocol p : AgentProtocol.all()) {
+            String name = p.getName();
+            if (name != null && !p.isRequired()) {
+                if (p.isOptIn()) {
+                    if (protocols.contains(name)) {
+                        enabled.add(name);
+                    }
+                } else {
+                    if (!protocols.contains(name)) {
+                        disabled.add(name);
+                    }
+                }
+            }
+        }
+        disabledAgentProtocols = fixEmpty(StringUtils.join(disabled, ", "));
+        enabledAgentProtocols = fixEmpty(StringUtils.join(enabled, ", "));
+        agentProtocols = null;
     }
 
     private void launchTcpSlaveAgentListener() throws IOException {
