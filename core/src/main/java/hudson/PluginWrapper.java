@@ -34,24 +34,7 @@ import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Closeable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.logging.Logger;
-import static java.util.logging.Level.WARNING;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
+import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -60,11 +43,32 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.util.Enumeration;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -149,6 +153,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private final List<Dependency> dependencies;
     private final List<Dependency> optionalDependencies;
+
+    public List<String> getDependencyErrors() {
+        return Collections.unmodifiableList(dependencyErrors);
+    }
+
+    private final transient List<String> dependencyErrors = new ArrayList<>();
 
     /**
      * Is this plugin bundled in jenkins.war?
@@ -552,27 +562,28 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (requiredCoreVersion == null) {
                 LOGGER.warning(shortName + " doesn't declare required core version.");
             } else {
-                checkRequiredCoreVersion(requiredCoreVersion);
+                VersionNumber actualVersion = Jenkins.getVersion();
+                if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                    dependencyErrors.add(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion));
+                }
             }
         }
-        List<Dependency> missingDependencies = new ArrayList<>();
-        List<Dependency> obsoleteDependencies = new ArrayList<>();
-        List<Dependency> disabledDependencies = new ArrayList<>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null) {
-                missingDependencies.add(d);
-                NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_MissingDependency(getLongName(), d.shortName));
+                dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        obsoleteDependencies.add(d);
-                        NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
+                        dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
                     }
                 } else {
-                    disabledDependencies.add(d);
-                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_DisabledDependency(getLongName(), dependency.getLongName()));
+                    if (isDependencyObsolete(d, dependency)) {
+                        dependencyErrors.add(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                    } else {
+                        dependencyErrors.add(Messages.PluginWrapper_disabled(dependency.getLongName()));
+                    }
                 }
 
             }
@@ -582,45 +593,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    obsoleteDependencies.add(d);
-                    NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_ObsoleteDependency(getLongName(), dependency.getLongName(), d.version));
+                    dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
                 } else {
                     dependencies.add(d);
                 }
             }
         }
-        StringBuilder messageBuilder = new StringBuilder();
-        if (!missingDependencies.isEmpty()) {
-            boolean plural = missingDependencies.size() > 1;
-            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
-                    .append(Util.join(missingDependencies, ", "))
-                    .append(" ").append(plural ? "don't" : "doesn't")
-                    .append(" exist. ");
-        }
-        if (!disabledDependencies.isEmpty()) {
-            boolean plural = disabledDependencies.size() > 1;
-            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
-                    .append(Util.join(missingDependencies, ", "))
-                    .append(" ").append(plural ? "are" : "is")
-                    .append(" disabled. ");
-        }
-        if (!obsoleteDependencies.isEmpty()) {
-            boolean plural = obsoleteDependencies.size() > 1;
-            messageBuilder.append(plural ? "Dependencies " : "Dependency ")
-                    .append(Util.join(obsoleteDependencies, ", "))
-                    .append(" ").append(plural ? "are" : "is")
-                    .append(" older than required.");
-        }
-        String message = messageBuilder.toString();
-        if (!message.isEmpty()) {
-            throw new IOException(message);
-        }
-    }
-
-    private void checkRequiredCoreVersion(String requiredCoreVersion) throws IOException {
-        if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
-            NOTICE.addErrorMessage(Messages.PluginWrapper_admonitor_OutdatedCoreVersion(getLongName(), requiredCoreVersion));
-            throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+        if (!dependencyErrors.isEmpty()) {
+            NOTICE.addPlugin(this);
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append("Failed to load ").append(getLongName()).append(System.lineSeparator());
+            for (Iterator<String> iterator = dependencyErrors.iterator(); iterator.hasNext(); ) {
+                String dependencyError = iterator.next();
+                messageBuilder.append(" - ").append(dependencyError);
+                if (iterator.hasNext()) {
+                    messageBuilder.append(System.lineSeparator());
+                }
+            }
+            throw new IOException(messageBuilder.toString());
         }
     }
 
@@ -740,14 +730,18 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Administrative Monitor for failed plugins
      */
     public static final class PluginWrapperAdministrativeMonitor extends AdministrativeMonitor {
-        public final List<String> pluginError = new ArrayList<>();
+        private final Set<PluginWrapper> plugins = new HashSet<>();
 
-        void addErrorMessage(String error) {
-            pluginError.add(error);
+        void addPlugin(PluginWrapper plugin) {
+            plugins.add(plugin);
         }
 
         public boolean isActivated() {
-            return !pluginError.isEmpty();
+            return !plugins.isEmpty();
+        }
+
+        public Collection<PluginWrapper> getPlugins() {
+            return plugins;
         }
 
         /**

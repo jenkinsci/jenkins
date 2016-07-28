@@ -6,9 +6,16 @@
                 <f:submit name="correct" value="${%Correct}"/>
             </div>
         </form>
+        There are dependency errors loading some plugins:
         <ul>
-            <j:forEach items="${it.pluginError}" var="pluginError">
-                <li>${pluginError}</li>
+            <j:forEach items="${it.plugins}" var="plugin">
+                <li>${plugin.longName}
+                    <ul>
+                        <j:forEach items="${plugin.dependencyErrors}" var="d">
+                            <li>${d}</li>
+                        </j:forEach>
+                    </ul>
+                </li>
             </j:forEach>
         </ul>
     </div>
