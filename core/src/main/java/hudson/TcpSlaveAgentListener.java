@@ -25,7 +25,6 @@ package hudson;
 
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
 import javax.annotation.Nullable;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.SystemProperties;
@@ -112,7 +111,7 @@ public final class TcpSlaveAgentListener extends Thread {
     /**
      * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
      * @return the Base64 encoded public key
-     * @since FIXME
+     * @since 2.16
      */
     @Nullable
     public String getIdentityPublicKey() {
@@ -120,6 +119,29 @@ public final class TcpSlaveAgentListener extends Thread {
         return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
     }
 
+    /**
+     * Returns a comma separated list of the enabled {@link AgentProtocol#getName()} implementations so that
+     * clients can avoid creating additional work for the server attempting to connect with unsupported protocols.
+     *
+     * @return a comma separated list of the enabled {@link AgentProtocol#getName()} implementations
+     * @since FIXME
+     */
+    public String getAgentProtocolNames() {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (AgentProtocol p : AgentProtocol.all()) {
+            String name = p.getName();
+            if (name != null) {
+                if (first) {
+                    first = false;
+                } else {
+                    result.append(", ");
+                }
+                result.append(name);
+            }
+        }
+        return result.toString();
+    }
 
     @Override
     public void run() {
