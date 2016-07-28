@@ -719,11 +719,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
             for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
-                VersionNumber requireVersion = p.getRequireVersion();
-                if (installedVersion != null && installedVersion.isOlderThan(requireVersion)) {
+                VersionNumber requiredVersion = p.getRequiredVersion();
+                if (installedVersion != null && installedVersion.isOlderThan(requiredVersion)) {
                     LOGGER.log(Level.WARNING,
                             "Detached plugin {0} found at version {1}, required minimum version is {2}",
-                            new Object[]{p.getShortName(), installedVersion, requireVersion});
+                            new Object[]{p.getShortName(), installedVersion, requiredVersion});
                     forceUpgrade.add(p);
                 }
             }
