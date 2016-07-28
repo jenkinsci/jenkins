@@ -58,9 +58,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -247,7 +249,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         @Override
         public String toString() {
-            return shortName + " (" + version + ") " + (optional ? "optional" : "");
+            return shortName + " (" + version + ")" + (optional ? " optional" : "");
         }        
     }
 
@@ -572,7 +574,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         for (Dependency d : dependencies) {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null) {
-                dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
+                PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
+                if (failedDependency != null) {
+                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load(failedDependency.getLongName(), d.version));
+                    break;
+                } else {
+                    dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
+                }
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
@@ -730,10 +738,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Administrative Monitor for failed plugins
      */
     public static final class PluginWrapperAdministrativeMonitor extends AdministrativeMonitor {
-        private final Set<PluginWrapper> plugins = new HashSet<>();
+        private final Map<String, PluginWrapper> plugins = new HashMap<>();
 
         void addPlugin(PluginWrapper plugin) {
-            plugins.add(plugin);
+            plugins.put(plugin.shortName, plugin);
         }
 
         public boolean isActivated() {
@@ -741,7 +749,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         }
 
         public Collection<PluginWrapper> getPlugins() {
-            return plugins;
+            return plugins.values();
+        }
+
+        public PluginWrapper getPlugin(String shortName) {
+            return plugins.get(shortName);
         }
 
         /**
