@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.Api;
 import hudson.model.ModelObject;
-import jenkins.MissingDependencyException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -550,26 +549,24 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (requiredCoreVersion == null) {
                 LOGGER.warning(shortName + " doesn't declare required core version.");
             } else {
-                if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
-                }
+                checkRequiredCoreVersion(requiredCoreVersion);
             }
         }
-        List<String> missingDependencies = new ArrayList<String>();
-        List<String> obsoleteDependencies = new ArrayList<String>();
-        List<String> disabledDependencies = new ArrayList<String>();
+        List<Dependency> missingDependencies = new ArrayList<>();
+        List<Dependency> obsoleteDependencies = new ArrayList<>();
+        List<Dependency> disabledDependencies = new ArrayList<>();
         // make sure dependencies exist
         for (Dependency d : dependencies) {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency == null) {
-                missingDependencies.add(d.toString());
+                missingDependencies.add(d);
             } else {
                 if (dependency.isActive()) {
-                    if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
-                        obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
+                    if (isDependencyObsolete(d, dependency)) {
+                        obsoleteDependencies.add(d);
                     }
                 } else {
-                    disabledDependencies.add(d.toString());
+                    disabledDependencies.add(d);
                 }
 
             }
@@ -578,8 +575,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         for (Dependency d : optionalDependencies) {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
-                if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version))) {
-                    obsoleteDependencies.add(dependency.getShortName() + "(" + dependency.getVersion() + " < " + d.version + ")");
+                if (isDependencyObsolete(d, dependency)) {
+                    obsoleteDependencies.add(d);
                 } else {
                     dependencies.add(d);
                 }
@@ -611,6 +608,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         if (!message.isEmpty()) {
             throw new IOException(message);
         }
+    }
+
+    private void checkRequiredCoreVersion(String requiredCoreVersion) throws IOException {
+        if (Jenkins.getVersion().isOlderThan(new VersionNumber(requiredCoreVersion))) {
+            throw new IOException(shortName + " requires a more recent core version (" + requiredCoreVersion + ") than the current (" + Jenkins.getVersion() + ").");
+        }
+    }
+
+    private boolean isDependencyObsolete(Dependency d, PluginWrapper dependency) {
+        return ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version));
     }
 
     /**
