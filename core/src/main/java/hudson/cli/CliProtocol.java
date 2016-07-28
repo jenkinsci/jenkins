@@ -36,6 +36,14 @@ public class CliProtocol extends AgentProtocol {
         return "CLI-connect";
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return "Jenkins CLI Protocol/1";
+    }
+
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         new Handler(nio.getHub(),socket).run();

@@ -265,7 +265,7 @@ public final class TcpSlaveAgentListener extends Thread {
          * Allow essential {@link AgentProtocol} implementations (basically {@link PingAgentProtocol})
          * to be always enabled.
          *
-         * @return {@code true} if the protocol can never be disbaled.
+         * @return {@code true} if the protocol can never be disabled.
          * @since FIXME
          */
         @Override
@@ -276,6 +276,14 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public String getName() {
             return "Ping";
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
         }
 
         @Override

@@ -32,13 +32,23 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
                         def agentProtocols = my.agentProtocols;
-                        for (AgentProtocol p: AgentProtocol.all()) {
-                            if (p.name != null && !p.required) {
-                                f.checkbox(name: "agentProtocol",
-                                        title: p.name,
-                                        checked:agentProtocols.contains(p.name),
-                                        json: p.name);
-                                br();
+                        table(width:"100%") {
+                            for (AgentProtocol p : AgentProtocol.all()) {
+                                if (p.name != null && !p.required) {
+                                    f.block() {
+                                        f.checkbox(name: "agentProtocol",
+                                                title: p.displayName,
+                                                checked: agentProtocols.contains(p.name),
+                                                json: p.name);
+                                    }
+                                    tr() {
+                                        td(colspan:"2");
+                                        td(class:"setting-description"){
+                                            st.include(from:p, page: "description", optional:true);
+                                        }
+                                        td();
+                                    }
+                                }
                             }
                         }
                     }

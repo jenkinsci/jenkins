@@ -42,6 +42,14 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         return ENABLED ? "JNLP3-connect" : null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return Messages.JnlpSlaveAgentProtocol3_displayName();
+    }
+
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         new Handler(hub.getHub(), socket).run();

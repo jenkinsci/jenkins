@@ -33,7 +33,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * Allow essential {@link AgentProtocol} implementations (basically {@link TcpSlaveAgentListener.PingAgentProtocol})
      * to be always enabled.
      *
-     * @return {@code true} if the protocol can never be disbaled.
+     * @return {@code true} if the protocol can never be disabled.
      * @since FIXME
      */
     public boolean isRequired() {
@@ -49,6 +49,16 @@ public abstract class AgentProtocol implements ExtensionPoint {
      *      until the protocol is properly configured.
      */
     public abstract String getName();
+
+    /**
+     * Returns the human readable protocol display name.
+     *
+     * @return the human readable protocol display name.
+     * @since FIXME
+     */
+    public String getDisplayName() {
+        return getName();
+    }
 
     /**
      * Called by the connection handling thread to execute the protocol.
