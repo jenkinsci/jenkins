@@ -505,7 +505,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
                             public void run(Reactor session) throws Exception {
                                 try {
                                     p.resolvePluginDependencies();
