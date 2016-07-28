@@ -715,6 +715,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
 
             InstallUtil.saveLastExecVersion();
+        } else {
+            final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
+                VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
+                VersionNumber requireVersion = p.getRequireVersion();
+                if (installedVersion != null && installedVersion.isOlderThan(requireVersion)) {
+                    LOGGER.log(Level.WARNING,
+                            "Detached plugin {0} found at version {1}, required minimum version is {2}",
+                            new Object[]{p.getShortName(), installedVersion, requireVersion});
+                    forceUpgrade.add(p);
+                }
+            }
+            if (!forceUpgrade.isEmpty()) {
+                Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        name = normalisePluginName(name);
+                        for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : forceUpgrade) {
+                            if (detachedPlugin.getShortName().equals(name)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+                LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
+                        new Object[]{loadedDetached});
+            }
         }
     }
 

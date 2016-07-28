@@ -401,6 +401,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public VersionNumber getSplitWhen() {
             return splitWhen;
         }
+
+        /**
+         * Gets the minimum required version for the current version of Jenkins.
+         *
+         * @return the minimum required version for the current version of Jenkins.
+         * @sice 2.16
+         */
+        public VersionNumber getRequireVersion() {
+            return new VersionNumber(requireVersion);
+        }
     }
 
     private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
