@@ -1868,14 +1868,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         private transient volatile boolean isActive = false;
 
-        private transient volatile List<String> pluginsWithCycle;
+        private transient volatile List<PluginWrapper> pluginsWithCycle;
 
         public boolean isActivated() {
             if(pluginsWithCycle == null){
-                pluginsWithCycle = new ArrayList<String>();
+                pluginsWithCycle = new ArrayList<>();
                 for (PluginWrapper p : Jenkins.getInstance().getPluginManager().getPlugins()) {
                     if(p.hasCycleDependency()){
-                        pluginsWithCycle.add(p.getShortName());
+                        pluginsWithCycle.add(p);
                         isActive = true;
                     }
                 }
@@ -1883,7 +1883,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return isActive;
         }
 
-        public List<String> getPluginsWithCycle() {
+        public List<PluginWrapper> getPluginsWithCycle() {
             return pluginsWithCycle;
         }
     }
