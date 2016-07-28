@@ -1,9 +1,7 @@
-package hudson.triggers;
-
 /*
  * The MIT License
  *
- * Copyright (c) 2016 Felix Belzunce Arcos
+ * Copyright (c) 2016 CloudBees, Inc
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +21,8 @@ package hudson.triggers;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+package hudson.triggers;
 
 import antlr.ANTLRException;
 import hudson.Extension;
@@ -69,6 +69,7 @@ public class TriggerTest {
             return DESCRIPTOR;
         }
 
+        // Override Trigger#readResolve so this one is not called
         @Override
         public Object readResolve() {
             return this;
