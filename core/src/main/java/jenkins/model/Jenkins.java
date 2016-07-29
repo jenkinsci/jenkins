@@ -1128,6 +1128,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (AgentProtocol p : AgentProtocol.all()) {
             String name = p.getName();
             if (name != null && !p.isRequired()) {
+                // we want to record the protocols where the admin has made a concious decision
+                // thus, if a protocol is opt-in, we record the admin enabling it
+                // if a protocol is opt-out, we record the admin disabling it
+                // We should not transition rapidly from opt-in -> opt-out -> opt-in
+                // the scenario we want to have work is:
+                // 1. We introduce a new protocol, it starts off as opt-in. Some admins decide to test and opt-in
+                // 2. We decide that the protocol is ready for general use. It gets marked as opt-out. Any admins
+                //    that took part in early testing now have their config switched to not mention the new protocol
+                //    at all when they save their config as the protocol is now opt-out. Any admins that want to
+                //    disable it can do so and will have their preference recorded.
+                // 3. We decide that the protocol needs to be retired. It gets switched back to opt-in. At this point
+                //    the initial opt-in admins, assuming they visited an upgrade to a master with step 2, will
+                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a master
+                //    with step 2, well there is not much we can do to differentiate them from somebody who is upgrading
+                //    from a previous step 3 master and had needed to keep the protocol turned on.
+                //
+                // What we should never do is flip-flop: opt-in -> opt-out -> opt-in -> opt-out as that will basically
+                // clear any preference that an admin has set, but this should be ok as we only ever will be
+                // adding new protocols and retiring old ones.
                 if (p.isOptIn()) {
                     if (protocols.contains(name)) {
                         enabled.add(name);
