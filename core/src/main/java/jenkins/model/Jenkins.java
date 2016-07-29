@@ -1128,7 +1128,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (AgentProtocol p : AgentProtocol.all()) {
             String name = p.getName();
             if (name != null && !p.isRequired()) {
-                // we want to record the protocols where the admin has made a concious decision
+                // we want to record the protocols where the admin has made a conscious decision
                 // thus, if a protocol is opt-in, we record the admin enabling it
                 // if a protocol is opt-out, we record the admin disabling it
                 // We should not transition rapidly from opt-in -> opt-out -> opt-in
