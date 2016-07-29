@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Mode;
@@ -31,9 +32,25 @@ public class CliProtocol extends AgentProtocol {
     @Inject
     NioChannelSelector nio;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return OPT_IN;
+    }
+
     @Override
     public String getName() {
         return "CLI-connect";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return "Jenkins CLI Protocol/1";
     }
 
     @Override
@@ -84,5 +101,15 @@ public class CliProtocol extends AgentProtocol {
             channel.setProperty(CliEntryPoint.class.getName(),new CliManagerImpl(channel));
             channel.join();
         }
+    }
+
+    /**
+     * A/B test turning off this protocol by default.
+     */
+    private static final boolean OPT_IN;
+
+    static {
+        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
+        OPT_IN = (hash % 10) == 0;
     }
 }

@@ -50,6 +50,7 @@ import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.AgentProtocol;
 import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
@@ -237,7 +238,6 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -597,6 +597,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * 0 for random, -1 to disable.
      */
     private int slaveAgentPort = SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
+
+    /**
+     * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
+     * are enabled by default). Will be {@code null} instead of empty to simplify XML format.
+     *
+     * @since FIXME
+     */
+    @CheckForNull
+    private List<String> disabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
+     * Will be {@code null} instead of empty to simplify XML format.
+     *
+     * @since FIXME
+     */
+    @CheckForNull
+    private List<String> enabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols}.
+     *
+     * @since FIXME
+     */
+    private transient Set<String> agentProtocols;
 
     /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.
@@ -1058,6 +1083,84 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
         launchTcpSlaveAgentListener();
+    }
+
+    /**
+     * Returns the enabled agent protocols.
+     *
+     * @return the enabled agent protocols.
+     * @since FIXME
+     */
+    public Set<String> getAgentProtocols() {
+        if (agentProtocols == null) {
+            // idempotent, so don't care if we do this concurrently, should all get same result
+            Set<String> result = new TreeSet<>();
+            Set<String> disabled = new TreeSet<>();
+            for (String p : Util.fixNull(disabledAgentProtocols)) {
+                disabled.add(p.trim());
+            }
+            Set<String> enabled = new TreeSet<>();
+            for (String p : Util.fixNull(enabledAgentProtocols)) {
+                enabled.add(p.trim());
+            }
+            for (AgentProtocol p : AgentProtocol.all()) {
+                String name = p.getName();
+                if (name != null && (p.isRequired()
+                        || (!disabled.contains(name) && (!p.isOptIn() || enabled.contains(name))))) {
+                    result.add(name);
+                }
+            }
+            agentProtocols = result;
+            return result;
+        }
+        return agentProtocols;
+    }
+
+    /**
+     * Sets the enabled agent protocols.
+     *
+     * @param protocols the enabled agent protocols.
+     * @since FIXME
+     */
+    public void setAgentProtocols(Set<String> protocols) {
+        Set<String> disabled = new TreeSet<>();
+        Set<String> enabled = new TreeSet<>();
+        for (AgentProtocol p : AgentProtocol.all()) {
+            String name = p.getName();
+            if (name != null && !p.isRequired()) {
+                // we want to record the protocols where the admin has made a conscious decision
+                // thus, if a protocol is opt-in, we record the admin enabling it
+                // if a protocol is opt-out, we record the admin disabling it
+                // We should not transition rapidly from opt-in -> opt-out -> opt-in
+                // the scenario we want to have work is:
+                // 1. We introduce a new protocol, it starts off as opt-in. Some admins decide to test and opt-in
+                // 2. We decide that the protocol is ready for general use. It gets marked as opt-out. Any admins
+                //    that took part in early testing now have their config switched to not mention the new protocol
+                //    at all when they save their config as the protocol is now opt-out. Any admins that want to
+                //    disable it can do so and will have their preference recorded.
+                // 3. We decide that the protocol needs to be retired. It gets switched back to opt-in. At this point
+                //    the initial opt-in admins, assuming they visited an upgrade to a master with step 2, will
+                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a master
+                //    with step 2, well there is not much we can do to differentiate them from somebody who is upgrading
+                //    from a previous step 3 master and had needed to keep the protocol turned on.
+                //
+                // What we should never do is flip-flop: opt-in -> opt-out -> opt-in -> opt-out as that will basically
+                // clear any preference that an admin has set, but this should be ok as we only ever will be
+                // adding new protocols and retiring old ones.
+                if (p.isOptIn()) {
+                    if (protocols.contains(name)) {
+                        enabled.add(name);
+                    }
+                } else {
+                    if (!protocols.contains(name)) {
+                        disabled.add(name);
+                    }
+                }
+            }
+        }
+        disabledAgentProtocols = disabled.isEmpty() ? null : new ArrayList<>(disabled);
+        enabledAgentProtocols = enabled.isEmpty() ? null : new ArrayList<>(enabled);
+        agentProtocols = null;
     }
 
     private void launchTcpSlaveAgentListener() throws IOException {
@@ -4818,6 +4921,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // for backward compatibility with <1.75, recognize the tag name "view" as well.
             XSTREAM.alias("view", ListView.class);
             XSTREAM.alias("listView", ListView.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "disabledAgentProtocols", "disabledAgentProtocol", String.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "enabledAgentProtocols", "enabledAgentProtocol", String.class);
             XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
             XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
             // this seems to be necessary to force registration of converter early enough

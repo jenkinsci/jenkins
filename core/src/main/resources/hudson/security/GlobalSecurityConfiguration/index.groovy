@@ -3,6 +3,7 @@ package hudson.security.GlobalSecurityConfiguration
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
+import jenkins.AgentProtocol
 import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
@@ -27,6 +28,30 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
                 f.entry (title:_("TCP port for JNLP agents"), field:"slaveAgentPort") {
                     f.serverTcpPort()
+                }
+                f.advanced(title: _("Agent protocols"), align:"left") {
+                    f.entry(title: _("Agent protocols")) {
+                        def agentProtocols = my.agentProtocols;
+                        table(width:"100%") {
+                            for (AgentProtocol p : AgentProtocol.all()) {
+                                if (p.name != null && !p.required) {
+                                    f.block() {
+                                        f.checkbox(name: "agentProtocol",
+                                                title: p.displayName,
+                                                checked: agentProtocols.contains(p.name),
+                                                json: p.name);
+                                    }
+                                    tr() {
+                                        td(colspan:"2");
+                                        td(class:"setting-description"){
+                                            st.include(from:p, page: "description", optional:true);
+                                        }
+                                        td();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 f.entry (title:_("Disable remember me"), field: "disableRememberMe") {

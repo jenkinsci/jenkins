@@ -25,8 +25,8 @@ package hudson;
 
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
 import javax.annotation.Nullable;
+import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Listens to incoming TCP connections from JNLP agents and CLI.
@@ -112,7 +113,7 @@ public final class TcpSlaveAgentListener extends Thread {
     /**
      * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
      * @return the Base64 encoded public key
-     * @since FIXME
+     * @since 2.16
      */
     @Nullable
     public String getIdentityPublicKey() {
@@ -120,6 +121,16 @@ public final class TcpSlaveAgentListener extends Thread {
         return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
     }
 
+    /**
+     * Returns a comma separated list of the enabled {@link AgentProtocol#getName()} implementations so that
+     * clients can avoid creating additional work for the server attempting to connect with unsupported protocols.
+     *
+     * @return a comma separated list of the enabled {@link AgentProtocol#getName()} implementations
+     * @since FIXME
+     */
+    public String getAgentProtocolNames() {
+        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+    }
 
     @Override
     public void run() {
@@ -196,9 +207,13 @@ public final class TcpSlaveAgentListener extends Thread {
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
-                    if (p!=null)
-                        p.handle(this.s);
-                    else
+                    if (p!=null) {
+                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                            p.handle(this.s);
+                        } else {
+                            error(out, "Disabled protocol:" + s);
+                        }
+                    } else
                         error(out, "Unknown protocol:" + s);
                 } else {
                     error(out, "Unrecognized protocol: "+s);
@@ -246,9 +261,29 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
+        /**
+         * Allow essential {@link AgentProtocol} implementations (basically {@link PingAgentProtocol})
+         * to be always enabled.
+         *
+         * @return {@code true} if the protocol can never be disabled.
+         * @since FIXME
+         */
+        @Override
+        public boolean isRequired() {
+            return true;
+        }
+
         @Override
         public String getName() {
             return "Ping";
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
         }
 
         @Override
