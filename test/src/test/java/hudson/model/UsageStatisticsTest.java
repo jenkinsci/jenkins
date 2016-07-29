@@ -105,7 +105,9 @@ public class UsageStatisticsTest {
         List<JSONObject> plugins = sortPlugins((List<JSONObject>) o.get("plugins"));
         Set<String> detached = new TreeSet<>();
         for (ClassicPluginStrategy.DetachedPlugin p: ClassicPluginStrategy.getDetachedPlugins()) {
-            detached.add(p.getShortName());
+            if (p.getSplitWhen().isOlderThan(Jenkins.getVersion())) {
+                detached.add(p.getShortName());
+            }
         }
         Set<String> keys = new TreeSet<>();
         keys.add("name");
