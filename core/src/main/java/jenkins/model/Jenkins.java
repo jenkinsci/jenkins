@@ -602,7 +602,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
      * are enabled by default). Will be {@code null} instead of empty to simplify XML format.
      *
-     * @since FIXME
+     * @since 2.16
      */
     @CheckForNull
     private List<String> disabledAgentProtocols;
@@ -611,15 +611,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
      * Will be {@code null} instead of empty to simplify XML format.
      *
-     * @since FIXME
+     * @since 2.16
      */
     @CheckForNull
     private List<String> enabledAgentProtocols;
 
     /**
-     * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols}.
+     * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols} and
+     * {@link #enabledAgentProtocols}.
      *
-     * @since FIXME
+     * @since 2.16
+     * @see #setAgentProtocols(Set)
+     * @see #getAgentProtocols()
      */
     private transient Set<String> agentProtocols;
 
@@ -1089,7 +1092,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns the enabled agent protocols.
      *
      * @return the enabled agent protocols.
-     * @since FIXME
+     * @since 2.16
      */
     public Set<String> getAgentProtocols() {
         if (agentProtocols == null) {
@@ -1120,7 +1123,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Sets the enabled agent protocols.
      *
      * @param protocols the enabled agent protocols.
-     * @since FIXME
+     * @since 2.16
      */
     public void setAgentProtocols(Set<String> protocols) {
         Set<String> disabled = new TreeSet<>();

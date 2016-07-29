@@ -37,7 +37,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * adding new protocols and retiring old ones.
      *
      * @return {@code true} if the protocol requires explicit opt-in.
-     * @since FIXME
+     * @since 2.16
      * @see Jenkins#setAgentProtocols(Set)
      */
     public boolean isOptIn() {
@@ -48,7 +48,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * to be always enabled.
      *
      * @return {@code true} if the protocol can never be disabled.
-     * @since FIXME
+     * @since 2.16
      */
     public boolean isRequired() {
         return false;
@@ -68,7 +68,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
      * Returns the human readable protocol display name.
      *
      * @return the human readable protocol display name.
-     * @since FIXME
+     * @since 2.16
      */
     public String getDisplayName() {
         return getName();

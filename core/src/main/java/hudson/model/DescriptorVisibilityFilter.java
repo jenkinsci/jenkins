@@ -35,7 +35,7 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
      * @return true to allow the descriptor to be visible. false to hide it.
      * If any of the installed {@link DescriptorVisibilityFilter} returns false,
      * the descriptor is not shown.
-     * @since FIXME
+     * @since 2.12
      */
     public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
         return true;

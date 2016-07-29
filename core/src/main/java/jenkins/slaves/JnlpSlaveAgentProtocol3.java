@@ -39,10 +39,7 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     NioChannelSelector hub;
 
     /**
-     * Allow experimental {@link AgentProtocol} implementations to declare being opt-in.
-     *
-     * @return {@code true} if the protocol requires explicit opt-in.
-     * @since FIXME
+     * {@inheritDoc}
      */
     @Override
     public boolean isOptIn() {

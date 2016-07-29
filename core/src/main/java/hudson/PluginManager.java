@@ -1298,7 +1298,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      *                    the plugin will only take effect after the reboot.
      *                    See {@link UpdateCenter#isRestartRequiredForCompletion()}
      * @return The install job list.
-     * @since FIXME
+     * @since 2.0
      */
     @Restricted(NoExternalUse.class)
     public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {

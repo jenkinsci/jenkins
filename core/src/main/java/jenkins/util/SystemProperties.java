@@ -212,7 +212,7 @@ public class SystemProperties implements ServletContextListener {
      *
      * @param name the system property name.
      * @return {@link Boolean#TRUE}, {@link Boolean#FALSE} or {@code null}
-     * @since FIXME
+     * @since 2.16
      */
     @CheckForNull
     public static Boolean optBoolean(String name) {

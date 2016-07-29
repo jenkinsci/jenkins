@@ -126,7 +126,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * clients can avoid creating additional work for the server attempting to connect with unsupported protocols.
      *
      * @return a comma separated list of the enabled {@link AgentProtocol#getName()} implementations
-     * @since FIXME
+     * @since 2.16
      */
     public String getAgentProtocolNames() {
         return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
@@ -262,11 +262,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         /**
-         * Allow essential {@link AgentProtocol} implementations (basically {@link PingAgentProtocol})
-         * to be always enabled.
-         *
-         * @return {@code true} if the protocol can never be disabled.
-         * @since FIXME
+         * {@inheritDoc}
          */
         @Override
         public boolean isRequired() {
