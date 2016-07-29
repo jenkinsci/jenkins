@@ -2,6 +2,7 @@ package jenkins.slaves;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Channel.Listener;
@@ -59,6 +60,14 @@ import java.util.logging.Logger;
 public class JnlpSlaveAgentProtocol extends AgentProtocol {
     @Inject
     NioChannelSelector hub;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return OPT_IN;
+    }
 
     @Override
     public String getName() {
@@ -164,4 +173,14 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
      * This secret value is used as a seed for agents.
      */
     public static final HMACConfidentialKey SLAVE_SECRET = new HMACConfidentialKey(JnlpSlaveAgentProtocol.class,"secret");
+
+    /**
+     * A/B test turning off this protocol by default.
+     */
+    private static final boolean OPT_IN;
+
+    static {
+        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
+        OPT_IN = (hash % 10) == 0;
+    }
 }

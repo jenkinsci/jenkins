@@ -31,6 +31,14 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
      * {@inheritDoc}
      */
     @Override
+    public boolean isOptIn() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getDisplayName() {
         return Messages.JnlpSlaveAgentProtocol2_displayName();
     }

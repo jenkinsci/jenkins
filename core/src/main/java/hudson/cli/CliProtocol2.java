@@ -32,6 +32,14 @@ public class CliProtocol2 extends CliProtocol {
      * {@inheritDoc}
      */
     @Override
+    public boolean isOptIn() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getDisplayName() {
         return "Jenkins CLI Protocol/2";
     }

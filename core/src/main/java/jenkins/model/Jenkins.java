@@ -225,7 +225,6 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
@@ -239,7 +238,6 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -602,18 +600,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
-     * are enabled by default).
+     * are enabled by default). Will be {@code null} instead of empty to simplify XML format.
      *
      * @since FIXME
      */
-    private String disabledAgentProtocols;
+    @CheckForNull
+    private List<String> disabledAgentProtocols;
 
     /**
      * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
+     * Will be {@code null} instead of empty to simplify XML format.
      *
      * @since FIXME
      */
-    private String enabledAgentProtocols;
+    @CheckForNull
+    private List<String> enabledAgentProtocols;
 
     /**
      * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols}.
@@ -1095,11 +1096,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // idempotent, so don't care if we do this concurrently, should all get same result
             Set<String> result = new TreeSet<>();
             Set<String> disabled = new TreeSet<>();
-            for (String p : StringUtils.split(StringUtils.defaultIfBlank(disabledAgentProtocols, ""), ",")) {
+            for (String p : Util.fixNull(disabledAgentProtocols)) {
                 disabled.add(p.trim());
             }
             Set<String> enabled = new TreeSet<>();
-            for (String p : StringUtils.split(StringUtils.defaultIfBlank(enabledAgentProtocols, ""), ",")) {
+            for (String p : Util.fixNull(enabledAgentProtocols)) {
                 enabled.add(p.trim());
             }
             for (AgentProtocol p : AgentProtocol.all()) {
@@ -1138,8 +1139,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 }
             }
         }
-        disabledAgentProtocols = fixEmpty(StringUtils.join(disabled, ", "));
-        enabledAgentProtocols = fixEmpty(StringUtils.join(enabled, ", "));
+        disabledAgentProtocols = disabled.isEmpty() ? null : new ArrayList<>(disabled);
+        enabledAgentProtocols = enabled.isEmpty() ? null : new ArrayList<>(enabled);
         agentProtocols = null;
     }
 
@@ -4904,6 +4905,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // for backward compatibility with <1.75, recognize the tag name "view" as well.
             XSTREAM.alias("view", ListView.class);
             XSTREAM.alias("listView", ListView.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "disabledAgentProtocols", "disabledAgentProtocol", String.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "enabledAgentProtocols", "enabledAgentProtocol", String.class);
             XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
             XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
             // this seems to be necessary to force registration of converter early enough
