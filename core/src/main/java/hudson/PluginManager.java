@@ -505,7 +505,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
                             public void run(Reactor session) throws Exception {
                                 try {
                                     p.resolvePluginDependencies();
@@ -844,7 +844,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // so existing plugins can't be depending on this newly deployed one.
 
         plugins.add(p);
-        activePlugins.add(p);
+        if (p.isActive())
+            activePlugins.add(p);
         synchronized (((UberClassLoader) uberClassLoader).loaded) {
             ((UberClassLoader) uberClassLoader).loaded.clear();
         }
@@ -1867,14 +1868,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         private transient volatile boolean isActive = false;
 
-        private transient volatile List<String> pluginsWithCycle;
+        private transient volatile List<PluginWrapper> pluginsWithCycle;
 
         public boolean isActivated() {
             if(pluginsWithCycle == null){
-                pluginsWithCycle = new ArrayList<String>();
+                pluginsWithCycle = new ArrayList<>();
                 for (PluginWrapper p : Jenkins.getInstance().getPluginManager().getPlugins()) {
                     if(p.hasCycleDependency()){
-                        pluginsWithCycle.add(p.getShortName());
+                        pluginsWithCycle.add(p);
                         isActive = true;
                     }
                 }
@@ -1882,7 +1883,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return isActive;
         }
 
-        public List<String> getPluginsWithCycle() {
+        public List<PluginWrapper> getPluginsWithCycle() {
             return pluginsWithCycle;
         }
     }
