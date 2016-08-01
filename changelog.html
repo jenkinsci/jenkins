@@ -61,22 +61,47 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.16>What's new in 2.16</a> (2016/07/31)</h3>
 <ul class=image>
+  <li class="major bug">
+    Fix plugin dependency resolution. Jenkins will now refuse to load plugins with unsatisfied dependencies, which resulted in difficult to diagnose problems. <strong>This may result in errors on startup if your instance has an invalid plugin configuration.</strong>, check the Jenkins log for details.
   <li class="major rfe">
-    Decouple bouncycastle libraries from Jenkins into bouncycastle-api plugin
+    Decouple bouncycastle libraries from Jenkins into bouncycastle-api plugin.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36923">issue 36923</a>)
   <li class="rfe">
-    Upgrade to instance-identity module 2.1
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36923">issue 36923</a>)
+    Upgrade to instance-identity module 2.1.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36922">issue 36922</a>)
   <li class="rfe">
-    Hide the Java Web Start launcher when the TCP agent port is disabled
+    Hide the Java Web Start launcher when the TCP agent port is disabled.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36996">issue 36996</a>)
-  <li class="bug">
-    If an older version of a detached plugin is already installed it does not get upgraded  
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37041">issue 37041</a>)
   <li class="rfe">
     Allow admins to control the enabled agent protocols on their instance from the global security settings screen.
     (<a href="https://issues.jenkins-ci.org/brows/JENKINS-37032">issue 37032</a>)
-  <li class=>
+  <li class="bug">
+    Make sure that the All view is created.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36908">issue 36908</a>)
+  <li class="bug">
+    Remove trailing space from <tt>Hudson.DisplayName</tt> in Spanish, which resulted in problems with Blue Ocean.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36940">issue 36940</a>)
+  <li class="bug">
+    Honor non-default update sites in setup wizard.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34882">issue 34882</a>)
+  <li class="bug">
+    Display delete button only when build is not locked.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2483">pull 2483</a>)
+  <li class="bug">
+    Use build start times instead of build scheduled times in build timeline widget.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36732">issue 36732</a>)
+  <li class="bug">
+    Ensure that detached plugins are always at least their minimum version.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37041">issue 37041</a>)
+  <li class="rfe">
+    Internal: Move CLI commands wait-node-online/wait-node-offline from core to CLI module.
+    (<a href="https://issues.jenkins-ci.org/brows/JENKINS-34915">issue 34915</a>)
+  <li class="rfe">
+    Internal: Allow accessing instance identity from core.
+    (<a href="https://issues.jenkins-ci.org/brows/JENKINS-36871">issue 36871</a>)
+  <li class="bug">
+    Internal: Fix the default value handling of <tt>ArtifactArchiver.excludes</tt>.
+    (<a href="https://issues.jenkins-ci.org/brows/JENKINS-29922">issue 29922</a>)
 </ul>
 <h3><a name=v2.15>What's new in 2.15</a> (2016/07/24)</h3>
 <ul class=image>
