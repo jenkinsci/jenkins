@@ -278,7 +278,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             // Should never happen
             LOGGER.log(WARNING, "UpdateCenter class {0} does not extend hudson.model.UpdateCenter. Using default.", requiredClassName);
         } catch(NoSuchMethodException e) {
-            LOGGER.log(WARNING, String.format("UpdateCenter class {0} does not define one of the required constructors. Using default", requiredClassName), e);
+            LOGGER.log(WARNING, String.format("UpdateCenter class %s does not define one of the required constructors. Using default", requiredClassName), e);
         } catch(Exception e) {
             LOGGER.log(WARNING, String.format("Unable to instantiate custom plugin manager [%s]. Using default.", requiredClassName), e);
         }
