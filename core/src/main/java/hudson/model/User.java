@@ -70,6 +70,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileFilter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -427,31 +431,39 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         final File configFile = getConfigFileFor(id);
         if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
             // check for legacy users and migrate if safe to do so.
-            File[] legacy = getLegacyConfigFilesFor(id);
-            if (legacy != null && legacy.length > 0) {
-                for (File legacyUserDir : legacy) {
-                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(legacyUserDir, "config.xml"));
-                    try {
-                        Object o = legacyXml.read();
-                        if (o instanceof User) {
-                            if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
-                                    .equals(legacyUserDir.getName())) {
-                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
-                                    LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
-                                            new Object[]{legacyUserDir, configFile.getParentFile()});
+
+            try (DirectoryStream<Path> legacy = getLegacyConfigFilesFor(id)){
+                if (legacy.iterator().hasNext()) {
+                    for (Path legacyUserDir : legacy) {
+                        final XmlFile legacyXml = new XmlFile(XSTREAM, legacyUserDir.resolve("config.xml").toFile());
+                        try {
+                            Object o = legacyXml.read();
+                            if (o instanceof User) {
+                                String fileName = legacyUserDir.getFileName().toString();
+                                if (idStrategy().equals(id, fileName) && !idStrategy().filenameOf(fileName)
+                                        .equals(fileName)) {
+                                    try {
+                                        Files.move(legacyUserDir, Paths.get(configFile.toURI()));
+                                    } catch (IOException e) {
+                                        LOGGER.log(Level.WARNING, String.format("Failed to migrate user record from %s to %s",
+                                                legacyUserDir, configFile.getParentFile()), e);
+                                    }
+                                    break;
                                 }
-                                break;
+                            } else {
+                                LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
+                                        new Object[]{ legacyUserDir, o });
                             }
-                        } else {
-                            LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
-                                    new Object[]{ legacyUserDir, o });
+                        } catch (IOException e) {
+                            LOGGER.log(Level.FINE, String.format("Exception trying to load user from %s: %s",
+                                    legacyUserDir, e.getMessage()), e);
                         }
-                    } catch (IOException e) {
-                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from {0}: {1}",
-                                new Object[]{ legacyUserDir, e.getMessage() }), e);
                     }
                 }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Issue obtaining the directory stream for legacy users.", e);
             }
+
         }
         if (u==null && (create || configFile.exists())) {
             User tmp = new User(id, fullName);
@@ -682,12 +694,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
     }
 
-    private static final File[] getLegacyConfigFilesFor(final String id) {
-        return getRootDir().listFiles(new FileFilter() {
+    private static final DirectoryStream<Path> getLegacyConfigFilesFor(final String id) throws IOException {
+        return Files.newDirectoryStream(getRootDir().toPath(), new DirectoryStream.Filter<Path>() {
             @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && new File(pathname, "config.xml").isFile() && idStrategy().equals(
-                        pathname.getName(), id);
+            public boolean accept(Path entry) throws IOException {
+                return Files.isDirectory(entry) && Files.exists(entry.resolve("config.xml")) && idStrategy().equals(entry.getFileName().toString(), id);
             }
         });
     }
