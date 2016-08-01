@@ -42,6 +42,8 @@ THE SOFTWARE.
     <stapler.version>1.243</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.7</groovy.version>
+    <!-- Currently there is a huge number of errors => we cannot fix all of them immediately -->
+    <findbugs.failOnError>false</findbugs.failOnError>
   </properties>
 
   <dependencies>
@@ -803,6 +805,10 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 
@@ -878,20 +884,12 @@ THE SOFTWARE.
     </profile>
     <profile>
       <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
+      <!-- FindBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>findbugs</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>High</threshold>
-              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
+      <properties>
+        <!-- In the default profile we always fail the build if there FindBugs errors -->
+        <findbugs.failOnError>true</findbugs.failOnError>
+      </properties>
     </profile>
     <profile>
       <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
