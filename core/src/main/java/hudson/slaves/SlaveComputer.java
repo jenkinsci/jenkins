@@ -48,8 +48,8 @@ import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
-import hudson.util.io.ReopenableFileOutputStream;
-import hudson.util.io.ReopenableRotatingFileOutputStream;
+import hudson.util.io.RewindableFileOutputStream;
+import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
@@ -110,7 +110,7 @@ public class SlaveComputer extends Computer {
     /**
      * Perpetually writable log file.
      */
-    private final ReopenableFileOutputStream log;
+    private final RewindableFileOutputStream log;
 
     /**
      * {@link StreamTaskListener} that wraps {@link #log}, hence perpetually writable.
@@ -137,7 +137,7 @@ public class SlaveComputer extends Computer {
 
     public SlaveComputer(Slave slave) {
         super(slave);
-        this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
+        this.log = new RewindableRotatingFileOutputStream(getLogFile(), 10);
         this.taskListener = new StreamTaskListener(decorate(this.log));
         assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
     }
