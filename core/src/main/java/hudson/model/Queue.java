@@ -2773,7 +2773,7 @@ public class Queue extends ResourceController implements Saveable {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);
 
-            clear();    // just to be sure
+            this.clear();    // just to be sure
         }
     }
 
