@@ -29,12 +29,14 @@ import hudson.util.VariableResolver;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Locale;
+import javax.annotation.Nonnull;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class PasswordParameterValue extends ParameterValue {
 
+    @Nonnull
     private final Secret value;
 
     // kept for backward compatibility
@@ -68,7 +70,8 @@ public class PasswordParameterValue extends ParameterValue {
     public boolean isSensitive() {
         return true;
     }
-    
+
+    @Nonnull
     public Secret getValue() {
         return value;
     }

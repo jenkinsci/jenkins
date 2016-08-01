@@ -28,6 +28,8 @@ import hudson.Extension;
 
 /**
  * Designed for projects with a self-contained configuration and history.
+ *
+ * @since 2.0
  */
 @Extension(ordinal = -100)
 public class StandaloneProjectsCategory extends ItemCategory {

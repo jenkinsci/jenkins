@@ -33,15 +33,34 @@ import jenkins.util.SystemProperties;
  * @author Akshay Dayal
  * @since 1.XXX
  */
+// TODO @Deprecated once JENKINS-36871 is merged
 @Extension
 public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     @Inject
     NioChannelSelector hub;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return !ENABLED;
+    }
+
     @Override
     public String getName() {
-        if (ENABLED)    return "JNLP3-connect";
-        else            return "JNLP3-disabled";
+        // we only want to force the protocol off for users that have explicitly banned it via system property
+        // everyone on the A/B test will just have the opt-in flag toggled
+        // TODO strip all this out and hardcode OptIn==TRUE once JENKINS-36871 is merged
+        return forceEnabled != Boolean.FALSE ? "JNLP3-connect" : null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return Messages.JnlpSlaveAgentProtocol3_displayName();
     }
 
     @Override
@@ -128,12 +147,12 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_REFACTORED_TO_BE_FINAL",
             justification = "Part of the administrative API for System Groovy scripts.")
     public static boolean ENABLED;
+    private static final Boolean forceEnabled;
 
     static {
-        String propName = JnlpSlaveAgentProtocol3.class.getName() + ".enabled";
-        String propertyString = SystemProperties.getString(propName);
-        if (propertyString != null)
-            ENABLED = SystemProperties.getBoolean(propName);
+        forceEnabled = SystemProperties.optBoolean(JnlpSlaveAgentProtocol3.class.getName() + ".enabled");
+        if (forceEnabled != null)
+            ENABLED = forceEnabled;
         else {
             byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
             ENABLED = (hash%10)==0;

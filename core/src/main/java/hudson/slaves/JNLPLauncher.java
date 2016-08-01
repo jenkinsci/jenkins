@@ -23,10 +23,13 @@
  */
 package hudson.slaves;
 
-import hudson.model.Descriptor;
-import hudson.model.TaskListener;
-import hudson.Util;
 import hudson.Extension;
+import hudson.Util;
+import hudson.model.Descriptor;
+import hudson.model.DescriptorVisibilityFilter;
+import hudson.model.TaskListener;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -93,5 +96,30 @@ public class JNLPLauncher extends ComputerLauncher {
             return Messages.JNLPLauncher_displayName();
         }
     };
+
+    /**
+     * Hides the JNLP launcher when the JNLP agent port is not enabled.
+     *
+     * @since 2.16
+     */
+    @Extension
+    public static class DescriptorVisibilityFilterImpl extends DescriptorVisibilityFilter {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+            return descriptor.clazz != JNLPLauncher.class || Jenkins.getInstance().getTcpSlaveAgentListener() != null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean filterType(@Nonnull Class<?> contextClass, @Nonnull Descriptor descriptor) {
+            return descriptor.clazz != JNLPLauncher.class || Jenkins.getInstance().getTcpSlaveAgentListener() != null;
+        }
+    }
 
 }

@@ -204,6 +204,21 @@ public class SystemProperties implements ServletContextListener {
         }
         return def;
     }
+
+    /**
+     * Returns {@link Boolean#TRUE} if the named system property exists and is equal to the string {@code "true}
+     * (ignoring case), returns {@link Boolean#FALSE} if the system property exists and doesn't equal {@code "true}
+     * otherwise returns {@code null} if the named system property does not exist.
+     *
+     * @param name the system property name.
+     * @return {@link Boolean#TRUE}, {@link Boolean#FALSE} or {@code null}
+     * @since 2.16
+     */
+    @CheckForNull
+    public static Boolean optBoolean(String name) {
+        String v = getString(name);
+        return v == null ? null : Boolean.parseBoolean(v);
+    }
     
     /**
       * Determines the integer value of the system property with the

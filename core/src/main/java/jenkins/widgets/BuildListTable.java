@@ -25,9 +25,13 @@
 package jenkins.widgets;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
 import net.sf.json.JSONObject;
+
+import java.util.Date;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -45,6 +49,7 @@ public class BuildListTable extends RunListProgressiveRendering {
         element.put("displayName", build.getDisplayName());
         element.put("timestampString", build.getTimestampString());
         element.put("timestampString2", build.getTimestampString2());
+        element.put("timestampString3", Util.XS_DATETIME_FORMATTER.format(new Date(build.getStartTimeInMillis())));
         Run.Summary buildStatusSummary = build.getBuildStatusSummary();
         element.put("buildStatusSummaryWorse", buildStatusSummary.isWorse);
         element.put("buildStatusSummaryMessage", buildStatusSummary.message);

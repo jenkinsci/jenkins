@@ -52,7 +52,7 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author pjanouse
  */
-public class AbstractBuildRangeCommandTest2 {
+public class AbstractBuildRangeCommand2Test {
 
     private CLICommandInvoker command;
 

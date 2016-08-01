@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%Extends the version 1 protocol by adding a per-client cookie, so that we can detect a reconnection from the agent and take appropriate action}
+</j:jelly>

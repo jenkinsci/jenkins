@@ -42,6 +42,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -62,6 +64,7 @@ public final class Secret implements Serializable {
     /**
      * Unencrypted secret text.
      */
+    @Nonnull
     private final String value;
 
     private Secret(String value) {
@@ -87,6 +90,7 @@ public final class Secret implements Serializable {
      * Before using this method, ask yourself if you'd be better off using {@link Secret#toString(Secret)}
      * to avoid NPE.
      */
+    @Nonnull
     public String getPlainText() {
         return value;
     }
@@ -144,7 +148,8 @@ public final class Secret implements Serializable {
      * Reverse operation of {@link #getEncryptedValue()}. Returns null
      * if the given cipher text was invalid.
      */
-    public static Secret decrypt(String data) {
+    @CheckForNull
+    public static Secret decrypt(@CheckForNull String data) {
         if(data==null)      return null;
         try {
             byte[] in = Base64.decode(data.toCharArray());
@@ -192,10 +197,9 @@ public final class Secret implements Serializable {
      *
      * <p>
      * Useful for recovering a value from a form field.
-     *
-     * @return never null
      */
-    public static Secret fromString(String data) {
+    @Nonnull
+    public static Secret fromString(@CheckForNull String data) {
         data = Util.fixNull(data);
         Secret s = decrypt(data);
         if(s==null) s=new Secret(data);
@@ -207,7 +211,8 @@ public final class Secret implements Serializable {
      * To be consistent with {@link #fromString(String)}, this method doesn't distinguish
      * empty password and null password.
      */
-    public static String toString(Secret s) {
+    @Nonnull
+    public static String toString(@CheckForNull Secret s) {
         return s==null ? "" : s.value;
     }
 

@@ -7,6 +7,8 @@ import hudson.TcpSlaveAgentListener;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Set;
+import jenkins.model.Jenkins;
 
 /**
  * Pluggable Jenkins TCP agent protocol handler called from {@link TcpSlaveAgentListener}.
@@ -22,6 +24,36 @@ import java.net.Socket;
  */
 public abstract class AgentProtocol implements ExtensionPoint {
     /**
+     * Allow experimental {@link AgentProtocol} implementations to declare being opt-in.
+     * Note that {@link Jenkins#setAgentProtocols(Set)} only records the protocols where the admin has made a
+     * conscious decision thus:
+     * <ul>
+     *     <li>if a protocol is opt-in, it records the admin enabling it</li>
+     *     <li>if a protocol is opt-out, it records the admin disabling it</li>
+     * </ul>
+     * Implementations should not transition rapidly from {@code opt-in -> opt-out -> opt-in}.
+     * Implementations should never flip-flop: {@code opt-in -> opt-out -> opt-in -> opt-out} as that will basically
+     * clear any preference that an admin has set. This latter restriction should be ok as we only ever will be
+     * adding new protocols and retiring old ones.
+     *
+     * @return {@code true} if the protocol requires explicit opt-in.
+     * @since 2.16
+     * @see Jenkins#setAgentProtocols(Set)
+     */
+    public boolean isOptIn() {
+        return false;
+    }
+    /**
+     * Allow essential {@link AgentProtocol} implementations (basically {@link TcpSlaveAgentListener.PingAgentProtocol})
+     * to be always enabled.
+     *
+     * @return {@code true} if the protocol can never be disabled.
+     * @since 2.16
+     */
+    public boolean isRequired() {
+        return false;
+    }
+    /**
      * Protocol name.
      *
      * This is a short string that consists of printable ASCII chars. Sent by the client to select the protocol.
@@ -31,6 +63,16 @@ public abstract class AgentProtocol implements ExtensionPoint {
      *      until the protocol is properly configured.
      */
     public abstract String getName();
+
+    /**
+     * Returns the human readable protocol display name.
+     *
+     * @return the human readable protocol display name.
+     * @since 2.16
+     */
+    public String getDisplayName() {
+        return getName();
+    }
 
     /**
      * Called by the connection handling thread to execute the protocol.

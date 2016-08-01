@@ -466,7 +466,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                             if(p.isActive())
                                                 activePlugins.add(p);
                                         }
-                                    } catch (CycleDetectedException e) {
+                                    } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
                                         throw e;    // let Hudson fail
                                     }
@@ -506,7 +506,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                     // schedule execution of loading plugins
                     for (final PluginWrapper p : activePlugins.toArray(new PluginWrapper[activePlugins.size()])) {
-                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add("Loading plugin " + p.getShortName(), new Executable() {
+                        g.followedBy().notFatal().attains(PLUGINS_PREPARED).add(String.format("Loading plugin %s v%s (%s)", p.getLongName(), p.getVersion(), p.getShortName()), new Executable() {
                             public void run(Reactor session) throws Exception {
                                 try {
                                     p.resolvePluginDependencies();
@@ -721,6 +721,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
 
             InstallUtil.saveLastExecVersion();
+        } else {
+            final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
+                VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
+                VersionNumber requiredVersion = p.getRequiredVersion();
+                if (installedVersion != null && installedVersion.isOlderThan(requiredVersion)) {
+                    LOGGER.log(Level.WARNING,
+                            "Detached plugin {0} found at version {1}, required minimum version is {2}",
+                            new Object[]{p.getShortName(), installedVersion, requiredVersion});
+                    forceUpgrade.add(p);
+                }
+            }
+            if (!forceUpgrade.isEmpty()) {
+                Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        name = normalisePluginName(name);
+                        for (ClassicPluginStrategy.DetachedPlugin detachedPlugin : forceUpgrade) {
+                            if (detachedPlugin.getShortName().equals(name)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+                LOGGER.log(INFO, "Upgraded detached plugins (and dependencies): {0}",
+                        new Object[]{loadedDetached});
+            }
         }
     }
 
@@ -821,7 +849,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // so existing plugins can't be depending on this newly deployed one.
 
         plugins.add(p);
-        activePlugins.add(p);
+        if (p.isActive())
+            activePlugins.add(p);
         synchronized (((UberClassLoader) uberClassLoader).loaded) {
             ((UberClassLoader) uberClassLoader).loaded.clear();
         }
@@ -1275,7 +1304,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      *                    the plugin will only take effect after the reboot.
      *                    See {@link UpdateCenter#isRestartRequiredForCompletion()}
      * @return The install job list.
-     * @since FIXME
+     * @since 2.0
      */
     @Restricted(NoExternalUse.class)
     public List<Future<UpdateCenter.UpdateCenterJob>> install(@Nonnull Collection<String> plugins, boolean dynamicLoad) {
@@ -1844,14 +1873,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         private transient volatile boolean isActive = false;
 
-        private transient volatile List<String> pluginsWithCycle;
+        private transient volatile List<PluginWrapper> pluginsWithCycle;
 
         public boolean isActivated() {
             if(pluginsWithCycle == null){
-                pluginsWithCycle = new ArrayList<String>();
+                pluginsWithCycle = new ArrayList<>();
                 for (PluginWrapper p : Jenkins.getInstance().getPluginManager().getPlugins()) {
                     if(p.hasCycleDependency()){
-                        pluginsWithCycle.add(p.getShortName());
+                        pluginsWithCycle.add(p);
                         isActive = true;
                     }
                 }
@@ -1859,7 +1888,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return isActive;
         }
 
-        public List<String> getPluginsWithCycle() {
+        public List<PluginWrapper> getPluginsWithCycle() {
             return pluginsWithCycle;
         }
     }

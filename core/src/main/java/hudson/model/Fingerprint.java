@@ -1468,7 +1468,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Provides the XStream instance this class is using for serialization.
      *
      * @return the XStream instance
-     * @since FIXME
+     * @since 1.655
      */
     @Nonnull
     public static XStream2 getXStream() {

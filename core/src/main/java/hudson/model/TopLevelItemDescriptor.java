@@ -139,7 +139,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *
      * @return A string, by default the value from newInstanceDetail view is taken.
      *
-     * @since TODO
+     * @since 2.0
      */
     @Nonnull
     public String getDescription() {
@@ -171,7 +171,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *
      * @return A string with the category identifier, {@link ItemCategory.UncategorizedCategory#getId()} by default.
      *
-     * @since TODO
+     * @since 2.0
      */
     @Nonnull
     public String getCategoryId() {
@@ -188,7 +188,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *
      * @return A string or null if it is not defined.
      *
-     * @since TODO
+     * @since 2.0
      */
     @CheckForNull
     public String getIconFilePathPattern() {
@@ -202,7 +202,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      *
      * @return A string or null if it is not defined.
      *
-     * @since TODO
+     * @since 2.0
      */
     @CheckForNull
     public String getIconFilePath(String size) {
