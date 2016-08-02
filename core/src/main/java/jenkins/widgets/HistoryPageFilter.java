@@ -23,6 +23,8 @@
  */
 package jenkins.widgets;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
@@ -32,6 +34,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -101,85 +105,116 @@ public class HistoryPageFilter<T> {
     /**
      * Add build items to the History page.
      *
-     * @param items The items to be added. Assumes the list of items are in descending queue ID order i.e. newest first.
+     * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
+     * @deprecated Replaced by add(Iterable&lt;T&gt;) as of version 2.15
      */
-    public void add(@Nonnull List<T> items) {
-        if (items.isEmpty()) {
+    @Deprecated
+    public void add(@Nonnull List<T> runItems) {
+        addInternal(runItems);
+    }
+
+    /**
+     * Add build items to the History page.
+     *
+     * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
+     * @since TODO
+     */
+    public void add(@Nonnull Iterable<T> runItems) {
+        addInternal(runItems);
+    }
+
+    /**
+     * Add run items and queued items to the History page.
+     *
+     * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
+     * @param queueItems The queue items to be added. Queue items do not need to be sorted.
+     * @since TODO
+     */
+    public void add(@Nonnull Iterable<T> runItems, @Nonnull List<Queue.Item> queueItems) {
+        sort(queueItems);
+        addInternal(Iterables.concat(queueItems, runItems));
+    }
+
+    /**
+     * Add items to the History page, internal implementation.
+     * @param items The items to be added.
+     * @param <ItemT> The type of items should either be T or Queue.Item.
+     */
+    private <ItemT> void addInternal(@Nonnull Iterable<ItemT> items) {
+        // Note that items can be a large lazily evaluated collection,
+        // so this method is optimized to only iterate through it as much as needed.
+
+        if (!items.iterator().hasNext()) {
             return;
         }
 
-        sort(items);
-
-        nextBuildNumber = getNextBuildNumber(items.get(0));
+        nextBuildNumber = getNextBuildNumber(items.iterator().next());
 
         if (newerThan == null && olderThan == null) {
             // Just return the first page of entries (newest)
-            for (T item : items) {
-                add(item);
+            Iterator<ItemT> iter = items.iterator();
+            while (iter.hasNext()) {
+                add(iter.next());
                 if (isFull()) {
                     break;
                 }
             }
-            hasDownPage = (items.size() > maxEntries);
+            hasDownPage = iter.hasNext();
         } else if (newerThan != null) {
             int toFillCount = getFillCount();
             if (toFillCount > 0) {
-                // Locate the point in the items list where the 'newerThan' build item is. Once located,
-                // add a max of 'getFillCount' build items before that build item.
-                long newestInList = HistoryPageEntry.getEntryId(items.get(0));
-                long oldestInList = HistoryPageEntry.getEntryId(items.get(items.size() - 1));
-                int newerThanIdx = -1;
+                // Walk through the items and keep track of the oldest
+                // 'toFillCount' items until we reach an item older than
+                // 'newerThan' or the end of the list.
+                LinkedList<ItemT> itemsToAdd = new LinkedList<>();
+                Iterator<ItemT> iter = items.iterator();
+                while (iter.hasNext()) {
+                    ItemT item = iter.next();
+                    if (HistoryPageEntry.getEntryId(item) > newerThan) {
+                        itemsToAdd.addLast(item);
 
-                if (newerThan > newestInList) {
-                    // Nothing newer
-                } else if (newerThan >= oldestInList) {
-                    // newerThan is within the range of items in the item list.
-                    // go through the list and locate the cut-off point.
-                    for (int i = 0; i < items.size(); i++) {
-                        T item = items.get(i);
-                        if (HistoryPageEntry.getEntryId(item) <= newerThan) {
-                            newerThanIdx = i;
-                            break;
-                        }
-                    }
-                } else if (newerThan < oldestInList) {
-                    newerThanIdx = items.size();
-                }
-
-                if (newerThanIdx != -1) {
-                    if (newerThanIdx <= maxEntries) {
-                        // If there's less than a full page of items newer than "newerThan", then it's ok to
-                        // fill the page with items older than "newerThan".
-                        int itemCountToAdd = Math.min(toFillCount, items.size());
-                        for (int i = 0; i < itemCountToAdd; i++) {
-                            add(items.get(i));
+                        // Discard an item off the front of the list if we have
+                        // to (which means we would be able to page up).
+                        if (itemsToAdd.size() > toFillCount) {
+                            itemsToAdd.removeFirst();
+                            hasUpPage = true;
                         }
                     } else {
-                        // There's more than a full page of items newer than "newerThan".
-                        for (int i = (newerThanIdx - toFillCount); i < newerThanIdx; i++) {
-                            add(items.get(i));
-                        }
-                        hasUpPage = true;
+                        break;
                     }
-                    // if there are items after the "newerThan" item, then we
-                    // can page down.
-                    hasDownPage = (items.size() > newerThanIdx + 1);
-                } else {
+                }
+                if (itemsToAdd.size() == 0) {
                     // All builds are older than newerThan ?
                     hasDownPage = true;
+                } else {
+                    // If there's less than a full page of items newer than
+                    // 'newerThan', then it's ok to fill the page with older items.
+                    if (itemsToAdd.size() < toFillCount) {
+                        // We have to restart the iterator and skip the items that we added (because
+                        // we may have popped an extra item off the iterator that did not get added).
+                        Iterator<ItemT> skippedIter = items.iterator();
+                        Iterators.skip(skippedIter, itemsToAdd.size());
+                        for (int i = itemsToAdd.size(); i < toFillCount && skippedIter.hasNext(); i++) {
+                            ItemT item = skippedIter.next();
+                            itemsToAdd.addLast(item);
+                        }
+                    }
+                    hasDownPage = iter.hasNext();
+                    for (Object item : itemsToAdd) {
+                        add(item);
+                    }
                 }
             }
         } else if (olderThan != null) {
-            for (int i = 0; i < items.size(); i++) {
-                T item = items.get(i);
+            Iterator<ItemT> iter = items.iterator();
+            while (iter.hasNext()) {
+                Object item = iter.next();
                 if (HistoryPageEntry.getEntryId(item) >= olderThan) {
                     hasUpPage = true;
                 } else {
                     add(item);
                     if (isFull()) {
-                        // This page is full but there may be more builds older
-                        // than the oldest on this page.
-                        hasDownPage = (i + 1 < items.size());
+                        hasDownPage = iter.hasNext();
                         break;
                     }
                 }
@@ -191,13 +226,13 @@ public class HistoryPageFilter<T> {
         return queueItems.size() + runs.size();
     }
 
-    private void sort(List<T> items) {
+    private void sort(List<? extends Object> items) {
         // Queue items can start building out of order with how they got added to the queue. Sorting them
         // before adding to the page. They'll still get displayed before the building items coz they end
         // up in a different list in HistoryPageFilter.
-        Collections.sort(items, new Comparator<T>() {
+        Collections.sort(items, new Comparator<Object>() {
             @Override
-            public int compare(T o1, T o2) {
+            public int compare(Object o1, Object o2) {
                 long o1QID = HistoryPageEntry.getEntryId(o1);
                 long o2QID = HistoryPageEntry.getEntryId(o2);
 
@@ -212,7 +247,7 @@ public class HistoryPageFilter<T> {
         });
     }
 
-    private long getNextBuildNumber(@Nonnull T entry) {
+    private long getNextBuildNumber(@Nonnull Object entry) {
         if (entry instanceof Queue.Item) {
             Queue.Task task = ((Queue.Item) entry).task;
             if (task instanceof Job) {
@@ -227,13 +262,19 @@ public class HistoryPageFilter<T> {
     }
 
     private void addQueueItem(Queue.Item item) {
-        HistoryPageEntry entry = new HistoryPageEntry(item);
+        HistoryPageEntry<Queue.Item> entry = new HistoryPageEntry<>(item);
         queueItems.add(entry);
         updateNewestOldest(entry.getEntryId());
     }
 
     private void addRun(Run run) {
-        HistoryPageEntry entry = new HistoryPageEntry(run);
+        HistoryPageEntry<Run> entry = new HistoryPageEntry<>(run);
+        // Assert that runs have been added in descending order
+        if (runs.size() > 0) {
+            if (entry.getEntryId() > runs.get(runs.size() - 1).getEntryId()) {
+                throw new IllegalStateException("Runs were out of order");
+            }
+        }
         runs.add(entry);
         updateNewestOldest(entry.getEntryId());
     }
@@ -243,7 +284,7 @@ public class HistoryPageFilter<T> {
         oldestOnPage = Math.min(oldestOnPage, entryId);
     }
 
-    private boolean add(T entry) {
+    private boolean add(Object entry) {
         // Purposely not calling isFull(). May need to add a greater number of entries
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
         if (entry instanceof Queue.Item) {
