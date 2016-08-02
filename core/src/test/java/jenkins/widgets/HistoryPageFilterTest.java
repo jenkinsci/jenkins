@@ -23,7 +23,12 @@
  */
 package jenkins.widgets;
 
-import hudson.model.*;
+import hudson.model.Job;
+import hudson.model.MockItem;
+import hudson.model.ModelObject;
+import hudson.model.Queue;
+import hudson.model.Result;
+import hudson.model.Run;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
 import org.junit.Assert;
