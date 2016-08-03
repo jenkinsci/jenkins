@@ -1,13 +1,17 @@
 package jenkins.slaves;
 
 import hudson.Extension;
-import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpServerHandshake;
-import org.jenkinsci.remoting.nio.NioChannelHub;
-
-import java.io.ByteArrayInputStream;
+import hudson.ExtensionList;
+import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import jenkins.AgentProtocol;
+import org.jenkinsci.Symbol;
+import org.jenkinsci.remoting.engine.JnlpClientDatabase;
+import org.jenkinsci.remoting.engine.JnlpProtocol2Handler;
 
 /**
  * {@link JnlpSlaveAgentProtocol} Version 2.
@@ -20,11 +24,32 @@ import java.net.Socket;
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
-@Extension @Symbol("jnlp2")
-public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
+@Extension
+@Symbol("jnlp2")
+public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
+    private NioChannelSelector hub;
+
+    private JnlpProtocol2Handler handler;
+
+    @Inject
+    public void setHub(NioChannelSelector hub) {
+        this.hub = hub;
+        this.handler = new JnlpProtocol2Handler(new JnlpClientDatabase() {
+            @Override
+            public boolean exists(String clientName) {
+                return JnlpAgentReceiver.exists(clientName);
+            }
+
+            @Override
+            public String getSecretOf(@Nonnull String clientName) {
+                return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(clientName);
+            }
+        }, Computer.threadPoolForRemoting, hub.getHub());
+    }
+
     @Override
     public String getName() {
-        return "JNLP2-connect";
+        return handler.isEnabled() ? handler.getName() : null;
     }
 
     /**
@@ -45,43 +70,7 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        new Handler2(hub.getHub(),socket).run();
+        handler.handle(socket, new HashMap<String, String>(), ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
-    protected static class Handler2 extends Handler {
-        /**
-         * @deprecated as of 1.559
-         *      Use {@link #Handler2(NioChannelHub, Socket)}
-         */
-        @Deprecated
-        public Handler2(Socket socket) throws IOException {
-            super(socket);
-        }
-
-        public Handler2(NioChannelHub hub, Socket socket) throws IOException {
-            super(hub, socket);
-        }
-
-        /**
-         * Handles JNLP agent connection request (v2 protocol)
-         */
-        @Override
-        protected void run() throws IOException, InterruptedException {
-            request.load(new ByteArrayInputStream(in.readUTF().getBytes("UTF-8")));
-
-            final String nodeName = request.getProperty("Node-Name");
-
-            for (JnlpAgentReceiver recv : JnlpAgentReceiver.all()) {
-                try {
-                    if (recv.handle(nodeName,this))
-                        return;
-                } catch (AbstractMethodError e) {
-                    if (recv.handle(nodeName,new JnlpSlaveHandshake(this)))
-                        return;
-                }
-            }
-
-            error("JNLP2-connect: rejected connection for node: " + nodeName);
-        }
-    }
 }
