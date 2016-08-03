@@ -1,33 +1,21 @@
 package jenkins.slaves;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.Computer;
-import hudson.slaves.SlaveComputer;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
-import jenkins.security.ChannelConfigurator;
 import jenkins.security.HMACConfidentialKey;
-import org.apache.commons.io.IOUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
-import org.jenkinsci.remoting.engine.JnlpConnectionState;
-import org.jenkinsci.remoting.engine.JnlpConnectionStateListener;
 import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
-import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
-import org.jenkinsci.remoting.protocol.impl.PermanentConnectionRefusalException;
 
 /**
  * {@link AgentProtocol} that accepts connection from agents.
@@ -57,7 +45,8 @@ import org.jenkinsci.remoting.protocol.impl.PermanentConnectionRefusalException;
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
-@Extension @Symbol("jnlp")
+@Extension
+@Symbol("jnlp")
 public class JnlpSlaveAgentProtocol extends AgentProtocol {
     /**
      * Our logger
