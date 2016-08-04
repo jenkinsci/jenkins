@@ -368,9 +368,17 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
         }
     }
 
+    /**
+     * @return the highest recorded build number, or 0 if there are none
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized int maxNumberOnDisk() {
+        return numberOnDisk.max();
+    }
+
     protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
-        if (numberOnDisk.isInRange(numberOnDisk.ceil(number))) {
-            throw new IllegalStateException("cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
+        if (number <= maxNumberOnDisk()) {
+            throw new IllegalStateException("JENKINS-27530: cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
         }
     }
 

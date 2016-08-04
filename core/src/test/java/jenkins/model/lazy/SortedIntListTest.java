@@ -34,4 +34,15 @@ public class SortedIntListTest {
         assertFalse(l.isInRange(3));
     }
 
+    @Test public void max() {
+        SortedIntList l = new SortedIntList(5);
+        assertEquals(0, l.max());
+        l.add(1);
+        assertEquals(1, l.max());
+        l.add(5);
+        assertEquals(5, l.max());
+        l.add(10);
+        assertEquals(10, l.max());
+    }
+
 }
