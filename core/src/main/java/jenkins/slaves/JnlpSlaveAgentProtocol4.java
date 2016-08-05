@@ -36,20 +36,21 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import jenkins.AgentProtocol;
 import jenkins.model.identity.InstanceIdentityProvider;
-import org.jenkinsci.remoting.engine.JnlpClientDatabase;
+import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
+import org.jenkinsci.remoting.protocol.IOHub;
 import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustManager;
 
 /**
@@ -75,16 +76,27 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     private final TrustManager trustManager;
 
+    /**
+     * The provider of our {@link IOHub}
+     */
     private IOHubProvider hub;
 
+    /**
+     * Our handler.
+     */
     private JnlpProtocol4Handler handler;
+    /**
+     * Our SSL context.
+     */
     private SSLContext sslContext;
 
-    @Override
-    public boolean isOptIn() {
-        return true;
-    }
-
+    /**
+     * Constructor.
+     *
+     * @throws KeyStoreException      if things go wrong.
+     * @throws KeyManagementException if things go wrong.
+     * @throws IOException            if things go wrong.
+     */
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
@@ -127,27 +139,45 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         sslContext.init(kmf.getKeyManagers(), trustManagers, null);
     }
 
+    /**
+     * Inject the {@link IOHubProvider}
+     *
+     * @param hub the hub provider.
+     */
     @Inject
     public void setHub(IOHubProvider hub) {
         this.hub = hub;
-        handler = new JnlpProtocol4Handler(new JnlpClientDatabase() {
-            @Override
-            public boolean exists(String clientName) {
-                return JnlpAgentReceiver.exists(clientName);
-            }
-
-            @Override
-            public String getSecretOf(@Nonnull String clientName) {
-                return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(clientName);
-            }
-        }, Computer.threadPoolForRemoting, hub.getHub(), sslContext, false);
+        handler = new JnlpProtocol4Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting, hub.getHub(),
+                sslContext, false, true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return Messages.JnlpSlaveAgentProtocol4_displayName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getName() {
         return handler.getName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         try {
@@ -163,13 +193,9 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         } catch (KeyStoreException e) {
             // ignore
         }
-        HashMap<String, String> headers = new HashMap<>();
-        // TODO populate headers
-        try {
-            handler.handle(socket, headers, ExtensionList.lookup(JnlpAgentReceiver.class)).get();
-        } catch (ExecutionException e) {
-            LOGGER.log(Level.WARNING, "Unexpected", e);
-        }
+        handler.handle(socket,
+                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
+                ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
 }

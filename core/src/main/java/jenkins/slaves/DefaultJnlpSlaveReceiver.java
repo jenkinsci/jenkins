@@ -37,8 +37,6 @@ import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
-    private final SecureRandom secureRandom = new SecureRandom();
-
     @Override
     public boolean owns(String clientName) {
         Computer computer = Jenkins.getInstance().getComputer(clientName);
@@ -140,12 +138,6 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         public void setLog(@Nonnull OutputStream log) {
             this.log = log;
         }
-    }
-
-    private String generateCookie() {
-        byte[] cookie = new byte[32];
-        secureRandom.nextBytes(cookie);
-        return Util.toHexString(cookie);
     }
 
     private static final Logger LOGGER = Logger.getLogger(DefaultJnlpSlaveReceiver.class.getName());

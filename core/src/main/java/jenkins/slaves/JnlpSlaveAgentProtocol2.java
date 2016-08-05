@@ -5,12 +5,14 @@ import hudson.ExtensionList;
 import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.HashMap;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
+import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol2Handler;
 
 /**
@@ -34,17 +36,8 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
     @Inject
     public void setHub(NioChannelSelector hub) {
         this.hub = hub;
-        this.handler = new JnlpProtocol2Handler(new JnlpClientDatabase() {
-            @Override
-            public boolean exists(String clientName) {
-                return JnlpAgentReceiver.exists(clientName);
-            }
-
-            @Override
-            public String getSecretOf(@Nonnull String clientName) {
-                return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(clientName);
-            }
-        }, Computer.threadPoolForRemoting, hub.getHub());
+        this.handler = new JnlpProtocol2Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting,
+                hub.getHub(), true);
     }
 
     @Override
@@ -70,7 +63,9 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
-        handler.handle(socket, new HashMap<String, String>(), ExtensionList.lookup(JnlpAgentReceiver.class));
+        handler.handle(socket,
+                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
+                ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 
 }
