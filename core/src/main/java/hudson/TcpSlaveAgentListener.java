@@ -275,6 +275,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
+                    o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
