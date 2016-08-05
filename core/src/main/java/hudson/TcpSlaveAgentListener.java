@@ -261,9 +261,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
 
                 if (header.startsWith("GET / ")) {
-                    o.write("HTTP/1.0 200 OK\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\n");
-                    o.write("\n");
+                    o.write("HTTP/1.0 200 OK\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
                     o.write("Jenkins-Agent-Protocols: ");
                     boolean first = true;
                     for (AgentProtocol p : AgentProtocol.all()) {
@@ -271,17 +271,17 @@ public final class TcpSlaveAgentListener extends Thread {
                         else        o.write(",");
                         o.write(p.getName());
                     }
-                    o.write("\n");
-                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\n");
-                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\n");
-                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\n");
+                    o.write("\r\n");
+                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
+                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
+                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
-                    o.write("HTTP/1.0 404 Not Found\n");
-                    o.write("Content-Type: text/plain;charset=UTF-8\n");
-                    o.write("\n");
-                    o.write("Not Found\n");
+                    o.write("HTTP/1.0 404 Not Found\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
+                    o.write("Not Found\r\n");
                     o.flush();
                     s.shutdownOutput();
                 }
