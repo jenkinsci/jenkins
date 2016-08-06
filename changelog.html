@@ -75,6 +75,7 @@ Upcoming changes</a>
 <ul class=image>
   <li class="major bug">
     Fix plugin dependency resolution. Jenkins will now refuse to load plugins with unsatisfied dependencies, which resulted in difficult to diagnose problems. <strong>This may result in errors on startup if your instance has an invalid plugin configuration.</strong>, check the Jenkins log for details.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-21486">issue 21486</a>)
   <li class="major rfe">
     Decouple bouncycastle libraries from Jenkins into bouncycastle-api plugin.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36923">issue 36923</a>)
