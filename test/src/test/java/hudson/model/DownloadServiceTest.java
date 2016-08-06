@@ -63,7 +63,6 @@ public class DownloadServiceTest extends HudsonTestCase {
 
     @WithoutJenkins // could have been in core/src/test/ but update-center.json was already in test/src/test/ (used by UpdateSiteTest)
     public void testLoadJSON() throws Exception {
-        assertRoots("[list]", "hudson.tasks.Maven.MavenInstaller.json"); // format used by most tools
         assertRoots("[data, version]", "hudson.tools.JDKInstaller.json"); // anomalous format
         assertRoots("[connectionCheckUrl, core, id, plugins, signature, updateCenterVersion]", "update-center.json");
     }
@@ -74,24 +73,6 @@ public class DownloadServiceTest extends HudsonTestCase {
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSON(resource));
         @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<String>(keySet).toString());
-    }
-
-    public void testReduceFunctionWithMavenJsons() throws Exception {
-        URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller1.json");
-        URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller2.json");
-        URL resource3 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller3.json");
-        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
-        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
-        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-        jsonObjectList.add(json1);
-        jsonObjectList.add(json2);
-        jsonObjectList.add(json3);
-        Downloadable downloadable = new Maven.MavenInstaller.DescriptorImpl().createDownloadable();
-        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
-        URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstallerResult.json");
-        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
-        assertEquals(reducedJson, expectedResultJson);
     }
 
     public void testReduceFunctionWithAntJsons() throws Exception {

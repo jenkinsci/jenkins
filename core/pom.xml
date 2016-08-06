@@ -616,6 +616,12 @@ THE SOFTWARE.
       <artifactId>jzlib</artifactId>
       <version>1.1.3-kohsuke-1</version>
     </dependency>
+    <!-- Should be removed after splitting maven-builder-plugin see JENKINS-26462 -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>maven-builder-plugin</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>

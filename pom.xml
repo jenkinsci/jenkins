@@ -52,6 +52,7 @@ THE SOFTWARE.
     <module>war</module>
     <module>test</module>
     <module>cli</module>
+    <module>maven-builder-plugin</module>
   </modules>
 
   <scm>

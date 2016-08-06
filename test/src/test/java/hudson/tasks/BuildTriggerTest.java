@@ -140,54 +140,6 @@ public class BuildTriggerTest {
         doTriggerTest(true, Result.UNSTABLE, Result.FAILURE);
     }
 
-    private void doMavenTriggerTest(boolean evenWhenUnstable) throws Exception {
-        File problematic = new File(System.getProperty("user.home"), ".m2/repository/org/apache/maven/plugins/maven-surefire-plugin/2.4.3/maven-surefire-plugin-2.4.3.pom");
-        if (problematic.isFile()) {
-            try {
-                new SAXReader().read(problematic);
-            } catch (DocumentException x) {
-                x.printStackTrace();
-                // somehow maven-surefire-plugin-2.4.3.pom got corrupted on CI builders
-                Assume.assumeNoException(x);
-            }
-        }
-        FreeStyleProject dp = createDownstreamProject();
-        ToolInstallations.configureDefaultMaven();
-        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
-        m.getPublishersList().add(new BuildTrigger("downstream", evenWhenUnstable));
-        if (!evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } // otherwise do nothing which gets FAILURE
-        // First build should not trigger downstream project
-        MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-        assertNoDownstreamBuild(dp, b);
-
-        if (evenWhenUnstable) {
-            // Configure for UNSTABLE
-            m.setGoals("clean test");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-test-failure.zip")));
-        } else {
-            // Configure for SUCCESS
-            m.setGoals("clean");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("maven-empty.zip")));
-        }
-        // Next build should trigger downstream project
-        b = m.scheduleBuild2(0).get();
-        assertDownstreamBuild(dp, b);
-    }
-
-    @Test
-    public void mavenBuildTrigger() throws Exception {
-        doMavenTriggerTest(false);
-    }
-
-    @Test
-    public void mavenTriggerEvenWhenUnstable() throws Exception {
-        doMavenTriggerTest(true);
-    }
-
     /** @see ReverseBuildTriggerTest#upstreamProjectSecurity */
     @Test
     public void downstreamProjectSecurity() throws Exception {
