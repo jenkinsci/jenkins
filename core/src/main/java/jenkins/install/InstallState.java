@@ -173,13 +173,13 @@ public class InstallState implements ExtensionPoint {
     public Object readResolve() {
         // If we get invalid state from the configuration, fallback to unknown
         if (StringUtils.isBlank(name)) {
-            LOGGER.log(Level.WARNING, "Read install state with blank name: '{0}'. It will be ignored", name);
+            LOGGER.log(Level.WARNING, "Read install state with blank name: ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
         
         InstallState state = InstallState.valueOf(name);
         if (state == null) {
-            LOGGER.log(Level.WARNING, "Cannot locate an extension point for the state '{0}'. It will be ignored", name);
+            LOGGER.log(Level.WARNING, "Cannot locate an extension point for the state ''{0}''. It will be ignored", name);
             return UNKNOWN;
         }
         
