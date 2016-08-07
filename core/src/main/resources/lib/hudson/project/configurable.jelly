@@ -37,6 +37,12 @@ THE SOFTWARE.
         </script>
     </j:if>
     <l:task confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}" href="${url}/doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" post="true" requiresConfirmation="true" title="${%delete(it.pronoun)}"/>
+
+    <j:set var="enableTitle" value="${it.disabled ? '%Enable Project' : '%Disable Project'}"/>
+    <j:set var="enableUrl" value="${it.disabled ? 'enable' : 'disable'}"/>
+    <!-- send POST then redirect to current page -->
+    <l:task title="${enableTitle}" permission="${it.CONFIGURE}" onclick="new Ajax.Request('${url}/${enableUrl}')" href="" icon="icon-secure icon-md"/>
+
     <j:choose>
         <j:when test="${h.hasPermission(it,it.CONFIGURE)}">
             <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%Configure}"/>
