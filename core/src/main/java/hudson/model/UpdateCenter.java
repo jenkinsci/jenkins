@@ -1466,7 +1466,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         }
                     });
                 } else {
-                    LOGGER.log(WARNING, "Update site '{0}' does not declare the connection check URL. "
+                    LOGGER.log(WARNING, "Update site ''{0}'' does not declare the connection check URL. "
                             + "Skipping the network availability check.", site.getId());
                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.SKIPPED);
                 }
