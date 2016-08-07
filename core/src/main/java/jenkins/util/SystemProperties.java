@@ -25,6 +25,7 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +88,8 @@ public class SystemProperties implements ServletContextListener {
      * Called by the servlet container to initialize the {@link ServletContext}.
      */
     @Override
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", 
+            justification = "Currently Jenkins instance may have one ond only one context")
     public void contextInitialized(ServletContextEvent event) {
         theContext = event.getServletContext();
     }

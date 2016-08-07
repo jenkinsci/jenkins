@@ -24,6 +24,7 @@
 package hudson;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACLContext;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
@@ -571,6 +572,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return loadPluginsFromWar(fromPath, null);
     }
 
+    //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
+    @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
     protected @Nonnull Set<String> loadPluginsFromWar(@Nonnull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet();
 
@@ -627,6 +630,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return names;
     }
 
+    //TODO: Consider refactoring in order to avoid DMI_COLLECTION_OF_URLS
+    @SuppressFBWarnings(value = "DMI_COLLECTION_OF_URLS", justification = "Plugin loading happens only once on Jenkins startup")
     protected static void addDependencies(URL hpiResUrl, String fromPath, Set<URL> dependencySet) throws URISyntaxException, MalformedURLException {
         if (dependencySet.contains(hpiResUrl)) {
             return;

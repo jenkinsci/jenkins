@@ -121,6 +121,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
@@ -2769,11 +2770,13 @@ public class Queue extends ResourceController implements Saveable {
             return x;
         }
 
+        @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
+                justification = "It will invoke the inherited clear() method according to Java semantics. "
+                              + "FindBugs recommends suppresing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);
-
-            clear();    // just to be sure
+            clear();
         }
     }
 

@@ -129,8 +129,10 @@ public class ListView extends View implements DirectlyModifiableView {
                 OldDataMonitor.report(this, Collections.<Throwable>singleton(x));
             }
         }
-        if (jobNames == null) {
-            jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+        synchronized(this) {
+            if (jobNames == null) {
+                jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+            }
         }
         initColumns();
         initJobFilters();

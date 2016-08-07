@@ -447,7 +447,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                                     new Object[]{ legacyUserDir, o });
                         }
                     } catch (IOException e) {
-                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from {0}: {1}",
+                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from %s: %s",
                                 new Object[]{ legacyUserDir, e.getMessage() }), e);
                     }
                 }
