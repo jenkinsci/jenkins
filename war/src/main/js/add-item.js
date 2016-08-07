@@ -100,25 +100,20 @@ $.when(getItems()).done(function(data) {
       });
     }
 
-
     function enableButton(status) {
       var btn = $('form .footer .btn-decorator button[type=submit]');
+
+      btn.prop('disabled', !status);
       if (status === true) {
-        if (btn.hasClass('disabled')) {
-          btn.removeClass('disabled');
-          btn.prop('disabled', false);
-        }
+        btn.removeClass('disabled');
       } else {
-        if (!btn.hasClass('disabled')) {
-          btn.addClass('disabled');
-          btn.prop('disabled', true);
-        }
+        btn.addClass('disabled');
       }
     }
 
     function focusButton(status) {
-      var btn = $('form .footer .btn-decorator button[type=submit]');
       if (status === true) {
+        var btn = $('form .footer .btn-decorator button[type=submit]');
         btn.focus();
       }
     }
