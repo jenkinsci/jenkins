@@ -264,14 +264,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("HTTP/1.0 200 OK\r\n");
                     o.write("Content-Type: text/plain;charset=UTF-8\r\n");
                     o.write("\r\n");
-                    o.write("Jenkins-Agent-Protocols: ");
-                    boolean first = true;
-                    for (AgentProtocol p : AgentProtocol.all()) {
-                        if (first)  first = false;
-                        else        o.write(",");
-                        o.write(p.getName());
-                    }
-                    o.write("\r\n");
+                    o.write("Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n");
                     o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
