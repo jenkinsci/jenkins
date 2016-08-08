@@ -1042,7 +1042,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if a connection to the update center server can't be established.
          */
         public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
-            testConnection(new URL(updateCenterUrl + "?uctest"));
+            if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
+                testConnection(new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest")));
+            } else {
+                testConnection(new URL(updateCenterUrl));
+            }
         }
 
         /**
