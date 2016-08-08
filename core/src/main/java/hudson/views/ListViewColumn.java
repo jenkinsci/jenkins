@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
 
 /**
  * Extension point for adding a column to a table rendering of {@link Item}s, such as {@link ListView}.
@@ -125,14 +126,14 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
         // OK, set up default list of columns:
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
-
+        final JSONObject emptyJSON = new JSONObject();
         for (Descriptor<ListViewColumn> d : ListViewColumn.all())
             try {
                 if (d instanceof ListViewColumnDescriptor) {
                     ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
                     if (!ld.shownByDefault())       continue;   // skip this
                 }
-                ListViewColumn lvc = d.newInstance(null, null);
+                ListViewColumn lvc = d.newInstance(null, emptyJSON);
                 if (!lvc.shownByDefault())      continue; // skip this
 
                 r.add(lvc);

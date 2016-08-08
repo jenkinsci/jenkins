@@ -74,7 +74,10 @@ public class RepositoryBrowsers {
         if(value==null || value.equals("auto"))
             return null;
 
-        return type.cast(list.get(Integer.parseInt(value)).newInstance(req,null/*TODO*/));
+        // TODO: There was a TODO in the original code, which presumes passing something meaningful to the newInstance() JSON param
+        // Now we just pass empty JSON in order to make the code compliant with the defined interface
+        final JSONObject emptyJSON = new JSONObject();
+        return type.cast(list.get(Integer.parseInt(value)).newInstance(req, emptyJSON));
     }
 
     /**

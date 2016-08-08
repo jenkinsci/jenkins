@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.17-SNAPSHOT</version>
+    <version>2.18-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -42,8 +42,8 @@ THE SOFTWARE.
     <stapler.version>1.243</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.7</groovy.version>
-    <!-- Currently there is a huge number of errors => we cannot fix all of them immediately -->
-    <findbugs.failOnError>false</findbugs.failOnError>
+    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
+    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
 
   <dependencies>

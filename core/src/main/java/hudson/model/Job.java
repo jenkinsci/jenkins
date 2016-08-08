@@ -816,7 +816,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) {
         try {
             // try to interpret the token as build number
-            return getBuildByNumber(Integer.valueOf(token));
+            return getBuildByNumber(Integer.parseInt(token));
         } catch (NumberFormatException e) {
             // try to map that to widgets
             for (Widget w : getWidgets()) {

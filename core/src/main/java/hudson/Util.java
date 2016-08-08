@@ -25,6 +25,7 @@ package hudson;
 
 import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.Proc.LocalProc;
@@ -405,6 +406,8 @@ public class Util {
      * @return false if it is ok to continue trying to delete things, true if
      *         we were interrupted (and should stop now).
      */
+    @SuppressFBWarnings(value = "DM_GC", justification = "Garbage collection happens only when "
+            + "GC_AFTER_FAILED_DELETE is true. It's an experimental feature in Jenkins.")
     private static boolean pauseBetweenDeletes(int numberOfAttemptsSoFar) {
         long delayInMs;
         if( numberOfAttemptsSoFar>=DELETION_MAX ) return false;

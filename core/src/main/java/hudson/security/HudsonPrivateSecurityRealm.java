@@ -570,6 +570,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                if (req == null) {
+                    // Should never happen, see newInstance() Javadoc
+                    throw new FormException("Stapler request is missing in the call", "staplerRequest");
+                }
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
                 String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
 

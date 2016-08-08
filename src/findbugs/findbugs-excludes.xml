@@ -12,13 +12,4 @@
       <Bug pattern="DM_DEFAULT_ENCODING"/>
     </Or>
   </Match>
-
-  <!-- exclude medium and low priorities -->
-  <!--TODO: Cleanup code and remove filtering of medium-priority issues-->
-  <Match>
-    <Priority value="2"/>
-  </Match>
-  <Match>
-    <Priority value="3"/>
-  </Match>
 </FindBugsFilter>

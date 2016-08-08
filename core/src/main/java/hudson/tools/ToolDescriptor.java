@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -59,6 +60,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * @return read-only list of installations;
      *      can be empty but never null.
      */
+    @SuppressWarnings("unchecked")
     public T[] getInstallations() {
         if (installations != null)
             return installations.clone();
@@ -70,9 +72,18 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
             return (T[])Array.newInstance(t,0);
         } else {
-            // can't infer the type. fallacbk
-            return (T[])new Object[0];
+            // can't infer the type. Fallback
+            return emptyArray_unsafeCast();
         }
+    }
+    
+    //TODO: Get rid of it? 
+    //It's unsafe according to http://stackoverflow.com/questions/2927391/whats-the-reason-i-cant-create-generic-array-types-in-java
+    @SuppressWarnings("unchecked")
+    @SuppressFBWarnings(value = "BC_IMPOSSIBLE_DOWNCAST",
+            justification = "Such casting is generally unsafe, but we use it as a last resort.")
+    private T[] emptyArray_unsafeCast() {
+        return (T[])new Object[0];
     }
 
     /**

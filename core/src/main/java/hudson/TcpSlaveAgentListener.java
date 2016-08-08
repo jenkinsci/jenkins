@@ -23,6 +23,9 @@
  */
 package hudson;
 
+import java.io.ByteArrayInputStream;
+import java.io.SequenceInputStream;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
@@ -50,7 +53,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -202,7 +207,19 @@ public final class TcpSlaveAgentListener extends Thread {
                         new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
                         true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
-                String s = in.readUTF();
+                // peek the first few bytes to determine what to do with this client
+                byte[] head = new byte[10];
+                in.readFully(head);
+
+                String header = new String(head, Charsets.US_ASCII);
+                if (header.startsWith("GET ")) {
+                    // this looks like an HTTP client
+                    respondHello(header,s);
+                    return;
+                }
+
+                // otherwise assume this is AgentProtocol and start from the beginning
+                String s = new DataInputStream(new SequenceInputStream(new ByteArrayInputStream(head),in)).readUTF();
 
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
@@ -232,6 +249,49 @@ public final class TcpSlaveAgentListener extends Thread {
                 } catch (IOException _) {
                     // try to clean up the socket
                 }
+            }
+        }
+
+        /**
+         * Respond to HTTP request with simple diagnostics.
+         * Primarily used to test the low-level connectivity.
+         */
+        private void respondHello(String header, Socket s) throws IOException {
+            try {
+                Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
+
+                if (header.startsWith("GET / ")) {
+                    o.write("HTTP/1.0 200 OK\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
+                    o.write("Jenkins-Agent-Protocols: ");
+                    boolean first = true;
+                    for (AgentProtocol p : AgentProtocol.all()) {
+                        if (first)  first = false;
+                        else        o.write(",");
+                        o.write(p.getName());
+                    }
+                    o.write("\r\n");
+                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
+                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
+                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
+                    o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
+                    o.flush();
+                    s.shutdownOutput();
+                } else {
+                    o.write("HTTP/1.0 404 Not Found\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
+                    o.write("Not Found\r\n");
+                    o.flush();
+                    s.shutdownOutput();
+                }
+
+                InputStream i = s.getInputStream();
+                IOUtils.copy(i, new NullOutputStream());
+                s.shutdownInput();
+            } finally {
+                s.close();
             }
         }
 

@@ -1,5 +1,6 @@
 package jenkins.slaves;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.Util;
@@ -80,6 +81,8 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
      * an escape hatch for those who hit any issues and those who are trying this out.
      */
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_REFACTORED_TO_BE_FINAL",
+            justification = "Part of the administrative API for System Groovy scripts.")
     public static boolean ENABLED;
     private static final Boolean forceEnabled;
 
