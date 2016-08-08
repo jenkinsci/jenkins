@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,31 +31,32 @@ import java.io.OutputStream;
 
 /**
  * {@link OutputStream} that writes to a file.
- *
  * <p>
- * Unlike regular {@link FileOutputStream}, this implementation allows the caller to close,
- * and then keep writing.
- *
- * @author Kohsuke Kawaguchi
- * @deprecated due to risk for file leak. Prefer {@link RewindableFileOutputStream}
+ * Allows the caller to rewind the stream and override previous content with fresh new data.
  */
-@Deprecated public class ReopenableFileOutputStream extends OutputStream {
+public class RewindableFileOutputStream extends OutputStream {
     protected final File out;
+    private boolean closed;
 
     private OutputStream current;
-    private boolean appendOnNextOpen = false;
 
-    public ReopenableFileOutputStream(File out) {
+    public RewindableFileOutputStream(File out) {
         this.out = out;
     }
 
     private synchronized OutputStream current() throws IOException {
-        if (current==null)
-            try {
-                current = new FileOutputStream(out,appendOnNextOpen);
-            } catch (FileNotFoundException e) {
-                throw new IOException("Failed to open "+out,e);
+        if (current == null) {
+            if (!closed) {
+                try {
+                    current = new FileOutputStream(out,false);
+                } catch (FileNotFoundException e) {
+                    throw new IOException("Failed to open "+out,e);
+                }
             }
+            else {
+                throw new IOException(out.getName()+" stream is closed");
+            }
+        }
         return current;
     }
 
@@ -81,18 +82,21 @@ import java.io.OutputStream;
 
     @Override
     public synchronized void close() throws IOException {
-        if (current!=null) {
-            current.close();
-            appendOnNextOpen = true;
-            current = null;
-        }
+        closeCurrent();
+        closed = true;
     }
 
     /**
      * In addition to close, ensure that the next "open" would truncate the file.
      */
     public synchronized void rewind() throws IOException {
-        close();
-        appendOnNextOpen = false;
+        closeCurrent();
+    }
+
+    private void closeCurrent() throws IOException {
+        if (current != null) {
+            current.close();
+            current = null;
+        }
     }
 }
