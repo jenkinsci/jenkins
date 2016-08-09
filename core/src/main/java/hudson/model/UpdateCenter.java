@@ -1042,11 +1042,23 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if a connection to the update center server can't be established.
          */
         public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
+            testConnection(toUpdateCenterCheckUrl(updateCenterUrl));
+        }
+
+        /**
+         * Converts an update center URL into the URL to use for checking its connectivity.
+         * @param updateCenterUrl the URL to convert.
+         * @return the converted URL.
+         * @throws MalformedURLException if the supplied URL is malformed.
+         */
+        static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
+            URL url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                testConnection(new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest")));
+                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
             } else {
-                testConnection(new URL(updateCenterUrl));
+                url = new URL(updateCenterUrl);
             }
+            return url;
         }
 
         /**
