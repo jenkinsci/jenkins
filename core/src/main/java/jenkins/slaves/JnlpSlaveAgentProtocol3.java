@@ -117,7 +117,6 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
 
     /**
      * Flag to control the activation of JNLP3 protocol.
-     * This feature is being A/B tested right now.
      *
      * <p>
      * Once this will be on by default, the flag and this field will disappear. The system property is
@@ -129,11 +128,8 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     static {
         String propName = JnlpSlaveAgentProtocol3.class.getName() + ".enabled";
         String propertyString = SystemProperties.getString(propName);
-        if (propertyString != null)
+        if (propertyString != null) {
             ENABLED = SystemProperties.getBoolean(propName);
-        else {
-            byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
-            ENABLED = (hash%10)==0;
         }
     }
 }
