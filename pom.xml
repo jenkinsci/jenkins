@@ -180,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.62-SNAPSHOT</version> <!-- TODO pick up release of remoting -->
+        <version>3.0-20160811.154802-1</version> <!-- TODO pick up release of remoting -->
       </dependency>
 
       <dependency>
