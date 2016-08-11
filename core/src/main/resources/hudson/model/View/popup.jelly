@@ -13,7 +13,7 @@
         </div>
       </div>
 
-      <div class="categories flat" role="radiogroup" aria-labelledby="Items" />
+      <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" />
 
       <j:if test="${!empty(app.itemMap)}">
         <div class="item-copy">
