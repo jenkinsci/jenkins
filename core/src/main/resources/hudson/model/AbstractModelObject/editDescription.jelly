@@ -33,7 +33,9 @@ THE SOFTWARE.
       <form action="submitDescription" method="post">
         <table>
           <f:entry help="${app.markupFormatter.helpUrl}">
-            <f:textarea name="description" value="${it.description}"
+            <!-- JENKINS-37360: Since Jenkins has a description (system message), prevent that from showing here.
+             Instead, use primary view's, as Jenkins's cannot be edited anyway (see Jenkins#submitDescription) -->
+            <f:textarea name="description" value="${it == app ? it.primaryView.description : it.description}"
                         codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </table>
