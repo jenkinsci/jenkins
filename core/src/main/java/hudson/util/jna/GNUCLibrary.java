@@ -29,6 +29,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Native;
 import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
+import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import jnr.posix.POSIX;
 import org.jvnet.libpam.impl.CLibrary.passwd;
@@ -74,8 +75,10 @@ public interface GNUCLibrary extends Library {
     int chown(String fileName, int uid, int gid);
     int chmod(String fileName, int i);
 
+    int open(String pathname, int flags) throws LastErrorException;
     int dup(int old);
     int dup2(int old, int _new);
+    long pread(int fd, Memory buffer, NativeLong size, NativeLong offset) throws LastErrorException;
     int close(int fd);
 
     // see http://www.gnu.org/s/libc/manual/html_node/Renaming-Files.html
