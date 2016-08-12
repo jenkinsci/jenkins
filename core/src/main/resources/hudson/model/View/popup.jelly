@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <div class="remodal new-job-popup" data-remodal-id="newjob" id="add-item-panel">
-    <form method="post" action="createItem" name="createItem" id="createItem">
+    <form method="post" action="${rootURL}/${it.viewUrl}createItem" name="createItem" id="createItem">
       <div class="header">
         <div class="add-item-name">
           <label for="name">${%ItemName.label}</label>
