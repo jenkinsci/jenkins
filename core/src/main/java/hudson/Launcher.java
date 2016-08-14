@@ -1147,7 +1147,7 @@ public abstract class Launcher {
 
             final Proc p = ps.start();
 
-            return Channel.current().export(RemoteProcess.class,new RemoteProcess() {
+            return Channel.current().exportAsyncObject(RemoteProcess.class,new RemoteProcess() {
                 public int join() throws InterruptedException, IOException {
                     try {
                         return p.join();
