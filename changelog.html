@@ -56,7 +56,35 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Better diagnostics and robustness against old <code>ChangeLogAnnotator</code> API usage in plugins.
+    Enhances <a href="https://issues.jenkins-ci.org/browse/JENKINS-23365">JENKINS-23365</a> fix in 1.569.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36757">issue 36757</a>)
+  <li class="bug">
+    Prevent open file leak when the agent channel <code>onClose()</code> listener writes to the already closed log.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37098">issue 37098</a>)
+  <li class="major bug">
+    Stop A/B testing of the remoting JNLP3 protocol due to the known issues.
+    The protocol can be enabled manually via the <code>jenkins.slaves.JnlpSlaveAgentProtocol3.enabled</code>
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">system property</a>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37315">issue 37315</a>)
+  <li class="bug">
+    When checking Update Center, append <code>?uctest</code> parameter to HTTP and HTTPS URLs only.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37189">issue 37189</a>)
+  <li class="bug">
+    Incorrect formatting of messages in the Upate Center and Setup Wizard.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36757">issue 36757</a>)
+  <li class="bug">
+    Massive cleanup of issues reported by FindBugs.
+    User-visible issues - wrong log message formatting bugs in the Update Center and user creation logic.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36717">issue 36717</a>,
+    <a href="https://github.com/jenkinsci/jenkins/pull/2459">PR #2459</a>)
+  <li class="rfe">
+    Improve German, Lithuanian and Bulgarian translations. 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2473">PR #2473</a>,
+     <a href="https://github.com/jenkinsci/jenkins/pull/2470">PR #2470</a>,
+     <a href="https://github.com/jenkinsci/jenkins/pull/2498">PR #2498</a>
+     )
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.17>What's new in 2.17</a> (2016/08/05)</h3>
