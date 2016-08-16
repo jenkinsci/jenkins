@@ -40,6 +40,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
 import org.apache.commons.io.FileUtils;
+
+import hudson.model.TopLevelItem;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -64,6 +66,11 @@ import jenkins.util.xml.XMLUtils;
  */
 @Restricted(NoExternalUse.class)
 public class InstallUtil {
+
+    /**
+     * If a file with the given name is found under an item directory, it won't cause the setup wizard to switch to upgrade mode.
+     */
+    public static final String BUILT_IN_MARKER_FILE = ".builtIn";
 
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
@@ -181,10 +188,7 @@ public class InstallUtil {
                 }
             }
 
-            // Edge case: used Jenkins 1 but did not save the system config page,
-            // the version is not persisted and returns 1.0, so try to check if
-            // they actually did anything
-            if (!j.getItemMap().isEmpty() || !j.getNodes().isEmpty()) {
+            if (isEdgeCaseUpgrade()) {
                 return InstallState.UPGRADE;
             }
             
@@ -202,6 +206,21 @@ public class InstallUtil {
             // Last running version was the same as "this" running version.
             return InstallState.RESTART;
         }
+    }
+
+    private static boolean isEdgeCaseUpgrade() {
+        Jenkins j = Jenkins.getInstance();
+        // Edge case: used Jenkins 1 but did not save the system config page,
+        // the version is not persisted and returns 1.0, so try to check if
+        // they actually did anything
+        Map<String, TopLevelItem> items = new HashMap<String, TopLevelItem>(j.getItemMap());
+        for (Iterator<Map.Entry<String, TopLevelItem>> it = items.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, TopLevelItem> entry = it.next();
+            if (new File(entry.getValue().getRootDir(), BUILT_IN_MARKER_FILE).exists()) {
+                it.remove();
+            }
+        }
+        return !items.isEmpty() || !j.getNodes().isEmpty();
     }
 
     /**
