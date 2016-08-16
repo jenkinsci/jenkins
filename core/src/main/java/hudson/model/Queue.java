@@ -1412,7 +1412,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 // pending -> buildable
                 for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.INFO,
+                    LOGGER.log(Level.FINE,
                             "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
                             p.task.getFullDisplayName());
                     p.isPending = false;
