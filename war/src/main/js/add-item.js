@@ -247,10 +247,10 @@ $.when(getItems()).done(function(data) {
           var message = parseResponseFromCheckJobName(data);
           if (message !== '') {
             activateValidationMessage('#itemname-invalid', '.add-item-name', message);
-            $('input[name="name"]').addClass("warning-input");
+            $('input[name="name"]').addClass("job-name_incorrect");
           } else {
             cleanValidationMessages('.add-item-name');
-            $('input[name="name"]').removeClass("warning-input");
+            $('input[name="name"]').removeClass("job-name_incorrect");
             showInputHelp('.add-item-name');
             setFieldValidationStatus('name', true);
             if (getFormValidationStatus()) {
