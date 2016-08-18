@@ -176,7 +176,6 @@ $.when(getItems()).done(function(data) {
 
         setFieldValidationStatus('items', true);
         if (!getFieldValidationStatus('name')) {
-          activateValidationMessage('#itemname-required', '.add-item-name');
           $('input[name="name"][type="text"]', '#createItem').focus();
         } else {
           if (getFormValidationStatus()) {
