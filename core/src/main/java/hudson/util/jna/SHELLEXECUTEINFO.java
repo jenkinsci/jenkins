@@ -26,6 +26,7 @@ package hudson.util.jna;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.Union;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,6 +57,7 @@ typedef struct _SHELLEXECUTEINFO {
  * @author Kohsuke Kawaguchi
  * @see <a href="http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx">MSDN: SHELLEXECUTEINFO</a>
  */
+@SuppressFBWarnings(value = "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", justification = "JNA Data Structure")
 public class SHELLEXECUTEINFO extends Structure {
     public int cbSize = size();
     public int fMask;
@@ -85,6 +87,7 @@ public class SHELLEXECUTEINFO extends Structure {
                 "hProcess");
     }
 
+    @SuppressFBWarnings(value = "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", justification = "JNA Data Structure")
     public static class DUMMYUNIONNAME_union extends Union {
         public Pointer hIcon;
         public Pointer hMonitor;

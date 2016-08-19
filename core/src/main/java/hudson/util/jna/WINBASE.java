@@ -17,6 +17,7 @@ package hudson.util.jna;
 
 import com.sun.jna.Structure;
 import com.sun.jna.Pointer;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +34,7 @@ typedef struct _SECURITY_ATTRIBUTES {
 } SECURITY_ATTRIBUTES,
  *PSECURITY_ATTRIBUTES,
  *LPSECURITY_ATTRIBUTES;*/
+  @SuppressFBWarnings(value = "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", justification = "JNA Data Structure")
   class SECURITY_ATTRIBUTES extends Structure {
     public int nLength;
     public Pointer lpSecurityDescriptor;
@@ -50,6 +52,7 @@ typedef struct _FILETIME {
     DWORD dwLowDateTime;
     DWORD dwHighDateTime;
 } FILETIME, *PFILETIME, *LPFILETIME;*/
+  @SuppressFBWarnings(value = "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", justification = "JNA Data Structure")
   class FILETIME extends Structure {
     public int dwLowDateTime;
     public int dwHighDateTime;
