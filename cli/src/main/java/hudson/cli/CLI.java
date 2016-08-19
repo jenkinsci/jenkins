@@ -188,6 +188,9 @@ public class CLI {
                 rsp.write(ch);
             }
             String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
+            if (head == null) {
+                throw new IOException("Unexpected empty response");
+            }
             if (!head.startsWith("HTTP/1.0 200 "))
                 throw new IOException("Failed to establish a connection through HTTP proxy: "+rsp);
 
