@@ -142,8 +142,6 @@ import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
 import java.util.jar.JarEntry;
@@ -954,7 +952,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
-        long lastModified = src.openConnection().getLastModified();
+        long lastModified = getModificationDate(src);
         File file = new File(rootDir, fileName);
 
         // normalization first, if the old file exists.
@@ -965,7 +963,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(src.openConnection().getLastModified());
+            file.setLastModified(getModificationDate(src));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -1029,6 +1027,34 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         
         return in;
+    }
+    
+    @Nonnull
+    private static long getModificationDate(@Nonnull URL url) throws IOException {
+        URLConnection uc = url.openConnection();
+        
+        // It prevents file desciptor leak if the URL references a file within JAR
+        // See JENKINS-37332  for more info
+        // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
+        if (uc instanceof JarURLConnection) {
+            final JarURLConnection connection = (JarURLConnection) uc;
+            final URL jarURL = connection.getJarFileURL();
+            if (jarURL.getProtocol().equals("file")) {
+                uc = null;
+                String file = jarURL.getFile();
+                return new File(file).lastModified();
+            } else {
+                // We access the data without file protocol
+                if (connection.getEntryName() != null) {
+                    LOGGER.log(WARNING, "Accessing modification date of {0} file, which is an entry in JAR file. "
+                        + "The access protocol is not file:, falling back to the default logic (risk of file descriptor leak).",
+                            url);
+                }
+            }
+        }
+        
+        // Fallbak to the default implementation
+        return uc.getLastModified();
     }
 
     /**
