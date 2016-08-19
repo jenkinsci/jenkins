@@ -982,7 +982,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return manifest;
                 }
             } finally {
-                IOUtils.closeQuietly(in);
+                Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());
                 if (cl instanceof Closeable)
                     ((Closeable)cl).close();
             }
