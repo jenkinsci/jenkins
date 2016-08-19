@@ -306,15 +306,22 @@ public class XStream2 extends XStream {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class<?> t) {
+        @CheckForNull
+        private Converter findConverter(@CheckForNull Class<?> t) {
+            if (t == null) {
+                return null;
+            }
+            
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
-                if(t==null || t.getClassLoader()==null)
+                final ClassLoader classLoader = t.getClassLoader();
+                if(classLoader == null) {
                     return null;
-                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
+                }
+                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
