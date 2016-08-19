@@ -363,6 +363,30 @@ describe("pluginSetupWizard.js", function () {
         }, ajaxMappings);
     });
 
+    it("restart not required", function (done) {
+        var ajaxMappings = {
+            '/jenkins/setupWizard/restartStatus': {
+                status: 'ok',
+                data: {
+                    restartRequired: false,
+                    restartSupported: false,
+                }
+            },
+            '/jenkins/updateCenter/installStatus': {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_SETUP_COMPLETED',
+                    jobs: [],
+                }
+            },
+        };
+        test(function($) {
+            expect($('.install-done').size()).toBe(1);
+            expect($('.install-done-restart').size()).toBe(0);
+            done();
+        }, ajaxMappings);
+    });
+
     it("resume install", function (done) {
         var ajaxMappings = {
         '/jenkins/updateCenter/incompleteInstallStatus': {
