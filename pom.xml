@@ -504,7 +504,7 @@ THE SOFTWARE.
           <version>${findbugs-maven-plugin.version}</version>
           <configuration>
             <effort>Max</effort>
-            <threshold>High</threshold>
+            <threshold>Medium</threshold>
             <!--Excludes file is located on the top level-->
             <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
             <xmlOutput>true</xmlOutput>
