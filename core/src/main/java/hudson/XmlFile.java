@@ -51,6 +51,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -205,9 +206,20 @@ public final class XmlFile {
      * Opens a {@link Reader} that loads XML.
      * This method uses {@link #sniffEncoding() the right encoding},
      * not just the system default encoding.
+     * @throws IOException Encoding issues
+     * @return Reader for the file. should be close externally once read.
      */
     public Reader readRaw() throws IOException {
-        return new InputStreamReader(new FileInputStream(file),sniffEncoding());
+        FileInputStream fileInputStream = new FileInputStream(file);
+        try {
+            return new InputStreamReader(fileInputStream, sniffEncoding());
+        } catch(IOException ex) {
+            // Exception may happen if we fail to find encoding or if this encoding is unsupported.
+            // In such case we close the underlying stream and rethrow.
+            // If close() fails, we will throw its exception as the more important one.
+            fileInputStream.close();
+            throw ex;
+        }
     }
 
     /**
