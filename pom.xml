@@ -918,5 +918,17 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>skip-findbugs-with-tests</id>
+       <activation>
+         <property>
+           <name>skipTests</name>
+           <value>true</value>
+         </property>
+       </activation>
+       <properties>
+        <findbugs.skip>true</findbugs.skip>
+      </properties>
+    </profile>
   </profiles>
 </project>
