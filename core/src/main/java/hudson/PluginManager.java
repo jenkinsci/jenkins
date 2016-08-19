@@ -974,7 +974,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
+    /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
@@ -996,8 +996,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return null;
     }
     
+    /**
+     * Retrieves input stream for the Manifest url.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the manifest file
+     * @return Input stream, which allows to retrieve manifest. This stream must be closed outside
+     * @throws IOException Operation error
+     */
     @Nonnull
-    private static InputStream getBundledJpiManifestStream(@Nonnull URL url) throws IOException {
+    /*package*/ static InputStream getBundledJpiManifestStream(@Nonnull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
@@ -1029,8 +1036,15 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return in;
     }
     
+    /**
+     * Retrieves modification date of the specified file.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the file
+     * @return Modification date
+     * @throws IOException Operation error
+     */
     @Nonnull
-    private static long getModificationDate(@Nonnull URL url) throws IOException {
+    /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         
         // It prevents file desciptor leak if the URL references a file within JAR
