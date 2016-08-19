@@ -23,6 +23,7 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
@@ -138,6 +139,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     // Backwards compatibility for older builds
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", 
+            justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
     public Object readResolve() {
         if (allowEmptyArchive == null) {
             this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
@@ -225,7 +228,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             return;
         }
 
-        if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
+        Result result = build.getResult();
+        if (onlyIfSuccessful && result != null && result.isWorseThan(Result.UNSTABLE)) {
             listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return;
         }
@@ -241,7 +245,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }
             } else {
-                Result result = build.getResult();
+                result = build.getResult();
                 if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
