@@ -93,6 +93,13 @@ public class PluginManagerTest {
         assertThat("manifest should have been read from the sample", manifest, notNullValue());
         assertAttribute(manifest, "Created-By", "Apache Maven");
         assertAttribute(manifest, "Short-Name", "matrix-auth");
+        
+        // Multi-line entries
+        assertAttribute(manifest, "Specification-Title", "Offers matrix-based security authorization strategies (global and per-project).");
+        assertAttribute(manifest, "Url", "http://wiki.jenkins-ci.org/display/JENKINS/Matrix+Authorization+Strategy+Plugin");
+    
+        // Empty field
+        assertAttribute(manifest, "Plugin-Developers", null);
     }
     
     @Test
@@ -101,7 +108,7 @@ public class PluginManagerTest {
         URL url = toManifestUrl(jar);
         assertThat("Manifest last modified date should be equal to the file date", 
                 PluginManager.getModificationDate(url), 
-                equalTo(jar.lastModified()));    
+                equalTo(jar.lastModified()));
     }
     
     private static void assertAttribute(Manifest manifest, String attributeName, String value) throws AssertionError {
@@ -119,7 +126,9 @@ public class PluginManagerTest {
                 "Built-By: jglick\n" +
                 "Build-Jdk: 1.8.0_92\n" +
                 "Extension-Name: matrix-auth\n" +
-                "Specification-Title: Offers matrix-based security authorization strate\n" +
+                "Specification-Title: \n" +
+                " Offers matrix-based security \n" +
+                " authorization strate\n" +
                 " gies (global and per-project).\n" +
                 "Implementation-Title: matrix-auth\n" +
                 "Implementation-Version: 1.4\n" +
