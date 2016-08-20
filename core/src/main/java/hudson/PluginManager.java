@@ -141,6 +141,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
+import java.io.ByteArrayInputStream;
+import java.net.JarURLConnection;
+import java.net.URLConnection;
+import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
@@ -948,7 +952,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
-        long lastModified = src.openConnection().getLastModified();
+        long lastModified = getModificationDate(src);
         File file = new File(rootDir, fileName);
 
         // normalization first, if the old file exists.
@@ -959,7 +963,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(src.openConnection().getLastModified());
+            file.setLastModified(getModificationDate(src));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -970,19 +974,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
+    /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
                 if (res!=null) {
-                    in = res.openStream();
+                    in = getBundledJpiManifestStream(res);
                     Manifest manifest = new Manifest(in);
                     return manifest;
                 }
             } finally {
-                IOUtils.closeQuietly(in);
+                Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());
                 if (cl instanceof Closeable)
                     ((Closeable)cl).close();
             }
@@ -990,6 +994,81 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
         }
         return null;
+    }
+    
+    /**
+     * Retrieves input stream for the Manifest url.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the manifest file
+     * @return Input stream, which allows to retrieve manifest. This stream must be closed outside
+     * @throws IOException Operation error
+     */
+    @Nonnull
+    /*package*/ static InputStream getBundledJpiManifestStream(@Nonnull URL url) throws IOException {
+        URLConnection uc = url.openConnection();
+        InputStream in = null;
+        // Magic, which allows to avoid using stream generated for JarURLConnection.
+        // It prevents getting into JENKINS-37332 due to the file desciptor leak 
+        if (uc instanceof JarURLConnection) {
+            final JarURLConnection jarURLConnection = (JarURLConnection) uc;
+            final String entryName = jarURLConnection.getEntryName();
+            
+            try(final JarFile jarFile = jarURLConnection.getJarFile()) {
+                final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
+                if (entry != null && jarFile != null) {
+                    try(InputStream i = jarFile.getInputStream(entry)) {
+                        byte[] manifestBytes = IOUtils.toByteArray(i);
+                        in = new ByteArrayInputStream(manifestBytes);
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Failed to locate the JAR file for {0}"
+                            + "The default URLConnection stream access will be used, file descriptor may be leaked.",
+                               url);
+                }
+            }
+        } 
+
+        // If input stream is undefined, use the default implementation
+        if (in == null) {
+            in = url.openStream();
+        }
+        
+        return in;
+    }
+    
+    /**
+     * Retrieves modification date of the specified file.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the file
+     * @return Modification date
+     * @throws IOException Operation error
+     */
+    @Nonnull
+    /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
+        URLConnection uc = url.openConnection();
+        
+        // It prevents file desciptor leak if the URL references a file within JAR
+        // See JENKINS-37332  for more info
+        // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
+        if (uc instanceof JarURLConnection) {
+            final JarURLConnection connection = (JarURLConnection) uc;
+            final URL jarURL = connection.getJarFileURL();
+            if (jarURL.getProtocol().equals("file")) {
+                uc = null;
+                String file = jarURL.getFile();
+                return new File(file).lastModified();
+            } else {
+                // We access the data without file protocol
+                if (connection.getEntryName() != null) {
+                    LOGGER.log(WARNING, "Accessing modification date of {0} file, which is an entry in JAR file. "
+                        + "The access protocol is not file:, falling back to the default logic (risk of file descriptor leak).",
+                            url);
+                }
+            }
+        }
+        
+        // Fallbak to the default implementation
+        return uc.getLastModified();
     }
 
     /**
