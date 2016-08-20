@@ -1623,6 +1623,28 @@ public class Util {
         p.load(new StringReader(properties));
         return p;
     }
+    
+    /**
+     * Closes the item and logs error to the log in the case of error.
+     * Logging will be performed on the {@code WARNING} level.
+     * @param toClose Item to close. Nothing will happen if it is {@code null}
+     * @param logger Logger, which receives the error
+     * @param closeableName Name of the closeable item
+     * @param closeableOwner String representation of the closeable holder
+     * @since TODO once merged to the master and un-restricted
+     */
+    @Restricted(NoExternalUse.class)
+    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 
+            @Nonnull String closeableName, @Nonnull String closeableOwner) {
+        if (toClose == null) {
+            return;
+        }
+        try {
+            toClose.close();
+        } catch(IOException ex) {
+            logger.log(Level.WARNING, String.format("Failed to close %s of %s", closeableName, closeableOwner), ex);
+        }
+    }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
