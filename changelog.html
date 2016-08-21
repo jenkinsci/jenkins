@@ -56,7 +56,31 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    Prevent File descriptor leaks when reading plugin manifests.
+    It causes failures during the upgrade of detached plugins on Windows.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37332">issue 37332</a>, regression in 2.16)
+  <li class="bug">
+    Prevent resource leaks in <code>AntClassLoader</code> being used in the core.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37561">issue 37561</a>)
+  <li class="bug">
+    Fix the wrong message about empty field in the case duplicate item name in the New Item dialog.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34532">issue 34532</a>)
+  <li class="rfe">
+    Allow invoking Upgrade Wizard when Jenkins starts up.
+    It can be done by placing an empty <code>jenkins.install.InstallUtil.lastExecVersion</code> file 
+    in <code>JENKINS_HOME</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37438">issue 37438</a>)
+  <li class="rfe">
+    Replace repetitious &quot;website&quot; and &quot;dependencies&quot; text in the Setup Wizard by icons.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37523">issue 37523</a>)
+  <li class="rfe">
+    Expose Job name to system logs when Jenkins fails to create a new build with <code>IllegalStateException</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33549">issue 33549</a>)
+  <li class="rfe">
+    Downgrade <code>Queue#maintain()</code> message for dead executors during task mapping 
+    from <code>INFO</code> to <code>FINE</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2510">PR #2510</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.18>What's new in 2.18</a> (2016/08/15)</h3>
