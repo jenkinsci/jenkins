@@ -492,16 +492,29 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
+        /*
+         *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
+         *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
+         *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
+         *  you have to go through BasicFileAttributes and do the following check:
+         *     isSymbolicLink() || isOther()
+         *  The isOther() call will include Windows reparse points, of which a directory junction is.
+         *
+         *  Since we already have a function that detects Windows junctions or symlinks and treats them
+         *  both as symlinks, let's use that function and always call it before calling down to the
+         *  NIO2 API.
+         *
+         */
         if (Functions.isWindows()) {
             try {
                 return Kernel32Utils.isJunctionOrSymlink(file);
             } catch (UnsupportedOperationException | LinkageError e) {
                 // fall through
             }
+        }
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
         }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
