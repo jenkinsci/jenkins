@@ -310,6 +310,19 @@ public class SetupWizard extends PageDecorator {
     }
     
     /**
+     * Returns whether the system needs a restart, and if it is supported
+     * e.g. { restartRequired: true, restartSupported: false }
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doRestartStatus() throws IOException {
+        JSONObject response = new JSONObject();
+        Jenkins jenkins = Jenkins.getInstance();
+        response.put("restartRequired", jenkins.getUpdateCenter().isRestartRequiredForCompletion());
+        response.put("restartSupported", jenkins.getLifecycle().canRestart());
+        return HttpResponses.okJSON(response);
+    }
+
+    /**
      * Provides the list of platform plugin updates from the last time
      * the upgrade was run.
      * @return {@code null} if the version range cannot be retrieved.
