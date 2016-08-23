@@ -35,7 +35,7 @@ public abstract class URLFactory implements ExtensionPoint {
     static class ClassicURLFactory extends URLFactory {
         @Override
         public String getRunURL(Run<?, ?> run) {
-            return JenkinsLocationConfiguration.get().getUrl() + run.getUrl();
+            return getRoot() + run.getUrl();
         }
 
         @Override
@@ -45,7 +45,15 @@ public abstract class URLFactory implements ExtensionPoint {
 
         @Override
         public String getProjectURL(Item project) {
-            return JenkinsLocationConfiguration.get().getUrl() + project.getUrl();
+            return getRoot() + project.getUrl();
+        }
+
+        static String getRoot() {
+            String root = Jenkins.getInstance().getRootUrl();
+            if (root.endsWith("/")) {
+                root = root.substring(0, root.length() - 1);
+            }
+            return root;
         }
     }
 }
