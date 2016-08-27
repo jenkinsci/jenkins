@@ -1160,8 +1160,8 @@ table.parameters > tbody:hover {
 .comboBoxList {
   border: 1px solid #000;
   overflow: visible;
-  color: MenuText;
-  background-color: Menu;
+  background-color: white;
+  color: black;
 }
 .comboBoxSelectedItem {
   background-color: Highlight;
