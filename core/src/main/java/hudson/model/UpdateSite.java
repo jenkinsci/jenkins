@@ -260,7 +260,7 @@ public class UpdateSite {
      *              if name is null, then the default name will be used,
      *              which is "update site" followed by the update site id
      * @return the signature validator.
-     * @since 2.15
+     * @since 2.20
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
@@ -450,7 +450,7 @@ public class UpdateSite {
      * URL which exposes the metadata location in a specific update site.
      * @param downloadable, the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
      * @return the location
-     * @since 2.15
+     * @since 2.20
      */
     @CheckForNull
     @Restricted(NoExternalUse.class)
