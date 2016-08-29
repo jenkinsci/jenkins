@@ -263,7 +263,6 @@ public class UpdateSite {
      * @since 2.20
      */
     @Nonnull
-    @Restricted(NoExternalUse.class)
     protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
         if (name == null) {
             name = signatureValidatorPrefix + " '" + id + "'";
