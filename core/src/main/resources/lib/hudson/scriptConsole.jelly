@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 <!--
   Called from doScript() to display the execution result and the form.
-  use <t:scriptConsole icon="computer.png"> to override the default icon
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
@@ -32,8 +31,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <j:if test="${icon == null}">
+      <j:if test="${it.icon == null}">
         <j:set var="icon" value="notepad.png"/>
+      </j:if>
+      <j:if test="${it.icon != null}">
+        <j:set var="icon" value="${it.icon}"/>
       </j:if>
       <h1><img src="${imagesURL}/48x48/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
