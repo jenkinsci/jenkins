@@ -911,10 +911,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // Ensure we reached the final initialization state. Log the error otherwise
             if (initLevel != InitMilestone.COMPLETED) {
                 LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the startup. " +
-                                "Current state: {0}." +
-                                "It is likely an issue with the Initialization task graph." +
-                                "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759)." +
-                                "Please create a bug in Jenkins bugtracker.",
+                                "Current state: {0}. " +
+                                "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                                "It is likely an issue with the Initialization task graph. " +
+                                "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
+                                "Please create a bug in Jenkins bugtracker. ",
                         initLevel);
             }
 
@@ -3854,9 +3855,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // Ensure we reached the final initialization state. Log the error otherwise
         if (initLevel != InitMilestone.COMPLETED) {
             LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the configuration reload. " +
-                            "Current state: {0}." +
-                            "It is likely an issue with the Initialization task graph." +
-                            "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759)." +
+                            "Current state: {0}. " +
+                            "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                            "It is likely an issue with the Initialization task graph. " +
+                            "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
                             "Please create a bug in Jenkins bugtracker.",
                     initLevel);
         }
