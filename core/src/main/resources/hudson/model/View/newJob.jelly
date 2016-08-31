@@ -66,7 +66,7 @@ THE SOFTWARE.
 
             <div class="footer">
               <div class="btn-decorator">
-                <button type="submit" id="ok-button">OK</button>
+                <st:include page="newJob_button-bar.jelly"/>
               </div>
             </div>
           </form>
