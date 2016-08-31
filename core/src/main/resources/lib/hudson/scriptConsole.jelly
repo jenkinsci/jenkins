@@ -31,12 +31,14 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <j:if test="${it.icon == null}">
-        <j:set var="icon" value="notepad.png"/>
-      </j:if>
-      <j:if test="${it.icon != null}">
-        <j:set var="icon" value="${it.icon}"/>
-      </j:if>
+      <j:choose>
+        <j:when test="${it.icon == null}">
+          <j:set var="icon" value="notepad.png"/>
+        </j:when>
+        <j:otherwise>
+          <j:set var="icon" value="${it.icon}"/>
+        </j:otherwise>
+      </j:choose>
       <h1><img src="${imagesURL}/48x48/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
       <j:choose>
