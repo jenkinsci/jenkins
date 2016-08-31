@@ -111,7 +111,6 @@ public class SCMTrigger extends Trigger<Item> {
      *     The spec to poll with.
      * @param ignorePostCommitHooks
      *     Whether to ignore post commit hooks.
-     * @throws ANTLRException
      *
      * @deprecated since 2.21
      */
@@ -208,7 +207,7 @@ public class SCMTrigger extends Trigger<Item> {
         return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    @Extension @Symbol("pollScm")
+    @Extension @Symbol("pollSCM")
     public static class DescriptorImpl extends TriggerDescriptor {
 
         private static ThreadFactory threadFactory() {
