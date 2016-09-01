@@ -66,7 +66,7 @@ THE SOFTWARE.
 
             <div class="footer">
               <div class="btn-decorator">
-                <st:include page="newJob_button-bar.jelly"/>
+                <st:include page="newJobButtonBar.jelly"/>
               </div>
             </div>
           </form>
