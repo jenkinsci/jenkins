@@ -260,10 +260,9 @@ public class UpdateSite {
      *              if name is null, then the default name will be used,
      *              which is "update site" followed by the update site id
      * @return the signature validator.
-     * @since 2.20
+     * @since 2.21
      */
     @Nonnull
-    @Restricted(NoExternalUse.class)
     protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
         if (name == null) {
             name = signatureValidatorPrefix + " '" + id + "'";
