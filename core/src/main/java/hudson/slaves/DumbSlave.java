@@ -43,7 +43,9 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public final class DumbSlave extends Slave {
-    private boolean acceptingTasks=true;
+    @Nonnull
+    private Boolean acceptingTasks=true;
+
     /**
      * @deprecated as of 1.286.
      *      Use {@link #DumbSlave(String, String, String, String, Node.Mode, String, ComputerLauncher, RetentionStrategy, List)}
@@ -89,5 +91,13 @@ public final class DumbSlave extends Slave {
      */
     public void setAcceptingTasks(boolean acceptingTasks) {
         this.acceptingTasks = acceptingTasks;
+    }
+
+    // Backwards compatibility for older version
+    public Object readResolve() {
+        if(acceptingTasks==null){
+            acceptingTasks=true;
+        }
+        return this;
     }
 }
