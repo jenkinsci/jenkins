@@ -26,12 +26,20 @@ THE SOFTWARE.
   Called from doScript() to display the execution result and the form.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout norefresh="true" permission="${h.RUN_SCRIPTS}">
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
-      <h1><img src="${imagesURL}/48x48/${it.icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
+      <j:choose>
+        <j:when test="${it.icon == null}">
+          <j:set var="icon" value="notepad.png"/>
+        </j:when>
+        <j:otherwise>
+          <j:set var="icon" value="${it.icon}"/>
+        </j:otherwise>
+      </j:choose>
+      <h1><img src="${imagesURL}/48x48/${icon}" width="48" height="48" alt=""/> ${%Script Console}</h1>
 
       <j:choose>
         <j:when test="${it.channel != null}">
