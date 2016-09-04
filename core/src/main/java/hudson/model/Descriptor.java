@@ -638,7 +638,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
             if (isApplicable(actualType, json)) {
                 LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {actualType.getName(), json});
                 try {
-                    return Jenkins.getActiveInstance().getDescriptor(actualType).newInstance(Stapler.getCurrentRequest(), json);
+                    final Descriptor descriptor = Jenkins.getActiveInstance().getDescriptor(actualType);
+                    if (descriptor != null) {
+                        return descriptor.newInstance(Stapler.getCurrentRequest(), json);
+                    } else {
+                        LOGGER.log(Level.WARNING, "Descriptor not found. Falling back to default instantiation "
+                                + actualType.getName() + " " + json);
+                    }
                 } catch (Exception x) {
                     LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
                     // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
