@@ -61,7 +61,24 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.21>What's new in 2.21</a> (2016/09/04)</h3>
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Ask for confirmation before canceling/aborting runs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-30565">issue 30565</a>)
+  <li class="rfe">
+    Add newline after the text in <code>userContent/readme.txt</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2532">PR #2532</a>)
+  <li class="bug">
+    Fixed the missing icon in the System Script console.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37814">issue 37814</a>)
+  <li class="bug">
+    Print warnings to system logs and administrative monitors
+    when Jenkins initializarion does not reach the final milestone.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37874">issue 37874</a>,
+     diagnostics for <a href="https://issues.jenkins-ci.org/browse/JENKINS-37759">issue-37759</a>)
+  <li class="rfe">
+    Developer API: <code>UpdateSite#getJsonSignatureValidator()</code> can be now
+    overriden and used in plugins.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2532">PR #2532</a>)
 </ul>
 <h3><a name=v2.20>What's new in 2.20</a> (2016/08/28)</h3>
 <ul class=image>
