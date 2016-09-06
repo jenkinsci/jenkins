@@ -137,7 +137,7 @@ public class SCMTrigger extends Trigger<Item> {
      * @param ignorePostCommitHooks
      *     True if we should ignore post commit hooks, false otherwise.
      *
-     * @since 2.21
+     * @since 2.22
      */
     @DataBoundSetter
     public void setIgnorePostCommitHooks(boolean ignorePostCommitHooks) {
