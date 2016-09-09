@@ -1,0 +1,39 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <div class="remodal new-job-popup" data-remodal-id="newjob" id="add-item-panel">
+    <form method="post" action="createItem" name="createItem" id="createItem">
+      <div class="header">
+        <div class="add-item-name">
+          <label for="name">${%ItemName.label}</label>
+          <input name="name" id="name" data-valid="false" type="text" tabindex="0" />
+          <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+          <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
+          <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
+        </div>
+      </div>
+
+      <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" >
+        <label for="type">Choose an item type</label>
+      </div>
+
+      <j:if test="${!empty(app.itemMap)}">
+        <div class="item-copy">
+          <p class="description">${%CopyOption.description}:</p>
+          <div class="add-item-copy">
+            <input type="radio" name="mode" value="copy" />
+            <div class="icon">
+              <img src="${resURL}/images/48x48/copy.png" />
+            </div>
+            <label>${%CopyOption.label}</label>
+            <j:set var="descriptor" value="${it.descriptor}" />
+            <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+          </div>
+        </div>
+      </j:if>
+
+      <div class="footer">
+        <button type="submit" id="ok-button">Create Item</button>
+      </div>
+    </form>
+  </div>
+</j:jelly>
