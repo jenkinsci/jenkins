@@ -1494,6 +1494,8 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist == null) {
                         console.log("There's no element that has ID of " + id);
+                        if (intervalID !== null)
+                            window.clearInterval(intervalID);
                         return;
                     }
                     var p = hist.up();
