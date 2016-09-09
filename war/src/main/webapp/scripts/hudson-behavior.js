@@ -1508,11 +1508,6 @@ function refreshPart(id,url) {
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
-
-                    if (isRunAsTest && intervalID) {
-                        window.clearInterval(intervalID);
-                        intervalID = null;
-                    }
                 }
             });
         }
