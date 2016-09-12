@@ -61,7 +61,25 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.22>What's new in 2.22</a> (2016/09/11)</h3>
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Change symbol and constructor for SCMTrigger to <tt>pollScm</tt> to make it usable in Pipeline scripts.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37731">issue 37731</a>)
+  <li class="rfe">
+    Prompt user whether to add the job to the current view.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-19142">issue 19142</a>)
+  <li class="rfe">
+    Update to sshd module 1.7, allowing definition of client idle timeout.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2534">pull 2534</a>, 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-36420">issue 36420</a>)
+  <li class="rfe">
+    Update to sezpoz 1.12 with better diagnostics.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2525">pull 2525</a>)
+  <li class="bug">
+    Fix <tt>NullPointerException</tt> when descriptor is not in <tt>DescriptorList</tt>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37997">issue 37997</a>)
+  <li class="bug">
+    Use the correct 'gear' icon for Manage Jenkins in Plugin Manager.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34250">issue 34250</a>)
 </ul>
 <h3><a name=v2.21>What's new in 2.21</a> (2016/09/04)</h3>
 <ul class=image>
