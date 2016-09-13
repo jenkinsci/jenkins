@@ -86,6 +86,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
+import jenkins.model.DisableableJobMixIn;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.io.OnMaster;
@@ -1078,10 +1079,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (lastBuild != null && lastBuild.hasntStartedYet())
             lastBuild = lastBuild.getPreviousBuild();
 
-        if (lastBuild != null)
+        if(DisableableJobMixIn.isDisabled(this)) {
+            return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
+        } else if (lastBuild != null) {
             return lastBuild.getIconColor();
-        else
+        } else {
             return BallColor.NOTBUILT;
+        }
     }
 
     /**

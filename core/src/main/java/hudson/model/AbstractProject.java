@@ -110,6 +110,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
+import jenkins.model.DisableableJobMixIn;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
@@ -143,7 +144,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob, DisableableJobMixIn.DisableableJob {
 
     /**
      * {@link SCM} associated with the project.
@@ -683,6 +684,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public boolean isDisabled() {
         return disabled;
     }
@@ -729,20 +731,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return this instanceof TopLevelItem;
     }
 
+    @Override
     public void disable() throws IOException {
         makeDisabled(true);
     }
 
+    @Override
     public void enable() throws IOException {
         makeDisabled(false);
-    }
-
-    @Override
-    public BallColor getIconColor() {
-        if(isDisabled())
-            return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
-        else
-            return super.getIconColor();
     }
 
     /**

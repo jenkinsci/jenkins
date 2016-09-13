@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.model.DependencyDeclarer;
+import jenkins.model.DisableableJobMixIn;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
@@ -247,7 +248,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 if (dep.shouldTriggerBuild(build, listener, buildActions)) {
                     AbstractProject p = dep.getDownstreamProject();
                     // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                    if (p.isDisabled()) {
+                    if (DisableableJobMixIn.isDisabled(p)) {
                         logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
                         continue;
                     }

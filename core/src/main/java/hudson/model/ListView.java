@@ -47,6 +47,8 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
+
+import jenkins.model.DisableableJobMixIn;
 import jenkins.model.Jenkins;
 
 import net.sf.json.JSONObject;
@@ -195,8 +197,8 @@ public class ListView extends View implements DirectlyModifiableView {
         for (TopLevelItem item : candidates) {
             if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
             // Add if no status filter or filter matches enabled/disabled status:
-            if(statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
+            if(statusFilter == null || !(item instanceof Job<?, ?>)
+                              || DisableableJobMixIn.isDisabled((Job<?, ?>) item) ^ statusFilter)
                 items.add(item);
         }
 
