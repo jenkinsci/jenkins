@@ -683,6 +683,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public boolean isDisabled() {
         return disabled;
     }
@@ -729,20 +730,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return this instanceof TopLevelItem;
     }
 
+    @Override
     public void disable() throws IOException {
         makeDisabled(true);
     }
 
+    @Override
     public void enable() throws IOException {
         makeDisabled(false);
-    }
-
-    @Override
-    public BallColor getIconColor() {
-        if(isDisabled())
-            return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
-        else
-            return super.getIconColor();
     }
 
     /**

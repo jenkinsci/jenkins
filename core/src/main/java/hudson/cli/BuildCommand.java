@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
-import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.model.Job;
@@ -157,7 +156,7 @@ public class BuildCommand extends CLICommand {
 
         if (!job.isBuildable()) {
             String msg = Messages.BuildCommand_CLICause_CannotBuildUnknownReasons(job.getFullDisplayName());
-            if (job instanceof AbstractProject<?, ?> && ((AbstractProject<?, ?>)job).isDisabled()) {
+            if (job.isDisabled()) {
                 msg = Messages.BuildCommand_CLICause_CannotBuildDisabled(job.getFullDisplayName());
             } else if (job.isHoldOffBuildUntilSave()){
                 msg = Messages.BuildCommand_CLICause_CannotBuildConfigNotSaved(job.getFullDisplayName());
@@ -167,7 +166,7 @@ public class BuildCommand extends CLICommand {
 
         Queue.Item item = ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new CLICause(Jenkins.getAuthentication().getName())), a);
         QueueTaskFuture<? extends Run<?,?>> f = item != null ? (QueueTaskFuture)item.getFuture() : null;
-        
+
         if (wait || sync || follow) {
             if (f == null) {
                 throw new IllegalStateException(BUILD_SCHEDULING_REFUSED);
