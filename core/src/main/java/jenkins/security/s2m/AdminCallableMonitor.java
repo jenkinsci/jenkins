@@ -39,7 +39,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Agent \u2192 Master Access Control";
+        return Messages.AdminCallableMonitor_DisplayName();
     }
 
     // bind this to URL

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.node_monitors;
 
-import hudson.model.AdministrativeMonitor;
+package jenkins.management;
+
 import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
+import jenkins.model.GlobalConfiguration;
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest;
 
-/**
- * If {@link NodeMonitor} marks the node as offline, we'll show this to the admin to get their attention.
- *
- * <p>
- * This also allows them to disable the monitoring if they don't like it.
- *
- * @author Kohsuke Kawaguchi
- * @since 1.301
- */
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @Extension
-public class MonitorMarkedNodeOffline extends AdministrativeMonitor {
+@Restricted(NoExternalUse.class)
+public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
     @Override
-    public String getDisplayName() {
-        return Messages.MonitorMarkedNodeOffline_DisplayName();
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
+            try {
+                boolean disable = !json.getJSONArray("administrativeMonitor").contains(am.id);
+                am.disable(disable);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to process form submission for " + am.id, e);
+            }
+        }
+        return true;
     }
 
-    public boolean active = false;
-
-    public boolean isActivated() {
-        return active;
-    }
+    private static Logger LOGGER = Logger.getLogger(AdministrativeMonitorsConfiguration.class.getName());
 }

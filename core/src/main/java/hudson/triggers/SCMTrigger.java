@@ -349,6 +349,12 @@ public class SCMTrigger extends Trigger<Item> {
 
     @Extension
     public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.SCMTrigger_AdministrativeMonitorImpl_DisplayName();
+        }
+
         private boolean on;
 
         public boolean isActivated() {

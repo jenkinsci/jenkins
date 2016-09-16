@@ -1950,6 +1950,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Extension @Symbol("pluginCycleDependencies")
     public static final class PluginCycleDependenciesMonitor extends AdministrativeMonitor {
 
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginCycleDependenciesMonitor_DisplayName();
+        }
+
         private transient volatile boolean isActive = false;
 
         private transient volatile List<PluginWrapper> pluginsWithCycle;
@@ -2007,6 +2012,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         public boolean isActivated() {
             return !pluginsToBeUpdated.isEmpty();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginUpdateMonitor_DisplayName();
         }
 
         /**

@@ -986,6 +986,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Extension @Symbol("coreUpdate")
     public static final class CoreUpdateMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.UpdateCenter_CoreUpdateMonitor_DisplayName();
+        }
+
         public boolean isActivated() {
             Data data = getData();
             return data!=null && data.hasCoreUpdates();
