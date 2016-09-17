@@ -32,9 +32,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
@@ -64,8 +67,18 @@ public class AtomicFileWriter extends Writer {
     /**
      * @param encoding
      *      File encoding to write. If null, platform default encoding is chosen.
+     *
+     * @deprecated Use AtomicFileWriter
      */
     public AtomicFileWriter(File f, String encoding) throws IOException {
+        this(f, Charset.forName(encoding));
+    }
+
+        /**
+         * @param charset
+         *      File charset to write. If null, platform default encoding is chosen.
+         */
+    public AtomicFileWriter(File f, Charset charset) throws IOException {
         Path dir = f.toPath().getParent();
         try {
             Files.createDirectories(dir);
@@ -74,9 +87,9 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
         destFile = f.toPath();
-        if (encoding==null)
-            encoding = Charset.defaultCharset().name();
-        core = Files.newBufferedWriter(tmpFile, Charset.forName(encoding), StandardOpenOption.SYNC);
+        if (charset==null)
+            charset = Charset.defaultCharset();
+        core = Files.newBufferedWriter(tmpFile, charset, StandardOpenOption.SYNC);
     }
 
     @Override
@@ -116,14 +129,20 @@ public class AtomicFileWriter extends Writer {
         close();
         if (Files.exists(destFile)) {
             try {
-                Files.delete(tmpFile); // First try with NIO.
-                Util.deleteFile(destFile.toFile()); // Then try with the util method.
+                Util.deleteFile(tmpFile.toFile());
             } catch (IOException x) {
                 Files.delete(tmpFile);
                 throw x;
             }
         }
-        Files.move(tmpFile, destFile, null);
+        try {
+            // Try to make an atomic move.
+            Files.move(tmpFile, destFile, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            // If it falls here that means that Atomic move is not supported by the OS.
+            // In this case we need to fall-back to a copy option which is supported by all OSes.
+            Files.move(tmpFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @Override
