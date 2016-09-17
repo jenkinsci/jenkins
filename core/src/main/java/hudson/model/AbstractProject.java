@@ -108,6 +108,7 @@ import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.logging.LoggingMethod;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -2282,7 +2283,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         this.customWorkspace= Util.fixEmptyAndTrim(customWorkspace);
         save();
     }
-
+    
     /**
      * Plugins may want to contribute additional restrictions on the use of specific labels for specific projects.
      * This extension point allows such restrictions.

@@ -88,6 +88,8 @@ import javax.annotation.Nonnull;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static java.util.logging.Level.WARNING;
+import jenkins.model.logging.LoggingMethod;
+import jenkins.model.logging.LoggingMethodLocator;
 
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -560,13 +562,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             final Node currentNode = getCurrentNode();
             Launcher l = currentNode.createLauncher(listener);
 
+            // Produce correct logger
+            // TODO: Consider merging with create Launcher
+            LoggingMethod locate = LoggingMethodLocator.locate(this.getBuild());
+            l = locate.decorateLauncher(l, getBuild(), getBuiltOn());
+            
             if (project instanceof BuildableItemWithBuildWrappers) {
                 BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
                     l = bw.decorateLauncher(AbstractBuild.this,l,listener);
             }
-
-            buildEnvironments = new ArrayList<Environment>();
 
             for (RunListener rl: RunListener.all()) {
                 Environment environment = rl.setUpEnvironment(AbstractBuild.this, l, listener);
@@ -1286,6 +1291,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return r;
     }
 
+    @Override
+    public LoggingMethod getDefaultLoggingMethod() {
+        return new LoggingMethod.DefaultAbstractBuildLoggingMethod();
+    }
+    
     /**
      * Represents a change in the dependency.
      */

@@ -101,11 +101,13 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.logging.LoggingMethod;
 import jenkins.model.PeepholePermalink;
 import jenkins.model.RunAction2;
 import jenkins.model.StandardArtifactManager;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.model.logging.LoggingMethodLocator;
 import jenkins.util.VirtualFile;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -1809,7 +1811,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 logger = bw.decorateLogger((AbstractBuild) build, logger);
             }
         }
-
+        
+        // Decorate logger by logging method of this build
+        final LoggingMethod located = LoggingMethodLocator.locate(this);
+        final ConsoleLogFilter f = located.createLoggerDecorator(this);
+        if (f != null) {
+            LOGGER.log(Level.INFO, "Decorated run {0} by a custom log filter {1}",
+                    new Object[] {this, f});
+            logger = f.decorateLogger(build, logger);
+        }
+        
         listener = new StreamBuildListener(logger,charset);
         return listener;
     }
@@ -2431,6 +2442,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             returnedResult = new RedirectUp();
         }
         return returnedResult;
+    }
+    
+    /**
+     * Determines a fallback logger to be used.
+     * @return Default logger.
+     * @since TODO
+     */
+    @Nonnull
+    public LoggingMethod getDefaultLoggingMethod() {
+        LOGGER.log(Level.WARNING, "Default Logging Method is not overriden, a NOOP fallback will be used");
+        return LoggingMethod.NOOP;
     }
 
     public static class RedirectUp {
