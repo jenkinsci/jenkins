@@ -68,7 +68,7 @@ public class AtomicFileWriter extends Writer {
      * @param encoding
      *      File encoding to write. If null, platform default encoding is chosen.
      *
-     * @deprecated Use AtomicFileWriter
+     * @deprecated Use {@link #AtomicFileWriter(File, Charset)}
      */
     public AtomicFileWriter(File f, String encoding) throws IOException {
         this(f, Charset.forName(encoding));
