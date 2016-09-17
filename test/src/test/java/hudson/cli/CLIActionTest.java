@@ -89,7 +89,6 @@ public class CLIActionTest {
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Session", UUID.randomUUID().toString());
         settings.setAdditionalHeader("Side", "download"); // We try to download something to init the duplex channel
-        settings = wc.addCrumb(settings);
 
         Page page = wc.getPage(settings);
         WebResponse webResponse = page.getWebResponse();
