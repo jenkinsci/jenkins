@@ -32,6 +32,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 
 /**
  * Buffered {@link FileWriter} that supports atomic operations.
@@ -45,8 +51,8 @@ import java.nio.charset.Charset;
 public class AtomicFileWriter extends Writer {
 
     private final Writer core;
-    private final File tmpFile;
-    private final File destFile;
+    private final Path tmpFile;
+    private final Path destFile;
 
     /**
      * Writes with UTF-8 encoding.
@@ -60,17 +66,17 @@ public class AtomicFileWriter extends Writer {
      *      File encoding to write. If null, platform default encoding is chosen.
      */
     public AtomicFileWriter(File f, String encoding) throws IOException {
-        File dir = f.getParentFile();
+        Path dir = f.toPath().getParent();
         try {
-            dir.mkdirs();
-            tmpFile = File.createTempFile("atomic",null, dir);
+            Files.createDirectories(dir);
+            tmpFile = Files.createTempFile(dir, "atomic", null, (FileAttribute<?>) null);
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
-        destFile = f;
+        destFile = f.toPath();
         if (encoding==null)
             encoding = Charset.defaultCharset().name();
-        core = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmpFile),encoding));
+        core = Files.newBufferedWriter(tmpFile, Charset.forName(encoding), StandardOpenOption.SYNC);
     }
 
     @Override
@@ -103,34 +109,47 @@ public class AtomicFileWriter extends Writer {
      */
     public void abort() throws IOException {
         close();
-        tmpFile.delete();
+        Files.deleteIfExists(tmpFile);
     }
 
     public void commit() throws IOException {
         close();
-        if (destFile.exists()) {
+        if (Files.exists(destFile)) {
             try {
-                Util.deleteFile(destFile);
+                Files.delete(tmpFile); // First try with NIO.
+                Util.deleteFile(destFile.toFile()); // Then try with the util method.
             } catch (IOException x) {
-                tmpFile.delete();
+                Files.delete(tmpFile);
                 throw x;
             }
         }
-        tmpFile.renameTo(destFile);
+        Files.move(tmpFile, destFile, null);
     }
 
     @Override
     protected void finalize() throws Throwable {
         // one way or the other, temporary file should be deleted.
         close();
-        tmpFile.delete();
+        Files.deleteIfExists(tmpFile);
     }
 
     /**
      * Until the data is committed, this file captures
      * the written content.
+     *
+     * @deprecated Use getTemporaryPath() for JDK 7+
      */
+    @Deprecated
     public File getTemporaryFile() {
+        return tmpFile.toFile();
+    }
+
+    /**
+     * Until the data is committed, this file captures
+     * the written content.
+     *
+     */
+    public Path getTemporaryPath() {
         return tmpFile;
     }
 }
