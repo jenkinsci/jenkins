@@ -82,7 +82,7 @@ public class AtomicFileWriter extends Writer {
         Path dir = f.toPath().getParent();
         try {
             Files.createDirectories(dir);
-            tmpFile = Files.createTempFile(dir, "atomic", null, (FileAttribute<?>) null);
+            tmpFile = Files.createTempFile(dir, "atomic", "tmp");
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
@@ -127,14 +127,6 @@ public class AtomicFileWriter extends Writer {
 
     public void commit() throws IOException {
         close();
-        if (Files.exists(destFile)) {
-            try {
-                Util.deleteFile(tmpFile.toFile());
-            } catch (IOException x) {
-                Files.delete(tmpFile);
-                throw x;
-            }
-        }
         try {
             // Try to make an atomic move.
             Files.move(tmpFile, destFile, StandardCopyOption.ATOMIC_MOVE);
