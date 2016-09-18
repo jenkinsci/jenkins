@@ -77,6 +77,6 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task,T> {
         historyPageFilter.add(baseList, getQueuedItems());
         historyPageFilter.widget = this;
 
-        return historyPageFilter;
+        return updateFirstTransientBuildKey(historyPageFilter);
     }
 }
