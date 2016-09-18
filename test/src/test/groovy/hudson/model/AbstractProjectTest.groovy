@@ -611,7 +611,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     }
 
-    static class MockBuildTriggerThrowsNPEOnStart<Item> extends Trigger {
+    static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {
         @Override
         public void start(hudson.model.Item project, boolean newInstance) { throw new NullPointerException(); }
 

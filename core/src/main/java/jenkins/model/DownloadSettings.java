@@ -36,13 +36,11 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Lets user configure how metadata files should be downloaded.
@@ -61,11 +59,6 @@ public final class DownloadSettings extends GlobalConfiguration {
     
     public DownloadSettings() {
         load();
-    }
-
-    @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        return true;
     }
 
     public boolean isUseBrowser() {

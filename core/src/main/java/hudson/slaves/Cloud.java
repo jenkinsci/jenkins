@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.DescriptorExtensionList;
 import hudson.model.Computer;
 import hudson.model.Slave;
+import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.model.Describable;
 import jenkins.model.Jenkins;
@@ -42,6 +43,7 @@ import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -175,10 +177,14 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return Jenkins.getInstance().<Cloud,Descriptor<Cloud>>getDescriptorList(Cloud.class);
     }
 
+    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);
+
     /**
      * Permission constant to control mutation operations on {@link Cloud}.
      *
      * This includes provisioning a new node, as well as removing it.
      */
-    public static final Permission PROVISION = Jenkins.ADMINISTER;
+    public static final Permission PROVISION = new Permission(
+            Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
+    );
 }

@@ -90,7 +90,11 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         this.job = project;
 
         try {// reparse the tabs with the job as the hash
-            this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
+            if (spec != null) {
+                this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
+            } else {
+                LOGGER.log(Level.WARNING, "The job {0} has a null crontab spec which is incorrect", job.getFullName());
+            }
         } catch (ANTLRException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
@@ -281,7 +285,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                             LOGGER.log(Level.FINER, "did not trigger {0}", p);
                         }
                     } else {
-                            LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
+                        LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
                     }
                 }
             }

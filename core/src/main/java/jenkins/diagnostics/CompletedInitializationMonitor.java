@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.init.impl;
+package jenkins.diagnostics;
 
-import static hudson.init.InitMilestone.JOB_LOADED;
-import hudson.init.Initializer;
+import hudson.Extension;
+import hudson.init.InitMilestone;
+import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
-import hudson.model.Messages;
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Prepares userContent folder and put a readme if it doesn't exist.
- * @author Kohsuke Kawaguchi
+ * Performs monitoring of {@link Jenkins} {@link InitMilestone} status.
+ *
+ * @author Oleg Nenashev
+ * @since TODO
  */
-public class InitialUserContent {
-    @Initializer(after=JOB_LOADED)
-    public static void init(Jenkins h) throws IOException {
-        File userContentDir = new File(h.getRootDir(), "userContent");
-        if(!userContentDir.exists()) {
-            userContentDir.mkdirs();
-            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
-        }
+@Restricted(NoExternalUse.class)
+@Extension @Symbol("completedInitialization")
+public class CompletedInitializationMonitor extends AdministrativeMonitor {
+    @Override
+    public boolean isActivated() {
+        final Jenkins instance = Jenkins.getInstance();
+        // Safe to check in such way, because monitors are being checked in UI only.
+        // So Jenkins class construction and initialization must be always finished by the call of this extension.
+        return instance.getInitLevel() != InitMilestone.COMPLETED;
     }
 }

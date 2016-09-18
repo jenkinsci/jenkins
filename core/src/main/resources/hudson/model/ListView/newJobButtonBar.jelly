@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2016, CloudBees
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-    displays a caption for build/externalRun.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-	<h1 class="build-caption page-headline">
-	  <j:if test="${it.building}">
-	    <div class="build-caption-progress-container" style="float:right">
-	      <table class="middle-align"><tr>
-	        <td>
-	          ${%Progress}:
-	        </td><td class="build-caption-progress-bar">
-	          <t:buildProgressBar build="${it}"/>
-	        </td><td>
-            <j:if test="${it.parent.hasAbortPermission()}">
-              <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}" alt="[${%cancel}]"/>
-            </j:if>
-	        </td>
-	      </tr></table>
-	    </div>
-	  </j:if>
-	  
-	  <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
-	  <d:invokeBody />
-	</h1>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <button type="submit" id="ok-button">OK</button>
+  <f:checkbox title="${%Add to current view}" field="addToCurrentView" checked="${it.addToCurrentView}"/>
 </j:jelly>
