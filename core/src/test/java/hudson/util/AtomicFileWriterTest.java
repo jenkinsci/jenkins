@@ -57,7 +57,6 @@ public class AtomicFileWriterTest {
         afw.commit();
 
         // Then
-        System.err.println(Files.size(af.toPath()));
         assertTrue(Files.size(af.toPath()) == expectedContent.length());
     }
 
