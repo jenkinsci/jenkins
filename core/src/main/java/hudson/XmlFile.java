@@ -216,8 +216,7 @@ public final class XmlFile {
         } catch(IOException ex) {
             // Exception may happen if we fail to find encoding or if this encoding is unsupported.
             // In such case we close the underlying stream and rethrow.
-            // If close() fails, we will throw its exception as the more important one.
-            fileInputStream.close();
+            Util.closeAndLogFailures(fileInputStream, LOGGER, "FileInputStream", file.toString());
             throw ex;
         }
     }
