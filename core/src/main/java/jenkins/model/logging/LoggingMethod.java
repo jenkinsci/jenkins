@@ -9,30 +9,33 @@ import java.io.Serializable;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+/**
+ * Defines logging method for Jenkins runs.
+ * @author Oleg Nenashev
+ * @see LoggingMethodLocator
+ * @since TODO
+ */
 public abstract class LoggingMethod implements Serializable {
   
-  //private final LoggingMethodLocator.JobData data;
-  
-  //public LoggingMethod(LoggingMethodLocator.JobData data) {
-  //  this.data = data;
-  //}
-  
+  /**
+   * Decorates logging on the Jenkins master side.
+   * These filters can be also used for log redirection and multi-reporting.
+   * @param build Build to be decorated
+   * @return Log filter on the master. {@code null} if no custom implementation
+   */
   @CheckForNull
-  public abstract ConsoleLogFilter createLoggerDecorator(Run<?, ?> build);
+  public abstract ConsoleLogFilter createLoggerDecorator(Run<?,?> build);
   
-  //public abstract OutputStreamWrapper getLogger();
-  
- // public abstract void initializeLogger();
-  
- // public abstract void finalizeLogger();
-  
-  //public abstract class OutputStreamWrapper {
-  //  public abstract Object readResolve();
-  //}
-  
-  public abstract Launcher decorateLauncher(@Nonnull Launcher l, @Nonnull Run run, @Nonnull Node node); 
-  
-
+  /**
+   * Decorates external process launcher running on a node.
+   * @param original Original launcher
+   * @param run Run, for which the decoration should be performed
+   * @param node Target node. May be {@code master} as well
+   * @return Decorated launcher or {@code original} launcher
+   */
+  @Nonnull
+  public abstract Launcher decorateLauncher(@Nonnull Launcher original, 
+          @Nonnull Run<?,?> run, @Nonnull Node node); 
   
   /** 
    * Fallback Logging methods for jobs, which do not define the implementation. 
