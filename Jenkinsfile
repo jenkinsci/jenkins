@@ -124,43 +124,6 @@ timestampedNode('docker') {
 }
 
 
-stage('Packaging - Testing') {
-    if (runTests) {
-        if (!env.CHANGE_ID) {
-            // NOTE: As of now, a lot of package tests will fail. See https://issues.jenkins-ci.org/issues/?filter=15257 for
-            // possible open JIRAs.
-
-            // Basic parameters
-            String artifactName = (binding.hasVariable('artifactName')) ? artifactName : 'jenkins'
-            String jenkinsPort = (binding.hasVariable('jenkinsPort')) ? jenkinsPort : '8080'
-
-            // Set up
-            String debfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/debian/${debFileName}"
-            String rpmfile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/rpm/${rpmFileName}"
-            String susefile = "artifact://${env.JOB_NAME}/${env.BUILD_NUMBER}#target/suse/${suseFileName}"
-
-            timestampedNode("docker") {
-                stage "Load Lib"
-                dir('workflowlib') {
-                    deleteDir()
-                    git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
-                    flow = load 'workflow/installertest.groovy'
-                }
-            }
-            // Run the real tests within docker node label
-            flow.fetchAndRunJenkinsInstallerTest("docker", rpmfile, susefile, debfile,
-                packagingBranch, artifactName, jenkinsPort)
-        }
-        else {
-            echo "Not running package testing against pull requests"
-        }
-    }
-    else {
-        echo "Skipping package tests"
-    }
-}
-
-
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
 // body we passed in within that environment.
