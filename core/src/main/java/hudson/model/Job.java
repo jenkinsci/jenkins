@@ -1071,11 +1071,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * The following methods should be overriden by Jobs that support being disabled:
-     * - supportsDisable() - override to return true
-     * - isDisabled()
-     * - disable()
-     * - enable()
+     * <p><ul>
+     * <li>supportsDisable() - override to return true</li>
+     * <li>isDisabled()</li>
+     * <li>disable()</li>
+     * <li>enable()</li>
+     * </ul>
      *
+     * <p>
      * The default behavior for jobs that do not override these methods is isDisabled() always returns false,
      * and enable()/disable() should not be called (they throw exceptions). enable()/disable() should only be
      * called if supportsDisable() returns true.
@@ -1105,7 +1108,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since TODO
      */
     public void disable() throws IOException {
-        throw new IllegalStateException("does not support disable/enable");
+        throw new IOException("does not support disable/enable");
     }
 
     /**
@@ -1117,7 +1120,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @since TODO
      */
     public void enable() throws IOException {
-        throw new IllegalStateException("does not support disable/enable");
+        throw new IOException("does not support disable/enable");
     }
 
     /**
