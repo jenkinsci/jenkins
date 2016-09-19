@@ -1177,8 +1177,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * Connects to the given URL for downloading the binary. Useful for tweaking
          * how the connection gets established.
          */
-        protected URLConnection connect(DownloadJob job, URL src) throws IOException {
-            return ProxyConfiguration.open(src);
+        protected URLConnection connect(DownloadJob job, URL src) throws IOException { 
+            URLConnection conn = ProxyConfiguration.open(src);
+            if(conn instanceof HttpURLConnection) {
+                HttpURLConnection httpConn = (HttpURLConnection) conn;
+                if (httpConn.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP 
+                    || httpConn.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM) {
+                    // 302, 301
+                    // TODO maybe need resolve recursive redirect
+                    conn = connect(job, new URL(httpConn.getHeaderField("location")));
+                    IOUtils.closeQuietly(httpConn.getInputStream());
+                }
+            }
+            return conn;
         }
 
         /**
