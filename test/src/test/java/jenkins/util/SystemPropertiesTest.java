@@ -44,7 +44,7 @@ public class SystemPropertiesTest {
     
     @Before
     public void setUp() {
-        new SystemProperties().contextInitialized(new ServletContextEvent(j.jenkins.servletContext));
+        new SystemProperties.ContextListener().contextInitialized(new ServletContextEvent(j.jenkins.servletContext));
     }
     
     @Test
