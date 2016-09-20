@@ -1183,10 +1183,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 HttpURLConnection httpConn = (HttpURLConnection) conn;
                 if (httpConn.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP 
                     || httpConn.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM) {
-                    // 302, 301
-                    // TODO maybe need resolve recursive redirect
-                    conn = connect(job, new URL(httpConn.getHeaderField("location")));
-                    IOUtils.closeQuietly(httpConn.getInputStream());
+                    // TODO maybe need to resolve recursive redirect
+                    try {
+                        URL redirectUrl = new URL(httpConn.getHeaderField("location"));
+                        conn = connect(job, redirectUrl);
+                    } finally {
+                        Util.closeAndLogFailures(httpConn.getInputStream(), LOGGER, job.getDestination().getName(), src.toString());;
+                    }
                 }
             }
             return conn;
