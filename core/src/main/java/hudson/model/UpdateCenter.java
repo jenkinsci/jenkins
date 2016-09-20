@@ -1188,7 +1188,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         URL redirectUrl = new URL(httpConn.getHeaderField("location"));
                         conn = connect(job, redirectUrl);
                     } finally {
-                        Util.closeAndLogFailures(httpConn.getInputStream(), LOGGER, job.getDestination().getName(), src.toString());;
+                        Util.closeAndLogFailures(httpConn.getInputStream(), LOGGER, job.getDestination().getName(), src.toString());
                     }
                 }
             }
