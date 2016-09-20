@@ -816,16 +816,15 @@ public class SlaveComputer extends Computer {
         }
 
         public Void call() {
+            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
-            if (SLAVE_LOG_HANDLER != null) {
-                for (Handler h : LOGGER.getHandlers()) {
-                    if (h.getClass().getName().equals(SLAVE_LOG_HANDLER.getClass().getName()))
-                        LOGGER.removeHandler(h);
-                }
+            for (Handler h : LOGGER.getHandlers()) {
+                if (h.getClass().getName().equals(SLAVE_LOG_HANDLER.getClass().getName()))
+                    LOGGER.removeHandler(h);
             }
-            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
             LOGGER.addHandler(SLAVE_LOG_HANDLER);
 
             // remove Sun PKCS11 provider if present. See http://wiki.jenkins-ci.org/display/JENKINS/Solaris+Issue+6276483
