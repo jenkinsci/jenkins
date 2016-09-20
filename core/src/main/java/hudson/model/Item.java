@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.security.PermissionScope;
+import jenkins.util.io.OnMaster;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -67,7 +68,7 @@ import hudson.util.Secret;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled {
+public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */
