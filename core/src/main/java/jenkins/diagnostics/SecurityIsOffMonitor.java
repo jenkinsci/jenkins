@@ -20,6 +20,12 @@ import java.io.IOException;
  */
 @Extension @Symbol("securityIsOff")
 public class SecurityIsOffMonitor extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.SecurityIsOffMonitor_DisplayName();
+    }
+
     @Override
     public boolean isActivated() {
         return !Jenkins.getInstance().isUseSecurity();

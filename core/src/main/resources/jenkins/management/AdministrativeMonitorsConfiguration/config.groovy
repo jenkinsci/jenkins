@@ -21,36 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.diagnostics;
 
-import hudson.Extension;
-import hudson.init.InitMilestone;
-import hudson.model.AdministrativeMonitor;
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+package jenkins.management.AdministrativeMonitorsConfiguration
 
-/**
- * Performs monitoring of {@link Jenkins} {@link InitMilestone} status.
- *
- * @author Oleg Nenashev
- * @since TODO
- */
-@Restricted(NoExternalUse.class)
-@Extension @Symbol("completedInitialization")
-public class CompletedInitializationMonitor extends AdministrativeMonitor {
+import hudson.model.AdministrativeMonitor
 
-    @Override
-    public String getDisplayName() {
-        return Messages.CompletedInitializationMonitor_DisplayName();
-    }
+f = namespace(lib.FormTagLib)
+st = namespace("jelly:stapler")
 
-    @Override
-    public boolean isActivated() {
-        final Jenkins instance = Jenkins.getInstance();
-        // Safe to check in such way, because monitors are being checked in UI only.
-        // So Jenkins class construction and initialization must be always finished by the call of this extension.
-        return instance.getInitLevel() != InitMilestone.COMPLETED;
+f.section(title: _("Administrative monitors configuration")) {
+    f.advanced(title: _("Administrative monitors")) {
+        f.entry(title: _("Enabled administrative monitors")) {
+            p(_("blurb"))
+            table(width: "100%") {
+                for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
+                    f.block() {
+                        f.checkbox(name: "administrativeMonitor",
+                                title: am.displayName,
+                                checked: am.enabled,
+                                json: am.id);
+                    }
+                    tr() {
+                        td(colspan: "2");
+                        td(class: "setting-description") {
+                            st.include(from: am, page: "description", optional: true);
+                        }
+                        td();
+                    }
+                }
+            }
+        }
     }
 }

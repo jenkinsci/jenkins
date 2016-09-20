@@ -748,6 +748,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             return !plugins.isEmpty();
         }
 
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
+        }
+
         public Collection<PluginWrapper> getPlugins() {
             return plugins.values();
         }

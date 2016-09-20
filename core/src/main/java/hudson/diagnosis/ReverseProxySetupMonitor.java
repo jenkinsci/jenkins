@@ -93,5 +93,10 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             return new HttpRedirect("https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+says+my+reverse+proxy+setup+is+broken");
         }
     }
+
+    @Override
+    public String getDisplayName() {
+        return Messages.ReverseProxySetupMonitor_DisplayName();
+    }
 }
 
