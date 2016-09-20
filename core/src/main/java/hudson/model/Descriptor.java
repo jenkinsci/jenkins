@@ -1144,7 +1144,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.
-                new Failure(getMessage()).generateResponse(req,rsp,node);
+                new Failure(getMessage()).generateResponse(req,rsp,node,getCause());
             }
         }
     }
