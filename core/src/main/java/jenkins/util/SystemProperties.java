@@ -65,7 +65,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties {
+public class SystemProperties implements ServletContextListener {
+    // this class implements ServletContextListener and is declared in WEB-INF/web.xml
 
     /**
      * The ServletContext to get the "init" parameters from.
@@ -78,7 +79,20 @@ public class SystemProperties {
      */
     private static final Logger LOGGER = Logger.getLogger(SystemProperties.class.getName());
 
-    private SystemProperties() {}
+    /**
+     * Public for the servlet container.
+     */
+    public SystemProperties() {}
+
+    /**
+     * Called by the servlet container to initialize the {@link ServletContext}.
+     */
+    @Override
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+            justification = "Currently Jenkins instance may have one ond only one context")
+    public void contextInitialized(ServletContextEvent event) {
+        theContext = event.getServletContext();
+    }
 
     /**
      * Gets the system property indicated by the specified key.
@@ -315,25 +329,8 @@ public class SystemProperties {
         return null;
     }
 
-    // this class is declared in WEB-INF/web.xml
-    public static class ContextListener implements ServletContextListener {
-
-        public ContextListener() {
-        }
-
-        /**
-         * Called by the servlet container to initialize the {@link ServletContext}.
-         */
-        @Override
-        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-                justification = "Currently Jenkins instance may have one ond only one context")
-        public void contextInitialized(ServletContextEvent event) {
-            theContext = event.getServletContext();
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent event) {
-            // nothing to do
-        }
+    @Override
+    public void contextDestroyed(ServletContextEvent event) {
+        // nothing to do
     }
 }

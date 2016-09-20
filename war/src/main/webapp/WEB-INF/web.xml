@@ -153,7 +153,7 @@ THE SOFTWARE.
 
   <listener>
     <!-- Must be before WebAppMain in order to initialize the context before the first use of this class. -->
-    <listener-class>jenkins.util.SystemProperties$ContextListener</listener-class>
+    <listener-class>jenkins.util.SystemProperties</listener-class>
   </listener>
   <listener>
     <listener-class>hudson.WebAppMain</listener-class>
