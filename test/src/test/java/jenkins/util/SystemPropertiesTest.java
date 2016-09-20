@@ -23,11 +23,13 @@
  */
 package jenkins.util;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import net.sourceforge.htmlunit.corejs.javascript.RhinoSecurityManager;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,10 +63,32 @@ public class SystemPropertiesTest {
     }
     
     @Test
+    public void shouldInitializeFromWebAppProperty() throws Exception {
+        assertThat("Property is undefined before test",
+                SystemProperties.getString("foo.bar"), equalTo(null));
+        setWebAppInitParameter("foo.bar", "myVal");
+        assertThat("Web App property should assign the value",
+                SystemProperties.getString("foo.bar"), equalTo("myVal"));
+    }
+
+    @Test
     public void shouldUseSystemPropertyAsAHighPriority() throws Exception {
-        ServletContext c = j.jenkins.servletContext;
+        setWebAppInitParameter("install-wizard-path", "myVal1");
         System.setProperty("install-wizard-path", "myVal2");
         assertThat("System property should take system property with a high priority", 
                 SystemProperties.getString("install-wizard-path"), equalTo("myVal2"));
+    }
+
+    /**
+     * Hack to set a web app initial parameter afterwards. Only works with Jetty.
+     * @param property property to set
+     * @param value value of the property
+     */
+    protected void setWebAppInitParameter(String property, String value) {
+        if (!(j.jenkins.servletContext instanceof ContextHandler.Context)) {
+            throw new IllegalArgumentException("This only works with Jetty");
+        }
+
+        ((ContextHandler.Context)j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
     }
 }
