@@ -47,6 +47,20 @@ public class CloudRetentionStrategy extends RetentionStrategy<AbstractCloudCompu
         this.idleMinutes = idleMinutes;
     }
 
+    /**
+     * @since FIXME
+     */
+    public int getIdleMinutes() {
+        return idleMinutes;
+    }
+
+    /**
+     * @since FIXME
+     */
+    public void setIdleMinutes(int idleMinutes) {
+        this.idleMinutes = idleMinutes;
+    }
+
     @Override
     @GuardedBy("hudson.model.Queue.lock")
     public long check(final AbstractCloudComputer c) {
