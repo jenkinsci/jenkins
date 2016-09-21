@@ -73,15 +73,15 @@ node('docker') {
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
-                /* Build the image using the Dockerfile in the docker/
-                 * directory
-                 */
-                image = docker.build("jenkinsci/packaging-builder:0.1", 'docker')
+                image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
+                sh 'cd docker && ./build-sudo-images.sh'
             }
 
             stage('Packaging - Build') {
                 unstash 'warfile'
-                image.inside {
+
+                // FIXME needs to be sudo-able packaging container
+                image.inside('-u root') {
                     withEnv([
                         'BRANCH=./branding/jenkins.mk',
                         'BUILDENV=./env/test.mk',
@@ -90,8 +90,38 @@ node('docker') {
                     ]) {
                         sh 'make clean deb rpm suse'
                     }
+                    stash(includes: 'target/rpm/*.rpm', name: 'rpm')
+                    stash(includes: 'target/suse/*.rpm', name: 'suse')
+                    stash(includes: 'target/debian/*.deb', name: 'debian')
                 }
             }
+        }
+
+        // Load groovy lib for packaging tests 
+        stage('Load packaging test libs') {
+            sh 'rm -rf lib'
+            dir('lib') {
+                git changelog: false, poll: false, url: 'https://github.com/jenkinsci/packaging.git', branch: 'master'
+                testFlow = load 'workflow/installertest.groovy'
+            }
+            sh 'rm -rf lib'
+        }
+
+        stage('Run installer tests') {
+            sh 'rm -rf packaging-tests'
+            dir('packaging-tests') {
+                git branch: 'master', url: 'https://github.com/jenkinsci/packaging.git'
+                unstash('rpm')
+                unstash('suse')
+                unstash('debian')
+                
+                // Needed because the installer folders don't align to expected locations
+                sh 'mv target installers'
+                sh 'mv installers/debian installers/deb'
+                
+                testFlow.runJenkinsInstallTests('master', 'jenkins', '8080')
+            }
+            sh 'rm -rf packaging-tests || true'
         }
     }
 }
