@@ -72,7 +72,10 @@ node('docker') {
             git branch: packagingBranch, 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
-                image = docker.build("jenkinsci/packaging-builder:0.1")
+                /* Build the image using the Dockerfile in the docker/
+                 * directory
+                 */
+                image = docker.build("jenkinsci/packaging-builder:0.1", 'docker')
             }
 
             stage('Packaging - Build') {
