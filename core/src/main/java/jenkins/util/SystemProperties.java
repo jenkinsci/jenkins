@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -65,7 +67,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties implements ServletContextListener {
+public class SystemProperties implements ServletContextListener, OnMaster {
     // this class implements ServletContextListener and is declared in WEB-INF/web.xml
 
     /**
@@ -88,7 +90,7 @@ public class SystemProperties implements ServletContextListener {
      * Called by the servlet container to initialize the {@link ServletContext}.
      */
     @Override
-    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", 
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
             justification = "Currently Jenkins instance may have one ond only one context")
     public void contextInitialized(ServletContextEvent event) {
         theContext = event.getServletContext();
