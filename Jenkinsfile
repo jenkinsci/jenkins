@@ -110,7 +110,7 @@ node('docker') {
         stage('Run installer tests') {
             sh 'rm -rf packaging-tests'
             dir('packaging-tests') {
-                git branch: 'master', url: 'https://github.com/jenkinsci/packaging.git'
+                git branch: 'packaging-stable-tests', url: 'https://github.com/jenkinsci/packaging.git'
                 unstash('rpm')
                 unstash('suse')
                 unstash('debian')
