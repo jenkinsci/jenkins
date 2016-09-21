@@ -28,7 +28,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
@@ -55,7 +55,7 @@ public class Failure extends RuntimeException implements HttpResponse {
         this.pre = pre;
     }
 
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node, @Nullable Throwable throwable) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node, @CheckForNull Throwable throwable) throws IOException, ServletException {
         if (throwable != null) {
             req.setAttribute("exception", throwable);
         }
