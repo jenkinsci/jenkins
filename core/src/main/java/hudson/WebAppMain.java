@@ -77,7 +77,11 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class WebAppMain implements ServletContextListener {
-    private final RingBufferLogHandler handler = new RingBufferLogHandler() {
+
+    // use RingBufferLogHandler class name to configure for backward compatibility
+    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+
+    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
