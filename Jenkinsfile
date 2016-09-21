@@ -55,8 +55,9 @@ node('java') {
         stage('Archive Artifacts / Test Results') {
             /* Stash jenkins.war for later packaging preparations */
             stash includes: '**/target/*.war', name: 'warfile'
-            archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
-                        fingerprint: true
+            // UNCOMMENT: commented out to avoid the transit hit during testing
+            //archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
+            //            fingerprint: true
             if (runTests) {
                 junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
             }
