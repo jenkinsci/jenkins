@@ -28,12 +28,16 @@ import hudson.Functions;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.PageDecorator;
+import hudson.util.HttpResponses;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import jenkins.model.Jenkins;
+import net.sf.json.JSON;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -57,6 +61,9 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
         // otherwise this would be added to every internal context menu building request
         ignoredJenkinsRestOfUrls.add("contextMenu");
+
+        // don't show here to allow admins to disable malfunctioning monitors via AdministrativeMonitorsDecorator
+        ignoredJenkinsRestOfUrls.add("configure");
     }
 
     @Override
@@ -94,10 +101,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
             return false;
         }
 
-        if (getActiveAdministrativeMonitorsCount() == 0) {
-            return false;
-        }
-
         StaplerRequest req = Stapler.getCurrentRequest();
 
         if (req == null) {
@@ -129,6 +132,10 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
             if (ignoredJenkinsRestOfUrls.contains(url)) {
                 return false;
             }
+        }
+
+        if (getActiveAdministrativeMonitorsCount() == 0) {
+            return false;
         }
 
         return true;
