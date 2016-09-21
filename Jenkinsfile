@@ -70,7 +70,7 @@ node('docker') {
         def image
 
         dir('packaging') {
-            git branch: packagingBranch, 'https://github.com/jenkinsci/packaging.git'
+            git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
                 /* Build the image using the Dockerfile in the docker/
