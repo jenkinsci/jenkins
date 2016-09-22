@@ -48,8 +48,12 @@ THE SOFTWARE.
     <st:attribute name="tableClass">
       Optional class attribute for &lt;table> that is created in the form.
     </st:attribute>
+    <st:attribute name="autocomplete">
+      Optional attribute for allowing browsers to perform auto complete or pre-fill the form from history.
+      Default: false
+    </st:attribute>
   </st:documentation>
-  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}">
+  <form action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
     <table width="100%" class="${attrs.tableClass}">
       <d:invokeBody/>
     </table>

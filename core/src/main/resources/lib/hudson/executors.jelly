@@ -34,7 +34,7 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="computerCaption">
 
-      <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="icon-computer${c.offline?'-x':''} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
+      <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="${c.iconClassName} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
       <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
     </d:tag>
@@ -45,15 +45,6 @@ THE SOFTWARE.
               ${name}
             </td>
             <j:choose>
-              <j:when test="${!e.active}">
-                <td class="pane">
-                  <a href="${rootURL}/${c.url}${url}/causeOfDeath">
-                    <div class="error">${%Dead} (!)</div>
-                  </a>
-                </td>
-                <td class="pane"/>
-                <td class="pane"/>
-              </j:when>
               <j:when test="${e.idle}">
                 <td class="pane">
                   <j:choose>
@@ -119,7 +110,7 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" alt="${%terminate this build}"/>
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stop" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
               </j:otherwise>

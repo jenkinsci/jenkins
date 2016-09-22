@@ -39,6 +39,7 @@ import hudson.tasks.Publisher;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +183,11 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      */
     @Override
     protected List<ExtensionComponent<D>> load() {
+        if (jenkins == null) {
+            // Should never happen on the real instance
+            LOGGER.log(Level.WARNING, "Cannot load extension components, because Jenkins instance has not been assigned yet");
+            return Collections.emptyList();
+        }
         return _load(jenkins.getExtensionList(Descriptor.class).getComponents());
     }
 

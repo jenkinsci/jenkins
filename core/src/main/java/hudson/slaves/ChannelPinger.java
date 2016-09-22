@@ -51,21 +51,15 @@ import static java.util.logging.Level.*;
 public class ChannelPinger extends ComputerListener {
     private static final Logger LOGGER = Logger.getLogger(ChannelPinger.class.getName());
     private static final String SYS_PROPERTY_NAME  = ChannelPinger.class.getName() + ".pingInterval";
-
+    private static final int DEFAULT_PING_INTERVAL_MIN = 5;
+    
     /**
      * Interval for the ping in minutes.
      */
-    private int pingInterval = 5;
+    private final int pingInterval;
 
     public ChannelPinger() {
-        String interval = SystemProperties.getString(SYS_PROPERTY_NAME);
-        if (interval != null) {
-            try {
-                pingInterval = Integer.valueOf(interval);
-            } catch (NumberFormatException e) {
-                LOGGER.warning("Ignoring invalid " + SYS_PROPERTY_NAME + "=" + interval);
-            }
-        }
+        pingInterval = SystemProperties.getInteger(SYS_PROPERTY_NAME, DEFAULT_PING_INTERVAL_MIN);
     }
 
     @Override

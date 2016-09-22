@@ -121,6 +121,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
@@ -342,6 +343,11 @@ public class Queue extends ResourceController implements Saveable {
     public void load() {
         lock.lock();
         try { try {
+            // Clear items, for the benefit of reloading.
+            waitingList.clear();
+            blockedProjects.clear();
+            buildables.clear();
+            pendings.clear();
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
@@ -1375,7 +1381,7 @@ public class Queue extends ResourceController implements Saveable {
         lock.lock();
         try { try {
 
-            LOGGER.log(Level.FINE, "Queue maintenance started {0}", this);
+            LOGGER.log(Level.FINE, "Queue maintenance started on {0} with {1}", new Object[] {this, snapshot});
 
             // The executors that are currently waiting for a job to run.
             Map<Executor, JobOffer> parked = new HashMap<Executor, JobOffer>();
@@ -1406,7 +1412,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 // pending -> buildable
                 for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.INFO,
+                    LOGGER.log(Level.FINE,
                             "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
                             p.task.getFullDisplayName());
                     p.isPending = false;
@@ -2764,11 +2770,13 @@ public class Queue extends ResourceController implements Saveable {
             return x;
         }
 
+        @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
+                justification = "It will invoke the inherited clear() method according to Java semantics. "
+                              + "FindBugs recommends suppresing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);
-
-            clear();    // just to be sure
+            clear();
         }
     }
 
@@ -2784,6 +2792,11 @@ public class Queue extends ResourceController implements Saveable {
             this.blockedProjects = new ArrayList<BlockedItem>(blockedProjects);
             this.buildables = new ArrayList<BuildableItem>(buildables);
             this.pendings = new ArrayList<BuildableItem>(pendings);
+        }
+
+        @Override
+        public String toString() {
+            return "Queue.Snapshot{waitingList=" + waitingList + ";blockedProjects=" + blockedProjects + ";buildables=" + buildables + ";pendings=" + pendings + "}";
         }
     }
     

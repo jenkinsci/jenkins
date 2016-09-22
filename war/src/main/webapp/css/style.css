@@ -462,6 +462,9 @@ table.stripped-even tr:nth-child(even) {
 table.stripped-odd tr:nth-child(odd) {
   background: #fbfbfb;
 }
+table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+  background: #e8e8e8 !important;
+}
 
 div.pane-header {
   font-weight: bold;
@@ -1021,7 +1024,7 @@ table.parameters > tbody:hover {
   padding: 3px 4px 3px 4px;
 }
 
-.build-row:hover, .build-row.model-link-active {
+.build-row.model-link-active {
   background: #e8e8e8 !important;
 }
 
@@ -1160,8 +1163,8 @@ table.parameters > tbody:hover {
 .comboBoxList {
   border: 1px solid #000;
   overflow: visible;
-  color: MenuText;
-  background-color: Menu;
+  background-color: white;
+  color: black;
 }
 .comboBoxSelectedItem {
   background-color: Highlight;

@@ -96,8 +96,7 @@ public class SetupWizard extends PageDecorator {
             // difficult password
             FilePath iapf = getInitialAdminPasswordFile();
             if(jenkins.getSecurityRealm() == null || jenkins.getSecurityRealm() == SecurityRealm.NO_AUTHENTICATION) { // this seems very fragile
-                BulkChange bc = new BulkChange(jenkins);
-                try{
+                try (BulkChange bc = new BulkChange(jenkins)) {
                     HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
                     jenkins.setSecurityRealm(securityRealm);
                     String randomUUID = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ENGLISH);
@@ -130,8 +129,6 @@ public class SetupWizard extends PageDecorator {
                 
                     jenkins.save(); // !!
                     bc.commit();
-                } finally {
-                    bc.abort();
                 }
             }
     
@@ -312,6 +309,19 @@ public class SetupWizard extends PageDecorator {
         return HttpResponses.okJSON();
     }
     
+    /**
+     * Returns whether the system needs a restart, and if it is supported
+     * e.g. { restartRequired: true, restartSupported: false }
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doRestartStatus() throws IOException {
+        JSONObject response = new JSONObject();
+        Jenkins jenkins = Jenkins.getInstance();
+        response.put("restartRequired", jenkins.getUpdateCenter().isRestartRequiredForCompletion());
+        response.put("restartSupported", jenkins.getLifecycle().canRestart());
+        return HttpResponses.okJSON(response);
+    }
+
     /**
      * Provides the list of platform plugin updates from the last time
      * the upgrade was run.

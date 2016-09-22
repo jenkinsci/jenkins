@@ -29,7 +29,7 @@ THE SOFTWARE.
 	<f:entry title="${it.name}" description="${it.formattedDescription}">
 		<div name="parameter">
 			<input type="hidden" name="name" value="${it.name}" />
-			<f:password name="value" value="${it.defaultValueAsSecret}" />
+			<f:password name="value" value="${it.DEFAULT_VALUE}"/>
 		</div>
 	</f:entry>
 </j:jelly>

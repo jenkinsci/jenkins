@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.11-SNAPSHOT</version>
+  <version>2.24-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -96,7 +96,8 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
@@ -179,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.60</version>
+        <version>2.62</version>
       </dependency>
 
       <dependency>
@@ -500,6 +501,24 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
+          <version>${findbugs-maven-plugin.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>High</threshold>
+            <!--Excludes file is located on the top level-->
+            <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+            <xmlOutput>true</xmlOutput>
+            <findbugsXmlOutput>false</findbugsXmlOutput>
+          </configuration>
+          <executions>
+            <execution>
+              <id>findbugs</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -735,6 +754,8 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
+      
+      
     </plugins>
 
     <extensions>
@@ -773,7 +794,7 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>metrics</id>
-      <reporting>
+      <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -783,7 +804,7 @@ THE SOFTWARE.
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
     </profile>
     <profile>
       <id>debug</id>

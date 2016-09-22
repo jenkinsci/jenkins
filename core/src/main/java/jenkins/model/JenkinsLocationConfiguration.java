@@ -5,10 +5,8 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -145,12 +143,6 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to set secure cookie flag", e);
         }
-    }
-
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this,json);
-        return true;
     }
 
     /**

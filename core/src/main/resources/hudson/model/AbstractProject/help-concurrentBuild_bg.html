@@ -1,0 +1,42 @@
+
+<div>
+  Когато тази опция е избрана, паралелно може да се изпълняват множество
+  изграждания на този проект.
+  <p>
+  Стандартно, в един момент се изпълнява максимум едно изграждане на отделен
+  проект — последващите заявки за изграждането на проекта се поставят в опашка
+  да изчакат завършването на текущото изграждане, преди да се продължи със
+  следващото.<br>
+  Това е по-безопасният вариант, защото често проектите изискват достъпът до
+  определени ресурси да е поединично — например база от данни или някакво
+  хардуерно устройство.
+  <p>
+  Ако изберете тази опция и в даден момент има достатъчно изграждащи машини, то
+  паралелно ще могат да се изпълняват множество изграждания на проекта. Ако в 
+  определен момент няма достатъчно свободни машини, то заявките за изграждане ще
+  изчакват в опашка както обикновено.
+  <p>
+  Включването на паралелните изграждание е полезно при проекти с дълги тестове,
+  защото това позволява отделното изграждане да съдържа сравнително малък на
+  брой промени, без това да увеличава прекомерно много времето за работа, защото
+  всяко ново изграждане няма нужда да изчаква завършването на всички предишни
+  изграждания.<br>
+  Тази възможност е полезна и за параметризираните проекти, чиито изграждания
+  може да са напълно независими едно от друго — при определени стойности на
+  параметрите.
+  <p>
+  Всяко Each concurrently executed build occurs in its own build workspace, isolated
+  from any other builds.  By default, Jenkins appends "<tt>@&lt;num&gt;</tt>" to
+  the workspace directory name, e.g. "<tt>@2</tt>".<br>
+  The separator "<tt>@</tt>" can be changed by setting the
+  <tt>hudson.slaves.WorkspaceList</tt> Java system property when starting
+  Jenkins.  For example, "<tt>hudson.slaves.WorkspaceList=-</tt>" would change
+  the separator to a hyphen.<br>
+  For more information on setting system properties, see the <a
+  href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties"
+  target="_blank">wiki page</a>.
+  <p>
+  However, if you enable the <i>Use custom workspace</i> option, all builds will
+  be executed in the same workspace.  Therefore caution is required, as multiple
+  builds may end up altering the same directory at the same time.
+</div>

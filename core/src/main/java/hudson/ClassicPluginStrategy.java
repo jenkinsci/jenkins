@@ -57,17 +57,13 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -277,7 +273,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
             // some earlier versions of maven-hpi-plugin apparently puts "null" as a literal in Hudson-Version. watch out for them.
             if (jenkinsVersion == null || jenkinsVersion.equals("null") || new VersionNumber(jenkinsVersion).compareTo(detached.splitWhen) <= 0) {
-                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requireVersion));
+                out.add(new PluginWrapper.Dependency(detached.shortName + ':' + detached.requiredVersion));
                 LOGGER.log(Level.FINE, "adding implicit dependency {0} → {1} because of {2}", new Object[] {pluginName, detached.shortName, jenkinsVersion});
             }
         }
@@ -378,12 +374,12 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * be "1.123.*" (because 1.124 will be the first version that doesn't include the removed code.)
          */
         private final VersionNumber splitWhen;
-        private final String requireVersion;
+        private final String requiredVersion;
 
-        private DetachedPlugin(String shortName, String splitWhen, String requireVersion) {
+        private DetachedPlugin(String shortName, String splitWhen, String requiredVersion) {
             this.shortName = shortName;
             this.splitWhen = new VersionNumber(splitWhen);
-            this.requireVersion = requireVersion;
+            this.requiredVersion = requiredVersion;
         }
 
         /**
@@ -401,6 +397,16 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public VersionNumber getSplitWhen() {
             return splitWhen;
         }
+
+        /**
+         * Gets the minimum required version for the current version of Jenkins.
+         *
+         * @return the minimum required version for the current version of Jenkins.
+         * @sice 2.16
+         */
+        public VersionNumber getRequiredVersion() {
+            return new VersionNumber(requiredVersion);
+        }
     }
 
     private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
@@ -417,7 +423,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             new DetachedPlugin("windows-slaves", "1.547.*", "1.0"),
             new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
             new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
-            new DetachedPlugin("junit", "1.577.*", "1.0")
+            new DetachedPlugin("junit", "1.577.*", "1.0"),
+            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0")
     ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */

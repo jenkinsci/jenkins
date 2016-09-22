@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.11-SNAPSHOT</version>
+    <version>2.24-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -42,6 +42,8 @@ THE SOFTWARE.
     <stapler.version>1.243</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.7</groovy.version>
+    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
+    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
 
   <dependencies>
@@ -539,7 +541,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.11</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -804,6 +806,10 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 
@@ -879,20 +885,12 @@ THE SOFTWARE.
     </profile>
     <profile>
       <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
+      <!-- FindBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>findbugs</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>High</threshold>
-              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
+      <properties>
+        <!-- In the default profile we always fail the build if there FindBugs errors -->
+        <findbugs.failOnError>true</findbugs.failOnError>
+      </properties>
     </profile>
     <profile>
       <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->

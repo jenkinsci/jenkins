@@ -25,12 +25,15 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -60,11 +63,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * because {@link EnvVars} is only for build variables, not Jenkins itself variables.
  *
  * @author Johannes Ernst
- * @since TODO
+ * @since 2.4
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties implements ServletContextListener {
+public class SystemProperties implements ServletContextListener, OnMaster {
     // this class implements ServletContextListener and is declared in WEB-INF/web.xml
 
     /**
@@ -87,6 +90,8 @@ public class SystemProperties implements ServletContextListener {
      * Called by the servlet container to initialize the {@link ServletContext}.
      */
     @Override
+    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
+            justification = "Currently Jenkins instance may have one ond only one context")
     public void contextInitialized(ServletContextEvent event) {
         theContext = event.getServletContext();
     }
@@ -203,6 +208,21 @@ public class SystemProperties implements ServletContextListener {
             return Boolean.parseBoolean(v);
         }
         return def;
+    }
+
+    /**
+     * Returns {@link Boolean#TRUE} if the named system property exists and is equal to the string {@code "true}
+     * (ignoring case), returns {@link Boolean#FALSE} if the system property exists and doesn't equal {@code "true}
+     * otherwise returns {@code null} if the named system property does not exist.
+     *
+     * @param name the system property name.
+     * @return {@link Boolean#TRUE}, {@link Boolean#FALSE} or {@code null}
+     * @since 2.16
+     */
+    @CheckForNull
+    public static Boolean optBoolean(String name) {
+        String v = getString(name);
+        return v == null ? null : Boolean.parseBoolean(v);
     }
     
     /**

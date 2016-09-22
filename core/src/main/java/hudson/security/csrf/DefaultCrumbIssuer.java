@@ -137,6 +137,11 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
 
         @Override
         public DefaultCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            if (req == null) {
+                // This state is prohibited according to the Javadoc of the super method.
+                throw new FormException("DefaultCrumbIssuer new instance method is called for null Stapler request. "
+                        + "Such call is prohibited.", "req");
+            }
             return req.bindJSON(DefaultCrumbIssuer.class, formData);
         }
     }

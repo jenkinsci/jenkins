@@ -28,6 +28,22 @@ public class CliProtocol2 extends CliProtocol {
         return "CLI2-connect";
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return "Jenkins CLI Protocol/2";
+    }
+
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         new Handler2(nio.getHub(), socket).run();

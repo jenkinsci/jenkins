@@ -48,14 +48,15 @@ import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
-import hudson.util.io.ReopenableFileOutputStream;
-import hudson.util.io.ReopenableRotatingFileOutputStream;
+import hudson.util.io.RewindableFileOutputStream;
+import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
+import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.kohsuke.stapler.HttpRedirect;
@@ -110,7 +111,7 @@ public class SlaveComputer extends Computer {
     /**
      * Perpetually writable log file.
      */
-    private final ReopenableFileOutputStream log;
+    private final RewindableFileOutputStream log;
 
     /**
      * {@link StreamTaskListener} that wraps {@link #log}, hence perpetually writable.
@@ -137,7 +138,7 @@ public class SlaveComputer extends Computer {
 
     public SlaveComputer(Slave slave) {
         super(slave);
-        this.log = new ReopenableRotatingFileOutputStream(getLogFile(),10);
+        this.log = new RewindableRotatingFileOutputStream(getLogFile(), 10);
         this.taskListener = new StreamTaskListener(decorate(this.log));
         assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
     }
@@ -541,7 +542,7 @@ public class SlaveComputer extends Computer {
         // it'll have a catastrophic impact on the communication.
         channel.pinClassLoader(getClass().getClassLoader());
 
-        channel.call(new SlaveInitializer());
+        channel.call(new SlaveInitializer(DEFAULT_RING_BUFFER_SIZE));
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);
         try {
             for (ComputerListener cl : ComputerListener.all()) {
@@ -804,11 +805,19 @@ public class SlaveComputer extends Computer {
         /**
          * This field is used on each agent to record logs on the agent.
          */
-        static final RingBufferLogHandler SLAVE_LOG_HANDLER = new RingBufferLogHandler();
+        static RingBufferLogHandler SLAVE_LOG_HANDLER;
     }
 
     private static class SlaveInitializer extends MasterToSlaveCallable<Void,RuntimeException> {
+        final int ringBufferSize;
+
+        public SlaveInitializer(int ringBufferSize) {
+            this.ringBufferSize = ringBufferSize;
+        }
+
         public Void call() {
+            SLAVE_LOG_HANDLER = new RingBufferLogHandler(ringBufferSize);
+
             // avoid double installation of the handler. JNLP slaves can reconnect to the master multiple times
             // and each connection gets a different RemoteClassLoader, so we need to evict them by class name,
             // not by their identity.
@@ -866,6 +875,9 @@ public class SlaveComputer extends Computer {
             return new ArrayList<LogRecord>(SLAVE_LOG_HANDLER.getView());
         }
     }
+
+    // use RingBufferLogHandler class name to configure for backward compatibility
+    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
     private static final Logger LOGGER = Logger.getLogger(SlaveComputer.class.getName());
 }

@@ -3,15 +3,23 @@
 </div>
 <div class="modal-body">
 	<div class="jumbotron welcome-panel success-panel">
+		{{#if restartRequired}}
+		<h1>{{translations.installWizard_installComplete_bannerRestart}}</h1>
+		{{else}}
 		<h1>{{translations.installWizard_installComplete_banner}}</h1>
+		{{/if}}
 		
 		{{{message}}}
 
 		{{#if restartRequired}}
-		<p>{{translations.installWizard_installComplete_message}} {{translations.installWizard_installComplete_restartRequiredMessage}}</p>
-		<button type="button" class="btn btn-primary install-done-restart">
-			{{translations.installWizard_installComplete_restartLabel}}
-		</button>
+			{{#if restartSupported}}
+			<p>{{translations.installWizard_installComplete_installComplete_restartRequiredMessage}}</p>
+			<button type="button" class="btn btn-primary install-done-restart">
+				{{translations.installWizard_installComplete_restartLabel}}
+			</button>
+			{{else}}
+			<p>{{translations.installWizard_installComplete_installComplete_restartRequiredNotSupportedMessage}}</p>
+			{{/if}}
 		{{else}}
 		<p>{{translations.installWizard_installComplete_message}}</p>
 		<button type="button" class="btn btn-primary install-done">

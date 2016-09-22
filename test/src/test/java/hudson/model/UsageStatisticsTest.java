@@ -25,9 +25,12 @@ package hudson.model;
 
 import com.google.common.io.Resources;
 import com.trilead.ssh2.crypto.Base64;
+import hudson.ClassicPluginStrategy;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
+import hudson.util.VersionNumber;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -50,7 +53,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -95,8 +101,30 @@ public class UsageStatisticsTest {
         assertTrue(o.has("jobs"));
         assertTrue(o.has("nodes"));
 
+        // Validate the plugins format
+        List<JSONObject> plugins = sortPlugins((List<JSONObject>) o.get("plugins"));
+        Set<String> detached = new TreeSet<>();
+        for (ClassicPluginStrategy.DetachedPlugin p: ClassicPluginStrategy.getDetachedPlugins()) {
+            if (p.getSplitWhen().isOlderThan(Jenkins.getVersion())) {
+                detached.add(p.getShortName());
+            }
+        }
+        Set<String> keys = new TreeSet<>();
+        keys.add("name");
+        keys.add("version");
+        Set<String> reported = new TreeSet<>();
+        for (JSONObject plugin: plugins) {
+            assertThat(plugin.keySet(), is((Set)keys));
+            assertThat(plugin.get("name"), instanceOf(String.class));
+            assertThat(plugin.get("version"), instanceOf(String.class));
+            String name = plugin.getString("name");
+            assertThat("No duplicates", reported.contains(name), is(false));
+            reported.add(name);
+        }
+        reported.retainAll(detached); // ignore the dependencies of the detached plugins
+        assertThat(reported, is(detached));
+
         // Compare content to watch out for backwards compatibility
-        compareWithFile("plugins.json", sortPlugins((List<JSONObject>) o.get("plugins")));
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));
         compareWithFile("nodes.json", o.get("nodes"));
     }
@@ -123,7 +151,7 @@ public class UsageStatisticsTest {
     }
 
     // Plugins can be retrieved in any order, so sorting them so that the test is stable
-    private Object sortPlugins(List<JSONObject> list) {
+    private List<JSONObject> sortPlugins(List<JSONObject> list) {
         List<JSONObject> sorted = new ArrayList<>(list);
         Collections.sort(sorted, new Comparator<JSONObject>() {
             public int compare(JSONObject j1, JSONObject j2) {

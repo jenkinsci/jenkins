@@ -27,6 +27,22 @@ public class JnlpSlaveAgentProtocol2 extends JnlpSlaveAgentProtocol {
         return "JNLP2-connect";
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isOptIn() {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getDisplayName() {
+        return Messages.JnlpSlaveAgentProtocol2_displayName();
+    }
+
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         new Handler2(hub.getHub(),socket).run();

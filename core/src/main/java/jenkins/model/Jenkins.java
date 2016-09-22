@@ -44,13 +44,13 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
-import hudson.LocalPluginManager;
 import hudson.Lookup;
 import hudson.Main;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import jenkins.AgentProtocol;
 import jenkins.util.SystemProperties;
 import hudson.TcpSlaveAgentListener;
 import hudson.UDPBroadcastThread;
@@ -238,8 +238,6 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder.Handle;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -311,6 +309,7 @@ import java.util.logging.Logger;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
+import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
@@ -600,6 +599,34 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private int slaveAgentPort = SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
 
     /**
+     * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
+     * are enabled by default). Will be {@code null} instead of empty to simplify XML format.
+     *
+     * @since 2.16
+     */
+    @CheckForNull
+    private List<String> disabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
+     * Will be {@code null} instead of empty to simplify XML format.
+     *
+     * @since 2.16
+     */
+    @CheckForNull
+    private List<String> enabledAgentProtocols;
+
+    /**
+     * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols} and
+     * {@link #enabledAgentProtocols}.
+     *
+     * @since 2.16
+     * @see #setAgentProtocols(Set)
+     * @see #getAgentProtocols()
+     */
+    private transient Set<String> agentProtocols;
+
+    /**
      * Whitespace-separated labels assigned to the master as a {@link Node}.
      */
     private String label="";
@@ -881,6 +908,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     InitMilestone.ordering()        // forced ordering among key milestones
             );
 
+            // Ensure we reached the final initialization state. Log the error otherwise
+            if (initLevel != InitMilestone.COMPLETED) {
+                LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the startup. " +
+                                "Current state: {0}. " +
+                                "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                                "It is likely an issue with the Initialization task graph. " +
+                                "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
+                                "Please create a bug in Jenkins bugtracker. ",
+                        initLevel);
+            }
+
+
             if(KILL_AFTER_LOAD)
                 System.exit(0);
 
@@ -988,7 +1027,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 if (is!=null && is.skipInitTask(task))  return;
 
                 ACL.impersonate(ACL.SYSTEM); // full access in the initialization thread
-                String taskName = task.getDisplayName();
+                String taskName = InitReactorRunner.getDisplayName(task);
 
                 Thread t = Thread.currentThread();
                 String name = t.getName();
@@ -1000,10 +1039,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if(LOG_STARTUP_PERFORMANCE)
                         LOGGER.info(String.format("Took %dms for %s by %s",
                                 System.currentTimeMillis()-start, taskName, name));
+                } catch (Exception | Error x) {
+                    if (containsLinkageError(x)) {
+                        LOGGER.log(Level.WARNING, taskName + " failed perhaps due to plugin dependency issues", x);
+                    } else {
+                        throw x;
+                    }
                 } finally {
                     t.setName(name);
                     SecurityContextHolder.clearContext();
                 }
+            }
+            private boolean containsLinkageError(Throwable x) {
+                if (x instanceof LinkageError) {
+                    return true;
+                }
+                Throwable x2 = x.getCause();
+                return x2 != null && containsLinkageError(x2);
             }
         };
 
@@ -1046,6 +1098,84 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
         launchTcpSlaveAgentListener();
+    }
+
+    /**
+     * Returns the enabled agent protocols.
+     *
+     * @return the enabled agent protocols.
+     * @since 2.16
+     */
+    public Set<String> getAgentProtocols() {
+        if (agentProtocols == null) {
+            // idempotent, so don't care if we do this concurrently, should all get same result
+            Set<String> result = new TreeSet<>();
+            Set<String> disabled = new TreeSet<>();
+            for (String p : Util.fixNull(disabledAgentProtocols)) {
+                disabled.add(p.trim());
+            }
+            Set<String> enabled = new TreeSet<>();
+            for (String p : Util.fixNull(enabledAgentProtocols)) {
+                enabled.add(p.trim());
+            }
+            for (AgentProtocol p : AgentProtocol.all()) {
+                String name = p.getName();
+                if (name != null && (p.isRequired()
+                        || (!disabled.contains(name) && (!p.isOptIn() || enabled.contains(name))))) {
+                    result.add(name);
+                }
+            }
+            agentProtocols = result;
+            return result;
+        }
+        return agentProtocols;
+    }
+
+    /**
+     * Sets the enabled agent protocols.
+     *
+     * @param protocols the enabled agent protocols.
+     * @since 2.16
+     */
+    public void setAgentProtocols(Set<String> protocols) {
+        Set<String> disabled = new TreeSet<>();
+        Set<String> enabled = new TreeSet<>();
+        for (AgentProtocol p : AgentProtocol.all()) {
+            String name = p.getName();
+            if (name != null && !p.isRequired()) {
+                // we want to record the protocols where the admin has made a conscious decision
+                // thus, if a protocol is opt-in, we record the admin enabling it
+                // if a protocol is opt-out, we record the admin disabling it
+                // We should not transition rapidly from opt-in -> opt-out -> opt-in
+                // the scenario we want to have work is:
+                // 1. We introduce a new protocol, it starts off as opt-in. Some admins decide to test and opt-in
+                // 2. We decide that the protocol is ready for general use. It gets marked as opt-out. Any admins
+                //    that took part in early testing now have their config switched to not mention the new protocol
+                //    at all when they save their config as the protocol is now opt-out. Any admins that want to
+                //    disable it can do so and will have their preference recorded.
+                // 3. We decide that the protocol needs to be retired. It gets switched back to opt-in. At this point
+                //    the initial opt-in admins, assuming they visited an upgrade to a master with step 2, will
+                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a master
+                //    with step 2, well there is not much we can do to differentiate them from somebody who is upgrading
+                //    from a previous step 3 master and had needed to keep the protocol turned on.
+                //
+                // What we should never do is flip-flop: opt-in -> opt-out -> opt-in -> opt-out as that will basically
+                // clear any preference that an admin has set, but this should be ok as we only ever will be
+                // adding new protocols and retiring old ones.
+                if (p.isOptIn()) {
+                    if (protocols.contains(name)) {
+                        enabled.add(name);
+                    }
+                } else {
+                    if (!protocols.contains(name)) {
+                        disabled.add(name);
+                    }
+                }
+            }
+        }
+        disabledAgentProtocols = disabled.isEmpty() ? null : new ArrayList<>(disabled);
+        enabledAgentProtocols = enabled.isEmpty() ? null : new ArrayList<>(enabled);
+        agentProtocols = null;
     }
 
     private void launchTcpSlaveAgentListener() throws IOException {
@@ -1284,6 +1414,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * If you have an instance of {@code type} and call {@link Describable#getDescriptor()},
      * you'll get the same instance that this method returns.
      */
+    @CheckForNull
     public Descriptor getDescriptor(Class<? extends Describable> type) {
         for( Descriptor d : getExtensionList(Descriptor.class) )
             if(d.clazz==type)
@@ -2856,14 +2987,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
                 // initialize views by inserting the default view if necessary
                 // this is both for clean Jenkins and for backward compatibility.
-                if(views.size()==0) {
+                if(views.size()==0 || primaryView==null) {
                     View v = new AllView(Messages.Hudson_ViewName());
                     setViewOwner(v);
                     views.add(0,v);
                     primaryView = v.getViewName();
-                }
-                if (primaryView==null) {
-                    primaryView = views.get(0).getViewName();
                 }
 
                 if (useSecurity!=null && !useSecurity) {
@@ -3023,15 +3151,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 final Level level = Level.parse(Configuration.getStringConfigParameter("termLogLevel", "FINE"));
 
                 public void onTaskStarted(Task t) {
-                    LOGGER.log(level, "Started " + t.getDisplayName());
+                    LOGGER.log(level, "Started {0}", InitReactorRunner.getDisplayName(t));
                 }
 
                 public void onTaskCompleted(Task t) {
-                    LOGGER.log(level, "Completed " + t.getDisplayName());
+                    LOGGER.log(level, "Completed {0}", InitReactorRunner.getDisplayName(t));
                 }
 
                 public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                    LOGGER.log(SEVERE, "Failed " + t.getDisplayName(), err);
+                    LOGGER.log(SEVERE, "Failed " + InitReactorRunner.getDisplayName(t), err);
                 }
 
                 public void onAttained(Milestone milestone) {
@@ -3458,11 +3586,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
-    @CLIMethod(name="quiet-down")
+    /**
+     * Quiet down Jenkins - preparation for a restart
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     */
     @RequirePOST
-    public HttpRedirect doQuietDown(
-            @Option(name="-block",usage="Block until the system really quiets down and no builds are running") @QueryParameter boolean block,
-            @Option(name="-timeout",usage="If non-zero, only block up to the specified number of milliseconds") @QueryParameter int timeout) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(@QueryParameter boolean block, @QueryParameter int timeout) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(ADMINISTER);
             isQuietingDown = true;
@@ -3479,7 +3610,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new HttpRedirect(".");
     }
 
-    @CLIMethod(name="cancel-quiet-down")
+    /**
+     * Cancel previous quiet down Jenkins - preparation for a restart
+     */
     @RequirePOST // TODO the cancel link needs to be updated accordingly
     public synchronized HttpRedirect doCancelQuietDown() {
         checkPermission(ADMINISTER);
@@ -3714,10 +3847,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Reloads the configuration synchronously.
+     * Beware that this calls neither {@link ItemListener#onLoaded} nor {@link Initializer}s.
      */
     public void reload() throws IOException, InterruptedException, ReactorException {
+        queue.save();
         executeReactor(null, loadTasks());
+
+        // Ensure we reached the final initialization state. Log the error otherwise
+        if (initLevel != InitMilestone.COMPLETED) {
+            LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the configuration reload. " +
+                            "Current state: {0}. " +
+                            "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                            "It is likely an issue with the Initialization task graph. " +
+                            "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
+                            "Please create a bug in Jenkins bugtracker.",
+                    initLevel);
+        }
+
         User.reload();
+        queue.load();
         servletContext.setAttribute("app", this);
     }
 
@@ -4776,7 +4924,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "/signup",
         "/tcpSlaveAgentListener",
         "/federatedLoginService/",
-        "/securityRealm"
+        "/securityRealm",
+        "/instance-identity"
     );
 
     /**
@@ -4800,6 +4949,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // for backward compatibility with <1.75, recognize the tag name "view" as well.
             XSTREAM.alias("view", ListView.class);
             XSTREAM.alias("listView", ListView.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "disabledAgentProtocols", "disabledAgentProtocol", String.class);
+            XSTREAM.addImplicitCollection(Jenkins.class, "enabledAgentProtocols", "enabledAgentProtocol", String.class);
             XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
             XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
             // this seems to be necessary to force registration of converter early enough

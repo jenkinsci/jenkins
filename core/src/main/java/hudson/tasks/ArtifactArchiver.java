@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
@@ -76,7 +77,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Possibly null 'excludes' pattern as in Ant.
      */
-    private String excludes = "";
+    private String excludes;
 
     @Deprecated
     private Boolean latestOnly;
@@ -154,11 +155,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return artifacts;
     }
 
-    public String getExcludes() {
+    public @CheckForNull String getExcludes() {
         return excludes;
     }
 
-    @DataBoundSetter public final void setExcludes(String excludes) {
+    @DataBoundSetter public final void setExcludes(@CheckForNull String excludes) {
         this.excludes = Util.fixEmptyAndTrim(excludes);
     }
 

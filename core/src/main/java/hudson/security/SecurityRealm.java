@@ -523,11 +523,8 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
-        if (StringUtils.isBlank(from)) {
-            from = "/";
-        }
-        from.trim();
-
+        from = StringUtils.defaultIfBlank(from, "/").trim();
+        
         // Encode the return value
         try {
             returnValue = java.net.URLEncoder.encode(from, "UTF-8");

@@ -25,6 +25,7 @@
  */
 package hudson;
 
+import hudson.model.Slave;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -153,11 +154,13 @@ import org.kohsuke.stapler.jelly.InternationalizedStringExpression.RawHtmlArgume
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Utility functions used in views.
@@ -889,10 +892,24 @@ public class Functions {
         return SCM._for(project);
     }
 
+    /**
+     * @since 2.12
+     * @deprecated replaced by {@link Slave.SlaveDescriptor#computerLauncherDescriptors(Slave)}
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.12")
     public static List<Descriptor<ComputerLauncher>> getComputerLauncherDescriptors() {
         return Jenkins.getInstance().<ComputerLauncher,Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class);
     }
 
+    /**
+     * @since 2.12
+     * @deprecated replaced by {@link Slave.SlaveDescriptor#retentionStrategyDescriptors(Slave)}
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.12")
     public static List<Descriptor<RetentionStrategy<?>>> getRetentionStrategyDescriptors() {
         return RetentionStrategy.all();
     }
@@ -913,6 +930,13 @@ public class Functions {
         return MyViewsTabBar.all();
     }
 
+    /**
+     * @deprecated replaced by {@link Slave.SlaveDescriptor#nodePropertyDescriptors(Slave)}
+     * @since 2.12
+     */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("2.12")
     public static List<NodePropertyDescriptor> getNodePropertyDescriptors(Class<? extends Node> clazz) {
         List<NodePropertyDescriptor> result = new ArrayList<NodePropertyDescriptor>();
         Collection<NodePropertyDescriptor> list = (Collection) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
@@ -1756,7 +1780,7 @@ public class Functions {
             }
             return ((Secret) o).getEncryptedValue();
         }
-        if (getIsUnitTest()) {
+        if (getIsUnitTest() && !o.equals(PasswordParameterDefinition.DEFAULT_VALUE)) {
             throw new SecurityException("attempted to render plaintext ‘" + o + "’ in password field; use a getter of type Secret instead");
         }
         return o.toString();

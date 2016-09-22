@@ -25,7 +25,6 @@ package hudson.model;
 
 import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -40,6 +39,7 @@ import hudson.Extension;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.AtomicFileWriter;
 import hudson.util.HexBinaryConverter;
 import hudson.util.Iterators;
@@ -822,11 +822,9 @@ public class Fingerprint implements ModelObject, Saveable {
     public static final class ProjectRenameListener extends ItemListener {
         @Override
         public void onLocationChanged(final Item item, final String oldName, final String newName) {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override public void run() {
-                    locationChanged(item, oldName, newName);
-                }
-            });
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                locationChanged(item, oldName, newName);
+            }
         }
         private void locationChanged(Item item, String oldName, String newName) {
             if (item instanceof AbstractProject) {
@@ -1437,36 +1435,31 @@ public class Fingerprint implements ModelObject, Saveable {
         // Probably it failed due to the missing Item.DISCOVER
         // We try to retrieve the job using SYSTEM user and to check permissions manually.
         final Authentication userAuth = Jenkins.getAuthentication();
-        final boolean[] res = new boolean[] {false};
-        ACL.impersonate(ACL.SYSTEM, new Runnable() {
-            @Override
-            public void run() {
-                final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
-                if (itemBySystemUser == null) {
-                    return;
-                }
-                
-                // To get the item existence fact, a user needs Item.DISCOVER for the item
-                // and Item.READ for all container folders.
-                boolean canDiscoverTheItem = itemBySystemUser.getACL().hasPermission(userAuth, Item.DISCOVER);
-                if (canDiscoverTheItem) {
-                    ItemGroup<?> current = itemBySystemUser.getParent();
-                    do {
-                        if (current instanceof Item) {
-                            final Item item = (Item) current;
-                            current = item.getParent();
-                            if (!item.getACL().hasPermission(userAuth, Item.READ)) {
-                                canDiscoverTheItem = false;
-                            }
-                        } else {
-                            current = null;
-                        }
-                    } while (canDiscoverTheItem && current != null);
-                }
-                res[0] = canDiscoverTheItem;
+        try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+            final Item itemBySystemUser = jenkins.getItemByFullName(fullName);
+            if (itemBySystemUser == null) {
+                return false;
             }
-        });
-        return res[0];
+
+            // To get the item existence fact, a user needs Item.DISCOVER for the item
+            // and Item.READ for all container folders.
+            boolean canDiscoverTheItem = itemBySystemUser.getACL().hasPermission(userAuth, Item.DISCOVER);
+            if (canDiscoverTheItem) {
+                ItemGroup<?> current = itemBySystemUser.getParent();
+                do {
+                    if (current instanceof Item) {
+                        final Item i = (Item) current;
+                        current = i.getParent();
+                        if (!i.getACL().hasPermission(userAuth, Item.READ)) {
+                            canDiscoverTheItem = false;
+                        }
+                    } else {
+                        current = null;
+                    }
+                } while (canDiscoverTheItem && current != null);
+            }
+            return canDiscoverTheItem;
+        }
     }
 
     private static final XStream2 XSTREAM = new XStream2();
@@ -1475,7 +1468,7 @@ public class Fingerprint implements ModelObject, Saveable {
      * Provides the XStream instance this class is using for serialization.
      *
      * @return the XStream instance
-     * @since FIXME
+     * @since 1.655
      */
     @Nonnull
     public static XStream2 getXStream() {
