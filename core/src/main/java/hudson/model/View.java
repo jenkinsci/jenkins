@@ -26,7 +26,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -1168,7 +1168,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
-            Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+            Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
             name = oldname;
         } catch (StreamException e) {
             throw new IOException("Unable to read",e);
