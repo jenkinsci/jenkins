@@ -64,7 +64,7 @@ node('java') {
         }
     }
 }
-
+// TODO  if (!env.CHANGE_ID) { }
 node('docker') {
     timestamps {
         def image
@@ -87,30 +87,24 @@ node('docker') {
                         'WAR=target/jenkins.war',
                     ]) {
                         sh 'make clean'
-                        unstash 'warfile'
+                        unstash 'warfile' // Removed by cleanup previously
                         sh 'make deb rpm suse'
                     }
                     stash(includes: 'target/rpm/*.rpm', name: 'rpm')
                     stash(includes: 'target/suse/*.rpm', name: 'suse')
                     stash(includes: 'target/debian/*.deb', name: 'debian')
+                    sh 'rm -rf target'
                 }
             }
         }
 
-        // Load groovy lib for packaging tests 
-        stage('Load packaging test libs') {
-            sh 'rm -rf lib'
-            dir('lib') {
-                git changelog: false, poll: false, url: 'https://github.com/jenkinsci/packaging.git', branch: 'master'
-                testFlow = load 'workflow/installertest.groovy'
-            }
-            sh 'rm -rf lib'
-        }
-
+        String packagingTestBranch = 'packaging-stable-tests';
+        
         stage('Run installer tests') {
             sh 'rm -rf packaging-tests'
             dir('packaging-tests') {
-                git branch: 'packaging-stable-tests', url: 'https://github.com/jenkinsci/packaging.git'
+                git changelog: false, poll: false, branch: packagingTestBranch, url: 'https://github.com/jenkinsci/packaging.git'
+                testFlow = load 'workflow/installertest.groovy'
                 unstash('rpm')
                 unstash('suse')
                 unstash('debian')
