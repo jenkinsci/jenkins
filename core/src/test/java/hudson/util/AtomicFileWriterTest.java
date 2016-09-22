@@ -2,7 +2,9 @@ package hudson.util;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,18 +17,13 @@ public class AtomicFileWriterTest {
     File af;
     AtomicFileWriter afw;
     String expectedContent = "hello world";
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
 
     @Before
     public void setUp() throws IOException {
-        af = File.createTempFile("AtomicFileWriter", ".tmp");
+        af = tmp.newFile();
         afw = new AtomicFileWriter(af, Charset.defaultCharset());
-    }
-
-    @After
-    public void tearDown() throws IOException {
-        Files.deleteIfExists(af.toPath());
-        Files.deleteIfExists(afw.getTemporaryPath());
     }
 
     @Test
@@ -44,8 +41,8 @@ public class AtomicFileWriterTest {
         afw.flush();
 
         // Then
-        assertTrue("File writer did not properly flush to temporary file",
-                Files.size(afw.getTemporaryPath()) == expectedContent.length());
+        assertEquals("File writer did not properly flush to temporary file",
+                expectedContent.length(), Files.size(afw.getTemporaryPath()));
     }
 
     @Test
@@ -57,7 +54,7 @@ public class AtomicFileWriterTest {
         afw.commit();
 
         // Then
-        assertTrue(Files.size(af.toPath()) == expectedContent.length());
+        assertEquals(expectedContent.length(), Files.size(af.toPath()));
     }
 
     @Test
