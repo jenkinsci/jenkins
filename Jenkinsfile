@@ -74,6 +74,12 @@ node('docker') {
 
             stage('Packaging - Preparation') {
                 image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
+                docker.image('ubuntu:15.10').pull()
+                docker.image('ubuntu:14.04').pull()
+                docker.image('debian:wheezy').pull()
+                docker.image('centos:6').pull()
+                docker.image('centos:7').pull()
+                docker.image('opensuse:13.2').pull()
                 sh 'cd docker && ./build-sudo-images.sh'
             }
 
@@ -99,7 +105,7 @@ node('docker') {
         }
 
         String packagingTestBranch = 'packaging-stable-tests';
-        
+
         stage('Run installer tests') {
             sh 'rm -rf packaging-tests'
             dir('packaging-tests') {
