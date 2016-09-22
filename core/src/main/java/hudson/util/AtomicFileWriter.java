@@ -77,7 +77,8 @@ public class AtomicFileWriter extends Writer {
          * @param charset File charset to write. If null, platform default encoding is chosen.
          */
     public AtomicFileWriter(File f, Charset charset) throws IOException {
-        Path dir = f.toPath().getParent();
+        destFile = f.toPath();
+        Path dir = destFile.getParent();
         try {
             if (Files.notExists(dir)) {
                 Files.createDirectories(dir);
@@ -86,7 +87,6 @@ public class AtomicFileWriter extends Writer {
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
-        destFile = f.toPath();
         if (charset==null)
             charset = Charset.defaultCharset();
         core = Files.newBufferedWriter(tmpFile, charset, StandardOpenOption.SYNC);
