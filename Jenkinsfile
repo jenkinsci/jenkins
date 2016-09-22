@@ -78,17 +78,17 @@ node('docker') {
             }
 
             stage('Packaging - Build') {
-                unstash 'warfile'
-
                 // FIXME needs to be sudo-able packaging container
                 image.inside('-u root') {
                     withEnv([
                         'BRANCH=./branding/jenkins.mk',
                         'BUILDENV=./env/test.mk',
                         'CREDENTIAL=./credentials/test.mk',
-                        'WAR=jenkins.war',
+                        'WAR=target/jenkins.war',
                     ]) {
-                        sh 'make clean deb rpm suse'
+                        sh 'make clean'
+                        unstash 'warfile'
+                        sh 'make deb rpm suse'
                     }
                     stash(includes: 'target/rpm/*.rpm', name: 'rpm')
                     stash(includes: 'target/suse/*.rpm', name: 'suse')
