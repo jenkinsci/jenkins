@@ -65,7 +65,7 @@ node('java') {
     }
 }
 // TODO  if (!env.CHANGE_ID) { }
-node('docker') {
+node('docker && celery') {   // NO KELP PLZ KTHX
     timestamps {
         def image
 
@@ -73,13 +73,16 @@ node('docker') {
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
-                image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
-                docker.image('ubuntu:15.10').pull()
                 docker.image('ubuntu:14.04').pull()
-                docker.image('debian:wheezy').pull()
                 docker.image('centos:6').pull()
-                docker.image('centos:7').pull()
+
+
+                docker.image('ubuntu:15.10').pull()
                 docker.image('opensuse:13.2').pull()
+                docker.image('debian:wheezy').pull()
+                docker.image('centos:7').pull()
+                
+                image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
                 sh 'cd docker && ./build-sudo-images.sh'
             }
 
