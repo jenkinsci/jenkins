@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2016, CloudBees
+Copyright (c) 2016, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <div class="warning">
-        ${%description(it.expectedPortString)}
+        ${%description(it.expectedPort)}
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <div style="float:right">
-                <f:submit name="fix" value="${%Fix}"/>
+                <f:submit name="reset" value="${%reset(it.expectedPort)}"/>
             </div>
         </form>
     </div>

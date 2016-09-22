@@ -1220,6 +1220,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Extension
+    @Restricted(NoExternalUse.class)
     public static class EnforceSlaveAgentPortAdministrativeMonitor extends AdministrativeMonitor {
         @Inject
         Jenkins j;
@@ -1234,15 +1235,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
 
-        public String getExpectedPortString() {
-            return Integer.toString(getExpectedPort());
-        }
-
-        /**
-         * Depending on whether the user said "yes" or "no", send him to the right place.
-         */
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if (req.hasParameter("fix")) {
+            if (req.hasParameter("reset")) {
                 j.setSlaveAgentPort(getExpectedPort());
             }
             rsp.sendRedirect2(req.getContextPath() + "/manage");
