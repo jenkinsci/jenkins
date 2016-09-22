@@ -130,7 +130,7 @@ public class AtomicFileWriter extends Writer {
         try {
             // Try to make an atomic move.
             Files.move(tmpFile, destFile, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
+        } catch (AtomicMoveNotSupportedException e) {
             // If it falls here that means that Atomic move is not supported by the OS.
             // In this case we need to fall-back to a copy option which is supported by all OSes.
             Files.move(tmpFile, destFile, StandardCopyOption.REPLACE_EXISTING);
