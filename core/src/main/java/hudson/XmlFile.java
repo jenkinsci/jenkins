@@ -28,7 +28,7 @@ import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -307,7 +307,7 @@ public final class XmlFile {
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final XppDriver DEFAULT_DRIVER = new XppDriver();
+    private static final Xpp3Driver DEFAULT_DRIVER = new Xpp3Driver();
 
     static {
         JAXP.setNamespaceAware(true);
