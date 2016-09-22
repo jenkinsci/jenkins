@@ -69,6 +69,7 @@ node('docker && celery') {   // NO KELP PLZ KTHX
     timestamps {
         def image
 
+        sh 'docker version'
         dir('packaging') {
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
