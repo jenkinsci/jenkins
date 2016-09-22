@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc.
+Copyright (c) 2016, Daniel Beck, Keith Zantow, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="error">
-    <j:out value="${it.message}"/>
-    <a href="${rootURL}/${it.url}/">${%See the log for more details}</a>.
-  </div>
+    <j:if test="${it.shouldDisplay()}">
+        <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
+        <div id="visible-am-container">
+            <a id="visible-am-button" href="#" onclick="toggleVisibleAmList(event)" title="${%tooltip(it.activeAdministrativeMonitorsCount)}">
+                ${it.activeAdministrativeMonitorsCount}
+            </a>
+            <div id="visible-am-list">
+                <j:forEach var="am" items="${it.activeAdministrativeMonitors}">
+                    <div class="am-message">
+                    <st:include page="message.jelly" it="${am}" />
+                    </div>
+                </j:forEach>
+                <p style="text-align: center; margin: 10px 0 0 0;">
+                    <a href="${rootURL}/manage" onclick="document.location.href='${rootURL}/manage';">${%Manage Jenkins}</a>
+                </p>
+            </div>
+        </div>
+        <script type="text/javascript">
+            document.getElementById("header").appendChild(document.getElementById("visible-am-container"));
+        </script>
+    </j:if>
 </j:jelly>

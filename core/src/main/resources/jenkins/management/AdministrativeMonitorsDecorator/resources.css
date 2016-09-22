@@ -1,0 +1,70 @@
+#visible-am-container {
+    float: right;
+}
+#visible-am-button {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: #e01716;
+    color: #fff;;
+    margin: 0;
+    line-height: 40px;
+    text-decoration: none;
+    min-width: 2em;
+    display: inline-block;
+    position: relative;
+    transition: all .1s;
+}
+#visible-am-button:hover, #visible-am-button:focus, #visible-am-button:active {
+    background: #e23635;
+}
+#visible-am-container.visible #visible-am-button {
+    box-shadow: inset 0px 1px 14px rgba(0,0,0,.5);
+}
+#visible-am-container div#visible-am-list {
+    position: absolute;
+    top: 35px;
+    right: 2%;
+    margin-left:2%;
+    height: auto;
+    z-index: 0;
+    padding: 2em;
+    border: 1px solid #aa;
+    text-align: left;
+    display: block;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 7px 20px rgba(0,0,0,.1);
+    transition: all .15s cubic-bezier(.84,.03,.21,.96);
+    opacity: 0;
+    transform: scale(0);
+}
+#visible-am-container.visible div#visible-am-list {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 1000;
+}
+#visible-am-container #visible-am-button:after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    bottom: -5px;
+    left: 32%;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #fff;
+    opacity: 0;
+    transition: all .05s;
+}
+#visible-am-container.visible #visible-am-button:after {
+    opacity: 1;
+    bottom: 4px;
+    transition: all .25s;
+}
+#visible-am-container .am-message {
+    display: block;
+    line-height: 1.4em;
+    margin-bottom: 1.4em;
+}
