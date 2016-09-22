@@ -1,0 +1,9 @@
+<div>
+    If set, the batch errorlevel result that will be interpreted as an unstable build result.
+    If the final errorlevel matches the value, the build results will be set to unstable and
+    next steps will be continued. Supported values match the widest errorlevel range for Windows
+    like systems. In Windows NT4 and beyond the ERRORLEVEL is stored as a four byte, signed integer,
+    yielding maximum and minimum values of 2147483647 and -2147483648, respectively. Older versions
+    of Windows use 2 bytes. DOS like systems use single byte, yelding errorlevels between 0-255.
+    The value 0 is ignored and does not make the build unstable to keep the default behaviour consistent.
+</div>

@@ -1,21 +1,22 @@
 package hudson.tasks;
 
+import static org.junit.Assert.assertNull;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
+import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
-import hudson.model.Result;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
+
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.test.FakeLauncher;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.PretendSlave;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.PretendSlave;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +74,7 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new Shell("echo abc"));
         p.setAssignedNode(s);
-        
+
         FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
 
         assertEquals(1,s.numLaunch);
@@ -96,54 +97,97 @@ public class ShellTest {
         }
     }
 
-    @Issue("JENKINS-23786")
-    public void testUnstableReturn() throws Exception {
-        if(Functions.isWindows())
-            return;
-
-        PretendSlave returns2 = rule.createPretendSlave(new ReturnCodeFakeLauncher(2));
-        PretendSlave returns1 = rule.createPretendSlave(new ReturnCodeFakeLauncher(1));
-        PretendSlave returns0 = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
-
-        FreeStyleProject p;
-        FreeStyleBuild b;
-
-        /* Unstable=2, error codes 0/1/2 */
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", 2));
-        p.setAssignedNode(returns2);
-        b = assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
-
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", 2));
-        p.setAssignedNode(returns1);
-        b = assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", 2));
-        p.setAssignedNode(returns0);
-        b = assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
-
-        /* unstable=null, error codes 0/1/2 */
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", null));
-        p.setAssignedNode(returns2);
-        b = assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", null));
-        p.setAssignedNode(returns1);
-        b = assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-
-        p = rule.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("", null));
-        p.setAssignedNode(returns0);
-        b = assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
-
-        /* Creating unstable=0 produces unstable=null */
-        assertNull( new Shell("",0).getUnstableReturn() );
-
+    private static Shell createNewShell(String command, Integer unstableReturn) {
+        Shell shell = new Shell(command);
+        shell.setUnstableReturn(unstableReturn);
+        return shell;
     }
 
+    private void nonZeroExitCodeShouldMakeBuildUnstable(int exitCode) throws Exception {
+        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+
+        FreeStyleProject p = rule.createFreeStyleProject();
+        p.getBuildersList().add(createNewShell("", exitCode));
+        p.setAssignedNode(slave);
+        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+    }
+
+    @Test
+    @Issue("JENKINS-23786")
+    public void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
+        assumeFalse(Functions.isWindows());
+        for( int exitCode: new int [] {1, 2, 255}) {
+            nonZeroExitCodeShouldMakeBuildUnstable(exitCode);
+        }
+    }
+
+    private void nonZeroExitCodeShouldBreakTheBuildByDefault(int exitCode) throws Exception {
+        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+
+        FreeStyleProject p;
+
+        p = rule.createFreeStyleProject();
+        p.getBuildersList().add(createNewShell("", null));
+        p.setAssignedNode(slave);
+        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+
+        p = rule.createFreeStyleProject();
+        p.getBuildersList().add(createNewShell("", 0));
+        p.setAssignedNode(slave);
+        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+    }
+
+    @Test
+    @Issue("JENKINS-23786")
+    public void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        for( int exitCode: new int [] {1, 2, 255}) {
+            nonZeroExitCodeShouldBreakTheBuildByDefault(exitCode);
+        }
+    }
+
+    private void nonZeroExitCodeShouldBreakTheBuildIfNotMatching(int exitCode) throws Exception {
+        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(exitCode));
+
+        final int notMatchingExitCode = 44;
+
+        FreeStyleProject p = rule.createFreeStyleProject();
+        p.getBuildersList().add(createNewShell("", notMatchingExitCode));
+        p.setAssignedNode(slave);
+        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+    }
+
+    @Test
+    @Issue("JENKINS-23786")
+    public void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
+        assumeFalse(Functions.isWindows());
+        for( int exitCode: new int [] {1, 2, 255}) {
+            nonZeroExitCodeShouldBreakTheBuildIfNotMatching(exitCode);
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-23786")
+    public void unixExitCodes0ShouldNeverMakeTheBuildUnstable() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
+        for( Integer unstableReturn: new Integer [] {null, 0, 1}) {
+            FreeStyleProject p = rule.createFreeStyleProject();
+            p.getBuildersList().add(createNewShell("", unstableReturn));
+            p.setAssignedNode(slave);
+            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+        }
+    }
+
+    @Issue("JENKINS-23786")
+    @Test
+    public void unixUnstableCodeZeroIsSameAsUnset() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        /* Creating unstable=0 produces unstable=null */
+        assertNull( createNewShell("",0).getUnstableReturn() );
+    }
 
 }

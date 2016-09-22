@@ -29,9 +29,8 @@ f.entry(title:_("Command"),description:_("description",rootURL)) {
 }
 
 f.advanced() {
-
-    f.entry(title:_("Return code to set build unstable"), description:_("If set, the script return code that will be interpreted as an unstable build result.")) {
-        f.number(name: "unstableReturn", value: instance?.unstableReturn, min:1, max:255, step:1)
+    f.entry(title:_("Exit code to set build unstable"), field: "unstableReturn") {
+        f.number(clazz:"positive-number", value: instance?.unstableReturn, min:1, max:255, step:1)
     }
 
 }
