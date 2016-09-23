@@ -76,15 +76,11 @@ node('docker') {
 
             stage('Packaging - Preparation') {
                 sh 'docker rmi ubuntu:14.04 ubuntu:15.10 centos:6 opensuse:13.2 centos:7 || true'
-                sh 'docker pull ubuntu:14.04'
-                docker.image('ubuntu:14.04').pull()
-                docker.image('centos:6').pull()
-
-
-                docker.image('ubuntu:15.10').pull()
-                docker.image('opensuse:13.2').pull()
-                docker.image('debian:wheezy').pull()
-                docker.image('centos:7').pull()
+                sh 'docker pull ubuntu:14.04 '
+                sh 'docker pull centos:6'
+                sh 'docker pull ubuntu:15.10'
+                sh 'docker pull debian:wheezy'
+                sh 'docker pull opensuse:13.2'
                 
                 image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
                 sh 'cd docker && ./build-sudo-images.sh'
