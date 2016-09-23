@@ -1104,11 +1104,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return slaveAgentPort;
     }
 
+    public boolean isSlaveAgentPortEnforced() {
+        return Jenkins.SLAVE_AGENT_PORT_ENFORCE;
+    }
+
     /**
      * @param port
      *      0 to indicate random available TCP port. -1 to disable this service.
      */
     public void setSlaveAgentPort(int port) throws IOException {
+        if (!SLAVE_AGENT_PORT_ENFORCE) {
+            forceSetSlaveAgentPort(port);
+        }
+    }
+
+    private void forceSetSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
         launchTcpSlaveAgentListener();
     }
@@ -1240,7 +1250,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            j.setSlaveAgentPort(getExpectedPort());
+            j.forceSetSlaveAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
         }
 
