@@ -76,6 +76,7 @@ node('docker') {
 
             stage('Packaging - Preparation') {
                 sh 'docker rmi ubuntu:14.04 ubuntu:15.10 centos:6 opensuse:13.2 centos:7'
+                sh 'docker pull ubuntu:14.04 ubuntu:15.10 centos:6 opensuse:13.2 centos:7'
                 docker.image('ubuntu:14.04').pull()
                 docker.image('centos:6').pull()
 
