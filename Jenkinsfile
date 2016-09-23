@@ -26,6 +26,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
+/*
 node('java') {
     timestamps {
         // First stage is actually checking out the source. Since we're using Multibranch
@@ -54,18 +55,18 @@ node('java') {
         // Once we've built, archive the artifacts and the test results.
         stage('Archive Artifacts / Test Results') {
             /* Stash jenkins.war for later packaging preparations */
-            stash includes: '**/target/*.war', name: 'warfile'
+     //       stash includes: '**/target/*.war', name: 'warfile'
             // UNCOMMENT: commented out to avoid the transit hit during testing
             //archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
             //            fingerprint: true
-            if (runTests) {
-                junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
-            }
-        }
-    }
-}
+     //       if (runTests) {
+     //           junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+     //      }
+     //   }
+   // }
+//}
 // TODO  if (!env.CHANGE_ID) { }
-node('docker && celery') {   // NO KELP PLZ KTHX
+node('docker') {
     timestamps {
         def image
 
@@ -74,6 +75,7 @@ node('docker && celery') {   // NO KELP PLZ KTHX
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
+                sh 'docker rmi ubuntu:14.04 ubuntu:15.10 centos:6 opensuse:13.2 centos:7'
                 docker.image('ubuntu:14.04').pull()
                 docker.image('centos:6').pull()
 
