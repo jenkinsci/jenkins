@@ -24,12 +24,12 @@
 package jenkins.util;
 
 import javax.servlet.ServletContextEvent;
-import net.sourceforge.htmlunit.corejs.javascript.RhinoSecurityManager;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.jenkinsci.remoting.RoleChecker;
+import org.hamcrest.Matchers;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,10 +85,7 @@ public class SystemPropertiesTest {
      * @param value value of the property
      */
     protected void setWebAppInitParameter(String property, String value) {
-        if (!(j.jenkins.servletContext instanceof ContextHandler.Context)) {
-            throw new IllegalArgumentException("This only works with Jetty");
-        }
-
+        Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(ContextHandler.Context.class));
         ((ContextHandler.Context)j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
     }
 }
