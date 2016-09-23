@@ -1104,6 +1104,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return slaveAgentPort;
     }
 
+    /**
+     * @since XXX
+     */
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.SLAVE_AGENT_PORT_ENFORCE;
     }

@@ -49,6 +49,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -72,6 +75,11 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().getSlaveAgentPort();
     }
 
+    /**
+     * @since XXX
+     * @return true if the slave agent port is enforced on this instance.
+     */
+    @Restricted(DoNotUse.class) // only for index.groovy
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.getInstance().isSlaveAgentPortEnforced();
     }
