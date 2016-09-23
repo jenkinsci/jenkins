@@ -170,6 +170,7 @@ public final class TcpSlaveAgentListener extends Thread {
             if (localAddress instanceof InetSocketAddress) {
                 InetSocketAddress address = (InetSocketAddress) localAddress;
                 Socket client = new Socket(address.getHostName(), address.getPort());
+                client.setSoTimeout(1000); // waking the acceptor loop should be quick
                 new PingAgentProtocol().connect(client);
             }
         } catch (IOException e) {
@@ -258,6 +259,7 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
+                s.
                 Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
 
                 if (header.startsWith("GET / ")) {
