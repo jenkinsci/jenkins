@@ -1230,15 +1230,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return jenkins.model.Messages.EnforceSlaveAgentPortAdministrativeMonitor_displayName();
         }
 
+        public String getSystemPropertyName() {
+            return Jenkins.class.getName() + ".slaveAgentPort";
+        }
+
         public int getExpectedPort() {
             int slaveAgentPort = j.slaveAgentPort;
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
 
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
-            if (req.hasParameter("reset")) {
-                j.setSlaveAgentPort(getExpectedPort());
-            }
+            j.setSlaveAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
         }
 
