@@ -840,6 +840,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @param number of executors
      */
+    @GuardedBy("hudson.model.Queue.lock")
     private void setNumExecutors(int n) {
         this.numExecutors = n;
         final int diff = executors.size()-n;
