@@ -481,7 +481,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     c.getMethods();
                     c.getFields();
                     LOGGER.log(Level.FINER, "{0} looks OK", c);
-                    while (c != Object.class) {
+                    while (c != null && c != Object.class) {
                         c.getGenericSuperclass();
                         c = c.getSuperclass();
                     }
