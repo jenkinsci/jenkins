@@ -259,7 +259,6 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private void respondHello(String header, Socket s) throws IOException {
             try {
-                s.
                 Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
 
                 if (header.startsWith("GET / ")) {
