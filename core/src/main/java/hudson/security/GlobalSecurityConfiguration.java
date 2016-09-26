@@ -76,7 +76,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     }
 
     /**
-     * @since XXX
+     * @since TODO
      * @return true if the slave agent port is enforced on this instance.
      */
     @Restricted(DoNotUse.class) // only for index.groovy
