@@ -221,7 +221,7 @@ public class InstallState implements ExtensionPoint {
      * {@code <installState class="jenkins.install.InstallState$CreateAdminUser" resolves-to="jenkins.install.InstallState">}
      * @see #UNUSED_INNER_CLASSES
      */
-    public Object readResolve() {
+    protected Object readResolve() {
         // If we get invalid state from the configuration, fallback to unknown
         if (StringUtils.isBlank(name)) {
             LOGGER.log(Level.WARNING, "Read install state with blank name: ''{0}''. It will be ignored", name);
