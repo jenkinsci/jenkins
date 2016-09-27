@@ -1348,6 +1348,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @return An input stream from the log file. 
      *   If the log file does not exist, the error message will be returned to the output.
      * @since 1.349
+     * @deprecated use {@link #getLogReader()} to ensure encoding is handled correctly
      */
     public @Nonnull InputStream getLogInputStream() throws IOException {
     	File logFile = getLogFile();
@@ -1917,7 +1918,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     @Deprecated
     public @Nonnull String getLog() throws IOException {
-        return Util.loadFile(getLogFile(),getCharset());
+        try (Reader log = getLogReader()) {
+            return IOUtils.toString(log);
+        }
     }
 
     /**
@@ -1935,7 +1938,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (maxLines == 0) {
             return logLines;
         }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
+        BufferedReader reader = new BufferedReader(getLogReader());
         try {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 logLines.add(line);
