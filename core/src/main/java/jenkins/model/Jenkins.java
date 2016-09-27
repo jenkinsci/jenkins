@@ -1116,7 +1116,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      0 to indicate random available TCP port. -1 to disable this service.
      */
     public void setSlaveAgentPort(int port) throws IOException {
-        if (!SLAVE_AGENT_PORT_ENFORCE) {
+        if (SLAVE_AGENT_PORT_ENFORCE) {
+            LOGGER.log(Level.WARNING, "setSlaveAgentPort({0}) call ignored because system property {1} is true", new String[] { Integer.toString(port), Jenkins.class.getName()+".slaveAgentPortEnforce" });
+        } else {
             forceSetSlaveAgentPort(port);
         }
     }
