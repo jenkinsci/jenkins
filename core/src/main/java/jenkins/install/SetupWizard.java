@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -117,9 +118,9 @@ public class SetupWizard extends PageDecorator {
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
     
-                    // Shut down all the ports we can by default:
-                    jenkins.setSlaveAgentPort(-1); // -1 to disable
-    
+                    // Disable jnlp by default, but honor system properties
+                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
+
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     
