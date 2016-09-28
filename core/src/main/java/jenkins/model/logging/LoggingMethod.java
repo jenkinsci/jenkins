@@ -50,14 +50,14 @@ public abstract class LoggingMethod implements Serializable {
     /**
      * Provides the output stream for given run.
      * @param run Run
-     * @return
+     * @return output stream
      */
     public abstract OutputStreamWrapper provideOutStream(Run run);
 
     /**
      * Provides the error stream for given run.
      * @param run Run
-     * @return
+     * @return error stream
      */
     public abstract OutputStreamWrapper provideErrStream(Run run);
 
