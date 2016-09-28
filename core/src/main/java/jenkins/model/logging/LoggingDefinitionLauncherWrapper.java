@@ -85,8 +85,7 @@ public class LoggingDefinitionLauncherWrapper {
             try {
                 final RemoteLaunchCallable callable = new RemoteLaunchCallable(
                     ps.cmds(), ps.masks(), ps.envs(), in,
-                    false, out, false, err,
-                    false, ps.quiet(), workDir, listener);
+                    out, err, ps.quiet(), workDir, listener);
 
                 return new Launcher.RemoteLauncher.ProcImpl(getChannel().call(callable));
             } catch (InterruptedException e) {
@@ -105,10 +104,9 @@ public class LoggingDefinitionLauncherWrapper {
             private final OutputStream err;
             private final String workDir;
             private final TaskListener listener;
-            private final boolean reverseStdin, reverseStdout, reverseStderr;
             private final boolean quiet;
 
-            RemoteLaunchCallable(List<String> cmd, boolean[] masks, String[] env, InputStream in, boolean reverseStdin, OutputStream out, boolean reverseStdout, OutputStream err, boolean reverseStderr, boolean quiet, String workDir, TaskListener listener) {
+            RemoteLaunchCallable(List<String> cmd, boolean[] masks, String[] env, InputStream in, OutputStream out, OutputStream err, boolean quiet, String workDir, TaskListener listener) {
                 this.cmd = new ArrayList<String>(cmd);
                 this.masks = masks;
                 this.env = env;
@@ -117,9 +115,6 @@ public class LoggingDefinitionLauncherWrapper {
                 this.err = err;
                 this.workDir = workDir;
                 this.listener = listener;
-                this.reverseStdin = reverseStdin;
-                this.reverseStdout = reverseStdout;
-                this.reverseStderr = reverseStderr;
                 this.quiet = quiet;
             }
 
@@ -128,15 +123,6 @@ public class LoggingDefinitionLauncherWrapper {
                 ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
                 if (workDir != null) {
                     ps.pwd(workDir);
-                }
-                if (reverseStdin) {
-                    ps.writeStdin();
-                }
-                if (reverseStdout) {
-                    ps.readStdout();
-                }
-                if (reverseStderr) {
-                    ps.readStderr();
                 }
 
                 final Proc p = ps.start();
