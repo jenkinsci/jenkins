@@ -26,7 +26,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
-/*
+
 node('java') {
     timestamps {
         // First stage is actually checking out the source. Since we're using Multibranch
@@ -54,18 +54,18 @@ node('java') {
 
         // Once we've built, archive the artifacts and the test results.
         stage('Archive Artifacts / Test Results') {
-            /* Stash jenkins.war for later packaging preparations */
-     //       stash includes: '**/target/*.war', name: 'warfile'
+            // Stash jenkins.war for later packaging preparations
+           stash includes: '**/target/*.war', name: 'warfile'
             // UNCOMMENT: commented out to avoid the transit hit during testing
             //archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
             //            fingerprint: true
-     //       if (runTests) {
-     //           junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
-     //      }
-     //   }
-   // }
-//}
-// TODO  if (!env.CHANGE_ID) { }
+            if (runTests) {
+                junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+           }
+        }
+    }
+}
+// TODO  if (!env.CHANGE_ID) { }  to not run for PR builds
 node('docker') {
     timestamps {
         def image
@@ -75,7 +75,6 @@ node('docker') {
             git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
 
             stage('Packaging - Preparation') {
-                sh 'docker rmi ubuntu:14.04 ubuntu:15.10 centos:6 opensuse:13.2 centos:7 || true'
                 sh 'docker pull ubuntu:14.04 '
                 sh 'docker pull centos:6'
                 sh 'docker pull ubuntu:15.10'
