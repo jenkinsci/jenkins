@@ -211,12 +211,9 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
                 text = null;
             }
             if (text != null) {
-                OutputStream o = rsp.getCompressedOutputStream(req);
-                try {
+                try (OutputStream o = rsp.getCompressedOutputStream(req)) {
                     rsp.setContentType("text/plain;charset=UTF-8");
                     o.write(text.getBytes("UTF-8"));
-                } finally {
-                    o.close();
                 }
             } else {
                 super.doXml(req, rsp, xpath, wrapper, tree, depth);
