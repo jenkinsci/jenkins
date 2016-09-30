@@ -1935,8 +1935,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if (maxLines == 0) {
             return logLines;
         }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()), getCharset()))) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 logLines.add(line);
                 ++lineCount;
@@ -1947,8 +1946,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                 if (lineCount > maxLines)
                     logLines.remove(0);
             }
-        } finally {
-            reader.close();
         }
 
         // If the log has been truncated, include that information.

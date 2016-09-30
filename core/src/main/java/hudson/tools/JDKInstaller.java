@@ -273,11 +273,8 @@ public class JDKInstaller extends ToolInstaller {
             if (r != 0) {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
-                InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
-                try {
-                    IOUtils.copy(in,new OutputStreamWriter(out));
-                } finally {
-                    in.close();
+                try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
+                    IOUtils.copy(in, new OutputStreamWriter(out));
                 }
                 throw new AbortException();
             }
@@ -521,11 +518,8 @@ public class JDKInstaller extends ToolInstaller {
                     File tmp = new File(cache.getPath()+".tmp");
                     try {
                         tmp.getParentFile().mkdirs();
-                        FileOutputStream out = new FileOutputStream(tmp);
-                        try {
+                        try (FileOutputStream out = new FileOutputStream(tmp)) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
-                        } finally {
-                            out.close();
                         }
 
                         tmp.renameTo(cache);

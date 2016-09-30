@@ -4157,9 +4157,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
-            PrintWriter w = rsp.getWriter();
-            w.println("Shutting down");
-            w.close();
+            try (PrintWriter w = rsp.getWriter()) {
+                w.println("Shutting down");
+            }
         }
 
         System.exit(0);

@@ -83,12 +83,9 @@ public class XStreamDOMTest {
 
     @Test
     public void testUnmarshal() throws Exception {
-        InputStream is = XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml");
         Foo foo;
-        try {
+        try (InputStream is = XStreamDOMTest.class.getResourceAsStream("XStreamDOMTest.data1.xml")) {
             foo = (Foo) xs.fromXML(is);
-        } finally {
-            is.close();
         }
         assertEquals("test1",foo.bar.getTagName());
         assertEquals("value",foo.bar.getAttribute("key"));

@@ -1156,28 +1156,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // data
             XMLUtils.safeTransform(source, new StreamResult(out));
             out.close();
-        } catch (TransformerException e) {
-            throw new IOException("Failed to persist configuration.xml", e);
-        } catch (SAXException e) {
+        } catch (TransformerException|SAXException e) {
             throw new IOException("Failed to persist configuration.xml", e);
         }
 
         // try to reflect the changes by reloading
-        InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
-        try {
+
+        try (InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")))){
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
             Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
             name = oldname;
-        } catch (StreamException e) {
+        } catch (StreamException | ConversionException | Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
-        } catch(ConversionException e) {
-            throw new IOException("Unable to read",e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read",e);
-        } finally {
-            in.close();
         }
         save();
     }
@@ -1302,20 +1294,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
      */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
-        InputStream in = new BufferedInputStream(xml);
-        try {
+
+        try (InputStream in = new BufferedInputStream(xml)) {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
             if (name != null) v.name = name;
             checkGoodName(v.name);
             return v;
-        } catch(StreamException e) {
+        } catch(StreamException|ConversionException|Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
-        } catch(ConversionException e) {
-            throw new IOException("Unable to read",e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read",e);
-        } finally {
-            in.close();
         }
     }
 

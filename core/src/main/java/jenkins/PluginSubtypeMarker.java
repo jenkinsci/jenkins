@@ -111,11 +111,8 @@ public class PluginSubtypeMarker extends AbstractProcessor {
     private void write(TypeElement c) throws IOException {
         FileObject f = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
                 "", "META-INF/services/hudson.Plugin");
-        Writer w = new OutputStreamWriter(f.openOutputStream(),"UTF-8");
-        try {
+        try (Writer w = new OutputStreamWriter(f.openOutputStream(), "UTF-8")) {
             w.write(c.getQualifiedName().toString());
-        } finally {
-            w.close();
         }
     }
 

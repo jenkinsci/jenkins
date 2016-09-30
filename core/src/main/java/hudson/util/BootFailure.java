@@ -60,8 +60,7 @@ public abstract class BootFailure extends ErrorObject {
             File f = getBootFailureFile(home);
             try {
                 if (f.exists()) {
-                    BufferedReader failureFileReader = new BufferedReader(new FileReader(f));
-                    try {
+                    try (BufferedReader failureFileReader = new BufferedReader(new FileReader(f))) {
                         String line;
                         while ((line=failureFileReader.readLine())!=null) {
                             try {
@@ -70,8 +69,6 @@ public abstract class BootFailure extends ErrorObject {
                                 // ignore any parse error
                             }
                         }
-                    } finally {
-                        failureFileReader.close();
                     }
                 }
             } catch (IOException e) {

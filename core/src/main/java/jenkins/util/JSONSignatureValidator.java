@@ -143,10 +143,9 @@ public class JSONSignatureValidator {
             if (cert.endsWith("/") || cert.endsWith(".txt"))  {
                 continue;       // skip directories also any text files that are meant to be documentation
             }
-            InputStream in = j.servletContext.getResourceAsStream(cert);
-            if (in == null) continue; // our test for paths ending in / should prevent this from happening
             Certificate certificate;
-            try {
+            try (InputStream in = j.servletContext.getResourceAsStream(cert)) {
+                if (in == null) continue; // our test for paths ending in / should prevent this from happening
                 certificate = cf.generateCertificate(in);
             } catch (CertificateException e) {
                 LOGGER.log(Level.WARNING, String.format("Webapp resources in /WEB-INF/update-center-rootCAs are "
@@ -155,8 +154,6 @@ public class JSONSignatureValidator {
                                 + "resource for now.",
                         cert), e);
                 continue;
-            } finally {
-                in.close();
             }
             try {
                 TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);

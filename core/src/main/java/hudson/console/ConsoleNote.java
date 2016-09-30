@@ -170,11 +170,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
-        try {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf))) {
             oos.writeObject(this);
-        } finally {
-            oos.close();
         }
 
         ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
@@ -223,12 +220,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(postamble,POSTAMBLE))
                 return null;    // not a valid postamble
 
-            ObjectInputStream ois = new ObjectInputStreamEx(
-                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
-            try {
+            try (ObjectInputStream ois = new ObjectInputStreamEx(
+                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader)) {
                 return (ConsoleNote) ois.readObject();
-            } finally {
-                ois.close();
             }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.

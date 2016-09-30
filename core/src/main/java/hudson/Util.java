@@ -198,14 +198,11 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile),charset));
-        try {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile), charset))) {
             char[] buf = new char[1024];
             int len;
-            while((len=r.read(buf,0,buf.length))>0)
-               str.append(buf,0,len);
-        } finally {
-            r.close();
+            while ((len = r.read(buf, 0, buf.length)) > 0)
+                str.append(buf, 0, len);
         }
 
         return str.toString();
@@ -768,12 +765,9 @@ public class Util {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
 
             byte[] buffer = new byte[1024];
-            DigestInputStream in =new DigestInputStream(source,md5);
-            try {
-                while(in.read(buffer)>=0)
+            try (DigestInputStream in = new DigestInputStream(source, md5)) {
+                while (in.read(buffer) >= 0)
                     ; // simply discard the input
-            } finally {
-                in.close();
             }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
@@ -806,11 +800,8 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
+        try (InputStream is = new FileInputStream(file)) {
             return getDigestOf(new BufferedInputStream(is));
-        } finally {
-            is.close();
         }
     }
 
