@@ -37,12 +37,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ * CLI Command, which disconnects nodes.
  * @author pjanouse
- * @since TODO
+ * @since 2.14
  */
 @Extension
 public class DisconnectNodeCommand extends CLICommand {
-    @Argument(metaVar = "NAME", usage = "Slave name, or empty string for master; comama-separated list is supported", required = true, multiValued = true)
+    @Argument(metaVar = "NAME", usage = "Slave name, or empty string for master; comma-separated list is supported", required = true, multiValued = true)
     private List<String> nodes;
 
     @Option(name = "-m", usage = "Record the reason about why you are disconnecting this node")
@@ -94,7 +95,7 @@ public class DisconnectNodeCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
         }
         return 0;
     }

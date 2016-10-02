@@ -34,13 +34,14 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ * CLI command, which deletes Jenkins nodes.
  * @author pjanouse
- * @since TODO
+ * @since 1.618
  */
 @Extension
 public class DeleteNodeCommand extends CLICommand {
 
-    @Argument(usage="Nodes name to delete", required=true, multiValued=true)
+    @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
     private List<String> nodes;
 
     @Override
@@ -82,7 +83,7 @@ public class DeleteNodeCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
         }
         return 0;
     }

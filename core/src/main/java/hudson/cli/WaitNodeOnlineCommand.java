@@ -28,8 +28,9 @@ import hudson.model.Node;
 import org.kohsuke.args4j.Argument;
 
 /**
+ * CLI command, which waits till the node switches to the online state.
  * @author pjanouse
- * @since TODO
+ * @since 2.16
  */
 @Extension
 public class WaitNodeOnlineCommand extends CLICommand {

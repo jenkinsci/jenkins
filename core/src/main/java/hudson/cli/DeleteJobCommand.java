@@ -34,8 +34,9 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
+ * CLI command, which deletes a job or multiple jobs.
  * @author pjanouse
- * @since TODO
+ * @since 1.649
  */
 @Extension
 public class DeleteJobCommand extends CLICommand {
@@ -83,7 +84,7 @@ public class DeleteJobCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
         }
         return 0;
     }

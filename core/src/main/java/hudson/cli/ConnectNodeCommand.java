@@ -37,13 +37,14 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ * Reconnect to a node or nodes.
  * @author pjanouse
- * @since TODO
+ * @since 2.6
  */
 @Extension
 public class ConnectNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comama-separated list is supported", required=true, multiValued=true)
+    @Argument(metaVar="NAME", usage="Slave name, or empty string for master; comma-separated list is supported", required=true, multiValued=true)
     private List<String> nodes;
 
     @Option(name="-f", usage="Cancel any currently pending connect operation and retry from scratch")
@@ -96,7 +97,7 @@ public class ConnectNodeCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
         }
         return 0;
     }

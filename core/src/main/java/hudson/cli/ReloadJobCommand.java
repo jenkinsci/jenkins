@@ -38,8 +38,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Reloads job from the disk.
  * @author pjanouse
- * @since TODO
+ * @since 1.633
  */
 @Extension
 public class ReloadJobCommand extends CLICommand {
@@ -100,7 +101,7 @@ public class ReloadJobCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
         }
         return 0;
     }
