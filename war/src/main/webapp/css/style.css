@@ -22,6 +22,100 @@
  * THE SOFTWARE.
  */
 
+/* General page layout */
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0 0 40px 0;
+}
+
+#header {
+  background-color: #000000;
+  height: 40px;
+}
+
+#header div {
+  display: inline-block;
+  height: inherit;
+}
+#header .logo {
+  margin-left: 16px;
+}
+
+#jenkins-home-link {
+  position: absolute;
+  height: 40px;
+}
+
+#jenkins-head-icon {
+  position: absolute;
+  bottom: 0px;
+}
+#jenkins-name-icon {
+  position: absolute;
+  bottom: 3px;
+  left: 32px;
+}
+
+#header .searchbox, #header .login {
+  float: right;
+  padding: 6px 11px;
+}
+
+#breadcrumbBar, #footer-container, .top-sticker-inner {
+  background-color: #f6faf2;
+}
+
+#page-body.clear:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+#side-panel {
+  padding: 15px 15px 40px 15px;
+  float: left;
+  width: 320px;
+}
+
+#main-panel {
+  padding: 15px 15px 40px 15px;
+  margin-left: 320px;
+}
+
+body#jenkins.j-hide-left #main-panel {
+  max-width:70em;
+  margin:0 auto;
+}
+
+@media (max-width: 750px) {
+  #side-panel {
+    width: 100%;
+    float: none;
+    padding-bottom: 20px;
+  }
+
+  #main-panel {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1170px) {
+  #side-panel {
+    width: 360px;
+  }
+
+  #main-panel {
+    margin-left: 360px;
+  }
+}
+
 /* task */
 
 #tasks {
@@ -39,6 +133,28 @@
 #buildQueue {
   margin-bottom: 20px;
 }
+
+/* footer */
+
+footer {
+  padding: 11px 0;
+  background-color: #f6faf2;
+  border-top: 1px solid #d3d7cf;
+  border-bottom: 1px solid #f6faf2;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  clear: both;
+  font-size: 12px;
+  text-align: right;
+}
+
+footer span {
+  margin-left: 15px;
+  line-height: 14px;
+}
+
 
 /* Fonts etc */
 
@@ -461,9 +577,6 @@ table.stripped-even tr:nth-child(even) {
 }
 table.stripped-odd tr:nth-child(odd) {
   background: #fbfbfb;
-}
-table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
-  background: #e8e8e8 !important;
 }
 
 div.pane-header {
@@ -1024,7 +1137,7 @@ table.parameters > tbody:hover {
   padding: 3px 4px 3px 4px;
 }
 
-.build-row.model-link-active {
+.build-row:hover, .build-row.model-link-active {
   background: #e8e8e8 !important;
 }
 
@@ -1163,8 +1276,8 @@ table.parameters > tbody:hover {
 .comboBoxList {
   border: 1px solid #000;
   overflow: visible;
-  background-color: white;
-  color: black;
+  color: MenuText;
+  background-color: Menu;
 }
 .comboBoxSelectedItem {
   background-color: Highlight;
@@ -1311,12 +1424,6 @@ TABLE.fingerprint-in-build TD {
   opacity: 0.2;
 }
 
-#plugins tr.has-dependants-but-disabled .enable input {
-  pointer-events: auto;
-  opacity: 1.0;
-  visibility: visible;
-}
-
 #plugins tr.has-disabled-dependency .enable input {
   opacity: 0.4;
 }
@@ -1418,6 +1525,12 @@ DIV.to-be-removed { display: none; }
 /* ========================= Other form related CSS ========================= */
 
 .row-set-end { display: none; }
+
+td.setting-main .CodeMirror {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
 
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
@@ -1862,16 +1975,22 @@ table#legend-table td {
     border-color: #faebcc;
 }
 
-body.no-decoration #main-panel {
+body.main-panel-only #side-panel {
+    width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+body.main-panel-only #main-panel {
     margin: 0 auto !important;
+    min-width: 100%;
+    padding: 2em 2em;
+    display: inline-block;
+    width: auto;
 }
-body.no-decoration #page-head,
-body.no-decoration #side-panel,
-body.no-decoration footer {
-    display: none;
-}
-body.no-sticker #bottom-sticker {
-    display: none;
+@media screen and (min-width: 1024px) {
+    body.main-panel-only #main-panel {
+        padding: 2em 10%;
+    }
 }
 
 /* see the Icon class for the definition of these CSS classes */
