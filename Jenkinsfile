@@ -96,6 +96,7 @@ node('docker') {
                     ]) {
                         sh 'make clean'
                         unstash 'warfile' // Removed by cleanup previously
+                        sh 'find . -iname jenkins.war'
                         sh 'make deb rpm suse'
                     }
                     stash(includes: 'target/rpm/*.rpm', name: 'rpm')
