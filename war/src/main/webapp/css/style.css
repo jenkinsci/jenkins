@@ -1526,6 +1526,12 @@ DIV.to-be-removed { display: none; }
 
 .row-set-end { display: none; }
 
+td.setting-main .CodeMirror {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
 /* ========================= Yahoo UI style adjustments ========================= */
 .ygtvlabel, .ygtvlabel:link, .ygtvlabel:visited, .ygtvlabel:hover {
   color: inherit;
