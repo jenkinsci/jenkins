@@ -92,11 +92,10 @@ node('docker') {
                         'BRANCH=./branding/jenkins.mk',
                         'BUILDENV=./env/test.mk',
                         'CREDENTIAL=./credentials/test.mk',
-                        'WAR=target/jenkins.war',
+                        'WAR=war/target/jenkins.war',
                     ]) {
                         sh 'make clean'
                         unstash 'warfile' // Removed by cleanup previously
-                        sh 'find . -iname jenkins.war'
                         sh 'make deb rpm suse'
                     }
                     stash(includes: 'target/rpm/*.rpm', name: 'rpm')
