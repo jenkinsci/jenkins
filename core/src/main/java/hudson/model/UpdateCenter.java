@@ -755,7 +755,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             try (JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"))) {
                 Attributes attrs = backupWar.getManifest().getMainAttributes();
                 String v = attrs.getValue("Jenkins-Version");
-                if (v == null) v = attrs.getValue("Hudson-Version");
+                if (v == null)   v = attrs.getValue("Hudson-Version");
                 return v;
             }
         } catch (IOException e) {
