@@ -71,8 +71,17 @@ Upcoming changes</a>
     Ensure exception stacktrace is shown when there's a <tt>FormException</tt>.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2555">pull 2555</a>)
   <li class="rfe">
+    Add new <code>jenkins.model.Jenkins.slaveAgentPortEnforce</code> system property, which prevents slave agent port modification via Jenkins Web UI and form submissions.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2545">PR #2545</a>)
+  <li class="rfe">
     Indicate hovered table row on striped tables.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32148">issue 32148</a>)
+  <li class="rfe">
+    Decrease connection timeout when changing the JNLP agent port via Groovy system scripts.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38473">issue 38473</a>)
+  <li class="rfe">
+    Added Serbian locatization.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2554">PR #2554</a>)
   <li class="bug">
     Exclude <tt>/cli</tt> URL from CSRF protection crumb requirement, making the CLI work with CSRF protection enabled and JNLP port disabled.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18114">issue 18114</a>)
@@ -82,22 +91,13 @@ Upcoming changes</a>
   <li class="bug">
     Fix handling of the <code>jenkins.model.Jenkins.slaveAgentPort</code> system property, which was not honored.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38187">issue 38187</a>, regression in 2.0)
-  <li class="rfe">
-    Add new <code>jenkins.model.Jenkins.slaveAgentPortEnforce</code> system property, which prevents slave agent port modification via Jenkins Web UI and form submissions.
-    (<a href="https://github.com/jenkinsci/jenkins/pull/2545">PR #2545</a>)
   <li class="bug">
     CLI: Disable the channel message chunking by default.
     Prevents connection issues like <code>java.io.StreamCorruptedException: invalid stream header: 0A0A0A0A</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23232">issue 23232</a>)
   <li class="bug">
-    CLI: Connection over HTTP was not working correctly
+    CLI: Connection over HTTP was not working correctly.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34287">issue 34287</a>, regression in 2.0)
-  <li class="rfe">
-    Decrease connection timeut when changing the JNLP agent port via Groovy system scripts.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38473">issue 38473</a>)
-  <li class="rfe">
-    Added Serbian locatization.
-    (<a href="https://github.com/jenkinsci/jenkins/pull/2554">PR #2554</a>)
 </ul>
 <h3><a name=v2.23>What's new in 2.23</a> (2016/09/18)</h3>
 <ul class=image>
