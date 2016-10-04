@@ -1214,16 +1214,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 tcpSlaveAgentListener = null;
             }
             if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
-                String administrativeMonitorId = getClass().getName() + ".tcpBind";
+                final String administrativeMonitorId = getClass().getName() + ".tcpBind";
                 try {
                     tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
                     // remove previous monitor in case of previous error
-                    for (Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext(); ) {
+                    AdministrativeMonitor toBeRemoved = null;
+                    ExtensionList<AdministrativeMonitor> all = AdministrativeMonitor.all();
+                    for (Iterator<AdministrativeMonitor> it = all.iterator(); it.hasNext(); ) {
                         AdministrativeMonitor am = it.next();
                         if (administrativeMonitorId.equals(am.id)) {
-                            it.remove();
+                            toBeRemoved = am;
+                            break;
                         }
                     }
+                    all.remove(toBeRemoved);
                 } catch (BindException e) {
                     LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through JNLP port %s. Change the JNLP port number", slaveAgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
