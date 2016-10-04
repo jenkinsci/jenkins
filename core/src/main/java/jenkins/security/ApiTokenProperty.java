@@ -66,7 +66,7 @@ public class ApiTokenProperty extends UserProperty {
      * If enabled, shows API tokens to users with {@link Jenkins#ADMINISTER) permissions.
      * Disabled by default due to the security reasons.
      * If enabled, it restores the original Jenkins behavior (SECURITY-200).
-     * @since TODO
+     * @since 1.638
      */
     private static final boolean SHOW_TOKEN_TO_ADMINS = 
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
@@ -87,12 +87,12 @@ public class ApiTokenProperty extends UserProperty {
 
     /**
      * Gets the API token.
-     * The method performs security checks. Only the current user and SYSTEM may see it.
+     * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
      * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_TOKEN_TO_ADMINS}.
      * 
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
-     * @since TODO: the method performs security checks
+     * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
     public String getApiToken() {

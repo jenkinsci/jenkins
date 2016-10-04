@@ -494,7 +494,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return Encoded URI where we should go back after successful login
      *         or "/" if no way back or an issue occurred
      *
-     * @since TODO
+     * @since 2.4
      */
     @Restricted(DoNotUse.class)
     public static String getFrom() {

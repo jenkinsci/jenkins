@@ -1631,7 +1631,7 @@ public class Util {
      * @param logger Logger, which receives the error
      * @param closeableName Name of the closeable item
      * @param closeableOwner String representation of the closeable holder
-     * @since TODO once merged to the master and un-restricted
+     * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
     public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 

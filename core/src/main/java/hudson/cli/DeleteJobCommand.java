@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 /**
  * CLI command, which deletes a job or multiple jobs.
  * @author pjanouse
- * @since 1.649
+ * @since 1.618
  */
 @Extension
 public class DeleteJobCommand extends CLICommand {

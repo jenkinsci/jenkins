@@ -269,7 +269,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /**
      * Allows customization of the human-readable display name to be rendered in the <i>Build Now</i> link.
      * @see #getBuildNowText
-     * @since TODO
+     * @since 1.624
      */
     public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<ParameterizedJob>();
 
