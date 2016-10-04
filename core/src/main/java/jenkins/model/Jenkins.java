@@ -1220,8 +1220,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     // remove previous monitor in case of previous error
                     AdministrativeMonitor toBeRemoved = null;
                     ExtensionList<AdministrativeMonitor> all = AdministrativeMonitor.all();
-                    for (Iterator<AdministrativeMonitor> it = all.iterator(); it.hasNext(); ) {
-                        AdministrativeMonitor am = it.next();
+                    for (AdministrativeMonitor am : all) {
                         if (administrativeMonitorId.equals(am.id)) {
                             toBeRemoved = am;
                             break;
