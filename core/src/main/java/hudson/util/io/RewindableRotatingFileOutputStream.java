@@ -30,7 +30,7 @@ import java.io.IOException;
  * {@link ReopenableFileOutputStream} that does log rotation upon rewind.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.416
+ * @since 2.18
  */
 public class RewindableRotatingFileOutputStream extends RewindableFileOutputStream {
     /**
