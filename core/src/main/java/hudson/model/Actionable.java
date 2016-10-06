@@ -23,6 +23,9 @@
  */
 package hudson.model;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import hudson.ExtensionList;
 import hudson.Util;
 import java.util.ArrayList;
@@ -91,18 +94,38 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Exported(name="actions")
     public final List<? extends Action> getAllActions() {
-        List<Action> _actions = new ArrayList<Action>(getActions());
-        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
-            if (taf.type().isInstance(this)) {
-                try {
-                    _actions.addAll(createFor(taf));
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+        List<Action> _actions = getActions();
+        boolean adding = false;
+        for (TransientActionFactory<?> taf : factoryCache.getUnchecked(getClass())) {
+            Collection<? extends Action> additions;
+            try {
+                additions = createFor(taf);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+                continue;
+            }
+            if (!additions.isEmpty()) {
+                if (!adding) { // need to make a copy
+                    adding = true;
+                    _actions = new ArrayList<>(_actions);
                 }
+                _actions.addAll(additions);
             }
         }
         return Collections.unmodifiableList(_actions);
     }
+    private static final LoadingCache<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>> factoryCache =
+        CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>>() {
+        @Override public Collection<? extends TransientActionFactory<?>> load(Class<? extends Actionable> implType) throws Exception {
+            List<TransientActionFactory<?>> factories = new ArrayList<>();
+            for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
+                if (taf.type().isAssignableFrom(implType)) {
+                    factories.add(taf);
+                }
+            }
+            return factories;
+        }
+    });
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         return taf.createFor(taf.type().cast(this));
     }
