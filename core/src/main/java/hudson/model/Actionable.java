@@ -27,6 +27,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import hudson.ExtensionList;
+import hudson.ExtensionListListener;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,6 +97,30 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
+        synchronized (Actionable.class) {
+            if (factoryCache == null) {
+                @SuppressWarnings("rawtypes")
+                final ExtensionList<TransientActionFactory> allFactories = ExtensionList.lookup(TransientActionFactory.class);
+                factoryCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>>() {
+                    @Override
+                    public Collection<? extends TransientActionFactory<?>> load(Class<? extends Actionable> implType) throws Exception {
+                        List<TransientActionFactory<?>> factories = new ArrayList<>();
+                        for (TransientActionFactory<?> taf : allFactories) {
+                            if (taf.type().isAssignableFrom(implType)) {
+                                factories.add(taf);
+                            }
+                        }
+                        return factories;
+                    }
+                });
+                allFactories.addListener(new ExtensionListListener() {
+                    @Override
+                    public void onChange() {
+                        factoryCache.invalidateAll();
+                    }
+                });
+            }
+        }
         for (TransientActionFactory<?> taf : factoryCache.getUnchecked(getClass())) {
             Collection<? extends Action> additions;
             try {
@@ -114,18 +139,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         return Collections.unmodifiableList(_actions);
     }
-    private static final LoadingCache<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>> factoryCache =
-        CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>>() {
-        @Override public Collection<? extends TransientActionFactory<?>> load(Class<? extends Actionable> implType) throws Exception {
-            List<TransientActionFactory<?>> factories = new ArrayList<>();
-            for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
-                if (taf.type().isAssignableFrom(implType)) {
-                    factories.add(taf);
-                }
-            }
-            return factories;
-        }
-    });
+    private static LoadingCache<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>> factoryCache;
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         return taf.createFor(taf.type().cast(this));
     }
