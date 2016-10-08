@@ -12,9 +12,11 @@
 def runTests = true
 
 // Only keep the 10 most recent builds.
-properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator',
-                                                                        numToKeepStr: '50',
-                                                                        artifactNumToKeepStr: '20']]])
+// NOTE: With Pipeline 1.14 and later combined with Jenkins 1.642 and later, this may need to be changed to
+// "jenkins.model.BuildDiscarderProperty".
+properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
+                                                          numToKeepStr: '50',
+                                                          artifactNumToKeepStr: '20']]])
 
 String packagingBranch = (binding.hasVariable('packagingBranch')) ? packagingBranch : 'master'
 
