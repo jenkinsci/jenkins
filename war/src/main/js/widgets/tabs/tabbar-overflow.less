@@ -1,0 +1,82 @@
+// Tabbar Overflow mixin.
+.tabBarOverflow() {
+  .tabBarFrame {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding-top: 5px;
+    padding-right: 54px;
+
+    .tabBar {
+      display: inline;
+      overflow-x: hidden;
+      white-space: nowrap;
+
+      .tab {
+        display: none;
+        float: none;
+      }
+      .tab.taboverflow-tab-visible {
+        display: inline-block;
+      }
+    }
+
+    .taboverflow-btn {
+      cursor: pointer;
+      width: 44px;
+      position: absolute;
+      top: 7px;
+      right: 5px;
+      border:1px solid @solid-border;
+      .border-radius(5px);
+      padding: 3px 3px;
+      font-size: 0.9em;
+      color: #999;
+      text-align: center;
+
+      .icon {
+        float: left;
+        width: 18px;
+      }
+      .count {
+        float: right;
+        width: 18px;
+      }
+    }
+
+    .taboverflow-btn:hover, .drop-tab:hover {
+      background:#bbb;
+      color:@brightest;
+      cursor: pointer;
+    }
+
+    .taboverflow-popup {
+      padding: 5px 10px;
+      overflow-y: auto;
+      background-color: @brightest;
+      max-width: 250px;
+      max-height: 250px;
+      position: absolute;
+      top: 35px;
+      right: 5px;
+
+      border:1px solid @solid-border;
+      .border-radius(5px);
+
+      .drop-tab {
+        padding: 5px;
+        .border-radius(2px);
+        overflow-x: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .drop-tab.visible {
+        opacity: 0.5;
+        .eye {
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+}

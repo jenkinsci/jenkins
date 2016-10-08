@@ -1,3 +1,5 @@
+@import "../tabs/tabbar-overflow";
+
 /*
  * Tab bar specific rules.
  */
@@ -46,8 +48,8 @@
     display:none;
   }
 
-  .form-config.tabBarFrame {
-    position: relative;
+  .tabBarFrame {
+    background-color: inherit;
     border-bottom: solid 1px @solid-border;
 
     .config-section-activators {
@@ -68,7 +70,8 @@
         text-decoration: none;
       }
       .tab:hover {
-        background:#bbb; color:@brightest;
+        background:#bbb;
+        color:@brightest;
       }
       .tab.active {
         background: @bright;
@@ -92,6 +95,12 @@
   }
 
 }
+
+.jenkins-config-widgets.nowrap {
+  position: relative;
+  .tabBarOverflow();
+}
+
 #jenkins{
   .jenkins-config {
     border:1px solid @solid-border;

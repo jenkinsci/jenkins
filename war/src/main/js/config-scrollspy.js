@@ -136,12 +136,12 @@ function stickTabbar(tabBar) {
             'margin': '0 auto !important'
         });
         configTable.css({'margin-top': widgetBox.outerHeight() + 'px'});
-        win.resize(setWidth);
+        win.on('resize.jenkins.config_scrollspy', setWidth);
         return true;
     } else {
         widgetBox.removeAttr('style');
         configTable.removeAttr('style');
-        win.unbind('resize', setWidth);
+        win.off('resize.jenkins.config_scrollspy');
         return false;
     }
 }
