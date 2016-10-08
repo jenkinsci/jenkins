@@ -27,12 +27,15 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout norefresh="true" permission="${it.ADMINISTER}" title="${%Configure System}">
-  <st:include page="sidepanel.jelly" />
+<l:layout norefresh="true" cssclass="main-panel-only" permission="${it.ADMINISTER}" title="${%Configure System}">
   <f:breadcrumb-config-outline />
   <l:main-panel>
     <div class="behavior-loading">${%LOADING}</div>
-    <f:form method="post" name="config" action="configSubmit">
+
+    <l:js src="jsbundles/config-scrollspy.js" />
+    <l:css src="jsbundles/config-scrollspy.css" />
+
+    <f:form method="post" name="config" action="configSubmit" tableClass="config-table scrollspy">
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${instance.descriptor}" />
 
