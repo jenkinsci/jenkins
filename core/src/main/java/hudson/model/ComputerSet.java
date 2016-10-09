@@ -388,7 +388,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             final AutoCompletionCandidates r = new AutoCompletionCandidates();
 
             for (Node n : Jenkins.getInstance().getNodes()) {
-                if (n.getNodeName().startsWith(value))
+                if (n.getNodeName().toLowerCase().contains(value.toLowerCase()))
                     r.add(n.getNodeName());
             }
 
