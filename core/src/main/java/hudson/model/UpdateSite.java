@@ -260,7 +260,6 @@ public class UpdateSite {
      *              if name is null, then the default name will be used,
      *              which is "update site" followed by the update site id
      * @return the signature validator.
-     * @since 2.15
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
