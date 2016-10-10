@@ -23,11 +23,6 @@
  */
 package hudson.model;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import hudson.ExtensionList;
-import hudson.ExtensionListListener;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,38 +92,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
-        synchronized (Actionable.class) {
-            if (factoryCache == null) {
-                @SuppressWarnings("rawtypes")
-                final ExtensionList<TransientActionFactory> allFactories = ExtensionList.lookup(TransientActionFactory.class);
-                factoryCache = CacheBuilder.newBuilder().build(new CacheLoader<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>>() {
-                    @Override
-                    public Collection<? extends TransientActionFactory<?>> load(Class<? extends Actionable> implType) throws Exception {
-                        List<TransientActionFactory<?>> factories = new ArrayList<>();
-                        for (TransientActionFactory<?> taf : allFactories) {
-                            if (taf.type().isAssignableFrom(implType)) {
-                                factories.add(taf);
-                            }
-                        }
-                        return factories;
-                    }
-                });
-                allFactories.addListener(new ExtensionListListener() {
-                    @Override
-                    public void onChange() {
-                        factoryCache.invalidateAll();
-                    }
-                });
-            }
-        }
-        for (TransientActionFactory<?> taf : factoryCache.getUnchecked(getClass())) {
-            Collection<? extends Action> additions;
-            try {
-                additions = createFor(taf);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
-                continue;
-            }
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass())) {
+            Collection<? extends Action> additions = createFor(taf);
             if (!additions.isEmpty()) {
                 if (!adding) { // need to make a copy
                     adding = true;
@@ -139,9 +104,14 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         return Collections.unmodifiableList(_actions);
     }
-    private static LoadingCache<Class<? extends Actionable>, Collection<? extends TransientActionFactory<?>>> factoryCache;
+
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
-        return taf.createFor(taf.type().cast(this));
+        try {
+            return taf.createFor(taf.type().cast(this));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+            return Collections.emptySet();
+        }
     }
 
     /**
@@ -199,9 +169,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {
-        for (Action a : getAllActions())
-            if (type.isInstance(a))
+        // Shortcut: if the persisted list has one, return it.
+        for (Action a : getActions()) {
+            if (type.isInstance(a)) {
                 return type.cast(a);
+            }
+        }
+        // Otherwise check transient factories.
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass())) {
+            for (Action a : createFor(taf)) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+        }
         return null;
     }
 

@@ -24,12 +24,21 @@
 
 package jenkins.model;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import hudson.ExtensionList;
+import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.TopLevelItem;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Allows you to add actions to any kind of object at once.
@@ -55,5 +64,38 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
      * @return a possible empty set of actions
      */
     public abstract @Nonnull Collection<? extends Action> createFor(@Nonnull T target);
+
+    @SuppressWarnings("rawtypes")
+    private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<Class<?>, List<TransientActionFactory<?>>>> cache =
+        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<Class<?>, List<TransientActionFactory<?>>>>() {
+        @Override
+        public LoadingCache<Class<?>, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory> allFactories) throws Exception {
+            final LoadingCache<Class<?>, List<TransientActionFactory<?>>> perJenkinsCache =
+                CacheBuilder.newBuilder().build(new CacheLoader<Class<?>, List<TransientActionFactory<?>>>() {
+                @Override
+                public List<TransientActionFactory<?>> load(Class<?> type) throws Exception {
+                    List<TransientActionFactory<?>> factories = new ArrayList<>();
+                    for (TransientActionFactory<?> taf : allFactories) {
+                        if (taf.type().isAssignableFrom(type)) {
+                            factories.add(taf);
+                        }
+                    }
+                    return factories;
+                }
+            });
+            allFactories.addListener(new ExtensionListListener() {
+                @Override
+                public void onChange() {
+                    perJenkinsCache.invalidateAll();
+                }
+            });
+            return perJenkinsCache;
+        }
+    });
+
+    @Restricted(NoExternalUse.class) // pending a need for it outside Actionable
+    public static Iterable<? extends TransientActionFactory<?>> factoriesFor(Class<?> type) {
+        return cache.getUnchecked(ExtensionList.lookup(TransientActionFactory.class)).getUnchecked(type);
+    }
 
 }
