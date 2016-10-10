@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import hudson.security.ACLContext;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -1369,6 +1370,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public volatile RestartJenkinsJobStatus status = new Pending();
 
         /**
+         * The name of the user that started this job
+         */
+        private String authentication;
+
+        /**
          * Cancel job
          */
         public synchronized boolean cancel() {
@@ -1381,6 +1387,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public RestartJenkinsJob(UpdateSite site) {
             super(site);
+            this.authentication = Jenkins.getAuthentication().getName();
         }
 
         public synchronized void run() {
@@ -1389,7 +1396,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             status = new Running();
             try {
-                Jenkins.getInstance().safeRestart();
+                // safeRestart records the current authentication for the log, so set it to the managing user
+                try (ACLContext _ = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
+                    Jenkins.getInstance().safeRestart();
+                }
             } catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
                 status = new Failure();
