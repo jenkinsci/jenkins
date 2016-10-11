@@ -23,6 +23,8 @@
  */
 package jenkins.util;
 
+import hudson.PluginWrapper;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -72,12 +74,37 @@ public class ResourceBundleUtil {
             return bundleJSON;
         }
 
-        ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
+        ResourceBundle bundle = getBundle(baseName, locale, Jenkins.class.getClassLoader());
+        if (bundle == null) {
+            // Not in Jenkins core. Check the plugins.
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
+                    bundle = getBundle(baseName, locale, plugin.classLoader);
+                    if (bundle != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (bundle == null) {
+            throw new MissingResourceException("Can't find bundle for base name "
+                    + baseName + ", locale " + locale, baseName + "_" + locale, "");
+        }
 
         bundleJSON = toJSONObject(bundle);
         bundles.put(bundleKey, bundleJSON);
 
         return bundleJSON;
+    }
+
+    private static ResourceBundle getBundle(String baseName, Locale locale, ClassLoader classLoader) {
+        try {
+            return ResourceBundle.getBundle(baseName, locale, classLoader);
+        } catch (MissingResourceException e) {
+            // fall through and return null.
+        }
+        return null;
     }
 
     private static JSONObject toJSONObject(@Nonnull ResourceBundle bundle) {
