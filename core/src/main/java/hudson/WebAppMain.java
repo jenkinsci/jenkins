@@ -27,6 +27,7 @@ import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider
 import com.thoughtworks.xstream.core.JVM;
 import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
+import hudson.security.ACL;
 import hudson.util.BootFailure;
 import jenkins.model.Jenkins;
 import hudson.util.HudsonIsLoading;
@@ -245,10 +246,7 @@ public class WebAppMain implements ServletContextListener {
             initThread.start();
         } catch (BootFailure e) {
             e.publish(context,home);
-        } catch (Error e) {
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (Error | RuntimeException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw e;
         }
@@ -367,6 +365,7 @@ public class WebAppMain implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent event) {
         try {
+            ACL.impersonate(ACL.SYSTEM);
             terminated = true;
             Jenkins instance = Jenkins.getInstanceOrNull();
             if(instance!=null)

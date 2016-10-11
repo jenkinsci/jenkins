@@ -1532,10 +1532,12 @@ public class Functions {
     /**
      * Computes the hyperlink to actions, to handle the situation when the {@link Action#getUrlName()}
      * returns absolute URL.
+     *
+     * @return null in case the action should not be presented to the user.
      */
-    public static String getActionUrl(String itUrl,Action action) {
+    public static @CheckForNull String getActionUrl(String itUrl,Action action) {
         String urlName = action.getUrlName();
-        if(urlName==null)   return null;    // to avoid NPE and fail to render the whole page
+        if(urlName==null)   return null;    // Should not be displayed
         try {
             if (new URI(urlName).isAbsolute()) {
                 return urlName;

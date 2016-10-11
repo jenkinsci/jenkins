@@ -422,10 +422,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     public T get() {
                         try {
                             return base.get();
-                        } catch (Exception e) {
-                            error(key, e);
-                            return null;
-                        } catch (LinkageError e) {
+                        } catch (Exception | LinkageError e) {
                             error(key, e);
                             return null;
                         }
