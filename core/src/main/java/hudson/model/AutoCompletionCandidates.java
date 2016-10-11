@@ -119,7 +119,11 @@ public class AutoCompletionCandidates implements HttpResponse {
             @Override
             public void onItem(Item i) {
                 String n = contextualNameOf(i);
-                boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+                
+                //Check user's setting on whether to do case sensitive comparison, configured in user -> configure
+                //This is the same setting that is used by the global search field, should be consistent throughout
+                //the whole application.
+                boolean caseInsensitive = UserSearchProperty.isCaseInsensitive(); 
                 
                 String hay = n;
                 String needle = value;
