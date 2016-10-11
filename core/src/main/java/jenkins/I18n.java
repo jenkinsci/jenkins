@@ -32,7 +32,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
+import java.util.MissingResourceException;
 
 /**
  * Internationalization REST (ish) API.
@@ -106,8 +108,10 @@ public class I18n implements RootAction {
             }
 
             return HttpResponses.okJSON(ResourceBundleUtil.getBundle(baseName, locale));
+        } catch (MissingResourceException e) {
+            return HttpResponses.errorJSON(e.getMessage(), HttpServletResponse.SC_NOT_FOUND);
         } catch (Exception e) {
-            return HttpResponses.errorJSON(e.getMessage());
+            return HttpResponses.errorJSON(e.getMessage(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }
