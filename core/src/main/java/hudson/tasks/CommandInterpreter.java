@@ -31,6 +31,7 @@ import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Node;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.remoting.ChannelClosedException;
 
@@ -64,6 +65,18 @@ public abstract class CommandInterpreter extends Builder {
         return perform(build,launcher,(TaskListener)listener);
     }
 
+    /**
+     * Determines whether a non-zero exit code from the process should change the build
+     * status to {@link Result#UNSTABLE} instead of default {@link Result#FAILURE}.
+     *
+     * Changing to {@link Result#UNSTABLE} does not abort the build, next steps are continued.
+     *
+     * @since TODO
+     */
+    protected boolean isErrorlevelForUnstableBuild(int exitCode) {
+        return false;
+    }
+
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, TaskListener listener) throws InterruptedException {
         FilePath ws = build.getWorkspace();
         if (ws == null) {
@@ -93,6 +106,11 @@ public abstract class CommandInterpreter extends Builder {
                     envVars.put(e.getKey(),e.getValue());
 
                 r = join(launcher.launch().cmds(buildCommandLine(script)).envs(envVars).stdout(listener).pwd(ws).start());
+
+                if(isErrorlevelForUnstableBuild(r)) {
+                    build.setResult(Result.UNSTABLE);
+                    r = 0;
+                }
             } catch (IOException e) {
                 Util.displayIOException(e, listener);
                 e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
@@ -127,7 +145,8 @@ public abstract class CommandInterpreter extends Builder {
      *
      * This allows subtypes to treat the exit code differently (for example by treating non-zero exit code
      * as if it's zero, or to set the status to {@link Result#UNSTABLE}). Any non-zero exit code will cause
-     * the build step to fail.
+     * the build step to fail. Use {@link #isErrorlevelForUnstableBuild(int exitCode)} to redefine the default
+     * behaviour.
      *
      * @since 1.549
      */
