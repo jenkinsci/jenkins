@@ -118,18 +118,16 @@ public class AutoCompletionCandidates implements HttpResponse {
             @Override
             public void onItem(Item i) {
                 String n = contextualNameOf(i);
-                String lowerCaseN = n.toLowerCase();
-                String lowerCaseValue = value.toLowerCase();
-                if ((lowerCaseN.startsWith(lowerCaseValue) || lowerCaseValue.startsWith(lowerCaseN))
+                if ((n.startsWith(value) || value.startsWith(n))
                     // 'foobar' is a valid candidate if the current value is 'foo'.
                     // Also, we need to visit 'foo' if the current value is 'foo/bar'
-                 && (lowerCaseValue.length()>lowerCaseN.length() || !lowerCaseN.substring(lowerCaseValue.length()).contains("/"))
+                 && (value.length()>n.length() || !n.substring(value.length()).contains("/"))
                     // but 'foobar/zot' isn't if the current value is 'foo'
                     // we'll first show 'foobar' and then wait for the user to type '/' to show the rest
                  && i.hasPermission(Item.READ)
                     // and read permission required
                 ) {
-                    if (type.isInstance(i) && lowerCaseN.startsWith(lowerCaseValue))
+                    if (type.isInstance(i) && n.startsWith(value))
                         candidates.add(n);
 
                     // recurse
