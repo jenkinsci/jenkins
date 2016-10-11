@@ -25,6 +25,7 @@
 package hudson.model;
 
 import hudson.search.Search;
+import hudson.search.UserSearchProperty;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -118,16 +119,26 @@ public class AutoCompletionCandidates implements HttpResponse {
             @Override
             public void onItem(Item i) {
                 String n = contextualNameOf(i);
-                if ((n.startsWith(value) || value.startsWith(n))
+                boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
+                
+                String hay = n;
+                String needle = value;
+                
+                if(caseInsensitive) {
+                	hay = hay.toLowerCase();
+                	needle = needle.toLowerCase();
+                }
+                
+                if ((hay.startsWith(needle) || needle.startsWith(hay))
                     // 'foobar' is a valid candidate if the current value is 'foo'.
                     // Also, we need to visit 'foo' if the current value is 'foo/bar'
-                 && (value.length()>n.length() || !n.substring(value.length()).contains("/"))
+                 && (needle.length()>hay.length() || !hay.substring(needle.length()).contains("/"))
                     // but 'foobar/zot' isn't if the current value is 'foo'
                     // we'll first show 'foobar' and then wait for the user to type '/' to show the rest
                  && i.hasPermission(Item.READ)
                     // and read permission required
                 ) {
-                    if (type.isInstance(i) && n.startsWith(value))
+                    if (type.isInstance(i) && hay.startsWith(needle))
                         candidates.add(n);
 
                     // recurse
