@@ -3940,7 +3940,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             w.println("Shutting down");
             w.close();
         }
-
+        // Just in case we have shutdown hooks
+        ACL.impersonate(ACL.SYSTEM);
         System.exit(0);
     }
 
