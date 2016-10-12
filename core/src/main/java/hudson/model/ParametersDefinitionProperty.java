@@ -70,18 +70,19 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
         if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+            parameterDefinitions = new ArrayList<>();
         }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
-        if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions == null || (parameterDefinitions.length == 1 && parameterDefinitions[0] == null)) {
+            this.parameterDefinitions = new ArrayList<>();
+        } else {
+            this.parameterDefinitions = Arrays.asList(parameterDefinitions);
         }
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
     }
 
     private Object readResolve() {

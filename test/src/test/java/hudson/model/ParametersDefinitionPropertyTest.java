@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
@@ -43,6 +44,18 @@ public class ParametersDefinitionPropertyTest {
 
     @Rule
     public LoggerRule logs = new LoggerRule();
+
+    @Issue("JENKINS-37590")
+    @Test
+    public void nullArgToConstructor() throws Exception {
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty((ParameterDefinition)null);
+        assertNotNull(pdp);
+        assertTrue(pdp.getParameterDefinitionNames().isEmpty());
+
+        ParametersDefinitionProperty nullList = new ParametersDefinitionProperty((List<ParameterDefinition>)null);
+        assertNotNull(nullList);
+        assertTrue(nullList.getParameterDefinitionNames().isEmpty());
+    }
 
     @Issue("JENKINS-31458")
     @Test
