@@ -28,6 +28,24 @@ public abstract class LoggingMethod implements Serializable {
      * @return Log filter on the master. {@code null} if no custom implementation
      */
     @CheckForNull
+    public abstract TaskListener createTaskListener(Run<?,?> build);
+
+    /**
+     * Decorates logging on the Jenkins master side.
+     * These filters can be also used for log redirection and multi-reporting.
+     * @param build Build to be decorated
+     * @return Log filter on the master. {@code null} if no custom implementation
+     */
+    @CheckForNull
+    public abstract StreamRunListener createRunListener(Run<?,?> build);
+
+    /**
+     * Decorates logging on the Jenkins master side.
+     * These filters can be also used for log redirection and multi-reporting.
+     * @param build Build to be decorated
+     * @return Log filter on the master. {@code null} if no custom implementation
+     */
+    @CheckForNull
     public abstract ConsoleLogFilter createLoggerDecorator(Run<?,?> build);
 
     /**

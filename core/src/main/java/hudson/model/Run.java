@@ -1792,7 +1792,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         }
     }
 
-    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, StreamBuildListener listener, Charset charset) throws IOException, InterruptedException {
+    @Nonnull
+    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, @CheckForNull StreamBuildListener listener,
+                                                    Charset charset) throws IOException, InterruptedException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
