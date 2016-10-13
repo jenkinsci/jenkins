@@ -106,11 +106,6 @@ public interface SimpleBuildStep extends BuildStep {
             return Job.class;
         }
 
-        @Override
-        public Class<Action> actionType() {
-            return Action.class;
-        }
-
         @Nonnull
         @Override
         public Collection<? extends Action> createFor(@Nonnull Job j) {
