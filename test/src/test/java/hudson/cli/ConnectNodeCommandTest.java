@@ -64,7 +64,7 @@ public class ConnectNodeCommandTest {
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Connect permission"));
-        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT)));
+        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
     @Test public void connectNodeShouldFailIfNodeDoesNotExist() throws Exception {
@@ -74,7 +74,7 @@ public class ConnectNodeCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
-        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT)));
+        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
     @Test public void connectNodeShouldSucceed() throws Exception {
@@ -156,7 +156,7 @@ public class ConnectNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }

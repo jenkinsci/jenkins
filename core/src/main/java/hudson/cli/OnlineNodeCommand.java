@@ -87,7 +87,7 @@ public class OnlineNodeCommand extends CLICommand {
         }
 
         if (errorOccurred){
-            throw new AbortException(CLI_ERROR_TEXT);
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
         return 0;
     }

@@ -253,7 +253,7 @@ public class OnlineNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
         if (slave1.toComputer().isConnecting()) {
             System.out.println("Waiting until aNode1 going online is in progress...");
             slave1.toComputer().waitUntilOnline();

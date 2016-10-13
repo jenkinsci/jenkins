@@ -129,7 +129,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * taking lists of parameters.
      * @since TODO
      */
-    static final String CLI_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
+    static final String CLI_LISTPARAM_SUMMARY_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
     
     /**
      * Connected to stdin of the CLI agent.

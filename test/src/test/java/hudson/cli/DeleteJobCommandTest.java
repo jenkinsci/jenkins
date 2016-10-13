@@ -131,7 +131,7 @@ public class DeleteJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getItem("aProject1"), nullValue());
         assertThat(j.jenkins.getItem("aProject2"), nullValue());
@@ -150,7 +150,7 @@ public class DeleteJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getItem("aProject1"), nullValue());
         assertThat(j.jenkins.getItem("aProject2"), nullValue());
@@ -169,7 +169,7 @@ public class DeleteJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getItem("aProject1"), nullValue());
         assertThat(j.jenkins.getItem("aProject2"), nullValue());
@@ -189,7 +189,7 @@ public class DeleteJobCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such job 'never_created1'"));
         assertThat(result.stderr(), containsString("never_created2: No such job 'never_created2'"));
-        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getItem("aProject1"), nullValue());
         assertThat(j.jenkins.getItem("aProject2"), nullValue());
