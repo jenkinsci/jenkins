@@ -552,7 +552,7 @@ public final class FilePath implements Serializable {
      * @see #unzip(FilePath)
      */
     public void unzipFrom(InputStream _in) throws IOException, InterruptedException {
-        final InputStream in = new RemoteInputStream(_in);
+        final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
         act(new SecureFileCallable<Void>() {
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
                 unzip(dir, in);
@@ -718,7 +718,7 @@ public final class FilePath implements Serializable {
      */
     public void untarFrom(InputStream _in, final TarCompression compression) throws IOException, InterruptedException {
         try {
-            final InputStream in = new RemoteInputStream(_in);
+            final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
             act(new SecureFileCallable<Void>() {
                 public Void invoke(File dir, VirtualChannel channel) throws IOException {
                     readFromTar("input stream",dir, compression.extract(in));
