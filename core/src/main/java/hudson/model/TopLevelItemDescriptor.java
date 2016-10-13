@@ -219,7 +219,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
 
     /**
      * Get the Item's Icon class specification e.g. 'icon-notepad'.
-     * <p/>
+     * <p>
      * Note: do <strong>NOT</strong> include icon size specifications (such as 'icon-sm').
      *
      * @return The Icon class specification e.g. 'icon-notepad'.
