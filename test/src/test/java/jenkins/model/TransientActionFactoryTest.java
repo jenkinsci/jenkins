@@ -49,7 +49,7 @@ public class TransientActionFactoryTest {
         assertNotNull(r.createFolder("d").getAction(MyAction.class));
         assertNotNull(r.createFreeStyleProject().getAction(MyAction.class));
     }
-    @TestExtension("addedToAbstractItem") public static class TestItemFactory extends TransientActionFactory<AbstractItem, MyAction> {
+    @TestExtension("addedToAbstractItem") public static class TestItemFactory extends TransientActionFactory<AbstractItem> {
         @Override public Class<AbstractItem> type() {return AbstractItem.class;}
         @Override public Class<MyAction> actionType() {return MyAction.class;}
         @Override public Collection<? extends MyAction> createFor(AbstractItem i) {
@@ -89,11 +89,11 @@ public class TransientActionFactoryTest {
         assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
         assertEquals(1, LazyFactory.count);
     }
-    @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<FreeStyleProject, ProminentProjectAction> {
+    @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<FreeStyleProject> {
         static int count;
         @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
-        @Override public Class<ProminentProjectAction> actionType() {return ProminentProjectAction.class;}
-        @Override public Collection<? extends ProminentProjectAction> createFor(FreeStyleProject p) {
+        @Override public Class<? extends Action> actionType() {return ProminentProjectAction.class;}
+        @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
             class A extends InvisibleAction implements ProminentProjectAction {}
             return Collections.singleton(new A());
@@ -120,11 +120,10 @@ public class TransientActionFactoryTest {
         assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
         assertEquals(2, OldFactory.count);
     }
-    @SuppressWarnings("rawtypes") // cannot actually compile one using a single type parameter, so have to simulate binary compatibility with rawtypes
-    @TestExtension("compatibility") public static class OldFactory extends TransientActionFactory {
+    @TestExtension("compatibility") public static class OldFactory extends TransientActionFactory<FreeStyleProject> {
         static int count;
         @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
-        @Override public Collection createFor(Object o) {
+        @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
             class A extends InvisibleAction implements ProminentProjectAction {}
             return Collections.singleton(new A());
