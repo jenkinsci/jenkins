@@ -1058,6 +1058,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", descriptor.getDescription());
             metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+            metadata.put("iconClassName", descriptor.getIconClassName());
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {

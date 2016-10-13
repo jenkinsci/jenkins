@@ -30,6 +30,9 @@ import org.acegisecurity.AccessDeniedException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -48,7 +51,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
+public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> implements IconSpec {
 
     private static final Logger LOGGER = Logger.getLogger(TopLevelItemDescriptor.class.getName());
 
@@ -189,6 +192,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * @return A string or null if it is not defined.
      *
      * @since 2.0
+     * @deprecated prefer {@link #getIconClassName()}
      */
     @CheckForNull
     public String getIconFilePathPattern() {
@@ -203,11 +207,42 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> {
      * @return A string or null if it is not defined.
      *
      * @since 2.0
+     * @deprecated prefer {@link #getIconClassName()}
      */
     @CheckForNull
     public String getIconFilePath(String size) {
         if (!StringUtils.isBlank(getIconFilePathPattern())) {
             return getIconFilePathPattern().replace(":size", size);
+        }
+        return null;
+    }
+
+    /**
+     * Get the Item's Icon class specification e.g. 'icon-notepad'.
+     * <p/>
+     * Note: do <strong>NOT</strong> include icon size specifications (such as 'icon-sm').
+     *
+     * @return The Icon class specification e.g. 'icon-notepad'.
+     */
+    @Override
+    public String getIconClassName() {
+        // Oh the fun of somebody adding a legacy way of referencing images into 2.0 code
+        String pattern = getIconFilePathPattern();
+        if (pattern != null) {
+            // here we go with the dance of the IconSet's
+            String path = pattern.replace(":size", "24x24"); // we'll strip the icon-md to get the class name
+            if (path.indexOf('/') == -1) {
+                // this one is easy... too easy... also will never happen
+                return IconSet.toNormalizedIconNameClass(path);
+            }
+            if (Jenkins.RESOURCE_PATH.length() > 0 && path.startsWith(Jenkins.RESOURCE_PATH)) {
+                // will to live falling
+                path = path.substring(Jenkins.RESOURCE_PATH.length());
+            }
+            Icon icon = IconSet.icons.getIconByUrl(path);
+            if (icon != null) {
+                return icon.getClassSpec().replaceAll("\\s*icon-md\\s*", " ").replaceAll("\\s+", " ");
+            }
         }
         return null;
     }
