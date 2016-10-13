@@ -57,7 +57,7 @@ public class I18nTest {
 
     @Test
     public void test_baseName_plugin() throws IOException, SAXException {
-        // ssh-slaves plugin is installed by defect
+        // ssh-slaves plugin is installed by default
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.plugins.sshslaves.Messages").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
