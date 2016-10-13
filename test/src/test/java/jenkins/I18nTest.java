@@ -23,14 +23,13 @@
  */
 package jenkins;
 
+import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -54,6 +53,15 @@ public class I18nTest {
         } catch (Exception e) {
             Assert.assertNotNull(e);
         }
+    }
+
+    @Test
+    public void test_baseName_plugin() throws IOException, SAXException {
+        // ssh-slaves plugin is installed by defect
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.plugins.sshslaves.Messages").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("The launch timeout must be a number.", data.getString("SSHConnector.LaunchTimeoutMustBeANumber"));
     }
 
     @Test

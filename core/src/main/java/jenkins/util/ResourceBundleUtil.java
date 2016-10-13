@@ -24,20 +24,21 @@
 package jenkins.util;
 
 import hudson.PluginWrapper;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.annotation.Nonnull;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Simple {@link java.util.ResourceBundle} utility class.
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.0
  */
@@ -51,22 +52,26 @@ public class ResourceBundleUtil {
 
     /**
      * Get a bundle JSON using the default Locale.
+     *
      * @param baseName The bundle base name.
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @Nonnull JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
+    public static @Nonnull
+    JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
         return getBundle(baseName, Locale.getDefault());
     }
 
     /**
      * Get a bundle JSON using the supplied Locale.
+     *
      * @param baseName The bundle base name.
      * @param locale The Locale.
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @Nonnull JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
+    public static @Nonnull
+    JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
         String bundleKey = baseName + ":" + locale.toString();
         JSONObject bundleJSON = bundles.get(bundleKey);
 
@@ -77,13 +82,11 @@ public class ResourceBundleUtil {
         ResourceBundle bundle = getBundle(baseName, locale, Jenkins.class.getClassLoader());
         if (bundle == null) {
             // Not in Jenkins core. Check the plugins.
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins != null) {
-                for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
-                    bundle = getBundle(baseName, locale, plugin.classLoader);
-                    if (bundle != null) {
-                        break;
-                    }
+            Jenkins jenkins = Jenkins.getInstance(); // will never return null
+            for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
+                bundle = getBundle(baseName, locale, plugin.classLoader);
+                if (bundle != null) {
+                    break;
                 }
             }
         }
@@ -98,7 +101,17 @@ public class ResourceBundleUtil {
         return bundleJSON;
     }
 
-    private static ResourceBundle getBundle(String baseName, Locale locale, ClassLoader classLoader) {
+    /**
+     * Get a plugin bundle using the supplied Locale and classLoader
+     *
+     * @param baseName The bundle base name.
+     * @param locale The Locale.
+     * @param classLoader The classLoader
+     * @return The bundle JSON.
+     * @throws MissingResourceException Missing resource bundle.
+     */
+    private static @Nullable
+    ResourceBundle getBundle(@Nonnull String baseName, @Nonnull Locale locale, @Nonnull ClassLoader classLoader) {
         try {
             return ResourceBundle.getBundle(baseName, locale, classLoader);
         } catch (MissingResourceException e) {
@@ -107,6 +120,12 @@ public class ResourceBundleUtil {
         return null;
     }
 
+    /**
+     * Create a JSON representation of a resource bundle
+     *
+     * @param bundle The resource bundle.
+     * @return The bundle JSON.
+     */
     private static JSONObject toJSONObject(@Nonnull ResourceBundle bundle) {
         JSONObject json = new JSONObject();
         for (String key : bundle.keySet()) {
