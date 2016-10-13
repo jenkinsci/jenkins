@@ -92,7 +92,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
-        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass())) {
+        for (TransientActionFactory<?, ?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             Collection<? extends Action> additions = createFor(taf);
             if (!additions.isEmpty()) {
                 if (!adding) { // need to make a copy
@@ -105,11 +105,18 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return Collections.unmodifiableList(_actions);
     }
 
-    private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
+    private <T, A extends Action> Collection<? extends A> createFor(TransientActionFactory<T, A> taf) {
         try {
-            return taf.createFor(taf.type().cast(this));
+            Collection<? extends A> result = taf.createFor(taf.type().cast(this));
+            for (Action a : result) {
+                if (!taf.actionType().isInstance(a)) {
+                    LOGGER.log(Level.WARNING, "Actions from {0} for {1} included {2} not assignable to {3}", new Object[] {taf, this, a, taf.actionType()});
+                    return Collections.emptySet();
+                }
+            }
+            return result;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+            LOGGER.log(Level.WARNING, "Could not load actions from " + taf + " for " + this, e);
             return Collections.emptySet();
         }
     }
@@ -123,7 +130,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @see #getAction(Class)
      */
     public <T extends Action> List<T> getActions(Class<T> type) {
-        return Util.filter(getAllActions(), type);
+        List<T> _actions = Util.filter(getActions(), type);
+        for (TransientActionFactory<?, ?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
+            _actions.addAll(Util.filter(createFor(taf), type));
+        }
+        return Collections.unmodifiableList(_actions);
     }
 
     /**
@@ -176,7 +187,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         // Otherwise check transient factories.
-        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass())) {
+        for (TransientActionFactory<?, ?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
             for (Action a : createFor(taf)) {
                 if (type.isInstance(a)) {
                     return type.cast(a);
