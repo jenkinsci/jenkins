@@ -26,6 +26,7 @@ package jenkins.model;
 
 import hudson.Util;
 import hudson.model.AbstractItem;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
@@ -77,18 +78,23 @@ public class TransientActionFactoryTest {
         assertEquals(0, LazyFactory.count);
         assertNotNull(p.getAction(ProminentProjectAction.class));
         assertEquals(1, LazyFactory.count);
+        assertNotNull(p.getAction(MyProminentProjectAction.class));
+        assertEquals(2, LazyFactory.count);
         LazyFactory.count = 0;
         // getAllActions
         List<? extends Action> allActions = p.getAllActions();
         assertEquals(1, LazyFactory.count);
         assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
         assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
+        assertThat(Util.filter(allActions, MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
         LazyFactory.count = 0;
         // getActions(Class)
         assertThat(p.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
         assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
         assertEquals(1, LazyFactory.count);
+        assertThat(p.getActions(MyProminentProjectAction.class), Matchers.<MyProminentProjectAction>iterableWithSize(1));
+        assertEquals(2, LazyFactory.count);
         LazyFactory.count = 0;
         // different context type
         MockFolder d = r.createFolder("d");
@@ -101,14 +107,14 @@ public class TransientActionFactoryTest {
         assertThat(d.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
     }
-    @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<FreeStyleProject> {
+    @SuppressWarnings("rawtypes")
+    @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<AbstractProject> {
         static int count;
-        @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
+        @Override public Class<AbstractProject> type() {return AbstractProject.class;}
         @Override public Class<? extends Action> actionType() {return ProminentProjectAction.class;}
-        @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
+        @Override public Collection<? extends Action> createFor(AbstractProject p) {
             count++;
-            class A extends InvisibleAction implements ProminentProjectAction {}
-            return Collections.singleton(new A());
+            return Collections.singleton(new MyProminentProjectAction());
         }
     }
 
@@ -137,9 +143,10 @@ public class TransientActionFactoryTest {
         @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
         @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
-            class A extends InvisibleAction implements ProminentProjectAction {}
-            return Collections.singleton(new A());
+            return Collections.singleton(new MyProminentProjectAction());
         }
     }
+
+    private static class MyProminentProjectAction extends InvisibleAction implements ProminentProjectAction {}
 
 }
