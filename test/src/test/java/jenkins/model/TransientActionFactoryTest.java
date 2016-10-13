@@ -39,6 +39,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 
 public class TransientActionFactoryTest {
@@ -88,6 +89,17 @@ public class TransientActionFactoryTest {
         assertEquals(0, LazyFactory.count);
         assertThat(p.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(1));
         assertEquals(1, LazyFactory.count);
+        LazyFactory.count = 0;
+        // different context type
+        MockFolder d = r.createFolder("d");
+        assertNull(d.getAction(FoldableAction.class));
+        assertNull(d.getAction(ProminentProjectAction.class));
+        allActions = d.getAllActions();
+        assertThat(Util.filter(allActions, FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(Util.filter(allActions, ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
+        assertThat(d.getActions(FoldableAction.class), Matchers.<FoldableAction>iterableWithSize(0));
+        assertThat(d.getActions(ProminentProjectAction.class), Matchers.<ProminentProjectAction>iterableWithSize(0));
+        assertEquals(0, LazyFactory.count);
     }
     @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<FreeStyleProject> {
         static int count;
