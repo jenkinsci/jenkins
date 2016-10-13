@@ -74,7 +74,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: user is missing the Agent/Disconnect permission"));
-        assertThat(result.stderr(), not(containsString("ERROR: Error occured while performing this command, see previous stderr output.")));
+        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT)));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
-        assertThat(result.stderr(), not(containsString("ERROR: Error occured while performing this command, see previous stderr output.")));
+        assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT)));
     }
 
     @Test
@@ -371,7 +371,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
         assertThat(slave1.toComputer().isOffline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo(null));
@@ -397,7 +397,7 @@ public class OfflineNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such agent \"never_created\" exists. Did you mean \"aNode1\"?"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_ERROR_TEXT));
         assertThat(slave1.toComputer().isOffline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
         assertThat(((OfflineCause.ByCLI) slave1.toComputer().getOfflineCause()).message, equalTo("aCause"));

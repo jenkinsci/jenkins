@@ -83,7 +83,7 @@ public class DeleteNodeCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occurred while performing this command, see previous stderr output.");
+            throw new AbortException(CLI_ERROR_TEXT);
         }
         return 0;
     }
