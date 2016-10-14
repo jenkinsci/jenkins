@@ -23,19 +23,19 @@
  */
 package hudson.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Map;
 /**
  * Various {@link HttpResponse} implementations.
  *
@@ -46,14 +46,12 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
-
     public static HttpResponse staticResource(File f) throws IOException {
         return staticResource(f.toURI().toURL());
     }
 
     /**
      * Create an empty "ok" response.
-     *
      * @since 2.0
      */
     public static HttpResponse okJSON() {
@@ -62,7 +60,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
     /**
      * Create a response containing the supplied "data".
-     *
      * @param data The data.
      *
      * @since 2.0
@@ -73,7 +70,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
     /**
      * Create a response containing the supplied "data".
-     *
      * @param data The data.
      *
      * @since 2.0
@@ -84,7 +80,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
     /**
      * Create a response containing the supplied "data".
-     *
      * @param data The data.
      *
      * @since 2.0
@@ -107,7 +102,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
     /**
      * Set the response as an error response.
-     *
      * @param message The error "message" set on the response.
      * @param errorCode The HTTP error code to return;
      * @return {@link this} object.
@@ -121,8 +115,7 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     /**
      * {@link net.sf.json.JSONObject} response.
      *
-     * @author
-     * <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+     * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
      */
     static class JSONObjectResponse implements HttpResponse {
 
@@ -142,7 +135,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Create a response containing the supplied "data".
-         *
          * @param data The data.
          */
         JSONObjectResponse(@Nonnull JSONObject data) {
@@ -152,7 +144,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Create a response containing the supplied "data".
-         *
          * @param data The data.
          */
         JSONObjectResponse(@Nonnull JSONArray data) {
@@ -162,7 +153,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Create a response containing the supplied "data".
-         *
          * @param data The data.
          */
         JSONObjectResponse(@Nonnull Map<?, ?> data) {
@@ -172,23 +162,20 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Set the response status code.
-         *
          * @param statusCode The status code.
          * @return {@link this} object.
          */
-        public JSONObjectResponse withStatusCode(Integer statusCode) {
+        public JSONObjectResponse withStatusCode(@CheckForNull Integer statusCode) {
             this.statusCode = statusCode;
             return this;
         }
 
         /**
          * Set the response as an error response.
-         *
          * @param message The error "message" set on the response.
          * @return {@link this} object.
          */
-        @Nonnull
-        JSONObjectResponse error(@Nonnull String message) {
+        @Nonnull JSONObjectResponse error(@Nonnull String message) {
             status("error");
             this.jsonObject.put("message", message);
             return this;

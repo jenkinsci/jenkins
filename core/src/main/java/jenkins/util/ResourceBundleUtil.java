@@ -23,22 +23,23 @@
  */
 package jenkins.util;
 
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import hudson.PluginWrapper;
+import java.util.logging.Logger;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Simple {@link java.util.ResourceBundle} utility class.
- *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.0
  */
@@ -52,26 +53,22 @@ public class ResourceBundleUtil {
 
     /**
      * Get a bundle JSON using the default Locale.
-     *
      * @param baseName The bundle base name.
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @Nonnull
-    JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
+    public static @Nonnull JSONObject getBundle(@Nonnull String baseName) throws MissingResourceException {
         return getBundle(baseName, Locale.getDefault());
     }
 
     /**
      * Get a bundle JSON using the supplied Locale.
-     *
      * @param baseName The bundle base name.
      * @param locale The Locale.
      * @return The bundle JSON.
      * @throws MissingResourceException Missing resource bundle.
      */
-    public static @Nonnull
-    JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
+    public static @Nonnull JSONObject getBundle(@Nonnull String baseName, @Nonnull Locale locale) throws MissingResourceException {
         String bundleKey = baseName + ":" + locale.toString();
         JSONObject bundleJSON = bundles.get(bundleKey);
 
@@ -108,14 +105,14 @@ public class ResourceBundleUtil {
      * @param locale The Locale.
      * @param classLoader The classLoader
      * @return The bundle JSON.
-     * @throws MissingResourceException Missing resource bundle.
      */
-    private static @Nullable
-    ResourceBundle getBundle(@Nonnull String baseName, @Nonnull Locale locale, @Nonnull ClassLoader classLoader) {
+    private static @CheckForNull ResourceBundle getBundle(@Nonnull String baseName, @Nonnull Locale locale, @Nonnull ClassLoader classLoader) {
         try {
             return ResourceBundle.getBundle(baseName, locale, classLoader);
         } catch (MissingResourceException e) {
             // fall through and return null.
+            Logger logger = Logger.getLogger("jenkins.util.ResourceBundle");
+            logger.info(e.getMessage());
         }
         return null;
     }
