@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <div class="warning">
+      <b>${%Warning!}</b>
+      ${%blurb(app.initLevel)}
+      ${%Example: usage of} <code>@Initializer(after = InitMilestone.COMPLETED)</code> ${%in a plugin}
+      (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37759">JENKINS-37759</a>).
+      ${%Please} <a href="https://wiki.jenkins-ci.org/display/JENKINS/How+to+report+an+issue">${%report a bug}</a> ${%in the Jenkins bugtracker}.
+      <!--TODO: Nice2have: cause diagnostics-->
+  </div>
+</j:jelly>

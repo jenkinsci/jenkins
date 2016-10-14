@@ -26,6 +26,7 @@ package hudson;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.PluginManager.PluginInstanceStore;
+import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
 import jenkins.YesNoMaybe;
@@ -33,35 +34,43 @@ import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Closeable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.logging.Logger;
-import static java.util.logging.Level.WARNING;
-import static org.apache.commons.io.FilenameUtils.getBaseName;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
+import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.util.Enumeration;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
+import static org.apache.commons.io.FilenameUtils.getBaseName;
 
 /**
  * Represents a Jenkins plug-in and associated control information
@@ -87,6 +96,12 @@ import javax.annotation.Nonnull;
  */
 @ExportedBean
 public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
+    /**
+     * A plugin won't be loaded unless his declared dependencies are present and match the required minimal version.
+     * This can be set to false to disable the version check (legacy behaviour)
+     */
+    private static final boolean ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK = Boolean.parseBoolean(System.getProperty(PluginWrapper.class.getName()+"." + "dependenciesVersionCheck.enabled", "true"));
+
     /**
      * {@link PluginManager} to which this belongs to.
      */
@@ -118,15 +133,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final File disableFile;
 
     /**
-     * Used to control the unpacking of the bundled plugin.
-     * If a pin file exists, Jenkins assumes that the user wants to pin down a particular version
-     * of a plugin, and will not try to overwrite it. Otherwise, it'll be overwritten
-     * by a bundled copy, to ensure consistency across upgrade/downgrade.
-     * @since 1.325
-     */
-    private final File pinFile;
-
-    /**
      * A .jpi file, an exploded plugin directory, or a .jpl file.
      */
     private final File archive;
@@ -149,6 +155,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     private final List<Dependency> dependencies;
     private final List<Dependency> optionalDependencies;
+
+    public List<String> getDependencyErrors() {
+        return Collections.unmodifiableList(dependencyErrors);
+    }
+
+    private final transient List<String> dependencyErrors = new ArrayList<>();
 
     /**
      * Is this plugin bundled in jenkins.war?
@@ -217,10 +229,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if(idx==-1)
                 throw new IllegalArgumentException("Illegal dependency specifier "+s);
             this.shortName = s.substring(0,idx);
-            this.version = s.substring(idx+1);
-            
+            String version = s.substring(idx+1);
+
             boolean isOptional = false;
-            String[] osgiProperties = s.split(";");
+            String[] osgiProperties = version.split("[;]");
             for (int i = 1; i < osgiProperties.length; i++) {
                 String osgiProperty = osgiProperties[i].trim();
                 if (osgiProperty.equalsIgnoreCase("resolution:=optional")) {
@@ -228,11 +240,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 }
             }
             this.optional = isOptional;
+            if (isOptional) {
+                this.version = osgiProperties[0];
+            } else {
+                this.version = version;
+            }
         }
 
         @Override
         public String toString() {
-            return shortName + " (" + version + ")";
+            return shortName + " (" + version + ")" + (optional ? " optional" : "");
         }        
     }
 
@@ -259,7 +276,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 		this.baseResourceURL = baseResourceURL;
 		this.classLoader = classLoader;
 		this.disableFile = disableFile;
-        this.pinFile = new File(archive.getPath() + ".pinned");
 		this.active = !disableFile.exists();
 		this.dependencies = dependencies;
 		this.optionalDependencies = optionalDependencies;
@@ -271,6 +287,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     public Api getApi() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return new Api(this);
     }
 
@@ -398,6 +415,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns the required Jenkins core version of this plugin.
+     * @return the required Jenkins core version of this plugin.
+     * @since XXX
+     */
+    @Exported
+    public @CheckForNull String getRequiredCoreVersion() {
+        String v = manifest.getMainAttributes().getValue("Jenkins-Version");
+        if (v!= null) return v;
+
+        v = manifest.getMainAttributes().getValue("Hudson-Version");
+        if (v!= null) return v;
+        return null;
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -450,6 +482,10 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * Enables this plugin next time Jenkins runs.
      */
     public void enable() throws IOException {
+        if (!disableFile.exists()) {
+            LOGGER.log(Level.FINEST, "Plugin {0} has been already enabled. Skipping the enable() operation", getShortName());
+            return;
+        }
         if(!disableFile.delete())
             throw new IOException("Failed to delete "+disableFile);
     }
@@ -523,20 +559,71 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      *             thrown if one or several mandatory dependencies doesn't exists.
      */
     /*package*/ void resolvePluginDependencies() throws IOException {
-        List<String> missingDependencies = new ArrayList<String>();
+        if (ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK) {
+            String requiredCoreVersion = getRequiredCoreVersion();
+            if (requiredCoreVersion == null) {
+                LOGGER.warning(shortName + " doesn't declare required core version.");
+            } else {
+                VersionNumber actualVersion = Jenkins.getVersion();
+                if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
+                    dependencyErrors.add(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion));
+                }
+            }
+        }
         // make sure dependencies exist
         for (Dependency d : dependencies) {
-            if (parent.getPlugin(d.shortName) == null)
-                missingDependencies.add(d.toString());
-        }
-        if (!missingDependencies.isEmpty())
-            throw new IOException("Dependency "+Util.join(missingDependencies, ", ")+" doesn't exist");
+            PluginWrapper dependency = parent.getPlugin(d.shortName);
+            if (dependency == null) {
+                PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
+                if (failedDependency != null) {
+                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), d.version));
+                    break;
+                } else {
+                    dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
+                }
+            } else {
+                if (dependency.isActive()) {
+                    if (isDependencyObsolete(d, dependency)) {
+                        dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                    }
+                } else {
+                    if (isDependencyObsolete(d, dependency)) {
+                        dependencyErrors.add(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                    } else {
+                        dependencyErrors.add(Messages.PluginWrapper_disabled(dependency.getLongName()));
+                    }
+                }
 
+            }
+        }
         // add the optional dependencies that exists
         for (Dependency d : optionalDependencies) {
-            if (parent.getPlugin(d.shortName) != null)
-                dependencies.add(d);
+            PluginWrapper dependency = parent.getPlugin(d.shortName);
+            if (dependency != null && dependency.isActive()) {
+                if (isDependencyObsolete(d, dependency)) {
+                    dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                } else {
+                    dependencies.add(d);
+                }
+            }
         }
+        if (!dependencyErrors.isEmpty()) {
+            NOTICE.addPlugin(this);
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
+            for (Iterator<String> iterator = dependencyErrors.iterator(); iterator.hasNext(); ) {
+                String dependencyError = iterator.next();
+                messageBuilder.append(" - ").append(dependencyError);
+                if (iterator.hasNext()) {
+                    messageBuilder.append(System.lineSeparator());
+                }
+            }
+            throw new IOException(messageBuilder.toString());
+        }
+    }
+
+    private boolean isDependencyObsolete(Dependency d, PluginWrapper dependency) {
+        return ENABLE_PLUGIN_DEPENDENCIES_VERSION_CHECK && dependency.getVersionNumber().isOlderThan(new VersionNumber(d.version));
     }
 
     /**
@@ -575,8 +662,9 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
     
     @Exported
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinned() {
-        return pinFile.exists();
+        return false;
     }
 
     /**
@@ -620,11 +708,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         File backup = getBackupFile();
         if (backup.exists()) {
             try {
-                JarFile backupPlugin = new JarFile(backup);
-                try {
+                try (JarFile backupPlugin = new JarFile(backup)) {
                     return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
-                } finally {
-                    backupPlugin.close();
                 }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
@@ -638,16 +723,54 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Checks if this plugin is pinned and that's forcing us to use an older version than the bundled one.
      */
+    @Deprecated // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     public boolean isPinningForcingOldVersion() {
-        if (!isPinned())    return false;
+        return false;
+    }
 
-        Manifest bundled = Jenkins.getInstance().pluginManager.getBundledPluginManifest(getShortName());
-        if (bundled==null)  return false;
+    @Extension
+    public final static PluginWrapperAdministrativeMonitor NOTICE = new PluginWrapperAdministrativeMonitor();
 
-        VersionNumber you = new VersionNumber(getVersionOf(bundled));
-        VersionNumber me = getVersionNumber();
+    /**
+     * Administrative Monitor for failed plugins
+     */
+    public static final class PluginWrapperAdministrativeMonitor extends AdministrativeMonitor {
+        private final Map<String, PluginWrapper> plugins = new HashMap<>();
 
-        return me.isOlderThan(you);
+        void addPlugin(PluginWrapper plugin) {
+            plugins.put(plugin.shortName, plugin);
+        }
+
+        public boolean isActivated() {
+            return !plugins.isEmpty();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
+        }
+
+        public Collection<PluginWrapper> getPlugins() {
+            return plugins.values();
+        }
+
+        public PluginWrapper getPlugin(String shortName) {
+            return plugins.get(shortName);
+        }
+
+        /**
+         * Depending on whether the user said "dismiss" or "correct", send him to the right place.
+         */
+        public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            if(req.hasParameter("correct")) {
+                rsp.sendRedirect(req.getContextPath()+"/pluginManager");
+
+            }
+        }
+
+        public static PluginWrapperAdministrativeMonitor get() {
+            return AdministrativeMonitor.all().get(PluginWrapperAdministrativeMonitor.class);
+        }
     }
 
 //
@@ -670,16 +793,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doPin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        new FileOutputStream(pinFile).close();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to pin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 
     @RequirePOST
+    @Deprecated
     public HttpResponse doUnpin() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        pinFile.delete();
+        // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
+        LOGGER.log(WARNING, "Call to unpin plugin has been ignored. Plugin name: " + shortName);
         return HttpResponses.ok();
     }
 

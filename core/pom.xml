@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.647-SNAPSHOT</version>
+    <version>2.26-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,9 +39,11 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.237</stapler.version>
+    <stapler.version>1.243</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>1.8.9</groovy.version>
+    <groovy.version>2.4.7</groovy.version>
+    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
+    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
 
   <dependencies>
@@ -147,7 +149,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-      <version>1.0</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -195,7 +197,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.7</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -243,8 +245,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.4</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -411,13 +413,13 @@ THE SOFTWARE.
     <dependency><!-- groovy shell uses this but uses an optional dependency -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>1.0</version>
+      <version>2.12</version>
       <scope>compile</scope>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>1.9</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <!--
@@ -539,7 +541,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.9</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -557,6 +559,11 @@ THE SOFTWARE.
       <groupId>org.jvnet.robust-http-client</groupId>
       <artifactId>robust-http-client</artifactId>
       <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>symbol-annotation</artifactId>
+      <version>1.1</version>
     </dependency>
 
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
@@ -640,6 +647,7 @@ THE SOFTWARE.
           <execution>
             <goals>
               <goal>generate-taglib-interface</goal>
+              <goal>record-core-location</goal>
             </goals>
           </execution>
         </executions>
@@ -798,6 +806,10 @@ THE SOFTWARE.
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 
@@ -873,20 +885,12 @@ THE SOFTWARE.
     </profile>
     <profile>
       <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
+      <!-- FindBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>findbugs</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>High</threshold>
-              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
+      <properties>
+        <!-- In the default profile we always fail the build if there FindBugs errors -->
+        <findbugs.failOnError>true</findbugs.failOnError>
+      </properties>
     </profile>
     <profile>
       <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->

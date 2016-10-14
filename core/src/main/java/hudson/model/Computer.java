@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
@@ -66,8 +67,9 @@ import hudson.util.NamingThreadFactory;
 import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.security.NotReallyRoleSensitiveCallable;
 
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -284,7 +286,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Directory where rotated slave logs are stored.
+     * Directory where rotated agent logs are stored.
      *
      * The method also creates a log directory if required.
      *
@@ -293,7 +295,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected @Nonnull File getLogDir() {
         File dir = new File(Jenkins.getInstance().getRootDir(),"logs/slaves/"+nodeName);
         if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.severe("Failed to create slave log directory " + dir.getAbsolutePath());
+            LOGGER.severe("Failed to create agent log directory " + dir.getAbsolutePath());
         }
         return dir;
     }
@@ -306,7 +308,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Gets the string representation of the slave log.
+     * Gets the string representation of the agent log.
      */
     public String getLog() throws IOException {
         return Util.loadFile(getLogFile());
@@ -383,12 +385,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public abstract Charset getDefaultCharset();
 
     /**
-     * Gets the logs recorded by this slave.
+     * Gets the logs recorded by this agent.
      */
     public abstract List<LogRecord> getLogRecords() throws IOException, InterruptedException;
 
     /**
-     * If {@link #getChannel()}==null, attempts to relaunch the slave agent.
+     * If {@link #getChannel()}==null, attempts to relaunch the agent.
      */
     public abstract void doLaunchSlaveAgent( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
 
@@ -447,10 +449,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected abstract Future<?> _connect(boolean forceReconnect);
 
     /**
-     * CLI command to reconnect this node.
+     * @deprecated Implementation of CLI command "connect-node" moved to {@link hudson.cli.ConnectNodeCommand}.
+     *
+     * @param force
+     *      If true cancel any currently pending connect operation and retry from scratch
      */
-    @CLIMethod(name="connect-node")
-    public void cliConnect(@Option(name="-f",usage="Cancel any currently pending connect operation and retry from scratch") boolean force) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliConnect(boolean force) throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         connect(force).get();
     }
@@ -506,23 +511,33 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * CLI command to disconnects this node.
+     * @deprecated Implementation of CLI command "disconnect-node" moved to {@link hudson.cli.DisconnectNodeCommand}.
+     *
+     * @param cause
+     *      Record the note about why you are disconnecting this node
      */
-    @CLIMethod(name="disconnect-node")
-    public void cliDisconnect(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliDisconnect(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
         disconnect(new ByCLI(cause)).get();
     }
 
     /**
-     * CLI command to mark the node offline.
+     * @deprecated  Implementation of CLI command "offline-node" moved to {@link hudson.cli.OfflineNodeCommand}.
+     *
+     * @param cause
+     *      Record the note about why you are disconnecting this node
      */
-    @CLIMethod(name="offline-node")
-    public void cliOffline(@Option(name="-m",usage="Record the note about why you are disconnecting this node") String cause) throws ExecutionException, InterruptedException {
+    @Deprecated
+    public void cliOffline(String cause) throws ExecutionException, InterruptedException {
         checkPermission(DISCONNECT);
         setTemporarilyOffline(true, new ByCLI(cause));
     }
 
+    /**
+     * @deprecated Implementation of CLI command "online-node" moved to {@link hudson.cli.OnlineNodeCommand}.
+     */
+    @Deprecated
     public void cliOnline() throws ExecutionException, InterruptedException {
         checkPermission(CONNECT);
         setTemporarilyOffline(false, null);
@@ -564,8 +579,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *      null if the configuration has changed and the node is removed, yet the corresponding {@link Computer}
      *      is not yet gone.
      */
-    public @CheckForNull Node getNode() {
-        Jenkins j = Jenkins.getInstance();
+    @CheckForNull
+    public Node getNode() {
+        Jenkins j = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (j == null) {
             return null;
         }
@@ -618,8 +634,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * This method is called to determine whether manual launching of the slave is allowed at this point in time.
-     * @return {@code true} if manual launching of the slave is allowed at this point in time.
+     * This method is called to determine whether manual launching of the agent is allowed at this point in time.
+     * @return {@code true} if manual launching of the agent is allowed at this point in time.
      */
     @Exported
     public boolean isManualLaunchAllowed() {
@@ -647,8 +663,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Returns true if this computer can be launched by Hudson proactively and automatically.
      *
      * <p>
-     * For example, JNLP slaves return {@code false} from this, because the launch process
-     * needs to be initiated from the slave side.
+     * For example, JNLP agents return {@code false} from this, because the launch process
+     * needs to be initiated from the agent side.
      */
     @Exported
     public boolean isLaunchSupported() {
@@ -661,7 +677,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * <p>
      * In contrast, {@link #isOffline()} represents the actual online/offline
      * state. For example, this method may return false while {@link #isOffline()}
-     * returns true if the slave agent failed to launch.
+     * returns true if the agent failed to launch.
      *
      * @deprecated
      *      You should almost always want {@link #isOffline()}.
@@ -707,6 +723,13 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
+    /**
+     * Returns the icon for this computer.
+     * 	 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * 
+     * @see #getIconClassName()
+     */
     @Exported
     public String getIcon() {
         if(isOffline())
@@ -715,6 +738,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             return "computer.png";
     }
 
+    /**
+     * Returns the class name that will be used to lookup the icon.
+     * 
+     * This class name will be added as a class tag to the html img tags where the icon should
+     * show up followed by a size specifier given by {@link Icon#toNormalizedIconSizeClass(String)}
+     * The conversion of class tag to src tag is registered through {@link IconSet#addIcon(Icon)}
+     * 
+     * It is both the recommended and default implementation to serve different icons based on {@link #isOffline}
+     * 
+     * @see #getIcon()
+     */
     @Exported
     public String getIconClassName() {
         if(isOffline())
@@ -1003,7 +1037,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
-    /*package*/ void removeExecutor(final Executor e) {
+    protected void removeExecutor(final Executor e) {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -1011,8 +1045,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                     executors.remove(e);
                     addNewExecutorIfNecessary();
                     if (!isAlive()) {
-                        AbstractCIBase ciBase = Jenkins.getInstance();
-                        if (ciBase != null) {
+                        AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
+                        if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
                             ciBase.removeComputer(Computer.this);
                         }
                     }
@@ -1027,9 +1061,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Returns true if any of the executors are {@linkplain Executor#isActive active}.
-     *
-     * Note that if an executor dies, we'll leave it in {@link #executors} until
-     * the administrator yanks it out, so that we can see why it died.
      *
      * @since 1.509
      */
@@ -1142,7 +1173,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Gets the thread dump of the slave JVM.
+     * Gets the thread dump of the agent JVM.
      * @return
      *      key is the thread name, and the value is the pre-formatted dump.
      */
@@ -1161,14 +1192,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * This method tries to compute the name of the host that's reachable by all the other nodes.
      *
      * <p>
-     * Since it's possible that the slave is not reachable from the master (it may be behind a firewall,
+     * Since it's possible that the agent is not reachable from the master (it may be behind a firewall,
      * connecting to master via JNLP), this method may return null.
      *
      * It's surprisingly tricky for a machine to know a name that other systems can get to,
      * especially between things like DNS search suffix, the hosts file, and YP.
      *
      * <p>
-     * So the technique here is to compute possible interfaces and names on the slave,
+     * So the technique here is to compute possible interfaces and names on the agent,
      * then try to ping them from the master, and pick the one that worked.
      *
      * <p>
@@ -1177,7 +1208,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.300
      * @return
      *      null if the host name cannot be computed (for example because this computer is offline,
-     *      because the slave is behind the firewall, etc.)
+     *      because the agent is behind the firewall, etc.)
      */
     public String getHostName() throws IOException, InterruptedException {
         if(hostNameCached)
@@ -1272,7 +1303,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static class GetFallbackName extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
-            return System.getProperty("host.name");
+            return SystemProperties.getString("host.name");
         }
         private static final long serialVersionUID = 1L;
     }
@@ -1334,19 +1365,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
-        VirtualChannel vc = getChannel();
-        if (vc instanceof Channel) {
-            w.println("Master to slave");
-            ((Channel)vc).dumpExportTable(w);
-            w.flush(); // flush here once so that even if the dump from the slave fails, the client gets some useful info
+        try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
+            VirtualChannel vc = getChannel();
+            if (vc instanceof Channel) {
+                w.println("Master to slave");
+                ((Channel) vc).dumpExportTable(w);
+                w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
 
-            w.println("\n\n\nSlave to master");
-            w.print(vc.call(new DumpExportTableTask()));
-        } else {
-            w.println(Messages.Computer_BadChannel());
+                w.println("\n\n\nSlave to master");
+                w.print(vc.call(new DumpExportTableTask()));
+            } else {
+                w.println(Messages.Computer_BadChannel());
+            }
         }
-        w.close();
     }
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
@@ -1399,9 +1430,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
 
-        // take the user back to the slave top page.
+        // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
     }
 
@@ -1434,28 +1465,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Replaces the current {@link Node} by another one.
-     */
-    private void replaceBy(final Node newNode) throws ServletException, IOException {
-        final Jenkins app = Jenkins.getInstance();
-
-        // use the queue lock until Nodes has a way of directly modifying a single node.
-        Queue.withLock(new NotReallyRoleSensitiveCallable<Void, IOException>() {
-            public Void call() throws IOException {
-                List<Node> nodes = new ArrayList<Node>(app.getNodes());
-                Node node = getNode();
-                int i  = (node != null) ? nodes.indexOf(node) : -1;
-                if(i<0) {
-                    throw new IOException("This slave appears to be removed while you were editing the configuration");
-                }
-                nodes.set(i, newNode);
-                app.setNodes(nodes);
-                return null;
-            }
-        });
-    }
-
-    /**
      * Updates Job by its XML definition.
      *
      * @since 1.526
@@ -1463,11 +1472,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public void updateByXml(final InputStream source) throws IOException, ServletException {
         checkPermission(CONFIGURE);
         Node result = (Node)Jenkins.XSTREAM2.fromXML(source);
-        replaceBy(result);
+        Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
     }
 
     /**
-     * Really deletes the slave.
+     * Really deletes the agent.
      */
     @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
@@ -1485,7 +1494,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Blocks until the node becomes online/offline.
      */
-    @CLIMethod(name="wait-node-online")
     public void waitUntilOnline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOnline())
@@ -1493,7 +1501,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    @CLIMethod(name="wait-node-offline")
     public void waitUntilOffline() throws InterruptedException {
         synchronized (statusChangeLock) {
             while (!isOffline())
@@ -1520,7 +1527,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * Returns {@code true} if the computer is accepting tasks. Needed to allow slaves programmatic suspension of task
+     * Returns {@code true} if the computer is accepting tasks. Needed to allow agents programmatic suspension of task
      * scheduling that does not overlap with being offline.
      *
      * @return {@code true} if the computer is accepting tasks
@@ -1538,15 +1545,15 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @CLIResolver
     public static Computer resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Slave name, or empty string for master") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Agent name, or empty string for master") String name) throws CmdLineException {
         Jenkins h = Jenkins.getInstance();
         Computer item = h.getComputer(name);
         if (item==null) {
-            List<String> names = new ArrayList<String>();
-            for (Computer c : h.getComputers())
-                if (c.getName().length()>0)
-                    names.add(c.getName());
-            throw new CmdLineException(null,Messages.Computer_NoSuchSlaveExists(name,EditDistance.findNearest(name,names)));
+            List<String> names = ComputerSet.getComputerNames();
+            String adv = EditDistance.findNearest(name, names);
+            throw new IllegalArgumentException(adv == null ?
+                    hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(name) :
+                    hudson.model.Messages.Computer_NoSuchSlaveExists(name, adv));
         }
         return item;
     }
@@ -1699,9 +1706,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * @since 1.532
      */
-    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, Boolean.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
+    public static final Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._Computer_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.COMPUTER});
     public static final Permission DELETE = new Permission(PERMISSIONS,"Delete", Messages._Computer_DeletePermission_Description(), Permission.DELETE, PermissionScope.COMPUTER);
-    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.COMPUTER);
+    public static final Permission CREATE = new Permission(PERMISSIONS,"Create", Messages._Computer_CreatePermission_Description(), Permission.CREATE, PermissionScope.JENKINS);
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);

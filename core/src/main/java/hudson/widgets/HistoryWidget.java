@@ -24,12 +24,12 @@
 package hudson.widgets;
 
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.model.ModelObject;
 import hudson.model.Run;
 
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
-import org.apache.commons.collections.IteratorUtils;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -88,7 +88,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
      *      The parent model object that owns this widget.
      */
     public HistoryWidget(O owner, Iterable<T> baseList, Adapter<? super T> adapter) {
-	StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
         this.adapter = adapter;
         this.baseList = baseList;
         this.baseUrl = Functions.getNearestAncestorUrl(currentRequest,owner);
@@ -112,6 +112,20 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
 
     public String getFirstTransientBuildKey() {
         return firstTransientBuildKey;
+    }
+
+    /**
+     * Calculates the first transient build record. Everything >= this will be discarded when AJAX call is made.
+     *
+     * @param historyPageFilter
+     *      The history page filter containing the list of builds.
+     * @return
+     *      The history page filter that was passed in.
+     */
+    @SuppressWarnings("unchecked")
+    protected HistoryPageFilter updateFirstTransientBuildKey(HistoryPageFilter historyPageFilter) {
+        updateFirstTransientBuildKey(historyPageFilter.runs);
+        return historyPageFilter;
     }
 
     private Iterable<HistoryPageEntry<T>> updateFirstTransientBuildKey(Iterable<HistoryPageEntry<T>> source) {
@@ -147,15 +161,15 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         Iterator<T> iterator = historyItemList.iterator();
 
         if (!iterator.hasNext()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         List<HistoryPageEntry<T>> pageEntries = new ArrayList<HistoryPageEntry<T>>();
         while (iterator.hasNext()) {
-	        pageEntries.add(new HistoryPageEntry<T>(iterator.next()));
+            pageEntries.add(new HistoryPageEntry<T>(iterator.next()));
         }
 
-	return pageEntries;
+        return pageEntries;
     }
 
     /**
@@ -164,9 +178,9 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
     public HistoryPageFilter getHistoryPageFilter() {
         HistoryPageFilter<T> historyPageFilter = newPageFilter();
 
-        historyPageFilter.add(IteratorUtils.toList(baseList.iterator()));
+        historyPageFilter.add(baseList);
         historyPageFilter.widget = this;
-        return historyPageFilter;
+        return updateFirstTransientBuildKey(historyPageFilter);
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
@@ -238,11 +252,10 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         }
 
         HistoryPageFilter page = getHistoryPageFilter();
-        updateFirstTransientBuildKey(page.runs);
         req.getView(page,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 
-    static final int THRESHOLD = Integer.getInteger(HistoryWidget.class.getName()+".threshold",30);
+    static final int THRESHOLD = SystemProperties.getInteger(HistoryWidget.class.getName()+".threshold",30);
 
     public String getNextBuildNumberToFetch() {
         return nextBuildNumberToFetch;

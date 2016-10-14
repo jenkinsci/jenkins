@@ -45,18 +45,26 @@ import org.jvnet.hudson.test.Email;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
+import hudson.security.ACL;
+import hudson.security.AccessDeniedException2;
 import hudson.slaves.DumbSlave;
+import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import jenkins.model.ProjectNamingStrategy;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -428,4 +436,90 @@ public class ViewTest {
             }
         }
     }
+
+    @Issue("JENKINS-20509")
+    @Test public void checkJobName() throws Exception {
+        j.createFreeStyleProject("topprj");
+        final MockFolder d1 = j.createFolder("d1");
+        d1.createProject(FreeStyleProject.class, "subprj");
+        final MockFolder d2 = j.createFolder("d2");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("admin").
+            grant(Jenkins.READ).everywhere().toEveryone().
+            grant(Job.READ).everywhere().toEveryone().
+            grant(Item.CREATE).onFolders(d1).to("dev")); // not on root or d2
+        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                return null;
+            }
+        });
+        ACL.impersonate(User.get("dev").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                try {
+                    assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
+                    fail("should not have been allowed");
+                } catch (AccessDeniedException2 x) {
+                    // OK
+                }
+                assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
+                return null;
+            }
+        });
+        ACL.impersonate(User.get("admin").impersonate(), new NotReallyRoleSensitiveCallable<Void,Exception>() {
+            @Override
+            public Void call() throws Exception {
+                assertCheckJobName(j.jenkins, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(d1, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(d2, "whatever", FormValidation.Kind.OK);
+                assertCheckJobName(j.jenkins, "d1", FormValidation.Kind.ERROR);
+                assertCheckJobName(j.jenkins, "topprj", FormValidation.Kind.ERROR);
+                assertCheckJobName(d1, "subprj", FormValidation.Kind.ERROR);
+                assertCheckJobName(j.jenkins, "", FormValidation.Kind.OK);
+                assertCheckJobName(j.jenkins, "foo/bie", FormValidation.Kind.ERROR);
+                assertCheckJobName(d2, "New", FormValidation.Kind.OK);
+                j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("[a-z]+", "", true));
+                assertCheckJobName(d2, "New", FormValidation.Kind.ERROR);
+                assertCheckJobName(d2, "new", FormValidation.Kind.OK);
+                return null;
+            }
+        });
+        JenkinsRule.WebClient wc = j.createWebClient().login("admin");
+        assertEquals("original ${rootURL}/checkJobName still supported", "<div/>", wc.goTo("checkJobName?value=stuff").getWebResponse().getContentAsString());
+        assertEquals("but now possible on a view in a folder", "<div/>", wc.goTo("job/d1/view/All/checkJobName?value=stuff").getWebResponse().getContentAsString());
+    }
+
+    private void assertCheckJobName(ViewGroup context, String name, FormValidation.Kind expected) {
+        assertEquals(expected, context.getPrimaryView().doCheckJobName(name).kind);
+    }
+    
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewCreatedIfNoPrimary() throws Exception {
+        assertNotNull(j.getInstance().getView("All"));
+    }
+    
+    @Test
+    @Issue("JENKINS-36908")
+    @LocalData
+    public void testAllViewNotCreatedIfPrimary() throws Exception {
+        assertNull(j.getInstance().getView("All"));
+    }
+
 }

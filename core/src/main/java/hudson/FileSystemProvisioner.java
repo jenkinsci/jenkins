@@ -34,6 +34,7 @@ import hudson.util.io.ArchiverFactory;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
+import org.jenkinsci.Symbol;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -51,7 +52,7 @@ import java.io.OutputStream;
  * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
- *   -> probably per slave.
+ *   -> probably per agent.
  *
  * <h2>Design Problems</h2>
  * <ol>
@@ -71,7 +72,7 @@ import java.io.OutputStream;
  * one more configuration option. It's especially tricky because
  * during the configuration we don't know the OS type.
  *
- * OTOH special slave type like the ones for network.com grid can
+ * OTOH special agent type like the ones for network.com grid can
  * hide this.
  * </ol>
  *
@@ -80,8 +81,8 @@ import java.io.OutputStream;
  *
  * To recap,
  *
- * - when a slave connects, we auto-detect the file system provisioner.
- *   (for example, ZFS FSP would check the slave root user prop
+ * - when an agent connects, we auto-detect the file system provisioner.
+ *   (for example, ZFS FSP would check the agent root user prop
  *   and/or attempt to "pfexec zfs create" and take over.)
  *
  * - the user may configure jobs for snapshot collection, along with
@@ -214,11 +215,8 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             File wss = new File(build.getRootDir(),"workspace.tgz");
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
-            try {
-                ws.archive(ArchiverFactory.TARGZ,os,glob);
-            } finally {
-                os.close();
+            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(wss))) {
+                ws.archive(ArchiverFactory.TARGZ, os, glob);
             }
             return new WorkspaceSnapshotImpl();
         }
@@ -235,7 +233,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
             }
         }
 
-        @Extension
+        @Extension @Symbol("standard")
         public static final class DescriptorImpl extends FileSystemProvisionerDescriptor {
             public boolean discard(FilePath ws, TaskListener listener) throws IOException, InterruptedException {
                 // the default provisioner does not do anything special,

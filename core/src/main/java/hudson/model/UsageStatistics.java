@@ -31,7 +31,6 @@ import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
-import static hudson.init.InitMilestone.COMPLETED;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -62,6 +61,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import com.jcraft.jzlib.GZIPOutputStream;
+import jenkins.util.SystemProperties;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -96,12 +96,9 @@ public class UsageStatistics extends PageDecorator {
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        final Jenkins j = Jenkins.getInstance();
-        // user opted out or Jenkins not fully initialized. no data collection.
-        if (j == null || j.isUsageStatisticsCollected() || DISABLED || COMPLETED.compareTo(j.getInitLevel()) > 0) {
-            return false;
-        }
-
+        // user opted out. no data collection.
+        if(!Jenkins.getInstance().isUsageStatisticsCollected() || DISABLED)     return false;
+        
         long now = System.currentTimeMillis();
         if(now - lastAttempt > DAY) {
             lastAttempt = now;
@@ -276,5 +273,5 @@ public class UsageStatistics extends PageDecorator {
 
     private static final long DAY = DAYS.toMillis(1);
 
-    public static boolean DISABLED = Boolean.getBoolean(UsageStatistics.class.getName()+".disabled");
+    public static boolean DISABLED = SystemProperties.getBoolean(UsageStatistics.class.getName()+".disabled");
 }

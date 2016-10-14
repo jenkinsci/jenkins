@@ -23,17 +23,22 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" trim="true">
+  <st:contentType value="text/plain;charset=UTF-8"/>
   <!--
-    Publicize the TCP port number for JNLP slave agents so that they know where to conenct.
+    Publicize the TCP port number for JNLP agents so that they know where to conenct.
     Keep the legacy header for better backward compatibility
   -->
-  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
-  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.port}" />
+  <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
+  <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
   <!--
     if the host name is overriden, advertise that as well
   -->
   <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
+  <!-- publish the instance identity so that agents can verify match from discovery -->
+  <st:header name="X-Instance-Identity" value="${app.tcpSlaveAgentListener.identityPublicKey}" />
+  <!-- reduce the number of client connection attempts during protocol negotiation -->
+  <st:header name="X-Jenkins-Agent-Protocols" value="${app.tcpSlaveAgentListener.agentProtocolNames}"/>
 
   Jenkins
 </j:jelly>

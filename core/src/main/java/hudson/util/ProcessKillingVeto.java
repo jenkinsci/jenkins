@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.util.ProcessTreeRemoting.IOSProcess;
 
@@ -32,7 +33,7 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
 
 /**
  * Allows extensions to veto killing processes. If at least one extension vetoes
@@ -44,7 +45,7 @@ import jenkins.model.Jenkins;
  * 
  * @since TODO
  * 
- * @author Daniel Weber <daniel.weber.dev@gmail.com>
+ * @author <a href="mailto:daniel.weber.dev@gmail.com">Daniel Weber</a>
  */
 public abstract class ProcessKillingVeto implements ExtensionPoint {
 
@@ -74,10 +75,20 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      *         list if Jenkins is not available, never null.
      */
     public static List<ProcessKillingVeto> all() {
-        Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null)
-            return Collections.emptyList();
-        return jenkins.getExtensionList(ProcessKillingVeto.class);
+        if (JenkinsJVM.isJenkinsJVM()) {
+            return _all();
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * As classloading is lazy, the classes referenced in this method will not be resolved
+     * until the first time the method is invoked, so we use this method to guard access to Jenkins JVM only classes.
+     *
+     * @return All ProcessKillingVeto extensions currently registered.
+     */
+    private static List<ProcessKillingVeto> _all() {
+        return ExtensionList.lookup(ProcessKillingVeto.class);
     }
 
     /**

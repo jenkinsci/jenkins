@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -42,11 +43,12 @@ import jenkins.tasks.SimpleBuildStep;
 import jenkins.util.BuildListenerAdapter;
 import net.sf.json.JSONObject;
 import org.apache.tools.ant.types.FileSet;
-import org.kohsuke.stapler.AncestorInPath;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -56,6 +58,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -74,7 +77,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Possibly null 'excludes' pattern as in Ant.
      */
-    private String excludes = "";
+    private String excludes;
 
     @Deprecated
     private Boolean latestOnly;
@@ -143,7 +146,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     // Backwards compatibility for older builds
     public Object readResolve() {
         if (allowEmptyArchive == null) {
-            this.allowEmptyArchive = Boolean.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
+            this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
         }
         if (defaultExcludes == null){
             defaultExcludes = true;
@@ -158,11 +161,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return artifacts;
     }
 
-    public String getExcludes() {
+    public @CheckForNull String getExcludes() {
         return excludes;
     }
 
-    @DataBoundSetter public final void setExcludes(String excludes) {
+    @DataBoundSetter public final void setExcludes(@CheckForNull String excludes) {
         this.excludes = Util.fixEmptyAndTrim(excludes);
     }
 
@@ -333,7 +336,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Deprecated
     public static volatile DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("archiveArtifacts")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public DescriptorImpl() {
             DESCRIPTOR = this; // backward compatibility

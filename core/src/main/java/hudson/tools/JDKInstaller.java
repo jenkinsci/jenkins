@@ -52,6 +52,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -272,11 +273,8 @@ public class JDKInstaller extends ToolInstaller {
             if (r != 0) {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
-                InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
-                try {
-                    IOUtils.copy(in,new OutputStreamWriter(out));
-                } finally {
-                    in.close();
+                try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
+                    IOUtils.copy(in, new OutputStreamWriter(out));
                 }
                 throw new AbortException();
             }
@@ -448,8 +446,7 @@ public class JDKInstaller extends ToolInstaller {
 
         HttpClient hc = new HttpClient();
         hc.getParams().setParameter("http.useragent","Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)");
-        Jenkins j = Jenkins.getInstance();
-        ProxyConfiguration jpc = j!=null ? j.proxy : null;
+        ProxyConfiguration jpc = Jenkins.getInstance().proxy;
         if(jpc != null) {
             hc.getHostConfiguration().setProxy(jpc.name, jpc.port);
             if(jpc.getUserName() != null)
@@ -521,11 +518,8 @@ public class JDKInstaller extends ToolInstaller {
                     File tmp = new File(cache.getPath()+".tmp");
                     try {
                         tmp.getParentFile().mkdirs();
-                        FileOutputStream out = new FileOutputStream(tmp);
-                        try {
+                        try (FileOutputStream out = new FileOutputStream(tmp)) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
-                        } finally {
-                            out.close();
                         }
 
                         tmp.renameTo(cache);
@@ -741,7 +735,7 @@ public class JDKInstaller extends ToolInstaller {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    @Extension
+    @Extension @Symbol("jdkInstaller")
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         private String username;
         private Secret password;
@@ -805,7 +799,7 @@ public class JDKInstaller extends ToolInstaller {
     /**
      * JDK list.
      */
-    @Extension
+    @Extension @Symbol("jdk")
     public static final class JDKList extends Downloadable {
         public JDKList() {
             super(JDKInstaller.class);

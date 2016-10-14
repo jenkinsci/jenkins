@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.35</version>
+    <version>1.36</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.647-SNAPSHOT</version>
+  <version>2.26-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -66,10 +66,6 @@ THE SOFTWARE.
       <id>github-pages</id>
       <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
     </site>
-    <snapshotRepository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <issueManagement>
@@ -98,8 +94,10 @@ THE SOFTWARE.
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
     <maven-plugin.version>2.7.1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
+    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
 
     <java.level>7</java.level>
@@ -107,6 +105,9 @@ THE SOFTWARE.
     <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
   </properties>
 
+  <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
+       from the Jenkins org pom. This is on purpose to keep jenkins core buildable even if one has
+       *not* defined the specific details in the settings.xml file. -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
@@ -179,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.53.2</version>
+        <version>2.62.2</version>
       </dependency>
 
       <dependency>
@@ -323,7 +324,17 @@ THE SOFTWARE.
               <artifactId>servlet-api</artifactId>
               <version>2.4</version>
             </dependency>
+            <dependency>
+              <groupId>org.codehaus.gmaven.runtime</groupId>
+              <artifactId>gmaven-runtime-2.0</artifactId>
+              <version>1.5-jenkins-3</version>
+            </dependency>
           </dependencies>
+          <configuration>
+            <!-- 2.4 not yet supported by plugin but 2.0 works
+                 here so long as we provide explicit version -->
+            <providerSelection>2.0</providerSelection>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -372,7 +383,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.16</version> <!-- ignoring ${maven-surefire-plugin.version} -->
+          <version>2.19.1</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
             <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
@@ -490,6 +501,24 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
+          <version>${findbugs-maven-plugin.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>High</threshold>
+            <!--Excludes file is located on the top level-->
+            <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+            <xmlOutput>true</xmlOutput>
+            <findbugsXmlOutput>false</findbugsXmlOutput>
+          </configuration>
+          <executions>
+            <execution>
+              <id>findbugs</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -500,7 +529,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>8.1.4.v20120524-jenkins-1</version>
+          <version>9.2.15.v20160210-jenkins-1</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -510,7 +539,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.114</version>
+          <version>1.120</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -567,7 +596,7 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.9</version>
+	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -724,19 +753,9 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-        <configuration>
-           <!-- 1.8 not yet supported by plugin but 1.7 works
-                here so long as we provide explicit version -->
-           <providerSelection>1.7</providerSelection>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.gmaven.runtime</groupId>
-            <artifactId>gmaven-runtime-1.7</artifactId>
-            <version>1.3</version>
-          </dependency>
-        </dependencies>
       </plugin>
+      
+      
     </plugins>
 
     <extensions>
@@ -775,7 +794,7 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>metrics</id>
-      <reporting>
+      <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -785,7 +804,7 @@ THE SOFTWARE.
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
     </profile>
     <profile>
       <id>debug</id>
@@ -803,17 +822,24 @@ THE SOFTWARE.
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </reporting>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </build>

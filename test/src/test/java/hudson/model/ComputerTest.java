@@ -84,7 +84,7 @@ public class ComputerTest {
         } catch (FailingHttpStatusCodeException e) {
             assertThat(NOTE, e.getStatusCode(), equalTo(400));
             assertThat(NOTE, e.getResponse().getContentAsString(),
-                    containsString("Slave called ‘nodeA’ already exists"));
+                    containsString("Agent called ‘nodeA’ already exists"));
         }
     }
 }

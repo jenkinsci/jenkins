@@ -94,7 +94,7 @@ public class JDKInstallerTest {
         j.jenkins.getJDKs().add(new JDK("test",tmp.getRoot().getAbsolutePath(), Arrays.asList(
                 new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer)))));
 
-        j.submit(j.createWebClient().goTo("configure").getFormByName("config"));
+        j.submit(j.createWebClient().goTo("configureTools").getFormByName("config"));
 
         JDK jdk = j.jenkins.getJDK("test");
         InstallSourceProperty isp = jdk.getProperties().get(InstallSourceProperty.class);

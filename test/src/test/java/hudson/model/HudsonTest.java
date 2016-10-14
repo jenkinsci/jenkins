@@ -89,6 +89,10 @@ public class HudsonTest {
         HtmlPage configPage = j.createWebClient().goTo("configure");
         HtmlForm form = configPage.getFormByName("config");
         j.submit(form);
+        // Load tools page and resubmit too
+        HtmlPage toolsConfigPage = j.createWebClient().goTo("configureTools");
+        HtmlForm toolsForm = toolsConfigPage.getFormByName("config");
+        j.submit(toolsForm);
 
         // make sure all the pieces are intact
         assertEquals(2, j.jenkins.getNumExecutors());

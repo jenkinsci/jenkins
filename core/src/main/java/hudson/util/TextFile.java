@@ -67,13 +67,10 @@ public class TextFile {
     public String read() throws IOException {
         StringWriter out = new StringWriter();
         PrintWriter w = new PrintWriter(out);
-        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
-        try {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
             String line;
-            while((line=in.readLine())!=null)
+            while ((line = in.readLine()) != null)
                 w.println(line);
-        } finally{
-            in.close();
         }
         return out.toString();
     }
@@ -177,23 +174,20 @@ public class TextFile {
      * So all in all, this algorithm should work decently, and it works quite efficiently on a large text.
      */
     public @Nonnull String fastTail(int numChars, Charset cs) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(file,"r");
 
-        try {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             long len = raf.length();
             // err on the safe side and assume each char occupies 4 bytes
             // additional 1024 byte margin is to bring us back in sync in case we started reading from non-char boundary.
-            long pos = Math.max(0, len - (numChars*4+1024));
+            long pos = Math.max(0, len - (numChars * 4 + 1024));
             raf.seek(pos);
 
-            byte[] tail = new byte[(int) (len-pos)];
+            byte[] tail = new byte[(int) (len - pos)];
             raf.readFully(tail);
 
             String tails = cs.decode(java.nio.ByteBuffer.wrap(tail)).toString();
 
-            return new String(tails.substring(Math.max(0,tails.length()-numChars))); // trim the baggage of substring by allocating a new String
-        } finally {
-            raf.close();
+            return new String(tails.substring(Math.max(0, tails.length() - numChars))); // trim the baggage of substring by allocating a new String
         }
     }
 

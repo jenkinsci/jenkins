@@ -62,11 +62,16 @@ import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -137,6 +142,15 @@ public class Maven extends Builder {
      */
     private GlobalSettingsProvider globalSettings;
 
+    /**
+     * Skip injecting build variables as properties into maven process.
+     *
+     * Defaults to false unless user requests otherwise. Old configurations are set to true to mimic the legacy behaviour.
+     *
+     * @since TODO
+     */
+    private @Nonnull Boolean injectBuildVariables;
+
     private final static String MAVEN_1_INSTALLATION_COMMON_FILE = "bin/maven";
     private final static String MAVEN_2_INSTALLATION_COMMON_FILE = "bin/mvn";
     
@@ -155,8 +169,12 @@ public class Maven extends Builder {
         this(targets, name, pom, properties, jvmOptions, usePrivateRepository, null, null);
     }
     
-    @DataBoundConstructor
     public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings) {
+        this(targets, name, pom, properties, jvmOptions, usePrivateRepository, settings, globalSettings, false);
+    }
+
+    @DataBoundConstructor
+    public Maven(String targets,String name, String pom, String properties, String jvmOptions, boolean usePrivateRepository, SettingsProvider settings, GlobalSettingsProvider globalSettings, boolean injectBuildVariables) {
         this.targets = targets;
         this.mavenName = name;
         this.pom = Util.fixEmptyAndTrim(pom);
@@ -165,6 +183,7 @@ public class Maven extends Builder {
         this.usePrivateRepository = usePrivateRepository;
         this.settings = settings != null ? settings : GlobalMavenConfig.get().getSettingsProvider();
         this.globalSettings = globalSettings != null ? globalSettings : GlobalMavenConfig.get().getGlobalSettingsProvider();
+        this.injectBuildVariables = injectBuildVariables;
     }
 
     public String getTargets() {
@@ -201,6 +220,11 @@ public class Maven extends Builder {
         return usePrivateRepository;
     }
 
+    @Restricted(NoExternalUse.class) // Exposed for view
+    public boolean isInjectBuildVariables() {
+        return injectBuildVariables;
+    }
+
     /**
      * Gets the Maven to invoke,
      * or null to invoke the default one.
@@ -211,6 +235,13 @@ public class Maven extends Builder {
                 return i;
         }
         return null;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        if (injectBuildVariables == null) {
+            injectBuildVariables = true;
+        }
+        return this;
     }
 
     /**
@@ -250,8 +281,6 @@ public class Maven extends Builder {
                 seed = new File(ws,"project.xml").exists() ? "maven" : "mvn";
             }
 
-            if(Functions.isWindows())
-                seed += ".bat";
             return seed;
         }
     }
@@ -311,11 +340,13 @@ public class Maven extends Builder {
                 }
             }
 
-            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+            if (isInjectBuildVariables()) {
+                Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+                args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
+                final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+                args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
+            }
 
-            args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
-            args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
             args.addTokenized(normalizedTarget);
@@ -388,7 +419,7 @@ public class Maven extends Builder {
     @Deprecated
     public static DescriptorImpl DESCRIPTOR;
 
-    @Extension
+    @Extension @Symbol("maven")
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @CopyOnWrite
         private volatile MavenInstallation[] installations = new MavenInstallation[0];
@@ -441,6 +472,11 @@ public class Maven extends Builder {
 
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            if (req == null) {
+                // This state is prohibited according to the Javadoc of the super method.
+                throw new FormException("Maven Build Step new instance method is called for null Stapler request. "
+                        + "Such call is prohibited.", "req");
+            }
             return req.bindJSON(Maven.class,formData);
         }
     }
@@ -607,9 +643,7 @@ public class Maven extends Builder {
         public boolean getExists() {
             try {
                 return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
-            } catch (IOException e) {
-                return false;
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 return false;
             }
         }
@@ -624,7 +658,7 @@ public class Maven extends Builder {
             return new MavenInstallation(getName(), translateFor(node, log), getProperties().toList());
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
             @Override
             public String getDisplayName() {
@@ -682,7 +716,7 @@ public class Maven extends Builder {
             super(id);
         }
 
-        @Extension
+        @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
             public String getDisplayName() {
                 return Messages.InstallFromApache();

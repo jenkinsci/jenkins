@@ -119,6 +119,6 @@ THE SOFTWARE.
   </l:pane>
   </div>
   <script defer="true">
-      updateBuildHistory("${it.baseUrl}/buildHistory/ajax",${it.owner.nextBuildNumber});
+    updateBuildHistory("${it.baseUrl}/buildHistory/ajax", ${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber});
   </script>
 </j:jelly>

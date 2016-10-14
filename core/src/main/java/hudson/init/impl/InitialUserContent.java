@@ -42,7 +42,7 @@ public class InitialUserContent {
         File userContentDir = new File(h.getRootDir(), "userContent");
         if(!userContentDir.exists()) {
             userContentDir.mkdirs();
-            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README());
+            FileUtils.writeStringToFile(new File(userContentDir,"readme.txt"), Messages.Hudson_USER_CONTENT_README() + "\n");
         }
     }
 }

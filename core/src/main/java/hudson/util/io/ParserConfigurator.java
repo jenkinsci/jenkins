@@ -75,7 +75,7 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
         Collection<ParserConfigurator> all = Collections.emptyList();
 
-        if (Jenkins.getInstance()==null) {
+        if (Jenkins.getInstanceOrNull()==null) {
             Channel ch = Channel.current();
             if (ch!=null)
                 all = ch.call(new SlaveToMasterCallable<Collection<ParserConfigurator>, IOException>() {

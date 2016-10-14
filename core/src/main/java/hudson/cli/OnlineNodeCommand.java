@@ -24,14 +24,17 @@
 
 package hudson.cli;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.Computer;
+import hudson.model.ComputerSet;
+import hudson.util.EditDistance;
 import jenkins.model.Jenkins;
 
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.args4j.Argument;
 
-import java.util.logging.Logger;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author pjanouse
@@ -40,46 +43,51 @@ import java.util.logging.Logger;
 @Extension
 public class OnlineNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NAME", usage="Slave name, or empty string for master")
-    public String computerName;
-
-    private static final Logger LOGGER = Logger.getLogger(OnlineNodeCommand.class.getName());
+    @Argument(metaVar = "NAME", usage = "Agent name, or empty string for master", required = true, multiValued = true)
+    private List<String> nodes;
 
     @Override
     public String getShortDescription() {
-
         return Messages.OnlineNodeCommand_ShortDescription();
     }
 
     @Override
     protected int run() throws Exception {
-
         boolean errorOccurred = false;
+        final Jenkins jenkins = Jenkins.getActiveInstance();
+        final HashSet<String> hs = new HashSet<String>(nodes);
+        List<String> names = null;
 
-        final Jenkins jenkins = Jenkins.getInstance();
+        for (String node_s : hs) {
+            Computer computer = null;
 
-        Computer computer = jenkins.getComputer(computerName);
-
-        if (computer == null) {
-            stderr.println(hudson.model.Messages.Computer_NoSuchSlaveExists(computerName, null));
-            errorOccurred = true;
-        } else {
             try {
+                computer = jenkins.getComputer(node_s);
+                if (computer == null) {
+                    if (names == null) {
+                        names = ComputerSet.getComputerNames();
+                    }
+                    String adv = EditDistance.findNearest(node_s, names);
+                    throw new IllegalArgumentException(adv == null ?
+                            hudson.model.Messages.Computer_NoSuchSlaveExistsWithoutAdvice(node_s) :
+                            hudson.model.Messages.Computer_NoSuchSlaveExists(node_s, adv));
+                }
                 computer.cliOnline();
-            } catch (AccessDeniedException e) {
-                stderr.println(e.getMessage());
-                errorOccurred = true;
             } catch (Exception e) {
-                final String errorMsg = String.format("Unexpected exception occurred during performing online operation on node '%s': %s",
-                        computer == null ? "(null)" : computer.getName(),
-                        e.getMessage());
+                if (hs.size() == 1) {
+                    throw e;
+                }
+
+                final String errorMsg = node_s + ": " + e.getMessage();
                 stderr.println(errorMsg);
-                LOGGER.warning(errorMsg);
                 errorOccurred = true;
+                continue;
             }
         }
 
-        return errorOccurred ? 1 : 0;
+        if (errorOccurred){
+            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+        }
+        return 0;
     }
-
 }

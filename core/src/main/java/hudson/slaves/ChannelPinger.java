@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import hudson.Extension;
 import hudson.FilePath;
+import jenkins.util.SystemProperties;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
@@ -50,21 +51,15 @@ import static java.util.logging.Level.*;
 public class ChannelPinger extends ComputerListener {
     private static final Logger LOGGER = Logger.getLogger(ChannelPinger.class.getName());
     private static final String SYS_PROPERTY_NAME  = ChannelPinger.class.getName() + ".pingInterval";
-
+    private static final int DEFAULT_PING_INTERVAL_MIN = 5;
+    
     /**
      * Interval for the ping in minutes.
      */
-    private int pingInterval = 5;
+    private final int pingInterval;
 
     public ChannelPinger() {
-        String interval = System.getProperty(SYS_PROPERTY_NAME);
-        if (interval != null) {
-            try {
-                pingInterval = Integer.valueOf(interval);
-            } catch (NumberFormatException e) {
-                LOGGER.warning("Ignoring invalid " + SYS_PROPERTY_NAME + "=" + interval);
-            }
-        }
+        pingInterval = SystemProperties.getInteger(SYS_PROPERTY_NAME, DEFAULT_PING_INTERVAL_MIN);
     }
 
     @Override
@@ -74,7 +69,7 @@ public class ChannelPinger extends ComputerListener {
 
     public void install(Channel channel) {
         if (pingInterval < 1) {
-            LOGGER.fine("Slave ping is disabled");
+            LOGGER.fine("Agent ping is disabled");
             return;
         }
 
@@ -87,7 +82,7 @@ public class ChannelPinger extends ComputerListener {
 
         // set up ping from both directions, so that in case of a router dropping a connection,
         // both sides can notice it and take compensation actions.
-        setUpPingForChannel(channel, pingInterval);
+        setUpPingForChannel(channel, pingInterval, true);
     }
 
     private static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
@@ -98,18 +93,20 @@ public class ChannelPinger extends ComputerListener {
         }
 
         public Void call() throws IOException {
-            setUpPingForChannel(Channel.current(), pingInterval);
+            setUpPingForChannel(Channel.current(), pingInterval, false);
             return null;
         }
     }
 
-    private static void setUpPingForChannel(final Channel channel, int interval) {
+    private static void setUpPingForChannel(final Channel channel, int interval, final boolean analysis) {
+        LOGGER.log(FINE, "setting up ping on {0} at interval {1}m", new Object[] {channel.getName(), interval});
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, interval * 60 * 1000) {
+            @Override
             protected void onDead(Throwable cause) {
                 try {
-                    for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
-                        pfa.onPingFailure(channel,cause);
+                    if (analysis) {
+                        analyze(cause);
                     }
                     if (isInClosed.get()) {
                         LOGGER.log(FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
@@ -121,6 +118,14 @@ public class ChannelPinger extends ComputerListener {
                     LOGGER.log(SEVERE,"Failed to terminate the channel "+channel.getName(),e);
                 }
             }
+            /** Keep in a separate method so we do not even try to do class loading on {@link PingFailureAnalyzer} from an agent JVM. */
+            private void analyze(Throwable cause) throws IOException {
+                for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
+                    pfa.onPingFailure(channel,cause);
+                }
+            }
+            @Deprecated
+            @Override
             protected void onDead() {
                 onDead(null);
             }

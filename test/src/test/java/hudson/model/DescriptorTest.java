@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.BuildStepDescriptor;
@@ -32,9 +33,14 @@ import hudson.tasks.Shell;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +48,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -195,4 +202,23 @@ public class DescriptorTest {
         @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
+    @Test
+    public void presentStacktraceFromFormException() throws Exception {
+        NullPointerException cause = new NullPointerException();
+        final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
+        try {
+            rule.executeOnServer(new Callable<Void>() {
+                @Override public Void call() throws Exception {
+                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.getInstance());
+                    return null;
+                }
+            });
+            fail();
+        } catch (FailingHttpStatusCodeException ex) {
+            String response = ex.getResponse().getContentAsString();
+            assertThat(response, containsString(fe.getMessage()));
+            assertThat(response, containsString(cause.getClass().getCanonicalName()));
+            assertThat(response, containsString(getClass().getCanonicalName()));
+        }
+    }
 }

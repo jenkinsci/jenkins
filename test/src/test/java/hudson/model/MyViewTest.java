@@ -23,20 +23,19 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Test;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  *
@@ -47,19 +46,14 @@ public class MyViewTest {
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
+    @Rule
+    public LoggerRule logs = new LoggerRule();
+
     @Before
     public void setup() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
     
-    private static final Logger logger = Logger.getLogger(AbstractItem.class.getName());
-    @BeforeClass public static void logging() {
-        logger.setLevel(Level.ALL);
-        Handler handler = new ConsoleHandler();
-        handler.setLevel(Level.ALL);
-        logger.addHandler(handler);
-    }
-
     @Test
     public void testContains() throws IOException, Exception{
         
@@ -78,11 +72,17 @@ public class MyViewTest {
     
     @Test
     public void testDoCreateItem() throws IOException, Exception{
+        logs.record(AbstractItem.class, Level.ALL);
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
-        HtmlForm form = rule.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob").getFormByName("createItem");
-        form.getInputsByValue("hudson.model.FreeStyleProject").get(0).setChecked(true);
+        HtmlPage newItemPage = rule.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob");
+        HtmlForm form = newItemPage.getFormByName("createItem");
+        // Set the name of the item
         form.getInputByName("name").setValueAttribute("job");
+        form.getInputByName("name").blur();
+        // Select the item clicking on the first item type shown
+        HtmlElement itemType = newItemPage.getFirstByXPath("//div[@class='category']/ul/li");
+        itemType.click();
         rule.submit(form);
         Item item = rule.jenkins.getItem("job");
         assertTrue("View " + view.getDisplayName() + " should contain job " + item.getDisplayName(), view.getItems().contains(item)); 

@@ -46,13 +46,6 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.jelly.XMLOutput;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -71,14 +64,24 @@ import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.RunAction2;
+import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.jelly.XMLOutput;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import static java.util.logging.Level.*;
-import jenkins.model.RunAction2;
+import static java.util.logging.Level.WARNING;
 
 
 /**
@@ -95,17 +98,28 @@ import jenkins.model.RunAction2;
 public class SCMTrigger extends Trigger<Item> {
     
     private boolean ignorePostCommitHooks;
-    
-    public SCMTrigger(String scmpoll_spec) throws ANTLRException {
-        this(scmpoll_spec, false);
-    }
-    
+
     @DataBoundConstructor
+    public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+        super(scmpoll_spec);
+    }
+
+    /**
+     * Backwards-compatibility constructor.
+     *
+     * @param scmpoll_spec
+     *     The spec to poll with.
+     * @param ignorePostCommitHooks
+     *     Whether to ignore post commit hooks.
+     *
+     * @deprecated since 2.21
+     */
+    @Deprecated
     public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ANTLRException {
         super(scmpoll_spec);
         this.ignorePostCommitHooks = ignorePostCommitHooks;
     }
-    
+
     /**
      * This trigger wants to ignore post-commit hooks.
      * <p>
@@ -115,6 +129,23 @@ public class SCMTrigger extends Trigger<Item> {
      */
     public boolean isIgnorePostCommitHooks() {
         return this.ignorePostCommitHooks;
+    }
+
+    /**
+     * Data-bound setter for ignoring post commit hooks.
+     *
+     * @param ignorePostCommitHooks
+     *     True if we should ignore post commit hooks, false otherwise.
+     *
+     * @since 2.22
+     */
+    @DataBoundSetter
+    public void setIgnorePostCommitHooks(boolean ignorePostCommitHooks) {
+        this.ignorePostCommitHooks = ignorePostCommitHooks;
+    }
+
+    public String getScmpoll_spec() {
+        return super.getSpec();
     }
 
     @Override
@@ -176,7 +207,7 @@ public class SCMTrigger extends Trigger<Item> {
         return new File(job.getRootDir(),"scm-polling.log");
     }
 
-    @Extension
+    @Extension @Symbol("pollSCM")
     public static class DescriptorImpl extends TriggerDescriptor {
 
         private static ThreadFactory threadFactory() {
@@ -318,6 +349,12 @@ public class SCMTrigger extends Trigger<Item> {
 
     @Extension
     public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.SCMTrigger_AdministrativeMonitorImpl_DisplayName();
+        }
+
         private boolean on;
 
         public boolean isActivated() {
@@ -547,6 +584,23 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
+            // we can pre-emtively check the SCMDecisionHandler instances here
+            // note that job().poll(listener) should also check this
+            SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
+            if (veto != null) {
+                try (StreamTaskListener listener = new StreamTaskListener(getLogFile())) {
+                    listener.getLogger().println(
+                            "Skipping polling on " + DateFormat.getDateTimeInstance().format(new Date())
+                                    + " due to veto from " + veto);
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to record SCM polling for " + job, e);
+                }
+
+                LOGGER.log(Level.FINE, "Skipping polling for {0} due to veto from {1}",
+                        new Object[]{job.getFullDisplayName(), veto}
+                );
+                return;
+            }
 
             String threadName = Thread.currentThread().getName();
             Thread.currentThread().setName("SCM polling for "+job);
@@ -614,7 +668,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * @deprecated
-         *      Use {@link #SCMTrigger.SCMTriggerCause(String)}.
+         *      Use {@link SCMTrigger.SCMTriggerCause#SCMTriggerCause(String)}.
          */
         @Deprecated
         public SCMTriggerCause() {
@@ -663,5 +717,5 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    public static long STARVATION_THRESHOLD =Long.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
+    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
 }

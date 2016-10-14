@@ -24,7 +24,9 @@
 package jenkins.model;
 
 import hudson.Extension;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -34,7 +36,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=395)
+@Extension(ordinal=395) @Symbol("scmRetryCount")
 public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
     public int getScmCheckoutRetryCount() {
         return Jenkins.getInstance().getScmCheckoutRetryCount();
@@ -48,6 +50,8 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
             return true;
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");
+        } catch (JSONException e) {
+            throw new FormException(e.getMessage(), "quietPeriod");
         }
     }
 }

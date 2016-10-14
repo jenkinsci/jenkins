@@ -156,11 +156,7 @@ public abstract class Proc {
                                     unit.toString().toLowerCase(Locale.ENGLISH));
                             kill();
                         }
-                    } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (IOException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
-                    } catch (RuntimeException x) {
+                    } catch (InterruptedException | IOException | RuntimeException x) {
                         x.printStackTrace(listener.error("Failed to join a process"));
                     }
                 }
@@ -241,6 +237,9 @@ public abstract class Proc {
             this.out = out;
             this.cookie = EnvVars.createCookie();
             procBuilder.environment().putAll(cookie);
+            if (procBuilder.directory() != null && !procBuilder.directory().exists()) {
+                throw new IOException(String.format("Process working directory '%s' doesn't exist!", procBuilder.directory().getAbsolutePath()));
+            }
             this.proc = procBuilder.start();
 
             InputStream procInputStream = proc.getInputStream();

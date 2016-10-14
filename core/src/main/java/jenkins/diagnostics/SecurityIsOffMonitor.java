@@ -3,6 +3,7 @@ package jenkins.diagnostics;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -17,8 +18,14 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("securityIsOff")
 public class SecurityIsOffMonitor extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.SecurityIsOffMonitor_DisplayName();
+    }
+
     @Override
     public boolean isActivated() {
         return !Jenkins.getInstance().isUseSecurity();

@@ -1195,6 +1195,7 @@ var jenkinsRules = {
         Element.observe(window,"resize",adjustSticker);
         // initial positioning
         Element.observe(window,"load",adjustSticker);
+        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
     },
@@ -1485,6 +1486,7 @@ function expandTextArea(button,id) {
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
+    var intervalID = null;
     var f = function() {
         if(isPageVisible()) {
             new Ajax.Request(url, {
@@ -1492,6 +1494,8 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist == null) {
                         console.log("There's no element that has ID of " + id);
+                        if (intervalID !== null)
+                            window.clearInterval(intervalID);
                         return;
                     }
                     var p = hist.up();
@@ -1504,22 +1508,14 @@ function refreshPart(id,url) {
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
-
-                    if(isRunAsTest) return;
-                    refreshPart(id,url);
                 }
-            });    
-        } else {
-            // Reschedule
-            if(isRunAsTest) return;
-            refreshPart(id,url);
+            });
         }
-        
     };
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
     if(isRunAsTest) f();
-    else    window.setTimeout(f, 5000);
+    else intervalID = window.setInterval(f, 5000);
 }
 
 

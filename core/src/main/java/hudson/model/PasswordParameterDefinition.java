@@ -24,12 +24,14 @@
 package hudson.model;
 
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.util.Secret;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Parameter whose value is a {@link Secret} and is hidden from the UI.
@@ -38,6 +40,9 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * @since 1.319
  */
 public class PasswordParameterDefinition extends SimpleParameterDefinition {
+
+    @Restricted(NoExternalUse.class)
+    public static final String DEFAULT_VALUE = "<DEFAULT>";
 
     private Secret defaultValue;
 
@@ -65,6 +70,9 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
     @Override
     public PasswordParameterValue createValue(StaplerRequest req, JSONObject jo) {
         PasswordParameterValue value = req.bindJSON(PasswordParameterValue.class, jo);
+        if (value.getValue().getPlainText().equals(DEFAULT_VALUE)) {
+            value = new PasswordParameterValue(getName(), getDefaultValue());
+        }
         value.setDescription(getDescription());
         return value;
     }
@@ -88,7 +96,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
         this.defaultValue = Secret.fromString(defaultValue);
     }
 
-    @Extension
+    @Extension @Symbol({"password","nonStoredPasswordParam"})
     public final static class ParameterDescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

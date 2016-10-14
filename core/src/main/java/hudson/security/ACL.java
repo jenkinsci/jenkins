@@ -23,6 +23,8 @@
  */
 package hudson.security;
 
+import hudson.model.User;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import hudson.model.Item;
@@ -179,7 +181,9 @@ public abstract class ACL {
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
      * @since 1.462
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static @Nonnull SecurityContext impersonate(@Nonnull Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
@@ -191,7 +195,9 @@ public abstract class ACL {
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect
      * @since 1.509
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static void impersonate(@Nonnull Authentication auth, @Nonnull Runnable body) {
         SecurityContext old = impersonate(auth);
         try {
@@ -206,7 +212,9 @@ public abstract class ACL {
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
      * @since 1.587
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
         SecurityContext old = impersonate(auth);
         try {
@@ -214,6 +222,49 @@ public abstract class ACL {
         } finally {
             SecurityContextHolder.setContext(old);
         }
+    }
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
+     * {@link AutoCloseable} that restores the previous security context.
+     *
+     * <p>
+     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
+     * <pre>
+     *     try (ACLContext _ = ACL.as(auth)) {
+     *        ...
+     *     }
+     * </pre>
+     * @param auth the new authentication.
+     * @return the previous authentication context
+     * @since 2.14
+     */
+    @Nonnull
+    public static ACLContext as(@Nonnull Authentication auth) {
+        final ACLContext context = new ACLContext(SecurityContextHolder.getContext());
+        SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
+        return context;
+    }
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
+     * {@link AutoCloseable} that restores the previous security context.
+     *
+     * <p>
+     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
+     * <pre>
+     *     try (ACLContext _ = ACL.as(auth)) {
+     *        ...
+     *     }
+     * </pre>
+     *
+     * @param user the user to impersonate.
+     * @return the previous authentication context
+     * @since 2.14
+     */
+    @Nonnull
+    public static ACLContext as(@CheckForNull User user) {
+        return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
     }
 
 }

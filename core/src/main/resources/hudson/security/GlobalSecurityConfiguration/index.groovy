@@ -3,6 +3,7 @@ package hudson.security.GlobalSecurityConfiguration
 import hudson.security.SecurityRealm
 import hudson.markup.MarkupFormatterDescriptor
 import hudson.security.AuthorizationStrategy
+import jenkins.AgentProtocol
 import jenkins.model.GlobalConfiguration
 import hudson.Functions
 import hudson.model.Descriptor
@@ -11,7 +12,7 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
+l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, cssclass:request.getParameter('decorate')) {
     l.main_panel {
         h1 {
             l.icon(class: 'icon-secure icon-xlg')
@@ -25,8 +26,42 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("TCP port for JNLP slave agents"), field:"slaveAgentPort") {
-                    f.serverTcpPort()
+                f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
+                    if (my.slaveAgentPortEnforced) {
+                        if (my.slaveAgentPort == -1) {
+                            text(_("slaveAgentPortEnforcedDisabled"))
+                        } else if (my.slaveAgentPort == 0) {
+                            text(_("slaveAgentPortEnforcedRandom"))
+                        } else {
+                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
+                        }
+                    } else {
+                        f.serverTcpPort()
+                    }
+                }
+                f.advanced(title: _("Agent protocols"), align:"left") {
+                    f.entry(title: _("Agent protocols")) {
+                        def agentProtocols = my.agentProtocols;
+                        table(width:"100%") {
+                            for (AgentProtocol p : AgentProtocol.all()) {
+                                if (p.name != null && !p.required) {
+                                    f.block() {
+                                        f.checkbox(name: "agentProtocol",
+                                                title: p.displayName,
+                                                checked: agentProtocols.contains(p.name),
+                                                json: p.name);
+                                    }
+                                    tr() {
+                                        td(colspan:"2");
+                                        td(class:"setting-description"){
+                                            st.include(from:p, page: "description", optional:true);
+                                        }
+                                        td();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
