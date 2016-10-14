@@ -69,10 +69,10 @@ public class BootMetrics implements InitReactorListener {
                     SystemMetrics prev = metrics;
 
                     float period = (m.time - prev.time) / 1000f;
-                    float cpupercent = (m.cputime - prev.cputime) / CPUS * period;
-                    float iowait = m.iowait - prev.iowait;
+                    float cpupercent = (m.cputime - prev.cputime) / CPUS / period;
+                    float iowait = (m.iowait - prev.iowait) / CPUS / period;
                     long read_bytes = m.read_bytes - prev.read_bytes;
-                    out.println(MessageFormat.format("{0,number,#} cpu:{1,number,#.##%} iowait:{2,number,#.###}% read_bytes:{3}",
+                    out.println(MessageFormat.format("{0,number,#} cpu:{1,number,#.##%} iowait:{2,number,#.##%} read_bytes:{3}",
                                                      m.time, cpupercent, iowait, read_bytes));
                 }
                 metrics = m;
