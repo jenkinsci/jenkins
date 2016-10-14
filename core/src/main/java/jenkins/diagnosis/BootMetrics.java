@@ -16,6 +16,8 @@ import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Record system metrics during jenkins boot, to help diagnose performance issues.
@@ -121,7 +123,7 @@ public class BootMetrics implements InitReactorListener {
             }
             return m;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to collect system metrics", e);
             return null;
         }
 
@@ -141,5 +143,7 @@ public class BootMetrics implements InitReactorListener {
         /** Bytes read from the storage layer */
         public long read_bytes;
     }
+
+    private static final Logger LOGGER = Logger.getLogger(BootMetrics.class.getName());
 
 }
