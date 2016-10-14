@@ -46,6 +46,7 @@ import jenkins.model.Jenkins;
 @Restricted(NoExternalUse.class)
 public class ResourceBundleUtil {
 
+    private static final Logger logger = Logger.getLogger("jenkins.util.ResourceBundle");
     private static final Map<String, JSONObject> bundles = new ConcurrentHashMap<>();
 
     private ResourceBundleUtil() {
@@ -111,7 +112,6 @@ public class ResourceBundleUtil {
             return ResourceBundle.getBundle(baseName, locale, classLoader);
         } catch (MissingResourceException e) {
             // fall through and return null.
-            Logger logger = Logger.getLogger("jenkins.util.ResourceBundle");
             logger.info(e.getMessage());
         }
         return null;

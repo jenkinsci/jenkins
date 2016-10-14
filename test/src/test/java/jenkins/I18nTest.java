@@ -23,6 +23,7 @@
  */
 package jenkins;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
@@ -50,8 +51,9 @@ public class I18nTest {
     public void test_baseName_unknown() throws IOException, SAXException {
         try {
             JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=com.acme.XyzWhatever").getJSONObject();
-        } catch (Exception e) {
+        } catch (FailingHttpStatusCodeException e) {
             Assert.assertNotNull(e);
+            Assert.assertTrue(e.getMessage().contains("com.acme.XyzWhatever"));
         }
     }
 

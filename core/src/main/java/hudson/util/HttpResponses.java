@@ -183,16 +183,13 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Get the JSON response object.
-         *
          * @return The JSON response object.
          */
-        @Nonnull
-        JSONObject getJsonObject() {
+        @Nonnull JSONObject getJsonObject() {
             return jsonObject;
         }
 
-        private @Nonnull
-        JSONObjectResponse status(@Nonnull String status) {
+        private @Nonnull JSONObjectResponse status(@Nonnull String status) {
             this.jsonObject.put("status", status);
             return this;
         }
