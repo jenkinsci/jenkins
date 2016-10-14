@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.model.*;
 import jenkins.model.Jenkins;
@@ -217,29 +218,40 @@ public class NodeProvisioner {
                         PlannedNode f = itr.next();
                         if (f.future.isDone()) {
                             try {
-                                Node node = f.future.get();
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onComplete(f, node);
+                                Node node = null;
+                                try {
+                                    node = f.future.get();
+                                    for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                        cl.onComplete(f, node);
+                                    }
+                                } catch (InterruptedException e) {
+                                    throw new AssertionError(e); // since we confirmed that the future is already done
+                                } catch (ExecutionException e) {
+                                    Throwable cause = e.getCause();
+                                    if(!(cause instanceof AbortException)) {
+                                        LOGGER.log(Level.WARNING, "Unexpected exception encountered while "
+                                                + "provisioning agent " + f.displayName, cause);
+                                    }
+                                    for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                        cl.onFailure(f, cause);
+                                    }
+                                    node = null;
                                 }
-    
-                                jenkins.addNode(node);
-                                LOGGER.log(Level.INFO,
-                                        "{0} provisioning successfully completed. " 
-                                                + "We have now {1,number,integer} computer(s)",
-                                        new Object[]{f.displayName, jenkins.getComputers().length});
-                            } catch (InterruptedException e) {
-                                throw new AssertionError(e); // since we confirmed that the future is already done
-                            } catch (ExecutionException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
-                                        e.getCause());
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onFailure(f, e.getCause());
-                                }
-                            } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch", 
-                                        e);
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onFailure(f, e);
+
+                                try {
+                                    if (node != null) {
+                                        jenkins.addNode(node);
+                                        LOGGER.log(Level.INFO,
+                                                "{0} provisioning successfully completed. "
+                                                        + "We have now {1,number,integer} computer(s)",
+                                                new Object[]{f.displayName, jenkins.getComputers().length});
+                                    }
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
+                                            e);
+                                    for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                        cl.onFailure(f, e);
+                                    }
                                 }
                             } catch (Error e) {
                                 // we are not supposed to try and recover from Errors
