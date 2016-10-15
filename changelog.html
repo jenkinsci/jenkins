@@ -56,7 +56,33 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Allow <code>CommandInterpreter<code> build steps to set a build result as <code>Unstable</code> via the return code.
+    Shell and Batch build steps now support this feature.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23786">issue 23786</a>)
+  <li class="rfe">
+    Performance: Avoid acquiring locks in <code>MaskingClassloader</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23784">issue 23784</a>)
+  <li class="rfe">
+    Performance: Update <code>XStream</code> driver to improve performance of XML serilization/deserialization.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2561">pull 2561</a>)
+  <li class="bug">
+    Restore automatic line wrapping in Build Step text boxes with syntax highlighting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27367">issue 27367</a>)
+  <li class="bug">
+    Properly remove disabled Administrative Monitors from the extension list.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38678">issue 38678</a>)
+  <li class="bug">
+    Remoting 2.62.2: Improve connection stability by turning on Socket Keep-alive by default.
+    Keep-alive can be disabled via the <code>-noKeepAlive</code> option.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38539">issue 38539</a>)
+  <li class="bug">
+    Remoting 2.62.2: Prevent <code>NullPointerException</code> in <code>Engine#connect()</code> 
+    when <code>host</code> or <code>port</code> parameters are <code>null</code> or empty.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37539">issue 37539</a>)
+  <li class="rfe">
+    Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run accross repositories.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1894">pull 1894</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.25>What's new in 2.25</a> (2016/10/09)</h3>
