@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  * Clears the build queue
  *
  * @author pjanouse
- * @since TODO
+ * @since 1.654
  */
 @Extension
 public class ClearQueueCommand extends CLICommand {

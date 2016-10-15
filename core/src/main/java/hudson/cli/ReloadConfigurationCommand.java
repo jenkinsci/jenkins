@@ -28,10 +28,10 @@ import hudson.Extension;
 import jenkins.model.Jenkins;
 
 /**
- * Reload everything from file system
+ * Reload everything from the file system.
  *
  * @author pjanouse
- * @since TODO
+ * @since 2.4
  */
 @Extension
 public class ReloadConfigurationCommand extends CLICommand {

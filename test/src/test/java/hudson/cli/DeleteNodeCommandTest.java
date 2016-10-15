@@ -118,7 +118,7 @@ public class DeleteNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
@@ -137,7 +137,7 @@ public class DeleteNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
@@ -156,7 +156,7 @@ public class DeleteNodeCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such node 'never_created'"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());
@@ -176,7 +176,7 @@ public class DeleteNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such node 'never_created1'"));
         assertThat(result.stderr(), containsString("never_created2: No such node 'never_created2'"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aNode1"), nullValue());
         assertThat(j.jenkins.getView("aNode2"), nullValue());

@@ -175,7 +175,7 @@ public class DeleteViewCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
@@ -194,7 +194,7 @@ public class DeleteViewCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
@@ -213,7 +213,7 @@ public class DeleteViewCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No view named never_created inside view Jenkins"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
@@ -233,7 +233,7 @@ public class DeleteViewCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No view named never_created1 inside view Jenkins"));
         assertThat(result.stderr(), containsString("never_created2: No view named never_created2 inside view Jenkins"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
@@ -267,7 +267,7 @@ public class DeleteViewCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("All: Jenkins does not allow to delete 'All' view"));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());

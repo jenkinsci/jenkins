@@ -95,7 +95,7 @@ public class DeleteViewCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
         return 0;
     }

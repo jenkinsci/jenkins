@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  * Quiet down Jenkins - preparation for a restart
  *
  * @author pjanouse
- * @since TODO
+ * @since 2.14
  */
 @Extension
 public class QuietDownCommand extends CLICommand {
