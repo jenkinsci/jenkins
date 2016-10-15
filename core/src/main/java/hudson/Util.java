@@ -27,7 +27,7 @@ import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -527,7 +527,7 @@ public class Util {
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
     }
 
-    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
             Path path = file.toPath();

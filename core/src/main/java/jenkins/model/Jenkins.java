@@ -842,7 +842,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings({
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings({
         "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
     })
@@ -3107,7 +3107,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Called to shut down the system.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void cleanUp() {
         if (theInstance != this && theInstance != null) {
             LOGGER.log(Level.WARNING, "This instance is no longer the singleton, ignoring cleanUp()");
@@ -3952,7 +3952,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * For debugging. Expose URL to perform GC.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("DM_GC")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DM_GC")
     @RequirePOST
     public void doGc(StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);

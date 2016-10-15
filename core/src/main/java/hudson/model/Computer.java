@@ -25,8 +25,6 @@
  */
 package hudson.model;
 
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
@@ -88,6 +86,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
@@ -1534,7 +1533,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverrideMustInvoke(When.ANYTIME)
+    @OverridingMethodsMustInvokeSuper
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());

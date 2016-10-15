@@ -24,7 +24,7 @@
 package hudson;
 
 import jenkins.util.SystemProperties;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
@@ -71,7 +71,7 @@ public class UDPBroadcastThread extends Thread {
         mcs = new MulticastSocket(PORT);
     }
 
-    @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     @Override
     public void run() {
         try {
