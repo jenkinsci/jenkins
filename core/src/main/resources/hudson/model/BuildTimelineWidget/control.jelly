@@ -41,35 +41,42 @@ THE SOFTWARE.
     <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
     var tz = ${(tz.rawOffset + tz.DSTSavings) / 3600000};
     var tl = null;
+    var interval = 24*60*60*1000;
     <![CDATA[
+    function getData(eventSource1, current, min, max) {
+        if (current < min) {
+            return;
+        }
+
+        if (!eventSource1.loaded[current]) {
+          eventSource1.loaded[current] = true;
+          new Ajax.Request("timeline/data/",{
+              method:"POST",
+              parameters: {min: current*interval, max:(current+1)*interval},
+              onSuccess: function(t) {
+                if (t.status != 0) {
+                  try {
+                    eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
+                    getData(eventSource1, current-1, min, max);
+                  } catch (e) {
+                    alert(e);
+                  }
+                }
+              }
+          });
+        }
+    }
+
     function doLoad() {
         var tl_el = document.getElementById("tl");
         var eventSource1 = new Timeline.DefaultEventSource();
         eventSource1.loaded = {};
-        var interval = 24*60*60*1000;
         eventSource1.ensureVisible = function(band) {
           // make sure all data are loaded for the portion visible in the band
           // $('status').innerHTML = "min="+band.getMinDate()+" max="+band.getMaxDate();
-          var min = Math.floor(band.getMinDate().getTime()/interval);
-          var max = Math.ceil(band.getMaxDate().getTime()/interval);
-          for (var i=min; i<=max; i++) {
-            if (!this.loaded[i]) {
-              this.loaded[i] = true;
-              new Ajax.Request("timeline/data/",{
-                  method:"POST",
-                  parameters: {min: i*interval, max:(i+1)*interval},
-                  onSuccess: function(t) {
-                    if (t.status != 0) {
-                      try {
-                        eventSource1.loadJSON(eval('('+t.responseText+')'),'.');
-                      } catch (e) {
-                        alert(e);
-                      }
-                    }
-                  }
-              });
-            }
-          }
+          var min = Math.floor(band.getMinVisibleDate().getTime()/interval);
+          var max = Math.ceil(band.getMaxVisibleDate().getTime()/interval);
+          getData(eventSource1, max, min, max);
         };
 
 
