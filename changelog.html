@@ -67,6 +67,10 @@ Upcoming changes</a>
     Performance: Update <code>XStream</code> driver to improve performance of XML serilization/deserialization.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2561">pull 2561</a>)
   <li class="bug">
+    Performance: Fix the performance of file compress/uncompress operations over the remoting channel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38640">issue 38640</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-38814">issue 38814</a>)
+  <li class="bug">
     Restore automatic line wrapping in Build Step text boxes with syntax highlighting.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27367">issue 27367</a>)
   <li class="bug">
@@ -80,6 +84,13 @@ Upcoming changes</a>
     Remoting 2.62.2: Prevent <code>NullPointerException</code> in <code>Engine#connect()</code> 
     when <code>host</code> or <code>port</code> parameters are <code>null</code> or empty.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37539">issue 37539</a>)
+  <li class="bug">
+    Node build history page was hammering the performance of the Jenkins instance by spawning parallel heavy requests.
+    Now the information is being loaded sequentially.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23244">issue 23244</a>)
+  <li class="bug">
+    Cleanup spelling in CLI help and error messages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38650">issue 38650</a>)
   <li class="rfe">
     Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run accross repositories.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1894">pull 1894</a>)
