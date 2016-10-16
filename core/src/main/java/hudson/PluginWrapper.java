@@ -417,7 +417,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the required Jenkins core version of this plugin.
      * @return the required Jenkins core version of this plugin.
-     * @since XXX
+     * @since 2.16
      */
     @Exported
     public @CheckForNull String getRequiredCoreVersion() {

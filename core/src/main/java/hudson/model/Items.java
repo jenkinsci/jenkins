@@ -120,7 +120,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the current security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(ItemGroup c) {
         return all(Jenkins.getAuthentication(), c);
@@ -130,7 +130,7 @@ public class Items {
      * Returns all the registered {@link TopLevelItemDescriptor}s that the specified security principal is allowed to
      * create within the specified item group.
      *
-     * @since TODO
+     * @since 1.607
      */
     public static List<TopLevelItemDescriptor> all(Authentication a, ItemGroup c) {
         List<TopLevelItemDescriptor> result = new ArrayList<TopLevelItemDescriptor>();

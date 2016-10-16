@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * CLI Command, which disconnects nodes.
  * @author pjanouse
- * @since 2.14
+ * @since 2.4
  */
 @Extension
 public class DisconnectNodeCommand extends CLICommand {

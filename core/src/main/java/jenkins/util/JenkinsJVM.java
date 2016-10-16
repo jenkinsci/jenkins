@@ -9,7 +9,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * A utility class to identify if the current JVM is the one that is running {@link Jenkins}
  *
- * @since TODO
+ * @since 1.653
  */
 public class JenkinsJVM {
     /**

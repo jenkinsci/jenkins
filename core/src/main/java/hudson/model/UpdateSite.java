@@ -615,7 +615,7 @@ public class UpdateSite {
         /**
          * The base64 encoded binary SHA-1 checksum of the file.
          * Can be null if not provided by the update site.
-         * @since TODO
+         * @since 1.641 (and 1.625.3 LTS)
          */
         // TODO @Exported assuming we want this in the API
         public String getSha1() {
