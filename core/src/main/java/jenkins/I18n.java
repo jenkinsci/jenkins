@@ -95,7 +95,7 @@ public class I18n implements RootAction {
         String variant = request.getParameter("variant");
         // https://www.w3.org/International/questions/qa-lang-priorities
         // in case we have regions/countries in the language query parameter
-        if (country == null && language.length()>2) {
+        if (country == null && language.length()>=5) {
             country = language.substring(3,5);
             // not mentioned in above url but we assume variants as en-US-Cloudbees
             if (variant == null && language.length()>5) {
