@@ -861,7 +861,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected void onRemoved(){
     }
 
-    private synchronized void setNumExecutors(int n) {
+    /**
+     * Calling path, *means protected by Queue.withLock
+     *
+     * Computer.doConfigSubmit -> Computer.replaceBy ->Jenkins.setNodes* ->Computer.setNode
+     * AbstractCIBase.updateComputerList->Computer.inflictMortalWound*
+     * AbstractCIBase.updateComputerList->AbstractCIBase.updateComputer* ->Computer.setNode
+     * AbstractCIBase.updateComputerList->AbstractCIBase.killComputer->Computer.kill
+     * Computer.constructor->Computer.setNode
+     * Computer.kill is called after numExecutors set to zero(Computer.inflictMortalWound) so not need the Queue.lock
+     *
+     * @param number of executors
+     */
+    @GuardedBy("hudson.model.Queue.lock")
+    private void setNumExecutors(int n) {
         this.numExecutors = n;
         final int diff = executors.size()-n;
 
