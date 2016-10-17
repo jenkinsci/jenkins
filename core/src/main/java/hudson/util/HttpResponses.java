@@ -91,7 +91,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
 
         /**
          * Set the response as an error response.
-         *
          * @param message The error "message" set on the response.
          * @return {@link this} object.
          *
