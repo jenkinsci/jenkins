@@ -181,7 +181,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -207,7 +207,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -233,7 +233,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -260,7 +260,7 @@ public class ReloadJobCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such job \u2018never_created1\u2019 exists."));
         assertThat(result.stderr(), containsString("never_created2: No such job \u2018never_created2\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
