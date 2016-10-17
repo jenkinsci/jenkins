@@ -56,7 +56,9 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="bug">
+    Prevent deadlocks during modification of node executor numbers (e.g. during deletion of nodes).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31768">issue 31768</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.26>What's new in 2.26</a> (2016/10/17)</h3>
@@ -71,6 +73,10 @@ Upcoming changes</a>
   <li class="rfe">
     Performance: Update <code>XStream</code> driver to improve performance of XML serilization/deserialization.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2561">pull 2561</a>)
+  <li class="rfe">
+    Harden checks of prohibited names in user creation logic.
+    Untrimmed spaces and different letter cases are being checked now.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35967">issue 35967</a>)
   <li class="bug">
     Performance: Fix the performance of file compress/uncompress operations over the remoting channel.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38640">issue 38640</a>,
@@ -96,9 +102,15 @@ Upcoming changes</a>
   <li class="bug">
     Cleanup spelling in CLI help and error messages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38650">issue 38650</a>)
+  <li class="bug">
+    Properly handle quotes and other special symbols in item names during form validation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31871">issue 31871</a>)
   <li class="rfe">
     Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run accross repositories.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1894">pull 1894</a>)
+  <li class="rfe">
+    Internal: Bulk cleanup of <code>@since</code> definitions in Javadoc.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2578">pull 2578</a>)
 </ul>
 <h3><a name=v2.25>What's new in 2.25</a> (2016/10/09)</h3>
 <ul class=image>
