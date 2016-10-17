@@ -195,6 +195,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      * @deprecated prefer {@link #getIconClassName()}
      */
     @CheckForNull
+    @Deprecated
     public String getIconFilePathPattern() {
         return null;
     }
@@ -210,6 +211,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      * @deprecated prefer {@link #getIconClassName()}
      */
     @CheckForNull
+    @Deprecated
     public String getIconFilePath(String size) {
         if (!StringUtils.isBlank(getIconFilePathPattern())) {
             return getIconFilePathPattern().replace(":size", size);
