@@ -221,11 +221,8 @@ public class NodeProvisioner {
                                 Node node = null;
                                 try {
                                     node = f.future.get();
-                                    for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                        cl.onComplete(f, node);
-                                    }
                                 } catch (InterruptedException e) {
-                                    throw new AssertionError(e); // since we confirmed that the future is already done
+                                    throw new AssertionError("InterruptedException occurred", e); // since we confirmed that the future is already done
                                 } catch (ExecutionException e) {
                                     Throwable cause = e.getCause();
                                     if(!(cause instanceof AbortException)) {
@@ -238,19 +235,25 @@ public class NodeProvisioner {
                                     node = null;
                                 }
 
-                                try {
-                                    if (node != null) {
-                                        jenkins.addNode(node);
-                                        LOGGER.log(Level.INFO,
-                                                "{0} provisioning successfully completed. "
-                                                        + "We have now {1,number,integer} computer(s)",
-                                                new Object[]{f.displayName, jenkins.getComputers().length});
-                                    }
-                                } catch (IOException e) {
-                                    LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
-                                            e);
+                                if (node != null) {
                                     for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                        cl.onFailure(f, e);
+                                        cl.fireOnComplete(f, node);
+                                    }
+
+                                    try {
+                                        if (node != null) {
+                                            jenkins.addNode(node);
+                                            LOGGER.log(Level.INFO,
+                                                    "{0} provisioning successfully completed. "
+                                                            + "We have now {1,number,integer} computer(s)",
+                                                    new Object[]{f.displayName, jenkins.getComputers().length});
+                                        }
+                                    } catch (IOException e) {
+                                        LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
+                                                e);
+                                        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                            cl.fireOnFailure(f, e);
+                                        }
                                     }
                                 }
                             } catch (Error e) {

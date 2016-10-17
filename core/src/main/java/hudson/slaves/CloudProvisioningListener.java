@@ -5,8 +5,11 @@ import hudson.ExtensionPoint;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
+import jenkins.model.Jenkins;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -53,6 +56,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
 
     /**
      * Called when the {@link NodeProvisioner.PlannedNode#future} completes.
+     *
      * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
      * @param node the node which has been provisioned by the cloud
      */
@@ -71,10 +75,51 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
+     * Called when either {@link NodeProvisioner.PlannedNode#future#get()} or {@link Jenkins#addNode(Node)} throws
+     * an exception and we need to be an exception-tolerant in
+     * {@link #onFailure(NodeProvisioner.PlannedNode, Throwable)}.
+     *
+     * @param plannedNode the planned node which failed to provision
+     * @param cause the exception
+     */
+    public static void fireOnFailure(final NodeProvisioner.PlannedNode plannedNode, final Throwable cause) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onFailure(plannedNode, cause);
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onFailure() listener " + cl + " for agent "
+                        + plannedNode.displayName, e);
+            }
+        }
+    }
+
+    /**
+     * Called when the {@link NodeProvisioner.PlannedNode#future} completes and we need to be an exception-tolerant in
+     * {@link #onComplete(NodeProvisioner.PlannedNode, Node)}.
+     *
+     * @param plannedNode the planned node which was provisioned
+     * @param newNode the new {@link Node}
+     */
+    public static void fireOnComplete(final NodeProvisioner.PlannedNode plannedNode, final Node newNode) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onComplete(plannedNode, newNode);
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onComplete() listener " + cl + " for agent "
+                        + plannedNode.displayName, e);
+            }
+        }
+    }
+
+    /**
      * All the registered {@link CloudProvisioningListener}s.
      */
     public static ExtensionList<CloudProvisioningListener> all() {
         return ExtensionList.lookup(CloudProvisioningListener.class);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(CloudProvisioningListener.class.getName());
 }
 
