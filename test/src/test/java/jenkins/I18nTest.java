@@ -66,7 +66,6 @@ public class I18nTest {
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de-DE").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
-        System.out.println("jenkins.I18nTest.test_valid_region() " + data.getString("LogRecorderManager.init"));
         Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
     }
     @Test
@@ -74,7 +73,6 @@ public class I18nTest {
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de-DE-cloudBees").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
-        System.out.println("jenkins.I18nTest.test_valid_region() " + data.getString("LogRecorderManager.init"));
         Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
     }
 }

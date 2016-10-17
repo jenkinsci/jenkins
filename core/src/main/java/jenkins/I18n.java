@@ -102,7 +102,6 @@ public class I18n implements RootAction {
                variant = language.substring(6);
             }
             language = language.substring(0,2);
-            System.out.println("jenkins.I18n.doResourceBundle(xxxx) " + country + language + variant);
         }
         try {
             Locale locale = request.getLocale();
