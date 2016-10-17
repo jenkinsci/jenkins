@@ -70,7 +70,7 @@ public class I18nTest {
     }
     @Test
     public void test_valid_region_variant() throws IOException, SAXException {
-        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de-DE-cloudBees").getJSONObject();
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de_DE_cloudBees").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
         Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
