@@ -61,4 +61,20 @@ public class I18nTest {
         JSONObject data = response.getJSONObject("data");
         Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
     }
+    @Test
+    public void test_valid_region() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de-DE").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        System.out.println("jenkins.I18nTest.test_valid_region() " + data.getString("LogRecorderManager.init"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
+    }
+    @Test
+    public void test_valid_region_variant() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.logging.Messages&language=de-DE-cloudBees").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        System.out.println("jenkins.I18nTest.test_valid_region() " + data.getString("LogRecorderManager.init"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
+    }
 }

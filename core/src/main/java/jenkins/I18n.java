@@ -93,7 +93,17 @@ public class I18n implements RootAction {
         String language = request.getParameter("language");
         String country = request.getParameter("country");
         String variant = request.getParameter("variant");
-
+        // https://www.w3.org/International/questions/qa-lang-priorities
+        // in case we have regions/countries in the language query parameter
+        if (country == null && language.length()>2) {
+            country = language.substring(3,5);
+            // not mentioned in above url but we assume variants as en-US-Cloudbees
+            if (variant == null && language.length()>5) {
+               variant = language.substring(6);
+            }
+            language = language.substring(0,2);
+            System.out.println("jenkins.I18n.doResourceBundle(xxxx) " + country + language + variant);
+        }
         try {
             Locale locale = request.getLocale();
 
