@@ -30,6 +30,7 @@ import antlr.ANTLRException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
 import hudson.BulkChange;
@@ -596,7 +597,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * TCP agent port.
      * 0 for random, -1 to disable.
      */
-    private int slaveAgentPort = SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",0);
+    private int slaveAgentPort = getSlaveAgentPortInitialValue(0);
+
+    private static int getSlaveAgentPortInitialValue(int def) {
+        return SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort", def);
+    }
+
+    /**
+     * If -Djenkins.model.Jenkins.slaveAgentPort is defined, enforce it on every start instead of only the first one.
+     */
+    private static final boolean SLAVE_AGENT_PORT_ENFORCE = SystemProperties.getBoolean(Jenkins.class.getName()+".slaveAgentPortEnforce", false);
 
     /**
      * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
@@ -832,7 +842,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param pluginManager
      *      If non-null, use existing plugin manager.  create a new one.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings({
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings({
         "SC_START_IN_CTOR", // bug in FindBugs. It flags UDPBroadcastThread.start() call but that's for another class
         "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" // Trigger.timer
     })
@@ -908,6 +918,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     InitMilestone.ordering()        // forced ordering among key milestones
             );
 
+            // Ensure we reached the final initialization state. Log the error otherwise
+            if (initLevel != InitMilestone.COMPLETED) {
+                LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the startup. " +
+                                "Current state: {0}. " +
+                                "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                                "It is likely an issue with the Initialization task graph. " +
+                                "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
+                                "Please create a bug in Jenkins bugtracker. ",
+                        initLevel);
+            }
+
+
             if(KILL_AFTER_LOAD)
                 System.exit(0);
 
@@ -969,6 +991,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private Object readResolve() {
         if (jdks == null) {
             jdks = new ArrayList<>();
+        }
+        if (SLAVE_AGENT_PORT_ENFORCE) {
+            slaveAgentPort = getSlaveAgentPortInitialValue(slaveAgentPort);
         }
         return this;
     }
@@ -1080,10 +1105,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * @since TODO
+     */
+    public boolean isSlaveAgentPortEnforced() {
+        return Jenkins.SLAVE_AGENT_PORT_ENFORCE;
+    }
+
+    /**
      * @param port
      *      0 to indicate random available TCP port. -1 to disable this service.
      */
     public void setSlaveAgentPort(int port) throws IOException {
+        if (SLAVE_AGENT_PORT_ENFORCE) {
+            LOGGER.log(Level.WARNING, "setSlaveAgentPort({0}) call ignored because system property {1} is true", new String[] { Integer.toString(port), Jenkins.class.getName()+".slaveAgentPortEnforce" });
+        } else {
+            forceSetSlaveAgentPort(port);
+        }
+    }
+
+    private void forceSetSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
         launchTcpSlaveAgentListener();
     }
@@ -1174,16 +1214,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 tcpSlaveAgentListener = null;
             }
             if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
-                String administrativeMonitorId = getClass().getName() + ".tcpBind";
+                final String administrativeMonitorId = getClass().getName() + ".tcpBind";
                 try {
                     tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
                     // remove previous monitor in case of previous error
-                    for (Iterator<AdministrativeMonitor> it = AdministrativeMonitor.all().iterator(); it.hasNext(); ) {
-                        AdministrativeMonitor am = it.next();
+                    AdministrativeMonitor toBeRemoved = null;
+                    ExtensionList<AdministrativeMonitor> all = AdministrativeMonitor.all();
+                    for (AdministrativeMonitor am : all) {
                         if (administrativeMonitorId.equals(am.id)) {
-                            it.remove();
+                            toBeRemoved = am;
+                            break;
                         }
                     }
+                    all.remove(toBeRemoved);
                 } catch (BindException e) {
                     LOGGER.log(Level.WARNING, String.format("Failed to listen to incoming agent connections through JNLP port %s. Change the JNLP port number", slaveAgentPort), e);
                     new AdministrativeError(administrativeMonitorId,
@@ -1191,6 +1234,38 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             "Failed to listen to incoming agent connections through JNLP. <a href='configureSecurity'>Change the JNLP port number</a> to solve the problem.", e);
                 }
             }
+        }
+    }
+
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static class EnforceSlaveAgentPortAdministrativeMonitor extends AdministrativeMonitor {
+        @Inject
+        Jenkins j;
+
+        @Override
+        public String getDisplayName() {
+            return jenkins.model.Messages.EnforceSlaveAgentPortAdministrativeMonitor_displayName();
+        }
+
+        public String getSystemPropertyName() {
+            return Jenkins.class.getName() + ".slaveAgentPort";
+        }
+
+        public int getExpectedPort() {
+            int slaveAgentPort = j.slaveAgentPort;
+            return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
+        }
+
+        public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
+            j.forceSetSlaveAgentPort(getExpectedPort());
+            rsp.sendRedirect2(req.getContextPath() + "/manage");
+        }
+
+        @Override
+        public boolean isActivated() {
+            int slaveAgentPort = Jenkins.getInstance().slaveAgentPort;
+            return SLAVE_AGENT_PORT_ENFORCE && slaveAgentPort != Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
     }
 
@@ -1402,6 +1477,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * If you have an instance of {@code type} and call {@link Describable#getDescriptor()},
      * you'll get the same instance that this method returns.
      */
+    @CheckForNull
     public Descriptor getDescriptor(Class<? extends Describable> type) {
         for( Descriptor d : getExtensionList(Descriptor.class) )
             if(d.clazz==type)
@@ -3031,7 +3107,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Called to shut down the system.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void cleanUp() {
         if (theInstance != this && theInstance != null) {
             LOGGER.log(Level.WARNING, "This instance is no longer the singleton, ignoring cleanUp()");
@@ -3839,6 +3915,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void reload() throws IOException, InterruptedException, ReactorException {
         queue.save();
         executeReactor(null, loadTasks());
+
+        // Ensure we reached the final initialization state. Log the error otherwise
+        if (initLevel != InitMilestone.COMPLETED) {
+            LOGGER.log(SEVERE, "Jenkins initialization has not reached the COMPLETED initialization milestone after the configuration reload. " +
+                            "Current state: {0}. " +
+                            "It may cause undefined incorrect behavior in Jenkins plugin relying on this state. " +
+                            "It is likely an issue with the Initialization task graph. " +
+                            "Example: usage of @Initializer(after = InitMilestone.COMPLETED) in a plugin (JENKINS-37759). " +
+                            "Please create a bug in Jenkins bugtracker.",
+                    initLevel);
+        }
+
         User.reload();
         queue.load();
         servletContext.setAttribute("app", this);
@@ -3864,7 +3952,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * For debugging. Expose URL to perform GC.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("DM_GC")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("DM_GC")
     @RequirePOST
     public void doGc(StaplerResponse rsp) throws IOException {
         checkPermission(Jenkins.ADMINISTER);
@@ -4072,9 +4160,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (rsp!=null) {
             rsp.setStatus(HttpServletResponse.SC_OK);
             rsp.setContentType("text/plain");
-            PrintWriter w = rsp.getWriter();
-            w.println("Shutting down");
-            w.close();
+            try (PrintWriter w = rsp.getWriter()) {
+                w.println("Shutting down");
+            }
         }
 
         System.exit(0);

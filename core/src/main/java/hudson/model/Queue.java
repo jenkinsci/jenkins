@@ -351,16 +351,13 @@ public class Queue extends ResourceController implements Saveable {
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)));
-                try {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)))) {
                     String line;
                     while ((line = in.readLine()) != null) {
                         AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
                         if (j != null)
                             j.scheduleBuild();
                     }
-                } finally {
-                    in.close();
                 }
                 // discard the queue file now that we are done
                 queueFile.delete();
@@ -1412,7 +1409,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 // pending -> buildable
                 for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.INFO,
+                    LOGGER.log(Level.FINE,
                             "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
                             p.task.getFullDisplayName());
                     p.isPending = false;

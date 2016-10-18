@@ -50,28 +50,25 @@ public class Service {
         final Enumeration<URL> e = classLoader.getResources("META-INF/services/"+type.getName());
         while (e.hasMoreElements()) {
             URL url = e.nextElement();
-            BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(),"UTF-8"));
-            try {
+            try (BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
                 String line;
                 while ((line = configFile.readLine()) != null) {
                     line = line.trim();
-                    if (line.startsWith("#") || line.length()==0)   continue;
+                    if (line.startsWith("#") || line.length() == 0) continue;
 
                     try {
                         Class<?> t = classLoader.loadClass(line);
-                        if (!type.isAssignableFrom(t))   continue;      // invalid type
+                        if (!type.isAssignableFrom(t)) continue;      // invalid type
 
                         result.add(type.cast(t.newInstance()));
                     } catch (ClassNotFoundException x) {
-                        LOGGER.log(WARNING,"Failed to load "+line,x);
+                        LOGGER.log(WARNING, "Failed to load " + line, x);
                     } catch (InstantiationException x) {
-                        LOGGER.log(WARNING,"Failed to load "+line,x);
+                        LOGGER.log(WARNING, "Failed to load " + line, x);
                     } catch (IllegalAccessException x) {
-                        LOGGER.log(WARNING,"Failed to load "+line,x);
+                        LOGGER.log(WARNING, "Failed to load " + line, x);
                     }
                 }
-            } finally {
-                configFile.close();
             }
         }
 
@@ -87,26 +84,23 @@ public class Service {
             Enumeration<URL> e = cl.getResources("META-INF/services/" + spi.getName());
             while(e.hasMoreElements()) {
                 final URL url = e.nextElement();
-                final BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(),"UTF-8"));
-                try {
+                try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
                     String line;
-                    while((line=r.readLine())!=null) {
-                        if(line.startsWith("#"))
+                    while ((line = r.readLine()) != null) {
+                        if (line.startsWith("#"))
                             continue;   // comment line
                         line = line.trim();
-                        if(line.length()==0)
+                        if (line.length() == 0)
                             continue;   // empty line. ignore.
 
                         try {
                             result.add(cl.loadClass(line).asSubclass(spi));
                         } catch (ClassNotFoundException x) {
-                            LOGGER.log(Level.WARNING, "Failed to load "+line, x);
+                            LOGGER.log(Level.WARNING, "Failed to load " + line, x);
                         }
                     }
                 } catch (IOException x) {
-                    LOGGER.log(Level.WARNING, "Failed to load "+url, x);
-                } finally {
-                    r.close();
+                    LOGGER.log(Level.WARNING, "Failed to load " + url, x);
                 }
             }
         } catch (IOException x) {

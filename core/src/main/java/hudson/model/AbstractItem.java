@@ -673,9 +673,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             try {
                 XMLUtils.safeTransform(source, new StreamResult(out));
                 out.close();
-            } catch (TransformerException e) {
-                throw new IOException("Failed to persist config.xml", e);
-            } catch (SAXException e) {
+            } catch (TransformerException | SAXException e) {
                 throw new IOException("Failed to persist config.xml", e);
             }
 

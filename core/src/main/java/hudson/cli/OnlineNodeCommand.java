@@ -37,8 +37,9 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
+ * CLI Command, which moves the node to the online state.
  * @author pjanouse
- * @since TODO
+ * @since 1.642
  */
 @Extension
 public class OnlineNodeCommand extends CLICommand {
@@ -86,7 +87,7 @@ public class OnlineNodeCommand extends CLICommand {
         }
 
         if (errorOccurred){
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
         return 0;
     }

@@ -190,8 +190,8 @@ exports.completeInstall = function(handler) {
 /**
  * Indicates there is a restart required to complete plugin installations
  */
-exports.isRestartRequired = function(handler) {
-	jenkins.get('/updateCenter/api/json?tree=restartRequiredForCompletion', function(response) {
+exports.getRestartStatus = function(handler) {
+	jenkins.get('/setupWizard/restartStatus', function(response) {
 		handler.call({ isError: false }, response.data);
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,

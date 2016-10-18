@@ -302,17 +302,36 @@ public class ListView extends View implements DirectlyModifiableView {
         return statusFilter;
     }
 
+    /**
+     * Determines the initial state of the checkbox.
+     *
+     * @return true when the view is empty or already contains jobs specified by name.
+     */
+    @Restricted(NoExternalUse.class) // called from newJob_button-bar view
+    @SuppressWarnings("unused") // called from newJob_button-bar view
+    public boolean isAddToCurrentView() {
+        synchronized(this) {
+            return !jobNames.isEmpty() || // There are already items in this view specified by name
+                    (jobFilters.isEmpty() && includePattern == null) // No other way to include items is used
+                    ;
+        }
+    }
+
     @Override
     @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        JSONObject form = req.getSubmittedForm();
+        boolean addToCurrentView = form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
         if (ig instanceof ModifiableItemGroup) {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
-            if(item!=null) {
-                synchronized (this) {
-                    jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+            if (item!=null) {
+                if (addToCurrentView) {
+                    synchronized (this) {
+                        jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+                    }
+                    owner.save();
                 }
-                owner.save();
             }
             return item;
         }

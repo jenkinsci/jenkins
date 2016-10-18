@@ -107,7 +107,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      *
      * @param parameters the parameters
      * @param additionalSafeParameters additional safe parameters
-     * @since TODO
+     * @since 1.651.2, 2.3
      */
     public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
@@ -334,7 +334,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * caller could inject any parameter (using any key) here. <strong>Treat it as untrusted data</strong>.
      *
      * @return all parameters defined here.
-     * @since TODO
+     * @since 1.651.2, 2.3
      */
     public List<ParameterValue> getAllParameters() {
         return Collections.unmodifiableList(parameters);

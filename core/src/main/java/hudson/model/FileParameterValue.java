@@ -266,11 +266,8 @@ public class FileParameterValue extends ParameterValue {
 
         public byte[] get() {
             try {
-                FileInputStream inputStream = new FileInputStream(file);
-                try {
+                try (FileInputStream inputStream = new FileInputStream(file)) {
                     return IOUtils.toByteArray(inputStream);
-                } finally {
-                    inputStream.close();
                 }
             } catch (IOException e) {
                 throw new Error(e);

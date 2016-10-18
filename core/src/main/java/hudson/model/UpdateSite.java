@@ -130,6 +130,10 @@ public class UpdateSite {
      */
     private final String url;
 
+    /**
+     * the prefix for the signature validator name
+     */
+    private static final String signatureValidatorPrefix = "update site";
 
 
     public UpdateSite(String id, String url) {
@@ -242,10 +246,28 @@ public class UpdateSite {
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
      * @return the signature validator.
+     * @deprecated use {@link #getJsonSignatureValidator(@CheckForNull String)} instead.
      */
+    @Deprecated
     @Nonnull
     protected JSONSignatureValidator getJsonSignatureValidator() {
-        return new JSONSignatureValidator("update site '"+id+"'");
+        return getJsonSignatureValidator(null);
+    }
+
+    /**
+     * Let sub-classes of UpdateSite provide their own signature validator.
+     * @param name, the name for the JSON signature Validator object.
+     *              if name is null, then the default name will be used,
+     *              which is "update site" followed by the update site id
+     * @return the signature validator.
+     * @since 2.21
+     */
+    @Nonnull
+    protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
+        if (name == null) {
+            name = signatureValidatorPrefix + " '" + id + "'";
+        }
+        return new JSONSignatureValidator(name);
     }
 
     /**
@@ -422,6 +444,28 @@ public class UpdateSite {
         return url;
     }
 
+
+    /**
+     * URL which exposes the metadata location in a specific update site.
+     * @param downloadable, the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
+     * @return the location
+     * @since 2.20
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public String getMetadataUrlForDownloadable(String downloadable) {
+        String siteUrl = getUrl();
+        String updateSiteMetadataUrl = null;
+        int baseUrlEnd = siteUrl.indexOf("update-center.json");
+        if (baseUrlEnd != -1) {
+            String siteBaseUrl = siteUrl.substring(0, baseUrlEnd);
+            updateSiteMetadataUrl = siteBaseUrl + "updates/" + downloadable;
+        } else {
+            LOGGER.log(Level.WARNING, "Url {0} does not look like an update center:", siteUrl);
+        }
+        return updateSiteMetadataUrl;
+    }
+
     /**
      * Where to actually download the update center?
      *
@@ -571,7 +615,7 @@ public class UpdateSite {
         /**
          * The base64 encoded binary SHA-1 checksum of the file.
          * Can be null if not provided by the update site.
-         * @since TODO
+         * @since 1.641 (and 1.625.3 LTS)
          */
         // TODO @Exported assuming we want this in the API
         public String getSha1() {

@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry title="${%Schedule}" help="/descriptor/hudson.triggers.TimerTrigger/help/spec">
-    <f:textarea name="scmpoll_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+encodeURIComponent(this.value)" value="${instance.spec}"/>
+    <f:textarea field="scmpoll_spec" checkUrl="'${rootURL}/trigger/TimerTrigger/check?value='+encodeURIComponent(this.value)"/>
   </f:entry>
   <f:entry field="ignorePostCommitHooks" title="${%Ignore post-commit hooks}">
     <f:checkbox />

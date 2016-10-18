@@ -34,7 +34,7 @@ import hudson.Util;
  * Exception thrown if plugin resolution fails due to missing dependencies
  * 
  * @author Carlos Sanchez
- * @since TODO
+ * @since 2.4
  *
  */
 public class MissingDependencyException extends IOException {

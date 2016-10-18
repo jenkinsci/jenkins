@@ -49,14 +49,8 @@ public class HsErrPidList extends AdministrativeMonitor {
             return;
         }
         try {
-            FileChannel ch = null;
-            try {
-                ch = new FileInputStream(getSecretKeyFile()).getChannel();
+            try (FileChannel ch = new FileInputStream(getSecretKeyFile()).getChannel()) {
                 map = ch.map(MapMode.READ_ONLY,0,1);
-            } finally {
-                if (ch != null) {
-                    ch.close();
-                }
             }
                 
             scan("./hs_err_pid%p.log");

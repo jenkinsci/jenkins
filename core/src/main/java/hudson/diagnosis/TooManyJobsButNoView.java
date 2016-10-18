@@ -42,6 +42,12 @@ import java.io.IOException;
  */
 @Extension @Symbol("tooManyJobsButNoView")
 public class TooManyJobsButNoView extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.TooManyJobsButNoView_DisplayName();
+    }
+
     public boolean isActivated() {
         Jenkins h = Jenkins.getInstance();
         return h.getViews().size()==1 && h.getItemMap().size()> THRESHOLD;

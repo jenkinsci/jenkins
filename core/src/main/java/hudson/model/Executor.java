@@ -282,19 +282,16 @@ public class Executor extends Thread implements ModelObject {
      */
     private void resetWorkUnit(String reason) {
         StringWriter writer = new StringWriter();
-        PrintWriter pw = new PrintWriter(writer);
-        try {
+        try (PrintWriter pw = new PrintWriter(writer)) {
             pw.printf("%s grabbed %s from queue but %s %s. ", getName(), workUnit, owner.getDisplayName(), reason);
             if (owner.getTerminatedBy().isEmpty()) {
                 pw.print("No termination trace available.");
             } else {
                 pw.println("Termination trace follows:");
-                for (Computer.TerminationRequest request: owner.getTerminatedBy()) {
+                for (Computer.TerminationRequest request : owner.getTerminatedBy()) {
                     request.printStackTrace(pw);
                 }
             }
-        } finally {
-            pw.close();
         }
         LOGGER.log(WARNING, writer.toString());
         lock.writeLock().lock();
