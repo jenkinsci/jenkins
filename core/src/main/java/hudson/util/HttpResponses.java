@@ -101,18 +101,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
     }
 
     /**
-     * Set the response as an error response.
-     * @param message The error "message" set on the response.
-     * @param errorCode The HTTP error code to return;
-     * @return {@link this} object.
-     *
-     * @since TODO
-     */
-    public static HttpResponse errorJSON(@Nonnull String message, int errorCode) {
-        return new JSONObjectResponse().error(message).withStatusCode(errorCode);
-    }
-
-    /**
      * {@link net.sf.json.JSONObject} response.
      *
      * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -122,8 +110,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         private static final Charset UTF8 = Charset.forName("UTF-8");
 
         private final JSONObject jsonObject;
-        @CheckForNull
-        private Integer statusCode;
 
         /**
          * Create an empty "ok" response.
@@ -161,16 +147,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         }
 
         /**
-         * Set the response status code.
-         * @param statusCode The status code.
-         * @return {@link this} object.
-         */
-        public JSONObjectResponse withStatusCode(@CheckForNull Integer statusCode) {
-            this.statusCode = statusCode;
-            return this;
-        }
-
-        /**
          * Set the response as an error response.
          * @param message The error "message" set on the response.
          * @return {@link this} object.
@@ -200,9 +176,6 @@ public class HttpResponses extends org.kohsuke.stapler.HttpResponses {
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             byte[] bytes = jsonObject.toString().getBytes(UTF8);
-            if (statusCode != null) {
-                rsp.setStatus(statusCode);
-            }
             rsp.setContentType("application/json; charset=UTF-8");
             rsp.setContentLength(bytes.length);
             rsp.getOutputStream().write(bytes);

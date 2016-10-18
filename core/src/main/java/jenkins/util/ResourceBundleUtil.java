@@ -81,10 +81,12 @@ public class ResourceBundleUtil {
         if (bundle == null) {
             // Not in Jenkins core. Check the plugins.
             Jenkins jenkins = Jenkins.getInstance(); // will never return null
-            for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
-                bundle = getBundle(baseName, locale, plugin.classLoader);
-                if (bundle != null) {
-                    break;
+            if (jenkins != null) {
+                for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
+                    bundle = getBundle(baseName, locale, plugin.classLoader);
+                    if (bundle != null) {
+                        break;
+                    }
                 }
             }
         }
@@ -112,7 +114,7 @@ public class ResourceBundleUtil {
             return ResourceBundle.getBundle(baseName, locale, classLoader);
         } catch (MissingResourceException e) {
             // fall through and return null.
-            logger.info(e.getMessage());
+            logger.warning(e.getMessage());
         }
         return null;
     }
