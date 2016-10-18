@@ -191,7 +191,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
                 keyStore.setKeyEntry("jenkins", privateKey, password, new X509Certificate[]{identityCertificate});
             }
         } catch (KeyStoreException e) {
-            // ignore
+            LOGGER.log(Level.FINEST, "Ignored", e);
         }
         handler.handle(socket,
                 Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
