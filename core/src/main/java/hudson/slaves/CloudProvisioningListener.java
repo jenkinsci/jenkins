@@ -8,7 +8,6 @@ import hudson.model.queue.CauseOfBlockage;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -65,9 +64,19 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
+     * Called when the <code>node</code>is fully connected in the Jenkins.
+     *
+     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param node the node which has been provisioned by the cloud
+     */
+    public void onCommit(NodeProvisioner.PlannedNode plannedNode, Node node) {
+
+    }
+
+    /**
      * Called when {@link NodeProvisioner.PlannedNode#future#get()} throws an exception.
      *
-     * @param plannedNode the planned node which failed to launch
+     * @param plannedNode the planned node which failed to provision
      * @param t the exception
      */
     public void onFailure(NodeProvisioner.PlannedNode plannedNode, Throwable t) {
@@ -75,42 +84,13 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
-     * Called when either {@link NodeProvisioner.PlannedNode#future#get()} or {@link Jenkins#addNode(Node)} throws
-     * an exception and we need to be an exception-tolerant in
-     * {@link #onFailure(NodeProvisioner.PlannedNode, Throwable)}.
+     * Called when {@link Jenkins#addNode(Node)} throws an exception.
      *
-     * @param plannedNode the planned node which failed to provision
-     * @param cause the exception
+     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param t the exception
      */
-    public static void fireOnFailure(final NodeProvisioner.PlannedNode plannedNode, final Throwable cause) {
-        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-            try {
-                cl.onFailure(plannedNode, cause);
-            } catch (Throwable e) {
-                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
-                        + "processing onFailure() listener " + cl + " for agent "
-                        + plannedNode.displayName, e);
-            }
-        }
-    }
+    public void onRollback(NodeProvisioner.PlannedNode plannedNode, Throwable t) {
 
-    /**
-     * Called when the {@link NodeProvisioner.PlannedNode#future} completes and we need to be an exception-tolerant in
-     * {@link #onComplete(NodeProvisioner.PlannedNode, Node)}.
-     *
-     * @param plannedNode the planned node which was provisioned
-     * @param newNode the new {@link Node}
-     */
-    public static void fireOnComplete(final NodeProvisioner.PlannedNode plannedNode, final Node newNode) {
-        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-            try {
-                cl.onComplete(plannedNode, newNode);
-            } catch (Throwable e) {
-                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
-                        + "processing onComplete() listener " + cl + " for agent "
-                        + plannedNode.displayName, e);
-            }
-        }
     }
 
     /**
@@ -120,6 +100,5 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
         return ExtensionList.lookup(CloudProvisioningListener.class);
     }
 
-    private static final Logger LOGGER = Logger.getLogger(CloudProvisioningListener.class.getName());
 }
 
