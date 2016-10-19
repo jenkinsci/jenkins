@@ -28,11 +28,13 @@ import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.diagnosis.OldDataMonitor;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -73,13 +75,23 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @Deprecated
 	public List<Action> getActions() {
-		if(actions == null) {
-			synchronized (this) {
-				if(actions == null) {
-					actions = new CopyOnWriteArrayList<Action>();
-				}
-			}
-		}
+        if(actions == null) {
+            synchronized (this) {
+                if (actions == null) {
+                    actions = new CopyOnWriteArrayList<Action>();
+                } else {
+                    Iterator<Action> actionIterator = actions.iterator();
+                    Action action;
+                    while (actionIterator.hasNext()) {
+                        action = actionIterator.next();
+                        if (!(action instanceof Action)) {
+                            LOGGER.log(Level.WARNING, "Not action found in " + this.getClass().getName());
+                            actionIterator.remove();
+                        }
+                    }
+                }
+            }
+        }
 		return actions;
 	}
 
@@ -95,9 +107,19 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
             if (taf.type().isInstance(this)) {
                 try {
-                    _actions.addAll(createFor(taf));
+                    Collection<? extends Action> newActions = createFor(taf);
+                    for (Action action : newActions) {
+                        if (action instanceof Action) {
+                            _actions.add(action);
+                        } else {
+                            LOGGER.log(Level.WARNING, "Not action found in " + this.getClass().getName() + "in TransientActionFactory " + taf.getClass().getName());
+                        }
+                    }
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+                    if (this instanceof Saveable)
+                        OldDataMonitor.report((Saveable) this, Collections.<Throwable>singleton(e));
+
+                        LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
                 }
             }
         }
