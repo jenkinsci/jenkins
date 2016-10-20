@@ -28,6 +28,7 @@ import hudson.Extension;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Semaphore;
@@ -50,6 +51,9 @@ public class InstallerTranslator extends ToolLocationTranslator {
         if (isp == null) {
             return null;
         }
+
+        ArrayList<String> inapplicableInstallersMessages = new ArrayList<String>();
+
         for (ToolInstaller installer : isp.installers) {
             if (installer.appliesTo(node)) {
                 Semaphore semaphore;
@@ -70,11 +74,14 @@ public class InstallerTranslator extends ToolLocationTranslator {
                     semaphore.release();
                 }
             } else {
-                log.getLogger().println(Messages.CannotBeInstalled(
+                inapplicableInstallersMessages.add(Messages.CannotBeInstalled(
                         installer.getDescriptor().getDisplayName(),
                         tool.getName(),
                         node.getDisplayName()));
             }
+        }
+        for (String message : inapplicableInstallersMessages) {
+            log.getLogger().println(message);
         }
         return null;
     }
