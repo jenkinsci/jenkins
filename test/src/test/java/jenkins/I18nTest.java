@@ -32,6 +32,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -58,6 +59,7 @@ public class I18nTest {
         }
     }
 
+    @Issue("JENKINS-35270")
     @Test
     public void test_baseName_plugin() throws IOException, SAXException {
         // ssh-slaves plugin is installed by default
