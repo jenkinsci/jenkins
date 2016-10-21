@@ -75,7 +75,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
@@ -133,6 +132,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, Messages.AbstractItem_Pronoun());
+    }
+
+    /**
+     * Get the term used in the UI to describe {@link #getDisplayName()} for this {@link Item}.
+     * Must start with a capital letter.
+     * @return the term used in the UI to describe {@link #getDisplayName()} for this {@link Item}.
+     */
+    public String getMetaName() {
+        return AlternativeUiTextProvider.get(META_NAME, this, Messages.AbstractItem_MetaName());
     }
 
     @Exported
@@ -762,8 +770,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
+     * Replaceable pronoun to be used when creating items. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
+    /**
+     * Replacable name used in the UI to describe {@link #getDisplayName()}. Defaults to "Name".
+     * @since FIXME
+     */
+    public static final Message<AbstractItem> META_NAME = new Message<AbstractItem>();
 
 }
