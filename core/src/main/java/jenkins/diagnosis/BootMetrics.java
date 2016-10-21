@@ -1,5 +1,6 @@
 package jenkins.diagnosis;
 
+import hudson.Platform;
 import hudson.init.InitMilestone;
 import hudson.init.InitReactorListener;
 import jenkins.model.Jenkins;
@@ -8,6 +9,8 @@ import org.apache.commons.io.LineIterator;
 import org.jvnet.hudson.reactor.Milestone;
 import org.jvnet.hudson.reactor.Task;
 import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,8 +25,10 @@ import java.util.logging.Logger;
 /**
  * Record system metrics during jenkins boot, to help diagnose performance issues.
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
+ * @since TODO
  */
 @MetaInfServices
+@Restricted(NoExternalUse.class)
 public class BootMetrics implements InitReactorListener {
 
     @Override
@@ -53,10 +58,12 @@ public class BootMetrics implements InitReactorListener {
     private final PrintStream out;
     private final Timer timer;
 
-    public BootMetrics() throws FileNotFoundException {
+    public BootMetrics() throws IOException {
 
         final File log = new File(Jenkins.getInstance().getRootDir(), "logs/boot-metrics.log");
-        log.getParentFile().mkdirs();
+        if (!log.getParentFile().mkdirs()) {
+            throw new IOException("Failed to create logs directory");
+        }
         out = new PrintStream(log);
         timer = new Timer("Boot metrics", true);
 
@@ -96,7 +103,7 @@ public class BootMetrics implements InitReactorListener {
      * see http://man7.org/linux/man-pages/man5/proc.5.html
      */
     private static SystemMetrics getSystemMetrics() {
-        if (!System.getProperty("os.name").toLowerCase().startsWith("linux")) {
+        if (!Platform.isLinux()) {
             // Not running on a Linux system
             return null;
         }
