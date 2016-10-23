@@ -56,9 +56,33 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class="major rfe">
+    Upgrade to the Remoting 3 baseline. Compatibility notes are available 
+    <a href="https://github.com/jenkinsci/remoting/blob/master/docs/remoting-3-compatibility.md">here</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37564">issue 37564</a>)
+  <li class="major rfe">
+    Remoting 3.0: New <a href="https://github.com/jenkinsci/remoting/blob/master/docs/protocols.md#jnlp4-connect">JNLP4-connect protocol</a>, 
+    which improves performance and stability compared to the JNLP3-connect protocol. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36871">issue 36871</a>)
+  <li class="rfe">
+    Remoting 3.0: Agents using <code>slave.jar</code> now explicitly require Java 7.    
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37565">issue 37565</a>)
   <li class="bug">
     Prevent deadlocks during modification of node executor numbers (e.g. during deletion of nodes).
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31768">issue 31768</a>)
+  <li class="bug">
+    Add missing internationalization support to <code>ResourceBundleUtil</code>.
+    It fixes internationalization in <a href="https://jenkins.io/projects/blueocean/">Blue Ocean</a> 
+    and <a href="http://jenkinsci.github.io/jenkins-design-language/">Jenkins Design Language</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37565">issue 37565</a>)
+  <li class="rfe">
+    Internal: Make the code more compatible with Java 9 requirements and allow its editing in newest NetBeans versions 
+    with <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=268452">NB bug 268452</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2595">pull 2595</a>)
+  <li class="bug">
+    Internal: Icon handling API for items.
+    Deprecate <code>TopLevelItemDescriptor#getIconFilePathPattern()</code> and switch to <code>IconSpec</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38960">issue 38960</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.26>What's new in 2.26</a> (2016/10/17)</h3>
