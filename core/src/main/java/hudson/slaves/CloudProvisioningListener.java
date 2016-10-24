@@ -73,7 +73,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @since TODO
      */
     public void onCommit(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node) {
-        ; // Noop by default
+        // Noop by default
     }
 
     /**
@@ -97,7 +97,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      */
     public void onRollback(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node,
                            @Nonnull Throwable t) {
-        ; // Noop by default
+        // Noop by default
     }
 
     /**

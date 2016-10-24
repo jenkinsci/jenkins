@@ -255,12 +255,11 @@ public class NodeProvisioner {
                                 // we are not supposed to try and recover from Errors
                                 throw e;
                             } catch (Throwable e) {
-                                // Just log and throw further
+                                // Just log it
                                 LOGGER.log(Level.SEVERE,
                                         "Unexpected uncaught exception encountered while processing agent "
                                                 + f.displayName,
                                         e);
-                                throw e;
                             } finally {
                                 while (true) {
                                     List<PlannedNode> orig = pendingLaunches.get();
@@ -838,6 +837,9 @@ public class NodeProvisioner {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onFailure() listener call in " + cl + " for agent "
                         + plannedNode.displayName, e);
+                if (e instanceof Error) {
+                    throw e;
+                }
             }
         }
     }
@@ -851,6 +853,9 @@ public class NodeProvisioner {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onRollback() listener call in " + cl + " for agent "
                         + newNode.getDisplayName(), e);
+                if (e instanceof Error) {
+                    throw e;
+                }
             }
         }
     }
@@ -863,6 +868,9 @@ public class NodeProvisioner {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onComplete() listener call in " + cl + " for agent "
                         + plannedNode.displayName, e);
+                if (e instanceof Error) {
+                    throw e;
+                }
             }
         }
     }
@@ -875,6 +883,9 @@ public class NodeProvisioner {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onCommit() listener call in " + cl + " for agent "
                         + newNode.getDisplayName(), e);
+                if (e instanceof Error) {
+                    throw e;
+                }
             }
         }
     }
@@ -888,6 +899,9 @@ public class NodeProvisioner {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onStarted() listener call in " + cl + " for label "
                         + label.toString(), e);
+                if (e instanceof Error) {
+                    throw e;
+                }
             }
         }
     }
