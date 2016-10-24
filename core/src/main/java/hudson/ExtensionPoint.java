@@ -29,6 +29,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
+import jenkins.util.io.OnMaster;
 
 /**
  * Marker interface that designates extensible components
@@ -47,7 +48,7 @@ import java.lang.annotation.Target;
  * @see Plugin
  * @see Extension
  */
-public interface ExtensionPoint {
+public interface ExtensionPoint extends OnMaster {
     /**
      * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
      * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are

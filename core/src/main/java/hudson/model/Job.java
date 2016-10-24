@@ -128,7 +128,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, OnMaster {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
 
