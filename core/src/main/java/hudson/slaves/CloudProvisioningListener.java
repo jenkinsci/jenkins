@@ -8,7 +8,8 @@ import hudson.model.queue.CauseOfBlockage;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
-import java.util.logging.Logger;
+
+import javax.annotation.Nonnull;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -68,9 +69,11 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      *
      * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
      * @param node the node which has been provisioned by the cloud
+     *
+     * @since TODO
      */
-    public void onCommit(NodeProvisioner.PlannedNode plannedNode, Node node) {
-
+    public void onCommit(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node) {
+        ; // Noop by default
     }
 
     /**
@@ -87,10 +90,14 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * Called when {@link Jenkins#addNode(Node)} throws an exception.
      *
      * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param node the node which has been provisioned by the cloud
      * @param t the exception
+     *
+     * @since TODO
      */
-    public void onRollback(NodeProvisioner.PlannedNode plannedNode, Throwable t) {
-
+    public void onRollback(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node,
+                           @Nonnull Throwable t) {
+        ; // Noop by default
     }
 
     /**

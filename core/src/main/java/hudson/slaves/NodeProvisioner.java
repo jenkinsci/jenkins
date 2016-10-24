@@ -231,7 +231,6 @@ public class NodeProvisioner {
                                                         + f.displayName,
                                                 cause);
                                     }
-
                                     fireOnFailure(f, cause);
                                 }
 
@@ -244,24 +243,24 @@ public class NodeProvisioner {
                                                 "{0} provisioning successfully completed. "
                                                         + "We have now {1,number,integer} computer(s)",
                                                 new Object[]{f.displayName, jenkins.getComputers().length});
+                                        fireOnCommit(f, node);
                                     } catch (IOException e) {
                                         LOGGER.log(Level.WARNING,
                                                 "Provisioned agent " + f.displayName + " failed to launch",
                                                 e);
-
-                                        fireOnRollback(f, e);
+                                        fireOnRollback(f, node, e);
                                     }
-
-                                    fireOnCommit(f, node);
                                 }
                             } catch (Error e) {
                                 // we are not supposed to try and recover from Errors
                                 throw e;
                             } catch (Throwable e) {
+                                // Just log and throw further
                                 LOGGER.log(Level.SEVERE,
                                         "Unexpected uncaught exception encountered while processing agent "
                                                 + f.displayName,
                                         e);
+                                throw e;
                             } finally {
                                 while (true) {
                                     List<PlannedNode> orig = pendingLaunches.get();
@@ -843,14 +842,15 @@ public class NodeProvisioner {
         }
     }
 
-    private static void fireOnRollback(final NodeProvisioner.PlannedNode plannedNode, final Throwable cause) {
+    private static void fireOnRollback(final NodeProvisioner.PlannedNode plannedNode, final Node newNode,
+                                       final Throwable cause) {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
-                cl.onRollback(plannedNode, cause);
+                cl.onRollback(plannedNode, newNode, cause);
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onRollback() listener call in " + cl + " for agent "
-                        + plannedNode.displayName, e);
+                        + newNode.getDisplayName(), e);
             }
         }
     }
@@ -874,7 +874,7 @@ public class NodeProvisioner {
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onCommit() listener call in " + cl + " for agent "
-                        + plannedNode.displayName, e);
+                        + newNode.getDisplayName(), e);
             }
         }
     }
