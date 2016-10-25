@@ -107,7 +107,9 @@ THE SOFTWARE.
 
         <!-- give actions a chance to contribute summary item -->
         <j:forEach var="a" items="${it.allActions}">
-          <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          <j:catch var="exceptionVariable">
+            <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
+          </j:catch>
         </j:forEach>
       </table>
 
