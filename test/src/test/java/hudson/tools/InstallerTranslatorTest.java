@@ -35,6 +35,8 @@ import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -96,6 +98,43 @@ public class InstallerTranslatorTest {
         FreeStyleBuild b6 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk1", b6);
         r.assertLogContains("/opt/jdk1", b6);
+    }
+
+    @Issue("JENKINS-26940")
+    @Test
+    public void testMessageLoggedWhenNoInstallerFound() throws Exception {
+        final CommandInstaller ci = new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
+        final BatchCommandInstaller bci = new BatchCommandInstaller("wrong2", "echo hello", "/opt/jdk2");
+        InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, bci));
+
+        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        r.jenkins.getJDKs().add(jdk);
+
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setJDK(jdk);
+        p.getBuildersList().add(new Shell("echo $JAVA_HOME"));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        r.assertLogContains(hudson.tools.Messages.CannotBeInstalled(ci.getDescriptor().getDisplayName(), jdk.getName(), r.jenkins.getDisplayName()), b1);
+        r.assertLogContains(hudson.tools.Messages.CannotBeInstalled(bci.getDescriptor().getDisplayName(), jdk.getName(), r.jenkins.getDisplayName()), b1);
+    }
+
+    @Issue("JENKINS-26940")
+    @Test
+    public void testNoMessageLoggedWhenAnyInstallerFound() throws Exception {
+        final CommandInstaller ci = new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
+        final CommandInstaller ci2 = new CommandInstaller("master", "echo hello", "/opt/jdk2");
+        InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
+
+        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        r.jenkins.getJDKs().add(jdk);
+
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setJDK(jdk);
+        p.getBuildersList().add(new Shell("echo $JAVA_HOME"));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        r.assertLogNotContains(ci.getDescriptor().getDisplayName(), b1);
     }
 
 }
