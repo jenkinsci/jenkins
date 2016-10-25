@@ -110,6 +110,9 @@ THE SOFTWARE.
           <j:catch var="exceptionVariable">
             <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
           </j:catch>
+          <j:if test="${exceptionVariable != null}">
+            Exception for ${a}: ${exceptionVariable}
+          </j:if>
         </j:forEach>
       </table>
 
