@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Match the name against the agent name and route the incoming JNLP agent as {@link Slave}.
@@ -50,6 +52,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      *
      * @since FIXME
      */
+    @Restricted(NoExternalUse.class)
     public static boolean disableStrictVerification =
             SystemProperties.getBoolean(DefaultJnlpSlaveReceiver.class.getName() + ".disableStrictVerification");
 
@@ -63,11 +66,21 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     private static ComputerLauncher getDelegate(ComputerLauncher launcher) {
         try {
             Method getDelegate = launcher.getClass().getMethod("getDelegate");
-            return ComputerLauncher.class.isAssignableFrom(getDelegate.getReturnType()) ? (ComputerLauncher) getDelegate
-                    .invoke(launcher) : null;
+            if (ComputerLauncher.class.isAssignableFrom(getDelegate.getReturnType())) {
+                return (ComputerLauncher) getDelegate.invoke(launcher);
+            }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            return null;
+            // ignore
         }
+        try {
+            Method getLauncher = launcher.getClass().getMethod("getLauncher");
+            if (ComputerLauncher.class.isAssignableFrom(getLauncher.getReturnType())) {
+                return (ComputerLauncher) getLauncher.invoke(launcher);
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            // ignore
+        }
+        return null;
     }
 
     @Override
