@@ -7,6 +7,8 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.DelegatingComputerLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.OutputStream;
@@ -47,9 +49,18 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(clientName);
-        if (computer == null || !(computer.getLauncher() instanceof JNLPLauncher)) {
+        if (computer == null) {
             event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
             return;
+        }
+        ComputerLauncher launcher = computer.getLauncher();
+        while (!(launcher instanceof JNLPLauncher)) {
+            if (launcher instanceof DelegatingComputerLauncher) {
+                launcher = ((DelegatingComputerLauncher)launcher).getLauncher();
+            } else {
+                event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+                return;
+            }
         }
         Channel ch = computer.getChannel();
         if (ch != null) {
