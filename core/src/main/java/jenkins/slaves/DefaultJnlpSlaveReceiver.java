@@ -99,13 +99,24 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             } else if (launcher instanceof ComputerLauncherFilter) {
                 launcher = ((ComputerLauncherFilter) launcher).getCore();
             } else if (null != (l = getDelegate(launcher))) {  // TODO remove when all plugins are fixed
+                LOGGER.log(Level.INFO, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
+                                + "itself correctly as being a JNLP agent",
+                        new Object[]{clientName, computer.getLauncher().getClass()});
                 launcher = l;
             } else {
                 if (disableStrictVerification) {
-                    LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher does not mark itself "
-                            + "correctly as being a JNLP agent", clientName);
+                    LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
+                            + "itself correctly as being a JNLP agent",
+                            new Object[]{clientName, computer.getLauncher().getClass()});
                     break;
                 } else {
+                    LOGGER.log(Level.WARNING, "Rejecting connection to {0} from {1} as a JNLP agent as the launcher "
+                                    + "{2} does not extend JNLPLauncher or does not implement "
+                                    + "DelegatingComputerLauncher with a delegation chain leading to a JNLPLauncher. "
+                                    + "Set system property "
+                                    + "jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true to allow"
+                                    + "connections until the plugin has been fixed.",
+                            new Object[]{clientName, event.getSocket().getRemoteSocketAddress(), computer.getLauncher().getClass()});
                     event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
                     return;
                 }
