@@ -1,6 +1,7 @@
 package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ClassicPluginStrategy;
 import hudson.Extension;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.Util;
@@ -17,6 +18,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
@@ -39,6 +41,16 @@ import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
+    /**
+     * Disables strict verification of connections. Turn this on if you have plugins that incorrectly extend
+     * {@link ComputerLauncher} when then should have extended {@link DelegatingComputerLauncher}
+     *
+     * @since FIXME
+     */
+    public static boolean disableStrictVerification =
+            SystemProperties.getBoolean(DefaultJnlpSlaveReceiver.class.getName() + ".disableStrictVerification");
+
+
     @Override
     public boolean owns(String clientName) {
         Computer computer = Jenkins.getInstance().getComputer(clientName);
@@ -56,10 +68,16 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         ComputerLauncher launcher = computer.getLauncher();
         while (!(launcher instanceof JNLPLauncher)) {
             if (launcher instanceof DelegatingComputerLauncher) {
-                launcher = ((DelegatingComputerLauncher)launcher).getLauncher();
+                launcher = ((DelegatingComputerLauncher) launcher).getLauncher();
             } else {
-                event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
-                return;
+                if (disableStrictVerification) {
+                    LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher does not mark itself "
+                            + "correctly as being a JNLP agent", clientName);
+                    break;
+                } else {
+                    event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+                    return;
+                }
             }
         }
         Channel ch = computer.getChannel();
