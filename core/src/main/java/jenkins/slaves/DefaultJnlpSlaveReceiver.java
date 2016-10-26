@@ -9,11 +9,14 @@ import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
 import hudson.slaves.ComputerLauncher;
+import hudson.slaves.ComputerLauncherFilter;
 import hudson.slaves.DelegatingComputerLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
@@ -57,6 +60,16 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         return computer != null;
     }
 
+    private static ComputerLauncher getDelegate(ComputerLauncher launcher) {
+        try {
+            Method getDelegate = launcher.getClass().getMethod("getDelegate");
+            return ComputerLauncher.class.isAssignableFrom(getDelegate.getReturnType()) ? (ComputerLauncher) getDelegate
+                    .invoke(launcher) : null;
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
     @Override
     public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
@@ -67,8 +80,13 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         }
         ComputerLauncher launcher = computer.getLauncher();
         while (!(launcher instanceof JNLPLauncher)) {
+            ComputerLauncher l;
             if (launcher instanceof DelegatingComputerLauncher) {
                 launcher = ((DelegatingComputerLauncher) launcher).getLauncher();
+            } else if (launcher instanceof ComputerLauncherFilter) {
+                launcher = ((ComputerLauncherFilter) launcher).getCore();
+            } else if (null != (l = getDelegate(launcher))) {  // TODO remove when all plugins are fixed
+                launcher = l;
             } else {
                 if (disableStrictVerification) {
                     LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher does not mark itself "
