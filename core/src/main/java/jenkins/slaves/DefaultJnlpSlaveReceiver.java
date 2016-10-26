@@ -59,7 +59,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             // We cannot just rely on the launcher type
             // TODO: Harden checks by provising new APIs in Launcher
             LOGGER.log(Level.FINE, "Received connection request to JNLP agent {0}. "
-                    + "This slave's launcher is instance of the {1} class, which does not extend {2}. "
+                    + "This agent's launcher is instance of the {1} class, which does not extend {2}. "
                     + "Accepting the connection request (JENKINS-39232).",
                     new Object[] {clientName, launcher.getClass(), JNLPLauncher.class});
         }
