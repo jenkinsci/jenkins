@@ -64,6 +64,11 @@ public class AllView extends View {
         return true;
     }
 
+    @Override
+    public String getDisplayName() {
+        return Messages.Hudson_ViewName();
+    }
+
     @RequirePOST
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
@@ -92,10 +97,12 @@ public class AllView extends View {
     @Extension @Symbol("all")
     public static final class DescriptorImpl extends ViewDescriptor {
         @Override
-        public boolean isInstantiable() {
-            for (View v : Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class).getViews())
-                if(v instanceof AllView)
+        public boolean isApplicableIn(ViewGroup owner) {
+            for (View v : owner.getViews()) {
+                if (v instanceof AllView) {
                     return false;
+                }
+            }
             return true;
         }
 
