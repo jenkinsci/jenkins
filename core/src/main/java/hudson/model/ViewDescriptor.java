@@ -23,13 +23,17 @@
  */
 package hudson.model;
 
+import hudson.util.FormValidation;
 import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -109,5 +113,30 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     public List<Descriptor<ViewJobFilter>> getJobFiltersDescriptors() {
         return ViewJobFilter.all();
+    }
+
+    /**
+     * Validation of the display name field.
+     *
+     * @param view the view to check the new display name of.
+     * @param value the proposed new display name.
+     * @return the validation result.
+     * @since FIXME
+     */
+    @SuppressWarnings("unused") // expose utility check method to subclasses
+    protected FormValidation checkDisplayName(@Nonnull View view, @CheckForNull String value) {
+        if (StringUtils.isBlank(value)) {
+            // no custom name, no need to check
+            return FormValidation.ok();
+        }
+        for (View v: view.owner.getViews()) {
+            if (v.getViewName().equals(view.getViewName())) {
+                continue;
+            }
+            if (StringUtils.equals(v.getDisplayName(), value)) {
+                return FormValidation.warning(Messages.View_DisplayNameNotUniqueWarning(value));
+            }
+        }
+        return FormValidation.ok();
     }
 }
