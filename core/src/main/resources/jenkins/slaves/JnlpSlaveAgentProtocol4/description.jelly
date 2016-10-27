@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%A TLS secured connection between the master and the agent performed by TLS upgrade of the socket.}
+</j:jelly>

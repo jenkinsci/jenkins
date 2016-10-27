@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,33 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.model;
+package jenkins.slaves;
 
-import com.google.common.collect.ImmutableList;
-import hudson.model.InvisibleAction;
-import hudson.model.Run;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
-import java.util.Collection;
-import java.util.List;
+import hudson.Extension;
+import hudson.init.Terminator;
+import hudson.model.Computer;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jenkinsci.remoting.protocol.IOHub;
 
 /**
- * Action added to {@link Run} to record the cause of interruption.
+ * Singleton holder of {@link IOHub}
  *
- * @author Kohsuke Kawaguchi
- * @since 1.425
+ * @since FIXME
  */
-@ExportedBean
-public class InterruptedBuildAction extends InvisibleAction {
-    private final List<CauseOfInterruption> causes;
+@Extension
+public class IOHubProvider {
+    /**
+     * Our logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(IOHubProvider.class.getName());
+    /**
+     * Our hub.
+     */
+    private IOHub hub;
 
-    public InterruptedBuildAction(Collection<? extends CauseOfInterruption> causes) {
-        this.causes = ImmutableList.<CauseOfInterruption>copyOf(causes);
+    public IOHubProvider() {
+        try {
+            hub = IOHub.create(Computer.threadPoolForRemoting);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to launch IOHub", e);
+            this.hub = null;
+        }
     }
 
-    @Exported
-    public List<CauseOfInterruption> getCauses() {
-        return causes;
+    public IOHub getHub() {
+        return hub;
     }
+
+    @Terminator
+    public void cleanUp() throws IOException {
+        if (hub != null) {
+            hub.close();
+            hub = null;
+        }
+    }
+
 }
