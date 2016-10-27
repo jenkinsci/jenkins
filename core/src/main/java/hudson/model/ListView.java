@@ -141,7 +141,9 @@ public class ListView extends View implements DirectlyModifiableView {
 
     protected void initColumns() {
         if (columns == null)
-            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,ListViewColumn.createDefaultInitialColumnList());
+            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
+                    ListViewColumn.createDefaultInitialColumnList(getClass())
+            );
     }
 
     protected void initJobFilters() {
@@ -459,7 +461,7 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Deprecated
     public static List<ListViewColumn> getDefaultColumns() {
-        return ListViewColumn.createDefaultInitialColumnList();
+        return ListViewColumn.createDefaultInitialColumnList(ListView.class);
     }
 
     @Restricted(NoExternalUse.class)

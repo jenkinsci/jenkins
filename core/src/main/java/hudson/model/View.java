@@ -415,7 +415,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If this view uses &lt;t:projectView> for rendering, this method returns columns to be displayed.
      */
     public Iterable<? extends ListViewColumn> getColumns() {
-        return ListViewColumn.createDefaultInitialColumnList();
+        return ListViewColumn.createDefaultInitialColumnList(this);
     }
 
     /**
