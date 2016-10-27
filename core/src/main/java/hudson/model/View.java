@@ -1228,7 +1228,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
         ViewGroup owner = Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class);
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
-            if (d.isApplicableIn(owner) && d.isInstantiable()) {
+            if (d.isApplicableIn(owner) && d.isInstantiable()
+                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
                 r.add(d);
             }
         }
@@ -1276,6 +1277,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
+                if (!owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, v.getDescriptor())) {
+                    throw new Failure(Messages.View_CreatePermissionMissing(v.getDescriptor().getDisplayName()));
+                }
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1294,6 +1298,9 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
             // create a view
             v = descriptor.newInstance(req,req.getSubmittedForm());
+        }
+        if (!owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, v.getDescriptor())) {
+            throw new Failure(Messages.View_CreatePermissionMissing(v.getDescriptor().getDisplayName()));
         }
         v.owner = owner;
 

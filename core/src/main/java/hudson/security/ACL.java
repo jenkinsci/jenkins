@@ -24,6 +24,8 @@
 package hudson.security;
 
 import hudson.model.User;
+import hudson.model.ViewDescriptor;
+import hudson.model.ViewGroup;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -117,6 +119,23 @@ public abstract class ACL {
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {
+        return true;
+    }
+
+    /**
+     * Checks if the given principal has the permission to create views within the specified view group.
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it can create anything anywhere.
+     * @param a the principal.
+     * @param c the container of the view.
+     * @param d the descriptor of the view to be created.
+     * @return false
+     *      if the user doesn't have the permission.
+     * @since FIXME
+     */
+    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ViewGroup c,
+                                       @Nonnull ViewDescriptor d) {
         return true;
     }
 
