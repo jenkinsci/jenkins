@@ -41,6 +41,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Descriptor} for {@link View}.
@@ -108,14 +110,20 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Possible {@link ListViewColumnDescriptor}s that can be used with this view.
      */
     public List<Descriptor<ListViewColumn>> getColumnsDescriptors() {
-        return ListViewColumn.all();
+        StaplerRequest request = Stapler.getCurrentRequest();
+        View view = request.findAncestorObject(clazz);
+        return view == null ? DescriptorVisibilityFilter.applyType(clazz, ListViewColumn.all())
+                : DescriptorVisibilityFilter.apply(view, ListViewColumn.all());
     }
 
     /**
      * Possible {@link ViewJobFilter} types that can be used with this view.
      */
     public List<Descriptor<ViewJobFilter>> getJobFiltersDescriptors() {
-        return ViewJobFilter.all();
+        StaplerRequest request = Stapler.getCurrentRequest();
+        View view = request.findAncestorObject(clazz);
+        return view == null ? DescriptorVisibilityFilter.applyType(clazz, ViewJobFilter.all())
+                : DescriptorVisibilityFilter.apply(view, ViewJobFilter.all());
     }
 
     /**
