@@ -95,12 +95,12 @@ public class I18n implements RootAction {
         String variant = request.getParameter("variant");
         // https://www.w3.org/International/questions/qa-lang-priorities
         // in case we have regions/countries in the language query parameter
-        if (country == null && language != null) {
+        if (language != null) {
             String[] languageTokens = language.split("-|_");
             language = languageTokens[0];
-            if (languageTokens.length > 1) {
+            if (country == null && languageTokens.length > 1) {
                 country = languageTokens[1];
-                if (languageTokens.length > 2) {
+                if (variant == null && languageTokens.length > 2) {
                     variant = languageTokens[2];
                 }
             }
