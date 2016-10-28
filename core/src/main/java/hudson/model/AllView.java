@@ -23,9 +23,15 @@
  */
 package hudson.model;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -44,6 +50,21 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.269
  */
 public class AllView extends View {
+
+    /**
+     * The name of the default {@link AllView}. An {@link AllView} with this name will get a localized display name.
+     * Other {@link AllView} instances will be assumed to have been created by the user and thus will use the
+     * name the user created them with.
+     *
+     * @since FIXME
+     */
+    public static final String DEFAULT_VIEW_NAME = "all";
+
+    /**
+     * Our logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(AllView.class.getName());
+
     @DataBoundConstructor
     public AllView(String name) {
         super(name);
@@ -66,7 +87,7 @@ public class AllView extends View {
 
     @Override
     public String getDisplayName() {
-        return Messages.Hudson_ViewName();
+        return DEFAULT_VIEW_NAME.equals(name) ? Messages.Hudson_ViewName() : name;
     }
 
     @RequirePOST
@@ -92,6 +113,58 @@ public class AllView extends View {
     @Override
     protected void submit(StaplerRequest req) throws IOException, ServletException, FormException {
         // noop
+    }
+
+    /**
+     * Corrects the name of the {@link AllView} if and only if the {@link AllView} is the primary view and
+     * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()}.
+     * Use this method to round-trip the primary view name, e.g.
+     * {@code primaryView = applyJenkins38606Fixup(views, primaryView)}
+     * NOTE: we can only fix the localized name of an {@link AllView} if it is the primary view as otherwise urls
+     * would change, whereas the primary view is special and does not normall get accessed by the
+     * {@code /view/_name_} url.
+     *
+     * @param views the list of views.
+     * @param primaryView the current primary view name.
+     * @return the primary view name - this will be the same as the provided primary view name unless a JENKINS-38606
+     * matching name is detected, in which case this will be the new name of the primary view.
+     * @since FIXME
+     */
+    @Nonnull
+    public static String applyJenkins38606Fixup(@Nonnull List<View> views, @Nonnull String primaryView) {
+        if (DEFAULT_VIEW_NAME.equals(primaryView)) {
+            // modern name, we are safe
+            return primaryView;
+        }
+        AllView allView = null;
+        for (View v: views) {
+            if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {
+                // name conflict, we cannot rename the all view anyway
+                return primaryView;
+            }
+            if (StringUtils.equals(v.getViewName(), primaryView)) {
+                if (v instanceof AllView) {
+                    allView = (AllView) v;
+                } else {
+                    // none of our business fixing as we can only safely fix the primary view
+                    return primaryView;
+                }
+            }
+        }
+        if (allView != null) {
+            // the primary view is an AllView but using a non-default name
+            for (Locale l : Locale.getAvailableLocales()) {
+                if (primaryView.equals(Messages._Hudson_ViewName().toString(l))) {
+                    // bingo JENKINS-38606 detected
+                    LOGGER.log(Level.INFO,
+                            "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
+                            new Object[]{allView.owner.getUrl(), DEFAULT_VIEW_NAME});
+                    allView.name = DEFAULT_VIEW_NAME;
+                    return DEFAULT_VIEW_NAME;
+                }
+            }
+        }
+        return primaryView;
     }
 
     @Extension @Symbol("all")
