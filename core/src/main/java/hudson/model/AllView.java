@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.util.SystemProperties;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -117,7 +118,8 @@ public class AllView extends View {
 
     /**
      * Corrects the name of the {@link AllView} if and only if the {@link AllView} is the primary view and
-     * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()}.
+     * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()} and the user has opted in to
+     * fixing the view name by setting the system property {@code hudson.mode.AllView.JENKINS-38606} to {@code true}.
      * Use this method to round-trip the primary view name, e.g.
      * {@code primaryView = applyJenkins38606Fixup(views, primaryView)}
      * NOTE: we can only fix the localized name of an {@link AllView} if it is the primary view as otherwise urls
@@ -136,31 +138,33 @@ public class AllView extends View {
             // modern name, we are safe
             return primaryView;
         }
-        AllView allView = null;
-        for (View v: views) {
-            if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {
-                // name conflict, we cannot rename the all view anyway
-                return primaryView;
-            }
-            if (StringUtils.equals(v.getViewName(), primaryView)) {
-                if (v instanceof AllView) {
-                    allView = (AllView) v;
-                } else {
-                    // none of our business fixing as we can only safely fix the primary view
+        if (SystemProperties.getBoolean(AllView.class.getName()+".JENKINS-38606", false)) {
+            AllView allView = null;
+            for (View v : views) {
+                if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {
+                    // name conflict, we cannot rename the all view anyway
                     return primaryView;
                 }
+                if (StringUtils.equals(v.getViewName(), primaryView)) {
+                    if (v instanceof AllView) {
+                        allView = (AllView) v;
+                    } else {
+                        // none of our business fixing as we can only safely fix the primary view
+                        return primaryView;
+                    }
+                }
             }
-        }
-        if (allView != null) {
-            // the primary view is an AllView but using a non-default name
-            for (Locale l : Locale.getAvailableLocales()) {
-                if (primaryView.equals(Messages._Hudson_ViewName().toString(l))) {
-                    // bingo JENKINS-38606 detected
-                    LOGGER.log(Level.INFO,
-                            "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
-                            new Object[]{allView.owner.getUrl(), DEFAULT_VIEW_NAME});
-                    allView.name = DEFAULT_VIEW_NAME;
-                    return DEFAULT_VIEW_NAME;
+            if (allView != null) {
+                // the primary view is an AllView but using a non-default name
+                for (Locale l : Locale.getAvailableLocales()) {
+                    if (primaryView.equals(Messages._Hudson_ViewName().toString(l))) {
+                        // bingo JENKINS-38606 detected
+                        LOGGER.log(Level.INFO,
+                                "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
+                                new Object[]{allView.owner.getUrl(), DEFAULT_VIEW_NAME});
+                        allView.name = DEFAULT_VIEW_NAME;
+                        return DEFAULT_VIEW_NAME;
+                    }
                 }
             }
         }
