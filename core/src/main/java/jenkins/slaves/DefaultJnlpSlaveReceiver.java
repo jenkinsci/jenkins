@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.OutputStream;
@@ -47,9 +48,20 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(clientName);
-        if (computer == null || !(computer.getLauncher() instanceof JNLPLauncher)) {
-            event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+        if (computer == null) {
+            event.reject(new ConnectionRefusalException(String.format("%s is not a registered JNLP agent", clientName)));
             return;
+        }
+        
+        final ComputerLauncher launcher = computer.getLauncher();
+        if (!(launcher instanceof JNLPLauncher) && LOGGER.isLoggable(Level.FINE)) {
+            // We do not interrupt the connection, because there are corner cases mentioned in JENKINS-39232
+            // We cannot just rely on the launcher type
+            // TODO: Harden checks by provising new APIs in Launcher
+            LOGGER.log(Level.FINE, "Received connection request to JNLP agent {0}. "
+                    + "This agent's launcher is instance of the {1} class, which does not extend {2}. "
+                    + "Accepting the connection request (JENKINS-39232).",
+                    new Object[] {clientName, launcher.getClass(), JNLPLauncher.class});
         }
         Channel ch = computer.getChannel();
         if (ch != null) {
