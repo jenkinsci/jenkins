@@ -121,7 +121,7 @@ public class AllView extends View {
      * Use this method to round-trip the primary view name, e.g.
      * {@code primaryView = applyJenkins38606Fixup(views, primaryView)}
      * NOTE: we can only fix the localized name of an {@link AllView} if it is the primary view as otherwise urls
-     * would change, whereas the primary view is special and does not normall get accessed by the
+     * would change, whereas the primary view is special and does not normally get accessed by the
      * {@code /view/_name_} url.
      *
      * @param views the list of views.
