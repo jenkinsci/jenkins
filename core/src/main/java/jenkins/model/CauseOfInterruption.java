@@ -86,7 +86,7 @@ public abstract class CauseOfInterruption implements Serializable {
 
         @CheckForNull
         public User getUser() {
-            return User.get(user, false, Collections.emptyMap());
+            return User.get(user, true, Collections.emptyMap());
         }
 
         public String getShortDescription() {
