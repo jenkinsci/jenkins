@@ -1,20 +1,27 @@
 package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ClassicPluginStrategy;
 import hudson.Extension;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.ComputerLauncherFilter;
+import hudson.slaves.DelegatingComputerLauncher;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
@@ -26,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Match the name against the agent name and route the incoming JNLP agent as {@link Slave}.
@@ -37,19 +46,81 @@ import org.jenkinsci.remoting.protocol.impl.ConnectionRefusalException;
 @Extension
 public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
 
+    /**
+     * Disables strict verification of connections. Turn this on if you have plugins that incorrectly extend
+     * {@link ComputerLauncher} when then should have extended {@link DelegatingComputerLauncher}
+     *
+     * @since FIXME
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean disableStrictVerification =
+            SystemProperties.getBoolean(DefaultJnlpSlaveReceiver.class.getName() + ".disableStrictVerification");
+
+
     @Override
     public boolean owns(String clientName) {
         Computer computer = Jenkins.getInstance().getComputer(clientName);
         return computer != null;
     }
 
+    private static ComputerLauncher getDelegate(ComputerLauncher launcher) {
+        try {
+            Method getDelegate = launcher.getClass().getMethod("getDelegate");
+            if (ComputerLauncher.class.isAssignableFrom(getDelegate.getReturnType())) {
+                return (ComputerLauncher) getDelegate.invoke(launcher);
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            // ignore
+        }
+        try {
+            Method getLauncher = launcher.getClass().getMethod("getLauncher");
+            if (ComputerLauncher.class.isAssignableFrom(getLauncher.getReturnType())) {
+                return (ComputerLauncher) getLauncher.invoke(launcher);
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            // ignore
+        }
+        return null;
+    }
+
     @Override
     public void afterProperties(@NonNull JnlpConnectionState event) {
         String clientName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         SlaveComputer computer = (SlaveComputer) Jenkins.getInstance().getComputer(clientName);
-        if (computer == null || !(computer.getLauncher() instanceof JNLPLauncher)) {
+        if (computer == null) {
             event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
             return;
+        }
+        ComputerLauncher launcher = computer.getLauncher();
+        while (!(launcher instanceof JNLPLauncher)) {
+            ComputerLauncher l;
+            if (launcher instanceof DelegatingComputerLauncher) {
+                launcher = ((DelegatingComputerLauncher) launcher).getLauncher();
+            } else if (launcher instanceof ComputerLauncherFilter) {
+                launcher = ((ComputerLauncherFilter) launcher).getCore();
+            } else if (null != (l = getDelegate(launcher))) {  // TODO remove when all plugins are fixed
+                LOGGER.log(Level.INFO, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
+                                + "itself correctly as being a JNLP agent",
+                        new Object[]{clientName, computer.getLauncher().getClass()});
+                launcher = l;
+            } else {
+                if (disableStrictVerification) {
+                    LOGGER.log(Level.WARNING, "Connecting {0} as a JNLP agent where the launcher {1} does not mark "
+                            + "itself correctly as being a JNLP agent",
+                            new Object[]{clientName, computer.getLauncher().getClass()});
+                    break;
+                } else {
+                    LOGGER.log(Level.WARNING, "Rejecting connection to {0} from {1} as a JNLP agent as the launcher "
+                                    + "{2} does not extend JNLPLauncher or does not implement "
+                                    + "DelegatingComputerLauncher with a delegation chain leading to a JNLPLauncher. "
+                                    + "Set system property "
+                                    + "jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification=true to allow"
+                                    + "connections until the plugin has been fixed.",
+                            new Object[]{clientName, event.getSocket().getRemoteSocketAddress(), computer.getLauncher().getClass()});
+                    event.reject(new ConnectionRefusalException(String.format("%s is not a JNLP agent", clientName)));
+                    return;
+                }
+            }
         }
         Channel ch = computer.getChannel();
         if (ch != null) {
