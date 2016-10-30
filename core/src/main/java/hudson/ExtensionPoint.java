@@ -48,7 +48,7 @@ import jenkins.util.io.OnMaster;
  * @see Plugin
  * @see Extension
  */
-public interface ExtensionPoint extends OnMaster {
+public interface ExtensionPoint {
     /**
      * Used by designers of extension points (direct subtypes of {@link ExtensionPoint}) to indicate that
      * the legacy instances are scoped to {@link Jenkins} instance. By default, legacy instances are
