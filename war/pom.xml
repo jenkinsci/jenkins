@@ -402,7 +402,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.2-beta-4</version>
+                  <version>1.6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
