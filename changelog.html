@@ -68,9 +68,13 @@ Upcoming changes</a>
     Print warnings if none of Tool Installers can be used during the tool installation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26940">issue 26940</a>)
   <li class="rfe">
-    Update Guice dependency from <code>4.0-beta</code> to <code>4.0</code>.
-    This change also requires upgrade of Maven plugin to <code>2.14</code> or above if it is installed.
-    (<a href="https://github.com/jenkinsci/jenkins/pull/2568">pull 2568</a>)
+    Update the minimal required versions of the detached Maven Project plugin from <code>2.7.1</code> to <code>2.14</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/Maven+Project+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>)
+  <li class="rfe">
+    Update the minimal required versions of the detached JUnit plugin from <code>1.2-beta-4</code> to <code>1.6</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>))
   <li class="major bug">
     Relax requirements of the JNLP connection receiver, which was rejections connections from agents not using 
     <code>JNLPComputerLauncher</code> (e.g. from Slave Setup, vSphere Cloud and other plugins). 
@@ -92,6 +96,10 @@ Upcoming changes</a>
   <li class="rfe">
     Internal: Start defining APIs that are for the master JVM only.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38370">issue 38370</a>)
+  <li class="rfe">
+    Internal: Update Guice dependency from <code>4.0-beta</code> to <code>4.0</code>.
+    This change required upgrade of detached plugins (see above).
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2568">pull 2568</a>)
 </ul>
 <h3><a name=v2.27>What's new in 2.27</a> (2016/10/23)</h3>
 <ul class=image>
