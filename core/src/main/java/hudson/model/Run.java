@@ -58,18 +58,8 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -113,6 +103,7 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -1930,31 +1921,55 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        int lineCount = 0;
-        List<String> logLines = new LinkedList<String>();
-        if (maxLines == 0) {
-            return logLines;
+        final List<String> lastLines = new ArrayList<>(maxLines);
+
+        if(maxLines == 0) {
+            return lastLines;
         }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()), getCharset()))) {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                logLines.add(line);
-                ++lineCount;
-                // If we have too many lines, remove the oldest line.  This way we
-                // never have to hold the full contents of a huge log file in memory.
-                // Adding to and removing from the ends of a linked list are cheap
-                // operations.
-                if (lineCount > maxLines)
-                    logLines.remove(0);
+
+        int lines = 0;
+        final List<Byte> bytes = new ArrayList<>();
+        try (RandomAccessFile fileHandler = new RandomAccessFile(getLogFile(), "r")) {
+            long fileLength = fileHandler.length() - 1;
+
+            for (long filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {
+                fileHandler.seek(filePointer);
+                byte readByte = fileHandler.readByte();
+
+
+                if (readByte == 0x0A) {
+                    if (filePointer < fileLength) {
+                        lines = lines + 1;
+                        lastLines.add(convertBytesToString(bytes));
+                        bytes.clear();
+                    }
+                }
+                else if (readByte != 0xD) {
+                    bytes.add(readByte);
+                }
             }
         }
+
+        if (lines != maxLines) {
+            lastLines.add(convertBytesToString(bytes));
+        }
+
+        Collections.reverse(lastLines);
 
         // If the log has been truncated, include that information.
         // Use set (replaces the first element) rather than add so that
         // the list doesn't grow beyond the specified maximum number of lines.
-        if (lineCount > maxLines)
-            logLines.set(0, "[...truncated " + (lineCount - (maxLines - 1)) + " lines...]");
+        if (lines == maxLines) {
+            lastLines.set(0, "[...truncated lines...]");
+        }
 
-        return ConsoleNote.removeNotes(logLines);
+        return ConsoleNote.removeNotes(lastLines);
+    }
+
+    private String convertBytesToString(List<Byte> bytes) {
+        Collections.reverse(bytes);
+        Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
+        return new String(ArrayUtils.toPrimitive(byteArray), Charset.forName("UTF-8"));
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
