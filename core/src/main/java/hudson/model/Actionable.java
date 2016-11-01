@@ -208,7 +208,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public <A extends Action> void replaceActions(@Nonnull Class<A> clazz, A a) {
+    public void replaceActions(@Nonnull Class<? extends Action> clazz, Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
         }
