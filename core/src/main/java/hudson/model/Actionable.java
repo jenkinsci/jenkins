@@ -75,16 +75,26 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
-	public List<Action> getActions() {
-		if(actions == null) {
-			synchronized (this) {
-				if(actions == null) {
-					actions = new CopyOnWriteArrayList<Action>();
-				}
-			}
-		}
-		return actions;
-	}
+    public List<Action> getActions() {
+        return getOrCreateActions();
+    }
+
+    /**
+     * We need to handle the initialization of the actions list in Actionable so that child classes that override
+     * getActions() for historical reasons do not have to override the manipulation methods: {@link #addAction(Action)},
+     * {@link #replaceAction(Action)}, {@link #removeAction(Action)}, etc.
+     * @return the CopyOnWriteArrayList of persisted actions.
+     */
+    private CopyOnWriteArrayList<Action> getOrCreateActions() {
+        if(actions == null) {
+            synchronized (this) {
+                if(actions == null) {
+                    actions = new CopyOnWriteArrayList<Action>();
+                }
+            }
+        }
+        return actions;
+    }
 
     /**
      * Gets all actions, transient or persistent.
@@ -123,9 +133,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Adds a new action.
+     * Adds a new action. Note calls to {@link #getAllActions()} that happen before calls to this method may not see the
+     * update.
      *
-     * The default implementation calls {@code getActions().add(a)}.
+     * The default implementation is mostly equivalent to the call chain {@code getActions().add(a)}.
      */
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
@@ -133,11 +144,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         if(a==null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
-        getActions().add(a);
+        getOrCreateActions().add(a);
     }
 
     /**
-     * Add an action, replacing any existing action of the (exact) same class.
+     * Add an action, replacing any existing action of the (exact) same class. Note calls to {@link #getAllActions()}
+     * that happen before calls to this method may not see the update.
      * @param a an action to add/replace
      * @since 1.548
      */
@@ -149,7 +161,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>(1);
-        List<Action> current = getActions();
+        List<Action> current = getOrCreateActions();
         boolean found = false;
         for (Action a2 : current) {
             if (!found && a.equals(a2)) {
@@ -165,7 +177,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Remove an action.
+     * Remove an action. Note calls to {@link #getAllActions()} that happen before calls to this method may not see the
+     * update.
      *
      * @param a an action to remove (if {@code null} then this will be a no-op)
      * @return {@code true} if this actions changed as a result of the call
@@ -177,11 +190,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             return false;
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        return getActions().removeAll(Collections.singleton(a));
+        return getOrCreateActions().removeAll(Collections.singleton(a));
     }
 
     /**
-     * Removes any actions of the specified type.
+     * Removes any actions of the specified type. Note calls to {@link #getAllActions()} that happen before calls to
+     * this method may not see the update.
      *
      * @param clazz the type of actions to remove
      * @return {@code true} if this actions changed as a result of the call
@@ -195,7 +209,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>();
-        List<Action> current = getActions();
+        List<Action> current = getOrCreateActions();
         for (Action a : current) {
             if (clazz.isInstance(a)) {
                 old.add(a);
@@ -205,7 +219,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Replaces any actions of the specified type by the supplied action.
+     * Replaces any actions of the specified type by the supplied action. Note calls to {@link #getAllActions()} that
+     * happen before calls to this method may not see the update.
      *
      * @param clazz the type of actions to replace
      * @param a     the action to replace with
@@ -220,7 +235,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>();
-        List<Action> current = getActions();
+        List<Action> current = getOrCreateActions();
         boolean found = false;
         for (Action a1 : current) {
             if (!found && a.equals(a1)) {
