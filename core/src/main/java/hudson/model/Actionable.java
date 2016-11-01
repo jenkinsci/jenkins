@@ -134,7 +134,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
     /**
      * Adds a new action. Note calls to {@link #getAllActions()} that happen before calls to this method may not see the
-     * update.
+     * update.<strong>Note: this method will always modify the actions</strong>
      *
      * The default implementation is mostly equivalent to the call chain {@code getActions().add(a)}.
      */
@@ -149,7 +149,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
     /**
      * Add an action, replacing any existing action of the (exact) same class. Note calls to {@link #getAllActions()}
-     * that happen before calls to this method may not see the update.
+     * that happen before calls to this method may not see the update. <strong>Note: this method will always modify the
+     * actions</strong>
      * @param a an action to add/replace
      * @since 1.548
      */
