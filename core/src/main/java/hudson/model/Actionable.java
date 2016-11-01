@@ -127,7 +127,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * The default implementation calls {@code getActions().add(a)}.
      */
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@Nonnull Action a) {
         if(a==null) {
@@ -141,7 +141,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @param a an action to add/replace
      * @since 1.548
      */
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@Nonnull Action a) {
         if (a == null) {
@@ -166,6 +166,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since FIXME
      */
+    @SuppressWarnings("deprecation")
     public boolean removeAction(@Nullable Action a) {
         if (a == null) {
             return false;
@@ -181,7 +182,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return {@code true} if this actions changed as a result of the call
      * @since FIXME
      */
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
         if (clazz == null) {
@@ -196,6 +197,31 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
         return current.removeAll(old);
+    }
+
+    /**
+     * Replaces any actions of the specified type by the supplied action.
+     *
+     * @param clazz the type of actions to replace
+     * @param a     the action to replace with
+     * @since FIXME
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public <A extends Action> void replaceActions(@Nonnull Class<A> clazz, A a) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        for (Action a1 : current) {
+            if (clazz.isInstance(a1)) {
+                old.add(a1);
+            }
+        }
+        current.removeAll(old);
+        addAction(a);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */

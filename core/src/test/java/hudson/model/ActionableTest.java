@@ -35,7 +35,8 @@ import org.junit.Test;
 public class ActionableTest {
 
     @SuppressWarnings("deprecation")
-    @Test public void replaceAction() {
+    @Test
+    public void replaceAction() {
         Actionable thing = new Actionable() {
             @Override public String getDisplayName() {return  null;}
             @Override public String getSearchUrl() {return null;}
@@ -50,7 +51,24 @@ public class ActionableTest {
     }
 
     @SuppressWarnings("deprecation")
-    @Test public void removeAction() {
+    @Test
+    public void replaceActions() {
+        Actionable thing = new Actionable() {
+            @Override public String getDisplayName() {return  null;}
+            @Override public String getSearchUrl() {return null;}
+        };
+        CauseAction a1 = new CauseAction();
+        ParametersAction a2 = new ParametersAction();
+        thing.addAction(a1);
+        thing.addAction(a2);
+        CauseAction a3 = new CauseAction();
+        thing.replaceActions(CauseAction.class, a3);
+        assertEquals(Arrays.asList(a2, a3), thing.getActions());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void removeAction() {
         Actionable thing = new Actionable() {
             @Override public String getDisplayName() {return  null;}
             @Override public String getSearchUrl() {return null;}
@@ -69,7 +87,8 @@ public class ActionableTest {
     }
 
     @SuppressWarnings("deprecation")
-    @Test public void removeActions() {
+    @Test
+    public void removeActions() {
         Actionable thing = new Actionable() {
             @Override public String getDisplayName() {return  null;}
             @Override public String getSearchUrl() {return null;}
@@ -86,7 +105,8 @@ public class ActionableTest {
     }
 
     @SuppressWarnings("deprecation")
-    @Test public void addAction() {
+    @Test
+    public void addAction() {
         Actionable thing = new Actionable() {
             @Override public String getDisplayName() {return  null;}
             @Override public String getSearchUrl() {return null;}
