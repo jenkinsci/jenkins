@@ -25,7 +25,11 @@
 package hudson.model;
 
 import java.util.Arrays;
+
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
+import java.util.Collections;
 import org.junit.Test;
 
 public class ActionableTest {
@@ -43,6 +47,57 @@ public class ActionableTest {
         CauseAction a3 = new CauseAction();
         thing.replaceAction(a3);
         assertEquals(Arrays.asList(a2, a3), thing.getActions());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test public void removeAction() {
+        Actionable thing = new Actionable() {
+            @Override public String getDisplayName() {return  null;}
+            @Override public String getSearchUrl() {return null;}
+        };
+        CauseAction a1 = new CauseAction();
+        ParametersAction a2 = new ParametersAction();
+        thing.addAction(a1);
+        thing.addAction(a2);
+        assertEquals(Arrays.asList(a1, a2), thing.getActions());
+        assertThat(thing.removeAction(a1), is(true));
+        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertThat(thing.removeAction(a1), is(false));
+        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertThat(thing.removeAction(null), is(false));
+        assertEquals(Arrays.asList(a2), thing.getActions());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test public void removeActions() {
+        Actionable thing = new Actionable() {
+            @Override public String getDisplayName() {return  null;}
+            @Override public String getSearchUrl() {return null;}
+        };
+        CauseAction a1 = new CauseAction();
+        ParametersAction a2 = new ParametersAction();
+        thing.addAction(a1);
+        thing.addAction(a2);
+        assertEquals(Arrays.asList(a1, a2), thing.getActions());
+        assertThat(thing.removeActions(CauseAction.class), is(true));
+        assertEquals(Arrays.asList(a2), thing.getActions());
+        assertThat(thing.removeActions(CauseAction.class), is(false));
+        assertEquals(Arrays.asList(a2), thing.getActions());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test public void addAction() {
+        Actionable thing = new Actionable() {
+            @Override public String getDisplayName() {return  null;}
+            @Override public String getSearchUrl() {return null;}
+        };
+        CauseAction a1 = new CauseAction();
+        ParametersAction a2 = new ParametersAction();
+        assertEquals(Collections.<Action>emptyList(), thing.getActions());
+        thing.addAction(a1);
+        assertEquals(Collections.singletonList(a1), thing.getActions());
+        thing.addAction(a2);
+        assertEquals(Arrays.asList(a1, a2), thing.getActions());
     }
 
 }

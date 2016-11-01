@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.Util;
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -124,8 +127,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * The default implementation calls {@code getActions().add(a)}.
      */
-    public void addAction(Action a) {
-        if(a==null) throw new IllegalArgumentException();
+    @SuppressWarnings("ConstantConditions")
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void addAction(@Nonnull Action a) {
+        if(a==null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         getActions().add(a);
     }
 
@@ -134,7 +141,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @param a an action to add/replace
      * @since 1.548
      */
-    public void replaceAction(Action a) {
+    @SuppressWarnings("ConstantConditions")
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void replaceAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>(1);
         List<Action> current = getActions();
@@ -145,6 +157,45 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
         current.removeAll(old);
         addAction(a);
+    }
+
+    /**
+     * Remove an action.
+     *
+     * @param a an action to remove (if {@code null} then this will be a no-op)
+     * @return {@code true} if this actions changed as a result of the call
+     * @since FIXME
+     */
+    public boolean removeAction(@Nullable Action a) {
+        if (a == null) {
+            return false;
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        return getActions().removeAll(Collections.singleton(a));
+    }
+
+    /**
+     * Removes any actions of the specified type.
+     *
+     * @param clazz the type of actions to remove
+     * @return {@code true} if this actions changed as a result of the call
+     * @since FIXME
+     */
+    @SuppressWarnings("ConstantConditions")
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        for (Action a : current) {
+            if (clazz.isInstance(a)) {
+                old.add(a);
+            }
+        }
+        return current.removeAll(old);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
