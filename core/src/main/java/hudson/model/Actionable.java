@@ -222,7 +222,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Replaces any actions of the specified type by the supplied action. Note calls to {@link #getAllActions()} that
      * happen before calls to this method may not see the update.
      *
-     * @param clazz the type of actions to replace
+     * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
+     *              this class)
      * @param a     the action to replace with
      * @return {@code true} if this actions changed as a result of the call
      * @since FIXME
