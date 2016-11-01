@@ -150,13 +150,18 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>(1);
         List<Action> current = getActions();
+        boolean found = false;
         for (Action a2 : current) {
-            if (a2.getClass() == a.getClass()) {
+            if (!found && a.equals(a2)) {
+                found = true;
+            } else  if (a2.getClass() == a.getClass()) {
                 old.add(a2);
             }
         }
         current.removeAll(old);
-        addAction(a);
+        if (!found) {
+            addAction(a);
+        }
     }
 
     /**
@@ -204,24 +209,31 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * @param clazz the type of actions to replace
      * @param a     the action to replace with
+     * @return {@code true} if this actions changed as a result of the call
      * @since FIXME
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public void replaceActions(@Nonnull Class<? extends Action> clazz, Action a) {
+    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>();
         List<Action> current = getActions();
+        boolean found = false;
         for (Action a1 : current) {
-            if (clazz.isInstance(a1)) {
+            if (!found && a.equals(a1)) {
+                found = true;
+            } else if (clazz.isInstance(a1) && !a.equals(a1)) {
                 old.add(a1);
             }
         }
         current.removeAll(old);
-        addAction(a);
+        if (!found) {
+            addAction(a);
+        }
+        return !(old.isEmpty() && found);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */

@@ -62,7 +62,9 @@ public class ActionableTest {
         thing.addAction(a1);
         thing.addAction(a2);
         CauseAction a3 = new CauseAction();
-        thing.replaceActions(CauseAction.class, a3);
+        assertTrue(thing.replaceActions(CauseAction.class, a3));
+        assertEquals(Arrays.asList(a2, a3), thing.getActions());
+        assertFalse(thing.replaceActions(CauseAction.class, a3));
         assertEquals(Arrays.asList(a2, a3), thing.getActions());
     }
 
