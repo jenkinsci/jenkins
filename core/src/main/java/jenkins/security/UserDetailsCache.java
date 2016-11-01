@@ -47,7 +47,7 @@ import static com.google.common.cache.CacheBuilder.newBuilder;
 /**
  * Cache layer for {@link org.acegisecurity.userdetails.UserDetails} lookup.
  *
- * @since TODO
+ * @since 2.15
  */
 @Extension
 public final class UserDetailsCache {

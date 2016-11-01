@@ -138,13 +138,8 @@ public class CompressedFile {
         compressionThread.submit(new Runnable() {
             public void run() {
                 try {
-                    InputStream in = read();
-                    OutputStream out = new GZIPOutputStream(new FileOutputStream(gz));
-                    try {
-                        Util.copyStream(in,out);
-                    } finally {
-                        in.close();
-                        out.close();
+                    try (InputStream in = read(); OutputStream out = new GZIPOutputStream(new FileOutputStream(gz))) {
+                        Util.copyStream(in, out);
                     }
                     // if the compressed file is created successfully, remove the original
                     file.delete();

@@ -59,6 +59,181 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.28>What's new in 2.28</a> (2016/10/30)</h3>
+<ul class=image>
+  <li class="rfe">
+    Performance: Improve responsiveness of Jenkins web UI on mobile devices.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39172">issue 39172</a>)
+  <li class="rfe">
+    Print warnings if none of Tool Installers can be used during the tool installation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26940">issue 26940</a>)
+  <li class="rfe">
+    Update the minimal required versions of the detached Maven Project plugin from <code>2.7.1</code> to <code>2.14</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/Maven+Project+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>)
+  <li class="rfe">
+    Update the minimal required versions of the detached JUnit plugin from <code>1.2-beta-4</code> to <code>1.6</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>))
+  <li class="major bug">
+    Relax requirements of the JNLP connection receiver, which was rejections connections from agents not using 
+    <code>JNLPComputerLauncher</code> (e.g. from Slave Setup, vSphere Cloud and other plugins). 
+    No the connection is accepted from launchers implementing other proxying and filtering <code>Launcher</code> implementations.
+    Particular plugins may require setting up the 
+    <code>jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification</code> system property in the master JVM to allow connecting agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39232">issue 39232</a>, regression in 2.28)
+  <li class="bug">
+    Prevent resource leak in <code>hudson.XmlFile#readRaw()</code> in the case of encoding issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39363">issue 39363</a>)
+  <li class="bug">
+    Prevented endless loop in <code>LargeText.BufferSession.skip()</code>, which was causing hanging of Pipeline jobs in corner cases.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37664">issue 37664</a>)
+  <li class="rfe">
+    Internal: Upgrade Stapler library from <code>1.243</code> to <code>1.246</code> with fixes required for the Blue Ocean project.
+    More details are coming soon.
+    Raw changes are listed <a href="https://github.com/stapler/stapler/compare/stapler-parent-1.243...stapler-parent-1.246">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2593">pull 2593</a>)
+  <li class="rfe">
+    Internal: Start defining APIs that are for the master JVM only.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38370">issue 38370</a>)
+  <li class="rfe">
+    Internal: Update Guice dependency from <code>4.0-beta</code> to <code>4.0</code>.
+    This change required upgrade of detached plugins (see above).
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2568">pull 2568</a>)
+</ul>
+<h3><a name=v2.27>What's new in 2.27</a> (2016/10/23)</h3>
+<ul class=image>
+  <li class="major rfe">
+    Upgrade to the Remoting 3 baseline. Compatibility notes are available 
+    <a href="https://github.com/jenkinsci/remoting/blob/master/docs/remoting-3-compatibility.md">here</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37564">issue 37564</a>)
+  <li class="major rfe">
+    Remoting 3.0: New <a href="https://github.com/jenkinsci/remoting/blob/master/docs/protocols.md#jnlp4-connect">JNLP4-connect protocol</a>, 
+    which improves performance and stability compared to the JNLP3-connect protocol. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36871">issue 36871</a>)
+  <li class="rfe">
+    Remoting 3.0: Agents using <code>slave.jar</code> now explicitly require Java 7.    
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37565">issue 37565</a>)
+  <li class="bug">
+    Prevent deadlocks during modification of node executor numbers (e.g. during deletion of nodes).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31768">issue 31768</a>)
+  <li class="bug">
+    Add missing internationalization support to <code>ResourceBundleUtil</code>.
+    It fixes internationalization in <a href="https://jenkins.io/projects/blueocean/">Blue Ocean</a> 
+    and <a href="http://jenkinsci.github.io/jenkins-design-language/">Jenkins Design Language</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35845">issue 35845</a>)
+  <li class="rfe">
+    Internal: Make the code more compatible with Java 9 requirements and allow its editing in newest NetBeans versions 
+    with <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=268452">NB bug 268452</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2595">pull 2595</a>)
+  <li class="bug">
+    Internal: Icon handling API for items.
+    Deprecate <code>TopLevelItemDescriptor#getIconFilePathPattern()</code> and switch to <code>IconSpec</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38960">issue 38960</a>)
+</ul>
+<h3><a name=v2.26>What's new in 2.26</a> (2016/10/17)</h3>
+<ul class=image>
+  <li class="rfe">
+    Allow <code>CommandInterpreter</code> build steps to set a build result as <code>Unstable</code> via the return code.
+    Shell and Batch build steps now support this feature.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23786">issue 23786</a>)
+  <li class="rfe">
+    Performance: Avoid acquiring locks in <code>MaskingClassloader</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23784">issue 23784</a>)
+  <li class="rfe">
+    Performance: Update <code>XStream</code> driver to improve performance of XML serilization/deserialization.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2561">pull 2561</a>)
+  <li class="rfe">
+    Harden checks of prohibited names in user creation logic.
+    Untrimmed spaces and different letter cases are being checked now.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35967">issue 35967</a>)
+  <li class="bug">
+    Performance: Fix the performance of file compress/uncompress operations over the remoting channel.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38640">issue 38640</a>,
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-38814">issue 38814</a>)
+  <li class="bug">
+    Restore automatic line wrapping in Build Step text boxes with syntax highlighting.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-27367">issue 27367</a>)
+  <li class="bug">
+    Properly remove disabled Administrative Monitors from the extension list.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38678">issue 38678</a>)
+  <li class="bug">
+    Remoting 2.62.2: Improve connection stability by turning on Socket Keep-alive by default.
+    Keep-alive can be disabled via the <code>-noKeepAlive</code> option.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38539">issue 38539</a>)
+  <li class="bug">
+    Remoting 2.62.2: Prevent <code>NullPointerException</code> in <code>Engine#connect()</code> 
+    when <code>host</code> or <code>port</code> parameters are <code>null</code> or empty.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37539">issue 37539</a>)
+  <li class="bug">
+    Node build history page was hammering the performance of the Jenkins instance by spawning parallel heavy requests.
+    Now the information is being loaded sequentially.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23244">issue 23244</a>)
+  <li class="bug">
+    Cleanup spelling in CLI help and error messages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38650">issue 38650</a>)
+  <li class="bug">
+    Properly handle quotes and other special symbols in item names during form validation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31871">issue 31871</a>)
+  <li class="rfe">
+    Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run accross repositories.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/1894">pull 1894</a>)
+  <li class="rfe">
+    Internal: Bulk cleanup of <code>@since</code> definitions in Javadoc.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2578">pull 2578</a>)
+</ul>
+<h3><a name=v2.25>What's new in 2.25</a> (2016/10/09)</h3>
+<ul class=image>
+  <li class="bug">
+    Display transient actions for labels.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38651">issue 38651</a>)
+  <li class="bug">
+    Add user to restart log message for restart after plugin installation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38615">issue 38615</a>)
+  <li class="rfe">
+    Internal: Code modernization: Use try-with-resources a lot more
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2570">pull 2570</a>)
+</ul>
+<h3><a name=v2.24>What's new in 2.24</a> (2016/10/02)</h3>
+<ul class=image>
+  <li class="major rfe">
+    Show notification with popup on most pages when administrative monitors are active.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38391">issue 38391</a>)
+  <li class="rfe">
+    Allow disabling/enabling administrative monitors on Configure Jenkins form.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38301">issue 38301</a>)
+  <li class="rfe">
+    Ensure exception stacktrace is shown when there's a <tt>FormException</tt>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2555">pull 2555</a>)
+  <li class="rfe">
+    Add new <code>jenkins.model.Jenkins.slaveAgentPortEnforce</code> system property, which prevents slave agent port modification via Jenkins Web UI and form submissions.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2545">PR #2545</a>)
+  <li class="rfe">
+    Indicate hovered table row on striped tables.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32148">issue 32148</a>)
+  <li class="rfe">
+    Decrease connection timeout when changing the JNLP agent port via Groovy system scripts.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38473">issue 38473</a>)
+  <li class="rfe">
+    Added Serbian locatization.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2554">PR #2554</a>)
+  <li class="bug">
+    Exclude <tt>/cli</tt> URL from CSRF protection crumb requirement, making the CLI work with CSRF protection enabled and JNLP port disabled.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18114">issue 18114</a>)
+  <li class="bug">
+    Prevent instatination of <code>jenkins.model.Jenkins</code> on agents in the <code>ProcessKillingVeto</code> extension point.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38534">issue 38534</a>)
+  <li class="bug">
+    Fix handling of the <code>jenkins.model.Jenkins.slaveAgentPort</code> system property, which was not honored.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38187">issue 38187</a>, regression in 2.0)
+  <li class="bug">
+    CLI: Disable the channel message chunking by default.
+    Prevents connection issues like <code>java.io.StreamCorruptedException: invalid stream header: 0A0A0A0A</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23232">issue 23232</a>)
+  <li class="bug">
+    CLI: Connection over HTTP was not working correctly.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34287">issue 34287</a>, regression in 2.0)
+</ul>
 <h3><a name=v2.23>What's new in 2.23</a> (2016/09/18)</h3>
 <ul class=image>
   <li class="bug">

@@ -168,8 +168,7 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
-        InputStream is = ProxyConfiguration.open(src).getInputStream();
-        try {
+        try (InputStream is = ProxyConfiguration.open(src).getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
@@ -178,8 +177,6 @@ public class DownloadService extends PageDecorator {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } finally {
-            is.close();
         }
     }
 
@@ -191,8 +188,7 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
-        InputStream is = ProxyConfiguration.open(src).getInputStream();
-        try {
+        try (InputStream is = ProxyConfiguration.open(src).getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
@@ -202,8 +198,6 @@ public class DownloadService extends PageDecorator {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } finally {
-            is.close();
         }
     }
 

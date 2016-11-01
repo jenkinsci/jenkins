@@ -93,7 +93,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
@@ -113,7 +113,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {

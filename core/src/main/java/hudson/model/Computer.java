@@ -25,8 +25,6 @@
  */
 package hudson.model;
 
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import edu.umd.cs.findbugs.annotations.When;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
@@ -88,6 +86,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
@@ -862,7 +861,20 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected void onRemoved(){
     }
 
-    private synchronized void setNumExecutors(int n) {
+    /**
+     * Calling path, *means protected by Queue.withLock
+     *
+     * Computer.doConfigSubmit -> Computer.replaceBy ->Jenkins.setNodes* ->Computer.setNode
+     * AbstractCIBase.updateComputerList->Computer.inflictMortalWound*
+     * AbstractCIBase.updateComputerList->AbstractCIBase.updateComputer* ->Computer.setNode
+     * AbstractCIBase.updateComputerList->AbstractCIBase.killComputer->Computer.kill
+     * Computer.constructor->Computer.setNode
+     * Computer.kill is called after numExecutors set to zero(Computer.inflictMortalWound) so not need the Queue.lock
+     *
+     * @param number of executors
+     */
+    @GuardedBy("hudson.model.Queue.lock")
+    private void setNumExecutors(int n) {
         this.numExecutors = n;
         final int diff = executors.size()-n;
 
@@ -1365,19 +1377,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req));
-        VirtualChannel vc = getChannel();
-        if (vc instanceof Channel) {
-            w.println("Master to slave");
-            ((Channel)vc).dumpExportTable(w);
-            w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
+        try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
+            VirtualChannel vc = getChannel();
+            if (vc instanceof Channel) {
+                w.println("Master to slave");
+                ((Channel) vc).dumpExportTable(w);
+                w.flush(); // flush here once so that even if the dump from the agent fails, the client gets some useful info
 
-            w.println("\n\n\nSlave to master");
-            w.print(vc.call(new DumpExportTableTask()));
-        } else {
-            w.println(Messages.Computer_BadChannel());
+                w.println("\n\n\nSlave to master");
+                w.print(vc.call(new DumpExportTableTask()));
+            } else {
+                w.println(Messages.Computer_BadChannel());
+            }
         }
-        w.close();
     }
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
@@ -1534,7 +1546,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see hudson.slaves.RetentionStrategy#isAcceptingTasks(Computer)
      * @see hudson.model.Node#isAcceptingTasks()
      */
-    @OverrideMustInvoke(When.ANYTIME)
+    @OverridingMethodsMustInvokeSuper
     public boolean isAcceptingTasks() {
         final Node node = getNode();
         return getRetentionStrategy().isAcceptingTasks(this) && (node == null || node.isAcceptingTasks());

@@ -33,6 +33,7 @@ import java.io.OutputStream;
  * {@link OutputStream} that writes to a file.
  * <p>
  * Allows the caller to rewind the stream and override previous content with fresh new data.
+ * @since 2.18
  */
 public class RewindableFileOutputStream extends OutputStream {
     protected final File out;

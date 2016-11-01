@@ -394,11 +394,8 @@ public abstract class Slave extends Node implements Serializable {
         }
 
         public byte[] readFully() throws IOException {
-            InputStream in = connect().getInputStream();
-            try {
+            try (InputStream in = connect().getInputStream()) {
                 return IOUtils.toByteArray(in);
-            } finally {
-                in.close();
             }
         }
 

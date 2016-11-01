@@ -26,7 +26,7 @@ package hudson.model;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -67,7 +67,11 @@ import jenkins.util.xml.XMLUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -1044,10 +1048,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @return A {@link Categories} entity that is shown as JSON file.
      */
     @Restricted(DoNotUse.class)
-    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
         getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
+        JellyContext ctx;
+
+        if (StringUtils.isNotBlank(iconStyle)) {
+            ctx = new JellyContext();
+            ctx.setVariable("resURL", req.getContextPath() + Jenkins.RESOURCE_PATH);
+        } else {
+            ctx = null;
+        }
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
@@ -1058,6 +1070,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
             metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", descriptor.getDescription());
             metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+            String iconClassName = descriptor.getIconClassName();
+            if (StringUtils.isNotBlank(iconClassName)) {
+                metadata.put("iconClassName", iconClassName);
+                if (ctx != null) {
+                    Icon icon = IconSet.icons
+                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                    if (icon != null) {
+                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
+                    }
+                }
+            }
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
@@ -1156,28 +1179,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // data
             XMLUtils.safeTransform(source, new StreamResult(out));
             out.close();
-        } catch (TransformerException e) {
-            throw new IOException("Failed to persist configuration.xml", e);
-        } catch (SAXException e) {
+        } catch (TransformerException|SAXException e) {
             throw new IOException("Failed to persist configuration.xml", e);
         }
 
         // try to reflect the changes by reloading
-        InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")));
-        try {
+
+        try (InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")))){
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
-            Jenkins.XSTREAM.unmarshal(new XppDriver().createReader(in), this);
+            Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
             name = oldname;
-        } catch (StreamException e) {
+        } catch (StreamException | ConversionException | Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
-        } catch(ConversionException e) {
-            throw new IOException("Unable to read",e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read",e);
-        } finally {
-            in.close();
         }
         save();
     }
@@ -1302,20 +1317,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @param name Alternative name to use or <tt>null</tt> to keep the one in xml.
      */
     public static View createViewFromXML(String name, InputStream xml) throws IOException {
-        InputStream in = new BufferedInputStream(xml);
-        try {
+
+        try (InputStream in = new BufferedInputStream(xml)) {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
             if (name != null) v.name = name;
             checkGoodName(v.name);
             return v;
-        } catch(StreamException e) {
+        } catch(StreamException|ConversionException|Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
-        } catch(ConversionException e) {
-            throw new IOException("Unable to read",e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read",e);
-        } finally {
-            in.close();
         }
     }
 

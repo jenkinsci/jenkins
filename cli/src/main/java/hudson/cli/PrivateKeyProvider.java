@@ -127,15 +127,11 @@ public class PrivateKeyProvider {
     }
 
     private static String readPemFile(File f) throws IOException{
-        FileInputStream is = new FileInputStream(f);
-        try {
-            DataInputStream dis = new DataInputStream(is);
+        try (FileInputStream is = new FileInputStream(f);
+             DataInputStream dis = new DataInputStream(is)) {
             byte[] bytes = new byte[(int) f.length()];
             dis.readFully(bytes);
-            dis.close();
             return new String(bytes);
-        } finally {
-            is.close();
         }
     }
 
