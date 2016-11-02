@@ -34,13 +34,11 @@ import org.junit.Test;
 
 public class ActionableTest {
 
+    private Actionable thing = new ActionableImpl();
+
     @SuppressWarnings("deprecation")
     @Test
     public void replaceAction() {
-        Actionable thing = new Actionable() {
-            @Override public String getDisplayName() {return  null;}
-            @Override public String getSearchUrl() {return null;}
-        };
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -52,11 +50,25 @@ public class ActionableTest {
 
     @SuppressWarnings("deprecation")
     @Test
+    public void addOrReplaceAction() {
+        CauseAction a1 = new CauseAction();
+        ParametersAction a2 = new ParametersAction();
+        thing.addAction(a1);
+        thing.addAction(a2);
+        CauseAction a3 = new CauseAction();
+        assertTrue(thing.addOrReplaceAction(a3));
+        assertEquals(Arrays.asList(a2, a3), thing.getActions());
+        assertFalse(thing.addOrReplaceAction(a3));
+        assertEquals(Arrays.asList(a2, a3), thing.getActions());
+        thing.addAction(a1);
+        assertEquals(Arrays.asList(a2, a3, a1), thing.getActions());
+        assertTrue(thing.addOrReplaceAction(a3));
+        assertEquals(Arrays.asList(a2, a3), thing.getActions());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
     public void replaceActions() {
-        Actionable thing = new Actionable() {
-            @Override public String getDisplayName() {return  null;}
-            @Override public String getSearchUrl() {return null;}
-        };
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -71,10 +83,6 @@ public class ActionableTest {
     @SuppressWarnings("deprecation")
     @Test
     public void removeAction() {
-        Actionable thing = new Actionable() {
-            @Override public String getDisplayName() {return  null;}
-            @Override public String getSearchUrl() {return null;}
-        };
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -91,10 +99,6 @@ public class ActionableTest {
     @SuppressWarnings("deprecation")
     @Test
     public void removeActions() {
-        Actionable thing = new Actionable() {
-            @Override public String getDisplayName() {return  null;}
-            @Override public String getSearchUrl() {return null;}
-        };
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         thing.addAction(a1);
@@ -109,10 +113,6 @@ public class ActionableTest {
     @SuppressWarnings("deprecation")
     @Test
     public void addAction() {
-        Actionable thing = new Actionable() {
-            @Override public String getDisplayName() {return  null;}
-            @Override public String getSearchUrl() {return null;}
-        };
         CauseAction a1 = new CauseAction();
         ParametersAction a2 = new ParametersAction();
         assertEquals(Collections.<Action>emptyList(), thing.getActions());
@@ -122,4 +122,44 @@ public class ActionableTest {
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void addAction_null() {
+        thing.addAction(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceAction_null() {
+        thing.replaceAction(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceActions_null() {
+        thing.replaceActions(CauseAction.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceActions_null_null() {
+        thing.replaceActions(null, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addOrReplaceAction_null() {
+        thing.addOrReplaceAction(null);
+    }
+
+    @Test
+    public void removeAction_null() {
+        assertFalse(thing.removeAction(null));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeActions_null() {
+        thing.removeActions(null);
+    }
+
+    private static class ActionableImpl extends Actionable {
+        @Override public String getDisplayName() {return  null;}
+
+        @Override public String getSearchUrl() {return null;}
+    }
 }

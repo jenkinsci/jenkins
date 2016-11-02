@@ -133,8 +133,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Adds a new action. Note calls to {@link #getAllActions()} that happen before calls to this method may not see the
-     * update.<strong>Note: this method will always modify the actions</strong>
+     * Adds a new action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * <strong>Note: this method will always modify the actions</strong>
      *
      * The default implementation is mostly equivalent to the call chain {@code getActions().add(a)}.
      */
@@ -148,15 +149,34 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Add an action, replacing any existing action of the (exact) same class. Note calls to {@link #getAllActions()}
-     * that happen before calls to this method may not see the update. <strong>Note: this method will always modify the
-     * actions</strong>
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     *
      * @param a an action to add/replace
      * @since 1.548
+     * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
+     * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
+     * and there is a desire to elide unneccessary persistence of unmodified objects.
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@Nonnull Action a) {
+        addOrReplaceAction(a);
+    }
+
+    /**
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     *
+     * @param a an action to add/replace
+     * @return {@code true} if this actions changed as a result of the call
+     * @since FIXME
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean addOrReplaceAction(@Nonnull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
@@ -175,11 +195,13 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         if (!found) {
             addAction(a);
         }
+        return !found || !old.isEmpty();
     }
 
     /**
-     * Remove an action. Note calls to {@link #getAllActions()} that happen before calls to this method may not see the
-     * update.
+     * Remove an action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
      *
      * @param a an action to remove (if {@code null} then this will be a no-op)
      * @return {@code true} if this actions changed as a result of the call
@@ -195,8 +217,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Removes any actions of the specified type. Note calls to {@link #getAllActions()} that happen before calls to
-     * this method may not see the update.
+     * Removes any actions of the specified type.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
      *
      * @param clazz the type of actions to remove
      * @return {@code true} if this actions changed as a result of the call
@@ -220,8 +243,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     /**
-     * Replaces any actions of the specified type by the supplied action. Note calls to {@link #getAllActions()} that
-     * happen before calls to this method may not see the update.
+     * Replaces any actions of the specified type by the supplied action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
      *
      * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
      *              this class)
@@ -234,6 +258,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public boolean replaceActions(@Nonnull Class<? extends Action> clazz, Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
+        }
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>();
