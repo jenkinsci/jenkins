@@ -36,13 +36,16 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleLogFilter;
+import hudson.console.ConsoleNote;
+import hudson.console.ModelHyperlinkNote;
+import hudson.console.PlainTextConsoleOutputStream;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
-import hudson.console.*;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Executables;
@@ -59,7 +62,18 @@ import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -73,7 +87,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -106,7 +119,11 @@ import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -1921,21 +1938,21 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        final List<String> lastLines = new ArrayList<>(maxLines);
-
-        if(maxLines == 0) {
-            return lastLines;
+        if (maxLines == 0) {
+            return Collections.emptyList();
         }
 
         int lines = 0;
+        long filePointer;
+        final List<String> lastLines = new ArrayList<>(Math.min(maxLines, 128));
         final List<Byte> bytes = new ArrayList<>();
+
         try (RandomAccessFile fileHandler = new RandomAccessFile(getLogFile(), "r")) {
             long fileLength = fileHandler.length() - 1;
 
-            for (long filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {
+            for (filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {
                 fileHandler.seek(filePointer);
                 byte readByte = fileHandler.readByte();
-
 
                 if (readByte == 0x0A) {
                     if (filePointer < fileLength) {
@@ -1943,8 +1960,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         lastLines.add(convertBytesToString(bytes));
                         bytes.clear();
                     }
-                }
-                else if (readByte != 0xD) {
+                } else if (readByte != 0xD) {
                     bytes.add(readByte);
                 }
             }
@@ -1960,7 +1976,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // Use set (replaces the first element) rather than add so that
         // the list doesn't grow beyond the specified maximum number of lines.
         if (lines == maxLines) {
-            lastLines.set(0, "[...truncated lines...]");
+            lastLines.set(0, "[...truncated " + Functions.humanReadableByteSize(filePointer)+ "...]");
         }
 
         return ConsoleNote.removeNotes(lastLines);
@@ -1969,7 +1985,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
         Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
-        return new String(ArrayUtils.toPrimitive(byteArray), Charset.forName("UTF-8"));
+        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {

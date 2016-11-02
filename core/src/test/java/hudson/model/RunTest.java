@@ -189,7 +189,7 @@ public class RunTest {
         for (int i = 1; i < 10; i++) {
             assertEquals("dummy" + (10+i), logLines.get(i));
         }
-        assertEquals("[...truncated lines...]", logLines.get(0));
+        assertEquals("[...truncated 68 B...]", logLines.get(0));
     }
 
     @Test
