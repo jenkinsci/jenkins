@@ -267,8 +267,12 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         List<Action> current = getOrCreateActions();
         boolean found = false;
         for (Action a1 : current) {
-            if (!found && a.equals(a1)) {
-                found = true;
+            if (!found) {
+                if (a.equals(a1)) {
+                    found = true;
+                } else if (clazz.isInstance(a1)) {
+                    old.add(a1);
+                }
             } else if (clazz.isInstance(a1) && !a.equals(a1)) {
                 old.add(a1);
             }
