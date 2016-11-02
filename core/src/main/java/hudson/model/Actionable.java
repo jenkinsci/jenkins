@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -151,7 +152,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /**
      * Add an action, replacing any existing actions of the (exact) same class.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
-     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}.
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
      *
      * @param a an action to add/replace
      * @since 1.548
@@ -169,6 +174,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Add an action, replacing any existing actions of the (exact) same class.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
      *
      * @param a an action to add/replace
      * @return {@code true} if this actions changed as a result of the call
@@ -202,6 +211,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Remove an action.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
      *
      * @param a an action to remove (if {@code null} then this will be a no-op)
      * @return {@code true} if this actions changed as a result of the call
@@ -220,6 +233,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Removes any actions of the specified type.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
      *
      * @param clazz the type of actions to remove
      * @return {@code true} if this actions changed as a result of the call
@@ -246,6 +263,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Replaces any actions of the specified type by the supplied action.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
      *
      * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
      *              this class)
@@ -255,7 +276,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
-    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, Action a) {
+    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
         }
