@@ -32,7 +32,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" it="${it.user}"/>
 
     <l:main-panel>
-      <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable"/>
+      <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
       <n:form nameTitle="${%View name}" action="createView"
               descriptors="${views}" checkUrl="${rootURL}/${it.url}viewExistsCheck" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>

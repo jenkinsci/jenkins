@@ -24,6 +24,7 @@
 package hudson.security;
 
 import hudson.model.User;
+import hudson.model.View;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
 import javax.annotation.CheckForNull;
@@ -120,6 +121,25 @@ public abstract class ACL {
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {
         return true;
+    }
+
+    /**
+     * Checks if the current security principal has the permission to create views within the specified view group.
+     * <p>
+     * This is just a convenience function.
+     *
+     * @param c the container of the item.
+     * @param d the descriptor of the view to be created.
+     * @throws AccessDeniedException if the user doesn't have the permission.
+     * @since 1.607
+     */
+    public final void checkCreatePermission(@Nonnull ViewGroup c,
+                                            @Nonnull ViewDescriptor d) {
+        Authentication a = Jenkins.getAuthentication();
+        if (!hasCreatePermission(a, c, d)) {
+            throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
+                    View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
+        }
     }
 
     /**

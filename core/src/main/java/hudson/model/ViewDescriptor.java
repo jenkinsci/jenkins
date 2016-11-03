@@ -111,9 +111,12 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     public List<Descriptor<ListViewColumn>> getColumnsDescriptors() {
         StaplerRequest request = Stapler.getCurrentRequest();
-        View view = request.findAncestorObject(clazz);
-        return view == null ? DescriptorVisibilityFilter.applyType(clazz, ListViewColumn.all())
-                : DescriptorVisibilityFilter.apply(view, ListViewColumn.all());
+        if (request != null) {
+            View view = request.findAncestorObject(clazz);
+            return view == null ? DescriptorVisibilityFilter.applyType(clazz, ListViewColumn.all())
+                    : DescriptorVisibilityFilter.apply(view, ListViewColumn.all());
+        }
+        return ListViewColumn.all();
     }
 
     /**
@@ -121,9 +124,12 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     public List<Descriptor<ViewJobFilter>> getJobFiltersDescriptors() {
         StaplerRequest request = Stapler.getCurrentRequest();
-        View view = request.findAncestorObject(clazz);
-        return view == null ? DescriptorVisibilityFilter.applyType(clazz, ViewJobFilter.all())
-                : DescriptorVisibilityFilter.apply(view, ViewJobFilter.all());
+        if (request != null) {
+            View view = request.findAncestorObject(clazz);
+            return view == null ? DescriptorVisibilityFilter.applyType(clazz, ViewJobFilter.all())
+                    : DescriptorVisibilityFilter.apply(view, ViewJobFilter.all());
+        }
+        return ViewJobFilter.all();
     }
 
     /**
@@ -153,6 +159,8 @@ public abstract class ViewDescriptor extends Descriptor<View> {
 
     /**
      * Returns true if this {@link View} type is applicable to the given {@link ViewGroup} type.
+     * <p>
+     * Default implementation returns {@code true} always.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the type of owner.
      * @since FIXME
@@ -163,6 +171,8 @@ public abstract class ViewDescriptor extends Descriptor<View> {
 
     /**
      * Returns true if this {@link View} type is applicable in the specific {@link ViewGroup}.
+     * <p>
+     * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup#getClass()}.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the given owner.
      * @since FIXME

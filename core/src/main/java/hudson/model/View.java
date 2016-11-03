@@ -56,6 +56,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.item_category.Categories;
@@ -238,6 +239,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see #rename(String)
      */
     @Exported(visibility=2,name="name")
+    @Nonnull
     public String getViewName() {
         return name;
     }
@@ -1221,12 +1223,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     /**
      * Returns the {@link ViewDescriptor} instances that can be instantiated for the {@link ViewGroup} in the current
-     * {@link StaplerRequest}. <strong>NOTE: This method must be called from a {@link StaplerRequest}</strong>
+     * {@link StaplerRequest}.
+     * <p>
+     * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest}</strong>
      * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest}
      */
+    @Nonnull
     public static List<ViewDescriptor> allInstantiable() {
         List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
-        ViewGroup owner = Stapler.getCurrentRequest().findAncestorObject(ViewGroup.class);
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if (request == null) {
+            throw new IllegalStateException("This method can only be invoked from a stapler request");
+        }
+        ViewGroup owner = request.findAncestorObject(ViewGroup.class);
+        if (owner == null) {
+            throw new IllegalStateException("This method can only be invoked from a request with a ViewGroup ancestor");
+        }
         for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
             if (d.isApplicableIn(owner) && d.isInstantiable()
                     && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
@@ -1277,9 +1289,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
-                if (!owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, v.getDescriptor())) {
-                    throw new Failure(Messages.View_CreatePermissionMissing(v.getDescriptor().getDisplayName()));
-                }
+                owner.getACL().checkCreatePermission(owner, v.getDescriptor());
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1299,9 +1309,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // create a view
             v = descriptor.newInstance(req,req.getSubmittedForm());
         }
-        if (!owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, v.getDescriptor())) {
-            throw new Failure(Messages.View_CreatePermissionMissing(v.getDescriptor().getDisplayName()));
-        }
+        owner.getACL().checkCreatePermission(owner, v.getDescriptor());
         v.owner = owner;
 
         // redirect to the config screen
