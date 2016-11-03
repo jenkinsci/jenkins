@@ -50,7 +50,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
      * Disables strict verification of connections. Turn this on if you have plugins that incorrectly extend
      * {@link ComputerLauncher} when then should have extended {@link DelegatingComputerLauncher}
      *
-     * @since FIXME
+     * @since 2.28
      */
     @Restricted(NoExternalUse.class)
     public static boolean disableStrictVerification =

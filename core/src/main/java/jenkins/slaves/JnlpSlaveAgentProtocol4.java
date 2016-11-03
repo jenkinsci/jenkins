@@ -58,7 +58,7 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since FIXME
+ * @since 2.27
  */
 @Extension
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {

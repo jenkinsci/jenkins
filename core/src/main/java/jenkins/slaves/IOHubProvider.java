@@ -34,7 +34,7 @@ import org.jenkinsci.remoting.protocol.IOHub;
 /**
  * Singleton holder of {@link IOHub}
  *
- * @since FIXME
+ * @since 2.27
  */
 @Extension
 public class IOHubProvider {
