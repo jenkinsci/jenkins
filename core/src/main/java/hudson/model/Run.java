@@ -349,7 +349,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     ((RunAction2) a).onLoad(this);
                 } catch (RuntimeException x) {
                     LOGGER.log(WARNING, "failed to load " + a + " from " + getDataFile(), x);
-                    getActions().remove(a); // if possible; might be in an inconsistent state
+                    removeAction(a); // if possible; might be in an inconsistent state
                 }
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
