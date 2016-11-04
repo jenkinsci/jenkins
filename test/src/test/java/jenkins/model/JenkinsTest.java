@@ -42,6 +42,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -51,6 +52,7 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
@@ -70,6 +72,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -451,5 +454,21 @@ public class JenkinsTest {
 
         assertThat(rsp.getContentAsString(), containsString("Node is offline"));
         assertThat(rsp.getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    @Issue("JENKINS-38487")
+    public void startupShouldNotFailOnFailingOnlineListener() {
+        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+        // boot failure if the issue is not fixed.
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
+    public static final class FailingOnOnlineListener extends ComputerListener {
+        
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            throw new IOException("Something happened (the listener always throws this exception)");
+        }
     }
 }
