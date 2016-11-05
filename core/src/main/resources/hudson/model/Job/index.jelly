@@ -28,6 +28,9 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1 class="job-index-headline page-headline">${it.pronoun} <l:breakable value="${it.displayName}"/></h1>
+      <j:if test="${it.customWorkspace!=null}">
+          <div><l:icon class="warning" tooltip="${%customWorkspaceWarning}" title="${%customWorkspaceWarning}"/>${%Workspace}: ${it.customWorkspace}</div>
+      </j:if>
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>
           <j:when test="${it.parent!=app}">
