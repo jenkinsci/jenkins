@@ -77,7 +77,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private Set<String> safeParameters;
 
-    private final List<ParameterValue> parameters;
+    @Nonnull
+    private List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
 
@@ -89,8 +90,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private transient Run<?, ?> run;
 
-    public ParametersAction(List<ParameterValue> parameters) {
-        this.parameters = parameters;
+    /**
+     * Constructs a new action with a specified list of parameter values.
+     * @param parameters Parameter values
+     */
+    public ParametersAction(@CheckForNull List<ParameterValue> parameters) {
+        this.parameters = parameters != null ? parameters : Collections.<ParameterValue>emptyList();
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
         if (paramNames != null) {
@@ -109,7 +114,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * @param additionalSafeParameters additional safe parameters
      * @since 1.651.2, 2.3
      */
-    public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
+    public ParametersAction(@CheckForNull List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
         if (additionalSafeParameters != null) {
             safeParameters.addAll(additionalSafeParameters);
@@ -118,6 +123,14 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     
     public ParametersAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
+    }
+    
+    @SuppressWarnings("unused")
+    private Object readResolve() {
+        if (parameters == null) {
+            parameters = Collections.emptyList();
+        }
+        return this;
     }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
