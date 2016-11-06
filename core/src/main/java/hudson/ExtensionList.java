@@ -206,14 +206,14 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     @Override
     public boolean removeAll(Collection<?> c) {
+        boolean removed = false;
         try {
-            boolean removed = false;
             for (Object o : c) {
                 removed |= removeSync(o);
             }
             return removed;
         } finally {
-            if (extensions != null) {
+            if (extensions != null && removed) {
                 fireOnChangeListeners();
             }
         }
