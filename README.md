@@ -14,7 +14,7 @@ Use Jenkins to automate your development workflow so you can focus on work that 
 - Static code analysis
 - Deployment
 
-Execute repetitive tasks, save time, and optimize your development process with Jenkins.
+Execute repetitive tasks, save time and optimize your development process with Jenkins.
 
 # Downloads
 Non-source downloads such as WAR files and several Linux packages can be found on our [Mirrors].
