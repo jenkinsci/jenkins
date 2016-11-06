@@ -159,7 +159,7 @@ public class RunTest {
         Job j = Mockito.mock(Job.class);
         File tempBuildDir = tmp.newFolder();
         Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
-        Run r = new Run(j, 0) {};
+        Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
         PrintWriter w = new PrintWriter(f, "utf-8");
@@ -169,4 +169,46 @@ public class RunTest {
         assertTrue(logLines.isEmpty());
     }
 
+    @Test
+    public void getLogReturnsAnRightOrder() throws Exception {
+        Job j = Mockito.mock(Job.class);
+        File tempBuildDir = tmp.newFolder();
+        Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
+        Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
+        File f = r.getLogFile();
+        f.getParentFile().mkdirs();
+        PrintWriter w = new PrintWriter(f, "utf-8");
+        for (int i = 0; i < 20; i++) {
+            w.println("dummy" + i);
+        }
+
+        w.close();
+        List<String> logLines = r.getLog(10);
+        assertFalse(logLines.isEmpty());
+
+        for (int i = 1; i < 10; i++) {
+            assertEquals("dummy" + (10+i), logLines.get(i));
+        }
+        assertEquals("[...truncated 68 B...]", logLines.get(0));
+    }
+
+    @Test
+    public void getLogReturnsAllLines() throws Exception {
+        Job j = Mockito.mock(Job.class);
+        File tempBuildDir = tmp.newFolder();
+        Mockito.when(j.getBuildDir()).thenReturn(tempBuildDir);
+        Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
+        File f = r.getLogFile();
+        f.getParentFile().mkdirs();
+        PrintWriter w = new PrintWriter(f, "utf-8");
+        w.print("a1\nb2\n\nc3");
+        w.close();
+        List<String> logLines = r.getLog(10);
+        assertFalse(logLines.isEmpty());
+
+        assertEquals("a1", logLines.get(0));
+        assertEquals("b2", logLines.get(1));
+        assertEquals("", logLines.get(2));
+        assertEquals("c3", logLines.get(3));
+    }
 }
