@@ -56,13 +56,28 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
   <li class="rfe">
-    Modify the Actionable API to provide methods to assist with manipulation of persisted actions.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39404">issue 39404</a>)
+    Performance: Optimize log retrieval logic for large log files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39535">issue 39535</a>)
   <li class="major bug">
-    2.28 broke Ruby plugins.
+    Integration of Stapler <code>1.246</code> caused regressions in plugins depending on Ruby Runtime Plugin.
+    Upgraded to Stapler <code>1.247</code> with a fix.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>)
+  <li class="bug">
+    Jenkins startup does not fail if one of 
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points#Extensionpoints-hudson.slaves.ComputerListener">
+      ComputerListeners</a> throws exception in the <code>onOnline()</code> handler.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38487">issue 38487</a>)
+  <li class="bug">
+    Queue: Do not consider pending tasks from the internal scheduling logic when looking for duplicate tasks.
+    It was causing race conditions in Jenkins Pipeline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39454">issue 39454</a>)
+  <li class="rfe">
+    Internal: Modify the Actionable API to provide methods to assist with manipulation of persisted actions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39404">issue 39404</a>)
+  <li class="rfe">
+    Internal: Jelly attribute documentation now supports the <code>since</code> tag.
+    (<a href="https://github.com/stapler/stapler/pull/84">Stapler pull #84</code>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.28>What's new in 2.28</a> (2016/10/30)</h3>
