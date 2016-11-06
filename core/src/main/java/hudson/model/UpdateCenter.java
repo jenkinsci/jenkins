@@ -158,8 +158,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
-     * @since 1.483 - public property
-     * @since TODO - configurable via system property
+     * @since 1.483; configurable via system property since 2.4
      */
     public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", PREDEFINED_UPDATE_SITE_ID);
 
@@ -214,7 +213,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Connection status check has been skipped.
          * As example, it may happen if there is no connection check URL defined for the site.
-         * @since TODO
+         * @since 2.4
          */
         SKIPPED,
         /**
@@ -250,7 +249,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Creates an update center.
      * @param config Requested configuration. May be {@code null} if defaults should be used
      * @return Created Update center. {@link UpdateCenter} by default, but may be overridden
-     * @since TODO
+     * @since 2.4
      */
     @Nonnull
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
@@ -1623,7 +1622,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * During download, an attempt is made to compute the SHA-1 checksum of the file.
          *
-         * @since TODO
+         * @since 1.641
          */
         @CheckForNull
         protected String getComputedSHA1() {
@@ -1912,7 +1911,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Indicates there is another installation job for this plugin
-         * @since TODO
+         * @since 2.1
          */
         protected boolean wasInstalled() {
             synchronized(UpdateCenter.this) {

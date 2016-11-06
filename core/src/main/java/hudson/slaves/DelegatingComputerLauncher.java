@@ -38,10 +38,12 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
- * Convenient base implementation of {@link ComputerLauncher} that allows
- * subtypes to perform some initialization (typically something cloud/v12n related
- * to power up the machine), then to delegate to another {@link ComputerLauncher}
+ * Base implementation of {@link ComputerLauncher} that to be used by launchers that
+ * perform some initialization (typically something cloud/v12n related
+ * to power up the machine), and then delegate to another {@link ComputerLauncher}
  * to connect.
+ *
+ * <strong>If you are delegating to another {@link ComputerLauncher} you must extend this base class</strong>
  *
  * @author Kohsuke Kawaguchi
  * @since 1.382

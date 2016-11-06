@@ -3,7 +3,7 @@ var $ = require('jquery-detached').getJQuery();
 
 var getItems = function() {
   var d = $.Deferred();
-  $.get('itemCategories?depth=3').done(
+  $.get('itemCategories?depth=3&iconStyle=icon-xlg').done(
     function(data){
       d.resolve(data);
     }
@@ -200,7 +200,10 @@ $.when(getItems()).done(function(data) {
 
     function drawIcon(elem) {
       var $icn;
-      if (elem.iconFilePathPattern) {
+      if (elem.iconClassName && elem.iconQualifiedUrl) {
+        $icn = $('<div class="icon">');
+        $(['<img class="', elem.iconClassName, ' icon-xlg" src="', elem.iconQualifiedUrl, '">'].join('')).appendTo($icn);
+      } else if (elem.iconFilePathPattern) {
         $icn = $('<div class="icon">');
         var iconFilePath = jRoot + '/' + elem.iconFilePathPattern.replace(":size", "48x48");
         $(['<img src="', iconFilePath, '">'].join('')).appendTo($icn);

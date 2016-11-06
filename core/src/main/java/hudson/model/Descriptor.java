@@ -39,6 +39,7 @@ import hudson.views.ListViewColumn;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.*;
@@ -125,7 +126,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable {
+public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -817,7 +818,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable {
      *
      * @return never null, always the same value for a given instance of {@link Descriptor}.
      *
-     * @since TODO, used to be in {@link GlobalConfiguration} before that.
+     * @since 2.0, used to be in {@link GlobalConfiguration} before that.
      */
     public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Unclassified.class);

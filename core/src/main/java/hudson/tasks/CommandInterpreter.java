@@ -71,7 +71,7 @@ public abstract class CommandInterpreter extends Builder {
      *
      * Changing to {@link Result#UNSTABLE} does not abort the build, next steps are continued.
      *
-     * @since TODO
+     * @since 2.26
      */
     protected boolean isErrorlevelForUnstableBuild(int exitCode) {
         return false;

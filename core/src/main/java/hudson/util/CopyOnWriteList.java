@@ -143,7 +143,7 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     }
 
     public List<E> getView() {
-        return Collections.unmodifiableList(core);
+        return Collections.<E>unmodifiableList(core);
     }
 
     public void addAllTo(Collection<? super E> dst) {

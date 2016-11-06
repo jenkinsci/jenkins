@@ -128,7 +128,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, OnMaster {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
 
@@ -698,7 +698,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported(name="allBuilds",visibility=-2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
-        return RunList.fromRuns(_getRuns().values());
+        return RunList.<RunT>fromRuns(_getRuns().values());
     }
 
     /**
@@ -730,7 +730,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets all the builds in a map.
      */
     public SortedMap<Integer, RunT> getBuildsAsMap() {
-        return Collections.unmodifiableSortedMap(_getRuns());
+        return Collections.<Integer, RunT>unmodifiableSortedMap(_getRuns());
     }
 
     /**

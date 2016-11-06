@@ -147,7 +147,7 @@ public class Maven extends Builder {
      *
      * Defaults to false unless user requests otherwise. Old configurations are set to true to mimic the legacy behaviour.
      *
-     * @since TODO
+     * @since 2.12
      */
     private @Nonnull Boolean injectBuildVariables;
 

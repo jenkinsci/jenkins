@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 Red Hat, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,33 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-package hudson.cli;
+package jenkins.slaves;
 
 import hudson.Extension;
-import jenkins.model.Jenkins;
-
+import hudson.init.Terminator;
+import hudson.model.Computer;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.remoting.protocol.IOHub;
 
 /**
- * Cancel previous quiet down Jenkins - preparation for a restart
+ * Singleton holder of {@link IOHub}
  *
- * @author pjanouse
- * @since 2.14
+ * @since 2.27
  */
 @Extension
-public class CancelQuietDownCommand extends CLICommand {
+public class IOHubProvider {
+    /**
+     * Our logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(IOHubProvider.class.getName());
+    /**
+     * Our hub.
+     */
+    private IOHub hub;
 
-    private static final Logger LOGGER = Logger.getLogger(CancelQuietDownCommand.class.getName());
-
-    @Override
-    public String getShortDescription() {
-        return Messages.CancelQuietDownCommand_ShortDescription();
+    public IOHubProvider() {
+        try {
+            hub = IOHub.create(Computer.threadPoolForRemoting);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to launch IOHub", e);
+            this.hub = null;
+        }
     }
 
-    @Override
-    protected int run() throws Exception {
-        Jenkins.getActiveInstance().doCancelQuietDown();
-        return 0;
+    public IOHub getHub() {
+        return hub;
     }
+
+    @Terminator
+    public void cleanUp() throws IOException {
+        if (hub != null) {
+            hub.close();
+            hub = null;
+        }
+    }
+
 }
