@@ -66,13 +66,13 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * This method by default returns only <em>persistent</em> actions
      * (though some subclasses override it to return an extended unmodifiable list).
      *
-     * @return
-     *      may be empty but never null.
+     * @return a possibly empty list
      * @deprecated Normally outside code should not call this method any more.
      *             Use {@link #getAllActions}, or {@link #addAction}, or {@link #replaceAction}.
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
+    @Nonnull
     public List<Action> getActions() {
         return getOrCreateActions();
     }
@@ -101,6 +101,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      */
     @Exported(name="actions")
+    @Nonnull
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
@@ -137,10 +138,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Gets all actions of a specified type that contributed to this object.
      *
      * @param type The type of action to return.
-     * @return
-     *      may be empty but never null.
+     * @return an unmodifiable, possible empty list
      * @see #getAction(Class)
      */
+    @Nonnull
     public <T extends Action> List<T> getActions(Class<T> type) {
         List<T> _actions = Util.filter(getActions(), type);
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {

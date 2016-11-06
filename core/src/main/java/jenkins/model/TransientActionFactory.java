@@ -79,7 +79,8 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
      */
     public abstract @Nonnull Collection<? extends Action> createFor(@Nonnull T target);
 
-    private static class CacheKey { // http://stackoverflow.com/a/24336841/12916
+    /** @see <a href="http://stackoverflow.com/a/24336841/12916">no pairs/tuples in Java</a> */
+    private static class CacheKey {
         private final Class<?> type;
         private final Class<? extends Action> actionType;
         CacheKey(Class<?> type, Class<? extends Action> actionType) {
