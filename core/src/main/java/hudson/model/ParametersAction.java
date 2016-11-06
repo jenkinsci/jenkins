@@ -124,14 +124,6 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public ParametersAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
-    
-    @SuppressWarnings("unused")
-    private Object readResolve() {
-        if (parameters == null) {
-            parameters = Collections.emptyList();
-        }
-        return this;
-    }
 
     public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
         for (ParameterValue p : getParameters()) {
@@ -285,7 +277,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return parametersAction;
     }
 
+    @SuppressWarnings("unused")
     private Object readResolve() {
+        if (parameters == null) {
+            parameters = Collections.emptyList();
+        }
         if (build != null)
             OldDataMonitor.report(build, "1.283");
         if (safeParameters == null) {
