@@ -584,7 +584,6 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        // TODO: Smells like a bug, but maybe it's a default behavior
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
