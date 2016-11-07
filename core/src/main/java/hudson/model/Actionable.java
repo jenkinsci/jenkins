@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.NotThreadSafe;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -81,8 +80,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             if(actions == null) {
                 actions = new CopyOnWriteArrayList<Action>();
             }
+            return actions;
         }
-        return actions;
     }
 
     /**
@@ -125,8 +124,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * Adds a new action.
      * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
      * <strong>Note: this method will always modify the actions</strong>
-     *
-     * The default implementation is mostly equivalent to the call chain {@code getActions().add(a)}.
      */
     @SuppressWarnings({"ConstantConditions","deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
