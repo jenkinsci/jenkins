@@ -24,27 +24,38 @@
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
 import hudson.ExtensionList;
+import hudson.FilePath;
+import hudson.remoting.Channel;
+import hudson.remoting.FileSystemJarCache;
+import hudson.remoting.Which;
+import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.RetentionStrategy;
+
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import hudson.util.RemotingDiagnostics;
+import jenkins.security.MasterToSlaveCallable;
+import org.apache.tools.ant.DirectoryScanner;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
@@ -63,6 +74,9 @@ public class Slave2Test {
     
     @Rule
     public JenkinsRule rule = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
     
     @Test
     @Issue("SECURITY-195")
@@ -118,6 +132,45 @@ public class Slave2Test {
     }
 
     @Test
+    public void corruptSlaveJar() throws Exception {
+        // Force custom location not to screw the one in ~/.jenkins. TODO separate this for testing.
+        String jarCache = tmp.newFolder().getAbsolutePath();
+        String command = rule.createComputerLauncher(new EnvVars()).getCommand() + " -jar-cache " + jarCache;
+        DumbSlave slave = new DumbSlave("dummy", tmp.newFolder().getAbsolutePath(), new CommandLauncher(command));
+        rule.jenkins.addNode(slave);
+        slave.toComputer().connect(false);
+        slave.toComputer().waitUntilOnline();
+
+        // Cache necessary classes
+        assertEquals("Hey!", RemotingDiagnostics.executeGroovy("print 'Hey!'", slave.getChannel()));
+
+        // Corrupt the cache
+        assertEquals(jarCache, slave.getChannel().call(new BreakSlaveJarCache()));
+
+        // Restart agent from cached classes
+        slave.toComputer().disconnect(null).get();
+        slave.toComputer().connect(true).get();
+
+        assertEquals("Hey!", RemotingDiagnostics.executeGroovy("print 'Hey!'", slave.getChannel()));
+    }
+    private static final class BreakSlaveJarCache extends MasterToSlaveCallable<String, Exception> {
+        @Override public String call() throws Exception {
+            File root = ((FileSystemJarCache) Channel.current().getJarCache()).rootDir;
+            DirectoryScanner ds = new DirectoryScanner();
+            ds.setBasedir(root);
+            ds.setIncludes(new String []{"**/*.jar"});
+            ds.scan();
+
+            FilePath file = new FilePath(Which.jarFile(Channel.class));
+            for (String s: ds.getIncludedFiles()) {
+                // Replace by different jars
+                new FilePath(new File(root, s)).copyFrom(file);
+            }
+            return root.getAbsolutePath();
+        }
+    }
+
+    @Test
     @Issue("JENKINS-36280")
     public void launcherFiltering() throws Exception {
         DumbSlave.DescriptorImpl descriptor =
@@ -168,8 +221,6 @@ public class Slave2Test {
         DynamicFilter.descriptors().remove(victim);
         assertThat(descriptor.nodePropertyDescriptors(null), hasItem(victim));
     }
-
-
 
     @TestExtension
     public static class DynamicFilter extends DescriptorVisibilityFilter {
