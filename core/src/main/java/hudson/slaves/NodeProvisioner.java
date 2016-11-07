@@ -849,13 +849,12 @@ public class NodeProvisioner {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
                 cl.onRollback(plannedNode, newNode, cause);
+            } catch (Error e) {
+                throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onRollback() listener call in " + cl + " for agent "
                         + newNode.getDisplayName(), e);
-                if (e instanceof Error) {
-                    throw e;
-                }
             }
         }
     }
@@ -864,13 +863,12 @@ public class NodeProvisioner {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
                 cl.onComplete(plannedNode, newNode);
+            } catch (Error e) {
+                throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onComplete() listener call in " + cl + " for agent "
                         + plannedNode.displayName, e);
-                if (e instanceof Error) {
-                    throw e;
-                }
             }
         }
     }
@@ -879,13 +877,12 @@ public class NodeProvisioner {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
                 cl.onCommit(plannedNode, newNode);
+            } catch (Error e) {
+                throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onCommit() listener call in " + cl + " for agent "
                         + newNode.getDisplayName(), e);
-                if (e instanceof Error) {
-                    throw e;
-                }
             }
         }
     }
@@ -895,13 +892,12 @@ public class NodeProvisioner {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
                 cl.onStarted(cloud, label, plannedNodes);
+            } catch (Error e) {
+                throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onStarted() listener call in " + cl + " for label "
                         + label.toString(), e);
-                if (e instanceof Error) {
-                    throw e;
-                }
             }
         }
     }
