@@ -1022,10 +1022,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         if (disabledAgentProtocols == null && _disabledAgentProtocols != null) {
             disabledAgentProtocols = Arrays.asList(_disabledAgentProtocols);
+            _disabledAgentProtocols = null;
         }
         if (enabledAgentProtocols == null && _enabledAgentProtocols != null) {
             enabledAgentProtocols = Arrays.asList(_enabledAgentProtocols);
+            _enabledAgentProtocols = null;
         }
+        // Invalidate the protocols cache after the reload
+        agentProtocols = null;
         return this;
     }
     

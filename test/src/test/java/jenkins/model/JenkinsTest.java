@@ -481,9 +481,6 @@ public class JenkinsTest {
         }
     }
     
-    // TODO: When unmarshalling Jenkins file, the AgentProtocols container does not get replaced
-    // Could it be a bug? XStream behavior analysis says "no", but who knows... Ideally the cache should be invalidated
-    
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_singleEnable_roundtrip() throws Exception {
@@ -502,8 +499,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        // TODO: restore
-        // assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
         assertThat("We should have additional enabled protocol", 
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
         assertThat("JNLP3-connect must be enabled after the roundtrip", 
@@ -527,8 +523,7 @@ public class JenkinsTest {
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
-        // TODO: restore
-        // assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled one protocol", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
         assertThat(protocolToDisable + " must be disabled after the roundtrip", 
@@ -558,8 +553,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
-        // TODO: restore
-        // assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
         assertThat("We should have two additional enabled protocols", 
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
         assertThat("JNLP3-connect must be enabled after the roundtrip", 
@@ -591,7 +585,7 @@ public class JenkinsTest {
         j.jenkins.reload();
         
         // TODO: Smells like a bug, but maybe it's a default behavior
-        // assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
         assertThat(protocolToDisable1 + " must be disaabled after the roundtrip", 
