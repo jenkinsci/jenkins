@@ -833,13 +833,12 @@ public class NodeProvisioner {
         for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
             try {
                 cl.onFailure(plannedNode, cause);
+            } catch (Error e) {
+                throw e;
             } catch (Throwable e) {
                 LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
                         + "processing onFailure() listener call in " + cl + " for agent "
                         + plannedNode.displayName, e);
-                if (e instanceof Error) {
-                    throw e;
-                }
             }
         }
     }
