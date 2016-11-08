@@ -56,13 +56,39 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v2.30>What's new in 2.30</a> (2016/11/07)</h3>
+<ul class=image>
+  <li class="major bug">
+    Adjust incompatible <code>Actionable</code> initialization changes made for <a href="https://issues.jenkins-ci.org/browse/JENKINS-39404">issue 39404</a>).
+    It caused massive regressions in plugins like Jenkins Pipeline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39555">issue 39555</a>, regression in 2.29)
+  <li class="major bug">
+    Integration of Stapler <code>1.246</code> caused regressions in plugins depending on Ruby Runtime Plugin.
+    Upgraded to Stapler <code>1.248</code> with a fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>, regression in 2.28)
+  <li class="major bug">
+    Custom remoting enable/disable settings were not properly persisted on the disk and then reloaded.
+    If the option has been configured in Jenkins starting from <code>2.16</code>, a reconfiguration may be required.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39465">issue 39465</a>)
+</ul>
+<h3><a name=v2.29>What's new in 2.29</a> (2016/11/06)</h3>
+<p>
+  <b class="color:red">Warning!</b> This release is not recommended for use due to 
+  <a href="https://issues.jenkins-ci.org/browse/JENKINS-39555">issue 39555</a>
+  and <a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>.
+  We are working on the out-of-order release (<a href="https://groups.google.com/forum/#!topic/jenkinsci-dev/kceM9T8NEdg">discussion</a>).
+</p>
+<ul class=image>  
   <li class="rfe">
     Performance: Optimize log retrieval logic for large log files.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39535">issue 39535</a>)
-  <li class="major bug">
+  <li class="bug">
     Integration of Stapler <code>1.246</code> caused regressions in plugins depending on Ruby Runtime Plugin.
-    Upgraded to Stapler <code>1.247</code> with a fix.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>)
+    Upgraded to Stapler <code>1.247</code> with a partial fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>, partial fix)
   <li class="bug">
     Jenkins startup does not fail if one of 
     <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points#Extensionpoints-hudson.slaves.ComputerListener">
@@ -79,7 +105,6 @@ Upcoming changes</a>
     Internal: Jelly attribute documentation now supports the <code>since</code> tag.
     (<a href="https://github.com/stapler/stapler/pull/84">Stapler pull #84</code>)
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v2.28>What's new in 2.28</a> (2016/10/30)</h3>
 <ul class=image>
   <li class="rfe">
