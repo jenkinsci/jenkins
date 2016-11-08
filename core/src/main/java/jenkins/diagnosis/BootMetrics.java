@@ -61,9 +61,7 @@ public class BootMetrics implements InitReactorListener {
     public BootMetrics() throws IOException {
 
         final File log = new File(Jenkins.getInstance().getRootDir(), "logs/boot-metrics.log");
-        if (!log.getParentFile().mkdirs()) {
-            throw new IOException("Failed to create logs directory");
-        }
+        log.getParentFile().mkdirs();
         out = new PrintStream(log);
         timer = new Timer("Boot metrics", true);
 
