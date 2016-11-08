@@ -56,11 +56,127 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=>
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v2.30>What's new in 2.30</a> (2016/11/07)</h3>
+<ul class=image>
+  <li class="major bug">
+    Adjust incompatible <code>Actionable</code> initialization changes made for <a href="https://issues.jenkins-ci.org/browse/JENKINS-39404">issue 39404</a>).
+    It caused massive regressions in plugins like Jenkins Pipeline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39555">issue 39555</a>, regression in 2.29)
+  <li class="major bug">
+    Integration of Stapler <code>1.246</code> caused regressions in plugins depending on Ruby Runtime Plugin.
+    Upgraded to Stapler <code>1.248</code> with a fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>, regression in 2.28)
+  <li class="major bug">
+    Custom remoting enable/disable settings were not properly persisted on the disk and then reloaded.
+    If the option has been configured in Jenkins starting from <code>2.16</code>, a reconfiguration may be required.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39465">issue 39465</a>)
+</ul>
+<h3><a name=v2.29>What's new in 2.29</a> (2016/11/06)</h3>
+<p>
+  <b class="color:red">Warning!</b> This release is not recommended for use due to 
+  <a href="https://issues.jenkins-ci.org/browse/JENKINS-39555">issue 39555</a>
+  and <a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>.
+  We are working on the out-of-order release (<a href="https://groups.google.com/forum/#!topic/jenkinsci-dev/kceM9T8NEdg">discussion</a>).
+</p>
+<ul class=image>  
+  <li class="rfe">
+    Performance: Optimize log retrieval logic for large log files.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39535">issue 39535</a>)
+  <li class="bug">
+    Integration of Stapler <code>1.246</code> caused regressions in plugins depending on Ruby Runtime Plugin.
+    Upgraded to Stapler <code>1.247</code> with a partial fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39414">issue 39414</a>, partial fix)
+  <li class="bug">
+    Jenkins startup does not fail if one of 
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points#Extensionpoints-hudson.slaves.ComputerListener">
+      ComputerListeners</a> throws exception in the <code>onOnline()</code> handler.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38487">issue 38487</a>)
+  <li class="bug">
+    Queue: Do not consider pending tasks from the internal scheduling logic when looking for duplicate tasks.
+    It was causing race conditions in Jenkins Pipeline.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39454">issue 39454</a>)
+  <li class="rfe">
+    Internal: Modify the Actionable API to provide methods to assist with manipulation of persisted actions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39404">issue 39404</a>)
+  <li class="rfe">
+    Internal: Jelly attribute documentation now supports the <code>since</code> tag.
+    (<a href="https://github.com/stapler/stapler/pull/84">Stapler pull #84</code>)
+</ul>
+<h3><a name=v2.28>What's new in 2.28</a> (2016/10/30)</h3>
+<ul class=image>
+  <li class="rfe">
+    Performance: Improve responsiveness of Jenkins web UI on mobile devices.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39172">issue 39172</a>)
+  <li class="rfe">
+    Print warnings if none of Tool Installers can be used during the tool installation.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26940">issue 26940</a>)
+  <li class="rfe">
+    Update the minimal required versions of the detached Maven Project plugin from <code>2.7.1</code> to <code>2.14</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/Maven+Project+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>)
+  <li class="rfe">
+    Update the minimal required versions of the detached JUnit plugin from <code>1.2-beta-4</code> to <code>1.6</code>.
+    Changelog is available <a href="https://wiki.jenkins-ci.org/display/JENKINS/JUnit+Plugin">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2606">pull 2606</a>))
+  <li class="major bug">
+    Relax requirements of the JNLP connection receiver, which was rejections connections from agents not using 
+    <code>JNLPComputerLauncher</code> (e.g. from Slave Setup, vSphere Cloud and other plugins). 
+    No the connection is accepted from launchers implementing other proxying and filtering <code>Launcher</code> implementations.
+    Particular plugins may require setting up the 
+    <code>jenkins.slaves.DefaultJnlpSlaveReceiver.disableStrictVerification</code> system property in the master JVM to allow connecting agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39232">issue 39232</a>, regression in 2.28)
+  <li class="bug">
+    Prevent resource leak in <code>hudson.XmlFile#readRaw()</code> in the case of encoding issues.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39363">issue 39363</a>)
+  <li class="bug">
+    Prevented endless loop in <code>LargeText.BufferSession.skip()</code>, which was causing hanging of Pipeline jobs in corner cases.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37664">issue 37664</a>)
+  <li class="rfe">
+    Internal: Upgrade Stapler library from <code>1.243</code> to <code>1.246</code> with fixes required for the Blue Ocean project.
+    More details are coming soon.
+    Raw changes are listed <a href="https://github.com/stapler/stapler/compare/stapler-parent-1.243...stapler-parent-1.246">here</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2593">pull 2593</a>)
+  <li class="rfe">
+    Internal: Start defining APIs that are for the master JVM only.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38370">issue 38370</a>)
+  <li class="rfe">
+    Internal: Update Guice dependency from <code>4.0-beta</code> to <code>4.0</code>.
+    This change required upgrade of detached plugins (see above).
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2568">pull 2568</a>)
+</ul>
+<h3><a name=v2.27>What's new in 2.27</a> (2016/10/23)</h3>
+<ul class=image>
+  <li class="major rfe">
+    Upgrade to the Remoting 3 baseline. Compatibility notes are available 
+    <a href="https://github.com/jenkinsci/remoting/blob/master/docs/remoting-3-compatibility.md">here</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37564">issue 37564</a>)
+  <li class="major rfe">
+    Remoting 3.0: New <a href="https://github.com/jenkinsci/remoting/blob/master/docs/protocols.md#jnlp4-connect">JNLP4-connect protocol</a>, 
+    which improves performance and stability compared to the JNLP3-connect protocol. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36871">issue 36871</a>)
+  <li class="rfe">
+    Remoting 3.0: Agents using <code>slave.jar</code> now explicitly require Java 7.    
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37565">issue 37565</a>)
   <li class="bug">
     Prevent deadlocks during modification of node executor numbers (e.g. during deletion of nodes).
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31768">issue 31768</a>)
+  <li class="bug">
+    Add missing internationalization support to <code>ResourceBundleUtil</code>.
+    It fixes internationalization in <a href="https://jenkins.io/projects/blueocean/">Blue Ocean</a> 
+    and <a href="http://jenkinsci.github.io/jenkins-design-language/">Jenkins Design Language</a>. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35845">issue 35845</a>)
+  <li class="rfe">
+    Internal: Make the code more compatible with Java 9 requirements and allow its editing in newest NetBeans versions 
+    with <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=268452">NB bug 268452</a>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2595">pull 2595</a>)
+  <li class="bug">
+    Internal: Icon handling API for items.
+    Deprecate <code>TopLevelItemDescriptor#getIconFilePathPattern()</code> and switch to <code>IconSpec</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38960">issue 38960</a>)
 </ul>
-</div><!--=TRUNK-END=-->
 <h3><a name=v2.26>What's new in 2.26</a> (2016/10/17)</h3>
 <ul class=image>
   <li class="rfe">

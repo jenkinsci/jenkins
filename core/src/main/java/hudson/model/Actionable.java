@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.Util;
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -72,16 +75,14 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
-	public List<Action> getActions() {
-		if(actions == null) {
-			synchronized (this) {
-				if(actions == null) {
-					actions = new CopyOnWriteArrayList<Action>();
-				}
-			}
-		}
-		return actions;
-	}
+    public List<Action> getActions() {
+        synchronized (this) {
+            if(actions == null) {
+                actions = new CopyOnWriteArrayList<Action>();
+            }
+            return actions;
+        }
+    }
 
     /**
      * Gets all actions, transient or persistent.
@@ -121,30 +122,172 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
     /**
      * Adds a new action.
-     *
-     * The default implementation calls {@code getActions().add(a)}.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * <strong>Note: this method will always modify the actions</strong>
      */
-    public void addAction(Action a) {
-        if(a==null) throw new IllegalArgumentException();
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void addAction(@Nonnull Action a) {
+        if(a==null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         getActions().add(a);
     }
 
     /**
-     * Add an action, replacing any existing action of the (exact) same class.
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}.
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
      * @param a an action to add/replace
      * @since 1.548
+     * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
+     * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
+     * and there is a desire to elide unneccessary persistence of unmodified objects.
      */
-    public void replaceAction(Action a) {
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void replaceAction(@Nonnull Action a) {
+        addOrReplaceAction(a);
+    }
+
+    /**
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param a an action to add/replace
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean addOrReplaceAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>(1);
         List<Action> current = getActions();
+        boolean found = false;
         for (Action a2 : current) {
-            if (a2.getClass() == a.getClass()) {
+            if (!found && a.equals(a2)) {
+                found = true;
+            } else  if (a2.getClass() == a.getClass()) {
                 old.add(a2);
             }
         }
         current.removeAll(old);
-        addAction(a);
+        if (!found) {
+            addAction(a);
+        }
+        return !found || !old.isEmpty();
+    }
+
+    /**
+     * Remove an action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param a an action to remove (if {@code null} then this will be a no-op)
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings("deprecation")
+    public boolean removeAction(@Nullable Action a) {
+        if (a == null) {
+            return false;
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        return getActions().removeAll(Collections.singleton(a));
+    }
+
+    /**
+     * Removes any actions of the specified type.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param clazz the type of actions to remove
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        for (Action a : current) {
+            if (clazz.isInstance(a)) {
+                old.add(a);
+            }
+        }
+        return current.removeAll(old);
+    }
+
+    /**
+     * Replaces any actions of the specified type by the supplied action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
+     *              this class)
+     * @param a     the action to replace with
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        boolean found = false;
+        for (Action a1 : current) {
+            if (!found) {
+                if (a.equals(a1)) {
+                    found = true;
+                } else if (clazz.isInstance(a1)) {
+                    old.add(a1);
+                }
+            } else if (clazz.isInstance(a1) && !a.equals(a1)) {
+                old.add(a1);
+            }
+        }
+        current.removeAll(old);
+        if (!found) {
+            addAction(a);
+        }
+        return !(old.isEmpty() && found);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */

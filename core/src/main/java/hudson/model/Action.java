@@ -68,6 +68,11 @@ import javax.annotation.CheckForNull;
  * (for example with {@link Build}) via XStream. In some other cases,
  * {@link Action}s are transient and not persisted (such as
  * when it's used with {@link Job}).
+ * <p>
+ * The {@link Actionable#replaceAction(Action)}, {@link Actionable#addOrReplaceAction(Action)}, and
+ * {@link Actionable#removeAction(Action)} methods use {@link Action#equals(Object)} to determine whether to update
+ * or replace or remove an {@link Action}. As such, {@link Action} subclasses that provide a deep
+ * {@link #equals(Object)} will assist in reducing the need for unnecessary persistence.
  *
  * @author Kohsuke Kawaguchi
  */

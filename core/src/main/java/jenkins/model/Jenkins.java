@@ -213,6 +213,7 @@ import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Timer;
 import jenkins.util.io.FileBoolean;
+import jenkins.util.io.OnMaster;
 import jenkins.util.xml.XMLUtils;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
@@ -324,7 +325,7 @@ import org.kohsuke.stapler.WebMethod;
 @ExportedBean
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
-        ModelObjectWithContextMenu, ModelObjectWithChildren {
+        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
     private transient final Queue queue;
 
     /**
@@ -616,6 +617,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CheckForNull
     private List<String> disabledAgentProtocols;
+    /**
+     * @deprecated Just a temporary buffer for XSTream migration code from JENKINS-39465, do not use
+     */
+    @Deprecated
+    private transient String[] _disabledAgentProtocols;
 
     /**
      * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
@@ -625,6 +631,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CheckForNull
     private List<String> enabledAgentProtocols;
+    /**
+     * @deprecated Just a temporary buffer for XSTream migration code from JENKINS-39465, do not use
+     */
+    @Deprecated
+    private transient String[] _enabledAgentProtocols;
 
     /**
      * The TCP agent protocols that are enabled. Built from {@link #disabledAgentProtocols} and
@@ -957,11 +968,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             updateComputerList();
 
-            {// master is online now
-                Computer c = toComputer();
-                if(c!=null)
-                    for (ComputerListener cl : ComputerListener.all())
-                        cl.onOnline(c, new LogTaskListener(LOGGER, INFO));
+            {// master is online now, it's instance must always exist
+                final Computer c = toComputer();
+                if(c != null) {
+                    for (ComputerListener cl : ComputerListener.all()) {
+                        try {
+                            cl.onOnline(c, new LogTaskListener(LOGGER, INFO));
+                        } catch (Throwable t) {
+                            if (t instanceof Error) {
+                                // We propagate Runtime errors, because they are fatal.
+                                throw t;
+                            }
+
+                            // Other exceptions should be logged instead of failing the Jenkins startup (See listener's Javadoc)
+                            // We also throw it for InterruptedException since it's what is expected according to the javadoc
+                            LOGGER.log(SEVERE, String.format("Invocation of the computer listener %s failed for the Jenkins master node",
+                                    cl.getClass()), t);
+                        }
+                    }
+                }
             }
 
             for (ItemListener l : ItemListener.all()) {
@@ -995,6 +1020,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (SLAVE_AGENT_PORT_ENFORCE) {
             slaveAgentPort = getSlaveAgentPortInitialValue(slaveAgentPort);
         }
+        if (disabledAgentProtocols == null && _disabledAgentProtocols != null) {
+            disabledAgentProtocols = Arrays.asList(_disabledAgentProtocols);
+            _disabledAgentProtocols = null;
+        }
+        if (enabledAgentProtocols == null && _enabledAgentProtocols != null) {
+            enabledAgentProtocols = Arrays.asList(_enabledAgentProtocols);
+            _enabledAgentProtocols = null;
+        }
+        // Invalidate the protocols cache after the reload
+        agentProtocols = null;
         return this;
     }
     
@@ -1105,7 +1140,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * @since TODO
+     * @since 2.24
      */
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.SLAVE_AGENT_PORT_ENFORCE;
@@ -5012,8 +5047,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // for backward compatibility with <1.75, recognize the tag name "view" as well.
             XSTREAM.alias("view", ListView.class);
             XSTREAM.alias("listView", ListView.class);
-            XSTREAM.addImplicitCollection(Jenkins.class, "disabledAgentProtocols", "disabledAgentProtocol", String.class);
-            XSTREAM.addImplicitCollection(Jenkins.class, "enabledAgentProtocols", "enabledAgentProtocol", String.class);
+            XSTREAM.addImplicitArray(Jenkins.class, "_disabledAgentProtocols", "disabledAgentProtocol");
+            XSTREAM.addImplicitArray(Jenkins.class, "_enabledAgentProtocols", "enabledAgentProtocol");
             XSTREAM2.addCriticalField(Jenkins.class, "securityRealm");
             XSTREAM2.addCriticalField(Jenkins.class, "authorizationStrategy");
             // this seems to be necessary to force registration of converter early enough
