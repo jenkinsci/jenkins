@@ -1598,6 +1598,7 @@ public class Util {
 
     /**
      * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@Nonnull String uri) {
         return !isAbsoluteUri(uri) && !uri.startsWith("//");
