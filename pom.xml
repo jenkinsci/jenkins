@@ -180,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.0</version>
+        <version>3.1</version>
       </dependency>
 
       <dependency>
