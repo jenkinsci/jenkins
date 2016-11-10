@@ -64,6 +64,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -532,6 +533,7 @@ public class JenkinsTest {
     
     @Test
     @Issue("JENKINS-39465")
+    @Ignore("No JNLP4 for 2.19.3")
     public void agentProtocols_multipleEnable_roundtrip() throws Exception {
         final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
         Assume.assumeThat("We assume that JNLP3-connect is disabled", 
