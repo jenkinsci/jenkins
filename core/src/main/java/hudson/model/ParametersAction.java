@@ -89,12 +89,19 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     private transient AbstractBuild<?, ?> build;
 
     private transient Run<?, ?> run;
+    /**
+     * Just a temporary variable for diagnostics of the root cause of JENKINS-39495.
+     * This field is being used in {@link #onLoad(hudson.model.Run)} and {@link #onAttached(hudson.model.Run)} hooks, which provide info about the run.
+     */
+    private transient boolean wasInitializedWithNullParameters;
 
     /**
      * Constructs a new action with a specified list of parameter values.
-     * @param parameters Parameter values
+     * @param parameters Parameter values.               
      */
-    public ParametersAction(@CheckForNull List<ParameterValue> parameters) {
+    @SuppressWarnings("null")
+    public ParametersAction(@Nonnull List<ParameterValue> parameters) {
+        wasInitializedWithNullParameters = parameters == null;
         this.parameters = parameters != null ? parameters : Collections.<ParameterValue>emptyList();
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
@@ -279,6 +286,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @SuppressWarnings("unused")
     private Object readResolve() {
+        wasInitializedWithNullParameters = parameters == null;
         if (parameters == null) {
             parameters = Collections.emptyList();
         }
@@ -298,12 +306,18 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         } else {
             this.parameterDefinitionNames = Collections.emptyList();
         }
+        if (wasInitializedWithNullParameters) {
+            LOGGER.log(Level.WARNING, "ParametersAction has been initialized with null parameter list for Run {0}. It is a bug in the plugin, which created this action (see JENKINS-39495).", r);
+        }
         this.run = r;
     }
 
     @Override
     public void onLoad(Run<?, ?> r) {
         this.run = r;
+        if (wasInitializedWithNullParameters) {
+            LOGGER.log(Level.WARNING, "ParametersAction has been loaded from disk with null parameter list for Run {0}. It is a bug in the plugin, which created this action (see JENKINS-39495).", r);
+        }
     }
 
     private List<? extends ParameterValue> filter(List<ParameterValue> parameters) {
