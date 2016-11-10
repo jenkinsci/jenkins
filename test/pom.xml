@@ -40,6 +40,7 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <jacocoSurefireArgs /><!-- empty by default -->
+    <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
   </properties>
 
   <dependencies>

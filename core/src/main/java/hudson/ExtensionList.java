@@ -204,6 +204,21 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
         }
     }
 
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean removed = false;
+        try {
+            for (Object o : c) {
+                removed |= removeSync(o);
+            }
+            return removed;
+        } finally {
+            if (extensions != null && removed) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
     private synchronized boolean removeSync(Object o) {
         boolean removed = removeComponent(legacyInstances, o);
         if(extensions!=null) {
