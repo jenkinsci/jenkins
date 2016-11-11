@@ -101,7 +101,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeFileUpload1() throws Exception {
-        probe(Payload.FileUpload1, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.FileUpload1, -1);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -129,7 +129,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeJRMPListener() throws Exception {
-        probe(Payload.JRMPListener, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.JRMPListener, -1);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
