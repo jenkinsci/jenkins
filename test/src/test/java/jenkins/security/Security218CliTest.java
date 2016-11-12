@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.PrintStream;
 import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -146,6 +147,8 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-218")
     public void probeSpring1() throws Exception {
+        // Reason it is -1 is that it is testing a test that is not in our version of Spring
+        // Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.support.AutowireUtils$ObjectFactoryDelegatingInvocationHandler
         probe(Payload.Spring1, -1);
     }
 
@@ -153,6 +156,8 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeSpring2() throws Exception {
+        // Reason it is -1 is that it is testing a test that is not in our version of Spring 4
+        // Caused by: java.lang.ClassNotFoundException: org.springframework.core.SerializableTypeWrapper$TypeProvider
         probe(Payload.Spring2, -1);
     }
     
