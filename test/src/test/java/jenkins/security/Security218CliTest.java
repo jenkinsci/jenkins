@@ -102,7 +102,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeFileUpload1() throws Exception {
-        probe(Payload.FileUpload1, -1);
+        probe(Payload.FileUpload1, 3);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -130,7 +130,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeJRMPListener() throws Exception {
-        probe(Payload.JRMPListener, -1);
+        probe(Payload.JRMPListener, 3);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -147,18 +147,18 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-218")
     public void probeSpring1() throws Exception {
-        // Reason it is -1 is that it is testing a test that is not in our version of Spring
+        // Reason it is 1 is that it is testing a test that is not in our version of Spring
         // Caused by: java.lang.ClassNotFoundException: org.springframework.beans.factory.support.AutowireUtils$ObjectFactoryDelegatingInvocationHandler
-        probe(Payload.Spring1, -1);
+        probe(Payload.Spring1, 1);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-317")
     public void probeSpring2() throws Exception {
-        // Reason it is -1 is that it is testing a test that is not in our version of Spring 4
+        // Reason it is 1 is that it is testing a test that is not in our version of Spring 4
         // Caused by: java.lang.ClassNotFoundException: org.springframework.core.SerializableTypeWrapper$TypeProvider
-        probe(Payload.Spring2, -1);
+        probe(Payload.Spring2, 1);
     }
     
     private void probe(Payload payload, int expectedResultCode) throws Exception {
