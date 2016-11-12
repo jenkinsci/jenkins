@@ -23,11 +23,8 @@
  */
 package jenkins.security.security218;
 
-import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
-import jenkins.security.security218.ysoserial.payloads.CommonsCollections2;
-import jenkins.security.security218.ysoserial.payloads.Groovy1;
-import jenkins.security.security218.ysoserial.payloads.ObjectPayload;
-import jenkins.security.security218.ysoserial.payloads.Spring1;
+import jenkins.security.security218.ysoserial.payloads.*;
+import net.sf.json.JSON;
 
 
 /**
@@ -35,10 +32,21 @@ import jenkins.security.security218.ysoserial.payloads.Spring1;
  * @author Oleg Nenashev
  */
 public enum Payload {
+    CommonsBeanutils1(CommonsBeanutils1.class),
     CommonsCollections1(CommonsCollections1.class),
     CommonsCollections2(CommonsCollections2.class),
+    CommonsCollections3(CommonsCollections3.class),
+    CommonsCollections4(CommonsCollections4.class),
+    CommonsCollections5(CommonsCollections5.class),
+    CommonsCollections6(CommonsCollections6.class),
+    FileUpload1(FileUpload1.class),
     Groovy1(Groovy1.class),
-    Spring1(Spring1.class);
+    Jdk7u21(Jdk7u21.class),
+    JRMPClient(JRMPClient.class),
+    JRMPListener(JRMPListener.class),
+    JSON1(JSON1.class),
+    Spring1(Spring1.class),
+    Spring2(Spring2.class);
     
     private final Class<? extends ObjectPayload> payloadClass;
     
