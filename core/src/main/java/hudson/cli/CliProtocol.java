@@ -33,7 +33,7 @@ public class CliProtocol extends AgentProtocol {
 
     @Override
     public String getName() {
-        return "CLI-connect";
+        return jenkins.CLI.DISABLED ? null : "CLI-connect";
     }
 
     @Override
