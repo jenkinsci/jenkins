@@ -56,7 +56,30 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="major bug">
+    It was not possible to connect Jenkins agents via Java Web Start due to the issue in Remoting <code>3.0</code>.
+    Upgraded to Remoting <code>3.1</code> with a fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39596">issue 39596</a>, regression in 2.26)
+  <li class="bug">
+    Remoting 3.1: <code>hudson.remoting.Engine</code> (mostly Java Web Start) was failing to establish connection 
+    if one of the URLs in <code>urls</code> parameter was malformed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39617">issue 39617</a>)
+  <li class="rfe">
+    Remoting 3.1: Add method for dumping diagnostics across all the channels (e.g. in the Support Core Plugin).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39150">issue 39150</a>)
+  <li class="rfe">
+    Remoting 3.1: Improve the caller/callee correlation diagnostics in thread dumps.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39543">issue 39543</a>)
+  <li class="rfe">
+    Remoting 3.1: Add the <code>org.jenkinsci.remoting.nio.NioChannelHub.disabled</code> flag 
+    for disabling NIO, mostly for debugging purposes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39290">issue 39290</a>)
+  <li class="rfe">
+    Remoting 3.1: Add extra logging to help diagnosing <code>IOHub</code> concurrent thread number spikes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38692">issue 38692</a>)
+  <li class="rfe">
+    Remoting 3.1: When a proxy fails, report what caused the channel to go down.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39289">issue 39289</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.30>What's new in 2.30</a> (2016/11/07)</h3>
