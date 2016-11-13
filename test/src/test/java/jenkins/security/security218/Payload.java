@@ -24,7 +24,6 @@
 package jenkins.security.security218;
 
 import jenkins.security.security218.ysoserial.payloads.*;
-import net.sf.json.JSON;
 
 
 /**
@@ -46,8 +45,10 @@ public enum Payload {
     JRMPListener(JRMPListener.class),
     JSON1(JSON1.class),
     Spring1(Spring1.class),
-    Spring2(Spring2.class);
-    
+    Spring2(Spring2.class),
+    Ldap(Ldap.class),
+    ;
+
     private final Class<? extends ObjectPayload> payloadClass;
     
     private Payload(Class<? extends ObjectPayload> payloadClass) {
