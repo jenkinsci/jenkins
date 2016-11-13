@@ -32,6 +32,8 @@ import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
+import hudson.remoting.Channel;
+import hudson.remoting.Which;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
@@ -373,7 +375,7 @@ public abstract class Slave extends Node implements Serializable {
             return res.openConnection();
         }
 
-        public URL getURL() throws MalformedURLException {
+        public URL getURL() throws IOException {
             String name = fileName;
             
             // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
@@ -383,6 +385,8 @@ public abstract class Slave extends Node implements Serializable {
             
             if (name.equals("hudson-cli.jar"))  {
                 name="jenkins-cli.jar";
+            } else if (name.equals("slave.jar") || name.equals("remoting.jar")) {
+                name = "lib/" + Which.jarFile(Channel.class).getName();
             }
             
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
