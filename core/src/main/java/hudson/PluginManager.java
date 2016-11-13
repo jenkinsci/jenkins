@@ -978,20 +978,24 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public HttpResponse doCheckUpdatesServer() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
-            FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
-            if (v.kind != FormValidation.Kind.OK) {
-                // TODO crude but enough for now
-                return v;
+        try {
+            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+                FormValidation v = site.updateDirectlyNow(DownloadService.signatureCheck);
+                if (v.kind != FormValidation.Kind.OK) {
+                    // TODO crude but enough for now
+                    return v;
+                }
             }
-        }
-        for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
-            FormValidation v = d.updateNow();
-            if (v.kind != FormValidation.Kind.OK) {
-                return v;
+            for (DownloadService.Downloadable d : DownloadService.Downloadable.all()) {
+                FormValidation v = d.updateNow();
+                if (v.kind != FormValidation.Kind.OK) {
+                    return v;
+                }
             }
+            return HttpResponses.forwardToPreviousPage();
+        } catch(RuntimeException ex) {
+            throw new IOException("Unhandled exception during updates server check", ex);
         }
-        return HttpResponses.forwardToPreviousPage();
     }
 
     protected String identifyPluginShortName(File t) {
