@@ -42,6 +42,8 @@ import org.apache.commons.io.input.NullInputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -163,6 +165,14 @@ public abstract class Launcher {
          * @since 1.399
          */
         protected boolean reverseStdin, reverseStdout, reverseStderr;
+
+        /**
+         * Just an instance holder for {@link #join()}, which creates a temporary {@link Proc} instance.
+         * Usage of {@code volatile} should prevent preliminary deallocation of the process object during the {@link Proc#join()} call.
+         */
+        @CheckForNull
+        @GuardedBy("this")
+        private volatile Proc procHolderForJoin;
 
         /**
          * Passes a white-space separated single-string command (like "cat abc def") and parse them
@@ -383,9 +393,24 @@ public abstract class Launcher {
 
         /**
          * Starts the process and waits for its completion.
+         * This method stores internal context and hence it is synchronized
+         * @return Return code of the invoked process
+         * @throws IOException Operation error (e.g. remote call failure)
+         * @throws InterruptedException The process has been interrupted
          */
-        public int join() throws IOException, InterruptedException {
-            return start().join();
+        public synchronized int join() throws IOException, InterruptedException {
+            // The logging around procHolderForJoin prevents the preliminary object deallocation we saw in JENKINS-23271
+            try {
+                procHolderForJoin = start();
+                LOGGER.log(Level.FINER, "Started the process {0}", procHolderForJoin);
+                final int returnCode = procHolderForJoin.join();
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[] {procHolderForJoin, returnCode});
+                }
+                return returnCode;
+            } finally {
+                procHolderForJoin = null;
+            }
         }
 
         /**
