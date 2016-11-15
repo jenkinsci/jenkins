@@ -182,6 +182,11 @@ THE SOFTWARE.
       <version>4.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
