@@ -176,6 +176,11 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.9</version>
+    </dependency>
+    <dependency>
       <groupId>org.codehaus.geb</groupId>
       <artifactId>geb-implicit-assertions</artifactId>
       <version>0.7.2</version>
