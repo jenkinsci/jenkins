@@ -638,7 +638,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         public String toStemUrl() {
             if (names==null)    return null;
-            return jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + '/' + relativePath();
+            return Descriptor.getCurrentDescriptorByNameUrl() + '/' + relativePath();
         }
 
         public String getDependsOn() {
