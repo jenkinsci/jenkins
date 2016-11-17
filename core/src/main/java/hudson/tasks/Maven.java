@@ -340,11 +340,12 @@ public class Maven extends Builder {
                 }
             }
 
+            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
+
             if (isInjectBuildVariables()) {
-                Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-                args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-                final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
-                args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
+                args.addKeyValuePairs("-D", build.getBuildVariables(), sensitiveVars);
             }
 
             if (usesPrivateRepository())
