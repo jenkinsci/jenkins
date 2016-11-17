@@ -27,6 +27,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import hudson.security.ACL;
@@ -139,6 +141,24 @@ public class ComputerConfigDotXmlTest {
         assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
+
+    @Test
+    public void emptyNodeMonitorDataWithoutExtendedRead() throws Exception {
+        rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
+
+        assertTrue(computer.getMonitorData().isEmpty());
+    }
+
+    @Test
+    public void populatedNodeMonitorDataWithExtendedRead() throws Exception {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        rule.jenkins.setAuthorizationStrategy(auth);
+        auth.add(Computer.CONFIGURE, "user");
+
+        assertFalse(computer.getMonitorData().isEmpty());
+    }
+
+
 
     private OutputStream captureOutput() throws IOException {
 
