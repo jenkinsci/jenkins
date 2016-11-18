@@ -129,6 +129,16 @@ public class IOUtils {
     }
 
     /**
+     * Gets the mode of a file/directory/symlink, if appropriate.
+     * @return a file mode, or -1 if not on Unix
+     * @throws PosixException if the file/link could not be statted, NOT for a broken symlink!
+     */
+    public static int lmode(File f) throws PosixException {
+        if(Functions.isWindows())   return -1;
+        return PosixAPI.jnr().lstat(f.getPath()).mode();
+    }
+
+    /**
      * Read the first line of the given stream, close it, and return that line.
      *
      * @param encoding

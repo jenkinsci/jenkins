@@ -26,13 +26,15 @@ package hudson.util.io;
 
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * {@link FileVisitor} that creates a zip archive.
@@ -41,44 +43,58 @@ import java.io.OutputStream;
  */
 final class ZipArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
-    private final ZipOutputStream zip;
+    private final ZipArchiveOutputStream zip;
 
     ZipArchiver(OutputStream out) {
-        zip = new ZipOutputStream(out);
+        zip = new ZipArchiveOutputStream(out);
         zip.setEncoding(System.getProperty("file.encoding"));
     }
 
-    public void visit(final File f, final String _relativePath) throws IOException {
+    @Override
+    public void visitSymlink(final File f, final String target, final String relativePath) throws IOException {
+        int mode = IOUtils.lmode(f);
+        ZipArchiveEntry zae = new ZipArchiveEntry(relativePath);
+        if (mode != -1) {
+            zae.setUnixMode(mode);
+        }
+        zae.setTime(f.lastModified());
+        zip.putArchiveEntry(zae);
+        zip.write(target.getBytes(StandardCharsets.UTF_8), 0, target.length());
+        zip.closeArchiveEntry();
+        entriesWritten++;
+    }
+
+    @Override
+    public boolean understandsSymlink() {
+        return true;
+    }
+
+    public void visit(final File f, final String relativePath) throws IOException {
         int mode = IOUtils.mode(f);
 
-        // On Windows, the elements of relativePath are separated by 
-        // back-slashes (\), but Zip files need to have their path elements separated
-        // by forward-slashes (/)
-        String relativePath = _relativePath.replace('\\', '/');
+        // ZipArchiveEntry already covers all the specialities we used to handle here:
+        // - Converts backslashes to slashes
+        // - Handles trailing slash of directories
+        // - Sets entry's time from file
+        // - Sets bitmask from setUnixMode() argument.
         
-        if(f.isDirectory()) {
-            ZipEntry dirZipEntry = new ZipEntry(relativePath+'/');
-            // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).
-            dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
-            if (mode!=-1)   dirZipEntry.setUnixMode(mode);
-            dirZipEntry.setTime(f.lastModified());
-            zip.putNextEntry(dirZipEntry);
-            zip.closeEntry();
-        } else {
-            ZipEntry fileZipEntry = new ZipEntry(relativePath);
-            if (mode!=-1)   fileZipEntry.setUnixMode(mode);
-            fileZipEntry.setTime(f.lastModified());
-            zip.putNextEntry(fileZipEntry);
+        ZipArchiveEntry zae = new ZipArchiveEntry(f, relativePath);
+        if (mode != -1) {
+            zae.setUnixMode(mode);
+        }
+        zip.putArchiveEntry(zae);
+        if (!zae.isDirectory()) {
             FileInputStream in = new FileInputStream(f);
             try {
                 int len;
-                while((len=in.read(buf))>=0)
-                    zip.write(buf,0,len);
+                while ((len = in.read(buf)) >= 0) {
+                    zip.write(buf, 0, len);
+                }
             } finally {
                 in.close();
             }
-            zip.closeEntry();
         }
+        zip.closeArchiveEntry();
         entriesWritten++;
     }
 

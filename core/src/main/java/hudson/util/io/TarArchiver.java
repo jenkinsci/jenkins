@@ -59,7 +59,7 @@ final class TarArchiver extends Archiver {
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
         TarArchiveEntry e = new TarArchiveEntry(relativePath, TarConstants.LF_SYMLINK);
         try {
-            int mode = IOUtils.mode(link);
+            int mode = IOUtils.lmode(link);
             if (mode != -1) {
                 e.setMode(mode);
             }
