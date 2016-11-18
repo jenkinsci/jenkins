@@ -393,15 +393,18 @@ public abstract class Launcher {
             // The logging around procHolderForJoin prevents the preliminary object deallocation we saw in JENKINS-23271
             final Proc procHolderForJoin = start();
             LOGGER.log(Level.FINER, "Started the process {0}", procHolderForJoin);
-            final int returnCode = procHolderForJoin.join();
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[] {procHolderForJoin, returnCode});
+            try {
+                final int returnCode = procHolderForJoin.join();
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[]{procHolderForJoin, returnCode});
+                }
+                return returnCode;
+            } finally {
+                if (procHolderForJoin.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                    assert false : "Process not finished after call to join() completed";
+                    LOGGER.log(Level.WARNING, "Process not finished after call to join() completed");
+                }
             }
-            if (procHolderForJoin.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
-                assert false : "Process not finished after call to join() completed";
-                LOGGER.log(Level.WARNING, "Process not finished after call to join() completed");
-            }
-            return returnCode;
         }
 
         /**
