@@ -401,7 +401,6 @@ public abstract class Launcher {
                 return returnCode;
             } finally {
                 if (procHolderForJoin.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
-                    assert false : "Process not finished after call to join() completed";
                     LOGGER.log(Level.WARNING, "Process not finished after call to join() completed");
                 }
             }
