@@ -1358,8 +1358,11 @@ function updateOptionalBlock(c,scroll) {
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
     vg.rowVisibilityGroup.makeInnerVisisble(checked);
-
-    if(checked && scroll) {
+    //FIXME: This scrollIntoView behavior breaks in v1 with FF on OSX.
+    // The scrolling behavior doesn't seem to add much utility, so this conditionally
+    // removes it from the v2 config page.
+    var legacyConfig =  $$('body.main-panel-only').length === 0;
+    if(checked && scroll && legacyConfig) {
         var D = YAHOO.util.Dom;
 
         var r = D.getRegion(s);
