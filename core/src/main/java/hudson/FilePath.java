@@ -2038,6 +2038,8 @@ public final class FilePath implements Serializable {
                                 File target = new File(dest, relativePath);
                                 mkdirsE(target.getParentFile());
                                 Util.copyFile(f, writing(target));
+				target.setExecutable(f.canExecute());
+				target.setWritable(f.canWrite());
                                 count.incrementAndGet();
                             }
                         }
