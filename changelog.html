@@ -56,7 +56,26 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class="rfe">
+    Reduce size of Jenkins WAR file by not storing identical copies of remoting.jar there.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2633">pull 2633</a>)
+  <li class="major bug">
+    Prevent early deallocation of process references by Garbage Collector when starting a remote process.
+    It was sometimes causing build failures with messages like <code>FATAL: Invalid object ID 184 iuota=187</code> and <code>java.lang.Exception: Object was recently deallocated</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23271">issue 23271</a>)
+  <li class="bug">
+    Make handling of internalization resource bundle names compliant with W3C standards.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39034">issue 39034</a>)
+  <li class="bug">
+    Redirect to login page in the case of authorisation error when checking connectivity to the Update Center.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39741">issue 39741</a>)
+  <li class="bug">
+    Remove the obsolete <code>hudson.showWindowsServiceInstallLink</code> property from the <code>slave-agent.jnlp</code> file.
+    It was causing harmless security warnings in Java web start.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39883">issue 39883</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2640">pull 2640</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.32>What's new in 2.32</a> (2016/11/16)</h3>
