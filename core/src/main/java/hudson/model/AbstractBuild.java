@@ -53,7 +53,6 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.Builder;
 import hudson.tasks.Fingerprinter.FingerprintAction;
 import hudson.tasks.Publisher;
 import hudson.util.*;
@@ -1005,52 +1004,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         }
         
         return s;
-    }
-
-    /**
-     * Provides additional variables and their values to {@link Builder}s.
-     *
-     * <p>
-     * This mechanism is used by {@code MatrixConfiguration} to pass
-     * the configuration values to the current build. It is up to
-     * {@link Builder}s to decide whether they want to recognize the values
-     * or how to use them.
-     *
-     * <p>
-     * This also includes build parameters if a build is parameterized.
-     *
-     * @return
-     *      The returned map is mutable so that subtypes can put more values.
-     */
-    public Map<String,String> getBuildVariables() {
-        Map<String,String> r = new HashMap<String, String>();
-
-        ParametersAction parameters = getAction(ParametersAction.class);
-        if (parameters!=null) {
-            // this is a rather round about way of doing this...
-            for (ParameterValue p : parameters) {
-                String v = p.createVariableResolver(this).resolve(p.getName());
-                if (v!=null) r.put(p.getName(),v);
-            }
-        }
-
-        // allow the BuildWrappers to contribute additional build variables
-        if (project instanceof BuildableItemWithBuildWrappers) {
-            for (BuildWrapper bw : ((BuildableItemWithBuildWrappers) project).getBuildWrappersList())
-                bw.makeBuildVariables(this,r);
-        }
-
-        for (BuildVariableContributor bvc : BuildVariableContributor.all())
-            bvc.buildVariablesFor(this,r);
-
-        return r;
-    }
-
-    /**
-     * Creates {@link VariableResolver} backed by {@link #getBuildVariables()}.
-     */
-    public final VariableResolver<String> getBuildVariableResolver() {
-        return new VariableResolver.ByMap<String>(getBuildVariables());
     }
 
     /**

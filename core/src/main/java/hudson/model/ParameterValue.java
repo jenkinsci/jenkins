@@ -208,7 +208,7 @@ public abstract class ParameterValue implements Serializable {
      *      if the parameter value is not interested in participating to the
      *      variable replacement process, return {@link VariableResolver#NONE}.
      */
-    public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
+    public VariableResolver<String> createVariableResolver(Run<?,?> build) {
         return VariableResolver.NONE;
     }
 
