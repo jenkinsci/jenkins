@@ -61,7 +61,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
-     * Called when {@link NodeProvisioner.PlannedNode#future#get()} throws an exception.
+     * Called when <tt>PlannedNode.future.get()</tt> throws an exception.
      *
      * @param plannedNode the planned node which failed to launch
      * @param t the exception
