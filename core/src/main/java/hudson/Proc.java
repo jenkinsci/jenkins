@@ -172,7 +172,7 @@ public abstract class Proc {
      */
     public static final class LocalProc extends Proc {
         private final Process proc;
-        private final Thread copier,copier2;
+        private final StreamCopyThread copier,copier2;
         private final OutputStream out;
         private final EnvVars cookie;
         private final String name;
@@ -319,31 +319,17 @@ public abstract class Proc {
                 // see http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
-                if (copier!=null)   copier.join(10*1000);
-                if(copier2!=null)   copier2.join(10*1000);
-                if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
-                    // looks like handles are leaking.
-                    // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build for more information";
-                    Throwable e = new Exception().fillInStackTrace();
-                    LOGGER.log(Level.WARNING,msg,e);
-
-                    // doing proc.getInputStream().close() hangs in FileInputStream.close0()
-                    // it could be either because another thread is blocking on read, or
-                    // it could be a bug in Windows JVM. Who knows.
-                    // so I'm abandoning the idea of closing the stream
-//                    try {
-//                        proc.getInputStream().close();
-//                    } catch (IOException x) {
-//                        LOGGER.log(Level.FINE,"stdin termination failed",x);
-//                    }
-//                    try {
-//                        proc.getErrorStream().close();
-//                    } catch (IOException x) {
-//                        LOGGER.log(Level.FINE,"stderr termination failed",x);
-//                    }
-                    out.write(msg.getBytes());
-                    out.write('\n');
+                if (copier != null) {
+                    copier.join(10 * 1000);
+                }
+                if (copier2 != null) {
+                    copier2.join(10 * 1000);
+                }
+                if (copier != null && copier.isAlive()) {
+                    copier.close(true);
+                }
+                if (copier2 != null && copier2.isAlive()) {
+                    copier2.close(true);
                 }
                 return r;
             } catch (InterruptedException e) {
