@@ -2,6 +2,7 @@ package hudson.cli;
 
 import org.apache.commons.codec.binary.Base64;
 
+import javax.annotation.CheckForNull;
 import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -36,6 +37,7 @@ public final class CliPort {
     /**
      * Gets the public part of the RSA key that represents the server identity.
      */
+    @CheckForNull
     public PublicKey getIdentity() throws GeneralSecurityException {
         if (identity==null) return null;
         byte[] image = Base64.decodeBase64(identity);

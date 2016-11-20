@@ -89,13 +89,16 @@ public class CLI {
     private final String httpsProxyTunnel;
     private final String authorization;
 
+    /**
+     * @deprecated Use {@link #CLI(hudson.cli.CLIConnectionFactory)
+     */
+    @Deprecated
     public CLI(URL jenkins) throws IOException, InterruptedException {
         this(jenkins,null);
     }
 
     /**
-     * @deprecated
-     *      Use {@link CLIConnectionFactory} to create {@link CLI}
+     * @deprecated Use {@link #CLI(hudson.cli.CLIConnectionFactory)
      */
     @Deprecated
     public CLI(URL jenkins, ExecutorService exec) throws IOException, InterruptedException {
@@ -103,16 +106,22 @@ public class CLI {
     }
 
     /**
-     * @deprecated 
-     *      Use {@link CLIConnectionFactory} to create {@link CLI}
+     * @deprecated Use {@link #CLI(hudson.cli.CLIConnectionFactory)
      */
     @Deprecated
     public CLI(URL jenkins, ExecutorService exec, String httpsProxyTunnel) throws IOException, InterruptedException {
         this(new CLIConnectionFactory().url(jenkins).executorService(exec).httpsProxyTunnel(httpsProxyTunnel));
     }
-    
-    /*package*/ CLI(CLIConnectionFactory factory) throws IOException, InterruptedException {
+
+    /**
+     * CLI connection to jenkins.
+     * @param factory builder with settings required for connection.
+     */
+    public CLI(CLIConnectionFactory factory) throws IOException, InterruptedException {
         URL jenkins = factory.jenkins;
+        if (jenkins == null) {
+            throw new IllegalArgumentException("Jenkins url must be specified in CLIConnectionFactory");
+        }
         this.httpsProxyTunnel = factory.httpsProxyTunnel;
         this.authorization = factory.authorization;
         ExecutorService exec = factory.exec;
@@ -122,11 +131,16 @@ public class CLI {
 
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool();
+        CliPort cliPort = factory.cliPort != null ? factory.cliPort : getCliTcpPort(url);
 
         Channel _channel;
         try {
-            _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
+            _channel = connectViaCliPort(jenkins, cliPort);
         } catch (IOException e) {
+            if (factory.onlyCliPortConnection) {
+                throw e;
+            }
+
             LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
             try {
                 _channel = connectViaHttp(url);
