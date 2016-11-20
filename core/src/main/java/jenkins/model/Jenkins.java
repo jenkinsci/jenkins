@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import groovy.lang.GroovyShell;
 import hudson.BulkChange;
 import hudson.DNSMultiCast;
 import hudson.DescriptorExtensionList;
@@ -435,6 +436,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Message displayed in the top page.
      */
     private String systemMessage;
+
+    private boolean systemMessageScript;
 
     private MarkupFormatter markupFormatter;
 
@@ -1314,7 +1317,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Exported
     public String getDescription() {
-        return systemMessage;
+        return getSystemMessage();
     }
 
     public PluginManager getPluginManager() {
@@ -1625,7 +1628,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Synonym for {@link #getDescription}.
      */
     public String getSystemMessage() {
+        if (systemMessageScript) {
+            return new GroovyShell().evaluate(systemMessage).toString();
+        }
+        return getRawSystemMessage();
+    }
+
+    public String getRawSystemMessage() {
         return systemMessage;
+    }
+
+    public boolean isSystemMessageScript() {
+        return systemMessageScript;
     }
 
     /**
@@ -1654,6 +1668,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void setSystemMessage(String message) throws IOException {
         this.systemMessage = message;
+        save();
+    }
+
+    public void setRawSystemMessage(String message) throws IOException {
+        setSystemMessage(message);
+    }
+
+    public void setSystemMessageScript(boolean systemMessageScript) throws IOException {
+        this.systemMessageScript = systemMessageScript;
         save();
     }
 
@@ -3598,7 +3621,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             workspaceDir = json.getString("rawWorkspaceDir");
             buildsDir = json.getString("rawBuildsDir");
 
-            systemMessage = Util.nullify(req.getParameter("system_message"));
+            systemMessage = Util.nullify(json.getString("system_message"));
+            systemMessageScript = json.getBoolean("system_message_script");
 
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
