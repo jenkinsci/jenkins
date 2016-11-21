@@ -59,6 +59,83 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.33>What's new in 2.33</a> (2016/11/20)</h3>
+<ul class=image>
+  <li class="rfe">
+    Reduce size of Jenkins WAR file by not storing identical copies of remoting.jar there.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2633">pull 2633</a>)
+  <li class="major bug">
+    Prevent early deallocation of process references by Garbage Collector when starting a remote process.
+    It was sometimes causing build failures with messages like <code>FATAL: Invalid object ID 184 iuota=187</code> and <code>java.lang.Exception: Object was recently deallocated</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23271">issue 23271</a>)
+  <li class="bug">
+    Make handling of internalization resource bundle names compliant with W3C standards.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39034">issue 39034</a>)
+  <li class="bug">
+    Redirect to login page in the case of authorisation error when checking connectivity to the Update Center.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39741">issue 39741</a>)
+  <li class="bug">
+    Remove the obsolete <code>hudson.showWindowsServiceInstallLink</code> property from the <code>slave-agent.jnlp</code> file.
+    It was causing harmless security warnings in Java web start.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39883">issue 39883</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2640">pull 2640</a>)
+</ul>
+<h3><a name=v2.32>What's new in 2.32</a> (2016/11/16)</h3>
+<ul class=image>
+   <li class="major bug">
+     <strong>Important security fixes</strong>
+     (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2016-11-16">security advisory</a>)
+  <li class="rfe">
+    Allow disabling the Jenkins CLI over HTTP and JNLP agent port by setting the System property <tt>jenkins.CLI.disabled</tt> to <tt>true</tt>.
+</ul>
+<h3><a name=v2.31>What's new in 2.31</a> (2016/11/13)</h3>
+<ul class=image>
+  <li class="rfe">
+    Performance: Improve responsiveness of Jenkins web UI on mobile devices.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39172">issue 39172</a>, continuation of the patch in 2.28)
+  <li class="major bug">
+    It was not possible to connect Jenkins agents via Java Web Start due to the issue in Remoting <code>3.0</code>.
+    Upgraded to Remoting <code>3.1</code> with a fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39596">issue 39596</a>, regression in 2.26)
+  <li class="bug">
+    Prevent <code>NullPointerException</code> when rendering <code>CauseOfInterruption.UserInterruption</code>
+    in build summary pages for non-existent users.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38721">issue 38721</a> and
+     <a href="https://issues.jenkins-ci.org/browse/JENKINS-37282">issue 37282</a>,
+     regression in 2.14)
+  <li class="bug">
+    Reduce logging level when the localization resource is missing <code>ResourceBundleUtil#getBundle()</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39604">issue 39604</a>)
+  <li class="bug">
+    <code>ExtensionList.removeAll</code> was not unimplemented in Jenkins extension management API.
+    It was causing issues during dynamic loading of GitHub and BitBucket branch source plugins on the same instance.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39520">issue 39520</a>)
+  <li class="bug">
+    Remoting 3.1: <code>hudson.remoting.Engine</code> (mostly Java Web Start) was failing to establish connection 
+    if one of the URLs in <code>urls</code> parameter was malformed.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39617">issue 39617</a>)
+  <li class="rfe">
+    Remoting 3.1: Add method for dumping diagnostics across all the channels (e.g. in the Support Core Plugin).
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39150">issue 39150</a>)
+  <li class="rfe">
+    Remoting 3.1: Improve the caller/callee correlation diagnostics in thread dumps.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39543">issue 39543</a>)
+  <li class="rfe">
+    Remoting 3.1: Add the <code>org.jenkinsci.remoting.nio.NioChannelHub.disabled</code> flag 
+    for disabling NIO, mostly for debugging purposes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39290">issue 39290</a>)
+  <li class="rfe">
+    Remoting 3.1: Add extra logging to help diagnosing <code>IOHub</code> concurrent thread number spikes.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38692">issue 38692</a>)
+  <li class="rfe">
+    Remoting 3.1: When a proxy fails, report what caused the channel to go down.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39289">issue 39289</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2631">pull 2631</a>)
+</ul>
 <h3><a name=v2.30>What's new in 2.30</a> (2016/11/07)</h3>
 <ul class=image>
   <li class="major bug">
