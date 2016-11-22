@@ -73,7 +73,6 @@ public class Security218BlackBoxTest {
         closables = new ArrayList<>();
     }
 
-    @SuppressWarnings("deprecation") // SocketInputStream.read ignores Thread.interrupt
     @AfterClass public static void shutdownExecutors() throws Exception {
         for (AutoCloseable c : closables) {
             c.close();
