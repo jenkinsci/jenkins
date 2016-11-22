@@ -65,10 +65,10 @@ public class CLIActionTest {
     @Test
     public void security218_take2() throws Exception {
         pool = Executors.newCachedThreadPool();
-        try {
+        try (CLI cli = new CLI(j.getURL())) {
             List/*<String>*/ commands = new ArrayList();
             commands.add(new Security218());
-            new CLI(j.getURL()).execute(commands);
+            cli.execute(commands);
             fail("Expected the call to be rejected");
         } catch (Exception e) {
             assertThat(Functions.printThrowable(e), containsString("Rejected: " + Security218.class.getName()));

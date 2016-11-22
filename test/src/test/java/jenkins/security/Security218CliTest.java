@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.PrintStream;
 import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -176,11 +175,13 @@ public class Security218CliTest {
         
         // Bypassing _main because it does nothing interesting here.
         // Hardcoding CLI protocol version 1 (CliProtocol) because it is easier to sniff.
-        int exitCode = new CLI(r.getURL()).execute("send-payload",
-                payload.toString(), "mv " + file.getAbsolutePath() + " " + moved.getAbsolutePath());
-        assertEquals("Unexpected result code.", expectedResultCode, exitCode);
-        assertTrue("Payload should not invoke the move operation " + file, !moved.exists());
-        file.delete();
+        try (CLI cli = new CLI(r.getURL())) {
+            int exitCode = cli.execute("send-payload",
+                    payload.toString(), "mv " + file.getAbsolutePath() + " " + moved.getAbsolutePath());
+            assertEquals("Unexpected result code.", expectedResultCode, exitCode);
+            assertTrue("Payload should not invoke the move operation " + file, !moved.exists());
+            file.delete();
+        }
     }
     
     @TestExtension()

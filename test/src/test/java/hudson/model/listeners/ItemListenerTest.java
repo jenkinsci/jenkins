@@ -66,8 +66,7 @@ public class ItemListenerTest {
     public void onCreatedViaCLI() throws Exception {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(buf);
-        CLI cli = new CLI(j.getURL());
-        try {
+        try (CLI cli = new CLI(j.getURL())) {
             cli.execute(Arrays.asList("create-job", "testJob"),
                     new ByteArrayInputStream(("<project><actions/><builders/><publishers/>"
                             + "<buildWrappers/></project>").getBytes()),
@@ -75,8 +74,6 @@ public class ItemListenerTest {
             out.flush();
             assertNotNull("job should be created: " + buf, j.jenkins.getItem("testJob"));
             assertEquals("onCreated event should be triggered: " + buf, "C", events.toString());
-        } finally {
-            cli.close();
         }
     }
 }
