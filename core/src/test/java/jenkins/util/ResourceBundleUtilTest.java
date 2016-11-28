@@ -54,6 +54,9 @@ public class ResourceBundleUtilTest {
      */
     @Test
     public void test_unknown_locale() {
+        //Set Default-Locale to english
+        Locale.setDefault(new Locale("en", "US"));
+
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
         Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
 
