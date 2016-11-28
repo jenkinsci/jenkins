@@ -1,6 +1,7 @@
 package hudson.model.queue;
 
 import hudson.console.ModelHyperlinkNote;
+import hudson.model.Computer;
 import hudson.model.Queue.Task;
 import hudson.model.Node;
 import hudson.model.Messages;
@@ -101,6 +102,33 @@ public abstract class CauseOfBlockage {
             listener.getLogger().println(
                 Messages.Queue_NodeOffline(ModelHyperlinkNote.encodeTo(node)));
         }
+    }
+
+    /**
+     * Build is blocked because a node (or its retention strategy) is not accepting tasks.
+     * @since FIXME
+     */
+    public static final class BecauseNodeIsNotAcceptingTasks extends CauseOfBlockage implements NeedsMoreExecutor {
+
+        public final Node node;
+
+        public BecauseNodeIsNotAcceptingTasks(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public String getShortDescription() {
+            Computer computer = node.toComputer();
+            String name = computer != null ? computer.getDisplayName() : node.getDisplayName();
+            return Messages.Queue_node_not_accepting_tasks(name);
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(
+                Messages.Queue_node_not_accepting_tasks(ModelHyperlinkNote.encodeTo(node)));
+        }
+
     }
 
     /**
