@@ -27,6 +27,7 @@ package jenkins.xml;
 import jenkins.util.xml.XMLUtils;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Locale;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -46,6 +48,12 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
+
+    @BeforeClass
+    public static void setUp(){
+        // These tests expect English texts.
+        Locale.setDefault(new Locale("en", "US"));
+    }
 
     @Issue("SECURITY-167")
     @Test()
