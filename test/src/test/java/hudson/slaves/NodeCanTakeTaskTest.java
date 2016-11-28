@@ -27,6 +27,7 @@ package hudson.slaves;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Result;
 import hudson.model.Slave;
@@ -40,6 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.SleepBuilder;
 
 public class NodeCanTakeTaskTest {
 
@@ -88,4 +90,21 @@ public class NodeCanTakeTaskTest {
             };
         }
     }
+
+    @Test
+    public void becauseNodeIsBusy() throws Exception {
+        Slave slave = r.createSlave();
+        FreeStyleProject project = r.createFreeStyleProject();
+        project.setAssignedNode(slave);
+        project.setConcurrentBuild(true);
+        project.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
+        project.scheduleBuild2(0).waitForStart(); // consume the one executor
+        project.scheduleBuild2(0); // now try to reschedule
+        Queue.Item item;
+        while ((item = r.jenkins.getQueue().getItem(project)) == null || !item.isBuildable()) {
+            Thread.sleep(100);
+        }
+        assertEquals(hudson.model.Messages.Queue_WaitingForNextAvailableExecutorOn(slave.getDisplayName()), item.getWhy());
+    }
+
 }

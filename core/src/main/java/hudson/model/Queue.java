@@ -291,7 +291,7 @@ public class Queue extends ResourceController implements Saveable {
             if (executor.getOwner().isOffline()) {
                 return new CauseOfBlockage.BecauseNodeIsOffline(node);
             }
-            if (!executor.getOwner().isAcceptingTasks()) {
+            if (!executor.getOwner().isAcceptingTasks()) { // Node.canTake (above) does not consider RetentionStrategy.isAcceptingTasks
                 return new CauseOfBlockage.BecauseNodeIsNotAcceptingTasks(node);
             }
             return null;
@@ -2536,13 +2536,13 @@ public class Queue extends ResourceController implements Saveable {
                     if (nodes.size() != 1)      return new BecauseLabelIsOffline(label);
                     else                        return new BecauseNodeIsOffline(nodes.iterator().next());
                 } else {
-                    if (transientCausesOfBlockage != null) {
+                    if (transientCausesOfBlockage != null && label.getIdleExecutors() > 0) {
                         return new CompositeCauseOfBlockage(transientCausesOfBlockage);
                     }
                     if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
-            } else if (transientCausesOfBlockage != null) {
+            } else if (transientCausesOfBlockage != null && new ComputerSet().getIdleExecutors() > 0) {
                 return new CompositeCauseOfBlockage(transientCausesOfBlockage);
             } else {
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
