@@ -8,6 +8,7 @@ import hudson.model.Messages;
 import hudson.model.Label;
 import hudson.model.TaskListener;
 import hudson.slaves.Cloud;
+import javax.annotation.Nonnull;
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -43,8 +44,10 @@ public abstract class CauseOfBlockage {
     /**
      * Obtains a simple implementation backed by {@link Localizable}.
      */
-    public static CauseOfBlockage fromMessage(final Localizable l) {
+    public static CauseOfBlockage fromMessage(@Nonnull final Localizable l) {
+        l.getKey(); // null check
         return new CauseOfBlockage() {
+            @Override
             public String getShortDescription() {
                 return l.toString();
             }
@@ -120,13 +123,13 @@ public abstract class CauseOfBlockage {
         public String getShortDescription() {
             Computer computer = node.toComputer();
             String name = computer != null ? computer.getDisplayName() : node.getDisplayName();
-            return Messages.Queue_node_not_accepting_tasks(name);
+            return Messages.Node_BecauseNodeIsNotAcceptingTasks(name);
         }
 
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(
-                Messages.Queue_node_not_accepting_tasks(ModelHyperlinkNote.encodeTo(node)));
+                Messages.Node_BecauseNodeIsNotAcceptingTasks(ModelHyperlinkNote.encodeTo(node)));
         }
 
     }

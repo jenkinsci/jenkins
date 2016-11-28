@@ -399,7 +399,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
 
         if (!isAcceptingTasks()) {
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsNotAcceptingTasks(getDisplayName()));
+            return new CauseOfBlockage.BecauseNodeIsNotAcceptingTasks(this);
         }
 
         // Looks like we can take the task
