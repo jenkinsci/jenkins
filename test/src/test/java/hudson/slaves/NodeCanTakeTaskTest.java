@@ -26,10 +26,8 @@ package hudson.slaves;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Queue.BuildableItem;
-import hudson.model.Queue.Task;
 import hudson.model.Result;
 import hudson.model.Slave;
 import hudson.model.queue.CauseOfBlockage;
@@ -40,6 +38,7 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class NodeCanTakeTaskTest {
@@ -47,6 +46,7 @@ public class NodeCanTakeTaskTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
+    @Issue({"JENKINS-6598", "JENKINS-38514"})
     @Test
     public void takeBlockedByProperty() throws Exception {
         // Set master executor count to zero to force all jobs to slaves
@@ -73,14 +73,19 @@ public class NodeCanTakeTaskTest {
             BuildableItem item = buildables.get(0);
             assertEquals(project, item.task);
             assertNotNull(item.getCauseOfBlockage());
-            assertEquals(Messages.Queue_WaitingForNextAvailableExecutor(), item.getCauseOfBlockage().getShortDescription());
+            assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
         }
     }
 
     private static class RejectAllTasksProperty extends NodeProperty<Node> {
         @Override
-        public CauseOfBlockage canTake(Task task) {
-            return CauseOfBlockage.fromMessage(null);
+        public CauseOfBlockage canTake(BuildableItem item) {
+            return new CauseOfBlockage() {
+                @Override
+                public String getShortDescription() {
+                    return "rejecting everything";
+                }
+            };
         }
     }
 }
