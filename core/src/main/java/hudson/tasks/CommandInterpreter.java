@@ -158,7 +158,7 @@ public abstract class CommandInterpreter extends Builder {
      * Creates a script file in a temporary name in the specified directory.
      */
     public FilePath createScriptFile(@Nonnull FilePath dir) throws IOException, InterruptedException {
-        return dir.createTextTempFile("hudson", getFileExtension(), getContents(), false);
+        return dir.createScriptTempFile("hudson", getFileExtension(), getContents(), false);
     }
 
     public abstract String[] buildCommandLine(FilePath script);
