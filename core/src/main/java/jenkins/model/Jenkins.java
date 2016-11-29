@@ -4561,6 +4561,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Test a path to see if it does not require authentication
      * @param restOfPath the URI, excluding the Jenkins root URI and query string
      * @return true if the path is unprotected
+     * @since TODO
      */
     public boolean isPathUnprotected(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
