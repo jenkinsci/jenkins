@@ -1014,7 +1014,13 @@ public abstract class Launcher {
 
             @Override
             public void kill() throws IOException, InterruptedException {
-                process.kill();
+                try {
+                    process.kill();
+                } finally {
+                    if (this.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                        LOGGER.log(Level.WARNING, "Process {0} has not really finished after the kill() method execution", this);
+                    }
+                }
             }
 
             @Override

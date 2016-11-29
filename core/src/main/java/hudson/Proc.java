@@ -442,7 +442,14 @@ public abstract class Proc {
 
         @Override
         public void kill() throws IOException, InterruptedException {
-            process.cancel(true);
+            try {
+                process.cancel(true);
+            } finally {
+                if (this.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                    // TODO: Report exceptions if they happen?
+                    LOGGER.log(Level.WARNING, "Process {0} has not really finished after the kill() method execution", this);
+                }
+            }
         }
 
         @Override
@@ -450,8 +457,8 @@ public abstract class Proc {
             try {
                 return process.get();
             } catch (InterruptedException e) {
-                // aborting. kill the process
-                process.cancel(true);
+                LOGGER.log(Level.FINE, String.format("Join operation has been interrupted for the process %s. Killing the process", this), e);
+                kill();
                 throw e;
             } catch (ExecutionException e) {
                 if(e.getCause() instanceof IOException)
