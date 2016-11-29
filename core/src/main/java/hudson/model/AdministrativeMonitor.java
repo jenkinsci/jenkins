@@ -34,8 +34,10 @@ import java.util.Set;
 import java.io.IOException;
 
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Checks the health of a subsystem of Jenkins and if there's something
@@ -75,7 +77,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @see Jenkins#administrativeMonitors
  */
 @LegacyInstancesAreScopedToHudson
-public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint {
+public abstract class AdministrativeMonitor extends AbstractModelObject implements ExtensionPoint, StaplerProxy {
     /**
      * Human-readable ID of this monitor, which needs to be unique within the system.
      *
@@ -143,10 +145,18 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * URL binding to disable this monitor.
      */
+    @RequirePOST
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         disable(true);
         rsp.sendRedirect2(req.getContextPath()+"/manage");
+    }
+
+    /**
+     * Requires ADMINISTER permission for any operation in here.
+     */
+    public Object getTarget() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        return this;
     }
 
     /**

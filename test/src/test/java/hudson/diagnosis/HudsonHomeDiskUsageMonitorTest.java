@@ -1,9 +1,20 @@
 package hudson.diagnosis;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import hudson.model.User;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.HudsonPrivateSecurityRealm;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -13,6 +24,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -43,6 +55,41 @@ public class HudsonHomeDiskUsageMonitorTest {
         } catch (ElementNotFoundException e) {
             // as expected
         }
+    }
+
+    @Test
+    public void noAccessForNonAdmin() throws Exception {
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        // TODO: Use MockAuthorizationStrategy in later versions
+        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+        realm.addGroups("administrator", "admins");
+        realm.addGroups("alice", "users");
+        realm.addGroups("bob", "users");
+        j.jenkins.setSecurityRealm(realm);
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        auth.add(Jenkins.ADMINISTER, "admins");
+        auth.add(Permission.READ, "users");
+        j.jenkins.setAuthorizationStrategy(auth);
+
+        WebRequest request = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        NameValuePair param = new NameValuePair("no", "true");
+        request.setRequestParameters(Collections.singletonList(param));
+
+        HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
+
+        try {
+            wc.login("bob");
+            wc.getPage(request);
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(403, e.getStatusCode());
+        }
+        assertTrue(mon.isEnabled());
+
+        wc.login("administrator");
+        wc.getPage(request);
+        assertFalse(mon.isEnabled());
+
     }
 
     /**
