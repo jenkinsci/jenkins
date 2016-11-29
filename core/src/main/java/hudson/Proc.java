@@ -49,6 +49,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * External process wrapper.
@@ -431,7 +433,7 @@ public abstract class Proc {
      * @deprecated as of 1.399. Replaced by {@link Launcher.RemoteLauncher.ProcImpl}
      */
     @Deprecated
-    public static final class RemoteProc extends Proc {
+    public static final class RemoteProc extends Proc implements ProcWithJenkins23271Patch {
         private final Future<Integer> process;
 
         public RemoteProc(Future<Integer> process) {
@@ -457,6 +459,10 @@ public abstract class Proc {
                 throw new IOException("Failed to join the process",e);
             } catch (CancellationException x) {
                 return -1;
+            } finally {
+                if (this.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                    LOGGER.log(Level.WARNING, "Process {0} has not really finished after the join() method completion", this);
+                }
             }
         }
 
@@ -486,4 +492,15 @@ public abstract class Proc {
      * Debug switch to have the thread display the process it's waiting for.
      */
     public static boolean SHOW_PID = false;
+    
+    /**
+    * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
+    * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
+    * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-23271">JENKINS-23271></a>
+    * @author Oleg Nenashev
+    */
+    @Restricted(NoExternalUse.class)
+    public interface ProcWithJenkins23271Patch {
+        // Empty marker interface
+    }
 }
