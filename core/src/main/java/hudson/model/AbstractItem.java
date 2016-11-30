@@ -354,12 +354,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public abstract Collection<? extends Job> getAllJobs();
 
+    @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
         if(n.length()==0)   return getName();
         else                return n+'/'+getName();
     }
 
+    @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();

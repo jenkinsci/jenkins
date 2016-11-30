@@ -59,10 +59,32 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.34>What's new in 2.34</a> (2016/11/27)</h3>
+<ul class=image>
+  <li class="rfe">
+    Improve performance of <code>Action</code> retrieval methods.
+    It speeds up core and plugin logic operating with <code>Actionable</code> objects like items, folders, nodes, etc. 
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38867">issue 38867</a>)
+  <li class="rfe">
+    Update the <a href="https://github.com/jenkinsci/sshd-module">SSHD module</a> from <code>1.7</code> to <code>1.8</code>.
+    The change disables obsolete Ciphers: AES128CBC, TripleDESCBC, and BlowfishCBC.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39805">issue 39805</a>)
+  <li class="rfe">
+    Update the <a href="https://github.com/kohsuke/winp">Windows process management library (WinP)</a> from <code>1.22</code> to <code>1.24</code>. 
+    Full changelog is available <a href="https://github.com/kohsuke/winp/blob/master/CHANGELOG.md">here</a>, only major issues are mentioned below.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2619">pull 2619</a>)
+  <li class="bug">
+    WinP 1.24: Native class now tries loading DLLs from the temporary location.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20913">issue 20913</a>)
+  <li class="bug">
+    WinP 1.24: WinP sometimes kills wrong processes when using <code>killRecursive</code>.
+    It was likely impacting process termination on Windows agents.
+    (<a href="https://github.com/kohsuke/winp/issues/22">WinP Issue #22</a>)
+</ul>
 <h3><a name=v2.33>What's new in 2.33</a> (2016/11/20)</h3>
 <ul class=image>
   <li class="rfe">
-    Reduce size of Jenkins WAR file by not storing identical copies of remoting.jar there.
+    Reduce size of Jenkins WAR file by not storing identical copies of <code>remoting.jar</code>/<code>slave.jar</code> there.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2633">pull 2633</a>)
   <li class="major bug">
     Prevent early deallocation of process references by Garbage Collector when starting a remote process.

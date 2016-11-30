@@ -24,7 +24,6 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.ExtensionList;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
@@ -68,13 +66,13 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * This method by default returns only <em>persistent</em> actions
      * (though some subclasses override it to return an extended unmodifiable list).
      *
-     * @return
-     *      may be empty but never null.
+     * @return a possibly empty list
      * @deprecated Normally outside code should not call this method any more.
      *             Use {@link #getAllActions}, or {@link #addAction}, or {@link #replaceAction}.
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
+    @Nonnull
     public List<Action> getActions() {
         synchronized (this) {
             if(actions == null) {
@@ -91,33 +89,53 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      */
     @Exported(name="actions")
+    @Nonnull
     public final List<? extends Action> getAllActions() {
-        List<Action> _actions = new ArrayList<Action>(getActions());
-        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
-            if (taf.type().isInstance(this)) {
-                try {
-                    _actions.addAll(createFor(taf));
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+        List<Action> _actions = getActions();
+        boolean adding = false;
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
+            Collection<? extends Action> additions = createFor(taf);
+            if (!additions.isEmpty()) {
+                if (!adding) { // need to make a copy
+                    adding = true;
+                    _actions = new ArrayList<>(_actions);
                 }
+                _actions.addAll(additions);
             }
         }
         return Collections.unmodifiableList(_actions);
     }
+
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
-        return taf.createFor(taf.type().cast(this));
+        try {
+            Collection<? extends Action> result = taf.createFor(taf.type().cast(this));
+            for (Action a : result) {
+                if (!taf.actionType().isInstance(a)) {
+                    LOGGER.log(Level.WARNING, "Actions from {0} for {1} included {2} not assignable to {3}", new Object[] {taf, this, a, taf.actionType()});
+                    return Collections.emptySet();
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Could not load actions from " + taf + " for " + this, e);
+            return Collections.emptySet();
+        }
     }
 
     /**
      * Gets all actions of a specified type that contributed to this object.
      *
      * @param type The type of action to return.
-     * @return
-     *      may be empty but never null.
+     * @return an unmodifiable, possible empty list
      * @see #getAction(Class)
      */
+    @Nonnull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        return Util.filter(getAllActions(), type);
+        List<T> _actions = Util.filter(getActions(), type);
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
+            _actions.addAll(Util.filter(createFor(taf), type));
+        }
+        return Collections.unmodifiableList(_actions);
     }
 
     /**
@@ -305,9 +323,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {
-        for (Action a : getAllActions())
-            if (type.isInstance(a))
+        // Shortcut: if the persisted list has one, return it.
+        for (Action a : getActions()) {
+            if (type.isInstance(a)) {
                 return type.cast(a);
+            }
+        }
+        // Otherwise check transient factories.
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
+            for (Action a : createFor(taf)) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+        }
         return null;
     }
 
