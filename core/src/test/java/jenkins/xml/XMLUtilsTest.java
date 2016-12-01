@@ -26,6 +26,7 @@ package jenkins.xml;
 
 import jenkins.util.xml.XMLUtils;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,10 +50,19 @@ import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
 
+    private static Locale temp;
+
     @BeforeClass
     public static void setUp(){
+        temp = Locale.getDefault();
         // These tests expect English texts.
         Locale.setDefault(new Locale("en", "US"));
+    }
+
+    @AfterClass
+    public static void tearDown(){
+        //Reset Default locale
+        Locale.setDefault(temp);
     }
 
     @Issue("SECURITY-167")
