@@ -251,17 +251,7 @@ public class Queue extends ResourceController implements Saveable {
          */
         @Deprecated
         public boolean canTake(BuildableItem item) {
-            Node node = getNode();
-            if (node==null)     return false;   // this executor is about to die
-
-            if(node.canTake(item)!=null)
-                return false;   // this node is not able to take the task
-
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
-                if (d.canTake(node,item)!=null)
-                    return false;
-
-            return isAvailable();
+            return getCauseOfBlockage(item) == null;
         }
 
         /**
@@ -2510,7 +2500,7 @@ public class Queue extends ResourceController implements Saveable {
          * Reasons why the last call to {@link #maintain} left this buildable (but not blocked or executing).
          * May be null but not empty.
          */
-        private transient @CheckForNull List<CauseOfBlockage> transientCausesOfBlockage;
+        private transient volatile @CheckForNull List<CauseOfBlockage> transientCausesOfBlockage;
 
         public BuildableItem(WaitingItem wi) {
             super(wi);
@@ -2525,6 +2515,8 @@ public class Queue extends ResourceController implements Saveable {
             if(isBlockedByShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
+            List<CauseOfBlockage> causesOfBlockage = transientCausesOfBlockage;
+
             Label label = getAssignedLabel();
             List<Node> allNodes = jenkins.getNodes();
             if (allNodes.isEmpty())
@@ -2536,14 +2528,14 @@ public class Queue extends ResourceController implements Saveable {
                     if (nodes.size() != 1)      return new BecauseLabelIsOffline(label);
                     else                        return new BecauseNodeIsOffline(nodes.iterator().next());
                 } else {
-                    if (transientCausesOfBlockage != null && label.getIdleExecutors() > 0) {
-                        return new CompositeCauseOfBlockage(transientCausesOfBlockage);
+                    if (causesOfBlockage != null && label.getIdleExecutors() > 0) {
+                        return new CompositeCauseOfBlockage(causesOfBlockage);
                     }
                     if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
-            } else if (transientCausesOfBlockage != null && new ComputerSet().getIdleExecutors() > 0) {
-                return new CompositeCauseOfBlockage(transientCausesOfBlockage);
+            } else if (causesOfBlockage != null && new ComputerSet().getIdleExecutors() > 0) {
+                return new CompositeCauseOfBlockage(causesOfBlockage);
             } else {
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
