@@ -66,6 +66,7 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
      * <p>If an API defines a abstract {@link Action} subtype and you are providing a concrete implementation,
      * you may return the API type here to delay class loading.
      * @return a bound for the result of {@link #createFor}
+     * @since 2.34
      */
     public /* abstract */ Class<? extends Action> actionType() {
         return Action.class;
