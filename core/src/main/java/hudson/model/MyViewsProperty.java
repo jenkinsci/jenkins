@@ -87,7 +87,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // preserve the non-empty invariant
             views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
         }
-        primaryViewName = AllView.applyJenkins38606Fixup(views, primaryViewName);
+        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }

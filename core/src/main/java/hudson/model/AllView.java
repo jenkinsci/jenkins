@@ -118,15 +118,15 @@ public class AllView extends View {
 
     /**
      * Corrects the name of the {@link AllView} if and only if the {@link AllView} is the primary view and
-     * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()} and the user has opted in to
-     * fixing the view name by setting the system property {@code hudson.mode.AllView.JENKINS-38606} to {@code true}.
+     * its name is one of the localized forms of {@link Messages#_Hudson_ViewName()} and the user has not opted out of
+     * fixing the view name by setting the system property {@code hudson.mode.AllView.JENKINS-38606} to {@code false}.
      * Use this method to round-trip the primary view name, e.g.
      * {@code primaryView = applyJenkins38606Fixup(views, primaryView)}
      * <p>
      * NOTE: we can only fix the localized name of an {@link AllView} if it is the primary view as otherwise urls
      * would change, whereas the primary view is special and does not normally get accessed by the
      * {@code /view/_name_} url. (Also note that there are some cases where the primary view will get accessed by
-     * its {@code /view/_name_} url which is why users need to opt-in to this fix.
+     * its {@code /view/_name_} url which will then fall back to the primary view)
      *
      * @param views the list of views.
      * @param primaryView the current primary view name.
@@ -135,12 +135,13 @@ public class AllView extends View {
      * @since FIXME
      */
     @Nonnull
-    public static String applyJenkins38606Fixup(@Nonnull List<View> views, @Nonnull String primaryView) {
+    public static String migrateLegacyPrimaryAllViewLocalizedName(@Nonnull List<View> views,
+                                                                  @Nonnull String primaryView) {
         if (DEFAULT_VIEW_NAME.equals(primaryView)) {
             // modern name, we are safe
             return primaryView;
         }
-        if (SystemProperties.getBoolean(AllView.class.getName()+".JENKINS-38606")) {
+        if (SystemProperties.getBoolean(AllView.class.getName()+".JENKINS-38606", true)) {
             AllView allView = null;
             for (View v : views) {
                 if (DEFAULT_VIEW_NAME.equals(v.getViewName())) {

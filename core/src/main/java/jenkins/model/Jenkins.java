@@ -3057,7 +3057,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     views.add(0,v);
                     primaryView = v.getViewName();
                 }
-                primaryView =AllView.applyJenkins38606Fixup(views, primaryView);
+                primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
 
                 if (useSecurity!=null && !useSecurity) {
                     // forced reset to the unsecure mode.
