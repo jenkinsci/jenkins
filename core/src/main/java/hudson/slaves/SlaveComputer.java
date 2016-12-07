@@ -665,7 +665,7 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", CONNECT);
     }
 
     @Override
