@@ -33,31 +33,11 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
-import hudson.BulkChange;
-import hudson.DNSMultiCast;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
-import hudson.ExtensionComponent;
-import hudson.ExtensionFinder;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.Launcher;
+import hudson.*;
 import hudson.Launcher.LocalLauncher;
-import hudson.Lookup;
-import hudson.Main;
-import hudson.Plugin;
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import hudson.ProxyConfiguration;
 import jenkins.AgentProtocol;
+import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.util.SystemProperties;
-import hudson.TcpSlaveAgentListener;
-import hudson.UDPBroadcastThread;
-import hudson.Util;
-import hudson.WebAppMain;
-import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
@@ -4454,20 +4434,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Checks if container uses UTF-8 to decode URLs. See
      * http://wiki.jenkins-ci.org/display/JENKINS/Tomcat#Tomcat-i18n
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("since TODO")
+    @Deprecated
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        // expected is non-ASCII String
-        final String expected = "\u57f7\u4e8b";
-        final String value = fixEmpty(request.getParameter("value"));
-        if (!expected.equals(value))
-            return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
-        return FormValidation.ok();
+        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).doCheckURIEncoding(request);
     }
 
     /**
      * Does not check when system default encoding is "ISO-8859-1".
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("since TODO")
+    @Deprecated
     public static boolean isCheckURIEncodingEnabled() {
-        return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
+        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).isCheckEnabled();
     }
 
     /**
