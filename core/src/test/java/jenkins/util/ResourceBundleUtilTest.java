@@ -37,18 +37,6 @@ import java.util.MissingResourceException;
  */
 public class ResourceBundleUtilTest {
 
-    private static Locale defaultOSLocale;
-
-    @BeforeClass
-    public static void setUp(){
-        defaultOSLocale = Locale.getDefault();
-    }
-
-    @AfterClass
-    public static void tearDown(){
-        Locale.setDefault(defaultOSLocale);
-    }
-
     /**
      * Test resource bundle loading for a defined locale.
      */
@@ -68,12 +56,16 @@ public class ResourceBundleUtilTest {
      */
     @Test
     public void test_unknown_locale() {
-        //Set Default-Locale to english
-        Locale.setDefault(new Locale("en", "US"));
+        Locale defaultOSLocale = Locale.getDefault();
+        try {
+            //Set Default-Locale to english
+            Locale.setDefault(new Locale("en", "US"));
 
-        JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
-        Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
-
+            JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
+            Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
+        }finally{
+            Locale.setDefault(defaultOSLocale);
+        }
     }
 
     /**
