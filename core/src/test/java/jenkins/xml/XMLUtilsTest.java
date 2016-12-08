@@ -50,21 +50,6 @@ import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
 
-    private static Locale temp;
-
-    @BeforeClass
-    public static void setUp(){
-        temp = Locale.getDefault();
-        // These tests expect English texts.
-        Locale.setDefault(new Locale("en", "US"));
-    }
-
-    @AfterClass
-    public static void tearDown(){
-        //Reset Default locale
-        Locale.setDefault(temp);
-    }
-
     @Issue("SECURITY-167")
     @Test()
     public void testSafeTransformDoesNotProcessForeignResources() throws Exception {
@@ -145,10 +130,10 @@ public class XMLUtilsTest {
                     "<foo>&xxe;</foo>";
 
             StringReader stringReader = new StringReader(xml);
-            Document doc = XMLUtils.parse(stringReader);
+            XMLUtils.parse(stringReader);
             Assert.fail("Expecting SAXException for XXE.");
         } catch (SAXException e) {
-            assertThat(e.getMessage(), containsString("DOCTYPE is disallowed"));
+            assertThat(e.getMessage(), containsString("\"http://apache.org/xml/features/disallow-doctype-decl\""));
         }
     }    
 }
