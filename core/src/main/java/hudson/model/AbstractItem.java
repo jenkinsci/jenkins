@@ -234,6 +234,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
+                // the lookup is case insensitive, so we should not fail if this item was the “existing” one
+                // to allow people to rename "Foo" to "foo", for example.
+                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
                 Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
                 File oldRoot = this.getRootDir();
