@@ -525,39 +525,6 @@ public class AbstractProjectTest extends HudsonTestCase {
         done.signal()
     }
 
-    public void testRenameToPrivileged() {
-        def secret = jenkins.createProject(FreeStyleProject.class,"secret");
-        def regular = jenkins.createProject(FreeStyleProject.class,"regular")
-
-        jenkins.securityRealm = createDummySecurityRealm();
-        def auth = new ProjectMatrixAuthorizationStrategy();
-        jenkins.authorizationStrategy = auth;
-
-        auth.add(Jenkins.ADMINISTER, "alice");
-        auth.add(Jenkins.READ, "bob");
-
-        // bob the regular user can only see regular jobs
-        regular.addProperty(new AuthorizationMatrixProperty([(Job.READ) : ["bob"] as Set]));
-
-        def wc = createWebClient()
-        wc.login("bob")
-        wc.executeOnServer {
-            assert jenkins.getItem("secret")==null;
-            try {
-                regular.renameTo("secret")
-                fail("rename as an overwrite should have failed");
-            } catch (Exception e) {
-                // expected rename to fail in some non-descriptive generic way
-                e.printStackTrace()
-            }
-        }
-
-        // those two jobs should still be there
-        assert jenkins.getItem("regular")!=null;
-        assert jenkins.getItem("secret")!=null;
-    }
-
-
     /**
      * Trying to POST to config.xml by a different job type should fail.
      */
