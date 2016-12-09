@@ -33,6 +33,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 
+import hudson.model.AllView;
 import java.io.IOException;
 
 import hudson.model.ListView;
@@ -116,12 +117,12 @@ public class DeleteViewCommandTest {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
-                .invokeWithArgs("All")
+                .invokeWithArgs(AllView.DEFAULT_VIEW_NAME)
         ;
 
         assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
-        assertThat(j.jenkins.getView("All"), notNullValue());
+        assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
         assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete 'All' view"));
     }
 
@@ -262,15 +263,15 @@ public class DeleteViewCommandTest {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
-                .invokeWithArgs("aView1", "aView2", "All");
+                .invokeWithArgs("aView1", "aView2", AllView.DEFAULT_VIEW_NAME);
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("All: Jenkins does not allow to delete 'All' view"));
+        assertThat(result.stderr(), containsString(AllView.DEFAULT_VIEW_NAME+": Jenkins does not allow to delete '"+ AllView.DEFAULT_VIEW_NAME+"' view"));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getView("aView1"), nullValue());
         assertThat(j.jenkins.getView("aView2"), nullValue());
-        assertThat(j.jenkins.getView("All"), notNullValue());
+        assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
     }
 }
