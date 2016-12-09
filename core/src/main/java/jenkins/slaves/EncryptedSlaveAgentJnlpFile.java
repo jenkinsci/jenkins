@@ -4,7 +4,6 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.slaves.SlaveComputer;
 import hudson.util.Secret;
-import hudson.Util;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.ResponseImpl;
 import org.kohsuke.stapler.StaplerRequest;
@@ -36,23 +35,27 @@ import java.security.SecureRandom;
  */
 public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
     /**
-     * The object that owns the Jelly view that renders JNLP file this is always 
-     * some type of {@link SlaveComputer}.
+     * The object that owns the Jelly view that renders JNLP file.
+     * For example {@link SlaveComputer}.
      */
-    private final SlaveComputer it;
+    private final AccessControlled it;
     /**
      * Name of the view that renders JNLP file that belongs to {@link #it}.
      */
     private final String viewName;
-
+    /**
+     * Name of the agent, which is used to determine secret HMAC code.
+     */
+    private final String slaveName;
     /**
      * Permission that allows plain text access. Checked against {@link #it}.
      */
     private final Permission connectPermission;
 
-    public EncryptedSlaveAgentJnlpFile(SlaveComputer it, String viewName, Permission connectPermission) {
+    public EncryptedSlaveAgentJnlpFile(AccessControlled it, String viewName, String slaveName, Permission connectPermission) {
         this.it = it;
         this.viewName = viewName;
+        this.slaveName = slaveName;
         this.connectPermission = connectPermission;
     }
 
@@ -74,7 +77,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             byte[] iv = new byte[128/8];
             new SecureRandom().nextBytes(iv);
 
-            byte[] jnlpMac = Util.fromHexString(it.getJnlpMac());
+            byte[] jnlpMac = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName.getBytes("UTF-8"));
             SecretKey key = new SecretKeySpec(jnlpMac, 0, /* export restrictions */ 128 / 8, "AES");
             byte[] encrypted;
             try {
