@@ -4548,7 +4548,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             checkPermission(READ);
         } catch (AccessDeniedException e) {
-            if (isPathUnprotected(Stapler.getCurrentRequest().getRestOfPath())) {
+            if (!isSubjectToMandatoryReadPermissionCheck(Stapler.getCurrentRequest().getRestOfPath())) {
                 return this;
             }
 
@@ -4558,31 +4558,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
     
     /**
-     * Test a path to see if it does not require authentication
+     * Test a path to see if it is subject to mandatory read permission checks by container-managed security
      * @param restOfPath the URI, excluding the Jenkins root URI and query string
-     * @return true if the path is unprotected
+     * @return true if the path is subject to mandatory read permission checks
      * @since TODO
      */
-    public boolean isPathUnprotected(String restOfPath) {
+    public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
             if (restOfPath.startsWith(name)) {
-                return true;
+                return false;
             }
         }
 
         for (String name : getUnprotectedRootActions()) {
             if (restOfPath.startsWith("/" + name + "/") || restOfPath.equals("/" + name)) {
-                return true;
+                return false;
             }
         }
 
         // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
         if (restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
             && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
