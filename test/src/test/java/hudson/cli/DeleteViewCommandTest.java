@@ -123,7 +123,7 @@ public class DeleteViewCommandTest {
         assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
         assertThat(j.jenkins.getView(AllView.DEFAULT_VIEW_NAME), notNullValue());
-        assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete 'All' view"));
+        assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete '"+AllView.DEFAULT_VIEW_NAME+"' view"));
     }
 
     @Test public void deleteViewShoudlFailIfViewNameIsEmpty() {
