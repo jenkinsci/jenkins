@@ -451,6 +451,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
+    public abstract <T extends NodeProperty> T getNodeProperty(Class<T> clazz);
+
+    public abstract NodeProperty getNodeProperty(String className);
+
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
         return NodeProperty.for_(this);
