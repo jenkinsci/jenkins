@@ -114,6 +114,16 @@ public class NodeListTest {
 		public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
             throw new UnsupportedOperationException();
 		}
+
+    public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
+    {
+      return null;
+    }
+
+    public NodeProperty getNodeProperty(String className)
+    {
+      return null;
+    }
     }
 
     static class EphemeralNode extends DummyNode implements hudson.slaves.EphemeralNode {
