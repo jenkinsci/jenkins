@@ -1457,7 +1457,12 @@ public class Functions {
         return s.toString();
     }
     private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix) {
-        // TODO check if t overrides printStackTrace
+        if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
+            StringWriter sw = new StringWriter();
+            t.printStackTrace(new PrintWriter(sw));
+            s.append(sw.toString());
+            return;
+        }
         Throwable lower = t.getCause();
         if (lower != null) {
             doPrintStackTrace(s, lower, t, prefix);

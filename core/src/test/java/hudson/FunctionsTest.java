@@ -494,6 +494,13 @@ public class FunctionsTest {
             "Caused: java.lang.IllegalStateException\n" +
             "\tat p.C.method1(C.java:19)\n" +
             "\tat m.Main.main(Main.java:1)\n");
+        // Custom printStackTrace implementations:
+        assertPrintThrowable(new Throwable() {
+            @Override
+            public void printStackTrace(PrintWriter s) {
+                s.println("Some custom exception");
+            }
+        }, "Some custom exception\n", "Some custom exception\n");
     }
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
