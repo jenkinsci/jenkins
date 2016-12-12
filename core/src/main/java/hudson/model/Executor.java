@@ -290,7 +290,7 @@ public class Executor extends Thread implements ModelObject {
             } else {
                 pw.println("Termination trace follows:");
                 for (Computer.TerminationRequest request : owner.getTerminatedBy()) {
-                    pw.print(Functions.printThrowable(request));
+                    Functions.printStackTrace(request, pw);
                 }
             }
         }

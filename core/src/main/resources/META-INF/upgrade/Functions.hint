@@ -1,2 +1,2 @@
-$t.printStackTrace($s) :: $s instance java.io.PrintStream && $t instanceof Throwable => $s.print(hudson.Functions.printThrowable($t));;
-$t.printStackTrace($s) :: $s instance java.io.PrintWriter && $t instanceof Throwable => $s.print(hudson.Functions.printThrowable($t));;
+$t.printStackTrace($s) :: $s instance java.io.PrintStream && $t instanceof Throwable => hudson.Functions.printStackTrace($t, $s);;
+$t.printStackTrace($s) :: $s instance java.io.PrintWriter && $t instanceof Throwable => hudson.Functions.printStackTrace($t, $s);;

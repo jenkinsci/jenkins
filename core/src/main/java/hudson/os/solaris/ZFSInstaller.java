@@ -229,7 +229,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         try {
             datasetName = createZfsFileSystem(listener,username,password);
         } catch (Exception e) {
-            listener.error(e.getMessage()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
 
             if (e instanceof ZFSException) {
                 ZFSException ze = (ZFSException) e;
@@ -293,7 +293,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 }
             } catch (Exception e) {
                 // if we let any exception from here, it will prevent Hudson from starting.
-                listener.error("Migration failed").print(Functions.printThrowable(e));
+                Functions.printStackTrace(e, listener.error("Migration failed"));
             }
             // migration failed
             return new MigrationFailedNotice(out);

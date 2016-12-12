@@ -265,13 +265,13 @@ public class SlaveComputer extends Computer {
                         throw e;
                     } catch (IOException e) {
                         Util.displayIOException(e,taskListener);
-                        taskListener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                         throw e;
                     } catch (InterruptedException e) {
-                        taskListener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                         throw e;
                     } catch (Exception e) {
-                        taskListener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                         throw e;
                     }
                 } finally {
@@ -495,7 +495,7 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause!=null) {
                     offlineCause = new ChannelTermination(cause);
-                    taskListener.error("Connection terminated").print(Functions.printThrowable(cause));
+                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 } else {
                     taskListener.getLogger().println("Connection terminated");
                 }

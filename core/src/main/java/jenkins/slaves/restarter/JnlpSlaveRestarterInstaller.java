@@ -94,7 +94,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
             LOGGER.log(FINE, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
         } catch (Throwable e) {
-            listener.error("Failed to install restarter").print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
     }
 

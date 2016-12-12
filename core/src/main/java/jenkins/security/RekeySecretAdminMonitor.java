@@ -153,7 +153,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
             LOGGER.info("Secret re-keying completed");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
-            listener.error("Fatal failure in rewriting secrets").print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));
         }
     }
 

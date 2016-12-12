@@ -270,7 +270,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("");
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
-                                stderr.print(Functions.printThrowable(e));
+                                Functions.printStackTrace(e, stderr);
                                 return 1;
                             }
                         }

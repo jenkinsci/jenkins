@@ -1864,7 +1864,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
-            listener.fatalError(e.getMessage()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.fatalError(e.getMessage()));
         } else {
             LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }

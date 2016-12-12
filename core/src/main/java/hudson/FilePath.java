@@ -831,7 +831,7 @@ public final class FilePath implements Serializable {
                     return true;
                 } catch (IOException x) {
                     if (listener != null) {
-                        listener.error("Failed to download " + archive + " from agent; will retry from master").print(Functions.printThrowable(x));
+                        Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from master"));
                     }
                 }
             }

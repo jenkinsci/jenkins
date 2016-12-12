@@ -196,7 +196,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
                 performAllBuildSteps(listener, project.getPublishersList(), false);
                 performAllBuildSteps(listener, project.getProperties(), false);
             } catch (Exception x) {
-                listener.error(Messages.Build_post_build_steps_failed()).print(Functions.printThrowable(x));
+                Functions.printStackTrace(x, listener.error(Messages.Build_post_build_steps_failed()));
             }
             super.cleanUp(listener);
         }

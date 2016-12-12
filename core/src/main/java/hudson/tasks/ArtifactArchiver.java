@@ -263,7 +263,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
             return;
         }

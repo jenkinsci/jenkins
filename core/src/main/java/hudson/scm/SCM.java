@@ -674,7 +674,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
             return true;
         } catch (IOException e) {
-            listener.error(e.getMessage()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
             return false;
         }
     }

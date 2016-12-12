@@ -299,7 +299,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("");
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
-            stderr.print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
             if(sc != null)
@@ -333,7 +333,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 return new ClientAuthenticationCache(channel).get();
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
-            stderr.print(Functions.printThrowable(e));  // recover
+            Functions.printStackTrace(e, stderr);  // recover
         }
         return Jenkins.ANONYMOUS;
     }

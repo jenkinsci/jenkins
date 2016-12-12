@@ -100,9 +100,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
                         execute(l);
                     } catch (IOException e) {
-                        l.fatalError(e.getMessage()).print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                     } catch (InterruptedException e) {
-                        l.fatalError("aborted").print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, l.fatalError("aborted"));
                     } finally {
                         stopTime = System.currentTimeMillis();
                         try {

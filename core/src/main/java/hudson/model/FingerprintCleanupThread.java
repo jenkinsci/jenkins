@@ -114,7 +114,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
                 return fp.trim();
             }
         } catch (IOException e) {
-            listener.error("Failed to process " + fingerprintFile).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
             return false;
         }
     }

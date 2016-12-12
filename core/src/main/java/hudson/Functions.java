@@ -156,6 +156,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1503,6 +1504,26 @@ public class Functions {
         for (int i = 0; i < end; i++) {
             s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
         }
+    }
+
+    /**
+     * Like {@link Throwable#printStackTrace(PrintWriter)} but using {@link #printThrowable} format.
+     * @param t an exception to print
+     * @param pw the log
+     * @since FIXME
+     */
+    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintWriter pw) {
+        pw.println(printThrowable(t).trim());
+    }
+
+    /**
+     * Like {@link Throwable#printStackTrace(PrintStream)} but using {@link #printThrowable} format.
+     * @param t an exception to print
+     * @param ps the log
+     * @since FIXME
+     */
+    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintStream ps) {
+        ps.println(printThrowable(t).trim());
     }
 
     /**

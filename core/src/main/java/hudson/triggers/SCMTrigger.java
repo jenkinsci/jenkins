@@ -569,7 +569,7 @@ public class SCMTrigger extends Trigger<Item> {
                         logger.println("No changes");
                     return result;
                 } catch (Error | RuntimeException e) {
-                    listener.error("Failed to record SCM polling for " + job).print(Functions.printThrowable(e));
+                    Functions.printStackTrace(e, listener.error("Failed to record SCM polling for " + job));
                     LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {

@@ -170,7 +170,7 @@ public class SecretRewriter {
                             rewritten++;
                         }
                     } catch (IOException e) {
-                        listener.error("Failed to rewrite " + child).print(Functions.printThrowable(e));
+                        Functions.printStackTrace(e, listener.error("Failed to rewrite " + child));
                     }
                 }
                 if (child.isDirectory()) {

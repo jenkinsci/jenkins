@@ -144,11 +144,11 @@ public class CommandLauncher extends ComputerLauncher {
 
             LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
-            listener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_abortedLaunch()));
         } catch (RuntimeException e) {
-            listener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (Error e) {
-            listener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (IOException e) {
             Util.displayIOException(e, listener);
 
@@ -160,14 +160,14 @@ public class CommandLauncher extends ComputerLauncher {
             }
             msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
-            listener.error(msg).print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, listener.error(msg));
 
             if(_proc!=null) {
                 reportProcessTerminated(_proc, listener);
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
-                    listener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(x));
+                    Functions.printStackTrace(x, listener.error(Messages.ComputerLauncher_abortedLaunch()));
                 }
             }
         }

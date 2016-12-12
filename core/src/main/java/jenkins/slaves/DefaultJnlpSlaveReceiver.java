@@ -172,7 +172,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
             PrintWriter logw = new PrintWriter(state.getLog(), true);
-            logw.print(Functions.printThrowable(e));
+            Functions.printStackTrace(e, logw);
             IOUtils.closeQuietly(event.getChannel());
         }
     }
