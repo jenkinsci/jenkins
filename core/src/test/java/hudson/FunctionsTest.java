@@ -346,6 +346,15 @@ public class FunctionsTest {
 
     @Issue("JDK-6507809")
     @Test public void printThrowable() throws Exception {
+        // Basics: a single exception. No change.
+        assertPrintThrowable(new Stack("java.lang.NullPointerException: oops", "p.C.method1:17", "m.Main.main:1"),
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\tat m.Main.main(Main.java:1)\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
+        // try {…} catch (Exception x) {throw new IllegalStateException(x);}
         assertPrintThrowable(new Stack("java.lang.IllegalStateException: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
                        cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
             "java.lang.IllegalStateException: java.lang.NullPointerException: oops\n" +
@@ -361,9 +370,90 @@ public class FunctionsTest {
             "Caused: java.lang.IllegalStateException\n" +
             "\tat p.C.method1(C.java:19)\n" +
             "\tat m.Main.main(Main.java:1)\n");
-        // TODO assert display of new WrapperException("more info", wrapped)
-        // TODO assert display of new WrapperException("more info: " + wrapped, wrapped)
-        // TODO assert that full stack is preserved if wrapped does not share a common stack (e.g., comes from an executor service thread)
+        // try {…} catch (Exception x) {throw new IllegalStateException("more info");}
+        assertPrintThrowable(new Stack("java.lang.IllegalStateException: more info", "p.C.method1:19", "m.Main.main:1").
+                       cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
+            "java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
+        // try {…} catch (Exception x) {throw new IllegalStateException("more info: " + x);}
+        assertPrintThrowable(new Stack("java.lang.IllegalStateException: more info: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
+                       cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
+            "java.lang.IllegalStateException: more info: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException: more info\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
+        // Synthetic stack showing an exception made elsewhere, such as happens with hudson.remoting.Channel.attachCallSiteStackTrace.
+        Throwable t = new Stack("remote.Exception: oops", "remote.Place.method:17", "remote.Service.run:9");
+        StackTraceElement[] callSite = new Stack("wrapped.Exception", "local.Side.call:11", "local.Main.main:1").getStackTrace();
+        StackTraceElement[] original = t.getStackTrace();
+        StackTraceElement[] combined = new StackTraceElement[original.length + 1 + callSite.length];
+        System.arraycopy(original, 0, combined, 0, original.length);
+        combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
+        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        t.setStackTrace(combined);
+        assertPrintThrowable(t,
+            "remote.Exception: oops\n" +
+            "\tat remote.Place.method(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n",
+            "remote.Exception: oops\n" +
+            "\tat remote.Place.method(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n");
+        // Same but now using a cause on the remote side.
+        t = new Stack("remote.Wrapper: remote.Exception: oops", "remote.Place.method2:19", "remote.Service.run:9").cause(new Stack("remote.Exception: oops", "remote.Place.method1:11", "remote.Place.method2:17", "remote.Service.run:9"));
+        callSite = new Stack("wrapped.Exception", "local.Side.call:11", "local.Main.main:1").getStackTrace();
+        original = t.getStackTrace();
+        combined = new StackTraceElement[original.length + 1 + callSite.length];
+        System.arraycopy(original, 0, combined, 0, original.length);
+        combined[original.length] = new StackTraceElement(".....", "remote call", null, -2);
+        System.arraycopy(callSite,0,combined,original.length+1,callSite.length);
+        t.setStackTrace(combined);
+        assertPrintThrowable(t,
+            "remote.Wrapper: remote.Exception: oops\n" +
+            "\tat remote.Place.method2(Place.java:19)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n" +
+            "Caused by: remote.Exception: oops\n" +
+            "\tat remote.Place.method1(Place.java:11)\n" +
+            "\tat remote.Place.method2(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n",
+            "remote.Exception: oops\n" +
+            "\tat remote.Place.method1(Place.java:11)\n" +
+            "\tat remote.Place.method2(Place.java:17)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" + // we do not know how to elide the common part in this case
+            "Caused: remote.Wrapper\n" +
+            "\tat remote.Place.method2(Place.java:19)\n" +
+            "\tat remote.Service.run(Service.java:9)\n" +
+            "\tat ......remote call(Native Method)\n" +
+            "\tat local.Side.call(Side.java:11)\n" +
+            "\tat local.Main.main(Main.java:1)\n");
     }
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
