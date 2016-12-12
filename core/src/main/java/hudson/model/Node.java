@@ -452,8 +452,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
     /**
-     * Gets the specified property or null if the property is not configured for
-     * this Node.
+     * Gets the specified property or null if the property is not configured for this Node.
      * 
      * @param clazz the type of the property
      * 
