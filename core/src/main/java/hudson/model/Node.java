@@ -465,9 +465,10 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
     {
         for (NodeProperty p: getNodeProperties()) {
-            if (clazz.isInstance(p))
+            if (clazz.isInstance(p)) {
                 return clazz.cast(p);
             }
+        }
         return null;      
     }
 
@@ -484,11 +485,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     @CheckForNull
     public NodeProperty getNodeProperty(String className)
     {
-      for (NodeProperty p: getNodeProperties()) {
-        if (p.getClass().getName().equals(className))
-            return p;
+        for (NodeProperty p: getNodeProperties()) {
+            if (p.getClass().getName().equals(className)) {
+                return p;
+            }
         }
-      return null;      
+        return null;      
     }
 
     // used in the Jelly script to expose descriptors
