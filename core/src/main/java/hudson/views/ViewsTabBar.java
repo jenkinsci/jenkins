@@ -78,7 +78,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
      *
      * @param views the views.
      * @return the sorted views
-     * @since FIXME
+     * @since 2.37
      */
     @Nonnull
     @Restricted(NoExternalUse.class)

@@ -138,7 +138,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * @param view the view to check the new display name of.
      * @param value the proposed new display name.
      * @return the validation result.
-     * @since FIXME
+     * @since 2.37
      */
     @SuppressWarnings("unused") // expose utility check method to subclasses
     protected FormValidation checkDisplayName(@Nonnull View view, @CheckForNull String value) {
@@ -163,7 +163,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Default implementation returns {@code true} always.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the type of owner.
-     * @since FIXME
+     * @since 2.37
      */
     public boolean isApplicable(Class<? extends ViewGroup> ownerType) {
         return true;
@@ -175,7 +175,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup#getClass()}.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the given owner.
-     * @since FIXME
+     * @since 2.37
      */
     public boolean isApplicableIn(ViewGroup owner) {
         return isApplicable(owner.getClass());

@@ -57,7 +57,7 @@ public class AllView extends View {
      * Other {@link AllView} instances will be assumed to have been created by the user and thus will use the
      * name the user created them with.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public static final String DEFAULT_VIEW_NAME = "all";
 
@@ -132,7 +132,7 @@ public class AllView extends View {
      * @param primaryView the current primary view name.
      * @return the primary view name - this will be the same as the provided primary view name unless a JENKINS-38606
      * matching name is detected, in which case this will be the new name of the primary view.
-     * @since FIXME
+     * @since 2.37
      */
     @Nonnull
     public static String migrateLegacyPrimaryAllViewLocalizedName(@Nonnull List<View> views,

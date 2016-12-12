@@ -257,7 +257,7 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Checks whether the {@link Executor} represented by this object is capable of executing the given task.
          * @return a reason why it cannot, or null if it could
-         * @since FIXME
+         * @since 2.37
          */
         public @CheckForNull CauseOfBlockage getCauseOfBlockage(BuildableItem item) {
             Node node = getNode();

@@ -152,7 +152,7 @@ public abstract class ACL {
      * @param d the descriptor of the view to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since FIXME
+     * @since 2.37
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ViewGroup c,
                                        @Nonnull ViewDescriptor d) {

@@ -109,7 +109,7 @@ public abstract class CauseOfBlockage {
 
     /**
      * Build is blocked because a node (or its retention strategy) is not accepting tasks.
-     * @since FIXME
+     * @since 2.37
      */
     public static final class BecauseNodeIsNotAcceptingTasks extends CauseOfBlockage implements NeedsMoreExecutor {
 
