@@ -83,7 +83,7 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * <p>
  * TODO: move out more stuff to {@link DumbSlave}.
- *
+ * 
  * On Febrary, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
@@ -280,7 +280,6 @@ public abstract class Slave extends Node implements Serializable {
         nodeProperties.replaceBy(properties);
     }
 
-
     public RetentionStrategy getRetentionStrategy() {
         return retentionStrategy == null ? RetentionStrategy.Always.INSTANCE : retentionStrategy;
     }
@@ -378,18 +377,18 @@ public abstract class Slave extends Node implements Serializable {
 
         public URL getURL() throws IOException {
             String name = fileName;
-
+            
             // Prevent the access to war contents & prevent the folder escaping (SECURITY-195)
             if (!ALLOWED_JNLPJARS_FILES.contains(name)) {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
-
+            
             if (name.equals("hudson-cli.jar"))  {
                 name="jenkins-cli.jar";
             } else if (name.equals("slave.jar") || name.equals("remoting.jar")) {
                 name = "lib/" + Which.jarFile(Channel.class).getName();
             }
-
+            
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
