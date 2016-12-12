@@ -5074,22 +5074,4 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
-    @Override
-    public <T extends NodeProperty> T getNodeProperty(Class<T> clazz) {
-      for (NodeProperty p: nodeProperties) {
-        if (clazz.isInstance(p))
-          return clazz.cast(p);
-      }
-      return null;
-    }
-
-    @Override
-    public NodeProperty getNodeProperty(String className)
-    {
-      for (NodeProperty p : nodeProperties)
-        if (p.getClass().getName().equals(className))
-            return p;
-      return null;
-    }
-
 }

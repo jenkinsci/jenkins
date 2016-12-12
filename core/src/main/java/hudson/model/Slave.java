@@ -137,7 +137,7 @@ public abstract class Slave extends Node implements Serializable {
      */
     private String label="";
 
-    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties =
+    private /*almost final*/ DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = 
                                     new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
 
     /**
@@ -278,24 +278,6 @@ public abstract class Slave extends Node implements Serializable {
     @DataBoundSetter
     public void setNodeProperties(List<? extends NodeProperty<?>> properties) throws IOException {
         nodeProperties.replaceBy(properties);
-    }
-
-    @Override
-    public <T extends NodeProperty> T getNodeProperty(Class<T> clazz) {
-      for (NodeProperty p: nodeProperties) {
-        if (clazz.isInstance(p))
-          return clazz.cast(p);
-      }
-      return null;
-    }
-
-    @Override
-    public NodeProperty getNodeProperty(String className)
-    {
-      for (NodeProperty p : nodeProperties)
-        if (p.getClass().getName().equals(className))
-            return p;
-      return null;
     }
 
 
