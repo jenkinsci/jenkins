@@ -28,6 +28,11 @@ public class MasterKillSwitchWarning extends AdministrativeMonitor {
         return rule.getMasterKillSwitch() && config.isRelevant();
     }
 
+    @Override
+    public String getDisplayName() {
+        return Messages.MasterKillSwitchWarning_DisplayName();
+    }
+
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {
         if(dismiss!=null) {
             disable(true);

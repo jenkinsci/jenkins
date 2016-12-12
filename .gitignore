@@ -16,6 +16,10 @@ build
 
 # vim
 *~
+*.swp
+
+# ctags
+tags
 
 # OS X
 .DS_Store

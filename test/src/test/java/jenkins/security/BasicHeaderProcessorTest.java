@@ -5,7 +5,7 @@ import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
@@ -81,7 +81,8 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
-        WebRequestSettings req = new WebRequestSettings(new URL(j.getURL(),"test"));
+        WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
+        req.setEncodingType(null);
         if (userAndPass!=null)
             req.setAdditionalHeader("Authorization","Basic "+Scrambler.scramble(userAndPass));
         Page p = wc.getPage(req);

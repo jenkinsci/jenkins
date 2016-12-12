@@ -25,11 +25,9 @@ package hudson.model;
 
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import hudson.triggers.Trigger;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.ExtensionList;
-import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 
 import java.util.concurrent.TimeUnit;

@@ -45,6 +45,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.AccessDeniedException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
@@ -82,9 +83,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
             views = new CopyOnWriteArrayList<View>();
 
-        if (views.isEmpty())
+        if (views.isEmpty()) {
             // preserve the non-empty invariant
-            views.add(new AllView(Messages.Hudson_ViewName(), this));
+            views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
+        }
+        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
@@ -201,7 +204,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return "my-views";
     }
 
-    @Extension
+    @Extension @Symbol("myView")
     public static class DescriptorImpl extends UserPropertyDescriptor {
 
         @Override
@@ -242,7 +245,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.getInstance().getMyViewsTabBar();
     }
     
-    @Extension
+    @Extension @Symbol("myView")
     public static class GlobalAction implements RootAction {
 
 		public String getDisplayName() {

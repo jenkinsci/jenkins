@@ -23,6 +23,11 @@
  */
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 
 import hudson.cli.CLI;
@@ -64,16 +69,22 @@ public class ComputerSetTest {
     public void nodeOfflineCli() throws Exception {
         DumbSlave s = j.createSlave();
 
-        CLI cli = new CLI(j.getURL());
-        try {
+        try (CLI cli = new CLI(j.getURL())) {
             assertTrue(cli.execute("wait-node-offline","xxx")!=0);
             assertTrue(cli.execute("wait-node-online",s.getNodeName())==0);
 
             s.toComputer().disconnect().get();
 
             assertTrue(cli.execute("wait-node-offline",s.getNodeName())==0);
-        } finally {
-            cli.close();
         }
+    }
+
+    @Test
+    public void getComputerNames() throws Exception {
+        assertThat(ComputerSet.getComputerNames(), is(empty()));
+        j.createSlave("aNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), contains("aNode"));
+        j.createSlave("anAnotherNode", "", null);
+        assertThat(ComputerSet.getComputerNames(), containsInAnyOrder("aNode", "anAnotherNode"));
     }
 }

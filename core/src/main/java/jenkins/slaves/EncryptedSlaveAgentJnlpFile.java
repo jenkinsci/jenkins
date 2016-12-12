@@ -44,7 +44,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
      */
     private final String viewName;
     /**
-     * Name of the slave, which is used to determine secret HMAC code.
+     * Name of the agent, which is used to determine secret HMAC code.
      */
     private final String slaveName;
     /**

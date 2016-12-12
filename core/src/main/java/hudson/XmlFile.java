@@ -28,7 +28,7 @@ import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -51,6 +51,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -137,15 +138,10 @@ public final class XmlFile {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Reading "+file);
         }
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
-        try {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             return xs.fromXML(in);
-        } catch (XStreamException e) {
+        } catch (XStreamException | Error e) {
             throw new IOException("Unable to read "+file,e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read "+file,e);
-        } finally {
-            in.close();
         }
     }
 
@@ -157,16 +153,12 @@ public final class XmlFile {
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
-        try {
+
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (XStreamException e) {
+        } catch (XStreamException | Error e) {
             throw new IOException("Unable to read "+file,e);
-        } catch(Error e) {// mostly reflection errors
-            throw new IOException("Unable to read "+file,e);
-        } finally {
-            in.close();
         }
     }
 
@@ -205,9 +197,19 @@ public final class XmlFile {
      * Opens a {@link Reader} that loads XML.
      * This method uses {@link #sniffEncoding() the right encoding},
      * not just the system default encoding.
+     * @throws IOException Encoding issues
+     * @return Reader for the file. should be close externally once read.
      */
     public Reader readRaw() throws IOException {
-        return new InputStreamReader(new FileInputStream(file),sniffEncoding());
+        FileInputStream fileInputStream = new FileInputStream(file);
+        try {
+            return new InputStreamReader(fileInputStream, sniffEncoding());
+        } catch(IOException ex) {
+            // Exception may happen if we fail to find encoding or if this encoding is unsupported.
+            // In such case we close the underlying stream and rethrow.
+            Util.closeAndLogFailures(fileInputStream, LOGGER, "FileInputStream", file.toString());
+            throw ex;
+        }
     }
 
     /**
@@ -224,11 +226,8 @@ public final class XmlFile {
      * Writer will not be closed by the implementation.
      */
     public void writeRawTo(Writer w) throws IOException {
-        Reader r = readRaw();
-        try {
-            Util.copyStream(r,w);
-        } finally {
-            r.close();
+        try (Reader r = readRaw()) {
+            Util.copyStream(r, w);
         }
     }
 
@@ -247,10 +246,10 @@ public final class XmlFile {
                 this.encoding = encoding;
             }
         }
-        InputSource input = new InputSource(file.toURI().toASCIIString());
-        input.setByteStream(new FileInputStream(file));
 
-        try {
+        try (InputStream in = new FileInputStream(file)) {
+            InputSource input = new InputSource(file.toURI().toASCIIString());
+            input.setByteStream(in);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {
                 private Locator loc;
                 @Override
@@ -292,9 +291,6 @@ public final class XmlFile {
             throw new IOException("Failed to detect encoding of "+file,e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
-        } finally {
-            // some JAXP implementations appear to leak the file handle if we just call parse(File,DefaultHandler)
-            input.getByteStream().close();
         }
     }
 
@@ -307,7 +303,7 @@ public final class XmlFile {
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final XppDriver DEFAULT_DRIVER = new XppDriver();
+    private static final Xpp3Driver DEFAULT_DRIVER = new Xpp3Driver();
 
     static {
         JAXP.setNamespaceAware(true);

@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.LinkOption;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.HashSet;
@@ -78,42 +79,36 @@ public class SecretRewriter {
     public boolean rewrite(File f, File backup) throws InvalidKeyException, IOException {
         AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(w));
 
             boolean modified = false; // did we actually change anything?
-            try {
-                FileInputStream fin = new FileInputStream(f);
-                try {
+            try (PrintWriter out = new PrintWriter(new BufferedWriter(w))) {
+                try (FileInputStream fin = new FileInputStream(f)) {
                     BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
                     String line;
                     StringBuilder buf = new StringBuilder();
 
-                    while ((line=r.readLine())!=null) {
-                        int copied=0;
+                    while ((line = r.readLine()) != null) {
+                        int copied = 0;
                         buf.setLength(0);
                         while (true) {
-                            int sidx = line.indexOf('>',copied);
-                            if (sidx<0) break;
-                            int eidx = line.indexOf('<',sidx);
-                            if (eidx<0) break;
+                            int sidx = line.indexOf('>', copied);
+                            if (sidx < 0) break;
+                            int eidx = line.indexOf('<', sidx);
+                            if (eidx < 0) break;
 
-                            String elementText = line.substring(sidx+1,eidx);
+                            String elementText = line.substring(sidx + 1, eidx);
                             String replacement = tryRewrite(elementText);
                             if (!replacement.equals(elementText))
                                 modified = true;
 
-                            buf.append(line.substring(copied,sidx+1));
+                            buf.append(line.substring(copied, sidx + 1));
                             buf.append(replacement);
                             copied = eidx;
                         }
                         buf.append(line.substring(copied));
                         out.println(buf.toString());
                     }
-                } finally {
-                    fin.close();
                 }
-            } finally {
-                out.close();
             }
 
             if (modified) {
@@ -145,7 +140,7 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.getCanonicalPath();
+            canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
         } catch (IOException e) {
             canonical = dir.getAbsolutePath(); //
         }

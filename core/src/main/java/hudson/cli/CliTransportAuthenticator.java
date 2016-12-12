@@ -4,7 +4,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import hudson.security.SecurityRealm;
-import jenkins.model.Jenkins;
 
 /**
  * Perform {@link SecurityRealm} independent authentication.

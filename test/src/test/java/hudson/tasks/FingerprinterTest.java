@@ -47,14 +47,12 @@ import static org.junit.Assert.*;
 
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.RandomlyFails;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -213,7 +211,7 @@ public class FingerprinterTest {
     }
     
     @Test public void matrixDependency() throws Exception {
-        MatrixProject matrixProject = j.createMatrixProject();
+        MatrixProject matrixProject = j.jenkins.createProject(MatrixProject.class, "p");
         matrixProject.setAxes(new AxisList(new Axis("foo", "a", "b")));
         FreeStyleProject freestyleProject = createFreeStyleProjectWithFingerprints(singleContents, singleFiles);
         addFingerprinterToProject(matrixProject, singleContents, singleFiles);
@@ -315,7 +313,7 @@ public class FingerprinterTest {
     }
 
     @SuppressWarnings("unchecked")
-    @RandomlyFails("for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>")
+    // TODO randomly fails: for p3.upstreamProjects expected:<[hudson.model.FreeStyleProject@590e5b8[test0]]> but was:<[]>
     @Issue("JENKINS-18417")
     @Test
     public void fingerprintCleanup() throws Exception {

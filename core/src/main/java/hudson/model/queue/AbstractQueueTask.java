@@ -27,6 +27,7 @@ package hudson.model.queue;
 import hudson.model.Queue;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
+import hudson.security.AccessControlled;
 import org.acegisecurity.Authentication;
 
 import javax.annotation.Nonnull;
@@ -36,6 +37,10 @@ import java.util.Collections;
 /**
  * Abstract base class for {@link hudson.model.Queue.Task} to protect plugins
  * from new additions to the interface.
+ *
+ * <p>
+ * Plugins are encouraged to implement {@link AccessControlled} otherwise
+ * the tasks will be hidden from display in the queue.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.360

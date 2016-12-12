@@ -51,11 +51,8 @@ public class ClientAuthenticationCache implements Serializable {
             }
         });
         if (store.exists()) {
-            InputStream istream = store.read();
-            try {
+            try (InputStream istream = store.read()) {
                 props.load(istream);
-            } finally {
-                istream.close();
             }
         }
     }
@@ -66,15 +63,13 @@ public class ClientAuthenticationCache implements Serializable {
      * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
     public Authentication get() {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
         Secret userName = Secret.decrypt(props.getProperty(getPropertyKey()));
         if (userName==null) return Jenkins.ANONYMOUS; // failed to decrypt
         try {
             UserDetails u = h.getSecurityRealm().loadUserByUsername(userName.getPlainText());
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
-        } catch (AuthenticationException e) {
-            return Jenkins.ANONYMOUS;
-        } catch (DataAccessException e) {
+        } catch (AuthenticationException | DataAccessException e) {
             return Jenkins.ANONYMOUS;
         }
     }
@@ -83,7 +78,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Computes the key that identifies this Hudson among other Hudsons that the user has a credential for.
      */
     private String getPropertyKey() {
-        String url = Jenkins.getInstance().getRootUrl();
+        String url = Jenkins.getActiveInstance().getRootUrl();
         if (url!=null)  return url;
         return Secret.fromString("key").toString();
     }
@@ -92,7 +87,7 @@ public class ClientAuthenticationCache implements Serializable {
      * Persists the specified authentication.
      */
     public void set(Authentication a) throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getActiveInstance();
 
         // make sure that this security realm is capable of retrieving the authentication by name,
         // as it's not required.
@@ -111,11 +106,8 @@ public class ClientAuthenticationCache implements Serializable {
     }
 
     private void save() throws IOException, InterruptedException {
-        OutputStream os = store.write();
-        try {
-            props.store(os,"Credential store");
-        } finally {
-            os.close();
+        try (OutputStream os = store.write()) {
+            props.store(os, "Credential store");
         }
         // try to protect this file from other users, if we can.
         store.chmod(0600);

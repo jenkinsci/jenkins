@@ -24,7 +24,6 @@
 package hudson.lifecycle;
 
 import com.sun.akuma.JavaVMArguments;
-import com.sun.akuma.Daemon;
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
 
@@ -66,7 +65,7 @@ public class UnixLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
         if (h != null)
             h.cleanUp();
 

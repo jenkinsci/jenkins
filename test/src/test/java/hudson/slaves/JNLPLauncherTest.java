@@ -31,36 +31,43 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
-import hudson.remoting.Callable;
 import hudson.remoting.Which;
 import hudson.util.ArgumentListBuilder;
 
 import jenkins.security.SlaveToMasterCallable;
-import org.jvnet.hudson.test.HudsonTestCase;
+
+import org.junit.Assume;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.awt.*;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class JNLPLauncherTest extends HudsonTestCase {
+public class JNLPLauncherTest {
+    @Rule public JenkinsRule j = new JenkinsRule();
+
     /**
      * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
      */
+    @Test
     public void testLaunch() throws Exception {
-        if(GraphicsEnvironment.isHeadless()) {
-            System.err.println("Skipping JNLPLauncherTest.testLaunch because we are running headless");
-            return;
-        }
+        Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
 
-        System.err.println("Not in headless mode, continuing with JNLPLauncherTest.testLaunch...");
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c));
     }
@@ -69,17 +76,15 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Tests the '-headless' option.
      * (Although this test doesn't really assert that the agent really is running in a headless mdoe.)
      */
+    @Test
     public void testHeadlessLaunch() throws Exception {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
-        assertEquals(1, listener.offlined);
+        assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
 
-    @Inject
-    ListenerImpl listener;
-
-    @TestExtension
+    @TestExtension("testHeadlessLaunch")
     public static class ListenerImpl extends ComputerListener {
         int offlined = 0;
 
@@ -89,14 +94,13 @@ public class JNLPLauncherTest extends HudsonTestCase {
             assertTrue(c.isOffline());
         }
     }
-    
-    
+
     private ArgumentListBuilder buildJnlpArgs(Computer c) throws Exception {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")),"bin/java").getPath(),"-jar");
         args.add(Which.jarFile(netx.jnlp.runtime.JNLPRuntime.class).getAbsolutePath());
         args.add("-headless","-basedir");
-        args.add(createTmpDir());
+        args.add(j.createTmpDir());
         args.add("-nosecurity","-jnlp", getJnlpLink(c));
         return args;
     }
@@ -105,7 +109,7 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Launches the JNLP slave agent and asserts its basic operations.
      */
     private void launchJnlpAndVerify(Computer c, ArgumentListBuilder args) throws Exception {
-        Proc proc = createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
+        Proc proc = j.createLocalLauncher().launch().cmds(args).stdout(System.out).pwd(".").start();
 
         try {
             // verify that the connection is established, up to 20 secs
@@ -135,9 +139,9 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Determines the link to the .jnlp file.
      */
     private String getJnlpLink(Computer c) throws Exception {
-        HtmlPage p = new WebClient().goTo("computer/"+c.getName()+"/");
+        HtmlPage p = j.createWebClient().goTo("computer/"+c.getName()+"/");
         String href = ((HtmlAnchor) p.getElementById("jnlp-link")).getHrefAttribute();
-        href = new URL(new URL(p.getDocumentURI()),href).toExternalForm();
+        href = new URL(new URL(p.getUrl().toExternalForm()),href).toExternalForm();
         return href;
     }
 
@@ -145,12 +149,12 @@ public class JNLPLauncherTest extends HudsonTestCase {
      * Adds a JNLP {@link Slave} to the system and returns it.
      */
     private Computer addTestSlave() throws Exception {
-        List<Node> slaves = new ArrayList<Node>(jenkins.getNodes());
+        List<Node> slaves = new ArrayList<Node>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
         slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
                 new JNLPLauncher(), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
-        jenkins.setNodes(slaves);
-        Computer c = jenkins.getComputer("test");
+        j.jenkins.setNodes(slaves);
+        Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);
         return c;
     }
@@ -163,12 +167,13 @@ public class JNLPLauncherTest extends HudsonTestCase {
         private static final long serialVersionUID = 1L;
     }
 
+    @Test
     public void testConfigRoundtrip() throws Exception {
-        DumbSlave s = createSlave();
+        DumbSlave s = j.createSlave();
         JNLPLauncher original = new JNLPLauncher("a", "b");
         s.setLauncher(original);
-        HtmlPage p = new WebClient().getPage(s, "configure");
-        submit(p.getFormByName("config"));
-        assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
+        HtmlPage p = j.createWebClient().getPage(s, "configure");
+        j.submit(p.getFormByName("config"));
+        j.assertEqualBeans(original,s.getLauncher(),"tunnel,vmargs");
     }
 }

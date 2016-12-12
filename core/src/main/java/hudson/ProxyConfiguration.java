@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
@@ -47,12 +48,17 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -72,6 +78,12 @@ import org.kohsuke.stapler.QueryParameter;
  * @see jenkins.model.Jenkins#proxy
  */
 public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfiguration> implements Saveable, Serializable {
+    /**
+     * Holds a default TCP connect timeout set on all connections returned from this class,
+     * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
+     */
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
+    
     public final String name;
     public final int port;
 
@@ -215,34 +227,39 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
      */
     public static URLConnection open(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
-        ProxyConfiguration p = h!=null ? h.proxy : null;
-        if(p==null)
-            return url.openConnection();
-
-        URLConnection con = url.openConnection(p.createProxy(url.getHost()));
-        if(p.getUserName()!=null) {
-            // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(new Authenticator() {
-                @Override
-                public PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType()!=RequestorType.PROXY)    return null;
-                    ProxyConfiguration p = Jenkins.getInstance().proxy;
-                    return new PasswordAuthentication(p.getUserName(),
-                            p.getPassword().toCharArray());
-                }
-            });
+        final ProxyConfiguration p = get();
+        
+        URLConnection con;
+        if(p==null) {
+            con = url.openConnection();
+        } else {
+            con = url.openConnection(p.createProxy(url.getHost()));
+            if(p.getUserName()!=null) {
+                // Add an authenticator which provides the credentials for proxy authentication
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    public PasswordAuthentication getPasswordAuthentication() {
+                        if (getRequestorType()!=RequestorType.PROXY)    return null;
+                        return new PasswordAuthentication(p.getUserName(),
+                                p.getPassword().toCharArray());
+                    }
+                });
+            }
         }
-
-        for (URLConnectionDecorator d : URLConnectionDecorator.all())
-            d.decorate(con);
+        
+        if(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
+            con.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS);
+        }
+        
+        if (JenkinsJVM.isJenkinsJVM()) { // this code may run on a slave
+            decorate(con);
+        }
 
         return con;
     }
-    
+
     public static InputStream getInputStream(URL url) throws IOException {
-        Jenkins h = Jenkins.getInstance(); // this code might run on slaves
-        final ProxyConfiguration p = (h != null) ? h.proxy : null;
+        final ProxyConfiguration p = get();
         if (p == null) 
             return new RetryableHttpStream(url);
 
@@ -264,6 +281,27 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return is;
     }
 
+    @CheckForNull
+    private static ProxyConfiguration get() {
+        if (JenkinsJVM.isJenkinsJVM()) {
+            return _get();
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static ProxyConfiguration _get() {
+        JenkinsJVM.checkJenkinsJVM();
+        // this code could be called between the JVM flag being set and theInstance initialized
+        Jenkins jenkins = Jenkins.getInstance();
+        return jenkins == null ? null : jenkins.proxy;
+    }
+
+    private static void decorate(URLConnection con) throws IOException {
+        for (URLConnectionDecorator d : URLConnectionDecorator.all())
+            d.decorate(con);
+    }
+
     private static final XStream XSTREAM = new XStream2();
 
     private static final long serialVersionUID = 1L;
@@ -272,7 +310,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         XSTREAM.alias("proxy", ProxyConfiguration.class);
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
         @Override
         public String getDisplayName() {
@@ -304,17 +342,24 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
-            
+
+            String host = testUrl;
+            try {
+                URL url = new URL(testUrl);
+                host = url.getHost();
+            } catch (MalformedURLException e) {
+                return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
+            }
+
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", new Integer(30 * 1000));
+                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
                 
                 HttpClient client = new HttpClient();
-                if (Util.fixEmptyAndTrim(name) != null) {
+                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = 
-                            new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+                    Credentials credentials = createCredentials(userName, password);
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
@@ -332,6 +377,27 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
             
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
+        }
+
+        private boolean isNoProxyHost(String host, String noProxyHost) {
+            if (host!=null && noProxyHost!=null) {
+                for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
+                    if (p.matcher(host).matches()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private Credentials createCredentials(String userName, String password) {
+            if (userName.indexOf('\\') >= 0){
+                final String domain = userName.substring(0, userName.indexOf('\\'));
+                final String user = userName.substring(userName.indexOf('\\') + 1);
+                return new NTCredentials(user, Secret.fromString(password).getPlainText(), domain, "");
+            } else {
+                return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+            }
         }
     }
 }

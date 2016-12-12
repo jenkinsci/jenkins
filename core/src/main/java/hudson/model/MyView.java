@@ -32,6 +32,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -93,7 +94,7 @@ public class MyView extends View {
         // noop
     }
 
-    @Extension
+    @Extension @Symbol("myView")
     public static final class DescriptorImpl extends ViewDescriptor {
         /**
          * If the security is not enabled, there's no point in having

@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.Extension;
 import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
+import org.jenkinsci.Symbol;
 
 import java.util.logging.Logger;
 
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("diskUsageCheck")
 public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     public long getRecurrencePeriod() {
         return HOUR;

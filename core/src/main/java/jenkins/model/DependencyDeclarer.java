@@ -29,7 +29,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import hudson.util.DescribableList;
 
 /**
  * Marker interface for project-associated objects that can participate

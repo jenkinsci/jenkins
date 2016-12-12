@@ -23,17 +23,20 @@
  */
 package hudson.model;
 
-import static org.junit.Assert.*;
-
 import com.gargoylesoftware.htmlunit.Page;
-
-import java.io.File;
-import java.net.HttpURLConnection;
-
+import com.gargoylesoftware.htmlunit.WebResponse;
+import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import java.io.File;
+import java.net.HttpURLConnection;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -53,8 +56,15 @@ public class ApiTest {
     @Test public void json() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("p");
         JenkinsRule.WebClient wc = j.createWebClient();
-        assertEquals("{\"name\":\"p\"}", wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse().getContentAsString());
-        assertEquals("wrap({\"name\":\"p\"})", wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString());
+        WebResponse response = wc.goTo(p.getUrl() + "api/json?tree=name", "application/json").getWebResponse();
+        JSONObject json = JSONObject.fromObject(response.getContentAsString());
+        assertEquals("p", json.get("name"));
+
+        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString();
+        assertTrue(s.startsWith("wrap("));
+        assertEquals(')', s.charAt(s.length()-1));
+        json = JSONObject.fromObject(s.substring("wrap(".length(), s.length() - 1));
+        assertEquals("p", json.get("name"));
     }
 
     @Test
@@ -89,7 +99,7 @@ public class ApiTest {
     @Issue("JENKINS-3267")
     public void wrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/view/name", "application/xml");
-        assertEquals("<root><name>All</name></root>", page.getWebResponse().getContentAsString());
+        assertEquals("<root><name>"+ AllView.DEFAULT_VIEW_NAME+"</name></root>", page.getWebResponse().getContentAsString());
     }
 
     @Test
@@ -108,7 +118,7 @@ public class ApiTest {
     @Test
     public void unwrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?xpath=/hudson/view/name", "application/xml");
-        assertEquals("<name>All</name>", page.getWebResponse().getContentAsString());
+        assertEquals("<name>"+ AllView.DEFAULT_VIEW_NAME+"</name>", page.getWebResponse().getContentAsString());
     }
 
     @Test

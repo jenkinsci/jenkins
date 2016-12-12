@@ -3,7 +3,6 @@ package jenkins.slaves.systemInfo;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Computer;
-import jenkins.model.Jenkins;
 
 /**
  * Extension point that contributes to the system information page of {@link Computer}.

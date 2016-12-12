@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%Accepts connections from CLI clients}
+</j:jelly>

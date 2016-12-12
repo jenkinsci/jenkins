@@ -45,9 +45,14 @@ import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
+import hudson.tools.ToolInstallation;
 import hudson.util.DescribableList;
 
+import java.io.IOException;
 import java.util.Collections;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -57,10 +62,14 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
+
+import org.apache.tools.ant.filters.TokenFilter.ContainsString;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -95,7 +104,7 @@ public class MavenTest {
     }
 
     @Test public void withNodeProperty() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -124,7 +133,7 @@ public class MavenTest {
     }
 
     @Test public void withParameter() throws Exception {
-        MavenInstallation maven = j.configureDefaultMaven();
+        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
         String mavenHome = maven.getHome();
         String mavenHomeVar = "${VAR_MAVEN}" + mavenHome.substring(3);
         String mavenVar = mavenHome.substring(0, 3);
@@ -158,7 +167,7 @@ public class MavenTest {
      * Simulates the addition of the new Maven via UI and makes sure it works.
      */
     @Test public void globalConfigAjax() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("configure");
+        HtmlPage p = j.createWebClient().goTo("configureTools");
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
         b.click();
@@ -213,7 +222,9 @@ public class MavenTest {
         final Entry envVar = new Entry("GLOBAL_PATH", "D:\\Jenkins");
 
         FreeStyleProject project = j.createFreeStyleProject();
-        project.getBuildersList().add(new Maven("--help",null,null,properties,null));
+        // This test implements legacy behavior, when Build Variables are injected by default
+        project.getBuildersList().add(new Maven("--help", null, null, properties, null,
+                false, null, null, true));
         project.addProperty(new ParametersDefinitionProperty(parameter));
         j.jenkins.getNodeProperties().replaceBy(Collections.singleton(
                 new EnvironmentVariablesNodeProperty(envVar)
@@ -270,7 +281,7 @@ public class MavenTest {
 
     @Issue("JENKINS-26684")
     @Test public void specialCharsInBuildVariablesPassedAsProperties() throws Exception {
-        MavenInstallation maven = j.configureMaven3();
+        MavenInstallation maven = ToolInstallations.configureMaven3();
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Maven("--help", maven.getName()));
@@ -304,5 +315,29 @@ public class MavenTest {
         ));
 
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
+    }
+
+    @Test public void doPassBuildVariablesOptionally() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
+        String log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables());
+        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, false/*do not inject*/));
+
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertFalse("Build variables are not injected", log.contains("-DNAME=VALUE"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, true/*do inject*/));
+
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+
+        assertFalse(new Maven("", "").isInjectBuildVariables());
     }
 }

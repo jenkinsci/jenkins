@@ -25,7 +25,6 @@ package hudson.model.queue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;

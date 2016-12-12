@@ -32,6 +32,7 @@ import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 
@@ -46,7 +47,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -110,7 +110,7 @@ public class ListViewTest {
 
     @Issue("JENKINS-20415")
     @Test public void nonTopLevelItemGroup() throws Exception {
-        MatrixProject mp = j.createMatrixProject();
+        MatrixProject mp = j.jenkins.createProject(MatrixProject.class, "mp");
         mp.setAxes(new AxisList(new TextAxis("axis", "one", "two")));
         assertEquals(2, mp.getItems().size());
         ListView v = new ListView("v");
@@ -220,15 +220,9 @@ public class ListViewTest {
         ListView v = new ListView("v", j.jenkins);
         v.add(p);
         j.jenkins.addView(v);
-        ACL.impersonate(User.get("alice").impersonate(), new Runnable() {
-            @Override public void run() {
-                try {
-                    p.renameTo("p2");
-                } catch (IOException x) {
-                    throw new RuntimeException(x);
-                }
-            }
-        });
+        try (ACLContext _ = ACL.as(User.get("alice"))) {
+            p.renameTo("p2");
+        }
         assertEquals(Collections.singletonList(p), v.getItems());
     }
     private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {

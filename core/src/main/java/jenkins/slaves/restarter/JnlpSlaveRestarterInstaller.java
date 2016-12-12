@@ -21,11 +21,11 @@ import static java.util.logging.Level.*;
 import jenkins.security.MasterToSlaveCallable;
 
 /**
- * Actual slave restart logic.
+ * Actual agent restart logic.
  *
  * <p>
  * Use {@link ComputerListener} to install {@link EngineListener}, which in turn gets executed when
- * the slave gets disconnected.
+ * the agent gets disconnected.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -73,15 +73,15 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
                             try {
                                 for (SlaveRestarter r : restarters) {
                                     try {
-                                        LOGGER.info("Restarting slave via "+r);
+                                        LOGGER.info("Restarting agent via "+r);
                                         r.restart();
                                     } catch (Exception x) {
-                                        LOGGER.log(SEVERE, "Failed to restart slave with "+r, x);
+                                        LOGGER.log(SEVERE, "Failed to restart agent with "+r, x);
                                     }
                                 }
                             } finally {
                                 // if we move on to the reconnection without restart,
-                                // don't let the current implementations kick in when the slave loses connection again
+                                // don't let the current implementations kick in when the agent loses connection again
                                 restarters.clear();
                             }
                         }

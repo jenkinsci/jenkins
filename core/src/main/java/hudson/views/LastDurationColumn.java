@@ -24,6 +24,7 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastDurationColumn extends ListViewColumn {
@@ -31,7 +32,7 @@ public class LastDurationColumn extends ListViewColumn {
     public LastDurationColumn() {
     }
 
-    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-4)
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-4) @Symbol("lastDuration")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

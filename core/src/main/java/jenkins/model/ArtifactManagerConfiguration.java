@@ -28,13 +28,14 @@ import hudson.Extension;
 import hudson.util.DescribableList;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * List of configured {@link ArtifactManagerFactory}s.
  * @since 1.532
  */
-@Extension
+@Extension @Symbol("artifactManager")
 public class ArtifactManagerConfiguration extends GlobalConfiguration {
     
     public static ArtifactManagerConfiguration get() {

@@ -37,6 +37,7 @@ public abstract class AbstractDescribableImpl<T extends AbstractDescribableImpl<
      * By default looks for a nested class (conventionally named {@code DescriptorImpl}) implementing {@link Descriptor} and marked with {@link Extension}.
      * <p>{@inheritDoc}
      */
+    @Override
     public Descriptor<T> getDescriptor() {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }

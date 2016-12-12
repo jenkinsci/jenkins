@@ -71,7 +71,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     protected abstract ACL getACL();
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      * @see #getPermission
      */
     @Override public abstract String getIconFileName();

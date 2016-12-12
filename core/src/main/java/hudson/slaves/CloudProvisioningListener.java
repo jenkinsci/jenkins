@@ -5,8 +5,6 @@ import hudson.ExtensionPoint;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
-import jenkins.model.Jenkins;
-import org.jvnet.localizer.Localizable;
 
 import java.util.Collection;
 

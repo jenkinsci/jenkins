@@ -26,7 +26,6 @@ package hudson.model.listeners;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.PollingResult;
-import jenkins.model.Jenkins;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
 

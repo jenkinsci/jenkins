@@ -61,7 +61,7 @@ import java.util.TreeMap;
  * Various remoting operations related to diagnostics.
  *
  * <p>
- * These code are useful wherever {@link VirtualChannel} is used, such as master, slaves, Maven JVMs, etc.
+ * These code are useful wherever {@link VirtualChannel} is used, such as master, agents, Maven JVMs, etc.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.175

@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -69,7 +70,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         return v;
     }
 
-    @Extension
+    @Extension @Symbol({"string","stringParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

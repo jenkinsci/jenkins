@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.util.FormValidation;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -17,20 +18,24 @@ import java.util.Arrays;
  * @author huybrechts
  */
 public class ChoiceParameterDefinition extends SimpleParameterDefinition {
-    public static final String CHOICES_DELIMETER = "\\r?\\n";
+    public static final String CHOICES_DELIMITER = "\\r?\\n";
+
+    @Deprecated
+    public static final String CHOICES_DELIMETER = CHOICES_DELIMITER;
+
 
     private final List<String> choices;
     private final String defaultValue;
 
     public static boolean areValidChoices(String choices) {
         String strippedChoices = choices.trim();
-        return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMETER).length > 0;
+        return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
     @DataBoundConstructor
     public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
-        this.choices = Arrays.asList(choices.split(CHOICES_DELIMETER));
+        this.choices = Arrays.asList(choices.split(CHOICES_DELIMITER));
         defaultValue = null;
     }
 
@@ -87,7 +92,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return checkValue(new StringParameterValue(getName(), value, getDescription()));
     }
 
-    @Extension
+    @Extension @Symbol({"choice","choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

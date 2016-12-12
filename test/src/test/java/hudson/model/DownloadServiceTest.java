@@ -3,8 +3,15 @@ package hudson.model;
 import hudson.model.DownloadService.Downloadable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import hudson.tasks.Maven;
+import hudson.tools.DownloadFromUrlInstaller;
+import hudson.tools.JDKInstaller;
+import hudson.tools.ToolInstallation;
 import jenkins.model.DownloadSettings;
 import net.sf.json.JSONObject;
 import org.jvnet.hudson.test.Issue;
@@ -36,20 +43,12 @@ public class DownloadServiceTest extends HudsonTestCase {
 
     @Issue("JENKINS-5536")
     public void testPost() throws Exception {
-        // initially it should fail because the data doesn't have a signature
-        assertNull(job.getData());
-        createWebClient().goTo("/self/testPost");
-        assertNull(job.getData());
+        // we do not save with signature for toolInstallers,
+        //neither we check it in the getData method.
 
-        // and now it should work
-        DownloadService.signatureCheck = false;
-        try {
-            createWebClient().goTo("/self/testPost");
-            JSONObject d = job.getData();
-            assertEquals(hashCode(),d.getInt("hello"));
-        } finally {
-            DownloadService.signatureCheck = true;
-        }
+        createWebClient().goTo("/self/testPost");
+        JSONObject d = job.getData();
+        assertEquals(hashCode(),d.getInt("hello"));
 
         // TODO: test with a signature
     }
@@ -77,4 +76,89 @@ public class DownloadServiceTest extends HudsonTestCase {
         assertEquals(expected, new TreeSet<String>(keySet).toString());
     }
 
+    public void testReduceFunctionWithMavenJsons() throws Exception {
+        URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller1.json");
+        URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller2.json");
+        URL resource3 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller3.json");
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        jsonObjectList.add(json1);
+        jsonObjectList.add(json2);
+        jsonObjectList.add(json3);
+        Downloadable downloadable = new Maven.MavenInstaller.DescriptorImpl().createDownloadable();
+        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
+        URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstallerResult.json");
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        assertEquals(reducedJson, expectedResultJson);
+    }
+
+    public void testReduceFunctionWithAntJsons() throws Exception {
+        URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller1.json");
+        URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller2.json");
+        URL resource3 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller3.json");
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        jsonObjectList.add(json1);
+        jsonObjectList.add(json2);
+        jsonObjectList.add(json3);
+        Downloadable downloadable = new hudson.tasks.Ant.AntInstaller.DescriptorImpl().createDownloadable();
+        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
+        URL expectedResult = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstallerResult.json");
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        assertEquals(reducedJson, expectedResultJson);
+    }
+
+    public void testReduceFunctionWithJDKJsons() throws Exception {
+        URL resource1 = DownloadServiceTest.class.getResource("hudson.tools.JDKInstaller1.json");
+        URL resource2 = DownloadServiceTest.class.getResource("hudson.tools.JDKInstaller2.json");
+        URL resource3 = DownloadServiceTest.class.getResource("hudson.tools.JDKInstaller3.json");
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        JSONObject json3 = JSONObject.fromObject(DownloadService.loadJSON(resource3));
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        jsonObjectList.add(json1);
+        jsonObjectList.add(json2);
+        jsonObjectList.add(json3);
+        JDKInstaller.JDKList downloadable = new JDKInstaller.JDKList();
+        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
+        URL expectedResult = DownloadServiceTest.class.getResource("hudson.tools.JDKInstallerResult.json");
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        assertEquals(reducedJson, expectedResultJson);
+    }
+
+    public void testReduceFunctionWithNotDefaultSchemaJsons() throws Exception {
+        URL resource1 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller1.json");
+        URL resource2 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller2.json");
+        JSONObject json1 = JSONObject.fromObject(DownloadService.loadJSON(resource1));
+        JSONObject json2 = JSONObject.fromObject(DownloadService.loadJSON(resource2));
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+        jsonObjectList.add(json1);
+        jsonObjectList.add(json2);
+        Downloadable downloadable = new GenericDownloadFromUrlInstaller.DescriptorImpl().createDownloadable();
+        JSONObject reducedJson = downloadable.reduce(jsonObjectList);
+        URL expectedResult = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstallerResult.json");
+        JSONObject expectedResultJson = JSONObject.fromObject(DownloadService.loadJSON(expectedResult));
+        assertEquals(reducedJson, expectedResultJson);
+    }
+
+    private static class GenericDownloadFromUrlInstaller extends DownloadFromUrlInstaller {
+        protected GenericDownloadFromUrlInstaller(String id) {
+            super(id);
+        }
+
+        public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<Maven.MavenInstaller> {
+            public String getDisplayName() {
+                return "";
+            }
+
+            @Override
+            public boolean isApplicable(Class<? extends ToolInstallation> toolType) {
+                return true;
+            }
+        }
+    }
 }

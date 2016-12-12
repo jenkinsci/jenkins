@@ -22,67 +22,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- tag file sed by both signup.jelly and addUser.jelly -->
+<!-- tag file used by both signup.jelly and addUser.jelly -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout norefresh="true" title="${%Sign up}">
-    <l:header>
-      <style>
-        <!-- match width with captcha image -->
-        INPUT {
-          width:200px;
-        }
-      </style>
-    </l:header>
-    <l:hasPermission permission="${app.READ}" it="${host}">
-      <st:include page="sidepanel.jelly" it="${host}" />
-    </l:hasPermission>
-    <l:main-panel>
-      <h1>${title}</h1>
-      <div style="margin: 2em;">
-        <j:if test="${data.errorMessage!=null}">
-          <div class="error" style="margin-bottom:1em">
-            ${data.errorMessage}
-          </div>
-        </j:if>
-        <form action="${rootURL}/securityRealm/${action}" method="post" style="text-size:smaller">
-          <table>
-            <tr>
-              <td>${%Username}:</td>
-              <td><input type="text" name="username" id="username" value="${data.username}" /></td>
-            </tr>
-            <tr>
-              <td>${%Password}:</td>
-              <td><input type="password" name="password1" value="${data.password1}" /></td>
-            </tr>
-            <tr>
-              <td>${%Confirm password}:</td>
-              <td><input type="password" name="password2" value="${data.password2}" /></td>
-            </tr>
-            <tr>
-              <td>${%Full name}:</td>
-              <td><input type="text" name="fullname" value="${data.fullname}" /></td>
-            </tr>
-            <tr>
-              <td>${%E-mail address}:</td>
-              <td><input type="text" name="email" value="${data.email}" /></td>
-            </tr>
-            <j:if test="${captcha}">
-              <tr>
-                <td>${%Enter text as shown}:</td>
-                <td>
-                  <input type="text" name="captcha" autocomplete="off" /><br />
-                  <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
-                </td>
-              </tr>
-            </j:if>
-          </table>
-          <f:submit value="${title}" />
-          <script>
-            $('username').focus();
-          </script>
-        </form>
+  <h1>${title}</h1>
+  <div style="margin: 2em;">
+    <j:if test="${data.errorMessage!=null}">
+      <div class="error" style="margin-bottom:1em">
+        ${data.errorMessage}
       </div>
-    </l:main-panel>
-  </l:layout>
+    </j:if>
+      <table>
+        <tr>
+          <td>${%Username}:</td>
+          <td><input type="text" name="username" id="username" value="${data.username}" /></td>
+        </tr>
+        <tr>
+          <td>${%Password}:</td>
+          <td><input type="password" name="password1" value="${data.password1}" /></td>
+        </tr>
+        <tr>
+          <td>${%Confirm password}:</td>
+          <td><input type="password" name="password2" value="${data.password2}" /></td>
+        </tr>
+        <tr>
+          <td>${%Full name}:</td>
+          <td><input type="text" name="fullname" value="${data.fullname}" /></td>
+        </tr>
+        <j:if test="${it.mailerPluginPresent}">
+        <tr>
+          <td>${%E-mail address}:</td>
+          <td><input type="text" name="email" value="${data.email}" /></td>
+        </tr>
+        </j:if>
+        <j:if test="${captcha}">
+          <tr>
+            <td>${%Enter text as shown}:</td>
+            <td>
+              <input type="text" name="captcha" autocomplete="off" /><br />
+              <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
+            </td>
+          </tr>
+        </j:if>
+      </table>
+  </div>
 </j:jelly>

@@ -36,6 +36,7 @@ import java.util.AbstractList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.CheckForNull;
 
 /**
  * List of {@link Descriptor}s.
@@ -152,7 +153,11 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * Creates a new instance of a {@link Describable}
      * from the structured form submission data posted
      * by a radio button group. 
+     * @param config Submitted configuration for Radio List
+     * @return new instance or {@code null} if none was selected in the radio list
+     * @throws FormException Data submission error
      */
+    @CheckForNull
     public T newInstanceFromRadioList(JSONObject config) throws FormException {
         if(config.isNullObject())
             return null;    // none was selected
@@ -160,15 +165,26 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
         return get(idx).newInstance(Stapler.getCurrentRequest(),config);
     }
 
+    /**
+     * Creates a new instance of a {@link Describable}
+     * from the structured form submission data posted
+     * by a radio button group. 
+     * @param parent JSON, which contains the configuration entry for the radio list
+     * @param name Name of the configuration entry for the radio list
+     * @return new instance or {@code null} if none was selected in the radio list
+     * @throws FormException Data submission error
+     */
+    @CheckForNull
     public T newInstanceFromRadioList(JSONObject parent, String name) throws FormException {
         return newInstanceFromRadioList(parent.getJSONObject(name));
     }
 
     /**
      * Finds a descriptor by their {@link Descriptor#getId()}.
-     *
-     * If none is found, null is returned.
+     * @param id Descriptor ID
+     * @return If none is found, {@code null} is returned.
      */
+    @CheckForNull
     public Descriptor<T> findByName(String id) {
         for (Descriptor<T> d : this)
             if(d.getId().equals(id))
@@ -201,6 +217,7 @@ public final class DescriptorList<T extends Describable<T>> extends AbstractList
      * Finds the descriptor that has the matching fully-qualified class name.
      * @deprecated Underspecified what the parameter is. {@link Descriptor#getId}? A {@link Describable} class name?
      */
+    @CheckForNull
     public Descriptor<T> find(String fqcn) {
         return Descriptor.find(this,fqcn);
     }

@@ -59,14 +59,14 @@ public class BuildListTableTest {
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         HtmlAnchor anchor = page.getAnchorByText("d » d2 » p");
         String href = anchor.getHrefAttribute();
-        URL target = URI.create(page.getDocumentURI()).resolve(href).toURL();
+        URL target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
         assertEquals(href, r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString());
         page = wc.goTo("job/d/view/All/builds?suppressTimelineControl=true");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         anchor = page.getAnchorByText("d » d2 » p");
         href = anchor.getHrefAttribute();
-        target = URI.create(page.getDocumentURI()).resolve(href).toURL();
+        target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
         assertEquals(href, r.getURL() + "job/d/job/d2/job/p/", target.toString());
     }

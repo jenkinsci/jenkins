@@ -23,7 +23,22 @@
  */
 package hudson;
 
+import java.io.ByteArrayInputStream;
+import java.io.SequenceInputStream;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.security.interfaces.RSAPublicKey;
+import javax.annotation.Nullable;
+import jenkins.model.Jenkins;
+import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketAddress;
+import java.util.Arrays;
 import jenkins.AgentProtocol;
 
 import java.io.BufferedWriter;
@@ -37,13 +52,18 @@ import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.StringUtils;
 
 /**
- * Listens to incoming TCP connections from JNLP slave agents and CLI.
+ * Listens to incoming TCP connections from JNLP agents and CLI.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
- * Historically  this was used for inbound connection from slave agents (hence the name), but over time
+ * Historically  this was used for inbound connection from agents (hence the name), but over time
  * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
  * same socket.
  *
@@ -66,7 +86,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *      Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
-        super("TCP slave agent listener port="+port);
+        super("TCP agent listener port="+port);
         try {
             serverSocket = ServerSocketChannel.open();
             serverSocket.socket().bind(new InetSocketAddress(port));
@@ -75,7 +95,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
 
-        LOGGER.log(Level.FINE, "JNLP slave agent listener started on TCP port {0}", getPort());
+        LOGGER.log(Level.FINE, "JNLP agent listener started on TCP port {0}", getPort());
 
         start();
     }
@@ -87,11 +107,41 @@ public final class TcpSlaveAgentListener extends Thread {
         return serverSocket.socket().getLocalPort();
     }
 
+    /**
+     * Gets the TCP port number in which we are advertising.
+     * @since 1.656
+     */
+    public int getAdvertisedPort() {
+        return CLI_PORT != null ? CLI_PORT : getPort();
+    }
+
+    /**
+     * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
+     * @return the Base64 encoded public key
+     * @since 2.16
+     */
+    @Nullable
+    public String getIdentityPublicKey() {
+        RSAPublicKey key = InstanceIdentityProvider.RSA.getPublicKey();
+        return key == null ? null : new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+    }
+
+    /**
+     * Returns a comma separated list of the enabled {@link AgentProtocol#getName()} implementations so that
+     * clients can avoid creating additional work for the server attempting to connect with unsupported protocols.
+     *
+     * @return a comma separated list of the enabled {@link AgentProtocol#getName()} implementations
+     * @since 2.16
+     */
+    public String getAgentProtocolNames() {
+        return StringUtils.join(Jenkins.getInstance().getAgentProtocols(), ", ");
+    }
+
     @Override
     public void run() {
         try {
             // the loop eventually terminates when the socket is closed.
-            while (true) {
+            while (!shuttingDown) {
                 Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
@@ -105,7 +155,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         } catch (IOException e) {
             if(!shuttingDown) {
-                LOGGER.log(Level.SEVERE,"Failed to accept JNLP slave agent connections",e);
+                LOGGER.log(Level.SEVERE,"Failed to accept JNLP agent connections",e);
             }
         }
     }
@@ -115,6 +165,17 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public void shutdown() {
         shuttingDown = true;
+        try {
+            SocketAddress localAddress = serverSocket.getLocalAddress();
+            if (localAddress instanceof InetSocketAddress) {
+                InetSocketAddress address = (InetSocketAddress) localAddress;
+                Socket client = new Socket(address.getHostName(), address.getPort());
+                client.setSoTimeout(1000); // waking the acceptor loop should be quick
+                new PingAgentProtocol().connect(client);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "Failed to send Ping to wake acceptor loop", e);
+        }
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -134,27 +195,43 @@ public final class TcpSlaveAgentListener extends Thread {
             synchronized(getClass()) {
                 id = iotaGen++;
             }
-            setName("TCP slave agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
+            setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
         }
 
         @Override
         public void run() {
             try {
-                LOGGER.info("Accepted connection #"+id+" from "+s.getRemoteSocketAddress());
+                LOGGER.log(Level.INFO, "Accepted connection #{0} from {1}", new Object[]{id,s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
                         new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
                         true); // DEPRECATED: newer protocol shouldn't use PrintWriter but should use DataOutputStream
 
-                String s = in.readUTF();
+                // peek the first few bytes to determine what to do with this client
+                byte[] head = new byte[10];
+                in.readFully(head);
+
+                String header = new String(head, Charsets.US_ASCII);
+                if (header.startsWith("GET ")) {
+                    // this looks like an HTTP client
+                    respondHello(header,s);
+                    return;
+                }
+
+                // otherwise assume this is AgentProtocol and start from the beginning
+                String s = new DataInputStream(new SequenceInputStream(new ByteArrayInputStream(head),in)).readUTF();
 
                 if(s.startsWith("Protocol:")) {
                     String protocol = s.substring(9);
                     AgentProtocol p = AgentProtocol.of(protocol);
-                    if (p!=null)
-                        p.handle(this.s);
-                    else
+                    if (p!=null) {
+                        if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                            p.handle(this.s);
+                        } else {
+                            error(out, "Disabled protocol:" + s);
+                        }
+                    } else
                         error(out, "Unknown protocol:" + s);
                 } else {
                     error(out, "Unrecognized protocol: "+s);
@@ -176,10 +253,135 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
+        /**
+         * Respond to HTTP request with simple diagnostics.
+         * Primarily used to test the low-level connectivity.
+         */
+        private void respondHello(String header, Socket s) throws IOException {
+            try {
+                Writer o = new OutputStreamWriter(s.getOutputStream(), "UTF-8");
+
+                if (header.startsWith("GET / ")) {
+                    o.write("HTTP/1.0 200 OK\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
+                    o.write("Jenkins-Agent-Protocols: " + getAgentProtocolNames()+"\r\n");
+                    o.write("Jenkins-Version: " + Jenkins.VERSION + "\r\n");
+                    o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
+                    o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
+                    o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
+                    o.flush();
+                    s.shutdownOutput();
+                } else {
+                    o.write("HTTP/1.0 404 Not Found\r\n");
+                    o.write("Content-Type: text/plain;charset=UTF-8\r\n");
+                    o.write("\r\n");
+                    o.write("Not Found\r\n");
+                    o.flush();
+                    s.shutdownOutput();
+                }
+
+                InputStream i = s.getInputStream();
+                IOUtils.copy(i, new NullOutputStream());
+                s.shutdownInput();
+            } finally {
+                s.close();
+            }
+        }
+
         private void error(PrintWriter out, String msg) throws IOException {
             out.println(msg);
             LOGGER.log(Level.WARNING,"Connection #"+id+" is aborted: "+msg);
             s.close();
+        }
+    }
+
+    /**
+     * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
+     * We also use this to wake the acceptor thread on termination.
+     *
+     * @since 1.653
+     */
+    @Extension
+    public static class PingAgentProtocol extends AgentProtocol {
+
+        private final byte[] ping;
+
+        public PingAgentProtocol() {
+            try {
+                ping = "Ping\n".getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException("JLS mandates support for UTF-8 charset", e);
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isRequired() {
+            return true;
+        }
+
+        @Override
+        public String getName() {
+            return "Ping";
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.TcpSlaveAgentListener_PingAgentProtocol_displayName();
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            try {
+                OutputStream stream = socket.getOutputStream();
+                try {
+                    LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
+                    stream.write(ping);
+                    stream.flush();
+                    LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
+                } finally {
+                    stream.close();
+                }
+            } finally {
+                socket.close();
+            }
+        }
+
+        public boolean connect(Socket socket) throws IOException {
+            try {
+                DataOutputStream out = null;
+                InputStream in = null;
+                try {
+                    LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                    out = new DataOutputStream(socket.getOutputStream());
+                    out.writeUTF("Protocol:Ping");
+                    in = socket.getInputStream();
+                    byte[] response = new byte[ping.length];
+                    int responseLength = in.read(response);
+                    if (responseLength == ping.length && Arrays.equals(response, ping)) {
+                        LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                        return true;
+                    } else {
+                        LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                                socket.getRemoteSocketAddress(),
+                                new String(ping, "UTF-8"),
+                                new String(response, 0, responseLength, "UTF-8")
+                        });
+                        return false;
+                    }
+                } finally {
+                    IOUtils.closeQuietly(out);
+                    IOUtils.closeQuietly(in);
+                }
+            } finally {
+                socket.close();
+            }
         }
     }
 
@@ -203,7 +405,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * TODO: think about how to expose this (including whether this needs to be exposed at all.)
      */
-    public static String CLI_HOST_NAME = System.getProperty(TcpSlaveAgentListener.class.getName()+".hostName");
+    public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName()+".hostName");
 
     /**
      * Port number that we advertise the CLI client to connect to.
@@ -215,7 +417,7 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * @since 1.611
      */
-    public static Integer CLI_PORT = Integer.getInteger(TcpSlaveAgentListener.class.getName()+".port");
+    public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
 
 /*

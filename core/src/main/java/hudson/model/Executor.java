@@ -54,6 +54,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -62,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
+import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -113,10 +115,6 @@ public class Executor extends Thread implements ModelObject {
     @GuardedBy("lock")
     private WorkUnit workUnit;
 
-    private Throwable causeOfDeath;
-
-    private boolean induceDeath;
-
     @GuardedBy("lock")
     private boolean started;
 
@@ -142,7 +140,34 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void interrupt() {
-        interrupt(Result.ABORTED);
+        if (Thread.currentThread() == this) {
+            // If you catch an InterruptedException the "correct" options are limited to one of two choices:
+            //   1. Propagate the exception;
+            //   2. Restore the Thread.currentThread().interrupted() flag
+            // The JVM locking support assumes such behaviour.
+            // Evil Jenkins overrides the interrupt() method so that when a different thread interrupts this thread
+            // we abort the build.
+            // but that causes JENKINS-28690 style deadlocks when the correctly written code does
+            //
+            // try {
+            //   ... some long running thing ...
+            // } catch (InterruptedException e) {
+            //   ... some tidy up
+            //   // restore interrupted flag
+            //   Thread.currentThread().interrupted();
+            // }
+            //
+            // What about why we do not set the Result.ABORTED on this branch?
+            // That is a good question to ask, the answer is that the only time a thread should be restoring
+            // its own interrupted flag is when that thread has already been interrupted by another thread
+            // as such we should assume that the result has already been applied. If that assumption were
+            // incorrect, then the Run.execute's catch (InterruptedException) block will either set the result
+            // or have been escaped - in which case the result of the run has been sealed anyway so it does not
+            // matter.
+            super.interrupt();
+        } else {
+            interrupt(Result.ABORTED);
+        }
     }
 
     void interruptForShutdown() {
@@ -205,7 +230,14 @@ public class Executor extends Thread implements ModelObject {
     }
 
     public Result abortResult() {
-        lock.readLock().lock();
+        // this method is almost always called as a result of the current thread being interrupted
+        // as a result we need to clean the interrupt flag so that the lock's lock method doesn't
+        // get confused and think it was interrupted while awaiting the lock
+        Thread.interrupted(); 
+        // we need to use a write lock as we may be repeatedly interrupted while processing and
+        // we need the same lock as used in void interrupt(Result,boolean,CauseOfInterruption...)
+        // JENKINS-28690
+        lock.writeLock().lock();
         try {
             Result r = interruptStatus;
             if (r == null) r =
@@ -213,7 +245,7 @@ public class Executor extends Thread implements ModelObject {
 
             return r;
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -250,19 +282,16 @@ public class Executor extends Thread implements ModelObject {
      */
     private void resetWorkUnit(String reason) {
         StringWriter writer = new StringWriter();
-        PrintWriter pw = new PrintWriter(writer);
-        try {
+        try (PrintWriter pw = new PrintWriter(writer)) {
             pw.printf("%s grabbed %s from queue but %s %s. ", getName(), workUnit, owner.getDisplayName(), reason);
             if (owner.getTerminatedBy().isEmpty()) {
                 pw.print("No termination trace available.");
             } else {
                 pw.println("Termination trace follows:");
-                for (Computer.TerminationRequest request: owner.getTerminatedBy()) {
+                for (Computer.TerminationRequest request : owner.getTerminatedBy()) {
                     request.printStackTrace(pw);
                 }
             }
-        } finally {
-            pw.close();
         }
         LOGGER.log(WARNING, writer.toString());
         lock.writeLock().lock();
@@ -302,8 +331,6 @@ public class Executor extends Thread implements ModelObject {
         ACL.impersonate(ACL.SYSTEM);
 
         try {
-            if (induceDeath)        throw new ThreadDeath();
-
             SubTask task;
             // transition from idle to building.
             // perform this state change as an atomic operation wrt other queue operations
@@ -362,6 +389,9 @@ public class Executor extends Thread implements ModelObject {
                 }
 
                 if (executable instanceof Actionable) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
+                    }
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
                     }
@@ -397,11 +427,7 @@ public class Executor extends Thread implements ModelObject {
         } catch (InterruptedException e) {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
-        } catch(Exception e) {
-            causeOfDeath = e;
-            LOGGER.log(SEVERE, "Unexpected executor death", e);
-        } catch (Error e) {
-            causeOfDeath = e;
+        } catch(Exception | Error e) {
             LOGGER.log(SEVERE, "Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
@@ -430,10 +456,10 @@ public class Executor extends Thread implements ModelObject {
     }
 
     private void finish2() {
-        for (RuntimeException e1: owner.getTerminatedBy()) LOGGER.log(Level.WARNING, String.format("%s termination trace", getName()), e1);
-        if (causeOfDeath == null) {// let this thread die and be replaced by a fresh unstarted instance
-            owner.removeExecutor(this);
+        for (RuntimeException e1 : owner.getTerminatedBy()) {
+            LOGGER.log(Level.FINE, String.format("%s termination trace", getName()), e1);
         }
+        owner.removeExecutor(this);
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
@@ -451,13 +477,6 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * For testing only. Simulate a fatal unexpected failure.
-     */
-    public void killHard() {
-        induceDeath = true;
-    }
-
-    /**
      * Returns the current build this executor is running.
      *
      * @return
@@ -471,6 +490,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+    
+    /**
+     * Returns causes of interruption.
+     *
+     * @return Unmodifiable collection of causes of interruption.
+     * @since  1.617    
+     */
+    public @Nonnull Collection<CauseOfInterruption> getCausesOfInterruption() {
+        return Collections.unmodifiableCollection(causes);
     }
 
     /**
@@ -561,7 +590,7 @@ public class Executor extends Thread implements ModelObject {
      * on-demand creation of executor threads. Callers should use
      * this method instead of {@link #isAlive()}, which would be incorrect for
      * non-started threads or running {@link AsynchronousExecution}.
-     * @return True if the executor is available for tasks
+     * @return true if the executor is available for tasks (usually true)
      * @since 1.536
      */
     public boolean isActive() {
@@ -615,13 +644,11 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * If this thread dies unexpectedly, obtain the cause of the failure.
-     *
-     * @return null if the death is expected death or the thread {@link #isActive}.
-     * @since 1.142
+     * @deprecated no longer used
      */
-    public Throwable getCauseOfDeath() {
-        return causeOfDeath;
+    @Deprecated
+    public @CheckForNull Throwable getCauseOfDeath() {
+        return null;
     }
 
     /**
@@ -825,14 +852,10 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Throws away this executor and get a new one.
+     * @deprecated now a no-op
      */
-    @RequirePOST
+    @Deprecated
     public HttpResponse doYank() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        if (isActive())
-            throw new Failure("Can't yank a live executor");
-        owner.removeExecutor(this);
         return HttpResponses.redirectViaContextPath("/");
     }
 
@@ -910,8 +933,9 @@ public class Executor extends Thread implements ModelObject {
      *          or null if it could not be found (for example because the execution has already completed)
      * @since 1.607
      */
-    public static @CheckForNull Executor of(Executable executable) {
-        Jenkins jenkins = Jenkins.getInstance();
+    @CheckForNull
+    public static Executor of(Executable executable) {
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // TODO confirm safe to assume non-null and use getInstance()
         if (jenkins == null) {
             return null;
         }

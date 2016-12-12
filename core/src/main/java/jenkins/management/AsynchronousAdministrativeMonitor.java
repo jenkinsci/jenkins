@@ -8,7 +8,6 @@ import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import jenkins.model.Jenkins;
 import jenkins.security.RekeySecretAdminMonitor;
-import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.File;
 import java.io.IOException;

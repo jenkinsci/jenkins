@@ -24,19 +24,16 @@
 
 package jenkins.model.queue;
 
-import hudson.model.Computer;
 import hudson.model.Executor;
-import hudson.model.ExecutorListener;
 import hudson.model.OneOffExecutor;
-import hudson.model.Queue.Executable;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Resource;
 import hudson.model.ResourceActivity;
 import hudson.model.ResourceController;
 import hudson.model.ResourceList;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
-import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -97,13 +94,16 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Obtains the associated executor.
+     * @return Associated Executor. May be {@code null} if {@link #setExecutor(hudson.model.Executor)} 
+     * has not been called yet.
      */
+    @CheckForNull
     public synchronized final Executor getExecutor() {
         return executor;
     }
 
     @Restricted(NoExternalUse.class)
-    public synchronized final void setExecutor(Executor executor) {
+    public synchronized final void setExecutor(@Nonnull Executor executor) {
         assert this.executor==null;
 
         this.executor = executor;

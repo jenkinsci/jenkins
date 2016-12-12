@@ -24,7 +24,6 @@
 package hudson.model;
 
 import hudson.ExtensionPoint;
-import hudson.Plugin;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
@@ -37,7 +36,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * Extensible property of {@link User}.
  *
  * <p>
- * {@link Plugin}s can extend this to define custom properties
+ * Plugins can extend this to define custom properties
  * for {@link User}s. {@link UserProperty}s show up in the user
  * configuration screen, and they are persisted with the user object.
  *
@@ -59,7 +58,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      */
     protected transient User user;
 
-    /*package*/ final void setUser(User u) {
+    protected void setUser(User u) {
         this.user = u;
     }
 

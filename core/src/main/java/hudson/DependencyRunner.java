@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 

@@ -25,20 +25,20 @@
 package hudson.util.io;
 
 import hudson.Functions;
-import hudson.org.apache.tools.tar.TarOutputStream;
 import hudson.os.PosixException;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
-import org.apache.tools.tar.TarEntry;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 
-import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarConstants;
+import org.apache.commons.compress.utils.BoundedInputStream;
+
 
 /**
  * {@link FileVisitor} that creates a tar archive.
@@ -47,24 +47,17 @@ import static org.apache.tools.tar.TarConstants.LF_SYMLINK;
  */
 final class TarArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
-    private final TarOutputStream tar;
+    private final TarArchiveOutputStream tar;
 
     TarArchiver(OutputStream out) {
-        tar = new TarOutputStream(new BufferedOutputStream(out) {
-            // TarOutputStream uses TarBuffer internally,
-            // which flushes the stream for each block. this creates unnecessary
-            // data stream fragmentation, and flush request to a remote, which slows things down.
-            @Override
-            public void flush() throws IOException {
-                // so don't do anything in flush
-            }
-        });
-        tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
+        tar = new TarArchiveOutputStream(out);
+        tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
+        tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
     }
 
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
-        TarEntry e = new TarEntry(relativePath, LF_SYMLINK);
+        TarArchiveEntry e = new TarArchiveEntry(relativePath, TarConstants.LF_SYMLINK);
         try {
             int mode = IOUtils.mode(link);
             if (mode != -1) {
@@ -73,16 +66,11 @@ final class TarArchiver extends Archiver {
         } catch (PosixException x) {
             // ignore
         }
+        
+        e.setLinkName(target);
 
-        try {
-            StringBuffer linkName = (StringBuffer) LINKNAME_FIELD.get(e);
-            linkName.setLength(0);
-            linkName.append(target);
-        } catch (IllegalAccessException x) {
-            throw new IOException("Failed to set linkName", x);
-        }
-
-        tar.putNextEntry(e);
+        tar.putArchiveEntry(e);
+        tar.closeArchiveEntry();
         entriesWritten++;
     }
 
@@ -97,45 +85,39 @@ final class TarArchiver extends Archiver {
 
         if(file.isDirectory())
             relativePath+='/';
-        TarEntry te = new TarEntry(relativePath);
+        TarArchiveEntry te = new TarArchiveEntry(relativePath);
         int mode = IOUtils.mode(file);
         if (mode!=-1)   te.setMode(mode);
         te.setModTime(file.lastModified());
-        if(!file.isDirectory())
-            te.setSize(file.length());
-
-        tar.putNextEntry(te);
+        long size = 0;
 
         if (!file.isDirectory()) {
-            FileInputStream in = new FileInputStream(file);
-            try {
-                int len;
-                while((len=in.read(buf))>=0)
-                    tar.write(buf,0,len);
-            } finally {
-                in.close();
-            }
+            size = file.length();
+            te.setSize(size);
         }
-
-        tar.closeEntry();
+        tar.putArchiveEntry(te);
+        try {
+            if (!file.isDirectory()) {
+                // ensure we don't write more bytes than the declared when we created the entry
+                
+                try (FileInputStream fin = new FileInputStream(file);
+                     BoundedInputStream in = new BoundedInputStream(fin, size)) {
+                    int len;
+                    while ((len = in.read(buf)) >= 0) {
+                        tar.write(buf, 0, len);
+                    }
+                } catch (IOException e) {// log the exception in any case
+                    IOException ioE = new IOException("Error writing to tar file from: " + file, e);
+                    throw ioE;
+                }
+            }
+        } finally { // always close the entry
+            tar.closeArchiveEntry();
+        }
         entriesWritten++;
     }
 
     public void close() throws IOException {
         tar.close();
-    }
-
-    private static final Field LINKNAME_FIELD = getTarEntryLinkNameField();
-
-    private static Field getTarEntryLinkNameField() {
-        try {
-            Field f = TarEntry.class.getDeclaredField("linkName");
-            f.setAccessible(true);
-            return f;
-        } catch (SecurityException e) {
-            throw new AssertionError(e);
-        } catch (NoSuchFieldException e) {
-            throw new AssertionError(e);
-        }
     }
 }

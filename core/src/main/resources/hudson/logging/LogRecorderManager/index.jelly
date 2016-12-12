@@ -59,7 +59,7 @@ THE SOFTWARE.
       <j:forEach var="lr" items="${it.logRecorders.values()}">
         <local:row name="${lr.name}" href="${lr.searchUrl}/">
           <a href="${lr.searchUrl}/configure">
-            <l:icon class="icon-setting icon-lg" tooltip="Configure"/>
+            <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
           </a>
         </local:row>
       </j:forEach>

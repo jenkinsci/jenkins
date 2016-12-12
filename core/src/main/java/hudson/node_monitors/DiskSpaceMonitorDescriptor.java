@@ -27,7 +27,6 @@ import hudson.Functions;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
-import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 
 import java.io.File;
@@ -37,6 +36,8 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Locale;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
 
@@ -79,6 +80,14 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         @Exported
         public String getPath() {
             return path;
+        }
+
+        // Needed for jelly that does not seem to be able to access properties
+        // named 'size' as it confuses it with built-in size method and fails
+        // to parse the expression expecting '()'.
+        @Restricted(DoNotUse.class)
+        public long getFreeSize() {
+            return size;
         }
 
         /**

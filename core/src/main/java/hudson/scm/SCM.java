@@ -58,6 +58,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -84,8 +85,13 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    /** JENKINS-35098: discouraged */
+    @SuppressWarnings("FieldMayBeFinal")
+    private static boolean useAutoBrowserHolder = SystemProperties.getBoolean(SCM.class.getName() + ".useAutoBrowserHolder");
     /**
      * Stores {@link AutoBrowserHolder}. Lazily created.
+     * @deprecated Unused by default.
      */
     private transient AutoBrowserHolder autoBrowserHolder;
 
@@ -124,17 +130,21 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Returns the applicable {@link RepositoryBrowser} for files
      * controlled by this {@link SCM}.
      * @see #guessBrowser
-     * @see SCMDescriptor#isBrowserReusable
      */
+    @SuppressWarnings("deprecation")
     @Exported(name="browser")
     public final @CheckForNull RepositoryBrowser<?> getEffectiveBrowser() {
         RepositoryBrowser<?> b = getBrowser();
         if(b!=null)
             return b;
-        if(autoBrowserHolder==null)
-            autoBrowserHolder = new AutoBrowserHolder(this);
-        return autoBrowserHolder.get();
-
+        if (useAutoBrowserHolder) {
+            if (autoBrowserHolder == null) {
+                autoBrowserHolder = new AutoBrowserHolder(this);
+            }
+            return autoBrowserHolder.get();
+        } else {
+            return guessBrowser();
+        }
     }
 
     /**
@@ -152,7 +162,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This flag affects the behavior of Hudson when a job lost its workspace
-     * (typically due to a slave outage.) If this method returns false and
+     * (typically due to a agent outage.) If this method returns false and
      * polling is configured, then that would immediately trigger a new build.
      *
      * <p>
@@ -177,9 +187,9 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Called before a workspace is deleted on the given node, to provide SCM an opportunity to perform clean up.
      *
      * <p>
-     * Hudson periodically scans through all the slaves and removes old workspaces that are deemed unnecessary.
+     * Hudson periodically scans through all the agents and removes old workspaces that are deemed unnecessary.
      * This behavior is implemented in {@link WorkspaceCleanupThread}, and it is necessary to control the
-     * disk consumption on slaves. If we don't do this, in a long run, all the slaves will have workspaces
+     * disk consumption on agents. If we don't do this, in a long run, all the agents will have workspaces
      * for all the projects, which will be prohibitive in big Hudson.
      *
      * <p>
@@ -191,7 +201,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * recursive directory deletion happens.
      *
      * <p>
-     * Note that this method does not guarantee that such a clean up will happen. For example, slaves can be
+     * Note that this method does not guarantee that such a clean up will happen. For example, agents can be
      * taken offline by being physically removed from the network, and in such a case there's no opportunity
      * to perform this clean up.
      *
@@ -233,7 +243,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Checks if there has been any changes to this module in the repository.
      *
      * TODO: we need to figure out a better way to communicate an error back,
-     * so that we won't keep retrying the same node (for example a slave might be down.)
+     * so that we won't keep retrying the same node (for example an agent might be down.)
      *
      * <p>
      * If the SCM doesn't implement polling, have the {@link #supportsPolling()} method

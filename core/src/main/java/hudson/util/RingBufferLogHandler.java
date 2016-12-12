@@ -41,6 +41,11 @@ public class RingBufferLogHandler extends Handler {
     private final LogRecord[] records;
     private volatile int size = 0;
 
+    /**
+     * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
+     * as it's not legal to use it on remoting agents.
+     */
+    @Deprecated
     public RingBufferLogHandler() {
         this(DEFAULT_RING_BUFFER_SIZE);
     }

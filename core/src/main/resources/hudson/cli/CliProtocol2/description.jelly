@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%Extends the version 1 protocol by adding transport encryption}
+</j:jelly>

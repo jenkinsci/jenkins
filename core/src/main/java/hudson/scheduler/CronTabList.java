@@ -29,6 +29,8 @@ import java.util.TimeZone;
 import java.util.Collection;
 import java.util.Vector;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -44,7 +46,7 @@ public final class CronTabList {
     private final Vector<CronTab> tabs;
 
     public CronTabList(Collection<CronTab> tabs) {
-        this.tabs = new Vector<CronTab>(tabs);
+        this.tabs = new Vector<>(tabs);
     }
 
     /**
@@ -90,12 +92,12 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(String format) throws ANTLRException {
+    public static CronTabList create(@Nonnull String format) throws ANTLRException {
         return create(format,null);
     }
 
-    public static CronTabList create(String format, Hash hash) throws ANTLRException {
-        Vector<CronTab> r = new Vector<CronTab>();
+    public static CronTabList create(@Nonnull String format, Hash hash) throws ANTLRException {
+        Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
         String timezone = null;
 

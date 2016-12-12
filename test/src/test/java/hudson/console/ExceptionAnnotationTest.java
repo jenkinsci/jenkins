@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
-import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi

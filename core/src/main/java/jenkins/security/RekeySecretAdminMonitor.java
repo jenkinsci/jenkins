@@ -10,6 +10,7 @@ import hudson.util.VersionNumber;
 import jenkins.management.AsynchronousAdministrativeMonitor;
 import jenkins.model.Jenkins;
 import jenkins.util.io.FileBoolean;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("rekeySecret")
 public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor implements StaplerProxy {
 
     /**
@@ -113,13 +114,11 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
 
     @Initializer(fatal=false,after=InitMilestone.PLUGINS_STARTED,before=InitMilestone.EXTENSIONS_AUGMENTED)
     // as early as possible, but this needs to be late enough that the ConfidentialStore is available
-    public static void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
-        RekeySecretAdminMonitor m = new RekeySecretAdminMonitor();  // throw-away instance
-
-        FileBoolean flag = m.scanOnBoot;
+    public void scanOnReboot() throws InterruptedException, IOException, GeneralSecurityException {
+        FileBoolean flag = scanOnBoot;
         if (flag.isOn()) {
             flag.off();
-            m.start(false).join();
+            start(false).join();
             // block the boot until the rewrite process is complete
             // don't let the failure in RekeyThread block Jenkins boot.
         }

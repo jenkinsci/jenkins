@@ -28,8 +28,6 @@ import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
 import jenkins.security.ApiTokenProperty;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -135,7 +133,9 @@ public class BasicAuthenticationFilter implements Filter {
         }
 
         {// attempt to authenticate as API token
-            User u = User.get(username);
+            // create is true as the user may not have been saved and the default api token may be in use.
+            // validation of the user will be performed against the underlying realm in impersonate.
+            User u = User.getById(username, true);
             ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
             if (t!=null && t.matchesPassword(password)) {
                 SecurityContextHolder.getContext().setAuthentication(u.impersonate());

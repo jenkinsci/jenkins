@@ -52,6 +52,7 @@ public class RunIdMigratorTest {
         TimeZone.setDefault(TimeZone.getTimeZone("EST"));
     }
 
+    // TODO could use LoggerRule only if it were extracted to an independent library
     @BeforeClass public static void logging() {
         RunIdMigrator.LOGGER.setLevel(Level.ALL);
         Handler handler = new ConsoleHandler();
@@ -121,6 +122,26 @@ public class RunIdMigratorTest {
     @Test public void reverseAfterNewBuilds() throws Exception {
         File root = dir;
         dir = new File(dir, "jobs/someproject/modules/test$test/builds");
+        write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        write("legacyIds", "");
+        assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
+    }
+
+    @Test public void reverseMatrixAfterNewBuilds() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/someproject/Environment=prod/builds");
+        write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
+        write("legacyIds", "");
+        assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());
+        RunIdMigrator.main(root.getAbsolutePath());
+        assertEquals("{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>1</number>\n  <otherstuff>ok</otherstuff>\n</run>'}}", summarize());
+    }
+
+    @Test public void reverseMavenAfterNewBuilds() throws Exception {
+        File root = dir;
+        dir = new File(dir, "jobs/someproject/test$test/builds");
         write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
         write("legacyIds", "");
         assertEquals("{1={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>'}, legacyIds=''}", summarize());

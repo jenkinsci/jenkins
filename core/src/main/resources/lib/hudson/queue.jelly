@@ -28,7 +28,7 @@ THE SOFTWARE.
     Displays the build queue as &lt;l:pane>
 
     <st:attribute name="items" use="required">
-      Queue items to be displayed. Normally you should specify ${app.queue.approximateItemsQuickly},
+      Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
       the list.
     </st:attribute>
@@ -91,7 +91,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="cancel this build"/>
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.task.fullDisplayName)}" alt="cancel this build"/>
               </j:if>
              </td>
           </tr>

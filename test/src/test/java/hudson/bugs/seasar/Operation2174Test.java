@@ -43,7 +43,7 @@ public class Operation2174Test extends HudsonTestCase {
      */
     public void testBuildChains() throws Exception {
         FreeStyleProject up = createFreeStyleProject("up");
-        MavenModuleSet dp = createMavenProject("dp");
+        MavenModuleSet dp = jenkins.createProject(MavenModuleSet.class, "dp");
 
         // designate 'dp' as the downstream in 'up'
         WebClient webClient = new WebClient();

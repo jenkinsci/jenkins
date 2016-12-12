@@ -37,8 +37,9 @@ import java.io.OutputStream;
  * and then keep writing.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated due to risk for file leak. Prefer {@link RewindableFileOutputStream}
  */
-public class ReopenableFileOutputStream extends OutputStream {
+@Deprecated public class ReopenableFileOutputStream extends OutputStream {
     protected final File out;
 
     private OutputStream current;

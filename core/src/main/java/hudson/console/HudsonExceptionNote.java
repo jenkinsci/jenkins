@@ -25,6 +25,7 @@ package hudson.console;
 
 import hudson.Extension;
 import hudson.MarkupText;
+import org.jenkinsci.Symbol;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,7 +96,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
         return "http://stacktrace.jenkins-ci.org/search?query="+className;
     }
 
-    @Extension
+    @Extension @Symbol("stackTrace")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
         @Override
         public String getDisplayName() {

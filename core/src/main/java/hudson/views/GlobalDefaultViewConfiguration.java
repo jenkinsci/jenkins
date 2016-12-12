@@ -24,12 +24,10 @@
 package hudson.views;
 
 import hudson.Extension;
-import hudson.markup.MarkupFormatter;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.SecurityRealm;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -37,7 +35,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=300)
+@Extension(ordinal=300) @Symbol("defaultView")
 public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {

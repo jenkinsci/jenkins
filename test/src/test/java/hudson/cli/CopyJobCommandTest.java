@@ -24,7 +24,6 @@
 
 package hudson.cli;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import static hudson.cli.CLICommandInvoker.Matcher.*;
 import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
@@ -47,7 +46,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
 
-@SuppressWarnings("DM_DEFAULT_ENCODING")
 public class CopyJobCommandTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
@@ -124,11 +122,11 @@ public class CopyJobCommandTest {
             }
         });
         copyJobCommand.setTransportAuth(User.get("alice").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(3));
         copyJobCommand.setTransportAuth(User.get("bob").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
         copyJobCommand.setTransportAuth(User.get("charlie").impersonate());
-        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(-1));
+        assertThat(command.invokeWithArgs("d1/p", "d2/p"), failedWith(6));
         copyJobCommand.setTransportAuth(User.get("debbie").impersonate());
         assertThat(command.invokeWithArgs("d1/p", "d2/p"), succeededSilently());
         assertNotNull(d2.getItem("p"));

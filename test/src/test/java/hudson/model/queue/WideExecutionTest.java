@@ -50,7 +50,7 @@ public class WideExecutionTest {
     public JenkinsRule j = new JenkinsRule();
 
     @TestExtension
-    public static class Contributer extends SubTaskContributor {
+    public static class Contributor extends SubTaskContributor {
         public Collection<? extends SubTask> forProject(final AbstractProject<?, ?> p) {
             return Collections.singleton(new AbstractSubTask() {
                 private final AbstractSubTask outer = this;

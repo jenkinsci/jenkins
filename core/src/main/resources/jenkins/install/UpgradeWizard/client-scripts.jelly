@@ -1,0 +1,86 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <j:if test="${!app.installState.setupComplete and app.installState.name() == 'UPGRADE'}">
+    <style>
+      #upgrade-fragment {
+        background: url(${rootURL}/images/jenkins.png) no-repeat 5% -63px;
+        padding: 10px;
+        box-shadow: 0 1px rgba(0,0,0,.1), 0 2px 5px rgba(0,0,0,.2), inset 0 -50px 50px -50px #cef;
+        position: relative;
+      }
+
+      #upgrade-notice {
+        text-align: center;
+        font-size: 20px;
+        height: 60px;
+        vertical-align:middle;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #upgrade-notice > .post{
+        display:inline-block;
+        color:#fff;
+        background: #478;
+        border:1px solid #356;
+        text-decoration:none;
+        padding:.5em;
+        margin:0 .33em 0 .5em;
+        border-radius:3px;
+      }
+      #upgrade-notice > .post:hover{
+        background: #356;
+      }
+      #upgrade-snooze {
+        position:absolute;
+        text-decoration:none;
+        font-weight:bold;
+        width:2.5em;
+        line-height:1.33em;
+        text-align:center;
+        top: -2px;
+        right: 25px;
+        background-color: #d24939;
+        color: #eeeeee;
+        border: 1px solid #be3a2b;
+        border-bottom-left-radius:3px;
+        border-bottom-right-radius:3px;
+      }
+      #upgrade-snooze:hover{
+        background:#900;
+        color:#fff;
+      }
+      #upgrade-snooze b {
+        border-bottom: 2px solid #fff;
+        width: 14px;
+        height: 13px;
+        margin-bottom: 0;
+        display: inline-block;
+        text-indent: -9000px;
+      }
+    </style>
+    <div style="display:none">
+      <div id="upgrade-fragment">
+        <a id="upgrade-snooze" class="post" href="${rootURL}/installState/snooze">
+          <b>%{Snooze}</b>
+        </a>
+        <div id="upgrade-notice">
+          <j:whitespace>${%msg.before}</j:whitespace> 
+          <f:link href="${rootURL}/setupWizard/installState/UPGRADE/showUpgradeWizard" post="true">${%msg.link}</f:link>
+          <j:whitespace>${%msg.after}</j:whitespace>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        var e = $('upgrade-fragment');
+        e.remove();
+        $('page-body').insert({ top: e });
+      })();
+    </script>
+    <j:if test="${app.installState.showUpgradeWizard}">
+      <div class="plugin-setup-wizard-container"></div>
+      <script src="${resURL}/jsbundles/upgradeWizard.js" type="text/javascript"/>
+    </j:if>
+  </j:if>
+</j:jelly>

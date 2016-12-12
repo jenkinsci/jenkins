@@ -1,12 +1,11 @@
 package jenkins.security;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,7 +19,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
 
-    @NonNull
+    @Nonnull
     public abstract List<QueueItemAuthenticator> getAuthenticators();
 
     public static Iterable<QueueItemAuthenticator> authenticators() {
@@ -32,10 +31,7 @@ public abstract class QueueItemAuthenticatorProvider implements ExtensionPoint {
         private Iterator<QueueItemAuthenticator> delegate = null;
 
         private IteratorImpl() {
-            final Jenkins jenkins = Jenkins.getInstance();
-            providers = new ArrayList<QueueItemAuthenticatorProvider>(jenkins == null
-                    ? Collections.<QueueItemAuthenticatorProvider>emptyList()
-                    : jenkins.getExtensionList(QueueItemAuthenticatorProvider.class)).iterator();
+            providers = ExtensionList.lookup(QueueItemAuthenticatorProvider.class).iterator();
         }
 
         @Override

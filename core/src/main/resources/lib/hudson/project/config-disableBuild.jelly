@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 
 <!--
-  Configuration entry for disabling builds
+  Configuration entry for disabling a project
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:optionalBlock name="disable" title="${%Disable Build} (${%No new builds will be executed until the project is re-enabled.})" checked="${it.disabled}"
+  <f:optionalBlock name="disable" title="${%Disable this project}" checked="${it.disabled}"
                    help="/help/project-config/disable.html" inline="true" />
 </j:jelly>

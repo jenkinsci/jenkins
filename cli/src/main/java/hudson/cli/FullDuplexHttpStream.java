@@ -44,7 +44,7 @@ public class FullDuplexHttpStream {
 
     private static String basicAuth(String userInfo) {
         if (userInfo != null)
-            return "Basic "+new String(new Base64().encodeBase64(userInfo.getBytes()));
+            return "Basic "+new String(Base64.encodeBase64(userInfo.getBytes()));
         return null;
     }
 

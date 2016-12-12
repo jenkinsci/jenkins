@@ -2,7 +2,6 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.Lookup;
-import hudson.init.InitMilestone;
 import hudson.util.Secret;
 import hudson.util.Service;
 import jenkins.model.Jenkins;
@@ -11,7 +10,6 @@ import org.kohsuke.MetaInfServices;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,9 +62,6 @@ public abstract class ConfidentialStore {
         if (TEST!=null) return TEST.get();
 
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            throw new IllegalStateException("cannot initialize confidential key store until Jenkins has started");
-        }
         Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
         if (cs==null) {

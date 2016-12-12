@@ -50,17 +50,20 @@ public class ConsoleCommand extends CLICommand {
             int n = Integer.parseInt(build);
             run = job.getBuildByNumber(n);
             if (run==null)
-                throw new CmdLineException("No such build #"+n);
+                throw new IllegalArgumentException("No such build #"+n);
         } catch (NumberFormatException e) {
             // maybe a permalink?
             Permalink p = job.getPermalinks().get(build);
             if (p!=null) {
                 run = (AbstractBuild)p.resolve(job);
                 if (run==null)
-                    throw new CmdLineException("Permalink "+build+" produced no build");
+                    throw new IllegalStateException("Permalink "+build+" produced no build");
             } else {
                 Permalink nearest = job.getPermalinks().findNearest(build);
-                throw new CmdLineException(String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?", build, nearest.getId()));
+                throw new IllegalArgumentException(nearest == null ?
+                        String.format("Not sure what you meant by \"%s\".", build) :
+                        String.format("Not sure what you meant by \"%s\". Did you mean \"%s\"?",
+                                build, nearest.getId()));
             }
         }
 
@@ -75,12 +78,9 @@ public class ConsoleCommand extends CLICommand {
                     pos = logText.writeLogTo(pos, w);
                 } while (!logText.isComplete());
             } else {
-                InputStream logInputStream = run.getLogInputStream();
-                try {
-                    IOUtils.skip(logInputStream,pos);
-                    org.apache.commons.io.IOUtils.copy(new InputStreamReader(logInputStream,run.getCharset()),w);
-                } finally {
-                    logInputStream.close();
+                try (InputStream logInputStream = run.getLogInputStream()) {
+                    IOUtils.skip(logInputStream, pos);
+                    IOUtils.copy(new InputStreamReader(logInputStream, run.getCharset()), w);
                 }
             }
         } finally {

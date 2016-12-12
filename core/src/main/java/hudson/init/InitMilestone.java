@@ -36,7 +36,16 @@ import org.jvnet.hudson.reactor.TaskGraphBuilder;
  * (in addition to defining their own milestones by implementing {@link Milestone}.
  *
  * <p>
- * These milestones are achieve in this order.
+ * These milestones are achieve in this order:
+ * <ol>
+ *  <li>STARTED
+ *  <li>PLUGINS_LISTED
+ *  <li>PLUGINS_PREPARED
+ *  <li>PLUGINS_STARTED
+ *  <li>EXTENSIONS_AUGMENTED
+ *  <li>JOB_LOADED
+ *  <li>COMPLETED
+ * </ol>
  * 
  * @author Kohsuke Kawaguchi
  */

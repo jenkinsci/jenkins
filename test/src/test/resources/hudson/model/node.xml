@@ -10,9 +10,7 @@
       <outer-class reference="../.."/>
     </DESCRIPTOR>
   </retentionStrategy>
-  <launcher class="hudson.slaves.CommandLauncher">
-    <agentCommand>&quot;/opt/java6/jre/bin/java&quot;  -jar &quot;slave.jar&quot;</agentCommand>
-  </launcher>
+  <launcher class="hudson.slaves.JNLPLauncher"/>
   <label></label>
   <nodeProperties/>
   <userId>SYSTEM</userId>

@@ -28,7 +28,6 @@ import jenkins.model.Jenkins;
 import hudson.triggers.SafeTimerTask;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -51,7 +50,7 @@ import java.lang.reflect.Method;
  * to forestall the problem of running multiple instances of Hudson that point to the same data directory.
  *
  * <p>
- * This set up error occasionally happens especialy when the user is trying to reassign the context path of the app,
+ * This set up error occasionally happens especially when the user is trying to reassign the context path of the app,
  * and it results in a hard-to-diagnose error, so we actively check this.
  *
  * <p>

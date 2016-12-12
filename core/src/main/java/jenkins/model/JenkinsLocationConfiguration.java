@@ -5,9 +5,8 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
-import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -29,7 +28,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.494
  */
-@Extension
+@Extension @Symbol("location")
 public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
@@ -77,7 +76,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
 
     /**
      * Gets the service administrator e-mail address.
-     * @return Admin adress or &quot;address not configured&quot; stub
+     * @return Admin address or &quot;address not configured&quot; stub
      */
     public @Nonnull String getAdminAddress() {
         String v = adminAddress;
@@ -92,7 +91,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public void setAdminAddress(@CheckForNull String adminAddress) {
         String address = Util.nullify(adminAddress);
         if(address != null && address.startsWith("\"") && address.endsWith("\"")) {
-            // some users apparently quote the whole thing. Don't konw why
+            // some users apparently quote the whole thing. Don't know why
             // anyone does this, but it's a machine's job to forgive human mistake
             address = address.substring(1,address.length()-1);
         }
@@ -144,12 +143,6 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to set secure cookie flag", e);
         }
-    }
-
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this,json);
-        return true;
     }
 
     /**

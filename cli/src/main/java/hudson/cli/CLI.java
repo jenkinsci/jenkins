@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.cli.client.Messages;
 import hudson.remoting.Channel;
+import hudson.remoting.NamingThreadFactory;
 import hudson.remoting.PingThread;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
@@ -80,7 +81,7 @@ import static java.util.logging.Level.*;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class CLI {
+public class CLI implements AutoCloseable {
     private final ExecutorService pool;
     private final Channel channel;
     private final CliEntryPoint entryPoint;
@@ -121,7 +122,7 @@ public class CLI {
         if(!url.endsWith("/"))  url+='/';
 
         ownsPool = exec==null;
-        pool = exec!=null ? exec : Executors.newCachedThreadPool();
+        pool = exec!=null ? exec : Executors.newCachedThreadPool(new NamingThreadFactory(Executors.defaultThreadFactory(), "CLI.pool"));
 
         Channel _channel;
         try {
@@ -131,13 +132,7 @@ public class CLI {
             try {
                 _channel = connectViaHttp(url);
             } catch (IOException e2) {
-                try { // Java 7: e.addSuppressed(e2);
-                    Throwable.class.getMethod("addSuppressed", Throwable.class).invoke(e, e2);
-                } catch (NoSuchMethodException _ignore) {
-                    // Java 6
-                } catch (Exception _huh) {
-                    LOGGER.log(Level.SEVERE, null, _huh);
-                }
+                e.addSuppressed(e2);
                 throw e;
             }
         }

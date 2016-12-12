@@ -26,9 +26,11 @@ package hudson.util
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins
 import jenkins.security.ConfidentialStoreRule;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule
 import org.junit.Test
 
+import java.util.Random;
 import javax.crypto.Cipher;
 
 /**
@@ -52,6 +54,17 @@ public class SecretTest {
 
         // can we round trip?
         assert secret==Secret.fromString(secret.encryptedValue);
+    }
+
+    @Test
+    void testEncryptedValuePattern() {
+        for (int i = 1; i < 100; i++) {
+            String plaintext = RandomStringUtils.random(new Random().nextInt(i));
+            String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
+            //println "${plaintext} → ${ciphertext}"
+            assert Secret.ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
+        }
+        assert !Secret.ENCRYPTED_VALUE_PATTERN.matcher("hello world").matches();
     }
 
     @Test

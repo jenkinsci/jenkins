@@ -41,10 +41,11 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-
-import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.*;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
+import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
 /**
  * {@link SortedMap} that keeps build records by their build numbers, in the descending order
@@ -292,6 +293,18 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
+     * Checks if the the specified build exists.
+     *
+     * @param number the build number to probe.
+     * @return {@code true} if there is an run for the corresponding number, note that this does not mean that
+     * the corresponding record will load.
+     * @since 2.14
+     */
+    public boolean runExists(int number) {
+        return numberOnDisk.contains(number);
+    }
+
+    /**
      * Finds the build #M where M is nearby the given 'n'.
      *
      * <p>
@@ -353,12 +366,32 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
             if (v!=null)        return v;       // already in memory
             // otherwise fall through to load
         }
-        return load(n, null);
+        synchronized (this) {
+            if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
+                BuildReference<R> ref = index.byNumber.get(n);
+                if (ref == null) {
+                    return null;
+                }
+                R v = unwrap(ref);
+                if (v != null) {
+                    return v;
+                }
+            }
+            return load(n, null);
+        }
+    }
+
+    /**
+     * @return the highest recorded build number, or 0 if there are none
+     */
+    @Restricted(NoExternalUse.class)
+    public synchronized int maxNumberOnDisk() {
+        return numberOnDisk.max();
     }
 
     protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
-        if (numberOnDisk.isInRange(numberOnDisk.ceil(number))) {
-            throw new IllegalStateException("cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
+        if (number <= maxNumberOnDisk()) {
+            throw new IllegalStateException("JENKINS-27530: cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
         }
     }
 
@@ -443,7 +476,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * 
      * @return null if the data failed to load.
      */
-    protected R load(int n, Index editInPlace) {
+    private R load(int n, Index editInPlace) {
+        assert Thread.holdsLock(this);
         assert dir != null;
         R v = load(new File(dir, String.valueOf(n)), editInPlace);
         if (v==null && editInPlace!=null) {
@@ -460,7 +494,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      *      If non-null, update this data structure.
      *      Otherwise do a copy-on-write of {@link #index}
      */
-    protected synchronized R load(File dataDir, Index editInPlace) {
+    private R load(File dataDir, Index editInPlace) {
+        assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
             if (r==null)    return null;

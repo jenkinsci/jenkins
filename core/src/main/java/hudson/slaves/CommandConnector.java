@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.TaskListener;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class CommandConnector extends ComputerConnector {
         return new CommandLauncher(command,new EnvVars("SLAVE",host));
     }
 
-    @Extension
+    @Extension @Symbol("command")
     public static class DescriptorImpl extends ComputerConnectorDescriptor {
         @Override
         public String getDisplayName() {

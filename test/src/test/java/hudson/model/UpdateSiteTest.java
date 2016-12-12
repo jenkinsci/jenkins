@@ -42,15 +42,16 @@ import javax.servlet.http.HttpServletResponse;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.server.HttpConnection;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.handler.AbstractHandler;
 
 public class UpdateSiteTest {
 
@@ -76,18 +77,17 @@ public class UpdateSiteTest {
     @Before
     public void setUpWebServer() throws Exception {
         server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
         server.setHandler(new AbstractHandler() {
-            public void handle(String target, HttpServletRequest request,
-                    HttpServletResponse response, int dispatch) throws IOException,
-                    ServletException {
+            @Override
+            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
                 if (target.startsWith(RELATIVE_BASE)) {
                     target = target.substring(RELATIVE_BASE.length());
                 }
                 String responseBody = getResource(target);
                 if (responseBody != null) {
-                    HttpConnection.getCurrentConnection().getRequest().setHandled(true);
+                    baseRequest.setHandled(true);
                     response.setContentType("text/plain; charset=utf-8");
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getOutputStream().write(responseBody.getBytes());

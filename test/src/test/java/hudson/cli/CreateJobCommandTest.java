@@ -78,7 +78,7 @@ public class CreateJobCommandTest {
             }
         });
         cmd.setTransportAuth(User.get("alice").impersonate());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(-1));
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(6));
         cmd.setTransportAuth(User.get("bob").impersonate());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));

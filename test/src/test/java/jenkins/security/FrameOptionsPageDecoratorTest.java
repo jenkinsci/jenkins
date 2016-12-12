@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNull;
 
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import org.apache.commons.httpclient.NameValuePair;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

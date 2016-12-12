@@ -39,6 +39,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -231,7 +232,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             }
         };
 
-        @Extension
+        @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
             @Override
             public String getDisplayName() {

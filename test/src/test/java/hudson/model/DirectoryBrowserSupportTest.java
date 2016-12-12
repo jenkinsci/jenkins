@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipFile;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -94,7 +95,7 @@ public class DirectoryBrowserSupportTest {
     @Email("http://www.nabble.com/Status-Code-400-viewing-or-downloading-artifact-whose-filename-contains-two-consecutive-periods-tt21407604.html")
     @Test
     public void doubleDots2() throws Exception {
-        if(Functions.isWindows())  return; // can't test this on Windows
+        Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
 
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
@@ -167,6 +168,36 @@ public class DirectoryBrowserSupportTest {
         is.close();
         readzip.close();
         zipfile.delete();
+    }
+
+    @Issue("SECURITY-95")
+    @Test
+    public void contentSecurityPolicy() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScm(new SingleFileSCM("test.html", "<html><body><h1>Hello world!</h1></body></html>"));
+        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+        for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+            assertEquals("Header set: " + header, page.getWebResponse().getResponseHeaderValue(header), DirectoryBrowserSupport.DEFAULT_CSP_VALUE);
+        }
+
+        String propName = DirectoryBrowserSupport.class.getName() + ".CSP";
+        String initialValue = System.getProperty(propName);
+        try {
+            System.setProperty(propName, "");
+            page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
+            for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                assertFalse("Header not set: " + header, page.getWebResponse().getResponseHeaders().contains(header));
+            }
+        } finally {
+            if (initialValue == null) {
+                System.clearProperty(DirectoryBrowserSupport.class.getName() + ".CSP");
+            } else {
+                System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", initialValue);
+            }
+        }
     }
 
     private File download(UnexpectedPage page) throws IOException {

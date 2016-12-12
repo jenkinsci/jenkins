@@ -30,6 +30,8 @@ import jenkins.model.Jenkins;
 import static hudson.model.LoadStatistics.DECAY;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.Symbol;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
@@ -42,6 +44,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
@@ -122,8 +125,8 @@ public class NodeProvisioner {
      */
     private final Label label;
 
-    @GuardedBy("provisioningLock")
-    private final List<PlannedNode> pendingLaunches = new ArrayList<PlannedNode>();
+    private final AtomicReference<List<PlannedNode>> pendingLaunches
+            = new AtomicReference<List<PlannedNode>>(new ArrayList<PlannedNode>());
 
     private final Lock provisioningLock = new ReentrantLock();
 
@@ -155,12 +158,7 @@ public class NodeProvisioner {
      * @since 1.401
      */
     public List<PlannedNode> getPendingLaunches() {
-        provisioningLock.lock();
-        try {
-            return new ArrayList<PlannedNode>(pendingLaunches);
-        } finally {
-            provisioningLock.unlock();
-        }
+        return new ArrayList<PlannedNode>(pendingLaunches.get());
     }
 
     /**
@@ -213,46 +211,71 @@ public class NodeProvisioner {
                     // bring up.
 
                     int plannedCapacitySnapshot = 0;
-                    List<PlannedNode> completedLaunches = new ArrayList<PlannedNode>();
 
-                    for (Iterator<PlannedNode> itr = pendingLaunches.iterator(); itr.hasNext(); ) {
+                    List<PlannedNode> snapPendingLaunches = new ArrayList<PlannedNode>(pendingLaunches.get());
+                    for (Iterator<PlannedNode> itr = snapPendingLaunches.iterator(); itr.hasNext(); ) {
                         PlannedNode f = itr.next();
                         if (f.future.isDone()) {
-                            completedLaunches.add(f);
-                            itr.remove();
+                            try {
+                                Node node = f.future.get();
+                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                    cl.onComplete(f, node);
+                                }
+    
+                                jenkins.addNode(node);
+                                LOGGER.log(Level.INFO,
+                                        "{0} provisioning successfully completed. " 
+                                                + "We have now {1,number,integer} computer(s)",
+                                        new Object[]{f.displayName, jenkins.getComputers().length});
+                            } catch (InterruptedException e) {
+                                throw new AssertionError(e); // since we confirmed that the future is already done
+                            } catch (ExecutionException e) {
+                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
+                                        e.getCause());
+                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                    cl.onFailure(f, e.getCause());
+                                }
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch", 
+                                        e);
+                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+                                    cl.onFailure(f, e);
+                                }
+                            } catch (Error e) {
+                                // we are not supposed to try and recover from Errors
+                                throw e;
+                            } catch (Throwable e) {
+                                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while " 
+                                        + "processing provisioned agent " + f.displayName, e);
+                            } finally {
+                                while (true) {
+                                    List<PlannedNode> orig = pendingLaunches.get();
+                                    List<PlannedNode> repl = new ArrayList<PlannedNode>(orig);
+                                    // the contract for List.remove(o) is that the first element i where
+                                    // (o==null ? get(i)==null : o.equals(get(i)))
+                                    // is true will be removed from the list
+                                    // since PlannedNode.equals(o) is not final and we cannot assume
+                                    // that subclasses do not override with an equals which does not
+                                    // assure object identity comparison, we need to manually
+                                    // do the removal based on instance identity not equality
+                                    boolean changed = false;
+                                    for (Iterator<PlannedNode> iterator = repl.iterator(); iterator.hasNext(); ) {
+                                        PlannedNode p = iterator.next();
+                                        if (p == f) {
+                                            iterator.remove();
+                                            changed = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!changed || pendingLaunches.compareAndSet(orig, repl)) {
+                                        break;
+                                    }
+                                }
+                                f.spent();
+                            }
                         } else {
                             plannedCapacitySnapshot += f.numExecutors;
                         }
-                    }
-
-                    for (PlannedNode f : completedLaunches) {
-                        try {
-                            Node node = f.future.get();
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                cl.onComplete(f, node);
-                            }
-
-                            jenkins.addNode(node);
-                            LOGGER.log(Level.INFO,
-                                    "{0} provisioning successfully completed. We have now {1,number,integer} computer"
-                                            + "(s)",
-                                    new Object[]{f.displayName, jenkins.getComputers().length});
-                        } catch (InterruptedException e) {
-                            throw new AssertionError(e); // since we confirmed that the future is already done
-                        } catch (ExecutionException e) {
-                            LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch",
-                                    e.getCause());
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                cl.onFailure(f, e.getCause());
-                            }
-                        } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, "Provisioned slave " + f.displayName + " failed to launch", e);
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                cl.onFailure(f, e);
-                            }
-                        }
-
-                        f.spent();
                     }
 
                     float plannedCapacity = plannedCapacitySnapshot;
@@ -264,7 +287,7 @@ public class NodeProvisioner {
                     int queueLengthSnapshot = snapshot.getQueueLength();
 
                     if (queueLengthSnapshot <= availableSnapshot) {
-                        LOGGER.log(Level.FINE,
+                        LOGGER.log(Level.FINER,
                                 "Queue length {0} is less than the available capacity {1}. No provisioning strategy required",
                                 new Object[]{queueLengthSnapshot, availableSnapshot});
                         provisioningState = null;
@@ -353,7 +376,6 @@ public class NodeProvisioner {
          * The current statistics snapshot for this {@link #label}.
          */
         private final LoadStatistics.LoadStatisticsSnapshot snapshot;
-        private final List<PlannedNode> pendingLaunches;
         /**
          * The additional planned capacity for this {@link #label} and provisioned by previous strategies during the
          * current updating of the {@link NodeProvisioner}.
@@ -370,7 +392,6 @@ public class NodeProvisioner {
             this.snapshot = snapshot;
             this.label = label;
             this.plannedCapacitySnapshot = plannedCapacitySnapshot;
-            pendingLaunches = NodeProvisioner.this.pendingLaunches;
         }
 
         /**
@@ -426,13 +447,8 @@ public class NodeProvisioner {
          * The additional planned capacity for this {@link #getLabel()} and provisioned by previous strategies during
          * the current updating of the {@link NodeProvisioner}.
          */
-        public int getAdditionalPlannedCapacity() {
-            provisioningLock.lock();
-            try {
-                return additionalPlannedCapacity;
-            } finally {
-                provisioningLock.unlock();
-            }
+        public synchronized int getAdditionalPlannedCapacity() {
+            return additionalPlannedCapacity;
         }
 
         /**
@@ -541,23 +557,26 @@ public class NodeProvisioner {
                         if (node != null) {
                             additionalPlannedCapacity += node.getNumExecutors();
                         }
-                    } catch (InterruptedException e) {
-                        // ignore, this will be caught by others later
-                    } catch (ExecutionException e) {
-                        // ignore, this will be caught by others later
+                    } catch (InterruptedException | ExecutionException e) {
+                        // InterruptedException: should never happen as we were told the future was done
+                        // ExecutionException: ignore, this will be caught by others later
                     }
                 } else {
                     additionalPlannedCapacity += f.numExecutors;
                 }
             }
-            provisioningLock.lock();
-            try {
-                pendingLaunches.addAll(plannedNodes);
-                if (additionalPlannedCapacity > 0) {
-                        this.additionalPlannedCapacity += additionalPlannedCapacity;
+            while (!plannedNodes.isEmpty()) {
+                List<PlannedNode> orig = pendingLaunches.get();
+                List<PlannedNode> repl = new ArrayList<PlannedNode>(orig);
+                repl.addAll(plannedNodes);
+                if (pendingLaunches.compareAndSet(orig, repl)) {
+                    if (additionalPlannedCapacity > 0) {
+                        synchronized (this) {
+                            this.additionalPlannedCapacity += additionalPlannedCapacity;
+                        }
+                    }
+                    break;
                 }
-            } finally {
-                provisioningLock.unlock();
             }
         }
 
@@ -581,7 +600,7 @@ public class NodeProvisioner {
      *
      * @since 1.588
      */
-    @Extension
+    @Extension @Symbol("standard")
     public static class StandardStrategyImpl extends Strategy {
 
         /** {@inheritDoc} */
@@ -589,23 +608,23 @@ public class NodeProvisioner {
         @Override
         public StrategyDecision apply(@Nonnull StrategyState state) {
         /*
-            Here we determine how many additional slaves we need to keep up with the load (if at all),
+            Here we determine how many additional agents we need to keep up with the load (if at all),
             which involves a simple math.
 
             Broadly speaking, first we check that all the executors are fully utilized before attempting
-            to start any new slave (this also helps to ignore the temporary gap between different numbers,
+            to start any new agent (this also helps to ignore the temporary gap between different numbers,
             as changes in them are not necessarily synchronized --- for example, there's a time lag between
-            when a slave launches (thus bringing the planned capacity down) and the time when its executors
+            when an agent launches (thus bringing the planned capacity down) and the time when its executors
             pick up builds (thus bringing the queue length down.)
 
-            Once we confirm that, we compare the # of buildable items against the additional slaves
-            that are being brought online. If we have more jobs than our executors can handle, we'll launch a new slave.
+            Once we confirm that, we compare the # of buildable items against the additional agents
+            that are being brought online. If we have more jobs than our executors can handle, we'll launch a new agent.
 
             So this computation involves three stats:
 
               1. # of idle executors
               2. # of jobs that are starving for executors
-              3. # of additional slaves being provisioned (planned capacities.)
+              3. # of additional agents being provisioned (planned capacities.)
 
             To ignore a temporary surge/drop, we make conservative estimates on each one of them. That is,
             we take the current snapshot value, and we take the current exponential moving average (EMA) value,
@@ -657,14 +676,14 @@ public class NodeProvisioner {
                     CLOUD:
                     for (Cloud c : Jenkins.getInstance().clouds) {
                         if (excessWorkload < 0) {
-                            break;  // enough slaves allocated
+                            break;  // enough agents allocated
                         }
 
                         // Make sure this cloud actually can provision for this label.
                         if (c.canProvision(state.getLabel())) {
                             // provisioning a new node should be conservative --- for example if excessWorkload is 1.4,
                             // we don't want to allocate two nodes but just one.
-                            // OTOH, because of the exponential decay, even when we need one slave,
+                            // OTOH, because of the exponential decay, even when we need one agent,
                             // excess workload is always
                             // something like 0.95, in which case we want to allocate one node.
                             // so the threshold here is 1-MARGIN, and hence floor(excessWorkload+MARGIN) is needed to
@@ -672,11 +691,10 @@ public class NodeProvisioner {
 
                             int workloadToProvision = (int) Math.round(Math.floor(excessWorkload + m));
 
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all())
-                            // consider displaying reasons in a future cloud ux
-                            {
+                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
                                 if (cl.canProvision(c, state.getLabel(), workloadToProvision) != null) {
-                                    break CLOUD;
+                                    // consider displaying reasons in a future cloud ux
+                                    continue CLOUD;
                                 }
                             }
 
@@ -757,11 +775,11 @@ public class NodeProvisioner {
     @Extension
     public static class NodeProvisionerInvoker extends PeriodicWork {
         /**
-         * Give some initial warm up time so that statically connected slaves
+         * Give some initial warm up time so that statically connected agents
          * can be brought online before we start allocating more.
          */
-    	 public static int INITIALDELAY = Integer.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
-    	 public static int RECURRENCEPERIOD = Integer.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
+        public static int INITIALDELAY = SystemProperties.getInteger(NodeProvisioner.class.getName()+".initialDelay",LoadStatistics.CLOCK*10);
+        public static int RECURRENCEPERIOD = SystemProperties.getInteger(NodeProvisioner.class.getName()+".recurrencePeriod",LoadStatistics.CLOCK);
 
         @Override
         public long getInitialDelay() {
@@ -782,7 +800,7 @@ public class NodeProvisioner {
     }
 
     private static final Logger LOGGER = Logger.getLogger(NodeProvisioner.class.getName());
-    private static final float MARGIN = Integer.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
+    private static final float MARGIN = SystemProperties.getInteger(NodeProvisioner.class.getName()+".MARGIN",10)/100f;
     private static final float MARGIN0 = Math.max(MARGIN, getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN0",0.5f));
     private static final float MARGIN_DECAY = getFloatSystemProperty(NodeProvisioner.class.getName()+".MARGIN_DECAY",0.5f);
 
@@ -790,7 +808,7 @@ public class NodeProvisioner {
     private static final TimeScale TIME_SCALE = TimeScale.SEC10;
 
     private static float getFloatSystemProperty(String propName, float defaultValue) {
-        String v = System.getProperty(propName);
+        String v = SystemProperties.getString(propName);
         if (v!=null)
             try {
                 return Float.parseFloat(v);

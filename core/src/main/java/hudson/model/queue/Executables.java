@@ -27,6 +27,7 @@ import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -61,10 +62,18 @@ public class Executables {
 
     /**
      * Returns the estimated duration for the executable.
+     * If the Executable is null the Estimated Duration can't be evaluated, then -1 is returned.
+     * This can happen if Computer.getIdleStartMilliseconds() is called before the executable is set to non-null in Computer.run()
+     * or if the executor thread exits prematurely, see JENKINS-30456
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
      * was compiled against Hudson < 1.383
+     * @param e Executable item
+     * @return the estimated duration for a given executable, -1 if the executable is null
      */
-    public static long getEstimatedDurationFor(Executable e) {
+    public static long getEstimatedDurationFor(@CheckForNull Executable e) {
+        if (e == null) {
+            return -1;
+        }
         try {
             return e.getEstimatedDuration();
         } catch (AbstractMethodError error) {

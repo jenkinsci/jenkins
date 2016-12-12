@@ -43,10 +43,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -158,7 +161,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         String pattern = req.getParameter("pattern");
         if(pattern==null)
             pattern = req.getParameter("path"); // compatibility with Hudson<1.129
-        if(pattern!=null && !Util.isAbsoluteUri(pattern)) {// avoid open redirect
+        if(pattern!=null && Util.isSafeToRedirectTo(pattern)) {// avoid open redirect
             rsp.sendRedirect2(pattern);
             return;
         }
@@ -220,8 +223,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
             if (plain) {
                 rsp.setContentType("text/plain;charset=UTF-8");
-                OutputStream os = rsp.getOutputStream();
-                try {
+                try (OutputStream os = rsp.getOutputStream()) {
                     for (VirtualFile kid : baseFile.list()) {
                         os.write(kid.getName().getBytes("UTF-8"));
                         if (kid.isDirectory()) {
@@ -230,8 +232,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         os.write('\n');
                     }
                     os.flush();
-                } finally {
-                    os.close();
                 }
                 return;
             }
@@ -309,6 +309,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             // pseudo file name to let the Stapler set text/plain
             rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
         } else {
+            String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DEFAULT_CSP_VALUE);
+            if (!csp.trim().equals("")) {
+                // allow users to prevent sending this header by setting empty system property
+                for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
+                    rsp.setHeader(header, csp);
+                }
+            }
             rsp.serveFile(req, in, lastModified, -1, length, baseFile.getName() );
         }
     }
@@ -346,33 +353,33 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     }
 
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
-        ZipOutputStream zos = new ZipOutputStream(outputStream);
-        zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
-        for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
-            String relativePath;
-            if (glob.length() == 0) {
-                // JENKINS-19947: traditional behavior is to prepend the directory name
-                relativePath = dir.getName() + '/' + n;
-            } else {
-                relativePath = n;
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
+                String relativePath;
+                if (glob.length() == 0) {
+                    // JENKINS-19947: traditional behavior is to prepend the directory name
+                    relativePath = dir.getName() + '/' + n;
+                } else {
+                    relativePath = n;
+                }
+                // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
+                // TODO On Linux file names can contain backslashes which should not treated as file separators.
+                //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
+                //      but not the file separator char of the (maybe remote) "dir".
+                ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
+                VirtualFile f = dir.child(n);
+                e.setTime(f.lastModified());
+                zos.putNextEntry(e);
+                InputStream in = f.open();
+                try {
+                    Util.copyStream(in, zos);
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
+                zos.closeEntry();
             }
-            // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
-            // TODO On Linux file names can contain backslashes which should not treated as file separators.
-            //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
-            //      but not the file separator char of the (maybe remote) "dir".
-            ZipEntry e = new ZipEntry(relativePath.replace('\\', '/'));
-            VirtualFile f = dir.child(n);
-            e.setTime(f.lastModified());
-            zos.putNextEntry(e);
-            InputStream in = f.open();
-            try {
-                Util.copyStream(in, zos);
-            } finally {
-                IOUtils.closeQuietly(in);
-            }
-            zos.closeEntry();
         }
-        zos.close();
     }
 
     /**
@@ -576,4 +583,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
 
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
+
+    @Restricted(NoExternalUse.class)
+    public static final String DEFAULT_CSP_VALUE = "sandbox; default-src 'none'; img-src 'self'; style-src 'self';";
 }

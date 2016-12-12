@@ -158,5 +158,5 @@ public class BasicHeaderProcessor implements Filter {
     public void destroy() {
     }
 
-    private static final Logger LOGGER = Logger.getLogger(ApiTokenFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(BasicHeaderProcessor.class.getName());
 }

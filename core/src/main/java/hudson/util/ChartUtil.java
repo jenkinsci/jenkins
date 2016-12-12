@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import org.jfree.chart.JFreeChart;
@@ -103,9 +104,13 @@ public class ChartUtil {
     @Deprecated
     public static boolean awtProblem = false;
 
+    //TODO: prevent usage of this APIs in plugins. Needs to be deprecated and replaced by a getter method
     /**
      * See issue 93. Detect an error in X11 and handle it gracefully.
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_REFACTORED_TO_BE_FINAL",
+            justification = "It's actually being widely used by plugins. "
+                    + "Obsolete approach, should be ideally replaced by Getter")
     public static Throwable awtProblemCause = null;
 
     /**
@@ -113,7 +118,7 @@ public class ChartUtil {
      *
      * @param defaultSize
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query paramter 'width' and 'height' in the request.
+     *      by the query parameter 'width' and 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)
@@ -129,7 +134,7 @@ public class ChartUtil {
      * @param defaultW
      * @param defaultH
      *      The size of the picture to be generated. These values can be overridden
-     *      by the query paramter 'width' and 'height' in the request.
+     *      by the query parameter 'width' and 'height' in the request.
      * @deprecated as of 1.320
      *      Bind {@link Graph} to the URL space. See {@code hudson.tasks.junit.History} as an example (note that doing so involves
      *      a bit of URL structure change.)

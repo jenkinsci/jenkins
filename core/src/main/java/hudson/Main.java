@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
 import com.thoughtworks.xstream.core.util.Base64Encoder;
@@ -218,10 +219,10 @@ public class Main {
     /**
      * Set to true if we are running inside "mvn hpi:run" or "mvn hudson-dev:run"
      */
-    public static boolean isDevelopmentMode = Boolean.getBoolean(Main.class.getName()+".development");
+    public static boolean isDevelopmentMode = SystemProperties.getBoolean(Main.class.getName()+".development");
 
     /**
      * Time out for socket connection to Hudson.
      */
-    public static final int TIMEOUT = Integer.getInteger(Main.class.getName()+".timeout",15000);
+    public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName()+".timeout",15000);
 }

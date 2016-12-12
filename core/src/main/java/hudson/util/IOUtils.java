@@ -136,12 +136,9 @@ public class IOUtils {
      * @since 1.422
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
-        BufferedReader reader = new BufferedReader(
-                encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding));
-        try {
+        try (BufferedReader reader = new BufferedReader(
+                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
-        } finally {
-            reader.close();
         }
     }
 

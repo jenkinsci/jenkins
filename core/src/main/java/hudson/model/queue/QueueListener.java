@@ -2,14 +2,12 @@ package hudson.model.queue;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.Computer;
 import hudson.model.Queue;
 import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.LeftItem;
 import hudson.model.Queue.WaitingItem;
-import jenkins.model.Jenkins;
 
 import java.util.concurrent.Executor;
 

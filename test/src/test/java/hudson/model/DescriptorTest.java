@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.BuildStepDescriptor;
@@ -32,9 +33,14 @@ import hudson.tasks.Shell;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +48,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -107,9 +114,6 @@ public class DescriptorTest {
         @Override public Builder newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
             return new BuilderImpl(id);
         }
-        @Override public String getDisplayName() {
-            return id;
-        }
         @Override public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
@@ -122,7 +126,7 @@ public class DescriptorTest {
         FreeStyleProject p = rule.createFreeStyleProject("p");
         p.getBuildersList().add(new B1(Arrays.asList(new D1(), new D2())));
         rule.configRoundtrip(p);
-        rule.assertLogContains("[D 1, D 2]", rule.buildAndAssertSuccess(p));
+        rule.assertLogContains("[D1, D2]", rule.buildAndAssertSuccess(p));
     }
     public static abstract class D extends AbstractDescribableImpl<D> {
         @Override public String toString() {return getDescriptor().getDisplayName();}
@@ -130,14 +134,12 @@ public class DescriptorTest {
     public static class D1 extends D {
         @DataBoundConstructor public D1() {}
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getDisplayName() {return "D 1";}
             @Override public String getId() {return "D1-id";}
         }
     }
     public static class D2 extends D {
         @DataBoundConstructor public D2() {}
         @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<D> {
-            @Override public String getDisplayName() {return "D 2";}
             @Override public String getId() {return "D2-id";}
         }
     }
@@ -150,9 +152,7 @@ public class DescriptorTest {
             listener.getLogger().println(ds);
             return true;
         }
-        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {
-            @Override public String getDisplayName() {return "B1";}
-        }
+        @TestExtension("nestedDescribableOverridingId") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
     @Ignore("never worked: TypePair.convertJSON looks for @DataBoundConstructor on D3 (Stapler does not grok Descriptor)")
@@ -187,9 +187,6 @@ public class DescriptorTest {
         @Override public D3 newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
             return new D3(id);
         }
-        @Override public String getDisplayName() {
-            return id;
-        }
     }
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3a = new D3D("d3a");
     @TestExtension("nestedDescribableSharingClass") public static final Descriptor<D3> d3b = new D3D("d3b");
@@ -202,9 +199,26 @@ public class DescriptorTest {
             listener.getLogger().println(ds);
             return true;
         }
-        @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {
-            @Override public String getDisplayName() {return "B2";}
-        }
+        @TestExtension("nestedDescribableSharingClass") public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 
+    @Test
+    public void presentStacktraceFromFormException() throws Exception {
+        NullPointerException cause = new NullPointerException();
+        final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
+        try {
+            rule.executeOnServer(new Callable<Void>() {
+                @Override public Void call() throws Exception {
+                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.getInstance());
+                    return null;
+                }
+            });
+            fail();
+        } catch (FailingHttpStatusCodeException ex) {
+            String response = ex.getResponse().getContentAsString();
+            assertThat(response, containsString(fe.getMessage()));
+            assertThat(response, containsString(cause.getClass().getCanonicalName()));
+            assertThat(response, containsString(getClass().getCanonicalName()));
+        }
+    }
 }

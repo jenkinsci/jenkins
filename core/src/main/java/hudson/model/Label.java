@@ -85,6 +85,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     protected transient final String name;
     private transient volatile Set<Node> nodes;
     private transient volatile Set<Cloud> clouds;
+    private transient volatile int tiedJobsCount;
 
     @Exported
     public transient final LoadStatistics loadStatistics;
@@ -236,8 +237,8 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * <p>
      * The answer is yes if there is a reasonable basis to believe that Hudson can have
      * an executor under this label, given the current configuration. This includes
-     * situations such as (1) there are offline slaves that have this label (2) clouds exist
-     * that can provision slaves that have this label.
+     * situations such as (1) there are offline agents that have this label (2) clouds exist
+     * that can provision agents that have this label.
      */
     public boolean isAssignable() {
         for (Node n : getNodes())
@@ -369,13 +370,17 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns a count of projects that are tied on this node. In a system without security this should be the same
+     * Returns an approximate count of projects that are tied on this node.
+     *
+     * In a system without security this should be the same
      * as {@code getTiedJobs().size()} but significantly faster as it involves fewer temporary objects and avoids
      * sorting the intermediary list. In a system with security, this will likely return a higher value as it counts
      * all jobs (mostly) irrespective of access.
      * @return a count of projects that are tied on this node.
      */
     public int getTiedJobCount() {
+        if (tiedJobsCount != -1) return tiedJobsCount;
+
         // denormalize for performance
         // we don't need to respect security as much when returning a simple count
         SecurityContext context = ACL.impersonate(ACL.SYSTEM);
@@ -412,7 +417,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
                     }
                 }
             }
-            return result;
+            return tiedJobsCount = result;
         } finally {
             SecurityContextHolder.setContext(context);
         }
@@ -433,6 +438,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /*package*/ void reset() {
         nodes = null;
         clouds = null;
+        tiedJobsCount = -1;
     }
 
     /**

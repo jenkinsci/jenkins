@@ -2,6 +2,8 @@ package jenkins.model
 
 import static org.junit.Assert.assertTrue
 
+import org.junit.Assume;
+
 import hudson.Functions
 import hudson.Util
 import hudson.model.Run
@@ -24,7 +26,7 @@ class PeepholePermalinkTest {
      */
     @Test
     void basics() {
-        if (Functions.isWindows())  return; // can't run on windows because we rely on symlinks
+        Assume.assumeFalse("can't run on windows because we rely on symlinks", Functions.isWindows());
 
         def p = j.createFreeStyleProject()
         def b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0))
@@ -71,7 +73,7 @@ class PeepholePermalinkTest {
      */
     @Test
     void legacyCompatibility() {
-        if (Functions.isWindows())  return; // can't run on windows because we rely on symlinks
+        Assume.assumeFalse("can't run on windows because we rely on symlinks", Functions.isWindows());
 
         def p = j.createFreeStyleProject()
         def b1 = j.assertBuildStatusSuccess(p.scheduleBuild2(0))

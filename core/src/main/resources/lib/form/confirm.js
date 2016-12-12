@@ -33,9 +33,6 @@
     }
 
     function initConfirm() {
-      // Timeout is needed since some events get sent on page load for some reason.
-      // Shouldn't hurt anything for this to only start monitoring events after a few millis;.
-      setTimeout(function() {
       var configForm = document.getElementsByName("config");
       if (configForm.length > 0) {
         configForm = configForm[0]
@@ -78,7 +75,6 @@
       for ( var i = 0; i < inputs.length; i++) {
         $(inputs[i]).on('input', confirm);
       }
-      }, 100);
     }
 
     window.onbeforeunload = confirmExit;

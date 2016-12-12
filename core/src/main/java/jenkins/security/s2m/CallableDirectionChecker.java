@@ -1,6 +1,7 @@
 package jenkins.security.s2m;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.remoting.Callable;
 import hudson.remoting.ChannelBuilder;
 import jenkins.security.ChannelConfigurator;
@@ -38,7 +39,7 @@ public class CallableDirectionChecker extends RoleChecker {
      * This is an escape hatch in case the fix breaks something critical, to allow the user
      * to keep operation.
      */
-    public static boolean BYPASS = Boolean.getBoolean(BYPASS_PROP);
+    public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
     private CallableDirectionChecker(Object context) {
         this.context = context;
@@ -55,11 +56,11 @@ public class CallableDirectionChecker extends RoleChecker {
 
         if (isWhitelisted(subject,expected)) {
             // this subject is dubious, but we are letting it through as per whitelisting
-            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from slave to master", name);
+            LOGGER.log(Level.FINE, "Explicitly allowing {0} to be sent from agent to master", name);
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from slave to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
     }
 
     /**

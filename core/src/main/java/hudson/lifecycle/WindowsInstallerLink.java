@@ -34,6 +34,7 @@ import hudson.util.jna.Shell32;
 import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.util.StreamTaskListener;
 import hudson.util.jna.DotNet;
 import org.apache.commons.io.IOUtils;
@@ -257,14 +258,14 @@ public class WindowsInstallerLink extends ManagementLink {
 
         // this system property is set by the launcher when we run "java -jar jenkins.war"
         // and this is how we know where is jenkins.war.
-        String war = System.getProperty("executable-war");
+        String war = SystemProperties.getString("executable-war");
         if(war!=null && new File(war).exists()) {
             WindowsInstallerLink link = new WindowsInstallerLink(new File(war));
 
             // in certain situations where we know the user is just trying Jenkins (like when Jenkins is launched
             // from JNLP), also put this link on the navigation bar to increase
             // visibility
-            if(System.getProperty(WindowsInstallerLink.class.getName()+".prominent")!=null)
+            if(SystemProperties.getString(WindowsInstallerLink.class.getName()+".prominent")!=null)
                 Jenkins.getInstance().getActions().add(link);
 
             return link;

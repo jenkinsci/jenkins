@@ -1,6 +1,5 @@
 package hudson.os;
 
-import hudson.remoting.Callable;
 import hudson.util.StreamTaskListener;
 import jenkins.security.MasterToSlaveCallable;
 

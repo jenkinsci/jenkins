@@ -27,7 +27,6 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Fingerprint;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

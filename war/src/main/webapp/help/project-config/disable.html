@@ -1,11 +1,13 @@
 <div>
-  Sometimes you want to temporarily stop building a project. For example,
-  maybe you are in the middle of a large migration and you know new builds are
-  going to fail. Or maybe a project is built every hour but you know that the
-  CVS server will be down for the next 24 hours.
-
+  When this option is checked, no new builds of this project will be executed.
   <p>
-  When this option is set, no new build is performed on this project. This
-  allows you to disable new builds without changing any of the build dependency
-  chain or changing the notification set up.
+  This can be helpful when you want to temporarily prevent a project from being
+  built.  For example, if your project depends on some infrastructure &mdash;
+  e.g. a test server, or a source code repository &mdash; and you know it will
+  be unavailable for a period of time, you could disable the project to prevent
+  unnecessary build failures (and any corresponding notifications) during this
+  period.
+  <p>
+  You can also disable (or re-enable) this project by clicking the <i>Disable
+  Project</i> (or <i>Enable Project</i>) button on this project's main page.
 </div>

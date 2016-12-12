@@ -24,9 +24,7 @@
 
 package jenkins.model;
 
-import hudson.model.Item;
 import hudson.model.TopLevelItem;
-import hudson.model.listeners.ItemListener;
 import java.io.IOException;
 
 /**

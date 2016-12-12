@@ -34,7 +34,7 @@ public class PluginTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Issue("SECURITY-131") // TODO test-annotations 1.2+: @Issue({"SECURITY-131", "SECURITY-155"})
+    @Issue({"SECURITY-131", "SECURITY-155"})
     @Test public void doDynamic() throws Exception {
         r.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         /* Collapsed somewhere before it winds up in restOfPath:

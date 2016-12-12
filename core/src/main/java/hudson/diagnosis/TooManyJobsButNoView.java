@@ -26,6 +26,7 @@ package hudson.diagnosis;
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.Jenkins;
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -39,8 +40,14 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("tooManyJobsButNoView")
 public class TooManyJobsButNoView extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.TooManyJobsButNoView_DisplayName();
+    }
+
     public boolean isActivated() {
         Jenkins h = Jenkins.getInstance();
         return h.getViews().size()==1 && h.getItemMap().size()> THRESHOLD;

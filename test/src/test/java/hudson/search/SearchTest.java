@@ -118,7 +118,7 @@ public class SearchTest {
         assertNotNull(result);
         j.assertGoodStatus(result);
 
-        URL resultUrl = result.getWebResponse().getUrl();
+        URL resultUrl = result.getUrl();
         assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
     }
 
@@ -134,7 +134,7 @@ public class SearchTest {
         assertNotNull(result);
         j.assertGoodStatus(result);
 
-        URL resultUrl = result.getWebResponse().getUrl();
+        URL resultUrl = result.getUrl();
         assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl()));
     }
 

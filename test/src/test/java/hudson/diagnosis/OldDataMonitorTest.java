@@ -25,7 +25,6 @@
 package hudson.diagnosis;
 
 import hudson.XmlFile;
-import hudson.model.Executor;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
@@ -41,11 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import hudson.model.ItemGroup;
-import hudson.model.Job;
-import hudson.model.Run;
 import hudson.model.Saveable;
-import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import static org.junit.Assert.*;
@@ -61,7 +56,6 @@ import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.Stapler;
 
-import javax.annotation.Nonnull;
 
 public class OldDataMonitorTest {
 

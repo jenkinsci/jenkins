@@ -44,7 +44,10 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Information about JDK installation.
@@ -54,10 +57,19 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, EnvironmentSpecific<JDK> {
 
     /**
-     * Name of the “default JDK”, meaning no specific JDK selected.
+     * Name of the “System JDK”, which is just the JDK on Jenkins' $PATH.
      * @since 1.577
      */
-    public static final String DEFAULT_NAME = "(Default)";
+    public static final String DEFAULT_NAME = "(System)";
+
+    @Restricted(NoExternalUse.class)
+    public static boolean isDefaultName(String name) {
+        if ("(Default)".equals(name)) {
+            // DEFAULT_NAME took this value prior to 1.598.
+            return true;
+        }
+        return DEFAULT_NAME.equals(name) || name == null;
+    }
 
     /**
      * @deprecated since 2009-02-25
@@ -155,7 +167,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
     }
 
-    @Extension
+    @Extension @Symbol("jdk")
     public static class DescriptorImpl extends ToolDescriptor<JDK> {
 
         public String getDisplayName() {
@@ -166,11 +178,8 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
         }
 
-        // this isn't really synchronized well since the list is Hudson.jdks :(
-        public @Override synchronized void setInstallations(JDK... jdks) {
-            List<JDK> list = Jenkins.getInstance().getJDKs();
-            list.clear();
-            list.addAll(Arrays.asList(jdks));
+        public @Override void setInstallations(JDK... jdks) {
+            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
         }
 
         @Override

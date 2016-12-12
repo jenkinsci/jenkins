@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%Extends the version 2 protocol by adding basic encryption but requires a thread per client}
+</j:jelly>

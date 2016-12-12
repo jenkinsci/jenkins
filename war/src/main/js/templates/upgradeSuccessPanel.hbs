@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{replace translations.installWizard_upgradeComplete_title jenkinsVersion}}</h4>
+</div>
+<div class="modal-body">
+  <div class="jumbotron welcome-panel success-panel">
+    <h1>{{replace translations.installWizard_pluginsInstalled_banner jenkinsVersion}}</h1>
+
+    {{#if restartRequired}}
+    <p>{{{replace translations.installWizard_upgradeComplete_message jenkinsVersion}}} {{translations.installWizard_installComplete_restartRequiredMessage}}</p>
+    <button type="button" class="btn btn-primary install-done-restart">
+      {{translations.installWizard_installComplete_restartLabel}}
+    </button>
+    {{else}}
+    <p>{{{replace translations.installWizard_upgradeComplete_message jenkinsVersion}}}</p>
+    <button type="button" class="btn btn-primary install-done">
+      {{translations.installWizard_upgradeComplete_finishButtonLabel}}
+    </button>
+    {{/if}}
+  </div>
+</div>
