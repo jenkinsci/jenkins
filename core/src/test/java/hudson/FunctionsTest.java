@@ -29,6 +29,8 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -344,42 +346,57 @@ public class FunctionsTest {
 
     @Issue("JDK-6507809")
     @Test public void printThrowable() throws Exception {
-        Throwable x;
-        try {
-            method1();
-            throw new AssertionError();
-        } catch (IllegalStateException _x) {
-            x = _x;
-        }
-        String stack = Functions.printThrowable(x).replace(IOUtils.LINE_SEPARATOR, "\n");
-        Matcher m = Pattern.compile(
-            "java\\.lang\\.NullPointerException: oops\n" +
-            "\tat hudson\\.FunctionsTest\\.method2\\(FunctionsTest\\.java:(\\d+)\\)\n" +
-            "\tat hudson\\.FunctionsTest\\.method1\\(FunctionsTest\\.java:(\\d+)\\)\n" +
-            "Caused: java\\.lang\\.IllegalStateException\n" +
-            "\tat hudson\\.FunctionsTest\\.method1\\(FunctionsTest\\.java:(\\d+)\\)\n" +
-            "\tat hudson\\.FunctionsTest\\.printThrowable\\(FunctionsTest\\.java:\\d+\\)\n" +
-            "(\tat .+\n)+").matcher(stack);
-        assertTrue(stack, m.matches());
-        int throwNPE = Integer.parseInt(m.group(1));
-        int callToMethod2 = Integer.parseInt(m.group(2));
-        int throwISE = Integer.parseInt(m.group(3));
-        assertEquals(callToMethod2 + 2, throwISE);
-        assertEquals(callToMethod2 + 6, throwNPE);
+        assertPrintThrowable(new Stack("java.lang.IllegalStateException: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
+                       cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")),
+            "java.lang.IllegalStateException: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused: java.lang.IllegalStateException\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
         // TODO assert display of new WrapperException("more info", wrapped)
         // TODO assert display of new WrapperException("more info: " + wrapped, wrapped)
         // TODO assert that full stack is preserved if wrapped does not share a common stack (e.g., comes from an executor service thread)
     }
-    // Do not change line spacing of these:
-    private static void method1() {
-        try {
-            method2();
-        } catch (Exception x) {
-            throw new IllegalStateException(x);
-        }
+    private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        assertEquals(sw.toString().replace(IOUtils.LINE_SEPARATOR, "\n"), traditional);
+        assertEquals(Functions.printThrowable(t).replace(IOUtils.LINE_SEPARATOR, "\n"), custom);
     }
-    private static void method2() {
-        throw new NullPointerException("oops");
+    private static final class Stack extends Throwable {
+        private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");
+        private final String toString;
+        Stack(String toString, String... stack) {
+            this.toString = toString;
+            StackTraceElement[] lines = new StackTraceElement[stack.length];
+            for (int i = 0; i < stack.length; i++) {
+                Matcher m = LINE.matcher(stack[i]);
+                assertTrue(m.matches());
+                lines[i] = new StackTraceElement(m.group(1) + "." + m.group(2), m.group(3), m.group(2) + ".java", Integer.parseInt(m.group(4)));
+            }
+            setStackTrace(lines);
+        }
+        @Override
+        public String toString() {
+            return toString;
+        }
+        synchronized Stack cause(Throwable cause) {
+            return (Stack) initCause(cause);
+        }
+        synchronized Stack suppressed(Throwable... suppressed) {
+            for (Throwable t : suppressed) {
+                addSuppressed(t);
+            }
+            return this;
+        }
     }
 
 }
