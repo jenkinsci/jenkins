@@ -454,12 +454,54 @@ public class FunctionsTest {
             "\tat ......remote call(Native Method)\n" +
             "\tat local.Side.call(Side.java:11)\n" +
             "\tat local.Main.main(Main.java:1)\n");
+        // Suppressed exceptions:
+        assertPrintThrowable(new Stack("java.lang.IllegalStateException: java.lang.NullPointerException: oops", "p.C.method1:19", "m.Main.main:1").
+                       cause(new Stack("java.lang.NullPointerException: oops", "p.C.method2:23", "p.C.method1:17", "m.Main.main:1")).
+                  suppressed(new Stack("java.io.IOException: could not close", "p.C.close:99", "p.C.method1:18", "m.Main.main:1"),
+                             new Stack("java.io.IOException: java.lang.NullPointerException", "p.C.flush:77", "p.C.method1:18", "m.Main.main:1").
+                       cause(new Stack("java.lang.NullPointerException", "p.C.findFlushee:70", "p.C.flush:75", "p.C.method1:18", "m.Main.main:1"))),
+            "java.lang.IllegalStateException: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n" +
+            "\tSuppressed: java.io.IOException: could not close\n" +
+            "\t\tat p.C.close(C.java:99)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "\t\t... 1 more\n" +
+            "\tSuppressed: java.io.IOException: java.lang.NullPointerException\n" +
+            "\t\tat p.C.flush(C.java:77)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "\t\t... 1 more\n" +
+            "\tCaused by: java.lang.NullPointerException\n" +
+            "\t\tat p.C.findFlushee(C.java:70)\n" +
+            "\t\tat p.C.flush(C.java:75)\n" +
+            "\t\t... 2 more\n" +
+            "Caused by: java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "\t... 1 more\n",
+            "java.lang.NullPointerException: oops\n" +
+            "\tat p.C.method2(C.java:23)\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Also:   java.io.IOException: could not close\n" +
+            "\t\tat p.C.close(C.java:99)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "Also:   java.lang.NullPointerException\n" +
+            "\t\tat p.C.findFlushee(C.java:70)\n" +
+            "\t\tat p.C.flush(C.java:75)\n" +
+            "\tCaused: java.io.IOException\n" +
+            "\t\tat p.C.flush(C.java:77)\n" +
+            "\t\tat p.C.method1(C.java:18)\n" +
+            "Caused: java.lang.IllegalStateException\n" +
+            "\tat p.C.method1(C.java:19)\n" +
+            "\tat m.Main.main(Main.java:1)\n");
     }
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
         t.printStackTrace(new PrintWriter(sw));
         assertEquals(sw.toString().replace(IOUtils.LINE_SEPARATOR, "\n"), traditional);
-        assertEquals(Functions.printThrowable(t).replace(IOUtils.LINE_SEPARATOR, "\n"), custom);
+        String actual = Functions.printThrowable(t);
+        System.out.println(actual);
+        assertEquals(actual.replace(IOUtils.LINE_SEPARATOR, "\n"), custom);
     }
     private static final class Stack extends Throwable {
         private static final Pattern LINE = Pattern.compile("(.+)[.](.+)[.](.+):(\\d+)");

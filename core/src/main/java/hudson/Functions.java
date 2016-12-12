@@ -1453,16 +1453,21 @@ public class Functions {
             return Messages.Functions_NoExceptionDetails();
         }
         StringBuilder s = new StringBuilder();
-        doPrintStackTrace(s, t, null);
+        doPrintStackTrace(s, t, null, "");
         return s.toString();
     }
-    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher) {
+    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix) {
         // TODO check if t overrides printStackTrace
-        // TODO handle suppressed exceptions
         Throwable lower = t.getCause();
         if (lower != null) {
-            doPrintStackTrace(s, lower, t);
-            s.append("Caused: ");
+            doPrintStackTrace(s, lower, t, prefix);
+        }
+        for (Throwable suppressed : t.getSuppressed()) {
+            s.append(prefix).append("Also:   ");
+            doPrintStackTrace(s, suppressed, t, prefix + "\t");
+        }
+        if (lower != null) {
+            s.append(prefix).append("Caused: ");
         }
         String summary = t.toString();
         if (lower != null) {
@@ -1485,7 +1490,7 @@ public class Functions {
             }
         }
         for (int i = 0; i < end; i++) {
-            s.append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
         }
     }
 
