@@ -156,6 +156,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -1453,10 +1455,14 @@ public class Functions {
             return Messages.Functions_NoExceptionDetails();
         }
         StringBuilder s = new StringBuilder();
-        doPrintStackTrace(s, t, null, "");
+        doPrintStackTrace(s, t, null, "", new HashSet<Throwable>());
         return s.toString();
     }
-    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix) {
+    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
+        if (!encountered.add(t)) {
+            s.append("<cycle to ").append(t).append(">\n");
+            return;
+        }
         if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw));
@@ -1465,11 +1471,11 @@ public class Functions {
         }
         Throwable lower = t.getCause();
         if (lower != null) {
-            doPrintStackTrace(s, lower, t, prefix);
+            doPrintStackTrace(s, lower, t, prefix, encountered);
         }
         for (Throwable suppressed : t.getSuppressed()) {
             s.append(prefix).append("Also:   ");
-            doPrintStackTrace(s, suppressed, t, prefix + "\t");
+            doPrintStackTrace(s, suppressed, t, prefix + "\t", encountered);
         }
         if (lower != null) {
             s.append(prefix).append("Caused: ");

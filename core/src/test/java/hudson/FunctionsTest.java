@@ -501,6 +501,22 @@ public class FunctionsTest {
                 s.println("Some custom exception");
             }
         }, "Some custom exception\n", "Some custom exception\n");
+        // Circular references:
+        Stack stack1 = new Stack("p.Exc1", "p.C.method1:17");
+        Stack stack2 = new Stack("p.Exc2", "p.C.method2:27");
+        stack1.cause(stack2);
+        stack2.cause(stack1);
+        assertPrintThrowable(stack1,
+            "p.Exc1\n" +
+            "\tat p.C.method1(C.java:17)\n" +
+            "Caused by: p.Exc2\n" +
+            "\tat p.C.method2(C.java:27)\n" +
+            "\t[CIRCULAR REFERENCE:p.Exc1]\n",
+            "<cycle to p.Exc1>\n" +
+            "Caused: p.Exc2\n" +
+            "\tat p.C.method2(C.java:27)\n" +
+            "Caused: p.Exc1\n" +
+            "\tat p.C.method1(C.java:17)\n");
     }
     private static void assertPrintThrowable(Throwable t, String traditional, String custom) {
         StringWriter sw = new StringWriter();
