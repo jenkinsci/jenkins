@@ -272,7 +272,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -3768,9 +3767,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 r.put(e.getKey(), e.getValue().get(endTime-System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
-                StringWriter sw = new StringWriter();
-                x.printStackTrace(new PrintWriter(sw,true));
-                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump",sw.toString()));
+                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump", Functions.printThrowable(x)));
             }
         }
         return Collections.unmodifiableSortedMap(new TreeMap<String, Map<String, String>>(r));

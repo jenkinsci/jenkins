@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
@@ -143,11 +144,11 @@ public class CommandLauncher extends ComputerLauncher {
 
             LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+            listener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(e));
         } catch (RuntimeException e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+            listener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
         } catch (Error e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+            listener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
         } catch (IOException e) {
             Util.displayIOException(e, listener);
 
@@ -159,14 +160,14 @@ public class CommandLauncher extends ComputerLauncher {
             }
             msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
-            e.printStackTrace(listener.error(msg));
+            listener.error(msg).print(Functions.printThrowable(e));
 
             if(_proc!=null) {
                 reportProcessTerminated(_proc, listener);
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
-                    x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                    listener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(x));
                 }
             }
         }

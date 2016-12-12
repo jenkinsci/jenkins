@@ -143,7 +143,7 @@ public final class RemotingDiagnostics {
                 if(output!=null)
                 pw.println("Result: "+output);
             } catch (Throwable t) {
-                t.printStackTrace(pw);
+                pw.print(Functions.printThrowable(t));
             }
             return out.toString();
         }

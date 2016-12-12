@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
@@ -298,7 +299,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("");
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
-            e.printStackTrace(stderr);
+            stderr.print(Functions.printThrowable(e));
             return 1;
         } finally {
             if(sc != null)
@@ -332,7 +333,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 return new ClientAuthenticationCache(channel).get();
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
-            e.printStackTrace(stderr);  // recover
+            stderr.print(Functions.printThrowable(e));  // recover
         }
         return Jenkins.ANONYMOUS;
     }

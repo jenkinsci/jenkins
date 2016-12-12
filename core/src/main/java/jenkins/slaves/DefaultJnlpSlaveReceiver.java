@@ -3,6 +3,7 @@ package jenkins.slaves;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ClassicPluginStrategy;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.Util;
 import hudson.model.Computer;
@@ -171,7 +172,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
             PrintWriter logw = new PrintWriter(state.getLog(), true);
-            e.printStackTrace(logw);
+            logw.print(Functions.printThrowable(e));
             IOUtils.closeQuietly(event.getChannel());
         }
     }

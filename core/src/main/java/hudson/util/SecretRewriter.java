@@ -1,6 +1,7 @@
 package hudson.util;
 
 import com.trilead.ssh2.crypto.Base64;
+import hudson.Functions;
 import hudson.model.TaskListener;
 import org.apache.commons.io.FileUtils;
 
@@ -169,7 +170,7 @@ public class SecretRewriter {
                             rewritten++;
                         }
                     } catch (IOException e) {
-                        e.printStackTrace(listener.error("Failed to rewrite "+child));
+                        listener.error("Failed to rewrite " + child).print(Functions.printThrowable(e));
                     }
                 }
                 if (child.isDirectory()) {

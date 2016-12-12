@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.Functions;
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import java.io.File;
@@ -119,9 +120,9 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
 
                         execute(l);
                     } catch (IOException e) {
-                        e.printStackTrace(l.fatalError(e.getMessage()));
+                        l.fatalError(e.getMessage()).print(Functions.printThrowable(e));
                     } catch (InterruptedException e) {
-                        e.printStackTrace(l.fatalError("aborted"));
+                        l.fatalError("aborted").print(Functions.printThrowable(e));
                     } finally {
                         stopTime = System.currentTimeMillis();
                         try {

@@ -25,6 +25,7 @@ package hudson.slaves;
 
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.Computer;
@@ -264,13 +265,13 @@ public class SlaveComputer extends Computer {
                         throw e;
                     } catch (IOException e) {
                         Util.displayIOException(e,taskListener);
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                        taskListener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
                         throw e;
                     } catch (InterruptedException e) {
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
+                        taskListener.error(Messages.ComputerLauncher_abortedLaunch()).print(Functions.printThrowable(e));
                         throw e;
                     } catch (Exception e) {
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                        taskListener.error(Messages.ComputerLauncher_unexpectedError()).print(Functions.printThrowable(e));
                         throw e;
                     }
                 } finally {
@@ -494,7 +495,7 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause!=null) {
                     offlineCause = new ChannelTermination(cause);
-                    cause.printStackTrace(taskListener.error("Connection terminated"));
+                    taskListener.error("Connection terminated").print(Functions.printThrowable(cause));
                 } else {
                     taskListener.getLogger().println("Connection terminated");
                 }

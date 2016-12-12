@@ -366,7 +366,7 @@ public class Maven extends Builder {
                 }
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError(Messages.Maven_ExecFailed()) );
+                listener.fatalError(Messages.Maven_ExecFailed()).print(Functions.printThrowable(e));
                 return false;
             }
             startIndex = endIndex + 1;

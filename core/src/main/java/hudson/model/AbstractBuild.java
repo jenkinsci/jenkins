@@ -633,7 +633,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                     throw (InterruptedException)new InterruptedException().initCause(e);
                 } catch (IOException e) {
                     // checkout error not yet reported
-                    e.printStackTrace(listener.getLogger());
+                    listener.getLogger().print(Functions.printThrowable(e));
                 }
 
                 if (retryCount == 0)   // all attempts failed
@@ -749,7 +749,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 listener.error("Step ‘" + buildStep + "’ failed: " + e.getMessage());
             } else {
                 String msg = "Step ‘" + buildStep + "’ aborted due to exception: ";
-                e.printStackTrace(listener.error(msg));
+                listener.error(msg).print(Functions.printThrowable(e));
                 LOGGER.log(WARNING, msg, e);
             }
 
@@ -784,8 +784,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 // Channel is closed, do not continue
                 reportBrokenChannel(listener);
             } catch (RuntimeException ex) {
-
-                ex.printStackTrace(listener.error("Build step failed with exception"));
+                listener.error("Build step failed with exception").print(Functions.printThrowable(ex));
             }
 
             for (BuildStepListener bsl : BuildStepListener.all()) {
