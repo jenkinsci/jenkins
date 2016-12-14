@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.List;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import jenkins.security.HMACConfidentialKey;
 
 /**
  * Data that hangs off from a console output.
@@ -121,6 +122,9 @@ import com.jcraft.jzlib.GZIPOutputStream;
  * @since 1.349
  */
 public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>>, ExtensionPoint {
+
+    private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ConsoleNote.class, "MAC");
+
     /**
      * When the line of a console output that this annotation is attached is read by someone,
      * a new {@link ConsoleNote} is de-serialized and this method is invoked to annotate that line.
@@ -182,6 +186,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
         try {
             buf2.write(PREAMBLE);
+            byte[] mac = MAC.mac(buf.toByteArray());
+            dos.writeInt(- mac.length); // negative to differentiate from older form
+            dos.write(mac);
             dos.writeInt(buf.size());
             buf.writeTo(dos);
         } finally {
@@ -214,9 +221,18 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid preamble
 
             DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
+            int macSz = - decoded.readInt();
+            if (macSz < 0) {
+                throw new IOException("Refusing to deserialize unsigned note from an old log.");
+            }
+            byte[] mac = new byte[macSz];
+            decoded.readFully(mac);
             int sz = decoded.readInt();
             byte[] buf = new byte[sz];
             decoded.readFully(buf);
+            if (!MAC.checkMac(buf, mac)) {
+                throw new IOException("MAC mismatch");
+            }
 
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);
