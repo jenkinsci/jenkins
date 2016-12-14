@@ -1224,26 +1224,27 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         JSONObject json = req.getSubmittedForm();
 
         try {
-            setDisplayName(json.optString("displayNameOrNull"));
+            try (BulkChange bc = new BulkChange(this)) {
+                setDisplayName(json.optString("displayNameOrNull"));
 
-            logRotator = null;
+                logRotator = null;
 
-            DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
-            JSONObject jsonProperties = json.optJSONObject("properties");
-            if (jsonProperties != null) {
-              t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
-            } else {
-              t.clear();
+                DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
+                JSONObject jsonProperties = json.optJSONObject("properties");
+                if (jsonProperties != null) {
+                  t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+                } else {
+                  t.clear();
+                }
+                properties.clear();
+                for (JobProperty p : t) {
+                    p.setOwner(this);
+                    properties.add(p);
+                }
+
+                submit(req, rsp);
+                bc.commit();
             }
-            properties.clear();
-            for (JobProperty p : t) {
-                p.setOwner(this);
-                properties.add(p);
-            }
-
-            submit(req, rsp);
-
-            save();
             ItemListener.fireOnUpdated(this);
 
             String newName = req.getParameter("name");
