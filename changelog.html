@@ -59,6 +59,35 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.36>What's new in 2.36</a> (2016/12/11)</h3>
+<ul class=image>
+  <li class="bug">
+    Several badges were missing in builds flagged as <code>KeepBuildForever</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40281">issue 40281</a>, regression in 2.34)
+  <li class="bug">
+    Retain cause of blockage if the Queue task cannot be taken due to the decision of
+    <code>QueueTaskDispatcher</code> extension, <code>NodeProperty</code> and other extensions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38514">issue 38514</a>)
+  <li class="rfe">
+    Internal API: Allow overriding <code>UserProperty.setUser(User)</code>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40266">issue 40266</a>)
+  <li class="rfe">
+    Internal API: Restrict usage of core localization message classes in plugins.
+    These message classes are not guaranteed to be binary compatible.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2656">pull 2656</a>)
+</ul>
+<h3><a name=v2.35>What's new in 2.35</a> (2016/12/04)</h3>
+<ul class=image>
+  <li class="rfe">
+    Add display name and full display name of items to the remote API.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39972">issue 39972</a>)
+  <li class="rfe">
+    API: Allow specifying log level in <tt>SystemProperties</tt> when a System property is undefined.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2646">pull 2646</a>)
+  <li class="bug">
+    Followup fix for JENKINS-23271 in 2.34 addressing plugin implementations not using <tt>ProcStarter</tt>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2653">pull 2653</a>)
+</ul>
 <h3><a name=v2.34>What's new in 2.34</a> (2016/11/27)</h3>
 <ul class=image>
   <li class="rfe">

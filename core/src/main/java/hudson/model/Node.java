@@ -372,7 +372,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public CauseOfBlockage canTake(Queue.BuildableItem item) {
         Label l = item.getAssignedLabel();
         if(l!=null && !l.contains(this))
-            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
+            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getDisplayName(), l));   // the task needs to be executed on label that this node doesn't have.
 
         if(l==null && getMode()== Mode.EXCLUSIVE) {
             // flyweight tasks need to get executed somewhere, if every node
@@ -381,14 +381,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                             || Jenkins.getInstance().getNumExecutors() < 1
                             || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
             )) {
-                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName()));   // this node is reserved for tasks that are tied to it
             }
         }
 
         Authentication identity = item.authenticate();
         if (!getACL().hasPermission(identity,Computer.BUILD)) {
             // doesn't have a permission
-            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
+            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));
         }
 
         // Check each NodeProperty to see whether they object to this node
@@ -399,7 +399,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
 
         if (!isAcceptingTasks()) {
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsNotAcceptingTasks(getNodeName()));
+            return new CauseOfBlockage.BecauseNodeIsNotAcceptingTasks(this);
         }
 
         // Looks like we can take the task

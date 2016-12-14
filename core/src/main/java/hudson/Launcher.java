@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
+import hudson.Proc.ProcWithJenkins23271Patch;
 
 /**
  * Starts a process.
@@ -393,15 +394,27 @@ public abstract class Launcher {
             // The logging around procHolderForJoin prevents the preliminary object deallocation we saw in JENKINS-23271
             final Proc procHolderForJoin = start();
             LOGGER.log(Level.FINER, "Started the process {0}", procHolderForJoin);
-            try {
-                final int returnCode = procHolderForJoin.join();
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[]{procHolderForJoin, returnCode});
+            
+            if (procHolderForJoin instanceof ProcWithJenkins23271Patch) {
+                return procHolderForJoin.join();
+            } else {
+                // Fallback to the internal handling logic
+                if (!(procHolderForJoin instanceof LocalProc)) {
+                    // We consider that the process may be at risk of JENKINS-23271
+                    LOGGER.log(Level.FINE, "Process {0} of type {1} is neither {2} nor instance of {3}. "
+                            + "If this process operates with Jenkins agents via remote invocation, you may get into JENKINS-23271",
+                            new Object[] {procHolderForJoin, procHolderForJoin.getClass(), LocalProc.class, ProcWithJenkins23271Patch.class});
                 }
-                return returnCode;
-            } finally {
-                if (procHolderForJoin.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
-                    LOGGER.log(Level.WARNING, "Process not finished after call to join() completed");
+                try {
+                    final int returnCode = procHolderForJoin.join();
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[]{procHolderForJoin, returnCode});
+                    }
+                    return returnCode;
+                } finally {
+                    if (procHolderForJoin.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                        LOGGER.log(Level.WARNING, "Process {0} has not finished after the join() method completion", procHolderForJoin);
+                    }
                 }
             }
         }
@@ -990,7 +1003,7 @@ public abstract class Launcher {
             private static final long serialVersionUID = 1L;
         }
 
-        public static final class ProcImpl extends Proc {
+        public static final class ProcImpl extends Proc implements ProcWithJenkins23271Patch {
             private final RemoteProcess process;
             private final IOTriplet io;
 
@@ -1001,12 +1014,28 @@ public abstract class Launcher {
 
             @Override
             public void kill() throws IOException, InterruptedException {
-                process.kill();
+                try {
+                    process.kill();
+                } finally {
+                    if (this.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                        LOGGER.log(Level.WARNING, "Process {0} has not really finished after the kill() method execution", this);
+                    }
+                }
             }
 
             @Override
             public int join() throws IOException, InterruptedException {
-                return process.join();
+                try {
+                    final int returnCode = process.join();
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER, "Process {0} has finished with the return code {1}", new Object[]{this, returnCode});
+                    }
+                    return returnCode;
+                } finally {
+                    if (this.isAlive()) { // Should never happen but this forces Proc to not be removed and early GC by escape analysis
+                        LOGGER.log(Level.WARNING, "Process {0} has not really finished after the join() method completion", this);
+                    }
+                }
             }
 
             @Override

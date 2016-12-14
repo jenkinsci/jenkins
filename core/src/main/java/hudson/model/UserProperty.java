@@ -58,7 +58,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      */
     protected transient User user;
 
-    /*package*/ final void setUser(User u) {
+    protected void setUser(User u) {
         this.user = u;
     }
 

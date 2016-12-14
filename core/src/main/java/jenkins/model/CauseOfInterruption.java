@@ -90,7 +90,7 @@ public abstract class CauseOfInterruption implements Serializable {
         /**
          * Gets ID of the user, who interrupted the build.
          * @return User ID
-         * @since TODO
+         * @since 2.31
          */
         @Nonnull
         public String getUserId() {
@@ -111,7 +111,7 @@ public abstract class CauseOfInterruption implements Serializable {
         /**
          * Gets user, who caused the interruption.
          * @return User or {@code null} if it has not been found
-         * @since TODO
+         * @since 2.31
          */
         @CheckForNull
         public User getUserOrNull() {
