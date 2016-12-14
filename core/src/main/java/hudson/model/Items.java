@@ -30,29 +30,30 @@ import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.Callable;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.triggers.Trigger;
 import hudson.util.DescriptorList;
 import hudson.util.EditDistance;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Convenience methods related to {@link Item}.
@@ -386,6 +387,35 @@ public class Items {
     }
 
     /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
+     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @return An {@link Iterable} for all items.
+     * @since FIXME
+     */
+    public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
+        return allItems(Jenkins.getAuthentication(), root, type);
+    }
+
+
+    /**
+     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied authentication
+     * without concern for the order in which items are returned.
+     *
+     * @param root the root.
+     * @param type the type.
+     * @param <T> the type.
+     * @return An {@link Iterable} for all items.
+     * @since FIXME
+     */
+    public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
+        return new AllItemsIterable<>(root, authentication, type);
+    }
+
+    /**
      * Finds an item whose name (when referenced from the specified context) is closest to the given name.
      * @param <T> the type of item being considered
      * @param type same as {@code T}
@@ -438,6 +468,121 @@ public class Items {
         item.movedTo(destination, newItem, destDir);
         ItemListener.fireLocationChange(newItem, oldFullName);
         return newItem;
+    }
+
+    private static class AllItemsIterable<T extends Item> implements Iterable<T> {
+
+        /**
+         * The authentication we are iterating as.
+         */
+        private final Authentication authentication;
+        /**
+         * The root we are iterating from.
+         */
+        private final ItemGroup root;
+        /**
+         * The type of item we want to return.
+         */
+        private final Class<T> type;
+
+        private AllItemsIterable(ItemGroup root, Authentication authentication, Class<T> type) {
+            this.root = root;
+            this.authentication = authentication;
+            this.type = type;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Iterator<T> iterator() {
+            return new AllItemsIterator();
+        }
+
+        private class AllItemsIterator implements Iterator<T> {
+
+            /**
+             * The stack of {@link ItemGroup}s that we have left to descend into.
+             */
+            private final Stack<ItemGroup> stack = new Stack<>();
+            /**
+             * The iterator of the current {@link ItemGroup} we
+             */
+            private Iterator<Item> delegate = null;
+            /**
+             * The next item.
+             */
+            private T next = null;
+
+            private AllItemsIterator() {
+                // put on the stack so that hasNext() is the only place that has to worry about authentication
+                // alternative would be to impersonate and populate delegate.
+                stack.push(root);
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public boolean hasNext() {
+                if (next != null) {
+                    return true;
+                }
+                while (true) {
+                    if (delegate == null || !delegate.hasNext()) {
+                        if (stack.isEmpty()) {
+                            return false;
+                        }
+                        ItemGroup group = stack.pop();
+                        // group.getItems() is responsible for performing the permission check so we will not repeat it
+                        if (Jenkins.getAuthentication() == authentication) {
+                            delegate = group.getItems().iterator();
+                        } else {
+                            // slower path because the caller has switched authentication
+                            // we need to keep the original authentication so that allItems() can be used
+                            // like getAllItems() without the cost of building the entire list up front
+                            try (ACLContext ctx = ACL.as(authentication)) {
+                                delegate = group.getItems().iterator();
+                            }
+                        }
+                    }
+                    while (delegate.hasNext()) {
+                        Item item = delegate.next();
+                        if (item instanceof ItemGroup) {
+                            stack.push((ItemGroup) item);
+                        }
+                        if (type.isInstance(item)) {
+                            next = type.cast(item);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                try {
+                    return next;
+                } finally {
+                    next = null;
+                }
+            }
+
+        }
     }
 
     /**

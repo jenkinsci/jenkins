@@ -28,6 +28,8 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -59,6 +61,31 @@ public class ItemsTest {
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertEquals(Arrays.asList(dp, sub1p, sub1q, sub2ap, sub2alpha, sub2bp, sub2BRAVO, sub2cp, sub2charlie), Items.getAllItems(d, FreeStyleProject.class));
         assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), Items.getAllItems(sub2, Item.class));
+    }
+
+    @Issue("JENKINS-40252")
+    @Test
+    public void allItems() throws Exception {
+        MockFolder d = r.createFolder("d");
+        MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
+        MockFolder sub2a = sub2.createProject(MockFolder.class, "a");
+        MockFolder sub2c = sub2.createProject(MockFolder.class, "c");
+        MockFolder sub2b = sub2.createProject(MockFolder.class, "b");
+        MockFolder sub1 = d.createProject(MockFolder.class, "sub1");
+        FreeStyleProject root = r.createFreeStyleProject("root");
+        FreeStyleProject dp = d.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub1q = sub1.createProject(FreeStyleProject.class, "q");
+        FreeStyleProject sub1p = sub1.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2ap = sub2a.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2bp = sub2b.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2cp = sub2c.createProject(FreeStyleProject.class, "p");
+        FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
+        FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
+        FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
+        assertThat(Items.allItems(d, FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
+                sub2bp, sub2BRAVO, sub2cp, sub2charlie));
+        assertThat(Items.allItems(sub2, Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
+                sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 
     @Issue("JENKINS-24825")
