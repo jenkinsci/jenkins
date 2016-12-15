@@ -351,7 +351,12 @@ public class Items {
     
     /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
+     * and filter them by the given type. The returned list will represent a snapshot view of the items present at some
+     * time during the call. If items are moved during the call, depending on the move, it may be possible for some
+     * items to escape the snapshot entirely.
+     * <p>
+     * If you do not need to iterate all items, or if the order of the items is not required, consider using
+     * {@link #allItems(ItemGroup, Class)} instead.
      * 
      * @since 1.512
      */
@@ -387,8 +392,11 @@ public class Items {
     }
 
     /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
-     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned.
+     * Gets a read-only view of all the {@link Item}s recursively in the {@link ItemGroup} tree visible to
+     * {@link Jenkins#getAuthentication()} without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
      *
      * @param root the root.
      * @param type the type.
@@ -402,8 +410,11 @@ public class Items {
 
 
     /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied authentication
-     * without concern for the order in which items are returned.
+     * Gets a read-only view all the {@link Item}s recursively in the {@link ItemGroup} tree visible to the supplied
+     * authentication without concern for the order in which items are returned. Each iteration
+     * of the view will be "live" reflecting the items available between the time the iteration was started and the
+     * time the iteration was completed, however if items are moved during an iteration - depending on the move - it
+     * may be possible for such items to escape the entire iteration.
      *
      * @param root the root.
      * @param type the type.
@@ -506,7 +517,7 @@ public class Items {
              */
             private final Stack<ItemGroup> stack = new Stack<>();
             /**
-             * The iterator of the current {@link ItemGroup} we
+             * The iterator of the current {@link ItemGroup} we are iterating.
              */
             private Iterator<Item> delegate = null;
             /**
