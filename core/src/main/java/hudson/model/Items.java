@@ -80,6 +80,44 @@ public class Items {
             return false;
         }
     };
+    /**
+     * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getName()}.
+     * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
+     * need to restore the sort order of a further filtered result, you probably want {@link #BY_FULL_NAME}.
+     *
+     * @since FIXME
+     */
+    public static final Comparator<Item> BY_NAME = new Comparator<Item>() {
+        @Override public int compare(Item i1, Item i2) {
+            return name(i1).compareToIgnoreCase(name(i2));
+        }
+
+        String name(Item i) {
+            String n = i.getName();
+            if (i instanceof ItemGroup) {
+                n += '/';
+            }
+            return n;
+        }
+    };
+    /**
+     * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getFullName()}.
+     *
+     * @since FIXME
+     */
+    public static final Comparator<Item> BY_FULL_NAME = new Comparator<Item>() {
+        @Override public int compare(Item i1, Item i2) {
+            return name(i1).compareToIgnoreCase(name(i2));
+        }
+
+        String name(Item i) {
+            String n = i.getFullName();
+            if (i instanceof ItemGroup) {
+                n += '/';
+            }
+            return n;
+        }
+    };
 
     /**
      * Runs a block while making {@link #currentlyUpdatingByXml} be temporarily true.
@@ -367,18 +405,8 @@ public class Items {
     }
     private static <T extends Item> void getAllItems(final ItemGroup root, Class<T> type, List<T> r) {
         List<Item> items = new ArrayList<Item>(((ItemGroup<?>) root).getItems());
-        Collections.sort(items, new Comparator<Item>() {
-            @Override public int compare(Item i1, Item i2) {
-                return name(i1).compareToIgnoreCase(name(i2));
-            }
-            String name(Item i) {
-                String n = i.getName();
-                if (i instanceof ItemGroup) {
-                    n += '/';
-                }
-                return n;
-            }
-        });
+        // because we add items depth first, we can use the quicker BY_NAME comparison
+        Collections.sort(items, BY_NAME);
         for (Item i : items) {
             if (type.isInstance(i)) {
                 if (i.hasPermission(Item.READ)) {
