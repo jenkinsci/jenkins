@@ -68,7 +68,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         Jenkins j = Jenkins.getInstance();
         nodes.add(j);
         nodes.addAll(j.getNodes());
-        for (TopLevelItem item : j.getAllItems(TopLevelItem.class)) {
+        for (TopLevelItem item : j.allItems(TopLevelItem.class)) {
             if (item instanceof ModifiableTopLevelItemGroup) { // no such thing as TopLevelItemGroup, and ItemGroup offers no access to its type parameter
                 continue; // children will typically have their own workspaces as subdirectories; probably no real workspace of its own
             }

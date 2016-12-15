@@ -310,12 +310,24 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Restricted(NoExternalUse.class)
         public boolean isPollingThreadCountOptionVisible() {
+            if (getPollingThreadCount() != 0) {
+                // this is a user who already configured the option
+                return true;
+            }
             // unless you have a fair number of projects, this option is likely pointless.
             // so let's hide this option for new users to avoid confusing them
             // unless it was already changed
-            // TODO switch to check for SCMTriggerItem
-            return Jenkins.getInstance().getAllItems(AbstractProject.class).size() > 10
-                    || getPollingThreadCount() != 0;
+            int count = 0;
+            // we are faster walking some items with a lazy iterator than building a list of all items just to query
+            // the size. This also lets us check against SCMTriggerItem rather than AbstractProject
+            for (Item item: Jenkins.getInstance().allItems(Item.class)) {
+                if (item instanceof SCMTriggerItem) {
+                    if (++count > 10) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**

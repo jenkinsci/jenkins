@@ -464,10 +464,9 @@ public class Items {
      * @since 1.538
      */
     public static @CheckForNull <T extends Item> T findNearest(Class<T> type, String name, ItemGroup context) {
-        List<T> projects = Jenkins.getInstance().getAllItems(type);
-        String[] names = new String[projects.size()];
-        for (int i = 0; i < projects.size(); i++) {
-            names[i] = projects.get(i).getRelativeNameFrom(context);
+        List<String> names = new ArrayList<>();
+        for (T item: Jenkins.getInstance().allItems(type)) {
+            names.add(item.getRelativeNameFrom(context));
         }
         String nearest = EditDistance.findNearest(name, names);
         return Jenkins.getInstance().getItem(nearest, context, type);
