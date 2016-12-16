@@ -3044,7 +3044,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         });
 
         for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
+            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 public void run(Reactor session) throws Exception {
                     if(!Items.getConfigFile(subdir).exists()) {
                         //Does not have job config file, so it is not a jenkins job hence skip it
@@ -3057,7 +3057,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             });
         }
 
-        g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
+        g.requires(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
