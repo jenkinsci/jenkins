@@ -415,7 +415,7 @@ public class CLI implements AutoCloseable {
                 continue;
             }
             if (head.equals("-noCertificateCheck")) {
-                System.out.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+                System.err.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
