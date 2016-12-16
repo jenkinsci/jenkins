@@ -24,11 +24,16 @@
  */
 package hudson.model;
 
-import jenkins.security.UserDetailsCache;
-import jenkins.util.SystemProperties;
 import com.google.common.base.Predicate;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
-import hudson.*;
+import hudson.BulkChange;
+import hudson.CopyOnWrite;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.FeedAdapter;
+import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
@@ -40,36 +45,9 @@ import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
-import jenkins.model.IdStrategy;
-import jenkins.model.Jenkins;
-import jenkins.model.ModelObjectWithContextMenu;
-import jenkins.security.ImpersonatingUserDetailsService;
-import jenkins.security.LastGrantedAuthoritiesProperty;
-import net.sf.json.JSONObject;
-
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
-import org.acegisecurity.userdetails.UsernameNotFoundException;
-import org.jenkinsci.Symbol;
-import org.springframework.dao.DataAccessException;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.annotation.concurrent.GuardedBy;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -91,7 +69,34 @@ import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import jenkins.model.IdStrategy;
+import jenkins.model.Jenkins;
+import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.security.ImpersonatingUserDetailsService;
+import jenkins.security.LastGrantedAuthoritiesProperty;
+import jenkins.security.UserDetailsCache;
+import jenkins.util.SystemProperties;
+import net.sf.json.JSONObject;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.GrantedAuthority;
+import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.acegisecurity.userdetails.UserDetails;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.springframework.dao.DataAccessException;
 
 /**
  * Represents a user.
@@ -647,9 +652,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * Gets the list of {@link Build}s that include changes by this user,
      * by the timestamp order.
      */
+    @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @Nonnull RunList getBuilds() {
-    	return new RunList<Run<?,?>>(Jenkins.getInstance().getAllItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
@@ -662,7 +668,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public @Nonnull Set<AbstractProject<?,?>> getProjects() {
         Set<AbstractProject<?,?>> r = new HashSet<AbstractProject<?,?>>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class))
+        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class))
             if(p.hasParticipant(this))
                 r.add(p);
         return r;
@@ -833,7 +839,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     public void doRssLatest(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         final List<Run> lastBuilds = new ArrayList<Run>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
             for (AbstractBuild<?,?> b = p.getLastBuild(); b != null; b = b.getPreviousBuild()) {
                 if (relatedTo(b)) {
                     lastBuilds.add(b);
@@ -841,6 +847,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 }
             }
         }
+        // historically these have been reported sorted by project name, we switched to the lazy iteration
+        // so we only have to sort the sublist of runs rather than the full list of irrelevant projects
+        Collections.sort(lastBuilds, new Comparator<Run>() {
+            @Override
+            public int compare(Run o1, Run o2) {
+                return Items.BY_FULL_NAME.compare(o1.getParent(), o2.getParent());
+            }
+        });
         rss(req, rsp, " latest build", RunList.fromRuns(lastBuilds), Run.FEED_ADAPTER_LATEST);
     }
 

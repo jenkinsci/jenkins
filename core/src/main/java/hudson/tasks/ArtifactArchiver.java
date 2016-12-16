@@ -348,7 +348,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

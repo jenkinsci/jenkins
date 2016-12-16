@@ -1734,12 +1734,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     *
+     * @since FIXME
+     */
+    public <T extends Item> Iterable<T> allItems(Class<T> type) {
+        return Items.allItems(this, type);
+    }
+
+    /**
      * Gets all the items recursively.
      *
      * @since 1.402
      */
     public List<Item> getAllItems() {
         return getAllItems(Item.class);
+    }
+
+    /**
+     * Gets all the items unordered, lazily and recursively.
+     *
+     * @since FIXME
+     */
+    public Iterable<Item> allItems() {
+        return allItems(Item.class);
     }
 
     /**
@@ -1761,8 +1780,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Collection<String> getJobNames() {
         List<String> names = new ArrayList<String>();
-        for (Job j : getAllItems(Job.class))
+        for (Job j : allItems(Job.class))
             names.add(j.getFullName());
+        Collections.sort(names, String.CASE_INSENSITIVE_ORDER);
         return names;
     }
 
@@ -2228,6 +2248,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             .add(new CollectionSearchIndex<TopLevelItem>() {
                 protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
                 protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
+                @Nonnull
+                @Override
+                protected Iterable<TopLevelItem> allAsIterable() {
+                    return allItems(TopLevelItem.class);
+                }
             })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
