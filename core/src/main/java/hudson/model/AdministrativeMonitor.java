@@ -34,6 +34,8 @@ import java.util.Set;
 import java.io.IOException;
 
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -154,6 +156,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Requires ADMINISTER permission for any operation in here.
      */
+    @Restricted(NoExternalUse.class)
     public Object getTarget() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         return this;

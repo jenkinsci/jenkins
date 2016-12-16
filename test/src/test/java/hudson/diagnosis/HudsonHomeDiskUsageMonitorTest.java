@@ -17,6 +17,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -57,6 +58,7 @@ public class HudsonHomeDiskUsageMonitorTest {
         }
     }
 
+    @Issue("SECURITY-371")
     @Test
     public void noAccessForNonAdmin() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
@@ -64,12 +66,11 @@ public class HudsonHomeDiskUsageMonitorTest {
         // TODO: Use MockAuthorizationStrategy in later versions
         JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
         realm.addGroups("administrator", "admins");
-        realm.addGroups("alice", "users");
         realm.addGroups("bob", "users");
         j.jenkins.setSecurityRealm(realm);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         auth.add(Jenkins.ADMINISTER, "admins");
-        auth.add(Permission.READ, "users");
+        auth.add(Jenkins.READ, "users");
         j.jenkins.setAuthorizationStrategy(auth);
 
         WebRequest request = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
@@ -85,6 +86,13 @@ public class HudsonHomeDiskUsageMonitorTest {
             assertEquals(403, e.getStatusCode());
         }
         assertTrue(mon.isEnabled());
+
+        try {
+            WebRequest getIndex = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull"), HttpMethod.GET);
+            wc.getPage(getIndex);
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(403, e.getStatusCode());
+        }
 
         wc.login("administrator");
         wc.getPage(request);
