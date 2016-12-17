@@ -74,6 +74,9 @@ Upcoming changes</a>
     Do not report <code>-noCertificateCheck</code> warning to STDOUT.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2666">pull 2666</a>)
   <li class="rfe">
+    Improve overall performance of Jenkins by accessing item group elements without sorting where it is possible.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2665">pull 2665</a>)
+  <li class="rfe">
     Convert URI encoding check on the <code>Manage Jenkins</code> page into admin monitor.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39433">issue 39433</a>)
   <li class="rfe">
@@ -100,6 +103,21 @@ Upcoming changes</a>
     <code>Check for Updates</code> button in the Plugin Manager was hidden in the <code>Updates</code> tab
     when there was no plugins updates available.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40489">issue 40489</a>)
+  <li class="bug">
+    Remoting 3.3: Agent JAR cache corruption was causing malfunctioning of agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39547">issue 39547</a>)
+  <li class="bug">
+    Remoting 3.3: Improve diagnostics of the preliminary FifoBuffer termination in the JNLP2 protocol.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40491">issue 40491</a>)
+  <li class="rfe">
+    Remoting 3.3: Hardening of FifoBuffer operation logic. 
+    The change improves the original fix of 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-25218">JENKINS-25218</a>.
+    (<a href="https://github.com/jenkinsci/remoting/pull/100">remoting pull #100</a>)
+  <li class="rfe">
+    Remoting 3.3: <code>ProxyException</code> now retains info about suppressed exceptions 
+    when serializing over the channel.
+    (<a href="https://github.com/jenkinsci/remoting/pull/136">remoting pull #136</a>)
   <li class="rfe">
     API: Introduce the new <code>Jenkins#isSubjectToMandatoryReadPermissionCheck(String restOfPath)</code> method
     for checking access permissions to particular paths.
@@ -107,6 +125,9 @@ Upcoming changes</a>
   <li class="rfe">
     API: Introduce new <code>Node#getNodeProperty()</code> methods for retrieving node properties.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40365">issue 40365</a>)
+  <li class="rfe">
+    API: Introduce new <code>Items#allItems()</code> methods for accessing items in item groups without sorting overhead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40252">issue 40252</a>)
   <li class="rfe">
     Improved Polish translation.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2643">pull 2643</a>)
