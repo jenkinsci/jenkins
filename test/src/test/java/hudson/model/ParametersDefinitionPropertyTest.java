@@ -27,6 +27,8 @@ package hudson.model;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
+
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -46,8 +48,8 @@ public class ParametersDefinitionPropertyTest {
     public LoggerRule logs = new LoggerRule();
 
     @Issue("JENKINS-37590")
-    @Test
-    public void nullArgToConstructor() throws Exception {
+    @Test(expected = FailingHttpStatusCodeException.class)
+    public void nullArgToConstructorAndRoundTrip() throws Exception {
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty((ParameterDefinition)null);
         assertNotNull(pdp);
         assertTrue(pdp.getParameterDefinitionNames().isEmpty());
@@ -55,6 +57,17 @@ public class ParametersDefinitionPropertyTest {
         ParametersDefinitionProperty nullList = new ParametersDefinitionProperty((List<ParameterDefinition>)null);
         assertNotNull(nullList);
         assertTrue(nullList.getParameterDefinitionNames().isEmpty());
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.addProperty(pdp);
+
+        try {
+            r.configRoundtrip(p);
+        } catch (FailingHttpStatusCodeException e) {
+            assertTrue(e.getResponse().getContentAsString().contains("No Parameters are specified for this parameterized build"));
+            throw e;
+        }
+
     }
 
     @Issue("JENKINS-31458")
