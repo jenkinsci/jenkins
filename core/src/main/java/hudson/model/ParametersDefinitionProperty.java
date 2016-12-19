@@ -70,14 +70,14 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(@CheckForNull List<ParameterDefinition> parameterDefinitions) {
         if (parameterDefinitions == null) {
             parameterDefinitions = new ArrayList<>();
         }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
+    public ParametersDefinitionProperty(@CheckForNull ParameterDefinition... parameterDefinitions) {
         if (parameterDefinitions == null || (parameterDefinitions.length == 1 && parameterDefinitions[0] == null)) {
             this.parameterDefinitions = new ArrayList<>();
         } else {
