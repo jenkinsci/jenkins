@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Looks out for a broken reverse proxy setup that doesn't rewrite the location header correctly.
@@ -85,6 +86,7 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if(no!=null) { // dismiss
             disable(true);
