@@ -222,22 +222,29 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
             DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
             int macSz = - decoded.readInt();
-            if (macSz < 0) {
-                throw new IOException("Refusing to deserialize unsigned note from an old log.");
+            byte[] mac;
+            int sz;
+            if (macSz > 0) { // new format
+                mac = new byte[macSz];
+                decoded.readFully(mac);
+                sz = decoded.readInt();
+            } else {
+                mac = null;
+                sz = - macSz;
             }
-            byte[] mac = new byte[macSz];
-            decoded.readFully(mac);
-            int sz = decoded.readInt();
             byte[] buf = new byte[sz];
             decoded.readFully(buf);
-            if (!MAC.checkMac(buf, mac)) {
-                throw new IOException("MAC mismatch");
-            }
 
             byte[] postamble = new byte[POSTAMBLE.length];
             in.readFully(postamble);
             if (!Arrays.equals(postamble,POSTAMBLE))
                 return null;    // not a valid postamble
+
+            if (mac == null) {
+                throw new IOException("Refusing to deserialize unsigned note from an old log.");
+            } else if (!MAC.checkMac(buf, mac)) {
+                throw new IOException("MAC mismatch");
+            }
 
             ObjectInputStream ois = new ObjectInputStreamEx(
                     new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
@@ -263,8 +270,15 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             return;    // not a valid preamble
 
         DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
-        int sz = decoded.readInt();
-        IOUtils.skip(decoded,sz);
+        int macSz = - decoded.readInt();
+        if (macSz > 0) { // new format
+            IOUtils.skip(decoded, macSz);
+            int sz = decoded.readInt();
+            IOUtils.skip(decoded, sz);
+        } else { // old format
+            int sz = -macSz;
+            IOUtils.skip(decoded, sz);
+        }
 
         byte[] postamble = new byte[POSTAMBLE.length];
         in.readFully(postamble);
