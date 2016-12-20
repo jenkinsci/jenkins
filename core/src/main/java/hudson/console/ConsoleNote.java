@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.List;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import hudson.remoting.ClassFilter;
 import jenkins.security.HMACConfidentialKey;
 
 /**
@@ -244,12 +245,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 throw new IOException("MAC mismatch");
             }
 
-            ObjectInputStream ois = new ObjectInputStreamEx(
-                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
-            try {
+            Jenkins jenkins = Jenkins.getInstance();
+            try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
+                    jenkins != null ? jenkins.pluginManager.uberClassLoader : ConsoleNote.class.getClassLoader(),
+                    ClassFilter.DEFAULT)) {
                 return (ConsoleNote) ois.readObject();
-            } finally {
-                ois.close();
             }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
