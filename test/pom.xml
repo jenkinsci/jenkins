@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.19.3-SNAPSHOT</version>
+    <version>2.19.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -174,6 +174,11 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.9</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.geb</groupId>
