@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -117,8 +118,7 @@ public class ConsoleAnnotatorTest {
 
         // make sure raw console output doesn't include the garbage
         TextPage raw = (TextPage)r.createWebClient().goTo(b.getUrl()+"consoleText","text/plain");
-        System.out.println(raw.getContent());
-        assertTrue(raw.getContent().contains("\nabc\ndef\n"));
+        assertThat(raw.getContent(), containsString("\nabc\ndef\n"));
     }
 
 
