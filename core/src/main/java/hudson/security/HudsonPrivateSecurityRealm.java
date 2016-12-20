@@ -60,7 +60,6 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
