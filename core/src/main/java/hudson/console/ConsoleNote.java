@@ -95,8 +95,6 @@ import jenkins.security.HMACConfidentialKey;
  * {@link ConsoleNote} always sticks to a particular point in the console output.
  *
  * <p>
- * This design allows descendant processes of Hudson to emit {@link ConsoleNote}s. For example, Ant forked
- * by a shell forked by Hudson can put an encoded note in its stdout, and Hudson will correctly understands that.
  * The preamble and postamble includes a certain ANSI escape sequence designed in such a way to minimize garbage
  * if this output is observed by a human being directly.
  *
