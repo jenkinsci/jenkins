@@ -11,7 +11,6 @@ import jenkins.management.AsynchronousAdministrativeMonitor;
 import jenkins.model.Jenkins;
 import jenkins.util.io.FileBoolean;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -29,7 +28,7 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor implements StaplerProxy {
+public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
 
     /**
      * Whether we detected a need to run the rewrite program.
@@ -60,14 +59,6 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor i
         if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
         &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
             needed.on();
-    }
-
-    /**
-     * Requires ADMINISTER permission for any operation in here.
-     */
-    public Object getTarget() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
-        return this;
     }
 
     @Override
