@@ -29,6 +29,7 @@ import hudson.Extension;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 
@@ -56,6 +57,7 @@ public class TooManyJobsButNoView extends AdministrativeMonitor {
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
      */
+    @RequirePOST
     public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
         if(req.hasParameter("no")) {
             disable(true);
