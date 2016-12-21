@@ -32,6 +32,8 @@ THE SOFTWARE.
 
     <st:attribute name="title">
       Name of the entry. Think of this like a label for the control.
+
+      This content is HTML. Use h.escape if necessary.
     </st:attribute>
     <st:attribute name="field">
       Used for the databinding. TBD. When this attribute
@@ -46,6 +48,8 @@ THE SOFTWARE.
       This text shouldn't get too long, and in recent Hudson, this feature
       is somewhat de-emphasized, in favor of the inline foldable help page
       specified via @help.
+
+      This content is HTML. Use h.escape if necessary.
     </st:attribute>
     <st:attribute name="help">
       URL to the HTML page. When this attribute is specified, the entry gets
