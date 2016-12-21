@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import org.apache.http.HttpStatus;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -226,7 +225,6 @@ public class ParametersTest {
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
 
-    @Ignore("TODO build page should mark up param description; parameters page should mark up param description")
     @Issue("SECURITY-353")
     @Test
     public void xss() throws Exception {
