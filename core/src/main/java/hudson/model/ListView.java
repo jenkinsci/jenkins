@@ -480,7 +480,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
@@ -524,7 +524,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     deleteViewItem(item, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {

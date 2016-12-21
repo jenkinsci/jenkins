@@ -33,31 +33,11 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
-import hudson.BulkChange;
-import hudson.DNSMultiCast;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
-import hudson.ExtensionComponent;
-import hudson.ExtensionFinder;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import hudson.FilePath;
-import hudson.Functions;
-import hudson.Launcher;
+import hudson.*;
 import hudson.Launcher.LocalLauncher;
-import hudson.Lookup;
-import hudson.Main;
-import hudson.Plugin;
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import hudson.ProxyConfiguration;
 import jenkins.AgentProtocol;
+import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.util.SystemProperties;
-import hudson.TcpSlaveAgentListener;
-import hudson.UDPBroadcastThread;
-import hudson.Util;
-import hudson.WebAppMain;
-import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.init.InitMilestone;
@@ -1754,12 +1734,31 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
+     * and filter them by the given type.
+     *
+     * @since FIXME
+     */
+    public <T extends Item> Iterable<T> allItems(Class<T> type) {
+        return Items.allItems(this, type);
+    }
+
+    /**
      * Gets all the items recursively.
      *
      * @since 1.402
      */
     public List<Item> getAllItems() {
         return getAllItems(Item.class);
+    }
+
+    /**
+     * Gets all the items unordered, lazily and recursively.
+     *
+     * @since FIXME
+     */
+    public Iterable<Item> allItems() {
+        return allItems(Item.class);
     }
 
     /**
@@ -1781,8 +1780,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Collection<String> getJobNames() {
         List<String> names = new ArrayList<String>();
-        for (Job j : getAllItems(Job.class))
+        for (Job j : allItems(Job.class))
             names.add(j.getFullName());
+        Collections.sort(names, String.CASE_INSENSITIVE_ORDER);
         return names;
     }
 
@@ -2248,6 +2248,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             .add(new CollectionSearchIndex<TopLevelItem>() {
                 protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
                 protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
+                @Nonnull
+                @Override
+                protected Iterable<TopLevelItem> allAsIterable() {
+                    return allItems(TopLevelItem.class);
+                }
             })
             .add(getPrimaryView().makeSearchIndex())
             .add(new CollectionSearchIndex() {// for computers
@@ -3044,7 +3049,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         });
 
         for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading job "+subdir.getName(),new Executable() {
+            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 public void run(Reactor session) throws Exception {
                     if(!Items.getConfigFile(subdir).exists()) {
                         //Does not have job config file, so it is not a jenkins job hence skip it
@@ -3057,7 +3062,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             });
         }
 
-        g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
+        g.requires(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
@@ -4455,20 +4460,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Checks if container uses UTF-8 to decode URLs. See
      * http://wiki.jenkins-ci.org/display/JENKINS/Tomcat#Tomcat-i18n
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("since TODO")
+    @Deprecated
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        // expected is non-ASCII String
-        final String expected = "\u57f7\u4e8b";
-        final String value = fixEmpty(request.getParameter("value"));
-        if (!expected.equals(value))
-            return FormValidation.warningWithMarkup(Messages.Hudson_NotUsesUTF8ToDecodeURL());
-        return FormValidation.ok();
+        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).doCheckURIEncoding(request);
     }
 
     /**
      * Does not check when system default encoding is "ISO-8859-1".
      */
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("since TODO")
+    @Deprecated
     public static boolean isCheckURIEncodingEnabled() {
-        return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
+        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).isCheckEnabled();
     }
 
     /**
@@ -4549,28 +4555,41 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             checkPermission(READ);
         } catch (AccessDeniedException e) {
-            String rest = Stapler.getCurrentRequest().getRestOfPath();
-            for (String name : ALWAYS_READABLE_PATHS) {
-                if (rest.startsWith(name)) {
-                    return this;
-                }
-            }
-            for (String name : getUnprotectedRootActions()) {
-                if (rest.startsWith("/" + name + "/") || rest.equals("/" + name)) {
-                    return this;
-                }
-            }
-
-            // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-            if (rest.matches("/computer/[^/]+/slave-agent[.]jnlp")
-                && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
+            if (!isSubjectToMandatoryReadPermissionCheck(Stapler.getCurrentRequest().getRestOfPath())) {
                 return this;
             }
-
 
             throw e;
         }
         return this;
+    }
+    
+    /**
+     * Test a path to see if it is subject to mandatory read permission checks by container-managed security
+     * @param restOfPath the URI, excluding the Jenkins root URI and query string
+     * @return true if the path is subject to mandatory read permission checks
+     * @since TODO
+     */
+    public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
+        for (String name : ALWAYS_READABLE_PATHS) {
+            if (restOfPath.startsWith(name)) {
+                return false;
+            }
+        }
+
+        for (String name : getUnprotectedRootActions()) {
+            if (restOfPath.startsWith("/" + name + "/") || restOfPath.equals("/" + name)) {
+                return false;
+            }
+        }
+
+        // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
+        if (restOfPath.matches("/computer/[^/]+/slave-agent[.]jnlp")
+            && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

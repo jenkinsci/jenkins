@@ -451,6 +451,47 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
 
+    /**
+     * Gets the specified property or null if the property is not configured for this Node.
+     * 
+     * @param clazz the type of the property
+     * 
+     * @return null if the property is not configured
+     * 
+     * @since TODO
+     */
+    @CheckForNull
+    public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
+    {
+        for (NodeProperty p: getNodeProperties()) {
+            if (clazz.isInstance(p)) {
+                return clazz.cast(p);
+            }
+        }
+        return null;      
+    }
+
+    /**
+     * Gets the property from the given classname or null if the property 
+     * is not configured for this Node.
+     * 
+     * @param className The classname of the property
+     * 
+     * @return null if the property is not configured
+     * 
+     * @since TODO
+     */
+    @CheckForNull
+    public NodeProperty getNodeProperty(String className)
+    {
+        for (NodeProperty p: getNodeProperties()) {
+            if (p.getClass().getName().equals(className)) {
+                return p;
+            }
+        }
+        return null;      
+    }
+
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {
         return NodeProperty.for_(this);

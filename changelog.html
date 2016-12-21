@@ -59,6 +59,84 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.37>What's new in 2.37</a> (2016/12/18)</h3>
+<ul class=image>
+  <li class="rfe">
+    Allow defining agent ping interval and ping timeout in seconds.
+    It can be done via the 
+    <code>hudson.slaves.ChannelPinger.pingIntervalSeconds</code> and
+    <code>hudson.slaves.ChannelPinger.pingTimeoutSeconds</code>
+    <a href="https://wiki.jenkins-ci.org/display/JENKINS/Features+controlled+by+system+properties">
+      system properties</a>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28245">issue 28245</a>)
+  <li class="rfe">
+    Delegate JNLP HMAC computation to <code>SlaveComputer</code> instances when possible.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40286">issue 40286</a>)
+  <li class="rfe">
+    Diagnosability: Split Exception handling of node provision and adding to Jenkins.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38903">issue 38903</a>)
+  <li class="rfe">
+    Do not report <code>-noCertificateCheck</code> warning to STDOUT.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2666">pull 2666</a>)
+  <li class="rfe">
+    Improve overall performance of Jenkins by accessing item group elements without sorting where it is possible.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2665">pull 2665</a>)
+  <li class="rfe">
+    Convert URI encoding check on the <code>Manage Jenkins</code> page into admin monitor.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39433">issue 39433</a>)
+  <li class="rfe">
+    Update <a href="https://mina.apache.org/sshd-project/">SSHD Core</a> from 0.8.0 to 0.14.0.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2662">pull 2662</a>)
+  <li class="bug">
+    SSHD Module: Handshake was failing (wrong shared secret) 1 out of 256 times due to 
+    <a href="https://issues.apache.org/jira/browse/SSHD-330">SSHD-330</a>.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40362">issue 40362</a>)
+  <li class="bug">
+    View display name was ignored during rendering of tabs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39300">issue 39300</a>)
+  <li class="bug">
+    Job configuration submission now does not fail when there is no parameters property.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39700">issue 39700</a>, regression in 1.637)
+  <li class="bug">
+    Fix names of item loading and cleanup Jenkins initializatiion stages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40489">issue 40489</a>)
+  <li class="bug">
+    Performance: Use bulk change when submitting Job configurations
+    to minimize the number of sequential <code>config.xml</code> write operations.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40435">issue 40435</a>)
+  <li class="bug">
+    <code>Check for Updates</code> button in the Plugin Manager was hidden in the <code>Updates</code> tab
+    when there was no plugins updates available.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39971">issue 39971</a>)
+  <li class="bug">
+    Remoting 3.3: Agent JAR cache corruption was causing malfunctioning of agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39547">issue 39547</a>)
+  <li class="bug">
+    Remoting 3.3: Improve diagnostics of the preliminary FifoBuffer termination in the JNLP2 protocol.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40491">issue 40491</a>)
+  <li class="rfe">
+    Remoting 3.3: Hardening of FifoBuffer operation logic. 
+    The change improves the original fix of 
+    <a href="https://issues.jenkins-ci.org/browse/JENKINS-25218">JENKINS-25218</a>.
+    (<a href="https://github.com/jenkinsci/remoting/pull/100">remoting pull #100</a>)
+  <li class="rfe">
+    Remoting 3.3: <code>ProxyException</code> now retains info about suppressed exceptions 
+    when serializing over the channel.
+    (<a href="https://github.com/jenkinsci/remoting/pull/136">remoting pull #136</a>)
+  <li class="rfe">
+    API: Introduce the new <code>Jenkins#isSubjectToMandatoryReadPermissionCheck(String restOfPath)</code> method
+    for checking access permissions to particular paths.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32797">issue 32797</a>)
+  <li class="rfe">
+    API: Introduce new <code>Node#getNodeProperty()</code> methods for retrieving node properties.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40365">issue 40365</a>)
+  <li class="rfe">
+    API: Introduce new <code>Items#allItems()</code> methods for accessing items in item groups without sorting overhead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40252">issue 40252</a>)
+  <li class="rfe">
+    Improved Polish translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2643">pull 2643</a>)
+</ul>
 <h3><a name=v2.36>What's new in 2.36</a> (2016/12/11)</h3>
 <ul class=image>
   <li class="bug">
