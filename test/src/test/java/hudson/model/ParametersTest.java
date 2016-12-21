@@ -226,7 +226,7 @@ public class ParametersTest {
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
 
-    @Ignore("TODO build page should not leave param name unescaped; parameters page should escape param name; parameters page should not leave param name unescaped; parameters page should mark up param description; parameters page should not leave param description unescaped")
+    @Ignore("TODO build page should mark up param description; parameters page should mark up param description")
     @Issue("SECURITY-353")
     @Test
     public void xss() throws Exception {
