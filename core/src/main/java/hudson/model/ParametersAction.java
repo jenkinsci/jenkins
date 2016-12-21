@@ -49,7 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.google.common.collect.Lists.newArrayList;
+import com.google.common.collect.Lists;
 import static com.google.common.collect.Sets.newHashSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -144,7 +144,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return Collections.unmodifiableList(filter(parameters));
+        return Collections.<ParameterValue>unmodifiableList(filter(parameters));
     }
 
     public ParameterValue getParameter(String name) {
@@ -204,7 +204,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         if(overrides == null) {
             return new ParametersAction(parameters);
         }
-        List<ParameterValue> combinedParameters = newArrayList(overrides);
+        List<ParameterValue> combinedParameters = Lists.<ParameterValue>newArrayList(overrides);
         Set<String> names = newHashSet();
 
         for(ParameterValue v : overrides) {
