@@ -4,9 +4,12 @@ import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
+import static org.hamcrest.Matchers.*;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 
+import org.apache.http.HttpStatus;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -19,6 +22,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.Set;
+import org.junit.Ignore;
 
 /**
  * @author huybrechts
@@ -27,6 +31,9 @@ public class ParametersTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public ErrorCollector collector = new ErrorCollector();
 
     @Test
     public void parameterTypes() throws Exception {
@@ -216,4 +223,38 @@ public class ParametersTest {
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
+
+    @Ignore("TODO fix")
+    @Issue("SECURITY-353")
+    @Test
+    public void xss() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("<param name>", "<param default>", "<param description>")));
+        WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.getPage(p, "build?delay=0sec");
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpStatus.SC_METHOD_NOT_ALLOWED)); // 405 to dissuade scripts from thinking this triggered the build
+        String text = page.getWebResponse().getContentAsString();
+        collector.checkThat(text, containsString("&lt;param name&gt;"));
+        collector.checkThat(text, not(containsString("<param name>")));
+        collector.checkThat(text, containsString("&lt;param default&gt;"));
+        collector.checkThat(text, not(containsString("<param default>")));
+        collector.checkThat(text, containsString("&lt;param description&gt;"));
+        collector.checkThat(text, not(containsString("<param description>")));
+        HtmlForm form = page.getFormByName("parameters");
+        HtmlTextInput value = form.getInputByValue("<param default>");
+        value.setText("<param value>");
+        j.submit(form);
+        j.waitUntilNoActivity();
+        FreeStyleBuild b = p.getBuildByNumber(1);
+        page = j.createWebClient().getPage(b, "parameters/");
+        text = page.getWebResponse().getContentAsString();
+        collector.checkThat(text, containsString("&lt;param name&gt;"));
+        collector.checkThat(text, not(containsString("<param name>")));
+        collector.checkThat(text, containsString("&lt;param value&gt;"));
+        collector.checkThat(text, not(containsString("<param value>")));
+        collector.checkThat(text, containsString("&lt;param description&gt;"));
+        collector.checkThat(text, not(containsString("<param description>")));
+    }
+
 }
