@@ -103,4 +103,60 @@ public class SearchTest {
         SuggestedItem found2 = Search.findClosestSuggestedItem(list, "abcd");
         assertEquals(searchItemNoHit, found2.item);
     }
+
+
+    @Test
+    public void suggestCaseInsensitive_searchStringLowerCase() {
+        SearchIndex si = new SearchIndexBuilder()
+                .add("abc-def-ghi", "abc def ghi")
+                .add("ABC-DEF-GHI", "ABC DEF GHI")
+                .add(SearchItems.create("abc","abc",
+                        new SearchIndexBuilder()
+                                .add("def-ghi","def ghixxx")
+                                .make()))
+                .make();
+
+        List<SuggestedItem> list = Search.suggest(si, "abc def ghi");
+        assertEquals(3,list.size());
+        assertEquals("/abc-def-ghi",list.get(0).getUrl());
+        assertEquals("/abc/def-ghi",list.get(1).getUrl());
+        assertEquals("/ABC-DEF-GHI",list.get(2).getUrl());
+    }
+
+    @Test
+    public void suggestCaseInsensitive_searchStringUpperCase() {
+        SearchIndex si = new SearchIndexBuilder()
+                .add("abc-def-ghi", "abc def ghi")
+                .add("ABC-DEF-GHI", "ABC DEF GHI")
+                .add(SearchItems.create("abc","abc",
+                        new SearchIndexBuilder()
+                                .add("def-ghi","def ghixxx")
+                                .make()))
+                .make();
+
+        List<SuggestedItem> list = Search.suggest(si, "DEF");
+        assertEquals(2,list.size());
+        assertEquals("/ABC-DEF-GHI",list.get(0).getUrl());
+        assertEquals("/abc-def-ghi",list.get(1).getUrl());
+    }
+
+    @Test
+    public void findCaseInsensitive_searchStringUpperCase() {
+        SearchIndex si = new SearchIndexBuilder()
+                .add("abc-def-ghi", "abc def ghi")
+                .add("ABC-DEF-GHI", "ABC DEF GHI")
+                .add(SearchItems.create("abc","abc",
+                        new SearchIndexBuilder()
+                                .add("def-ghi","def ghixxx")
+                                .make()))
+                .add(SearchItems.create("ABC","ABC",
+                        new SearchIndexBuilder()
+                                .add("def-ghi","def ghixxx")
+                                .make()))
+                .make();
+
+        SuggestedItem item = Search.find(si, "ABC");
+        assertNotNull(item);
+        assertEquals("/ABC",item.getUrl());
+    }
 }
