@@ -1,0 +1,9 @@
+.hideWarnings:checked + label {
+  color: grey;
+  text-decoration: line-through;
+}
+/*
+.hideWarnings:checked ~ div a {
+  color: grey;
+}
+*/

@@ -46,6 +46,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,12 +56,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -513,6 +516,10 @@ public class UpdateSite {
          * Plugins in the repository, keyed by their artifact IDs.
          */
         public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
+        /**
+         * List of warnings (mostly security) published with the update site.
+         */
+        public final Set<Warning> warnings = new HashSet<Warning>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -528,6 +535,14 @@ public class UpdateSite {
             } else {
                 core = null;
             }
+
+            JSONArray w = o.optJSONArray("warnings");
+            if (w != null) {
+                for (int i = 0; i < w.size(); i++) {
+                    warnings.add(new Warning(w.getJSONObject(i)));
+                }
+            }
+
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -644,6 +659,144 @@ public class UpdateSite {
             return new Api(this);
         }
 
+    }
+
+    /**
+     * A version range for {@code Warning}s indicates which versions of a given plugin are affected
+     * by it.
+     *
+     * Name, firstVersion and lastVersion fields are only used for administrator notices.
+     *
+     * The pattern is used to determine whether a given warning applies to the current installation.
+     */
+    public static final class WarningVersionRange {
+        /**
+         * Human-readable English name for this version range, e.g. 'regular', 'LTS', '2.6 line'.
+         *
+         * Can be null.
+         */
+        public final String name;
+
+        /**
+         * First version in this version range to be subject to the warning. Can be null.
+         */
+        public final String firstVersion;
+
+        /**
+         * Last version in this version range to be subject to the warning. Can be null.
+         */
+        public final String lastVersion;
+
+        /**
+         * Regular expression pattern for this version range that matches all included version numbers.
+         */
+        @Nonnull
+        public final Pattern pattern;
+
+        public WarningVersionRange(JSONObject o) {
+            this.name = Util.fixEmpty(o.optString("name"));
+            this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
+            this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
+            this.pattern = Pattern.compile(o.getString("pattern"));
+        }
+    }
+
+    /**
+     * Represents a warning about a certain component, mostly related to known security issues.
+     *
+     * Two objects are considered equal if they have the same ID.
+     */
+    public static final class Warning {
+
+        public static final String TYPE_PLUGIN = "plugin";
+        public static final String TYPE_CORE = "core";
+        public static final String NAME_CORE = "core";
+
+        /**
+         * The type classifier for this warning. Two are currently supported:
+         * - core, for Jenkins itself
+         * - plugin, for Jenkins plugins
+         * Never null.
+         */
+        // TODO Do we actually need this?
+        @Exported
+        public final String type;
+
+        /**
+         * The globally unique ID of this warning.
+         *
+         * This is typically the CVE identifier or SECURITY issue (Jenkins project);
+         * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.
+         */
+        @Exported
+        public final String id;
+
+        /**
+         * The name of the affected component.
+         * - If type is 'core', this is 'core' by convention.
+         * - If type is 'plugin', this is the artifactId of the affected plugin
+         * Never null.
+         */
+        @Exported
+        public final String name;
+
+        /**
+         * A short, English language explanation for this warning. Never null.
+         */
+        @Exported
+        public final String message;
+
+        /**
+         * A URL with more information about this, typically a security advisory. Never null.
+         */
+        @Exported
+        public final String uri;
+
+        /**
+         * A list of named version ranges specifying which versions of the named component this warning applies to.
+         *
+         * If this list is empty, all versions of the component are considered to be affected by this warning.
+         *
+         * Never null.
+         */
+        @Exported
+        public final List<WarningVersionRange> versionRanges;
+
+        @Restricted(NoExternalUse.class)
+        public Warning(JSONObject o) {
+            this.type = o.getString("type");
+            this.id = o.getString("id");
+            this.name = o.getString("name");
+            this.message = o.getString("message");
+            this.uri = o.getString("uri");
+
+            if (o.has("versions")) {
+                List<WarningVersionRange> ranges = new ArrayList<>();
+                JSONArray versions = o.getJSONArray("versions");
+                for (int i = 0; i < versions.size(); i++) {
+                    WarningVersionRange range = new WarningVersionRange(versions.getJSONObject(i));
+                    ranges.add(range);
+                }
+                this.versionRanges = Collections.unmodifiableList(ranges);
+            } else {
+                this.versionRanges = Collections.emptyList();
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Warning)) return false;
+
+            Warning warning = (Warning) o;
+
+            return id.equals(warning.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
     }
 
     public final class Plugin extends Entry {
