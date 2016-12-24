@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.IOUtils;
 
@@ -29,6 +30,32 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
 
     public String getPath() {
         return path;
+    }
+
+
+    @Override
+    public FilePath supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener) {
+        if (StringUtils.isEmpty(path)) {
+            return null;
+        }
+
+        try {
+            EnvVars env = run.getEnvironment(listener);
+            String targetPath = env.expand(path);
+
+            FilePath result;
+            if (IOUtils.isAbsolute(targetPath)) {
+                result = new FilePath(new File(targetPath));
+            } else {
+                result = workspace.child(targetPath);
+            }
+            listener.getLogger().print("Supply Global Maven settings.xml " + result);
+            return result;
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to prepare Global Maven settings.xml with path '" + path + "' for " + run +
+                            " in workspace " + workspace, e);
+        }
     }
 
     @Override

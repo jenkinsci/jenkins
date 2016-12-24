@@ -5,8 +5,11 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
@@ -19,6 +22,26 @@ import org.kohsuke.stapler.StaplerRequest;
  * @since 1.491
  */
 public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<GlobalSettingsProvider> implements ExtensionPoint {
+
+    /**
+     * <p>
+     *     Configure maven launcher argument list with adequate settings path.
+     * </p>
+     * <p>Implementations should
+     * <ul>Be aware that this method might get called multiple times during a build.</ul>
+     * <ul>Implement this method. This class provides a default implementation throwing an {@link UnsupportedOperationException}
+     * so that implementations have time to adapt.</ul>
+     * </p>
+     *
+     * @param run       the build / run to provide the settings for
+     * @param workspace the workspace in which the build / run takes place
+     * @param listener the listener of this given build / run
+     * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     */
+    @CheckForNull
+    public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
+        throw new UnsupportedOperationException("Maven GlobalSettingsProvider " + getClass() + " does not yet support injecting Maven settings in jobs of type " + run.getClass());
+    }
 
     /**
      * configure maven launcher argument list with adequate settings path
