@@ -3,6 +3,7 @@ package jenkins.mvn;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import org.jenkinsci.Symbol;
@@ -17,6 +18,11 @@ public class DefaultSettingsProvider extends SettingsProvider {
 
     @DataBoundConstructor
     public DefaultSettingsProvider() {
+    }
+
+    @Override
+    public FilePath supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener) {
+        return null;
     }
 
     @Override

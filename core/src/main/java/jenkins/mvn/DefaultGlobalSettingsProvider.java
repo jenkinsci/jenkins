@@ -3,10 +3,13 @@ package jenkins.mvn;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -17,6 +20,11 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
 
     @DataBoundConstructor
     public DefaultGlobalSettingsProvider() {
+    }
+
+    @Override
+    public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
+        return null;
     }
 
     @Override
