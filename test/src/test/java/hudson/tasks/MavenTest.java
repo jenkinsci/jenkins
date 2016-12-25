@@ -45,10 +45,8 @@ import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
-import hudson.tools.ToolInstallation;
 import hudson.util.DescribableList;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import javax.xml.transform.Source;
@@ -63,13 +61,11 @@ import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
 
-import org.apache.tools.ant.filters.TokenFilter.ContainsString;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
-import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
