@@ -336,4 +336,24 @@ public class MavenTest {
 
         assertFalse("Build variables injection should be disabled by default", new Maven("", "").isInjectBuildVariables());
     }
+
+    @Test public void doAlwaysPassProperties() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        String properties = "TEST_PROP1=VAL1\nTEST_PROP2=VAL2";
+
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
+                null, false/*do not inject build variables*/));
+        String log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Properties should always be injected, even when build variables injection is disabled",
+                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
+                null, true/*do inject build variables*/));
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Properties should always be injected, even when build variables injection is enabled",
+                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+    }
 }
