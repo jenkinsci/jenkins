@@ -323,21 +323,21 @@ public class MavenTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
         String log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables());
-        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+        assertTrue("Build variables injection should be enabled by default when loading from XML", p.getBuildersList().get(Maven.class).isInjectBuildVariables());
+        assertTrue("Build variables should be injected by default when loading from XML", log.contains("-DNAME=VALUE"));
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, false/*do not inject*/));
 
         log = j.buildAndAssertSuccess(p).getLog();
-        assertFalse("Build variables are not injected", log.contains("-DNAME=VALUE"));
+        assertFalse("Build variables should not be injected", log.contains("-DNAME=VALUE"));
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, true/*do inject*/));
 
         log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+        assertTrue("Build variables should be injected", log.contains("-DNAME=VALUE"));
 
-        assertFalse(new Maven("", "").isInjectBuildVariables());
+        assertFalse("Build variables injection should be disabled by default", new Maven("", "").isInjectBuildVariables());
     }
 }
