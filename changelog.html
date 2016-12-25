@@ -61,7 +61,17 @@ Upcoming changes</a>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.38>What's new in 2.38</a> (2016/12/25)</h3>
 <ul class=image>
-  <li class=>
+  <li class=rfe>
+    Update to Winstone 3.2 to support ad-hoc certification generation on Java 8 (using unsupported APIs).
+    <strong>This option is deprecated and will be removed in a future release.</strong>
+    We strongly recommend you create self-signed certificates yourself and use <tt>--httpsKeyStore</tt> and related options instead.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-25333">issue 25333</a>)
+  <li class=bug>
+    The <tt>install-plugin</tt> CLI command now correctly installs plugins when multiple file arguments are specified.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32358">issue 32358</a>)
+  <li class=bug>
+    Correctly state that Jenkins will refuse to load plugins whose dependencies are not satisfied in plugin manager.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40666">issue 40666</a>)
 </ul>
 <h3><a name=v2.37>What's new in 2.37</a> (2016/12/18)</h3>
 <ul class=image>
