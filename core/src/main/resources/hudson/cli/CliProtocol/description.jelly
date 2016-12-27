@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-  ${%Accepts connections from CLI clients}
+  ${%Accepts connections from CLI clients.  This protocol is insecure.}
 </j:jelly>
