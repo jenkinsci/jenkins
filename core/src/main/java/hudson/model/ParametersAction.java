@@ -75,6 +75,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".safeParameters";
 
+    @Restricted(NoExternalUse.class)
+    public static final String DONT_KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
+            ".dontKeepUndefinedParameters";
+
     private Set<String> safeParameters;
 
     private final List<ParameterValue> parameters;
@@ -315,11 +319,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         for (ParameterValue v : this.parameters) {
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
-            } else {
+            } else if (!SystemProperties.getBoolean(DONT_KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, false)) {
                 LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
                         + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
-                        + "even though it represents a security breach",
-                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
+                        + "even though it represents a security breach or `-D{4}=true to explicitly forbid it without warning.",
+                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME, DONT_KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME });
             }
         }
 
