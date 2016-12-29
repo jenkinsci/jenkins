@@ -364,7 +364,7 @@ public class HistoryPageFilter<T> {
             if (data instanceof Number) {
                 return data.toString().equals(searchString);
             } else {
-                return data.toString().toLowerCase().contains(searchString);
+                return data.toString().toLowerCase().contains(searchString.toLowerCase());
             }
         }
 

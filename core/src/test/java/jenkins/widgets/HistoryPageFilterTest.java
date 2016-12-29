@@ -335,11 +335,28 @@ public class HistoryPageFilterTest {
     }
 
     @Test
+    public void test_case_insensitivity_in_search_runs() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
+        //and
+        historyPageFilter.setSearchString("FAILure");
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+    }
+
+    @Test
     public void test_search_builds_by_build_params() throws IOException {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
         //and
-        historyPageFilter.setSearchString("dummyenv");
+        historyPageFilter.setSearchString("dummyEnv");
         //and
         List<ModelObject> runs = new ArrayList<>();
         runs.add(new MockBuild(2, ImmutableMap.of("env", "dummyEnv")));
