@@ -2,7 +2,6 @@ package jenkins.mvn;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
@@ -24,11 +23,6 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
 
     @Override
     public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
-        return null;
-    }
-
-    @Override
-    public FilePath supplySettings(AbstractBuild<?, ?> project, TaskListener listener) {
         return null;
     }
 
