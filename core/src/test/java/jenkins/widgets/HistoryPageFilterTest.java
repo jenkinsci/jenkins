@@ -23,21 +23,27 @@
  */
 package jenkins.widgets;
 
+import hudson.model.Build;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.MockItem;
 import hudson.model.ModelObject;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
-import jenkins.widgets.HistoryPageEntry;
-import jenkins.widgets.HistoryPageFilter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -293,7 +299,62 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(HistoryPageEntry.getEntryId(6), historyPageFilter.oldestOnPage);
     }
 
-    private List<Queue.Item> newQueueItems(long startId, long endId) {
+    @Test
+    public void test_search_runs_by_build_number() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        List<ModelObject> runs = newRuns(23, 24);
+        List<Queue.Item> queueItems = newQueueItems(25, 26);
+        //and
+        historyPageFilter.setSearchString("23");
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(23), historyPageFilter.runs.get(0).getEntryId());
+    }
+
+    @Test
+    public void test_search_runs_by_build_result() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        //and
+        historyPageFilter.setSearchString("failure");
+        //and
+        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+    }
+
+    @Test
+    public void test_search_builds_by_build_params() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        //and
+        historyPageFilter.setSearchString("dummyenv");
+        //and
+        List<ModelObject> runs = new ArrayList<>();
+        runs.add(new MockBuild(2, ImmutableMap.of("env", "dummyEnv")));
+        runs.add(new MockBuild(1, ImmutableMap.of("env", "otherEnv")));
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+    }
+
+   private List<Queue.Item> newQueueItems(long startId, long endId) {
         List<Queue.Item> items = new ArrayList<>();
         for (long queueId = startId; queueId <= endId; queueId++) {
             items.add(new MockItem(queueId));
@@ -327,6 +388,11 @@ public class HistoryPageFilterTest {
         public MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
+        }
+
+        public MockRun(long queueId, Result result) throws IOException {
+            this(queueId);
+            this.result = result;
         }
 
         @Override
@@ -371,6 +437,28 @@ public class HistoryPageFilterTest {
         public int getNumber() {
             Assert.fail("Should not get called");
             return super.getNumber();
+        }
+    }
+
+    private static class MockBuild extends Build<FreeStyleProject,FreeStyleBuild> {
+
+        private final int buildNumber;
+        private final Map<String, String> buildVariables;
+
+        public MockBuild(int buildNumber, Map<String, String> buildVariables) {
+            super(Mockito.mock(FreeStyleProject.class), Mockito.mock(Calendar.class));
+            this.buildNumber = buildNumber;
+            this.buildVariables = buildVariables;
+        }
+
+        @Override
+        public int getNumber() {
+            return buildNumber;
+        }
+
+        @Override
+        public Map<String, String> getBuildVariables() {
+            return buildVariables;
         }
     }
 }

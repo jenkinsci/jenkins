@@ -25,6 +25,7 @@ package jenkins.widgets;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import hudson.model.Build;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
@@ -37,6 +38,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * History page filter.
@@ -343,6 +345,10 @@ public class HistoryPageFilter<T> {
             return true;
         } else if (fitsSearchString(run.getResult())) {
             return true;
+        } else if (run instanceof Build) {
+            if (fitsSearchBuild((Build) run)) {
+                return true;
+            }
         }
         
         // Non of the fuzzy matches "liked" the search term. 
@@ -361,7 +367,17 @@ public class HistoryPageFilter<T> {
                 return data.toString().toLowerCase().contains(searchString);
             }
         }
-        
+
         return false;
-    }    
+    }
+
+    private boolean fitsSearchBuild(Build runAsBuild) {
+        Map buildVariables = runAsBuild.getBuildVariables();
+        for (Object paramsValues : buildVariables.values()) {
+            if (fitsSearchString(paramsValues)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
