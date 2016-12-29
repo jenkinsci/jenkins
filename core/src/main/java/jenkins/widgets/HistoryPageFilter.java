@@ -54,8 +54,8 @@ public class HistoryPageFilter<T> {
 
     // Need to use different Lists for Queue.Items and Runs because
     // we need access to them separately in the jelly files for rendering.
-    public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<HistoryPageEntry<Queue.Item>>();
-    public final List<HistoryPageEntry<Run>> runs = new ArrayList<HistoryPageEntry<Run>>();
+    public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<>();
+    public final List<HistoryPageEntry<Run>> runs = new ArrayList<>();
 
     public boolean hasUpPage = false; // there are newer builds than on this page
     public boolean hasDownPage = false; // there are older builds than on this page
