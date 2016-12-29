@@ -16,6 +16,8 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
@@ -39,8 +41,8 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
     @CheckForNull
-    public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
-        throw new UnsupportedOperationException("Maven GlobalSettingsProvider " + getClass() + " does not yet support injecting Maven settings in jobs of type " + run.getClass());
+    public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        throw new AbstractMethodError("Class " + getClass() + " must override the new supplySettings overload");
     }
 
     /**
@@ -49,8 +51,20 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * @param build
      *            the build to provide the settings for
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * @deprecated use {@link #supplySettings(Run, FilePath, TaskListener)}
      */
-    public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
+    @Deprecated
+    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
+        try {
+            return supplySettings(build, build.getWorkspace(), listener);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to prepare Maven global settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Failed to prepare Maven global settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        }
+    }
 
     public static GlobalSettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("globalSettings");

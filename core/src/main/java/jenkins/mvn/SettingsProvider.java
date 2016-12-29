@@ -16,6 +16,8 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
+
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  * @author Dominik Bartholdi (imod)
@@ -39,8 +41,8 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
     @CheckForNull
-    public FilePath supplySettings(@Nonnull Run<?, ?> run,  @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
-        throw new UnsupportedOperationException("Maven SettingsProvider " + getClass() + " does not yet support injecting Maven settings in jobs of type " + run.getClass());
+    public FilePath supplySettings(@Nonnull Run<?, ?> run,  @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        throw new AbstractMethodError("Class " + getClass() + " must override the new supplySettings overload");
     }
 
     /**
@@ -48,8 +50,20 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *
      * @param build
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * @deprecated use {@link #supplySettings(Run, FilePath, TaskListener)}
      */
-    public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
+    @Deprecated
+    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
+        try {
+            return supplySettings(build, build.getWorkspace(), listener);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        }
+    }
 
     public static SettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("settings");
@@ -69,11 +83,22 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
+     * @deprecated directly invoke {@link SettingsProvider#supplySettings(Run, FilePath, TaskListener)}
      */
     public static final FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
-        FilePath settingsPath = null;
-        if (settings != null) {
-            settingsPath = settings.supplySettings(build, listener);
+        FilePath settingsPath;
+        if (settings == null) {
+            settingsPath = null;
+        } else {
+            try {
+                settingsPath = settings.supplySettings(build, build.getWorkspace(), listener);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                        " in workspace " + build.getWorkspace(), e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                        " in workspace " + build.getWorkspace(), e);
+            }
         }
         return settingsPath;
     }
@@ -88,7 +113,9 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
+     * @deprecated directly invoke {@link SettingsProvider#supplySettings(Run, FilePath, TaskListener)}
      */
+    @Deprecated
     public static final String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath fp = getSettingsFilePath(settings, build, listener);
         return fp == null ? null : fp.getRemote();
