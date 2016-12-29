@@ -368,6 +368,30 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     /**
+     * Check every node, and return false if at least one node is non-exclusive.
+     * If all nodes (including the master node) are exclusive, return true.
+     * Used to determine if a flyweight task should be allowed to execute on
+     * an exclusive node.
+     */
+    private static boolean everyNodeIsExclusive(Jenkins jenkins)
+    {
+        /* First check if the master node is exclusive */
+        if (jenkins.getMode() != Mode.EXCLUSIVE)
+            return false; // flyweight tasks can run on master
+
+        /* If it is, we need to check the other nodes */
+        for (Node node : jenkins.getNodes()) {
+            if (node.getMode() != Mode.EXCLUSIVE)
+                return false; // flyweight tasks can run on this node
+        }
+
+        /* Every node is exclusive, so flyweight tasks must bypass the
+         * exclusivity restrictions.
+         */
+        return true;
+    }
+
+    /**
      * Called by the {@link Queue} to determine whether or not this node can
      * take the given task. The default checks include whether or not this node
      * is part of the task's assigned label, whether this node is in
@@ -383,12 +407,12 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getDisplayName(), l));   // the task needs to be executed on label that this node doesn't have.
 
         if(l==null && getMode()== Mode.EXCLUSIVE) {
-            // flyweight tasks need to get executed somewhere, if every node
-            if (!(item.task instanceof Queue.FlyweightTask && (
-                    this instanceof Jenkins
-                            || Jenkins.getInstance().getNumExecutors() < 1
-                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
-            )) {
+            // In the unlikely event that every single node is marked exclusive, it
+            // would be possible for flyweight tasks to never get run.
+            if (item.task instanceof Queue.FlyweightTask) {
+                if (!everyNodeIsExclusive(Jenkins.getInstance()))
+                    return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName())); // at least one other node could run this task, so don't run it here
+            } else {
                 return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName()));   // this node is reserved for tasks that are tied to it
             }
         }
