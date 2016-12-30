@@ -25,7 +25,7 @@ package jenkins.widgets;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
@@ -345,8 +345,8 @@ public class HistoryPageFilter<T> {
             return true;
         } else if (fitsSearchString(run.getResult())) {
             return true;
-        } else if (run instanceof Build) {
-            if (fitsSearchBuild((Build) run)) {
+        } else if (run instanceof AbstractBuild) {
+            if (fitsSearchBuild((AbstractBuild) run)) {
                 return true;
             }
         }
@@ -371,7 +371,7 @@ public class HistoryPageFilter<T> {
         return false;
     }
 
-    private boolean fitsSearchBuild(Build runAsBuild) {
+    private boolean fitsSearchBuild(AbstractBuild runAsBuild) {
         Map buildVariables = runAsBuild.getBuildVariables();
         for (Object paramsValues : buildVariables.values()) {
             if (fitsSearchString(paramsValues)) {
