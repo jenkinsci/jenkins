@@ -75,6 +75,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public static final String SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".safeParameters";
 
+    /**
+     * Allow jenkins to stop warns when an undefined parameter is skipped.
+     *
+     * @since TODO
+     */
     @Restricted(NoExternalUse.class)
     public static final String DONT_KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".dontKeepUndefinedParameters";
