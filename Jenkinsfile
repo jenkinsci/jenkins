@@ -11,13 +11,14 @@
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
+def failFast = false
 
 // Only keep the 10 most recent builds.
 properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator',
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
-node('java') {
+def build = {
     timestamps {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
@@ -36,7 +37,13 @@ node('java') {
                     // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
                     // .repository directory at the root of the build (which it gets from the
                     // pwd() Workflow call) and use that for the local Maven repository.
-                    sh "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
+                    def cmd = "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
+                    if(isUnix()) {
+                        sh(cmd)
+                    }
+                    else {
+                        bat(cmd)
+                    }
                 }
             }
         }
@@ -45,13 +52,23 @@ node('java') {
         // Once we've built, archive the artifacts and the test results.
         stage('Archive Artifacts / Test Results') {
             archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
-                        fingerprint: true
+                    fingerprint: true
             if (runTests) {
                 junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
             }
         }
     }
 }
+
+parallel linux: {
+    node('linux') {
+        build.call()
+    }
+},       windows: {
+    node('windows') {
+        build.call()
+    }
+},      failFast: failFast
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
