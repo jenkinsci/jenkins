@@ -37,6 +37,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -46,6 +50,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
@@ -388,6 +393,24 @@ public class SearchTest {
         List<SearchItem> suggest = suggest(j.jenkins.getSearchIndex(), "myjob");
         assertTrue(suggest.contains(p1));
         assertTrue(suggest.contains(p2));
+    }
+
+
+    @Test
+    @Issue("JENKINS-7874")
+    public void adminOnlyLinksNotShownToRegularUser() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Jenkins.READ).onRoot().toEveryone();
+        j.jenkins.setAuthorizationStrategy(mas);
+
+        try(ACLContext _ = ACL.as(User.get("alice"))) {
+            List<SearchItem> results = new ArrayList<>();
+            j.jenkins.getSearchIndex().find("config", results);
+            j.jenkins.getSearchIndex().find("manage", results);
+            j.jenkins.getSearchIndex().find("log", results);
+            assertEquals("empty results list", 0, results.size());
+        }
     }
 
     private List<SearchItem> suggest(SearchIndex index, String term) {
