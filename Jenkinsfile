@@ -9,13 +9,23 @@
  * make this explicit. "docker" would be any node with docker installed.
  */
 
+/*
+ * Plugins required:
+ *  - Pipeline
+ *  - CloudBees Docker Pipeline
+ *  - Timestamper
+ */
+
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
-def runTests = true
+def runTests = false
+/* Branch from jenkinsci/packaging to use for the packaging stages */
+String packagingBranch = 'master'
 
 // Only keep the 10 most recent builds.
 properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator',
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
+
 
 node('java') {
     timestamps {
@@ -36,7 +46,7 @@ node('java') {
                     // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
                     // .repository directory at the root of the build (which it gets from the
                     // pwd() Workflow call) and use that for the local Maven repository.
-                    sh "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
+                    sh "mvn -T 1C -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
                 }
             }
         }
@@ -44,14 +54,81 @@ node('java') {
 
         // Once we've built, archive the artifacts and the test results.
         stage('Archive Artifacts / Test Results') {
-            archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
-                        fingerprint: true
+            // Stash jenkins.war for later packaging preparations
+           stash includes: '**/target/*.war', name: 'warfile'
+            // UNCOMMENT: commented out to avoid the transit hit during testing
+            //archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
+            //            fingerprint: true
             if (runTests) {
                 junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
-            }
+           }
         }
     }
 }
+// TODO  if (!env.CHANGE_ID) { }  to not run for PR builds
+node('docker') {
+    timestamps {
+        def image
+
+        sh 'docker version'
+        dir('packaging') {
+            git branch: packagingBranch, url: 'https://github.com/jenkinsci/packaging.git'
+
+            stage('Packaging - Preparation') {
+                sh 'docker pull ubuntu:14.04 '
+                sh 'docker pull centos:6'
+                sh 'docker pull ubuntu:15.10'
+                sh 'docker pull debian:wheezy'
+                sh 'docker pull opensuse:13.2'
+                
+                image = docker.build("jenkinsci/packaging-builder:0.2", 'docker')
+                sh 'cd docker && ./build-sudo-images.sh'
+            }
+
+            stage('Packaging - Build') {
+                // FIXME needs to be sudo-able packaging container
+                image.inside('-u root') {
+                    withEnv([
+                        'BRANCH=./branding/jenkins.mk',
+                        'BUILDENV=./env/test.mk',
+                        'CREDENTIAL=./credentials/test.mk',
+                        'WAR=war/target/jenkins.war',
+                    ]) {
+                        sh 'make clean'
+                        unstash 'warfile' // Removed by cleanup previously
+                        sh 'make deb rpm suse'
+                    }
+                    stash(includes: 'target/rpm/*.rpm', name: 'rpm')
+                    stash(includes: 'target/suse/*.rpm', name: 'suse')
+                    stash(includes: 'target/debian/*.deb', name: 'debian')
+                    sh 'rm -rf target'
+                }
+            }
+        }
+
+        String packagingTestBranch = 'packaging-stable-tests';
+
+        stage('Run installer tests') {
+            sh 'rm -rf packaging-tests'
+            dir('packaging-tests') {
+                git changelog: false, poll: false, branch: packagingTestBranch, url: 'https://github.com/jenkinsci/packaging.git'
+                testFlow = load 'workflow/installertest.groovy'
+                unstash('rpm')
+                unstash('suse')
+                unstash('debian')
+                
+                // Needed because the installer folders don't align to expected locations
+                sh 'mv target installers'
+                sh 'mv installers/debian installers/deb'
+                
+                testFlow.runJenkinsInstallTests('master', 'jenkins', '8080')
+            }
+            sh 'rm -rf packaging-tests || true'
+        }
+    }
+}
+
+
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
