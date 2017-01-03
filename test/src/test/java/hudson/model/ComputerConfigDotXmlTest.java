@@ -143,17 +143,17 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
-    public void emptyNodeMonitorDataWithoutExtendedRead() throws Exception {
+    public void emptyNodeMonitorDataWithoutConnect() throws Exception {
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
         assertTrue(computer.getMonitorData().isEmpty());
     }
 
     @Test
-    public void populatedNodeMonitorDataWithExtendedRead() throws Exception {
+    public void populatedNodeMonitorDataWithConnect() throws Exception {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
-        auth.add(Computer.CONFIGURE, "user");
+        auth.add(Computer.CONNECT, "user");
 
         assertFalse(computer.getMonitorData().isEmpty());
     }
