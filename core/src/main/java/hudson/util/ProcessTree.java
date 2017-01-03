@@ -788,6 +788,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             private static final byte PR_MODEL_LP64 = 2;
 
             /*
+             * An arbitrary upper-limit on how many characters readLine() will
+             * try reading before giving up. This avoids having readLine() loop
+             * over the entire process address space if this class has bugs.
+             */
+            private static final int LINE_LENGTH_LIMIT = 10000;
+
+            /*
              * True if target process is 64-bit (Java process may be different).
              */
             private final boolean b64;
@@ -900,7 +907,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         for( int n=0; n<argc; n++ ) {
                             // read a pointer to one entry
                             LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
 
                             arguments.add(readLine(fd, addr, "argv["+ n +"]"));
                         }
@@ -935,7 +942,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
                             LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
                             if (addr == 0) // completed the walk
                                 break;
 
@@ -959,7 +966,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 Memory m = new Memory(1);
                 byte ch = 1;
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                int i = 0;
                 while(true) {
+                    if (i++ > LINE_LENGTH_LIMIT) {
+                        LOGGER.finest("could not find end of line, giving up");
+                        throw new IOException("could not find end of line, giving up");
+                    }
+
                     LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
                     ch = m.getByte(0);
                     if (ch == 0)
