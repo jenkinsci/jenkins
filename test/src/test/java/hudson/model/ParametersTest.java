@@ -14,7 +14,7 @@ import java.io.Writer;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.http.HttpStatus;
+import org.apache.commons.httpclient.HttpStatus;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Rule;
