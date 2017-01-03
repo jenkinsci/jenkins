@@ -49,6 +49,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.DummySecurityRealm;
 import org.kohsuke.stapler.StaplerRequest;
@@ -143,6 +144,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
+    @Issue("SECURITY-343")
     public void emptyNodeMonitorDataWithoutConnect() throws Exception {
         rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
 
@@ -150,6 +152,7 @@ public class ComputerConfigDotXmlTest {
     }
 
     @Test
+    @Issue("SECURITY-343")
     public void populatedNodeMonitorDataWithConnect() throws Exception {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
