@@ -36,6 +36,7 @@ THE SOFTWARE.
 		<l:main-panel>
 			<h1>${%Build} ${build.displayName}</h1>
 			<l:pane title="${%Parameters}" width="3">
+                        <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
 			<j:forEach var="parameterValue" items="${it.parameters}">
 				<st:include it="${parameterValue}"
 					page="value.jelly" />
