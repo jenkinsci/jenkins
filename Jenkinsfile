@@ -97,6 +97,8 @@ void withMavenEnv(List envVars = [], def body) {
     }
 }
 
+// This hacky method is used because File is not whitelisted,
+// so we can't use renameTo or friends
 void renameFiles(def files, String prefix) {
     for(i = 0; i < files.length; i++) {
         def newPath = files[i].path.replace(files[i].name, "${prefix}-${files[i].name}")
