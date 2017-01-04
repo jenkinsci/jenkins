@@ -52,8 +52,6 @@ import javax.annotation.Nonnull;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -633,11 +631,8 @@ public class Items {
      */
     static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
         Item existing;
-        SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
-        try {
+        try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
             existing = parent.getItem(newName);
-        } finally {
-            SecurityContextHolder.setContext(orig);
         }
         if (existing != null && existing != variant) {
             if (existing.hasPermission(Item.DISCOVER)) {
