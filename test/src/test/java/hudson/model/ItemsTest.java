@@ -34,24 +34,13 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.Permission;
-import hudson.security.SidACL;
 import hudson.security.csrf.CrumbIssuer;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import org.acegisecurity.acls.sid.Sid;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;
@@ -62,6 +51,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
 public class ItemsTest {
@@ -266,215 +256,6 @@ public class ItemsTest {
             String crumbName = issuer.getDescriptor().getCrumbRequestField();
             String crumb = issuer.getCrumb(null);
             return new URL(wc.getContextPath() + relativePath + (relativePath.contains("?") ? "&" : "?") + crumbName + "=" + crumb);
-        }
-    }
-
-    // TODO delete in 1.651+ and use standard version
-    /**
-     * An authorization strategy configured in a fluent style from test code.
-     * Install using {@link Jenkins#setAuthorizationStrategy}.
-     * You probably also want to call {@link Jenkins#setSecurityRealm} on {@link JenkinsRule#createDummySecurityRealm}.
-     */
-    private static class MockAuthorizationStrategy extends AuthorizationStrategy {
-
-        private final List<Grant.GrantOn.GrantOnTo> grantsOnTo = new ArrayList<Grant.GrantOn.GrantOnTo>();
-
-        /** Creates a new strategy granting no permissions. */
-        public MockAuthorizationStrategy() {}
-
-        /**
-         * Begin granting a set of permissions.
-         * Note that grants cannot be subsequently revoked, but you could reset the strategy to a newly configured one.
-         * @param permissions which permissions to grant ({@link Permission#impliedBy} is honored)
-         */
-        public Grant grant(Permission... permissions) {
-            Set<Permission> effective = new HashSet<Permission>(Arrays.asList(permissions));
-            boolean added = true;
-            while (added) {
-                added = false;
-                for (Permission p : Permission.getAll()) {
-                    added |= effective.contains(p.impliedBy) && effective.add(p);
-                }
-            }
-            return new Grant(effective);
-        }
-
-        /**
-         * Like {@link #grant} but does <em>not</em> honor {@link Permission#impliedBy}.
-         */
-        public Grant grantWithoutImplication(Permission... permissions) {
-            return new Grant(new HashSet<Permission>(Arrays.asList(permissions)));
-        }
-
-        /**
-         * A grant of a set of permissions.
-         * You must proceed to specify where they should be granted.
-         */
-        public class Grant {
-
-            private final Set<Permission> permissions;
-
-            Grant(Set<Permission> permissions) {
-                this.permissions = permissions;
-            }
-
-            /**
-             * Everywhere in Jenkins.
-             */
-            public GrantOn everywhere() {
-                return onPaths(".*");
-            }
-
-            /**
-             * On {@code Jenkins} itself, but not any child objects.
-             */
-            public GrantOn onRoot() {
-                return onPaths("");
-            }
-
-            /**
-             * On some items such as jobs.
-             * If some of these happen to be {@link ItemGroup}s, the grant is <em>not</em> applied to children.
-             */
-            public GrantOn onItems(Item... items) {
-                String[] paths = new String[items.length];
-                for (int i = 0; i < items.length; i++) {
-                    paths[i] = Pattern.quote(items[i].getFullName());
-                }
-                return onPaths(paths);
-            }
-
-            /**
-             * On some item groups, typically folders.
-             * The grant applies to the folder itself as well as any (direct or indirect) children.
-             */
-            public GrantOn onFolders(ItemGroup<?>... folders) {
-                String[] paths = new String[folders.length];
-                for (int i = 0; i < folders.length; i++) {
-                    paths[i] = Pattern.quote(folders[i].getFullName()) + "(|/.+)";
-                }
-                return onPaths(paths);
-            }
-
-            /**
-             * On some item path expressions.
-             * Each element is an implicitly rooted regular expression.
-             * {@code Jenkins} itself is {@code ""}, a top-level job would be {@code "jobname"}, a nested job would be {@code "folder/jobname"}, etc.
-             * Grants are <em>not</em> implicitly applied to child objects.
-             */
-            public GrantOn onPaths(String... pathRegexps) {
-                StringBuilder b = new StringBuilder();
-                boolean first = true;
-                for (String rx : pathRegexps) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        b.append('|');
-                    }
-                    b.append("(?:").append(rx).append(')');
-                }
-                return new GrantOn(b.toString());
-            }
-
-            /**
-             * A grant of some permissions in certain places.
-             * You must proceed to specify to whom the grant is made.
-             */
-            public class GrantOn {
-
-                private final Pattern regexp;
-
-                GrantOn(String regexp) {
-                    this.regexp = Pattern.compile(regexp);
-                }
-
-                /** To some users or groups. */
-                public MockAuthorizationStrategy to(String... sids) {
-                    return new GrantOnTo(new HashSet<String>(Arrays.asList(sids))).add();
-                }
-
-                /** To some users. */
-                public MockAuthorizationStrategy to(User... users) {
-                    String[] sids = new String[users.length];
-                    for (int i = 0; i < users.length; i++) {
-                        sids[i] = users[i].getId();
-                    }
-                    return to(sids);
-                }
-
-                /** To everyone, including anonymous users. */
-                public MockAuthorizationStrategy toEveryone() {
-                    return to(/* SidACL.toString(ACL.EVERYONE) */"role_everyone");
-                }
-
-                /** To all authenticated users. */
-                public MockAuthorizationStrategy toAuthenticated() {
-                    return to(/* SecurityRealm.AUTHENTICATED_AUTHORITY */"authenticated");
-                }
-
-                private class GrantOnTo {
-
-                    private final Set<String> sids;
-
-                    GrantOnTo(Set<String> sids) {
-                        this.sids = sids;
-                    }
-
-                    MockAuthorizationStrategy add() {
-                        grantsOnTo.add(this);
-                        return MockAuthorizationStrategy.this;
-                    }
-
-                    boolean matches(String path, String name, Permission permission) {
-                        return regexp.matcher(path).matches() &&
-                            sids.contains(name) && // TODO consider IdStrategy
-                            permissions.contains(permission);
-                    }
-
-                }
-
-            }
-
-        }
-
-        @Override
-        public ACL getRootACL() {
-            return new ACLImpl("");
-        }
-
-        @Override
-        public ACL getACL(AbstractItem item) {
-            return new ACLImpl(item.getFullName());
-        }
-
-        @Override
-        public ACL getACL(Job<?, ?> project) {
-            return getACL((AbstractItem) project); // stupid overload
-        }
-
-        private class ACLImpl extends SidACL {
-
-            private final String path;
-
-            ACLImpl(String path) {
-                this.path = path;
-            }
-
-            @Override protected Boolean hasPermission(Sid p, Permission permission) {
-                String name = toString(p);
-                for (Grant.GrantOn.GrantOnTo grantOnTo : grantsOnTo) {
-                    if (grantOnTo.matches(path, name, permission)) {
-                        return true;
-                    }
-                }
-                return null; // allow groups to be checked after users, etc.
-            }
-
-        }
-
-        @Override
-        public Collection<String> getGroups() {
-            return Collections.emptySet(); // we do not differentiate usernames from groups
         }
     }
 
