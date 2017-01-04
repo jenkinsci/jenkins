@@ -792,7 +792,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              * try reading before giving up. This avoids having readLine() loop
              * over the entire process address space if this class has bugs.
              */
-            private static final int LINE_LENGTH_LIMIT = 10000;
+            private final int LINE_LENGTH_LIMIT =
+                SystemProperties.getInteger(Solaris.class.getName()+".lineLimit", 10000);
 
             /*
              * True if target process is 64-bit (Java process may be different).
