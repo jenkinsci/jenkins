@@ -27,7 +27,6 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.PluginWrapper;
-import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.UpdateSite;
 import hudson.util.HttpResponses;
@@ -36,16 +35,12 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +74,8 @@ import java.util.Set;
  *   <li>Intersection of active and hidden
  *   <li>Intersection of active and inapplicable
  * </ul>
+ *
+ * @since TODO
  */
 @Extension
 @Restricted(NoExternalUse.class)

@@ -26,6 +26,7 @@
 package hudson.model;
 
 import hudson.ClassicPluginStrategy;
+import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -65,6 +66,7 @@ import javax.annotation.Nullable;
 
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
+import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
@@ -73,6 +75,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -522,6 +525,8 @@ public class UpdateSite {
         public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
         /**
          * List of warnings (mostly security) published with the update site.
+         *
+         * @since TODO
          */
         public final Set<Warning> warnings = new HashSet<Warning>();
 
@@ -676,6 +681,8 @@ public class UpdateSite {
      * {@link #name}, {@link #firstVersion} and {@link #lastVersion} fields are only used for administrator notices.
      *
      * The {@link #pattern} is used to determine whether a given warning applies to the current installation.
+     *
+     * @since TODO
      */
     public static final class WarningVersionRange {
         /**
@@ -723,6 +730,11 @@ public class UpdateSite {
 
     /**
      * Represents a warning about a certain component, mostly related to known security issues.
+     *
+     * @see UpdateSiteWarningsConfiguration
+     * @see jenkins.security.UpdateSiteWarningsMonitor
+     *
+     * @since TODO
      */
     public static final class Warning {
 
@@ -850,6 +862,10 @@ public class UpdateSite {
             return this.type == Type.PLUGIN;
         }
 
+        public boolean isPluginWarning(@Nonnull String pluginName) {
+            return isPluginWarning() && pluginName.equals(this.component);
+        }
+
         /**
          * Returns true if this warning is relevant to the current configuration
          * @return true if this warning is relevant to the current configuration
@@ -859,7 +875,7 @@ public class UpdateSite {
                 case CORE:
                     VersionNumber current = Jenkins.getVersion();
 
-                    if (!isRelevantToInstalledVersion(current)) {
+                    if (!isRelevantToVersion(current)) {
                         return false;
                     }
                     return true;
@@ -873,7 +889,7 @@ public class UpdateSite {
 
                     // check whether warning is relevant to installed version
                     VersionNumber currentCore = plugin.getVersionNumber();
-                    if (!isRelevantToInstalledVersion(currentCore)) {
+                    if (!isRelevantToVersion(currentCore)) {
                         return false;
                     }
                     return true;
@@ -883,7 +899,7 @@ public class UpdateSite {
             }
         }
 
-        private boolean isRelevantToInstalledVersion(@Nonnull VersionNumber version) {
+        public boolean isRelevantToVersion(@Nonnull VersionNumber version) {
             if (this.versionRanges.isEmpty()) {
                 // no version ranges specified, so all versions are affected
                 return true;
@@ -1113,6 +1129,49 @@ public class UpdateSite {
                     return false;
             }
             return true;
+        }
+
+        /**
+         * @since TODO
+         */
+        @CheckForNull
+        @Restricted(NoExternalUse.class)
+        public Set<Warning> getWarnings() {
+            ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
+            if (list.size() == 0) {
+                return null;
+            }
+
+            Set<Warning> warnings = new HashSet<>();
+
+            UpdateSiteWarningsConfiguration configuration = list.get(0);
+
+            for (Warning warning: configuration.getAllWarnings()) {
+                if (configuration.isIgnored(warning)) {
+                    // warning is currently being ignored
+                    continue;
+                }
+                if (!warning.isPluginWarning(this.name)) {
+                    // warning is not about this plugin
+                    continue;
+                }
+
+                if (!warning.isRelevantToVersion(new VersionNumber(this.version))) {
+                    // warning is not relevant to this version
+                    continue;
+                }
+                warnings.add(warning);
+            }
+
+            return warnings;
+        }
+
+        /**
+         * @since TODO
+         */
+        @Restricted(DoNotUse.class)
+        public boolean hasWarnings() {
+            return getWarnings().size() > 0;
         }
 
         /**

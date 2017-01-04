@@ -25,28 +25,29 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite;
-import hudson.util.VersionNumber;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Configuration for update site-provided warnings.
+ *
+ * @see UpdateSiteWarningsMonitor
+ *
+ * @since TODO
+ */
 @Extension
 @Restricted(NoExternalUse.class)
 public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
@@ -80,7 +81,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
     }
 
     @Nonnull
-    public Set<UpdateSite.Warning> getApplicableWarnings() {
+    public Set<UpdateSite.Warning> getAllWarnings() {
         HashSet<UpdateSite.Warning> allWarnings = new HashSet<>();
 
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
@@ -89,6 +90,12 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
                 allWarnings.addAll(data.warnings);
             }
         }
+        return allWarnings;
+    }
+
+    @Nonnull
+    public Set<UpdateSite.Warning> getApplicableWarnings() {
+        Set<UpdateSite.Warning> allWarnings = getAllWarnings();
 
         HashSet<UpdateSite.Warning> applicableWarnings = new HashSet<>();
         for (UpdateSite.Warning warning: allWarnings) {
