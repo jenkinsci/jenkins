@@ -67,6 +67,7 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
@@ -1524,9 +1525,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
 
-        return HttpResponses.redirectToContextRoot();
+        return new HttpRedirect("advanced");
     }
-
 
     @RequirePOST
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
@@ -1555,7 +1555,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
             // Parse the request
-            FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
+            FileItem fileItem = upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
@@ -1568,7 +1568,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
-            fileItem.write(t);
+            try {
+                fileItem.write(t);
+            } catch (Exception e) {
+                // Exception thrown is too generic so at least limit the scope where it can occur
+                throw new ServletException(e);
+            }
             fileItem.delete();
 
             final String baseName = identifyPluginShortName(t);
@@ -1604,9 +1609,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("../updateCenter");
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {// grrr. fileItem.write throws this
+        } catch (FileUploadException e) {
             throw new ServletException(e);
         }
     }
