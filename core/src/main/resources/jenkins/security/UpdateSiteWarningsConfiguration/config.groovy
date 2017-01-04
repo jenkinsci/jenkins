@@ -31,13 +31,12 @@ st.adjunct(includes: "jenkins.security.UpdateSiteWarningsConfiguration.style")
 
 def printEntry(warning, title, checked) {
     f.block {
-        f.checkbox(name: "ignoredWarnings",
+        f.checkbox(name: warning.id,
                 title: title,
                 checked: checked,
-                class: 'hideWarnings',
-                json: warning.id);
+                class: 'hideWarnings');
         div(class: "setting-description") {
-            a(warning.uri, href: warning.uri)
+            a(warning.url, href: warning.url)
         }
     }
 }
@@ -46,7 +45,6 @@ f.section(title:_("Hidden security warnings")) {
 
     f.advanced(title: _("Security warnings"), align:"left") {
         f.block {
-            // TODO this behavior is crazy unintuitive.
             text(_("blurb"))
         }
         f.entry(title: _("Security warnings"),
@@ -54,16 +52,16 @@ f.section(title:_("Hidden security warnings")) {
             table(width:"100%") {
 
                 descriptor.applicableWarnings.each { warning ->
-                    if (warning.type == 'core') {
+                    if (warning.coreWarning) {
                         printEntry(warning,
                                 _("warning.core", warning.message),
-                                descriptor.isIgnored(warning))
+                                !descriptor.isIgnored(warning))
                     }
-                    if (warning.type == 'plugin') {
+                    if (warning.pluginWarning) {
                         def plugin = descriptor.getPlugin(warning)
                         printEntry(warning,
                                 _("warning.plugin", plugin.displayName, warning.message),
-                                descriptor.isIgnored(warning))
+                                !descriptor.isIgnored(warning))
                     }
                 }
             }

@@ -27,14 +27,18 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.PluginWrapper;
+import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.UpdateSite;
+import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,23 +54,31 @@ import java.util.Set;
 /**
  * Administrative monitor showing plugin/core warnings published by the configured update site to the user.
  *
- * Terminology overview:
- * - Applicable warnings are those relevant to currently installed components
- * - Active warnings are those actually shown to users.
- * - Hidden warnings are those _not_ shown to users due to them being configured to be hidden.
- * - Inapplicable warnings are those that are not applicable.
+ * <p>Terminology overview:</p>
  *
- * The following sets may be non-empty:
- * - Intersection of applicable and active
- * - Intersection of applicable and hidden
- * - Intersection of hidden and inapplicable (although not really relevant)
- * - Intersection of inapplicable and neither hidden nor active
+ * <ul>
+ *   <li>Applicable warnings are those relevant to currently installed components
+ *   <li>Active warnings are those actually shown to users.
+ *   <li>Hidden warnings are those _not_ shown to users due to them being configured to be hidden.
+ *   <li>Inapplicable warnings are those that are not applicable.
+ * </ul>
  *
- * The following sets must necessarily be empty:
- * - Intersection of applicable and inapplicable
- * - Intersection of active and hidden
- * - Intersection of active and inapplicable
+ * <p></p>The following sets may be non-empty:</p>
  *
+ * <ul>
+ *   <li>Intersection of applicable and active
+ *   <li>Intersection of applicable and hidden
+ *   <li>Intersection of hidden and inapplicable (although not really relevant)
+ *   <li>Intersection of inapplicable and neither hidden nor active
+ * </ul>
+ *
+ * <p>The following sets must necessarily be empty:</p>
+ *
+ * <ul>
+ *   <li>Intersection of applicable and inapplicable
+ *   <li>Intersection of active and hidden
+ *   <li>Intersection of active and inapplicable
+ * </ul>
  */
 @Extension
 @Restricted(NoExternalUse.class)
@@ -80,8 +92,7 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
         List<UpdateSite.Warning> CoreWarnings = new ArrayList<>();
 
         for (UpdateSite.Warning warning : getActiveWarnings()) {
-            if (!UpdateSite.Warning.TYPE_CORE.equals(warning.type)
-                    || !UpdateSite.Warning.NAME_CORE.equals(warning.name)) {
+            if (!warning.isCoreWarning()) {
                 // this is not a core warning
                 continue;
             }
@@ -94,12 +105,12 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
         Map<PluginWrapper, List<UpdateSite.Warning>> activePluginWarningsByPlugin = new HashMap<>();
 
         for (UpdateSite.Warning warning : getActiveWarnings()) {
-            if (!UpdateSite.Warning.TYPE_PLUGIN.equals(warning.type)) {
+            if (!warning.isPluginWarning()) {
                 // this is not a plugin warning
                 continue;
             }
 
-            String pluginName = warning.name;
+            String pluginName = warning.component;
 
             PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(pluginName);
 
@@ -119,38 +130,31 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
         }
         UpdateSiteWarningsConfiguration configuration = configurations.get(0);
 
-        HashSet<UpdateSite.Warning> warnings = new HashSet<>(configuration.getApplicableWarnings());
+        HashSet<UpdateSite.Warning> activeWarnings = new HashSet<>();
 
-        for (Iterator<UpdateSite.Warning> it = warnings.iterator(); it.hasNext(); ) {
-            UpdateSite.Warning warning = it.next();
-
-            if (configuration.getIgnoredWarnings().contains(warning.id)) {
-                it.remove();
+        for (UpdateSite.Warning warning : configuration.getApplicableWarnings()) {
+            if (!configuration.getIgnoredWarnings().contains(warning.id)) {
+                activeWarnings.add(warning);
             }
         }
 
-        return Collections.unmodifiableSet(warnings);
+        return Collections.unmodifiableSet(activeWarnings);
     }
 
     /**
-     * Redirects the user to the security configuration where they can configure which warnings to show/hide.
-     *
-     * For Stapler use only.
-     *
-     * @param req the request
-     * @param rsp the response
-     * @throws IOException
+     * Redirects the user to the plugin manager or security configuration
      */
-    public void doAct(StaplerRequest req, StaplerResponse rsp, @QueryParameter String fix, @QueryParameter String configure) throws IOException {
+    @RequirePOST
+    public HttpResponse doForward(@QueryParameter String fix, @QueryParameter String configure) {
         if (fix != null) {
-            rsp.sendRedirect(req.getContextPath() + "/pluginManager");
+            return HttpResponses.redirectViaContextPath("pluginManager");
         }
         if (configure != null) {
-            rsp.sendRedirect(req.getContextPath() + "/configureSecurity");
+            return HttpResponses.redirectViaContextPath("configureSecurity");
         }
 
         // shouldn't happen
-        rsp.sendRedirect(req.getContextPath());
+        return HttpResponses.redirectViaContextPath("/");
     }
 
     /**
@@ -171,6 +175,6 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Vulnerable Plugins"; // TODO i18n
+        return Messages.UpdateSiteWarningsMonitor_DisplayName();
     }
 }

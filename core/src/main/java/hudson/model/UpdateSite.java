@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -57,8 +58,11 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
 import jenkins.util.JSONSignatureValidator;
@@ -539,7 +543,11 @@ public class UpdateSite {
             JSONArray w = o.optJSONArray("warnings");
             if (w != null) {
                 for (int i = 0; i < w.size(); i++) {
-                    warnings.add(new Warning(w.getJSONObject(i)));
+                    try {
+                        warnings.add(new Warning(w.getJSONObject(i)));
+                    } catch (JSONException ex) {
+                        LOGGER.log(Level.WARNING, "Failed to parse JSON for warning", ex);
+                    }
                 }
             }
 
@@ -665,110 +673,132 @@ public class UpdateSite {
      * A version range for {@code Warning}s indicates which versions of a given plugin are affected
      * by it.
      *
-     * Name, firstVersion and lastVersion fields are only used for administrator notices.
+     * {@link #name}, {@link #firstVersion} and {@link #lastVersion} fields are only used for administrator notices.
      *
-     * The pattern is used to determine whether a given warning applies to the current installation.
+     * The {@link #pattern} is used to determine whether a given warning applies to the current installation.
      */
     public static final class WarningVersionRange {
         /**
          * Human-readable English name for this version range, e.g. 'regular', 'LTS', '2.6 line'.
-         *
-         * Can be null.
          */
+        @Nullable
         public final String name;
 
         /**
-         * First version in this version range to be subject to the warning. Can be null.
+         * First version in this version range to be subject to the warning.
          */
+        @Nullable
         public final String firstVersion;
 
         /**
-         * Last version in this version range to be subject to the warning. Can be null.
+         * Last version in this version range to be subject to the warning.
          */
+        @Nullable
         public final String lastVersion;
 
         /**
          * Regular expression pattern for this version range that matches all included version numbers.
          */
         @Nonnull
-        public final Pattern pattern;
+        private final Pattern pattern;
 
         public WarningVersionRange(JSONObject o) {
             this.name = Util.fixEmpty(o.optString("name"));
             this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
             this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
-            this.pattern = Pattern.compile(o.getString("pattern"));
+            Pattern p;
+            try {
+                p = Pattern.compile(o.getString("pattern"));
+            } catch (PatternSyntaxException ex) {
+                LOGGER.log(Level.WARNING, "Failed to compile pattern '" + o.getString("pattern") + "', using '.*' instead", ex);
+                p = Pattern.compile(".*");
+            }
+            this.pattern = p;
+        }
+
+        public boolean includes(VersionNumber number) {
+            return pattern.matcher(number.toString()).matches();
         }
     }
 
     /**
      * Represents a warning about a certain component, mostly related to known security issues.
-     *
-     * Two objects are considered equal if they have the same ID.
      */
     public static final class Warning {
 
-        public static final String TYPE_PLUGIN = "plugin";
-        public static final String TYPE_CORE = "core";
-        public static final String NAME_CORE = "core";
+        private static enum Type {
+            CORE,
+            PLUGIN,
+            UNKNOWN
+        }
 
         /**
-         * The type classifier for this warning. Two are currently supported:
-         * - core, for Jenkins itself
-         * - plugin, for Jenkins plugins
-         * Never null.
+         * The type classifier for this warning.
          */
-        // TODO Do we actually need this?
-        @Exported
-        public final String type;
+        @Nonnull
+        private /* final */ Type type;
 
         /**
          * The globally unique ID of this warning.
          *
-         * This is typically the CVE identifier or SECURITY issue (Jenkins project);
-         * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.
+         * <p>This is typically the CVE identifier or SECURITY issue (Jenkins project);
+         * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.</p>
          */
         @Exported
+        @Nonnull
         public final String id;
 
         /**
          * The name of the affected component.
-         * - If type is 'core', this is 'core' by convention.
-         * - If type is 'plugin', this is the artifactId of the affected plugin
-         * Never null.
+         * <ul>
+         *   <li>If type is 'core', this is 'core' by convention.
+         *   <li>If type is 'plugin', this is the artifactId of the affected plugin
+         * </ul>
          */
         @Exported
-        public final String name;
+        @Nonnull
+        public final String component;
 
         /**
-         * A short, English language explanation for this warning. Never null.
+         * A short, English language explanation for this warning.
          */
         @Exported
+        @Nonnull
         public final String message;
 
         /**
-         * A URL with more information about this, typically a security advisory. Never null.
+         * A URL with more information about this, typically a security advisory. For use in administrator notices
+         * only, so
          */
         @Exported
-        public final String uri;
+        @Nonnull
+        public final String url;
 
         /**
          * A list of named version ranges specifying which versions of the named component this warning applies to.
          *
          * If this list is empty, all versions of the component are considered to be affected by this warning.
-         *
-         * Never null.
          */
         @Exported
+        @Nonnull
         public final List<WarningVersionRange> versionRanges;
 
+        /**
+         *
+         * @param o the {@link JSONObject} representing the warning
+         * @throws JSONException if the argument does not match the expected format
+         */
         @Restricted(NoExternalUse.class)
         public Warning(JSONObject o) {
-            this.type = o.getString("type");
+            try {
+                this.type = Type.valueOf(o.getString("type").toUpperCase(Locale.US));
+            } catch (IllegalArgumentException ex) {
+                this.type = Type.UNKNOWN;
+            }
             this.id = o.getString("id");
-            this.name = o.getString("name");
+            this.component = o.getString("name");
             this.message = o.getString("message");
-            this.uri = o.getString("uri");
+            this.url = o.getString("url");
 
             if (o.has("versions")) {
                 List<WarningVersionRange> ranges = new ArrayList<>();
@@ -783,6 +813,12 @@ public class UpdateSite {
             }
         }
 
+        /**
+         * Two objects are considered equal if they are the same type and have the same ID.
+         *
+         * @param o the other object
+         * @return true iff this object and the argument are considered equal
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -796,6 +832,69 @@ public class UpdateSite {
         @Override
         public int hashCode() {
             return id.hashCode();
+        }
+
+        /**
+         * Returns true iff this warning is for Jenkins core
+         * @return true iff this warning is for Jenkins core
+         */
+        public boolean isCoreWarning() {
+            return this.type == Type.CORE;
+        }
+
+        /**
+         * Returns true iff this warning is for a plugin
+         * @return true iff this warning is for a plugin
+         */
+        public boolean isPluginWarning() {
+            return this.type == Type.PLUGIN;
+        }
+
+        /**
+         * Returns true if this warning is relevant to the current configuration
+         * @return true if this warning is relevant to the current configuration
+         */
+        public boolean isRelevant() {
+            switch (this.type) {
+                case CORE:
+                    VersionNumber current = Jenkins.getVersion();
+
+                    if (!isRelevantToInstalledVersion(current)) {
+                        return false;
+                    }
+                    return true;
+                case PLUGIN:
+
+                    // check whether plugin is installed
+                    PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(this.component);
+                    if (plugin == null) {
+                        return false;
+                    }
+
+                    // check whether warning is relevant to installed version
+                    VersionNumber currentCore = plugin.getVersionNumber();
+                    if (!isRelevantToInstalledVersion(currentCore)) {
+                        return false;
+                    }
+                    return true;
+                case UNKNOWN:
+                default:
+                    return false;
+            }
+        }
+
+        private boolean isRelevantToInstalledVersion(@Nonnull VersionNumber version) {
+            if (this.versionRanges.isEmpty()) {
+                // no version ranges specified, so all versions are affected
+                return true;
+            }
+
+            for (UpdateSite.WarningVersionRange range : this.versionRanges) {
+                if (range.includes(version)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

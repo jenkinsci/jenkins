@@ -39,9 +39,12 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 @Extension
@@ -55,104 +58,60 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
-    @DataBoundConstructor
     public UpdateSiteWarningsConfiguration() {
         load();
     }
 
-    public void ignore(String warningId) {
-        ignoredWarnings.add(warningId);
-        save();
-    }
-
+    @Nonnull
     public Set<String> getIgnoredWarnings() {
         return Collections.unmodifiableSet(ignoredWarnings);
     }
 
-    public boolean isIgnored(UpdateSite.Warning warning) {
-        return getIgnoredWarnings().contains(warning.id);
+    public boolean isIgnored(@Nonnull UpdateSite.Warning warning) {
+        return ignoredWarnings.contains(warning.id);
     }
 
-    public PluginWrapper getPlugin(UpdateSite.Warning warning) {
-        if (!UpdateSite.Warning.TYPE_PLUGIN.equals(warning.type)) {
+    @CheckForNull
+    public PluginWrapper getPlugin(@Nonnull UpdateSite.Warning warning) {
+        if (!warning.isPluginWarning()) {
             return null;
         }
-        return Jenkins.getInstance().getPluginManager().getPlugin(warning.name);
+        return Jenkins.getInstance().getPluginManager().getPlugin(warning.component);
     }
 
+    @Nonnull
     public Set<UpdateSite.Warning> getApplicableWarnings() {
-        HashSet<UpdateSite.Warning> warnings = new HashSet<>();
+        HashSet<UpdateSite.Warning> allWarnings = new HashSet<>();
 
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
             UpdateSite.Data data = site.getData();
             if (data != null) {
-                warnings.addAll(data.warnings);
+                allWarnings.addAll(data.warnings);
             }
         }
 
-        PluginManager pluginManager = Jenkins.getInstance().getPluginManager();
-
-        for (Iterator<UpdateSite.Warning> it = warnings.iterator(); it.hasNext(); ) {
-            UpdateSite.Warning warning = it.next();
-
-            if (UpdateSite.Warning.TYPE_PLUGIN.equals(warning.type)) {
-                PluginWrapper plugin = pluginManager.getPlugin(warning.name);
-
-                if (plugin == null) {
-                    // it's a warning for a plugin that's not installed
-                    it.remove();
-                    continue;
-                }
-
-                // check whether warning is relevant to installed version
-                VersionNumber current = plugin.getVersionNumber();
-                if (!isWarningRelevantToInstalledVersion(warning, current)) {
-                    it.remove();
-                }
-            }
-
-            if (UpdateSite.Warning.TYPE_CORE.equals(warning.type)
-                    && UpdateSite.Warning.NAME_CORE.equals(warning.name)) {
-
-                VersionNumber current = Jenkins.getVersion();
-
-                if (!isWarningRelevantToInstalledVersion(warning, current)) {
-                    it.remove();
-                }
+        HashSet<UpdateSite.Warning> applicableWarnings = new HashSet<>();
+        for (UpdateSite.Warning warning: allWarnings) {
+            if (warning.isRelevant()) {
+                applicableWarnings.add(warning);
             }
         }
 
-        return Collections.unmodifiableSet(warnings);
+        return Collections.unmodifiableSet(applicableWarnings);
     }
 
-    private boolean isWarningRelevantToInstalledVersion(UpdateSite.Warning warning, VersionNumber version) {
-        if (warning.versionRanges.isEmpty()) {
-            // no version ranges specified, so all versions are affected
-            return true;
-        }
-
-        for (UpdateSite.WarningVersionRange range : warning.versionRanges) {
-            if (range.pattern.matcher(version.toString()).matches()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        ignoredWarnings.clear();
-        if (json.has("ignoredWarnings")) {
-            JSONArray warnings = json.optJSONArray("ignoredWarnings");
-            if (warnings != null) {
-                for (int i = 0; i < warnings.size(); i++) {
-                    ignore(warnings.getString(i));
-                }
-            } else {
-                // single item variant of a list thing
-                ignore(json.getString("ignoredWarnings"));
+        HashSet<String> newIgnoredWarnings = new HashSet<>();
+        for (Object key : json.keySet()) {
+            String warningKey = key.toString();
+            if (!json.getBoolean(warningKey)) {
+                newIgnoredWarnings.add(warningKey);
             }
         }
+        this.ignoredWarnings = newIgnoredWarnings;
+        this.save();
         return true;
     }
 }

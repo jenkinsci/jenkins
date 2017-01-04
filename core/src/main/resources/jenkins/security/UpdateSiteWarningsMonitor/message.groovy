@@ -29,7 +29,7 @@ def f = namespace(lib.FormTagLib)
 def listWarnings(warnings) {
     warnings.each { warning ->
         li {
-            a(warning.message, href: warning.uri)
+            a(warning.message, href: warning.url)
         }
     }
 }
@@ -67,7 +67,7 @@ div(class: "error") {
     }
 }
 
-form(method: "post", action: "${rootURL}/${it.url}/act") {
+form(method: "post", action: "${rootURL}/${it.url}/forward") {
     div {
         if (!pluginWarnings.isEmpty()) {
             f.submit(name: 'fix', value: _("pluginManager.link"))
