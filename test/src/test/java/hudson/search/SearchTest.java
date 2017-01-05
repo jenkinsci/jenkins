@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import hudson.model.User;
@@ -412,7 +413,7 @@ public class SearchTest {
 
                 List<SearchItem> results = new ArrayList<>();
                 j.jenkins.getSearchIndex().suggest("foo", results);
-                assertEquals("empty results list", 0, results.size());
+                assertEquals("empty results list", Collections.emptyList(), results);
             }
         });
     }
