@@ -11,47 +11,67 @@
 
 // TEST FLAG - to make it easier to turn on/off unit tests for speeding up access to later stuff.
 def runTests = true
+def failFast = false
 
 // Only keep the 10 most recent builds.
 properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 'LogRotator',
                                                                         numToKeepStr: '50',
                                                                         artifactNumToKeepStr: '20']]])
 
-node('java') {
-    timestamps {
-        // First stage is actually checking out the source. Since we're using Multibranch
-        // currently, we can use "checkout scm".
-        stage('Checkout') {
-            checkout scm
-        }
+// see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
+def buildTypes = ['Linux', 'Windows']
 
-        // Now run the actual build.
-        stage("Build / Test") {
-            timeout(time: 180, unit: 'MINUTES') {
-                // See below for what this method does - we're passing an arbitrary environment
-                // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-                withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m",
-                            "MAVEN_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m"]) {
-                    // Actually run Maven!
-                    // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
-                    // .repository directory at the root of the build (which it gets from the
-                    // pwd() Workflow call) and use that for the local Maven repository.
-                    sh "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository"
+def builds = [:]
+for(i = 0; i < buildTypes.size(); i++) {
+    def buildType = buildTypes[i]
+    builds[buildType] = {
+        node(buildType.toLowerCase()) {
+            timestamps {
+                // First stage is actually checking out the source. Since we're using Multibranch
+                // currently, we can use "checkout scm".
+                stage('Checkout') {
+                    checkout scm
                 }
-            }
-        }
 
+                // Now run the actual build.
+                stage("${buildType} Build / Test") {
+                    timeout(time: 180, unit: 'MINUTES') {
+                        // See below for what this method does - we're passing an arbitrary environment
+                        // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
+                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m",
+                                    "MAVEN_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m"]) {
+                            // Actually run Maven!
+                            // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
+                            // .repository directory at the root of the build (which it gets from the
+                            // pwd() Workflow call) and use that for the local Maven repository.
+                            def mvnCmd = "mvn -Pdebug -U clean install ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository" 
+                            if(isUnix()) {
+                                sh mvnCmd
+                            } else {
+                                bat mvnCmd
+                            }
+                        }
+                    }
+                }
 
-        // Once we've built, archive the artifacts and the test results.
-        stage('Archive Artifacts / Test Results') {
-            archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
-                        fingerprint: true
-            if (runTests) {
-                junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+                // Once we've built, archive the artifacts and the test results.
+                stage("${buildType} Archive Artifacts / Test Results") {
+                    def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
+                    renameFiles(files, buildType.toLowerCase())
+
+                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
+                                fingerprint: true
+                    if (runTests) {
+                        junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+                    }
+                }
             }
         }
     }
 }
+
+builds.failFast = failFast
+parallel builds
 
 // This method sets up the Maven and JDK tools, puts them in the environment along
 // with whatever other arbitrary environment variables we passed in, and runs the
@@ -74,5 +94,19 @@ void withMavenEnv(List envVars = [], def body) {
     // Invoke the body closure we're passed within the environment we've created.
     withEnv(mvnEnv) {
         body.call()
+    }
+}
+
+// This hacky method is used because File is not whitelisted,
+// so we can't use renameTo or friends
+void renameFiles(def files, String prefix) {
+    for(i = 0; i < files.length; i++) {
+        def newPath = files[i].path.replace(files[i].name, "${prefix}-${files[i].name}")
+        def rename = "${files[i].path} ${newPath}"
+        if(isUnix()) {
+            sh "mv ${rename}"
+        } else {
+            bat "move ${rename}"
+        }
     }
 }
