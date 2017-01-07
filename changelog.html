@@ -56,7 +56,21 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
-  <li class=>
+  <li class=rfe>
+    Do not print warnings about undefined parameters
+    when <code>hudson.model.ParametersAction.keepUndefinedParameters</code> property is set to <code>true</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2687">pull 2687</a>)
+  <li class=bug>
+    Prevent the <code>ClassNotFoundException: javax.servlet.ServletException</code> error 
+    when invoking shell tasks on remote agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39268">issue 39268</a>)
+  <li class=bug>
+    Jobs were hanging during process termination on the Solaris 11 Intel platform.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40470">issue 40470</a>, regression in 2.20)
+  <li class=rfe>
+    Internal: improvements around the built-in <code>Securing Jenkins</code> pages.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2702">pull 2702</a> and
+     <a href="https://github.com/jenkinsci/jenkins/pull/2699">pull 2699</a>)
 </ul>
 </div><!--=TRUNK-END=-->
 <h3><a name=v2.39>What's new in 2.39</a> (2017/01/02)</h3>
