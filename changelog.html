@@ -62,11 +62,15 @@ Upcoming changes</a>
 <h3><a name=v2.39>What's new in 2.39</a> (2017/01/02)</h3>
 <ul class=image>
   <li class=bug>
-    Properties were not passed to Maven command by Maven build step
+    Properties were not passed to Maven command by Maven build step when the <code>Inject Build Variables</code> flag was not set.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39268">issue 39268</a>)
   <li class=bug>
-    Update remoting to 3.4
+    Update remoting to 3.4 in order to properly terminate the channel in the case <code>Errors</code> and <code>Exception</code>s. 
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39835">issue 39835</a>)
+  <li class="rfe">
+    Improved Polish and Catalan translations.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2688">pull 2688</a> and
+    <a href="https://github.com/jenkinsci/jenkins/pull/2686">pull 2686</a>)
 </ul>
 <h3><a name=v2.38>What's new in 2.38</a> (2016/12/25)</h3>
 <ul class=image>
