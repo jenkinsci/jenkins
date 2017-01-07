@@ -25,9 +25,6 @@ package hudson.util;
 
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
-import com.sun.jna.Pointer;
-import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -755,28 +752,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Implementation for Solaris that uses <tt>/proc</tt>.
      *
-     * /proc/PID/psinfo contains a psinfo_t struct. We use it to determine where the
-     *     process arguments and environment are located in PID's address space.
-     *     Note that the psinfo_t struct is different (different sized elements) for 32-bit
-     *     vs 64-bit processes and the kernel will provide the version of the struct that
-     *     matches the _reader_ (this Java process) regardless of whether PID is a
-     *     32-bit or 64-bit process.
-     *
-     *     Note that this means that if PID is a 64-bit process, then a 32-bit Java
-     *     process can not get meaningful values for envp and argv out of the psinfo_t. The
-     *     values will have been truncated to 32-bits.
-     *
-     * /proc/PID/as contains the address space of the process we are inspecting. We can
-     *     follow the envp and argv pointers from psinfo_t to find the environment variables
-     *     and process arguments. When following pointers in this address space we need to
-     *     make sure to use 32-bit or 64-bit pointers depending on what sized pointers
-     *     PID uses, regardless of what size pointers the Java process uses.
-     *
-     *     Note that the size of a 64-bit address space is larger than Long.MAX_VALUE (because
-     *     longs are signed). So normal Java utilities like RandomAccessFile and FileChannel
-     *     (which use signed longs as offsets) are not able to read from the end of the address
-     *     space, where envp and argv will be. Therefore we need to use LIBC.pread() directly.
-     *     when accessing this file.
+     * Amazingly, this single code works for both 32bit and 64bit Solaris, despite the fact
+     * that does a lot of pointer manipulation and what not.
      */
     static class Solaris extends ProcfsUnix {
         protected OSProcess createProcess(final int pid) throws IOException {
@@ -784,23 +761,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         private class SolarisProcess extends UnixProcess {
-            private static final byte PR_MODEL_ILP32 = 1;
-            private static final byte PR_MODEL_LP64 = 2;
-
-            /*
-             * True if target process is 64-bit (Java process may be different).
-             */
-            private final boolean b64;
-
             private final int ppid;
             /**
-             * Address of the environment vector.
+                 * Address of the environment vector. Even on 64bit Solaris this is still 32bit pointer.
              */
-            private final long envp;
+            private final int envp;
             /**
-             * Similarly, address of the arguments vector.
+                 * Similarly, address of the arguments vector.
              */
-            private final long argp;
+            private final int argp;
             private final int argc;
             private EnvVars envVars;
             private List<String> arguments;
@@ -852,23 +821,10 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         throw new IOException("psinfo PID mismatch");   // sanity check
                     ppid = adjust(psinfo.readInt());
 
-                    /*
-                     * Read the remainder of psinfo_t differently depending on whether the
-                     * Java process is 32-bit or 64-bit.
-                     */
-                    if (Pointer.SIZE == 8) {
-                        psinfo.seek(236);  // offset of pr_argc
-                        argc = adjust(psinfo.readInt());
-                        argp = adjustL(psinfo.readLong());
-                        envp = adjustL(psinfo.readLong());
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
-                    } else {
-                        psinfo.seek(188);  // offset of pr_argc
-                        argc = adjust(psinfo.readInt());
-                        argp = to64(adjust(psinfo.readInt()));
-                        envp = to64(adjust(psinfo.readInt()));
-                        b64 = (psinfo.readByte() == PR_MODEL_LP64);
-                    }
+                    psinfo.seek(188);  // now jump to pr_argc
+                    argc = adjust(psinfo.readInt());
+                    argp = adjust(psinfo.readInt());
+                    envp = adjust(psinfo.readInt());
                 } finally {
                     psinfo.close();
                 }
@@ -886,28 +842,23 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
 
                 arguments = new ArrayList<String>(argc);
-		if (argc == 0) {
-		    return arguments;
-		}
 
-                int psize = b64 ? 8 : 4;
-                Memory m = new Memory(psize);
                 try {
+                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
                     if(LOGGER.isLoggable(FINER))
                         LOGGER.finer("Reading "+getFile("as"));
-                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
                     try {
                         for( int n=0; n<argc; n++ ) {
                             // read a pointer to one entry
-                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
+                            as.seek(to64(argp+n*4));
+                            int p = adjust(as.readInt());
 
-                            arguments.add(readLine(fd, addr, "argv["+ n +"]"));
+                            arguments.add(readLine(as, p, "argv["+ n +"]"));
                         }
                     } finally {
-                        LIBC.close(fd);
+                        as.close();
                     }
-                } catch (IOException | LastErrorException e) {
+                } catch (IOException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
                     // so don't report this as an error.
                 }
@@ -921,51 +872,44 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
 
-		if (envp == 0) {
-		    return envVars;
-		}
-
-                int psize = b64 ? 8 : 4;
-                Memory m = new Memory(psize);
                 try {
+                    RandomAccessFile as = new RandomAccessFile(getFile("as"),"r");
                     if(LOGGER.isLoggable(FINER))
                         LOGGER.finer("Reading "+getFile("as"));
-                    int fd = LIBC.open(getFile("as").getAbsolutePath(), 0);
                     try {
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
-                            LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
-                            if (addr == 0) // completed the walk
-                                break;
+                            as.seek(to64(envp+n*4));
+                            int p = adjust(as.readInt());
+                            if(p==0)
+                                break;  // completed the walk
 
                             // now read the null-terminated string
-                            envVars.addLine(readLine(fd, addr, "env["+ n +"]"));
+                            envVars.addLine(readLine(as, p, "env["+ n +"]"));
                         }
                     } finally {
-                        LIBC.close(fd);
+                        as.close();
                     }
-                } catch (IOException | LastErrorException e) {
+                } catch (IOException e) {
                     // failed to read. this can happen under normal circumstances (most notably permission denied)
                     // so don't report this as an error.
                 }
+
                 return envVars;
             }
 
-            private String readLine(int fd, long addr, String prefix) throws IOException {
+            private String readLine(RandomAccessFile as, int p, String prefix) throws IOException {
                 if(LOGGER.isLoggable(FINEST))
-                    LOGGER.finest("Reading "+prefix+" at "+addr);
+                    LOGGER.finest("Reading "+prefix+" at "+p);
 
-                Memory m = new Memory(1);
-                byte ch = 1;
+                as.seek(to64(p));
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                while(true) {
-                    LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
-                    ch = m.getByte(0);
-                    if (ch == 0)
-                        break;
+                int ch,i=0;
+                while((ch=as.read())>0) {
+                    if((++i)%100==0 && LOGGER.isLoggable(FINEST))
+                        LOGGER.finest(prefix +" is so far "+buf.toString());
+
                     buf.write(ch);
-                    addr++;
                 }
                 String line = buf.toString();
                 if(LOGGER.isLoggable(FINEST))
@@ -992,13 +936,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 return i;
         }
 
-        public static long adjustL(long i) {
-            if(IS_LITTLE_ENDIAN) {
-                return Long.reverseBytes(i);
-            } else {
-                return i;
-            }
-        }
     }
 
     /**
