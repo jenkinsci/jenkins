@@ -58,7 +58,8 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since 2.27
+ * @since 2.27 available as the experimental protocol 
+ * @since TODO enabled by default
  */
 @Extension
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
@@ -156,7 +157,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return true;
+        return false;
     }
 
     /**
