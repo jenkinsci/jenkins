@@ -56,10 +56,21 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class="major rfe">
+    Support displaying of warnings from the Update Site in the Plugin Manager
+    and in administrative monitors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40404</a>)
   <li class=rfe>
     Do not print warnings about undefined parameters
     when <code>hudson.model.ParametersAction.keepUndefinedParameters</code> property is set to <code>false</code>.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2687">pull 2687</a>)
+  <li class="rfe">
+    Increase the <code>JENKINS_HOME</code> disk space threshold from <code>1Gb</code> to <code>10Gb</code> left.
+    The warning will be shown only if more than <code>90%</code> of the disk is utilized.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40749">issue 40749</a>)
+  <li class=rfe>
+    Plugin Manager: Redirect back to the Advanced Tab when saving the Update Site URL.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2703">pull 2703</a>)
   <li class=bug>
     Prevent the <code>ClassNotFoundException: javax.servlet.ServletException</code> error 
     when invoking shell tasks on remote agents.
@@ -67,6 +78,12 @@ Upcoming changes</a>
   <li class=bug>
     Jobs were hanging during process termination on the Solaris 11 Intel platform.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40470">issue 40470</a>, regression in 2.20)
+  <li class=bug>
+    Fix handling of the <code>POST</code> flag in <code>ManagementLink</code>s within the Manage Jenkins page.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38175">issue 38175</a>)
+  <li class=bug>
+    Require POST in the <code>Reload from disk</code> management link.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2692">pull 2692</a>)
   <li class=rfe>
     Internal: improvements around the built-in <code>Securing Jenkins</code> pages.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2702">pull 2702</a> and
