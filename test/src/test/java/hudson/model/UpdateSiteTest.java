@@ -148,7 +148,7 @@ public class UpdateSiteTest {
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         sites.add(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
-        assertEquals("number of warnings", 7, site.getData().warnings.size());
+        assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
 }

@@ -74,7 +74,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
 
     @CheckForNull
     public PluginWrapper getPlugin(@Nonnull UpdateSite.Warning warning) {
-        if (!warning.isPluginWarning()) {
+        if (warning.type != UpdateSite.Warning.Type.PLUGIN) {
             return null;
         }
         return Jenkins.getInstance().getPluginManager().getPlugin(warning.component);
@@ -87,7 +87,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration {
         for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
             UpdateSite.Data data = site.getData();
             if (data != null) {
-                allWarnings.addAll(data.warnings);
+                allWarnings.addAll(data.getWarnings());
             }
         }
         return allWarnings;

@@ -528,7 +528,7 @@ public class UpdateSite {
          *
          * @since TODO
          */
-        public final Set<Warning> warnings = new HashSet<Warning>();
+        private final Set<Warning> warnings = new HashSet<Warning>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -571,6 +571,16 @@ public class UpdateSite {
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
+        }
+
+        /**
+         * Returns the set of warnings
+         * @return the set of warnings
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public Set<Warning> getWarnings() {
+            return this.warnings;
         }
 
         /**
@@ -684,6 +694,7 @@ public class UpdateSite {
      *
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public static final class WarningVersionRange {
         /**
          * Human-readable English name for this version range, e.g. 'regular', 'LTS', '2.6 line'.
@@ -736,9 +747,10 @@ public class UpdateSite {
      *
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public static final class Warning {
 
-        private static enum Type {
+        public enum Type {
             CORE,
             PLUGIN,
             UNKNOWN
@@ -748,7 +760,7 @@ public class UpdateSite {
          * The type classifier for this warning.
          */
         @Nonnull
-        private /* final */ Type type;
+        public /* final */ Type type;
 
         /**
          * The globally unique ID of this warning.
@@ -846,24 +858,8 @@ public class UpdateSite {
             return id.hashCode();
         }
 
-        /**
-         * Returns true iff this warning is for Jenkins core
-         * @return true iff this warning is for Jenkins core
-         */
-        public boolean isCoreWarning() {
-            return this.type == Type.CORE;
-        }
-
-        /**
-         * Returns true iff this warning is for a plugin
-         * @return true iff this warning is for a plugin
-         */
-        public boolean isPluginWarning() {
-            return this.type == Type.PLUGIN;
-        }
-
         public boolean isPluginWarning(@Nonnull String pluginName) {
-            return isPluginWarning() && pluginName.equals(this.component);
+            return type == Type.PLUGIN && pluginName.equals(this.component);
         }
 
         /**
@@ -1139,7 +1135,7 @@ public class UpdateSite {
         public Set<Warning> getWarnings() {
             ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
             if (list.size() == 0) {
-                return null;
+                return Collections.emptySet();
             }
 
             Set<Warning> warnings = new HashSet<>();
