@@ -59,14 +59,49 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.40>What's new in 2.40</a> (2017/01/08)</h3>
+<ul class=image>
+  <li class="major rfe">
+    Support displaying of warnings from the Update Site in the Plugin Manager
+    and in administrative monitors.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40404</a>)
+  <li class=rfe>
+    Do not print warnings about undefined parameters
+    when <code>hudson.model.ParametersAction.keepUndefinedParameters</code> property is set to <code>false</code>.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2687">pull 2687</a>)
+  <li class="rfe">
+    Increase the <code>JENKINS_HOME</code> disk space threshold from <code>1Gb</code> to <code>10Gb</code> left.
+    The warning will be shown only if more than <code>90%</code> of the disk is utilized.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40749">issue 40749</a>)
+  <li class=rfe>
+    Plugin Manager: Redirect back to the Advanced Tab when saving the Update Site URL.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2703">pull 2703</a>)
+  <li class=bug>
+    Prevent the <code>ClassNotFoundException: javax.servlet.ServletException</code> error 
+    when invoking shell tasks on remote agents.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39268">issue 39268</a>)
+  <li class=bug>
+    Jobs were hanging during process termination on the Solaris 11 Intel platform.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40470">issue 40470</a>, regression in 2.20)
+  <li class=bug>
+    Fix handling of the <code>POST</code> flag in <code>ManagementLink</code>s within the Manage Jenkins page.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38175">issue 38175</a>)
+  <li class=bug>
+    Require POST in the <code>Reload from disk</code> management link.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2692">pull 2692</a>)  
+</ul>
 <h3><a name=v2.39>What's new in 2.39</a> (2017/01/02)</h3>
 <ul class=image>
   <li class=bug>
-    Properties were not passed to Maven command by Maven build step
+    Properties were not passed to Maven command by Maven build step when the <code>Inject Build Variables</code> flag was not set.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39268">issue 39268</a>)
   <li class=bug>
-    Update remoting to 3.4
+    Update remoting to 3.4 in order to properly terminate the channel in the case <code>Errors</code> and <code>Exception</code>s. 
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39835">issue 39835</a>)
+  <li class="rfe">
+    Improved Polish and Catalan translations.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2688">pull 2688</a> and
+    <a href="https://github.com/jenkinsci/jenkins/pull/2686">pull 2686</a>)
 </ul>
 <h3><a name=v2.38>What's new in 2.38</a> (2016/12/25)</h3>
 <ul class=image>

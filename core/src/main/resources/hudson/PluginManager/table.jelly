@@ -110,6 +110,15 @@ THE SOFTWARE.
                       <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
                         <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
                       </j:if>
+                      <j:if test="${p.hasWarnings()}">
+                        <div class="securityWarning">${%securityWarning}
+                          <ul>
+                            <j:forEach var="warning" items="${p.getWarnings()}">
+                              <li><a href="${warning.url}" target="_blank">${warning.message}</a></li>
+                            </j:forEach>
+                          </ul>
+                        </div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${isUpdates}">
