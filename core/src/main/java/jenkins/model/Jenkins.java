@@ -4089,6 +4089,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @RequirePOST
     public void doFingerprintCleanup(StaplerResponse rsp) throws IOException {
+        checkPermission(ADMINISTER);
         FingerprintCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
@@ -4097,6 +4098,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @RequirePOST
     public void doWorkspaceCleanup(StaplerResponse rsp) throws IOException {
+        checkPermission(ADMINISTER);
         WorkspaceCleanupThread.invoke();
         rsp.setStatus(HttpServletResponse.SC_OK);
         rsp.setContentType("text/plain");
