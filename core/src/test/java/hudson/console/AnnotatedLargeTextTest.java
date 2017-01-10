@@ -79,13 +79,13 @@ public class AnnotatedLargeTextTest {
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
         // TODO expect log record with message "Failed to resurrect annotation" and IOException with message "Refusing to deserialize unsigned note from an old log."
-        ConsoleNote.LENIENT_MAC = true;
+        ConsoleNote.INSECURE = true;
         try {
             w = new StringWriter();
             text.writeHtmlTo(0, w);
             assertThat(w.toString(), containsString("<script>"));
         } finally {
-            ConsoleNote.LENIENT_MAC = false;
+            ConsoleNote.INSECURE = false;
         }
     }
 
