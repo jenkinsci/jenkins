@@ -30,6 +30,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class AdminFilePathFilterTest {
@@ -46,7 +47,7 @@ public class AdminFilePathFilterTest {
         rule.setMasterKillSwitch(false);
     }
 
-    // TODO in master when using a version taking a String[]: @Issue({"JENKINS-27055", "SECURITY-358"})
+    @Issue({"JENKINS-27055", "SECURITY-358"})
     @Test
     public void matchBuildDir() throws Exception {
         File buildDir = r.buildAndAssertSuccess(r.createFreeStyleProject()).getRootDir();
