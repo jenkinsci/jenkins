@@ -1,5 +1,6 @@
 package hudson.tasks;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
@@ -16,6 +17,7 @@ import hudson.Launcher.ProcStarter;
 import hudson.Proc;
 import hudson.model.Result;
 import hudson.model.FreeStyleProject;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 
 /**
@@ -147,5 +149,14 @@ public class BatchFileTest {
 
         /* Creating unstable=0 produces unstable=null */
         assertNull( createNewBatchTask("",0).getUnstableReturn() );
+    }
+
+    @Issue("JENKINS-40894")
+    @Test
+    @LocalData
+    public void canLoadUnstableReturnFromDisk() throws Exception {
+        FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("batch");
+        BatchFile batchFile = (BatchFile) p.getBuildersList().get(0);
+        assertEquals("unstable return", Integer.valueOf(1), batchFile.getUnstableReturn());
     }
 }
