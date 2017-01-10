@@ -246,7 +246,7 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid postamble
 
             if (mac == null) {
-                if (!LENIENT_MAC) {
+                if (!INSECURE) {
                     throw new IOException("Refusing to deserialize unsigned note from an old log.");
                 }
             } else if (!MAC.checkMac(buf, mac)) {
