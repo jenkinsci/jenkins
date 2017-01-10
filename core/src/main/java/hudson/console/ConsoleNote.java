@@ -123,6 +123,12 @@ import jenkins.security.HMACConfidentialKey;
 public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>>, ExtensionPoint {
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ConsoleNote.class, "MAC");
+    /**
+     * Allows historical build records with unsigned console notes to be displayed, at the expense of any security.
+     * Disables checking of {@link #MAC} so do not set this flag unless you completely trust all users capable of affecting build output,
+     * which in practice means that all SCM committers as well as all Jenkins users with any non-read-only access are consider administrators.
+     */
+    static /* nonfinal for tests & script console */ boolean LENIENT_MAC = Boolean.getBoolean(ConsoleNote.class.getName() + ".LENIENT_MAC"); // TODO 2.x use SystemProperties
 
     /**
      * When the line of a console output that this annotation is attached is read by someone,
@@ -240,7 +246,9 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid postamble
 
             if (mac == null) {
-                throw new IOException("Refusing to deserialize unsigned note from an old log.");
+                if (!LENIENT_MAC) {
+                    throw new IOException("Refusing to deserialize unsigned note from an old log.");
+                }
             } else if (!MAC.checkMac(buf, mac)) {
                 throw new IOException("MAC mismatch");
             }

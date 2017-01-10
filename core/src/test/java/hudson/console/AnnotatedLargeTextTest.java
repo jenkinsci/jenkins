@@ -31,8 +31,9 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.Charsets;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
@@ -78,6 +79,14 @@ public class AnnotatedLargeTextTest {
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
         // TODO expect log record with message "Failed to resurrect annotation" and IOException with message "Refusing to deserialize unsigned note from an old log."
+        ConsoleNote.LENIENT_MAC = true;
+        try {
+            w = new StringWriter();
+            text.writeHtmlTo(0, w);
+            assertThat(w.toString(), containsString("<script>"));
+        } finally {
+            ConsoleNote.LENIENT_MAC = false;
+        }
     }
 
     @Issue("SECURITY-382")
