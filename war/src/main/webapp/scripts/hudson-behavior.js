@@ -2355,6 +2355,7 @@ function createSearchBox(searchURL) {
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
     ac.autoHighlight = false;
+    ac.formatResult = ac.formatEscapedResult;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
