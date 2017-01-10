@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security;
+package jenkins.security.s2m;
 
 import hudson.FilePath;
 import hudson.model.Slave;
@@ -31,8 +31,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import jenkins.security.s2m.AdminWhitelistRule;
-import jenkins.security.s2m.DefaultFilePathFilter;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +39,6 @@ import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import javax.inject.Inject;
-import org.jvnet.hudson.test.Issue;
 
 public class DefaultFilePathFilterTest {
 
@@ -110,13 +107,6 @@ public class DefaultFilePathFilterTest {
         public void checkRoles(RoleChecker checker) throws SecurityException {
             throw new NoSuchMethodError(); // simulate legacy Callable impls
         }
-    }
-
-    @Issue("JENKINS-27055")
-    @Test public void matchBuildDir() throws Exception {
-        File f = new File(r.buildAndAssertSuccess(r.createFreeStyleProject()).getRootDir(), "whatever");
-        rule.setMasterKillSwitch(false);
-        assertTrue(rule.checkFileAccess("write", f));
     }
 
 }
