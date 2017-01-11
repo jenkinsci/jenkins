@@ -191,7 +191,7 @@ public class CLI implements AutoCloseable {
             String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
             if (!(head.startsWith("HTTP/1.0 200 ") || head.startsWith("HTTP/1.1 200 "))) {
                 s.close();
-                System.err.println("Failed to tunnel the CLI port through the HTTP proxy. Falling back to HTTP.");
+                System.out.println("Failed to tunnel the CLI port through the HTTP proxy. Falling back to HTTP.");
                 throw new IOException("Failed to establish a connection through HTTP proxy: " + rsp);
             }
 
