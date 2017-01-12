@@ -1869,7 +1869,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // Do this first so we can avoid duplicate downloads, too
                 // check to see if the plugin is already installed at the same version and skip it
                 LOGGER.info("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
-                throw new Skipped();
+                return;
             }
             try {
                 super._run();
