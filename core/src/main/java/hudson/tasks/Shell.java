@@ -125,7 +125,9 @@ public class Shell extends CommandInterpreter {
     }
 
     private Object readResolve() throws ObjectStreamException {
-        return new Shell(command);
+        Shell shell = new Shell(command);
+        shell.setUnstableReturn(unstableReturn);
+        return shell;
     }
 
     @Extension @Symbol("shell")
