@@ -93,7 +93,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>3.1</version>
+      <version>3.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -134,7 +134,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>1.7</version>
+      <version>1.9</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>
