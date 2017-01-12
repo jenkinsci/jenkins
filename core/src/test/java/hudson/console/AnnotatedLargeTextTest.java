@@ -45,7 +45,7 @@ public class AnnotatedLargeTextTest {
     @Rule
     public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
 
-    /* TODO in trunk:
+    /* TODO defined in jenkins-test-harness and so not available from tests in core module; use if moved to test module:
     @Rule
     public LoggerRule logging = new LoggerRule().record(ConsoleAnnotationOutputStream.class, Level.FINE).capture(100);
     */
