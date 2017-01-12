@@ -14,6 +14,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -115,6 +116,18 @@ public class XStream2Security383Test {
         @Override
         public int read() throws IOException {
             return inner.read();
+        }
+        @Override
+        public boolean isFinished() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isReady() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            throw new UnsupportedOperationException();
         }
     }
 }
