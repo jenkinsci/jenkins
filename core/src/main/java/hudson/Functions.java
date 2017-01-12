@@ -1556,30 +1556,13 @@ public class Functions {
     /**
      * Converts the Hudson build status to CruiseControl build status,
      * which is either Success, Failure, Exception, or Unknown.
+     *
+     * @deprecated This functionality has been moved to ccxml plugin.
      */
+    @Deprecated
+    @Restricted(DoNotUse.class)
+    @RestrictedSince("since TODO")
     public static String toCCStatus(Item i) {
-        if (i instanceof Job) {
-            Job j = (Job) i;
-            switch (j.getIconColor()) {
-            case ABORTED:
-            case ABORTED_ANIME:
-            case RED:
-            case RED_ANIME:
-            case YELLOW:
-            case YELLOW_ANIME:
-                return "Failure";
-            case BLUE:
-            case BLUE_ANIME:
-                return "Success";
-            case DISABLED:
-            case DISABLED_ANIME:
-            case GREY:
-            case GREY_ANIME:
-            case NOTBUILT:
-            case NOTBUILT_ANIME:
-                return "Unknown";
-            }
-        }
         return "Unknown";
     }
 
