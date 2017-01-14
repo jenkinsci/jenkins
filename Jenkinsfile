@@ -48,7 +48,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                             if(isUnix()) {
                                 sh mvnCmd
                             } else {
-                                bat mvnCmd
+                                bat "$mvnCmd -Duser.name=yay" // INFRA-1032 workaround
                             }
                         }
                     }
