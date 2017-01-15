@@ -27,7 +27,7 @@
 # Perl script to generate missing translation keys and missing properties files,
 # to remove unused keys, and to convert utf8 properties files to iso or ascii.
 #
-# 1.- It recursively looks for files in a folder, and analizes them to extract the
+# 1.- It recursively looks for files in a folder, and analyzes them to extract the
 #     keys being used in the application.
 # 2.- If --add=true, it generates the appropriate file for the desired language and adds
 #     these keys to it, adding the english text as a reference.
