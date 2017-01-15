@@ -82,7 +82,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
      * @throws IOException
      *      if the method throws an {@link IOException} or {@link InterruptedException}, the launch was considered
      *      a failure and the stack trace is reported into the listener. This handling is just so that the implementation
-     *      of this method doesn't have to dilligently catch those exceptions.
+     *      of this method doesn't have to diligently catch those exceptions.
      */
     public void launch(SlaveComputer computer, TaskListener listener) throws IOException , InterruptedException {
         // to remain compatible with the legacy implementation that overrides the old signature
