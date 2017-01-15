@@ -1223,7 +1223,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (PluginWrapper p : activePlugins) {
             if (p.classLoader==cl) {
                 if (oneAndOnly!=null)
-                    return null;    // ambigious
+                    return null;    // ambiguous
                 oneAndOnly = p;
             }
         }
@@ -1417,7 +1417,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
                     // There could be cases like:
                     // 'plugin.ambiguous.updatesite' where both
-                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
+                    // 'plugin' @ 'ambiguous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);
