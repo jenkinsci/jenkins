@@ -181,7 +181,7 @@ public class NodeTest {
         addDynamicLabel = true;
         assertTrue("Node should have label1.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label1")));
         assertTrue("Node should have label2.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("label2")));
-        assertTrue("Node should have dynamicly added dynamicLabel.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")));
+        assertTrue("Node should have dynamically added dynamicLabel.", node.getAssignedLabels().contains(j.jenkins.getLabelAtom("dynamicLabel")));
         assertFalse("Node should not have label notContained.", node.getAssignedLabels().contains(notContained));
         assertTrue("Node should have self label.", node.getAssignedLabels().contains(node.getSelfLabel()));
     }
