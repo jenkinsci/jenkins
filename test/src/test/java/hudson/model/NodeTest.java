@@ -204,7 +204,7 @@ public class NodeTest {
         String message = Messages._Node_LabelMissing(node.getNodeName(),j.jenkins.getLabel("notContained")).toString();
         assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
         ((Slave)node).setMode(Node.Mode.EXCLUSIVE);
-        assertNotNull("Node should not take project which has null label bacause it is in exclusive mode.", node.canTake(item2));
+        assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
         message = Messages._Node_BecauseNodeIsReserved(node.getNodeName()).toString();
         assertEquals("Cause of blockage should be reserved label.", message, node.canTake(item2).getShortDescription());
         node.getNodeProperties().add(new NodePropertyImpl());
