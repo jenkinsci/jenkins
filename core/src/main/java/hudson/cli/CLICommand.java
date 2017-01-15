@@ -401,7 +401,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @throws IllegalArgumentException
      *      If the execution can't continue due to wrong input parameter (job doesn't exist etc.)
      * @throws IllegalStateException
-     *      If the execution can't continue due to an incorect state of Jenkins, job, build etc.
+     *      If the execution can't continue due to an incorrect state of Jenkins, job, build etc.
      * @throws AbortException
      *      If the execution can't continue due to an other (rare, but foreseeable) issue
      * @throws AccessDeniedException
