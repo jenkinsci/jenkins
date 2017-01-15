@@ -246,7 +246,7 @@ public class TarInputStream extends FilterInputStream {
             this.currEntry = new TarEntry(headerBuf);
 
             if (this.debug) {
-                System.err.println("TarInputStream: SET CURRENTRY '"
+                System.err.println("TarInputStream: SET currENTRY '"
                         + this.currEntry.getName()
                         + "' size = "
                         + this.currEntry.getSize());
