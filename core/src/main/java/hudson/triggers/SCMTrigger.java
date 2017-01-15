@@ -597,7 +597,7 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
-            // we can pre-emtively check the SCMDecisionHandler instances here
+            // we can preemptively check the SCMDecisionHandler instances here
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {
