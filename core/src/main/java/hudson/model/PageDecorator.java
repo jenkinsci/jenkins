@@ -35,7 +35,7 @@ import java.util.List;
  * Participates in the rendering of HTML pages for all pages of Hudson.
  *
  * <p>
- * This class provides a few hooks to augument the HTML generation process of Hudson, across
+ * This class provides a few hooks to augment the HTML generation process of Hudson, across
  * all the HTML pages that Hudson delivers.
  *
  * <p>
