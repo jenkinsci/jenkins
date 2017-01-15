@@ -252,7 +252,7 @@ public class Security218CliTest {
                 }
 
                 if (cause instanceof SecurityException) {
-                    // It should happen if the remote chanel reject a class.
+                    // It should happen if the remote channel reject a class.
                     // That's what we have done in SECURITY-218 => may be OK
                     if (cause.getMessage().contains("Rejected")) {
                         // OK
