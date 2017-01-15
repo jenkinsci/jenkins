@@ -101,7 +101,7 @@ public class ChunkedInputStream extends InputStream {
      * is followed by a CRLF. The method returns -1 as soon as a chunksize of 0
      * is detected.</p>
      *
-     * <p> Trailer headers are read automcatically at the end of the stream and
+     * <p> Trailer headers are read automatically at the end of the stream and
      * can be obtained with the getResponseFooters() method.</p>
      *
      * @return -1 of the end of the stream has been reached or the next data
