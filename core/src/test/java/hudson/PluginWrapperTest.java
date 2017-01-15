@@ -54,7 +54,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContians(ex, "fake v42 failed to load", "update Jenkins from v2.0 to v3.0");
+            assertContains(ex, "fake v42 failed to load", "update Jenkins from v2.0 to v3.0");
         }
     }
 
@@ -65,7 +65,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContians(ex, "dependee v42 failed to load", "dependency v42 is missing. To fix, install v42 or later");
+            assertContains(ex, "dependee v42 failed to load", "dependency v42 is missing. To fix, install v42 or later");
         }
     }
 
@@ -77,7 +77,7 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContians(ex, "dependee v42 failed to load", "dependency v3 is older than required. To fix, install v5 or later");
+            assertContains(ex, "dependee v42 failed to load", "dependency v3 is older than required. To fix, install v5 or later");
         }
     }
 
@@ -89,11 +89,11 @@ public class PluginWrapperTest {
             pw.resolvePluginDependencies();
             fail();
         } catch (IOException ex) {
-            assertContians(ex, "dependee v42 failed to load", "dependency v5 failed to load. Fix this plugin first");
+            assertContains(ex, "dependee v42 failed to load", "dependency v5 failed to load. Fix this plugin first");
         }
     }
 
-    private void assertContians(Throwable ex, String... patterns) {
+    private void assertContains(Throwable ex, String... patterns) {
         String msg = ex.getMessage();
         for (String pattern : patterns) {
             assertThat(msg, containsString(pattern));

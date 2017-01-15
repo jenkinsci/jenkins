@@ -51,7 +51,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         property.readResolve();
-        assertNotNull("Property should contains " + AllView.DEFAULT_VIEW_NAME + " defaultly.", property.getView(AllView.DEFAULT_VIEW_NAME));
+        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME + " defaultly.", property.getView(AllView.DEFAULT_VIEW_NAME));
     }
     
     @Test
@@ -82,10 +82,10 @@ public class MyViewsPropertyTest {
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        assertTrue("Property should contains " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
+        assertTrue("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
         View view = new ListView("foo",property);
         property.addView(view);
-        assertTrue("Property should contains " + view.name, property.getViews().contains(view));
+        assertTrue("Property should contain " + view.name, property.getViews().contains(view));
     }
     
     @Test
@@ -94,11 +94,11 @@ public class MyViewsPropertyTest {
         MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        assertNotNull("Property should contains " + AllView.DEFAULT_VIEW_NAME, property.getView(
+        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getView(
                 AllView.DEFAULT_VIEW_NAME));
         View view = new ListView("foo",property);
         property.addView(view);
-        assertEquals("Property should contains " + view.name, view, property.getView(view.name));
+        assertEquals("Property should contain " + view.name, view, property.getView(view.name));
     }
     
     @Test
@@ -187,7 +187,7 @@ public class MyViewsPropertyTest {
         user.addProperty(property);
         View view = new ListView("foo", property);
         property.addView(view);
-        assertTrue("Property should contains view " + view.name, property.getViews().contains(view));
+        assertTrue("Property should contain view " + view.name, property.getViews().contains(view));
         User.reload();
         user = User.get("User");
         property = user.getProperty(property.getClass());
