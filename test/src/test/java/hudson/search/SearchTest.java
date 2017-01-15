@@ -251,7 +251,7 @@ public class SearchTest {
         assertEquals(2, jsonArray.size());
         
         boolean foundProjectName = false;
-        boolean foundDispayName = false;
+        boolean foundDisplayName = false;
         for(Object suggestion : jsonArray) {
             JSONObject jsonSuggestion = (JSONObject)suggestion;
             
@@ -260,12 +260,12 @@ public class SearchTest {
                 foundProjectName = true;
             }
             else if(displayName.equals(name)) {
-                foundDispayName = true;
+                foundDisplayName = true;
             }
         }
 
         assertTrue(foundProjectName);
-        assertTrue(foundDispayName);
+        assertTrue(foundDisplayName);
     }
 
     @Issue("JENKINS-24433")
