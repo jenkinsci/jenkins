@@ -402,7 +402,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doConfigSubmit(null, null);
-            fail("User should not have permission to configure antoher user.");
+            fail("User should not have permission to configure another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
@@ -440,7 +440,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doDoDelete(null, null);
-            fail("User should not have permission to delete antoher user.");
+            fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
