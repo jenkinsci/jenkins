@@ -206,7 +206,7 @@ public class UsageStatistics extends PageDecorator {
     }
 
     /**
-     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encrypt the first block.
      *
      * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
      * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.
