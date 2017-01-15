@@ -141,7 +141,7 @@ public class Security218CliTest {
     
     //TODO: Fix the conversion layer (not urgent)
     // There is an issue in the conversion layer after the migration to another XALAN namespace
-    // with newer libs. SECURITY-218 does not apper in this case in manual tests anyway
+    // with newer libs. SECURITY-218 does not appear in this case in manual tests anyway
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
