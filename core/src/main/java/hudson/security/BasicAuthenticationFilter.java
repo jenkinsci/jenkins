@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 /**
- * Implements the dual authentcation mechanism.
+ * Implements the dual authentication mechanism.
  *
  * <p>
  * Jenkins supports both the HTTP basic authentication and the form-based authentication.
