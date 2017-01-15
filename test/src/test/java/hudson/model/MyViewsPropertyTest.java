@@ -51,7 +51,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         property.readResolve();
-        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME + " defaultly.", property.getView(AllView.DEFAULT_VIEW_NAME));
+        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME + " by default.", property.getView(AllView.DEFAULT_VIEW_NAME));
     }
     
     @Test

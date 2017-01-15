@@ -255,7 +255,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
-            // Use the defaul Update Center
+            // Use the default Update Center
             LOGGER.log(Level.FINE, "Using the default Update Center implementation");
             return createDefaultUpdateCenter(config);
         }
