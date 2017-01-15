@@ -574,7 +574,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     * Convert a whitespace-separate list of tokens into a set of {@link Label}s.
      *
      * @param labels
      *      Strings like "abc def ghi". Can be empty or null.
