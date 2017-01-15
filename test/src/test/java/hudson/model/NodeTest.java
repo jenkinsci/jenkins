@@ -229,12 +229,12 @@ public class NodeTest {
     public void testCreatePath() throws Exception {
         Node node = j.createOnlineSlave();
         Node node2 = j.createSlave();
-        String absolutPath = ((Slave)node).remoteFS;
-        FilePath path = node.createPath(absolutPath);
+        String absolutePath = ((Slave)node).remoteFS;
+        FilePath path = node.createPath(absolutePath);
         assertNotNull("Path should be created.", path);
         assertNotNull("Channel should be set.", path.getChannel());
         assertEquals("Channel should be equals to channel of node.", node.getChannel(), path.getChannel());
-        path = node2.createPath(absolutPath);
+        path = node2.createPath(absolutePath);
         assertNull("Path should be null if slave have channel null.", path);
     }
 
