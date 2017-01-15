@@ -1110,7 +1110,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
                     if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
-                        throw new IOException("Failed to get kernl.argmax: "+LIBC.strerror(Native.getLastError()));
+                        throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
 
