@@ -2342,7 +2342,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // Almost everyone else except Nginx put the host and port in separate headers
             buf.append(host);
         } else {
-            // Nginx uses the same spec as for the Host header, i.e. hostanme:port
+            // Nginx uses the same spec as for the Host header, i.e. hostname:port
             buf.append(host.substring(0, index));
             if (index + 1 < host.length()) {
                 try {
