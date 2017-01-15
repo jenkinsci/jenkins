@@ -481,7 +481,7 @@ public abstract class FormFieldValidator {
                     else                    warning(msg);
                 }
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(); // couldn't check
             }
         }
 
