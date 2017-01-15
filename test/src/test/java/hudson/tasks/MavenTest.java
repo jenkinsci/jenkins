@@ -286,7 +286,7 @@ public class MavenTest {
                 new StringParameterDefinition("exclamation_mark", "!"),
                 new StringParameterDefinition("at_sign", "@"),
                 new StringParameterDefinition("sharp", "#"),
-                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("dollar", "$"),
                 new StringParameterDefinition("percent", "%"),
                 new StringParameterDefinition("circumflex", "^"),
                 new StringParameterDefinition("ampersand", "&"),
