@@ -151,7 +151,7 @@ public class InstallState implements ExtensionPoint {
     public static final InstallState TEST = new InstallState("TEST", true);
     
     /**
-     * Jenkins started in development mode: Bolean.getBoolean("hudson.Main.development").
+     * Jenkins started in development mode: Boolean.getBoolean("hudson.Main.development").
      * Can be run normally with the -Djenkins.install.runSetupWizard=true
      */
     public static final InstallState DEVELOPMENT = new InstallState("DEVELOPMENT", true);
