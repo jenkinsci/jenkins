@@ -411,7 +411,7 @@ Usage: $0 --lang=xx [options] [dir]
      --editor=command     -> command to run over each updated file, implies add=true (default none)
      --reuse=folder       -> load a cache with keys already translated in the folder provided in
                              order to utilize them when the same key appears
-     --counter=true       -> to each translated key, unique value is added to easily identyfy match missing translation
+     --counter=true       -> to each translated key, unique value is added to easily identify match missing translation
                              with value in source code (default false)
 
    Examples:
