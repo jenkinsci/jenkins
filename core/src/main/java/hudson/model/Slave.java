@@ -496,7 +496,7 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @Nonnull
-        @Restricted(NoExternalUse.class) // intedned for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
+        @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
                     Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(
