@@ -87,7 +87,7 @@ public class I18nTest {
     }
 
     @Issue("JENKINS-39034")
-    @Test //country testing with delimeter '-' instead of '_'
+    @Test //country testing with delimiter '-' instead of '_'
     public void test_valid_region() throws IOException, SAXException {
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=en-AU").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
