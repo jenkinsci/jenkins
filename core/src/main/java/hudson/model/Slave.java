@@ -123,7 +123,7 @@ public abstract class Slave extends Node implements Serializable {
     private Mode mode = Mode.NORMAL;
 
     /**
-     * Agent availablility strategy.
+     * Agent availability strategy.
      */
     private RetentionStrategy retentionStrategy;
 
