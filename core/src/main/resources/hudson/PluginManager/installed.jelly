@@ -146,7 +146,7 @@ THE SOFTWARE.
                   <td class="pane" />
                   <td class="pane">
                     <h4 class="error">Failed : ${p.name}</h4>
-                    <div stlyle="padding-left: 1em">
+                    <div style="padding-left: 1em">
                       <pre>${p.exceptionString}</pre>
                     </div>
                   </td>
