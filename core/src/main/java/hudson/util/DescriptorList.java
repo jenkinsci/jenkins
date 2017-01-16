@@ -54,7 +54,7 @@ import javax.annotation.CheckForNull;
  * <p>
  * The other mode is the new mode, where the {@link Descriptor}s are actually stored in {@link ExtensionList}
  * (see {@link jenkins.model.Jenkins#getDescriptorList(Class)}) and this class acts as a view to it. This enables
- * bi-directional interoperability &mdash; both descriptors registred automatically and descriptors registered
+ * bi-directional interoperability &mdash; both descriptors registered automatically and descriptors registered
  * manually are visible from both {@link DescriptorList} and {@link ExtensionList}. In this mode,
  * {@link #legacy} is null but {@link #type} is non-null.
  *

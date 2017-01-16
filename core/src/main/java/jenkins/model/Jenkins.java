@@ -1456,7 +1456,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked", "rawtypes"}) // too late to fix
     public Descriptor getDescriptor(String id) {
-        // legacy descriptors that are reigstered manually doesn't show up in getExtensionList, so check them explicitly.
+        // legacy descriptors that are registered manually doesn't show up in getExtensionList, so check them explicitly.
         Iterable<Descriptor> descriptors = Iterators.sequence(getExtensionList(Descriptor.class), DescriptorExtensionList.listLegacyInstances());
         for (Descriptor d : descriptors) {
             if (d.getId().equals(id)) {
