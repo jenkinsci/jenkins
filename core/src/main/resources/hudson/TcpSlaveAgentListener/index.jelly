@@ -32,7 +32,7 @@ THE SOFTWARE.
   <st:header name="X-Hudson-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
   <st:header name="X-Jenkins-JNLP-Port" value="${app.tcpSlaveAgentListener.advertisedPort}" />
   <!--
-    if the host name is overriden, advertise that as well
+    if the host name is overridden, advertise that as well
   -->
   <st:header name="X-Jenkins-JNLP-Host" value="${app.tcpSlaveAgentListener.CLI_HOST_NAME}" />
   <!-- publish the instance identity so that agents can verify match from discovery -->
