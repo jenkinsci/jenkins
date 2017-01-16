@@ -124,7 +124,7 @@ public class JnlpAccessWithSecuredHudsonTest extends HudsonTestCase {
                         fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
                     } catch (SecurityException x) {
                         System.out.println("expected: " + x);
-                        assertTrue(x.getMessage().contains("http://jenkins-ci.org/security-144"));
+                        assertTrue(x.getMessage().contains("https://jenkins.io/redirect/security-144"));
                     }
                     return;
                 }
