@@ -190,7 +190,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected final Object statusChangeLock = new Object();
 
     /**
-     * Keeps track of stack traces to track the tremination requests for this computer.
+     * Keeps track of stack traces to track the termination requests for this computer.
      *
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
