@@ -688,7 +688,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         String truncDesc = description;
 
-        // Could not find a preferred truncable index, force a trunc at maxTruncLength
+        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
             lastTruncatablePoint = maxTruncLength;
 
