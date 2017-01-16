@@ -1015,7 +1015,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
-         * context key for realm (domain) where idOrFullName has been retreived from.
+         * context key for realm (domain) where idOrFullName has been retrieved from.
          * Can be used (for example) to distinguish ambiguous committer ID using the SCM URL.
          * Associated Value is a {@link String}
          */
