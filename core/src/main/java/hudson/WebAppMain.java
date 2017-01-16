@@ -386,7 +386,7 @@ public class WebAppMain implements ServletContextListener {
             }
 
             // Logger is in the system classloader, so if we don't do this
-            // the whole web app will never be undepoyed.
+            // the whole web app will never be undeployed.
             Logger.getLogger("").removeHandler(handler);
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);
