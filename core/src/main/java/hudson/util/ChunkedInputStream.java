@@ -67,7 +67,7 @@ public class ChunkedInputStream extends InputStream {
     /** The current position within the current chunk */
     private int pos;
 
-    /** True if we'are at the beginning of stream */
+    /** True if we're at the beginning of stream */
     private boolean bof = true;
 
     /** True if we've reached the end of stream */
