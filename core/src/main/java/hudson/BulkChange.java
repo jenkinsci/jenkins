@@ -78,7 +78,7 @@ public class BulkChange implements Closeable {
     public BulkChange(Saveable saveable) {
         this.parent = current();
         this.saveable = saveable;
-        // rememeber who allocated this object in case
+        // remember who allocated this object in case
         // someone forgot to call save() at the end.
         allocator = new Exception();
 
