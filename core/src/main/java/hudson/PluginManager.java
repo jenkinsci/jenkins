@@ -1145,8 +1145,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Get the plugin instance with the given short name.
      * @param shortName the short name of the plugin
-     * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
+     * @return The plugin singleton or {@code null} if a plugin with the given short name does not exist.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(String shortName) {
         for (PluginWrapper p : getPlugins()) {
             if(p.getShortName().equals(shortName))
@@ -1159,8 +1162,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Get the plugin instance that implements a specific class, use to find your plugin singleton.
      * Note: beware the classloader fun.
      * @param pluginClazz The class that your plugin implements.
-     * @return The plugin singleton or <code>null</code> if for some reason the plugin is not loaded.
+     * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link Plugin#getWrapper()} and then {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(Class<? extends Plugin> pluginClazz) {
         for (PluginWrapper p : getPlugins()) {
             if(pluginClazz.isInstance(p.getPlugin()))

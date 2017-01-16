@@ -1556,11 +1556,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the plugin object from its short name.
-     *
-     * <p>
      * This allows URL <tt>hudson/plugin/ID</tt> to be served by the views
      * of the plugin class.
+     * @param shortName Short name of the plugin
+     * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link Plugin#getWrapper()} and then {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public Plugin getPlugin(String shortName) {
         PluginWrapper p = pluginManager.getPlugin(shortName);
         if(p==null)     return null;
@@ -1574,12 +1577,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This allows easy storage of plugin information in the plugin singleton without
      * every plugin reimplementing the singleton pattern.
      *
+     * @param <P> Class of the plugin
      * @param clazz The plugin class (beware class-loader fun, this will probably only work
      * from within the jpi that defines the plugin class, it may or may not work in other cases)
-     *
-     * @return The plugin instance.
+     * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link Plugin#getWrapper()} and then {@link PluginWrapper#isActive()} to check it.
      */
     @SuppressWarnings("unchecked")
+    @CheckForNull
     public <P extends Plugin> P getPlugin(Class<P> clazz) {
         PluginWrapper p = pluginManager.getPlugin(clazz);
         if(p==null)     return null;
