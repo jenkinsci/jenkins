@@ -172,7 +172,7 @@ public class MavenTest {
         j.submit(f);
         verify();
 
-        // another submission and verfify it survives a roundtrip
+        // another submission and verify it survives a roundtrip
         p = j.createWebClient().goTo("configure");
         f = p.getFormByName("config");
         j.submit(f);
