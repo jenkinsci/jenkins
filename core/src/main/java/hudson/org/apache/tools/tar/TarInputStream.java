@@ -53,7 +53,7 @@ public class TarInputStream extends FilterInputStream {
 
     /**
      * This contents of this array is not used at all in this class,
-     * it is only here to avoid repreated object creation during calls
+     * it is only here to avoid repeated object creation during calls
      * to the no-arg read method.
      */
     protected byte[] oneBuf;
