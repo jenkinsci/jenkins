@@ -940,7 +940,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If the war file has any "/WEB-INF/plugins/[*.jpi | *.hpi]", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.jpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subversion.jpi"}
      * @throws Exception
      *      Any exception will be reported and halt the startup.
      */
