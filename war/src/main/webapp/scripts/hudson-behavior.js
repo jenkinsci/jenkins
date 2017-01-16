@@ -1037,7 +1037,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
-        // can sandwitch row-set-end
+        // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
