@@ -568,7 +568,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the specific property, or null if the propert is not configured for
+     * Gets the specific property, or null if the property is not configured for
      * this job.
      */
     public <T extends JobProperty> T getProperty(Class<T> clazz) {

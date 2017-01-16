@@ -1618,7 +1618,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Gets the specific trigger, or null if the propert is not configured for this job.
+     * Gets the specific trigger, or null if the property is not configured for this job.
      */
     public <T extends Trigger> T getTrigger(Class<T> clazz) {
         for (Trigger p : triggers()) {
