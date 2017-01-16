@@ -249,7 +249,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     /**
      * {@link Converter} implementation for XStream.
      *
-     * Serializaion form is compatible with plain {@link List}.
+     * Serialization form is compatible with plain {@link List}.
      */
     public static class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;
