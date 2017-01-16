@@ -2822,7 +2822,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
-                              + "FindBugs recommends suppresing warnings in such case")
+                              + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);
