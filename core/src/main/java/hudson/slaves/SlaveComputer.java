@@ -557,7 +557,7 @@ public class SlaveComputer extends Computer {
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
         synchronized(channelLock) {
             if(this.channel!=null) {
-                // check again. we used to have this entire method in a big sycnhronization block,
+                // check again. we used to have this entire method in a big synchronization block,
                 // but Channel constructor blocks for an external process to do the connection
                 // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
                 // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,
