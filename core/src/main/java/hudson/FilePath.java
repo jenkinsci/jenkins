@@ -1202,7 +1202,7 @@ public final class FilePath implements Serializable {
             deleteFile(deleting(dir));
         } catch (IOException e) {
             // if some of the child directories are big, it might take long enough to delete that
-            // it allows others to create new files, causing problemsl ike JENKINS-10113
+            // it allows others to create new files, causing problems like JENKINS-10113
             // so give it one more attempt before we give up.
             if(!isSymlink(dir))
                 deleteContentsRecursive(dir);
