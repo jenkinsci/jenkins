@@ -44,7 +44,7 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 /**
- * Represents write-once read-many file that can be optiionally compressed
+ * Represents write-once read-many file that can be optionally compressed
  * to save disk space. This is used for console output and other bulky data.
  *
  * <p>
