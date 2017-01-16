@@ -197,7 +197,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                 return;
             }
         }
-        logger.println(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
-        throw new IOException(Messages.ComputerLauncher_UknownJavaVersion(javaCommand));
+        logger.println(Messages.ComputerLauncher_UnknownJavaVersion(javaCommand));
+        throw new IOException(Messages.ComputerLauncher_UnknownJavaVersion(javaCommand));
     }
 }

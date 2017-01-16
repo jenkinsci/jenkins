@@ -128,14 +128,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * The username of the 'unknown' user used to avoid null user references.
      */
-    private static final String UKNOWN_USERNAME = "unknown";
+    private static final String UNKNOWN_USERNAME = "unknown";
 
     /**
      * These usernames should not be used by real users logging into Jenkins. Therefore, we prevent
      * users with these names from being saved.
      */
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
-            ACL.SYSTEM_USERNAME, UKNOWN_USERNAME};
+            ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
     private transient final String id;
 
     private volatile String fullName;
@@ -353,7 +353,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is used to avoid null {@link User} instance.
      */
     public static @Nonnull User getUnknown() {
-        return getById(UKNOWN_USERNAME, true);
+        return getById(UNKNOWN_USERNAME, true);
     }
 
     /**
