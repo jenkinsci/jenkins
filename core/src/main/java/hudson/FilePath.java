@@ -2383,7 +2383,7 @@ public final class FilePath implements Serializable {
                         for (String token : Util.tokenize(fileMask))
                             matched &= hasMatch(dir,token,caseSensitive);
                         if(matched)
-                            return Messages.FilePath_validateAntFileMask_whitespaceSeprator();
+                            return Messages.FilePath_validateAntFileMask_whitespaceSeparator();
                     }
 
                     // a common mistake is to assume the wrong base dir, and there are two variations
