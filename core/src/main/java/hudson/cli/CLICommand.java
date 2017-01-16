@@ -405,7 +405,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @throws AbortException
      *      If the execution can't continue due to an other (rare, but foreseeable) issue
      * @throws AccessDeniedException
-     *      If the caller doesn't have sufficent rights for requested action
+     *      If the caller doesn't have sufficient rights for requested action
      * @throws BadCredentialsException
      *      If bad credentials were provided to CLI
      */
