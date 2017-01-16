@@ -650,7 +650,7 @@ div.behavior-loading {
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
-  box-shaodw:#fff 0 0 0 10px
+  box-shadow:#fff 0 0 0 10px
 }
 
 @-webkit-keyframes sk-scaleout {
