@@ -211,7 +211,7 @@ public class Search {
     }
 
     /**
-     * When there are mutiple suggested items, this method can narrow down the resultset
+     * When there are multiple suggested items, this method can narrow down the resultset
      * to the SuggestedItem that has a url that contains the query. This is useful is one
      * job has a display name that matches another job's project name.
      * @param r A list of Suggested items. It is assumed that there is at least one 
