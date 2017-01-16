@@ -1437,7 +1437,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * @deprecated
-     *      UI method. Not meant to be used programatically.
+     *      UI method. Not meant to be used programmatically.
      */
     @Deprecated
     public ComputerSet getComputer() {
