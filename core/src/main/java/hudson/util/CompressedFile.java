@@ -51,7 +51,7 @@ import com.jcraft.jzlib.GZIPOutputStream;
  * In this class, the data on the disk can be one of two states:
  * <ol>
  * <li>Uncompressed, in which case the original data is available in the specified file name.
- * <li>Compressed, in which case the gzip-compressed data is available in the specifiled file name + ".gz" extension.
+ * <li>Compressed, in which case the gzip-compressed data is available in the specified file name + ".gz" extension.
  * </ol>
  *
  * Once the file is written and completed, it can be compressed asynchronously
