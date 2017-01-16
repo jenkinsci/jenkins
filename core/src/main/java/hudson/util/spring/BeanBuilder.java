@@ -147,7 +147,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	}
 
 	/**
-	 * Retrieves the RuntimeSpringConfiguration instance used the the BeanBuilder
+	 * Retrieves the RuntimeSpringConfiguration instance used by the BeanBuilder
 	 * @return The RuntimeSpringConfiguration instance
 	 */
 	public RuntimeSpringConfiguration getSpringConfig() {
