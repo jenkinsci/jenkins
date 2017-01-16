@@ -52,7 +52,7 @@ public class InstallState implements ExtensionPoint {
     public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true);
     
     /**
-     * After any setup / restart / etc. hooks are done, states hould be running
+     * After any setup / restart / etc. hooks are done, states should be running
      */
     @Extension
     public static final InstallState RUNNING = new InstallState("RUNNING", true);
