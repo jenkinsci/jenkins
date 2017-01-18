@@ -81,7 +81,9 @@ public class BatchFile extends CommandInterpreter {
     }
 
     private Object readResolve() throws ObjectStreamException {
-        return new BatchFile(command);
+        BatchFile batch = new BatchFile(command);
+        batch.setUnstableReturn(unstableReturn);
+        return batch;
     }
 
     @Extension @Symbol("batchFile")
