@@ -77,8 +77,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
     @Extension
     public static final class DescriptorImpl extends Descriptor<PasswordTest> {}
 
-    // TODO in trunk switch to @Issue({"SECURITY-266","SECURITY-304"})
-    @Issue("SECURITY-266, SECURITY-304")
+    @Issue({"SECURITY-266", "SECURITY-304"})
     public void testExposedCiphertext() throws Exception {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         try {

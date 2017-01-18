@@ -21,7 +21,7 @@ import java.security.GeneralSecurityException;
  * @since 1.498
  */
 public class CryptoConfidentialKey extends ConfidentialKey {
-    @Restricted(NoExternalUse.class) //TODO remove when in mainline
+    @Restricted(NoExternalUse.class) // TODO pending API
     public static final int DEFAULT_IV_LENGTH = 16;
 
     private volatile SecretKey secret;
@@ -74,7 +74,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
      * @param iv the initialization vector
      * @return the cipher
      */
-    @Restricted(NoExternalUse.class) //TODO remove when in mainline
+    @Restricted(NoExternalUse.class) // TODO pending API
     public Cipher encrypt(byte[] iv) {
         try {
             Cipher cipher = Secret.getCipher(ALGORITHM);
@@ -90,7 +90,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
      * @param iv the initialization vector
      * @return the cipher
      */
-    @Restricted(NoExternalUse.class) //TODO remove when in mainline
+    @Restricted(NoExternalUse.class) // TODO pending ApI
     public Cipher decrypt(byte[] iv) {
         try {
             Cipher cipher = Secret.getCipher(ALGORITHM);
@@ -107,7 +107,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
      * @return some random bytes
      * @see #encrypt(byte[])
      */
-    @Restricted(NoExternalUse.class) //TODO remove when in mainline
+    @Restricted(NoExternalUse.class) // TODO pending API
     public byte[] newIv(int length) {
         return ConfidentialStore.get().randomBytes(length);
     }
@@ -118,7 +118,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
      * @see #newIv(int)
      * @see #encrypt(byte[])
      */
-    @Restricted(NoExternalUse.class) //TODO remove when in mainline
+    @Restricted(NoExternalUse.class) // TODO pending API
     public byte[] newIv() {
         return newIv(DEFAULT_IV_LENGTH);
     }
