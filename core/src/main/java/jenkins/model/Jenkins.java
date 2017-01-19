@@ -2489,7 +2489,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see User#get(String,boolean), {@link User#getById(String, boolean)}
      */
     public @CheckForNull User getUser(String name) {
-        return User.get(name,hasPermission(ADMINISTER));
+        return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name ) throws IOException {
