@@ -70,6 +70,7 @@ public class SecretCompatTest {
     public void encryptedValueStaysTheSameAfterRoundtrip() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr37", "Keep this a secret")));
+        project.getAllActions(); // initialize Actionable.actions; otherwise first made nonnull while rendering sidepanel after redirect after round #1 has been saved, so only round #2 has <actions/>
         project = j.configRoundtrip(project);
         String round1 = project.getConfigFile().asString();
         project = j.configRoundtrip(project);
