@@ -88,14 +88,7 @@ public class JenkinsTest {
         WebClient wc = j.createWebClient();
 
         assertNull("User not supposed to exist", User.getById("nonexistent", false));
-
-        try {
-            wc.goTo("user/nonexistent");
-            fail("expected exception");
-        } catch (FailingHttpStatusCodeException ex) {
-            assertEquals("expect 404", 404, ex.getStatusCode());
-        }
-
+        wc.assertFails("user/nonexistent", 404);
         assertNull("User not supposed to exist", User.getById("nonexistent", false));
 
         try {

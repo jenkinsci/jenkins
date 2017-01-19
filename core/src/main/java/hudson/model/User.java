@@ -1092,6 +1092,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * SECURITY-406.
      */
+    // TODO 2.4+ SystemProperties
     @Restricted(NoExternalUse.class)
     public static boolean ALLOW_USER_CREATION_VIA_URL = Boolean.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
 }
