@@ -853,9 +853,9 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
+            <groupId>com.mysema.maven</groupId>
             <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
+            <!-- version specified in parent pom -->
             <executions>
               <execution>
                 <goals>
