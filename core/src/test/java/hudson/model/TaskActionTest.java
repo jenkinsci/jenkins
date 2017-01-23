@@ -1,19 +1,25 @@
 package hudson.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import jenkins.security.ConfidentialStoreRule;
 import org.acegisecurity.Authentication;
+import static org.hamcrest.CoreMatchers.startsWith;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Jerome Lacoste
  */
 public class TaskActionTest {
+
+    @Rule
+    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
 
     private static class MyTaskThread extends TaskThread {
         MyTaskThread(TaskAction taskAction) {
@@ -63,6 +69,6 @@ public class TaskActionTest {
         }
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         annotatedText.writeLogTo(0, os);
-        assertTrue(os.toString("UTF-8").startsWith("a linkCompleted"));
+        assertThat(os.toString("UTF-8"), startsWith("a linkCompleted"));
     }
 }

@@ -2,7 +2,6 @@ package hudson.util;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.model.TaskListener;
-import org.apache.commons.io.FileUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -35,20 +34,20 @@ public class SecretRewriter {
     private int count;
 
     /**
-     * If non-null the original file before rewrite gets in here.
-     */
-    private final File backupDirectory;
-
-    /**
      * Canonical paths of the directories we are recursing to protect
      * against symlink induced cycles.
      */
     private Set<String> callstack = new HashSet<String>();
 
-    public SecretRewriter(File backupDirectory) throws GeneralSecurityException {
+    public SecretRewriter() throws GeneralSecurityException {
         cipher = Secret.getCipher("AES");
-        key = Secret.getLegacyKey();
-        this.backupDirectory = backupDirectory;
+        key = HistoricalSecrets.getLegacyKey();
+    }
+
+    /** @deprecated SECURITY-376: {@code backupDirectory} is ignored */
+    @Deprecated
+    public SecretRewriter(File backupDirectory) throws GeneralSecurityException {
+        this();
     }
 
     private String tryRewrite(String s) throws IOException, InvalidKeyException {
@@ -64,19 +63,21 @@ public class SecretRewriter {
             return s;   // not a valid base64
         }
         cipher.init(Cipher.DECRYPT_MODE, key);
-        Secret sec = Secret.tryDecrypt(cipher, in);
+        Secret sec = HistoricalSecrets.tryDecrypt(cipher, in);
         if(sec!=null) // matched
             return sec.getEncryptedValue(); // replace by the new encrypted value
         else // not encrypted with the legacy key. leave it unmodified
             return s;
     }
 
-    /**
-     * @param backup
-     *      if non-null, the original file will be copied here before rewriting.
-     *      if the rewrite doesn't happen, no copying.
-     */
+    /** @deprecated SECURITY-376: {@code backup} is ignored */
+    @Deprecated
     public boolean rewrite(File f, File backup) throws InvalidKeyException, IOException {
+        return rewrite(f);
+    }
+
+    public boolean rewrite(File f) throws InvalidKeyException, IOException {
+
         AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
         try {
 
@@ -112,10 +113,6 @@ public class SecretRewriter {
             }
 
             if (modified) {
-                if (backup!=null) {
-                    backup.getParentFile().mkdirs();
-                    FileUtils.copyFile(f,backup);
-                }
                 w.commit();
             }
             return modified;
@@ -160,11 +157,7 @@ public class SecretRewriter {
                     if ((count++)%100==0)
                         listener.getLogger().println("Scanning "+child);
                     try {
-                        File backup = null;
-                        if (backupDirectory!=null)  backup = new File(backupDirectory,relative+'/'+ cn);
-                        if (rewrite(child,backup)) {
-                            if (backup!=null)
-                                listener.getLogger().println("Copied "+child+" to "+backup+" as a backup");
+                        if (rewrite(child)) {
                             listener.getLogger().println("Rewritten "+child);
                             rewritten++;
                         }
@@ -194,7 +187,6 @@ public class SecretRewriter {
         String n = dir.getName();
         return n.equals("workspace") || n.equals("artifacts")
             || n.equals("plugins") // no mutable data here
-            || n.equals("jenkins.security.RekeySecretAdminMonitor") // we don't want to rewrite backups
             || n.equals(".") || n.equals("..");
     }
 

@@ -14,16 +14,13 @@ public class ConfidentialStoreRule extends ExternalResource {
     @Override
     protected void before() throws Throwable {
         tmp.create();
-        ConfidentialStore.TEST.set(new DefaultConfidentialStore(tmp.getRoot()));
+        ConfidentialStore.TEST = new DefaultConfidentialStore(tmp.getRoot());
     }
 
     @Override
     protected void after() {
-        ConfidentialStore.TEST.set(null);
+        ConfidentialStore.TEST = null;
         tmp.delete();
     }
 
-    static {
-        ConfidentialStore.TEST = new ThreadLocal<ConfidentialStore>();
-    }
 }
