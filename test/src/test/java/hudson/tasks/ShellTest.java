@@ -27,6 +27,7 @@ import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Tests for the Shell tasks class
@@ -188,6 +189,15 @@ public class ShellTest {
 
         /* Creating unstable=0 produces unstable=null */
         assertNull( createNewShell("",0).getUnstableReturn() );
+    }
+
+    @Issue("JENKINS-40894")
+    @Test
+    @LocalData
+    public void canLoadUnstableReturnFromDisk() throws Exception {
+        FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("test");
+        Shell shell = (Shell) p.getBuildersList().get(0);
+        assertEquals("unstable return", Integer.valueOf(1), shell.getUnstableReturn());
     }
 
 }
