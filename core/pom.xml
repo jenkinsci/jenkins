@@ -157,7 +157,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.4</version>
+      <version>1.5-20170112.000031-1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
