@@ -59,12 +59,31 @@ Upcoming changes</a>
   <li class=>
 </ul>
 </div><!--=TRUNK-END=-->
+<h3><a name=v2.41>What's new in 2.41</a> (2017/01/15)</h3>
+<ul class=image>
+  <li class=bug>
+    Restore option value for setting build result to unstable when loading shell and batch build steps from disk.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40894">issue 40894</a>)
+  <li class=bug>
+    Autocomplete admin-only links in search suggestions only when admin.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-7874">issue 7874</a>)
+  <li class=rfe>
+    Improve agent protocol descriptions.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40700">issue 40700</a>)
+  <li class=rfe>
+    Improve description for <em>Enable Security</em> option and administrative monitor when security is off.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40813">issue 40813</a>)
+  <li class=rfe>
+    Enable the JNLP4 agent protocol by default.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40886">issue 40886</a>)
+</ul>
 <h3><a name=v2.40>What's new in 2.40</a> (2017/01/08)</h3>
 <ul class=image>
   <li class="major rfe">
     Support displaying of warnings from the Update Site in the Plugin Manager
     and in administrative monitors.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40404</a>)
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40404</a>,
+    <a href="/blog/2017/01/10/security-warnings/">announcement blog post</a>)
   <li class=rfe>
     Do not print warnings about undefined parameters
     when <code>hudson.model.ParametersAction.keepUndefinedParameters</code> property is set to <code>false</code>.

@@ -2235,32 +2235,35 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex()
-            .add("configure", "config","configure")
-            .add("manage")
-            .add("log")
-            .add(new CollectionSearchIndex<TopLevelItem>() {
-                protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
-                protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
-                @Nonnull
-                @Override
-                protected Iterable<TopLevelItem> allAsIterable() {
-                    return allItems(TopLevelItem.class);
-                }
-            })
-            .add(getPrimaryView().makeSearchIndex())
-            .add(new CollectionSearchIndex() {// for computers
-                protected Computer get(String key) { return getComputer(key); }
-                protected Collection<Computer> all() { return computers.values(); }
-            })
-            .add(new CollectionSearchIndex() {// for users
-                protected User get(String key) { return User.get(key,false); }
-                protected Collection<User> all() { return User.getAll(); }
-            })
-            .add(new CollectionSearchIndex() {// for views
-                protected View get(String key) { return getView(key); }
-                protected Collection<View> all() { return viewGroupMixIn.getViews(); }
-            });
+        SearchIndexBuilder builder = super.makeSearchIndex();
+        if (hasPermission(ADMINISTER)) {
+                builder.add("configure", "config", "configure")
+                    .add("manage")
+                    .add("log");
+        }
+        builder.add(new CollectionSearchIndex<TopLevelItem>() {
+                    protected SearchItem get(String key) { return getItemByFullName(key, TopLevelItem.class); }
+                    protected Collection<TopLevelItem> all() { return getAllItems(TopLevelItem.class); }
+                    @Nonnull
+                    @Override
+                    protected Iterable<TopLevelItem> allAsIterable() {
+                        return allItems(TopLevelItem.class);
+                    }
+                })
+                .add(getPrimaryView().makeSearchIndex())
+                .add(new CollectionSearchIndex() {// for computers
+                    protected Computer get(String key) { return getComputer(key); }
+                    protected Collection<Computer> all() { return computers.values(); }
+                })
+                .add(new CollectionSearchIndex() {// for users
+                    protected User get(String key) { return User.get(key,false); }
+                    protected Collection<User> all() { return User.getAll(); }
+                })
+                .add(new CollectionSearchIndex() {// for views
+                    protected View get(String key) { return getView(key); }
+                    protected Collection<View> all() { return viewGroupMixIn.getViews(); }
+                });
+        return builder;
     }
 
     public String getUrlChildPrefix() {
