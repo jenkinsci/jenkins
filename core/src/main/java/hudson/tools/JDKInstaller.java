@@ -79,6 +79,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static hudson.tools.JDKInstaller.Preference.*;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Install JDKs from java.sun.com.
@@ -794,7 +795,9 @@ public class JDKInstaller extends ToolInstaller {
         /**
          * Submits the Oracle account username/password.
          */
+        @RequirePOST
         public HttpResponse doPostCredential(@QueryParameter String username, @QueryParameter String password) throws IOException, ServletException {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             this.username = username;
             this.password = Secret.fromString(password);
             save();

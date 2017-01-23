@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.TaskListener;
@@ -50,6 +51,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
      */
     private final FileBoolean scanOnBoot = state("scanOnBoot");
 
+    @SuppressWarnings("OverridableMethodCallInConstructor") // should have been final
     public RekeySecretAdminMonitor() throws IOException {
         // if JENKINS_HOME existed <1.497, we need to offer rewrite
         // this computation needs to be done and the value be captured,
@@ -59,6 +61,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
         if (j.isUpgradedFromBefore(new VersionNumber("1.496.*"))
         &&  new FileBoolean(new File(j.getRootDir(),"secret.key.not-so-secret")).isOff())
             needed.on();
+        Util.deleteRecursive(new File(getBaseDir(), "backups")); // SECURITY-376: no longer used
     }
 
     @Override
@@ -133,7 +136,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
     protected void fix(TaskListener listener) throws Exception {
         LOGGER.info("Initiating a re-keying of secrets. See "+getLogFile());
 
-        SecretRewriter rewriter = new SecretRewriter(new File(getBaseDir(),"backups"));
+        SecretRewriter rewriter = new SecretRewriter();
 
         try {
             PrintStream log = listener.getLogger();
