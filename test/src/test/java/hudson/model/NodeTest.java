@@ -51,10 +51,15 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
+import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.*;
 
+import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -117,6 +122,40 @@ public class NodeTest {
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+        assertEquals(root, cause.getUser());
+
+        computer.doToggleOffline(null);
+        assertNull(computer.getOfflineCause());
+    }
+
+    @Test
+    public void testOfflineCauseAsAnonymous() throws Exception {
+        Node node = j.createOnlineSlave();
+        final Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+        ACL.impersonate(Jenkins.ANONYMOUS, new NotReallyRoleSensitiveCallable() {
+            @Override
+            public Void call() throws Exception {
+                computer.doToggleOffline("original message");
+                return null;
+            }
+        });
+
+        cause = (UserCause) computer.getOfflineCause();
+        assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
+        assertEquals(User.getUnknown(), cause.getUser());
+
+
+        final User root = User.get("root@localhost");
+        ACL.impersonate(root.impersonate(), new NotReallyRoleSensitiveCallable() {
+            @Override
+            public Void call() throws Exception {
+                computer.doChangeOfflineCause("new message");
+                return null;
+            }
+        });
+        cause = (UserCause) computer.getOfflineCause();
+        assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);

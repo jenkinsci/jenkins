@@ -28,6 +28,7 @@ import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.User;
 
+import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Exported;
@@ -147,7 +148,7 @@ public abstract class OfflineCause {
         }
 
         private UserCause(String userId, String message) {
-            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId, message));
+            super(hudson.slaves.Messages._SlaveComputer_DisconnectedBy(userId != null ? userId : Jenkins.ANONYMOUS.getName(), message));
             this.userId = userId;
         }
 
