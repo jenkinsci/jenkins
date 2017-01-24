@@ -92,7 +92,7 @@ THE SOFTWARE.
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <maven-plugin.version>2.14</maven-plugin.version>
+    <maven-plugin.version>2.14.1-20170124.191714-1</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
