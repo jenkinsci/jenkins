@@ -2,6 +2,7 @@ package jenkins.mvn;
 
 import hudson.ExtensionPoint;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
@@ -26,9 +27,8 @@ import java.io.IOException;
 public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<GlobalSettingsProvider> implements ExtensionPoint {
 
     /**
-     * <p>
-     *     Configure maven launcher argument list with adequate settings path.
-     * </p>
+     * Configure maven launcher argument list with adequate settings path.
+     *
      * <p>Implementations should
      * <ul>Be aware that this method might get called multiple times during a build.</ul>
      * <ul>Implement this method. This class provides a default implementation throwing an {@link UnsupportedOperationException}
@@ -39,10 +39,20 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * @param workspace the workspace in which the build / run takes place
      * @param listener the listener of this given build / run
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * @throws IOException typically occurs when the {@code supplySettings()} implementation accesses to the
+     *         build environment on the build agent (copying a file to disk...)
+     * @throws InterruptedException typically occurs while the {@code supplySettings()} implementation accesses to the
+     *         build environment on the build agent (copying a file to disk...)
+     * @since TODO
      */
     @CheckForNull
     public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        throw new AbstractMethodError("Class " + getClass() + " must override the new supplySettings overload");
+        if (run instanceof AbstractBuild && Util.isOverridden(GlobalSettingsProvider.class, this.getClass() , "supplySettings",AbstractBuild.class, TaskListener.class)) {
+            AbstractBuild build = (AbstractBuild) run;
+            return supplySettings(build, listener);
+        } else {
+            throw new AbstractMethodError("Class " + getClass() + " must override the new method supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener)");
+        }
     }
 
     /**
@@ -51,6 +61,9 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * @param build
      *            the build to provide the settings for
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * @throws RuntimeException if an {@link IOException} or an {@link InterruptedException} occurs. These {@link IOException}
+     *         or {@link InterruptedException} can typically occur when the {@code supplySettings()} implementation access to the
+     *         build environment on the build agent (copying a file to disk...)
      * @deprecated use {@link #supplySettings(Run, FilePath, TaskListener)}
      */
     @Deprecated
