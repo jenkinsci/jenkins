@@ -136,5 +136,36 @@ public abstract class DirScanner implements Serializable {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Scans by using Ant GLOB syntax, flattening all the resulting files into a single directory.
+     * @since TODO
+     */
+    public static class FlattenGlob extends DirScanner {
+        private final String includes, excludes;
+
+        private boolean useDefaultExcludes = true;
+
+        public FlattenGlob(String includes, String excludes, boolean useDefaultExcludes) {
+            this.includes = includes;
+            this.excludes = excludes;
+            this.useDefaultExcludes = useDefaultExcludes;
+        }
+
+        public void scan(File dir, FileVisitor visitor) throws IOException {
+            FileSet fs = Util.createFileSet(dir,includes,excludes);
+            fs.setDefaultexcludes(useDefaultExcludes);
+
+            if(dir.exists()) {
+                DirectoryScanner ds = fs.getDirectoryScanner(new org.apache.tools.ant.Project());
+                for( String f : ds.getIncludedFiles()) {
+                    File file = new File(dir, f);
+                    scanSingle(file, file.getName(), visitor);
+                }
+            }
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
+
     private static final long serialVersionUID = 1L;
 }

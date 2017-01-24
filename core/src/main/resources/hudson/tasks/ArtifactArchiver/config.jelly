@@ -46,5 +46,8 @@ THE SOFTWARE.
     <f:entry field="caseSensitive" >
       <f:checkbox title="${%caseSensitive}" default="true"/>
     </f:entry>
+    <f:entry field="flattenDirectories">
+      <f:checkbox title="${%flattenDirectories}" default="false"/>
+    </f:entry>
   </f:advanced>
 </j:jelly>

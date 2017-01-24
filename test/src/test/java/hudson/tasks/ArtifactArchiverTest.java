@@ -33,12 +33,6 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import static hudson.tasks.LogRotatorTest.build;
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Collections;
-import java.util.List;
 import jenkins.util.VirtualFile;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
 import static org.junit.Assert.*;
@@ -50,6 +44,14 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Collections;
+import java.util.List;
+
+import static hudson.tasks.LogRotatorTest.build;
 
 public class ArtifactArchiverTest {
     
@@ -281,4 +283,55 @@ public class ArtifactArchiverTest {
         assertEquals("[stuff]", a.getFingerprints().keySet().toString());
     }
 
+    @Test
+    @Issue("JENKINS-29780")
+    public void testFlatten() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver("dir/");
+        artifactArchiver.setFlattenDirectories(true);
+
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
+        project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath dir = build.getWorkspace().child("dir");
+                FilePath subdir1 = dir.child("subdir1");
+                subdir1.mkdirs();
+                subdir1.child("firstfile").write("content", "UTF-8");
+                FilePath subdir2 = dir.child("subdir2");
+                subdir2.mkdirs();
+                subdir2.child("secondfile").write("content", "UTF-8");
+                return true;
+            }
+        }));
+        assertEquals(Result.SUCCESS, build(project)); // #1
+        File artifacts = project.getBuildByNumber(1).getArtifactsDir();
+        File[] kids = artifacts.listFiles();
+        assertEquals(2, kids.length);
+        assertFalse(artifacts.toPath().relativize(kids[0].toPath()).toString().contains("/"));
+        assertFalse(artifacts.toPath().relativize(kids[1].toPath()).toString().contains("/"));
+    }
+
+    @Test
+    @Issue("JENKINS-29780")
+    public void testFlattenDuplicateFiles() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver("dir/");
+        artifactArchiver.setFlattenDirectories(true);
+
+        project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
+        project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath dir = build.getWorkspace().child("dir");
+                FilePath subdir1 = dir.child("subdir1");
+                subdir1.mkdirs();
+                subdir1.child("firstfile").write("content", "UTF-8");
+                FilePath subdir2 = dir.child("subdir2");
+                subdir2.mkdirs();
+                subdir2.child("firstfile").write("content", "UTF-8");
+                return true;
+            }
+        }));
+        assertEquals(Result.FAILURE, build(project));
+        j.assertLogContains("Attempted to add duplicate", project.getBuildByNumber(1));
+    }
 }

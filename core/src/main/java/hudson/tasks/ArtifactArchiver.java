@@ -23,11 +23,11 @@
  */
 package hudson.tasks;
 
+import hudson.AbortException;
+import hudson.Extension;
 import hudson.FilePath;
-import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.Extension;
 import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
@@ -36,29 +36,29 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.ItemListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-import java.io.File;
-
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.BuildDiscarder;
+import jenkins.model.Jenkins;
+import jenkins.tasks.SimpleBuildStep;
+import jenkins.util.BuildListenerAdapter;
+import net.sf.json.JSONObject;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-
-import net.sf.json.JSONObject;
-import javax.annotation.Nonnull;
-import jenkins.model.BuildDiscarder;
-import jenkins.model.Jenkins;
-import jenkins.tasks.SimpleBuildStep;
-import jenkins.util.BuildListenerAdapter;
-import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Copies the artifacts into an archive directory.
@@ -106,6 +106,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     @Nonnull
     private Boolean caseSensitive = true;
+
+    /**
+     * Indicate whether to flatten directories in archive and just store the files. Will cause an {@link hudson.AbortException}
+     * if there are duplicate filenames selected.
+     */
+    private boolean flattenDirectories = false;
 
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
@@ -209,6 +215,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
+    public boolean isFlattenDirectories() {
+        return flattenDirectories;
+    }
+
+    @DataBoundSetter public final void setFlattenDirectories(boolean flattenDirectories) {
+        this.flattenDirectories = flattenDirectories;
+    }
+
     private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
@@ -236,6 +250,19 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
             if (!files.isEmpty()) {
+                if (isFlattenDirectories()) {
+                    Map<String,String> flattenedFiles = new LinkedHashMap<>();
+                    for (Map.Entry<String,String> soloFile : files.entrySet()) {
+                        String simpleFile = soloFile.getKey().replaceFirst(".*/", "");
+                        if (flattenedFiles.put(simpleFile, soloFile.getKey()) != null) {
+                            throw new AbortException("Attempted to add duplicate filenames to flattened archive. " +
+                                    "First file path: " + flattenedFiles.get(simpleFile) + " and second file path: "
+                                    + soloFile.getKey());
+                        }
+                    }
+
+                    files = flattenedFiles;
+                }
                 build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
                 if (fingerprint) {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
@@ -248,15 +275,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
-                    	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
+                        msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
                     } catch (Exception e) {
-                    	listenerWarnOrError(listener, e.getMessage());
+                        listenerWarnOrError(listener, e.getMessage());
                     }
                     if(msg!=null)
                         listenerWarnOrError(listener, msg);
                 }
                 if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
+                    build.setResult(Result.FAILURE);
                 }
                 return;
             }
