@@ -29,23 +29,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.io.Charsets;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.Rule;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 @For({AnnotatedLargeText.class, ConsoleNote.class, ConsoleAnnotationOutputStream.class, PlainTextConsoleOutputStream.class})
 public class AnnotatedLargeTextTest {
 
-    @Rule
-    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
+    @ClassRule
+    public static JenkinsRule r = new JenkinsRule();
 
-    /* TODO in trunk:
+    /* TODO in master:
     @Rule
     public LoggerRule logging = new LoggerRule().record(ConsoleAnnotationOutputStream.class, Level.FINE).capture(100);
     */
