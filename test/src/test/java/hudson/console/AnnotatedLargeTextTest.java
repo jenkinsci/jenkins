@@ -29,26 +29,27 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import jenkins.security.ConfidentialStoreRule;
+import java.util.logging.Level;
 import org.apache.commons.io.Charsets;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import org.junit.Test;
+import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
 @For({AnnotatedLargeText.class, ConsoleNote.class, ConsoleAnnotationOutputStream.class, PlainTextConsoleOutputStream.class})
 public class AnnotatedLargeTextTest {
 
-    @Rule
-    public ConfidentialStoreRule confidentialStoreRule = new ConfidentialStoreRule();
+    @ClassRule
+    public static JenkinsRule r = new JenkinsRule();
 
-    /* TODO defined in jenkins-test-harness and so not available from tests in core module; use if moved to test module:
     @Rule
     public LoggerRule logging = new LoggerRule().record(ConsoleAnnotationOutputStream.class, Level.FINE).capture(100);
-    */
 
     @Test
     public void smokes() throws Exception {
@@ -78,7 +79,7 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("hellothere\n", w.toString());
-        // TODO expect log record with message "Failed to resurrect annotation" and IOException with message "Refusing to deserialize unsigned note from an old log."
+        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation")); // TODO assert that this is IOException: Refusing to deserialize unsigned note from an old log.
         ConsoleNote.INSECURE = true;
         try {
             w = new StringWriter();
@@ -101,7 +102,7 @@ public class AnnotatedLargeTextTest {
         StringWriter w = new StringWriter();
         text.writeHtmlTo(0, w);
         assertEquals("Go back to your home.\n", w.toString());
-        // TODO expect log record with message "Failed to resurrect annotation" and IOException with message "MAC mismatch"
+        assertThat(logging.getMessages(), hasItem("Failed to resurrect annotation")); // TODO assert that this is IOException: MAC mismatch
     }
 
     /** Simplified version of {@link HyperlinkNote}. */

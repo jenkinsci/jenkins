@@ -189,9 +189,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
         try {
             buf2.write(PREAMBLE);
-            byte[] mac = MAC.mac(buf.toByteArray());
-            dos.writeInt(- mac.length); // negative to differentiate from older form
-            dos.write(mac);
+            if (Jenkins.getInstanceOrNull() != null) { // else we are in another JVM and cannot sign; result will be ignored unless INSECURE
+                byte[] mac = MAC.mac(buf.toByteArray());
+                dos.writeInt(- mac.length); // negative to differentiate from older form
+                dos.write(mac);
+            }
             dos.writeInt(buf.size());
             buf.writeTo(dos);
         } finally {
