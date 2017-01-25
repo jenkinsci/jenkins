@@ -61,9 +61,7 @@ public abstract class ConfidentialStore {
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
     public static @Nonnull ConfidentialStore get() {
-        if (TEST != null) {
-            return TEST;
-        }
+        if (TEST!=null) return TEST.get();
 
         Jenkins j = Jenkins.getInstance();
         if (j == null) {
@@ -97,7 +95,7 @@ public abstract class ConfidentialStore {
     /**
      * Testing only. Used for testing {@link ConfidentialKey} without {@link Jenkins}
      */
-    /*package*/ static ConfidentialStore TEST = null;
+    /*package*/ static ThreadLocal<ConfidentialStore> TEST = null;
 
     private static final Logger LOGGER = Logger.getLogger(ConfidentialStore.class.getName());
 }
