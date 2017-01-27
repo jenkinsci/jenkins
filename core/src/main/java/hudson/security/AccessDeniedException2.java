@@ -12,6 +12,9 @@ import java.io.PrintWriter;
  * @author Kohsuke Kawaguchi
  */
 public class AccessDeniedException2 extends AccessDeniedException {
+
+    private static final int MAX_REPORTED_AUTHORITIES = 10;
+
     /**
      * This object represents the user being authenticated.
      */
@@ -38,8 +41,14 @@ public class AccessDeniedException2 extends AccessDeniedException {
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
         rsp.addHeader("X-You-Are-Authenticated-As",authentication.getName());
-        for (GrantedAuthority auth : authentication.getAuthorities()) {
-            rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
+        GrantedAuthority[] authorities = authentication.getAuthorities();
+        for (int i = 0; i < authorities.length; i++) {
+            if (i == MAX_REPORTED_AUTHORITIES) {
+                rsp.addHeader("X-You-Are-In-Group", "<" + (authorities.length - i) + " more>");
+                break;
+            } else {
+                rsp.addHeader("X-You-Are-In-Group", authorities[i].getAuthority());
+            }
         }
         rsp.addHeader("X-Required-Permission", permission.getId());
         for (Permission p=permission.impliedBy; p!=null; p=p.impliedBy) {
