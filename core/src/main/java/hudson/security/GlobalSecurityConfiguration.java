@@ -79,7 +79,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
      * @since 2.24
      * @return true if the slave agent port is enforced on this instance.
      */
-    @Restricted(DoNotUse.class) // only for index.groovy
+    @Restricted(NoExternalUse.class) // only for index.groovy
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.getInstance().isSlaveAgentPortEnforced();
     }
@@ -114,10 +114,12 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
             j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-            try {
-                j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
-            } catch (IOException e) {
-                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
+            if (!isSlaveAgentPortEnforced()) {
+                try {
+                    j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
+                } catch (IOException e) {
+                    throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
+                }
             }
             Set<String> agentProtocols = new TreeSet<>();
             if (security.has("agentProtocol")) {
