@@ -79,7 +79,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
      * @since 2.24
      * @return true if the slave agent port is enforced on this instance.
      */
-    @Restricted(NoExternalUse.class) // only for index.groovy
+    @Restricted(NoExternalUse.class)
     public boolean isSlaveAgentPortEnforced() {
         return Jenkins.getInstance().isSlaveAgentPortEnforced();
     }
