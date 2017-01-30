@@ -1367,7 +1367,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
-            e.printStackTrace( log );
+            Functions.printStackTrace(e, log);
         }
     }
 

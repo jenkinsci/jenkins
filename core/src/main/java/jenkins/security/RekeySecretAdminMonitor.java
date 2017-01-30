@@ -2,6 +2,7 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.Util;
+import hudson.Functions;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.TaskListener;
@@ -146,7 +147,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
             LOGGER.info("Secret re-keying completed");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Fatal failure in re-keying secrets",e);
-            e.printStackTrace(listener.error("Fatal failure in rewriting secrets"));
+            Functions.printStackTrace(e, listener.error("Fatal failure in rewriting secrets"));
         }
     }
 

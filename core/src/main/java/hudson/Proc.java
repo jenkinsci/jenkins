@@ -159,7 +159,7 @@ public abstract class Proc {
                             kill();
                         }
                     } catch (InterruptedException | IOException | RuntimeException x) {
-                        x.printStackTrace(listener.error("Failed to join a process"));
+                        Functions.printStackTrace(x, listener.error("Failed to join a process"));
                     }
                 }
             });
