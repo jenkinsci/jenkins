@@ -820,7 +820,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public String getDisplayName() {
-        return "Update center";
+        return Messages.UpdateCenter_DisplayName();
     }
 
     public String getSearchUrl() {
