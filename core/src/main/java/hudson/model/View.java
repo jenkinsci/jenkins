@@ -59,10 +59,11 @@ import hudson.widgets.Widget;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
-import jenkins.scm.RunWithSCM;
+import jenkins.scm.RunWithSCMMixIn;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
@@ -116,7 +117,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.model.Jenkins.*;
+import static jenkins.model.Jenkins.checkGoodName;
+import static jenkins.scm.RunWithSCMMixIn.*;
+
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -463,7 +466,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     private boolean isRelevant(Collection<Label> labels, Computer computer) {
         Node node = computer.getNode();
         if (node == null) return false;
-        if (labels.contains(null) && node.getMode() == Mode.NORMAL) return true;
+        if (labels.contains(null) && node.getMode() == Node.Mode.NORMAL) return true;
 
         for (Label l : labels)
             if (l != null && l.contains(node))
@@ -638,8 +641,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return lastChange;
         }
 
-        @Exported
-        public Job<?,?> getProject() {
+        @Deprecated
+        public AbstractProject getProject() {
+            return project instanceof AbstractProject ? (AbstractProject)project : null;
+        }
+
+        @Exported(name="project")
+        public Job<?,?> getJob() {
             return project;
         }
 
@@ -727,18 +735,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         RunList<? extends Run<?, ?>> runs = job.getBuilds();
                         for (Run<?, ?> r : runs) {
                             if (r instanceof RunWithSCM) {
-                                RunWithSCM runWithSCM = (RunWithSCM) r;
+                                RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
 
-                                for (ChangeLogSet<? extends Entry> c: runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
                                     for (Entry entry : c) {
                                         User user = entry.getAuthor();
 
                                         UserInfo info = users.get(user);
                                         if (info == null)
-                                            users.put(user, new UserInfo(user, job, runWithSCM.getTimestamp()));
-                                        else if (info.getLastChange().before(runWithSCM.getTimestamp())) {
+                                            users.put(user, new UserInfo(user, job, r.getTimestamp()));
+                                        else if (info.getLastChange().before(r.getTimestamp())) {
                                             info.project = job;
-                                            info.lastChange = runWithSCM.getTimestamp();
+                                            info.lastChange = r.getTimestamp();
                                         }
                                     }
                                 }
@@ -773,7 +781,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
                         for (Run<?,?> r : runs) {
                             if (r instanceof RunWithSCM) {
-                                RunWithSCM runWithSCM = (RunWithSCM) r;
+                                RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
                                 for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
                                     for (Entry entry : c) {
                                         User user = entry.getAuthor();
@@ -827,31 +835,33 @@ public abstract class View extends AbstractModelObject implements AccessControll
             for (Item item : items) {
                 for (Job<?,?> job : item.getAllJobs()) {
                     if (job instanceof SCMTriggerItem) {
-                        RunList<? extends Run<?,?>> runs = job.getBuilds();
+                        RunList<? extends Run<?,?>> builds = job.getBuilds();
                         int buildCount = 0;
-                        for (Run<?,?> r : runs) {
+                        for (Run<?,?> r : builds) {
                             if (canceled()) {
                                 return;
                             }
-                            if (r instanceof RunWithSCM) {
-                                RunWithSCM runWithSCM = (RunWithSCM) r;
-                                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
-                                    for (ChangeLogSet.Entry entry : c) {
-                                        User user = entry.getAuthor();
-                                        UserInfo info = users.get(user);
-                                        if (info == null) {
-                                            UserInfo userInfo = new UserInfo(user, job, runWithSCM.getTimestamp());
-                                            userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
-                                            synchronized (this) {
-                                                users.put(user, userInfo);
-                                                modified.add(user);
-                                            }
-                                        } else if (info.getLastChange().before(runWithSCM.getTimestamp())) {
-                                            synchronized (this) {
-                                                info.project = job;
-                                                info.lastChange = runWithSCM.getTimestamp();
-                                                modified.add(user);
-                                            }
+                            if (!(r instanceof RunWithSCM)) {
+                                continue;
+                            }
+
+                            RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
+                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                for (ChangeLogSet.Entry entry : c) {
+                                    User user = entry.getAuthor();
+                                    UserInfo info = users.get(user);
+                                    if (info == null) {
+                                        UserInfo userInfo = new UserInfo(user, job, r.getTimestamp());
+                                        userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
+                                        synchronized (this) {
+                                            users.put(user, userInfo);
+                                            modified.add(user);
+                                        }
+                                    } else if (info.getLastChange().before(r.getTimestamp())) {
+                                        synchronized (this) {
+                                            info.project = job;
+                                            info.lastChange = r.getTimestamp();
+                                            modified.add(user);
                                         }
                                     }
                                 }
@@ -860,7 +870,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             buildCount++;
                             // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
                             // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
-                            progress((itemCount + 1.0 * buildCount / runs.size()) / (items.size() + 1));
+                            progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
                     }
                 }
@@ -901,7 +911,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
-                Job<?,?> p = i.getProject();
+                Job<?,?> p = i.getJob();
                 if (p != null) {
                     entry.accumulate("projectUrl", p.getUrl()).accumulate("projectFullDisplayName", p.getFullDisplayName());
                 }
@@ -1046,7 +1056,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         try {
-            Jenkins.checkGoodName(value);
+            checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
             Jenkins.getInstance().getProjectNamingStrategy().checkName(value);
         } catch (Failure e) {
@@ -1216,8 +1226,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         save();
     }
 
-    public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        ContextMenu m = new ContextMenu();
+    public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
             m.add(i.getShortUrl(),i.getDisplayName());
         return m;

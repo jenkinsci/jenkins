@@ -30,7 +30,8 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import jenkins.scm.RunWithSCM;
+import jenkins.model.ParameterizedJobMixIn;
+import jenkins.scm.RunWithSCMMixIn;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
@@ -92,8 +93,6 @@ import static java.util.logging.Level.WARNING;
 
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Base implementation of {@link Run}s that build software.
@@ -103,7 +102,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCM {
+public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCMMixIn.RunWithSCM<P,R> {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -182,6 +181,23 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override public final LazyBuildMixIn.RunMixIn<P,R> getRunMixIn() {
         return runMixIn;
+    }
+
+    @Override
+    public RunWithSCMMixIn<P,R> getRunWithSCMMixIn() {
+        return new RunWithSCMMixIn<P, R>() {
+            @SuppressWarnings("unchecked") // untypable
+            @Override protected R asRun() {
+                return (R) AbstractBuild.this;
+            }
+
+            @Override
+            @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+                ChangeLogSet<? extends Entry> cs = getChangeSet();
+                return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
+            }
+
+        };
     }
 
     @Override protected final BuildReference<R> createReference() {
@@ -335,52 +351,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     @Override
     @Exported
     @Nonnull public Set<User> getCulprits() {
-        if (culprits==null) {
-            Set<User> r = new HashSet<User>();
-            R p = getPreviousCompletedBuild();
-            if (p !=null && isBuilding()) {
-                Result pr = p.getResult();
-                if (pr!=null && pr.isWorseThan(Result.SUCCESS)) {
-                    // we are still building, so this is just the current latest information,
-                    // but we seems to be failing so far, so inherit culprits from the previous build.
-                    // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
-                    // this information
-                    r.addAll(p.getCulprits());
-                }
-            }
-            for (Entry e : getChangeSet())
-                r.add(e.getAuthor());
+        return getRunWithSCMMixIn().getCulprits();
+    }
 
-            if (upstreamCulprits) {
-                // If we have dependencies since the last successful build, add their authors to our list
-                if (getPreviousNotFailedBuild() != null) {
-                    Map <AbstractProject,DependencyChange> depmap = getDependencyChanges(getPreviousSuccessfulBuild());
-                    for (DependencyChange dep : depmap.values()) {
-                        for (AbstractBuild<?,?> b : dep.getBuilds()) {
-                            for (Entry entry : b.getChangeSet()) {
-                                r.add(entry.getAuthor());
-                            }
-                        }
-                    }
-                }
-            }
-
-            return r;
-        }
-
-        return new AbstractSet<User>() {
-            public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(culprits.iterator()) {
-                    protected User adapt(String id) {
-                        return User.get(id);
-                    }
-                };
-            }
-
-            public int size() {
-                return culprits.size();
-            }
-        };
+    @Override
+    @CheckForNull public Set<String> getCulpritIds() {
+        return culprits;
     }
 
     /**
@@ -390,14 +366,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     @Override
     public boolean hasParticipant(User user) {
-        for (ChangeLogSet.Entry e : getChangeSet())
-            try{
-                if (e.getAuthor()==user)
-                    return true;
-            } catch (RuntimeException re) { 
-                LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + getParent().getDisplayName() + ", " + getDisplayName(), re);
-            }
-        return false;
+        return getRunWithSCMMixIn().hasParticipant(user);
     }
 
     /**

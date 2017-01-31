@@ -91,10 +91,9 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
-import jenkins.scm.RunWithSCM;
+import jenkins.scm.RunWithSCMMixIn;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.triggers.SCMTriggerItem;
-import jenkins.util.io.OnMaster;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -1093,8 +1092,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
                 int idx = 0;
-                if (r instanceof RunWithSCM) {
-                    for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM) r).getChangeSets()) {
+                if (r instanceof RunWithSCMMixIn.RunWithSCM) {
+                    for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCMMixIn.RunWithSCM<?,?>) r).getChangeSets()) {
                         for (ChangeLogSet.Entry e : c) {
                             entries.add(new FeedItem(e, idx++));
                         }
