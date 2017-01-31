@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.slaves.WorkspaceList;
@@ -82,10 +83,10 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 try {
                     check = shouldBeDeleted(item, ws, node);
                 } catch (IOException x) {
-                    x.printStackTrace(listener.error("Failed to check " + node.getDisplayName()));
+                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 } catch (InterruptedException x) {
-                    x.printStackTrace(listener.error("Failed to check " + node.getDisplayName()));
+                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 }
                 if (check) {
@@ -94,9 +95,9 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                         ws.deleteRecursive();
                         WorkspaceList.tempDir(ws).deleteRecursive();
                     } catch (IOException x) {
-                        x.printStackTrace(listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
+                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
+                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
                 }
             }

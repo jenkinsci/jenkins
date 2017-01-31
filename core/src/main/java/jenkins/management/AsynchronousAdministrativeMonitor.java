@@ -1,6 +1,7 @@
 package jenkins.management;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.TaskListener;
@@ -125,7 +126,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
             } catch (AbortException e) {
                 listener.error(e.getMessage());
             } catch (Throwable e) {
-                e.printStackTrace(listener.error(getName() + " failed"));
+                Functions.printStackTrace(e, listener.error(getName() + " failed"));
                 LOGGER.log(Level.WARNING, getName() + " failed", e);
             }
         }

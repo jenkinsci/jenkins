@@ -27,6 +27,7 @@ package hudson.triggers;
 import antlr.ANTLRException;
 import com.google.common.base.Preconditions;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AbstractBuild;
@@ -580,7 +581,7 @@ public class SCMTrigger extends Trigger<Item> {
                         logger.println("No changes");
                     return result;
                 } catch (Error | RuntimeException e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    Functions.printStackTrace(e, listener.error("Failed to record SCM polling for " + job));
                     LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {
