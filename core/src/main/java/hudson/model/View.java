@@ -62,6 +62,8 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.scm.RunWithSCM;
+import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 
@@ -615,12 +617,12 @@ public abstract class View extends AbstractModelObject implements AccessControll
         /**
          * Which project did this user commit? Can be null.
          */
-        private AbstractProject project;
+        private Job<?,?> project;
 
         /** @see UserAvatarResolver */
         String avatar;
 
-        UserInfo(User user, AbstractProject p, Calendar lastChange) {
+        UserInfo(User user, Job<?,?> p, Calendar lastChange) {
             this.user = user;
             this.project = p;
             this.lastChange = lastChange;
@@ -637,7 +639,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         @Exported
-        public AbstractProject getProject() {
+        public Job<?,?> getProject() {
             return project;
         }
 
@@ -720,20 +722,25 @@ public abstract class View extends AbstractModelObject implements AccessControll
         private Map<User,UserInfo> getUserInfo(Collection<? extends Item> items) {
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
-                for (Job job : item.getAllJobs()) {
-                    if (job instanceof AbstractProject) {
-                        AbstractProject<?,?> p = (AbstractProject) job;
-                        for (AbstractBuild<?,?> build : p.getBuilds()) {
-                            for (Entry entry : build.getChangeSet()) {
-                                User user = entry.getAuthor();
+                for (Job<?, ?> job : item.getAllJobs()) {
+                    if (job instanceof SCMTriggerItem) {
+                        RunList<? extends Run<?, ?>> runs = job.getBuilds();
+                        for (Run<?, ?> r : runs) {
+                            if (r instanceof RunWithSCM) {
+                                RunWithSCM runWithSCM = (RunWithSCM) r;
 
-                                UserInfo info = users.get(user);
-                                if(info==null)
-                                    users.put(user,new UserInfo(user,p,build.getTimestamp()));
-                                else
-                                if(info.getLastChange().before(build.getTimestamp())) {
-                                    info.project = p;
-                                    info.lastChange = build.getTimestamp();
+                                for (ChangeLogSet<? extends Entry> c: runWithSCM.getChangeSets()) {
+                                    for (Entry entry : c) {
+                                        User user = entry.getAuthor();
+
+                                        UserInfo info = users.get(user);
+                                        if (info == null)
+                                            users.put(user, new UserInfo(user, job, runWithSCM.getTimestamp()));
+                                        else if (info.getLastChange().before(runWithSCM.getTimestamp())) {
+                                            info.project = job;
+                                            info.lastChange = runWithSCM.getTimestamp();
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -761,13 +768,19 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
-                    if (job instanceof AbstractProject) {
-                        AbstractProject<?,?> p = (AbstractProject) job;
-                        for (AbstractBuild<?,?> build : p.getBuilds()) {
-                            for (Entry entry : build.getChangeSet()) {
-                                User user = entry.getAuthor();
-                                if(user!=null)
-                                    return true;
+                    if (job instanceof SCMTriggerItem) {
+                        RunList<? extends Run<?, ?>> runs = job.getBuilds();
+
+                        for (Run<?,?> r : runs) {
+                            if (r instanceof RunWithSCM) {
+                                RunWithSCM runWithSCM = (RunWithSCM) r;
+                                for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
+                                    for (Entry entry : c) {
+                                        User user = entry.getAuthor();
+                                        if (user != null)
+                                            return true;
+                                    }
+                                }
                             }
                         }
                     }
@@ -813,29 +826,33 @@ public abstract class View extends AbstractModelObject implements AccessControll
             int itemCount = 0;
             for (Item item : items) {
                 for (Job<?,?> job : item.getAllJobs()) {
-                    if (job instanceof AbstractProject) {
-                        AbstractProject<?,?> p = (AbstractProject) job;
-                        RunList<? extends AbstractBuild<?,?>> builds = p.getBuilds();
+                    if (job instanceof SCMTriggerItem) {
+                        RunList<? extends Run<?,?>> runs = job.getBuilds();
                         int buildCount = 0;
-                        for (AbstractBuild<?,?> build : builds) {
+                        for (Run<?,?> r : runs) {
                             if (canceled()) {
                                 return;
                             }
-                            for (ChangeLogSet.Entry entry : build.getChangeSet()) {
-                                User user = entry.getAuthor();
-                                UserInfo info = users.get(user);
-                                if (info == null) {
-                                    UserInfo userInfo = new UserInfo(user, p, build.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
-                                    synchronized (this) {
-                                        users.put(user, userInfo);
-                                        modified.add(user);
-                                    }
-                                } else if (info.getLastChange().before(build.getTimestamp())) {
-                                    synchronized (this) {
-                                        info.project = p;
-                                        info.lastChange = build.getTimestamp();
-                                        modified.add(user);
+                            if (r instanceof RunWithSCM) {
+                                RunWithSCM runWithSCM = (RunWithSCM) r;
+                                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                                    for (ChangeLogSet.Entry entry : c) {
+                                        User user = entry.getAuthor();
+                                        UserInfo info = users.get(user);
+                                        if (info == null) {
+                                            UserInfo userInfo = new UserInfo(user, job, runWithSCM.getTimestamp());
+                                            userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
+                                            synchronized (this) {
+                                                users.put(user, userInfo);
+                                                modified.add(user);
+                                            }
+                                        } else if (info.getLastChange().before(runWithSCM.getTimestamp())) {
+                                            synchronized (this) {
+                                                info.project = job;
+                                                info.lastChange = runWithSCM.getTimestamp();
+                                                modified.add(user);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -843,7 +860,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                             buildCount++;
                             // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
                             // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
-                            progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
+                            progress((itemCount + 1.0 * buildCount / runs.size()) / (items.size() + 1));
                         }
                     }
                 }
@@ -884,7 +901,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/" + iconSize + "/user.png").
                         accumulate("timeSortKey", i.getTimeSortKey()).
                         accumulate("lastChangeTimeString", i.getLastChangeTimeString());
-                AbstractProject<?,?> p = i.getProject();
+                Job<?,?> p = i.getProject();
                 if (p != null) {
                     entry.accumulate("projectUrl", p.getUrl()).accumulate("projectFullDisplayName", p.getFullDisplayName());
                 }

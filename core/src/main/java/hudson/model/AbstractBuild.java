@@ -30,6 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
+import jenkins.scm.RunWithSCM;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
@@ -102,7 +103,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R> {
+public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCM {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -331,8 +332,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return
      *      can be empty but never null.
      */
+    @Override
     @Exported
-    public Set<User> getCulprits() {
+    @Nonnull public Set<User> getCulprits() {
         if (culprits==null) {
             Set<User> r = new HashSet<User>();
             R p = getPreviousCompletedBuild();
@@ -386,6 +388,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *
      * @since 1.191
      */
+    @Override
     public boolean hasParticipant(User user) {
         for (ChangeLogSet.Entry e : getChangeSet())
             try{
@@ -863,7 +866,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      * @return never null.
      */
     @Exported
-    public ChangeLogSet<? extends Entry> getChangeSet() {
+    @Nonnull public ChangeLogSet<? extends Entry> getChangeSet() {
         synchronized (changeSetLock) {
             if (scm==null) {
                 scm = NullChangeLogParser.INSTANCE;                
@@ -887,8 +890,8 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return cs;
     }
 
-    @Restricted(DoNotUse.class) // for project-changes.jelly
-    public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+    @Override
+    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
         ChangeLogSet<? extends Entry> cs = getChangeSet();
         return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
     }
