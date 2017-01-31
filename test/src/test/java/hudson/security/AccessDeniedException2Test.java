@@ -25,11 +25,7 @@
 package hudson.security;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import org.hamcrest.Matchers;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,19 +50,10 @@ public class AccessDeniedException2Test {
         r.jenkins.setSecurityRealm(realm);
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         try {
-            r.createWebClient().login("user").goTo("confgure");
+            r.createWebClient().login("user");
             fail("should not have been allowed to access anything");
         } catch (FailingHttpStatusCodeException x) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-            List<String> reportedGroups = new ArrayList<>();
-            for (NameValuePair header : x.getResponse().getResponseHeaders()) {
-                if (header.getName().equals("X-You-Are-In-Group")) {
-                    reportedGroups.add(header.getValue());
-                }
-            }
-            assertThat("capped at a reasonable number", reportedGroups, Matchers.<List<String>>allOf(
-                Matchers.<String>hasSize(11), // 10 groups plus final warning
-                Matchers.<String>hasItem("<991 more>"))); // 1000 + SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority() - 10
         }
     }
 
