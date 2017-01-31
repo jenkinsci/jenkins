@@ -30,7 +30,6 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.RunWithSCMMixIn;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
@@ -72,7 +71,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.lang.ref.WeakReference;
-import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -861,8 +859,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
     @Override
     @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
-        ChangeLogSet<? extends Entry> cs = getChangeSet();
-        return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
+        return getRunWithSCMMixIn().getChangeSets();
     }
 
     /**
