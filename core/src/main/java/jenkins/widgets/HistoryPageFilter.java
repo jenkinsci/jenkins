@@ -31,6 +31,7 @@ import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
+import hudson.search.UserSearchProperty;
 import hudson.widgets.HistoryWidget;
 
 import javax.annotation.Nonnull;
@@ -365,15 +366,19 @@ public class HistoryPageFilter<T> {
             return true;
         }
 
-        if (data != null) {
-            if (data instanceof Number) {
-                return data.toString().equals(searchString);
-            } else {
-                return data.toString().toLowerCase().contains(searchString.toLowerCase());
-            }
+        if (data == null) {
+            return false;
         }
 
-        return false;
+        if (data instanceof Number) {
+            return data.toString().equals(searchString);
+        } else {
+            if (UserSearchProperty.isCaseInsensitive()) {
+                return data.toString().toLowerCase().contains(searchString.toLowerCase());
+            } else {
+                return data.toString().contains(searchString);
+            }
+        }
     }
 
     private boolean fitsSearchBuildVariables(AbstractBuild<?, ?> runAsBuild) {
