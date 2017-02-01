@@ -376,10 +376,9 @@ public class HistoryPageFilter<T> {
         return false;
     }
 
-    private boolean fitsSearchBuildVariables(AbstractBuild runAsBuild) {
-        Map buildVariables = runAsBuild.getBuildVariables();
-        //TODO: Add isSensitive filtering
-        for (Object paramsValues : buildVariables.values()) {
+    private boolean fitsSearchBuildVariables(AbstractBuild<?, ?> runAsBuild) {
+        Map<String, String> buildVariables = runAsBuild.getBuildVariables();
+        for (String paramsValues : buildVariables.values()) {
             if (fitsSearchString(paramsValues)) {
                 return true;
             }
@@ -389,9 +388,8 @@ public class HistoryPageFilter<T> {
 
     private boolean fitsSearchBuildParameters(ParametersAction parametersAction) {
         List<ParameterValue> parameters = parametersAction.getParameters();
-        //TODO: Add isSensitive filtering
         for (ParameterValue parameter : parameters) {
-            if (fitsSearchString(parameter.getValue())) {
+            if (!parameter.isSensitive() && fitsSearchString(parameter.getValue())) {
                 return true;
             }
         }

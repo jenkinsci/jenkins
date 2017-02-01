@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -396,6 +397,26 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
     }
 
+    @Test
+    public void test_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        //and
+        historyPageFilter.setSearchString("pass1");
+        //and
+        List<ModelObject> runs = new ArrayList<>();
+        runs.add(new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")));
+        runs.add(new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+    }
+
     private List<Queue.Item> newQueueItems(long startId, long endId) {
         List<Queue.Item> items = new ArrayList<>();
         for (long queueId = startId; queueId <= endId; queueId++) {
@@ -482,7 +503,7 @@ public class HistoryPageFilterTest {
         }
     }
 
-    private static class MockBuild extends Build<FreeStyleProject,FreeStyleBuild> {
+    private static class MockBuild extends Build<FreeStyleProject, FreeStyleBuild> {
 
         private final int buildNumber;
 
@@ -520,6 +541,21 @@ public class HistoryPageFilterTest {
                 parameterValues.add(new StringParameterValue(parameter.getKey(), parameter.getValue()));
             }
             return parameterValues;
+        }
+
+        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
+            addAction(new ParametersAction(ImmutableList.<ParameterValue>of(createSensitiveStringParameterValue(paramName, paramValue)),
+                    ImmutableList.of(paramName)));
+            return this;
+        }
+
+        private StringParameterValue createSensitiveStringParameterValue(final String paramName, final String paramValue) {
+            return new StringParameterValue(paramName, paramValue) {
+                @Override
+                public boolean isSensitive() {
+                    return true;
+                }
+            };
         }
     }
 }
