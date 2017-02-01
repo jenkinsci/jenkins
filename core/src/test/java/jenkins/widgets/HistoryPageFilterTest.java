@@ -343,92 +343,49 @@ public class HistoryPageFilterTest {
     @Test
     @Ignore //User with insensitiveSearch enabled needs to be injected
     public void test_search_runs_by_build_result() throws IOException {
-        //given
         //TODO: Set user with insensitiveSearch enabled
-        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        //and
-        historyPageFilter.setSearchString("failure");
-        //and
-        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
-        List<Queue.Item> queueItems = newQueueItems(3, 4);
-
-        //when
-        historyPageFilter.add(runs, queueItems);
-
-        //then
-        Assert.assertEquals(1, historyPageFilter.runs.size());
-        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 
     @Test
     @Ignore //User with insensitiveSearch enabled needs to be injected
     public void test_case_insensitivity_in_search_runs() throws IOException {
-        //given
         //TODO: Set user with insensitiveSearch enabled
-        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
-        List<Queue.Item> queueItems = newQueueItems(3, 4);
-        //and
-        historyPageFilter.setSearchString("FAILure");
-
-        //when
-        historyPageFilter.add(runs, queueItems);
-
-        //then
-        Assert.assertEquals(1, historyPageFilter.runs.size());
-        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
     }
 
     @Test
     public void test_search_builds_by_build_variables() throws IOException {
-        //given
-        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        //and
-        historyPageFilter.setSearchString("dummyEnv");
-        //and
-        List<ModelObject> runs = new ArrayList<>();
-        runs.add(new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")));
-        runs.add(new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
-        List<Queue.Item> queueItems = newQueueItems(3, 4);
-
-        //when
-        historyPageFilter.add(runs, queueItems);
-
-        //then
-        Assert.assertEquals(1, historyPageFilter.runs.size());
-        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+                new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     public void test_search_builds_by_build_params() throws IOException {
-        //given
-        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        //and
-        historyPageFilter.setSearchString("dummyEnv");
-        //and
-        List<ModelObject> runs = new ArrayList<>();
-        runs.add(new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")));
-        runs.add(new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
-        List<Queue.Item> queueItems = newQueueItems(3, 4);
-
-        //when
-        historyPageFilter.add(runs, queueItems);
-
-        //then
-        Assert.assertEquals(1, historyPageFilter.runs.size());
-        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+                new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
     @Test
     public void test_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
+        List<ModelObject> runs = ImmutableList.<ModelObject>of(
+                new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),
+                new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
+    }
+
+    private void assertOneMatchingBuildForGivenSearchStringAndRunItems(String searchString, List<ModelObject> runs) {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
         //and
-        historyPageFilter.setSearchString("pass1");
+        historyPageFilter.setSearchString(searchString);
         //and
-        List<ModelObject> runs = new ArrayList<>();
-        runs.add(new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")));
-        runs.add(new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         List<Queue.Item> queueItems = newQueueItems(3, 4);
 
         //when
