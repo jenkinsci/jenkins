@@ -29,9 +29,13 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.MockItem;
 import hudson.model.ModelObject;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.StringParameterValue;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -39,6 +43,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -352,15 +357,15 @@ public class HistoryPageFilterTest {
     }
 
     @Test
-    public void test_search_builds_by_build_params() throws IOException {
+    public void test_search_builds_by_build_variables() throws IOException {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
         //and
         historyPageFilter.setSearchString("dummyEnv");
         //and
         List<ModelObject> runs = new ArrayList<>();
-        runs.add(new MockBuild(2, ImmutableMap.of("env", "dummyEnv")));
-        runs.add(new MockBuild(1, ImmutableMap.of("env", "otherEnv")));
+        runs.add(new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")));
+        runs.add(new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
         List<Queue.Item> queueItems = newQueueItems(3, 4);
 
         //when
@@ -371,7 +376,27 @@ public class HistoryPageFilterTest {
         Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
     }
 
-   private List<Queue.Item> newQueueItems(long startId, long endId) {
+    @Test
+    public void test_search_builds_by_build_params() throws IOException {
+        //given
+        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
+        //and
+        historyPageFilter.setSearchString("dummyEnv");
+        //and
+        List<ModelObject> runs = new ArrayList<>();
+        runs.add(new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")));
+        runs.add(new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
+        List<Queue.Item> queueItems = newQueueItems(3, 4);
+
+        //when
+        historyPageFilter.add(runs, queueItems);
+
+        //then
+        Assert.assertEquals(1, historyPageFilter.runs.size());
+        Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
+    }
+
+    private List<Queue.Item> newQueueItems(long startId, long endId) {
         List<Queue.Item> items = new ArrayList<>();
         for (long queueId = startId; queueId <= endId; queueId++) {
             items.add(new MockItem(queueId));
@@ -460,12 +485,12 @@ public class HistoryPageFilterTest {
     private static class MockBuild extends Build<FreeStyleProject,FreeStyleBuild> {
 
         private final int buildNumber;
-        private final Map<String, String> buildVariables;
 
-        public MockBuild(int buildNumber, Map<String, String> buildVariables) {
+        private Map<String, String> buildVariables = Collections.emptyMap();
+
+        private MockBuild(int buildNumber) {
             super(Mockito.mock(FreeStyleProject.class), Mockito.mock(Calendar.class));
             this.buildNumber = buildNumber;
-            this.buildVariables = buildVariables;
         }
 
         @Override
@@ -476,6 +501,25 @@ public class HistoryPageFilterTest {
         @Override
         public Map<String, String> getBuildVariables() {
             return buildVariables;
+        }
+
+        MockBuild withBuildVariables(Map<String, String> buildVariables) {
+            this.buildVariables = buildVariables;
+            return this;
+        }
+
+        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) throws IOException {
+            addAction(new ParametersAction(buildPropertiesMapToParameterValues(buildParametersAsMap), buildParametersAsMap.keySet()));
+            return this;
+        }
+
+        //TODO: Rewrite in functional style when Java 8 is available
+        private List<ParameterValue> buildPropertiesMapToParameterValues(Map<String, String> buildParametersAsMap) {
+            List<ParameterValue> parameterValues = new ArrayList<>();
+            for (Map.Entry<String, String> parameter : buildParametersAsMap.entrySet()) {
+                parameterValues.add(new StringParameterValue(parameter.getKey(), parameter.getValue()));
+            }
+            return parameterValues;
         }
     }
 }

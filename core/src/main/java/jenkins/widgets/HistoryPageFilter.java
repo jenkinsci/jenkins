@@ -27,6 +27,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.widgets.HistoryWidget;
@@ -345,8 +347,11 @@ public class HistoryPageFilter<T> {
             return true;
         } else if (fitsSearchString(run.getResult())) {
             return true;
-        } else if (run instanceof AbstractBuild) {
-            if (fitsSearchBuild((AbstractBuild) run)) {
+        } else if (run instanceof AbstractBuild && fitsSearchBuildVariables((AbstractBuild) run)) {
+            return true;
+        } else {
+            ParametersAction parametersAction = run.getAction(ParametersAction.class);
+            if (parametersAction != null && fitsSearchBuildParameters(parametersAction)) {
                 return true;
             }
         }
@@ -371,10 +376,22 @@ public class HistoryPageFilter<T> {
         return false;
     }
 
-    private boolean fitsSearchBuild(AbstractBuild runAsBuild) {
+    private boolean fitsSearchBuildVariables(AbstractBuild runAsBuild) {
         Map buildVariables = runAsBuild.getBuildVariables();
+        //TODO: Add isSensitive filtering
         for (Object paramsValues : buildVariables.values()) {
             if (fitsSearchString(paramsValues)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean fitsSearchBuildParameters(ParametersAction parametersAction) {
+        List<ParameterValue> parameters = parametersAction.getParameters();
+        //TODO: Add isSensitive filtering
+        for (ParameterValue parameter : parameters) {
+            if (fitsSearchString(parameter.getValue())) {
                 return true;
             }
         }
