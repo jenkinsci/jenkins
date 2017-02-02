@@ -819,6 +819,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
+        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
         LOGGER.info("Attempting to dynamic load "+arc);
         PluginWrapper p = null;
         String sn;
@@ -913,6 +914,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         resolveDependantPlugins();
 
         LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
+        }
     }
 
     @Restricted(NoExternalUse.class)
