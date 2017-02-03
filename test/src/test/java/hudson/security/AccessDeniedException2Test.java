@@ -54,6 +54,7 @@ public class AccessDeniedException2Test {
             fail("should not have been allowed to access anything");
         } catch (FailingHttpStatusCodeException x) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
+            assertNotNull(x.getResponse().getResponseHeaderValue("X-You-Are-In-Group-Disabled"));
         }
     }
 
