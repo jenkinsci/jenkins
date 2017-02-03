@@ -35,6 +35,7 @@ import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.*;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
@@ -53,6 +54,8 @@ import java.util.concurrent.Callable;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.context.SecurityContextHolder;
+
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
@@ -117,6 +120,32 @@ public class NodeTest {
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
         assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+        assertEquals(root, cause.getUser());
+
+        computer.doToggleOffline(null);
+        assertNull(computer.getOfflineCause());
+    }
+
+    @Test
+    public void testOfflineCauseAsAnonymous() throws Exception {
+        Node node = j.createOnlineSlave();
+        final Computer computer = node.toComputer();
+        OfflineCause.UserCause cause;
+        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS)) {
+            computer.doToggleOffline("original message");
+        }
+
+        cause = (UserCause) computer.getOfflineCause();
+        assertThat(cause.toString(), endsWith("Disconnected by anonymous : original message"));
+        assertEquals(User.getUnknown(), cause.getUser());
+
+
+        final User root = User.get("root@localhost");
+        try (ACLContext ctxt = ACL.as(root.impersonate())) {
+            computer.doChangeOfflineCause("new message");
+        }
+        cause = (UserCause) computer.getOfflineCause();
+        assertThat(cause.toString(), endsWith("Disconnected by root@localhost : new message"));
         assertEquals(root, cause.getUser());
 
         computer.doToggleOffline(null);
