@@ -92,9 +92,10 @@ public abstract class ViewGroupMixIn {
     }
 
     public View getView(String name) {
-        for (View v : views()) {
-            if(v.getViewName().equals(name))
+        for (View v : getAllViews()) {
+            if (v.getViewName().equals(name)) {
                 return v;
+            }
         }
         if (name != null && !name.equals(primaryView())) {
             // Fallback to subview of primary view if it is a ViewGroup
@@ -127,6 +128,11 @@ public abstract class ViewGroupMixIn {
         }
         Collections.sort(copy, View.SORTER);
         return copy;
+    }
+
+    //Already implemented in ViewGroup interface - can be private
+    private Collection<View> getAllViews() {
+        return owner.getAllViews();
     }
 
     /**

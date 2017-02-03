@@ -18,6 +18,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.mockito.Mockito;
@@ -103,6 +104,22 @@ public class ViewTest {
         final TopLevelItem[] expected = new TopLevelItem[] {rootJob, sharedJob, leftJob, rightJob};
 
         assertArrayEquals(expected, rootView.getAllItems().toArray());
+    }
+
+    @Test
+    @Issue("JENKINS-43322")
+    public void getAllViewsRecursively() {
+        //given
+        View left2ndNestedView = Mockito.mock(View.class);
+        View right2ndNestedView = Mockito.mock(View.class);
+        CompositeView rightNestedGroupView = new CompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
+        //and
+        View leftTopLevelView = Mockito.mock(View.class);
+        CompositeView rootView = new CompositeView("rootGroupView", leftTopLevelView, rightNestedGroupView);
+        //when
+        Collection<View> allViews = rootView.getAllViews();
+        //then
+        assertEquals(4, allViews.size());
     }
 
     private TopLevelItem createJob(String jobName) {

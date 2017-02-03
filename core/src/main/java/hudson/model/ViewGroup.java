@@ -29,6 +29,7 @@ import hudson.views.ViewsTabBar;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -56,6 +57,26 @@ public interface ViewGroup extends Saveable, ModelObject, AccessControlled {
      *      can be empty but never null.
      */
     Collection<View> getViews();
+
+    /**
+     * Gets all the views in this group including nested views.
+     *
+     * @return
+     *      can be empty but never null.
+     *
+     * @since TODO
+     */
+    default Collection<View> getAllViews() {
+        final Collection<View> views = new LinkedHashSet<>(getViews());
+
+        for (View view : getViews()) {
+            if (view instanceof ViewGroup) {
+                views.addAll(((ViewGroup) view).getAllViews());
+            }
+        }
+
+        return views;
+    }
 
     /**
      * Gets a view of the given name.

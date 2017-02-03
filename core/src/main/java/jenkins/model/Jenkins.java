@@ -1811,6 +1811,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return viewGroupMixIn.getViews();
     }
 
+    @Exported     //Just to be exported - @Exported on default methods in interface is not supported
+    public Collection<View> getAllViews() {
+        return super.getAllViews();
+    }
+
     @Override
     public void addView(View v) throws IOException {
         viewGroupMixIn.addView(v);
@@ -2266,7 +2271,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 })
                 .add(new CollectionSearchIndex() {// for views
                     protected View get(String key) { return getView(key); }
-                    protected Collection<View> all() { return viewGroupMixIn.getViews(); }
+                    protected Collection<View> all() { return getAllViews(); }
                 });
         return builder;
     }

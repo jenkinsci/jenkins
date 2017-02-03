@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import hudson.views.ViewsTabBar;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -42,6 +43,8 @@ import hudson.model.Queue.Task;
 import hudson.model.Node.Mode;
 
 import org.jvnet.hudson.test.Email;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.w3c.dom.Text;
 
 import static hudson.model.Messages.Hudson_ViewName;
@@ -53,12 +56,18 @@ import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+import javax.servlet.ServletException;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -217,7 +226,7 @@ public class ViewTest {
         xml = new XmlFile(Jenkins.XSTREAM, new File(j.jenkins.getRootDir(), "config.xml")).asString();
         assertTrue(xml, xml.contains("<description>two</description>"));
     }
-    
+
     @Test
     public void testGetQueueItems() throws IOException, Exception{
         ListView view1 = listView("view1");
@@ -555,4 +564,104 @@ public class ViewTest {
         assertNull(j.getInstance().getView("All"));
     }
 
+    @Test
+    @Issue("JENKINS-43322")
+    public void shouldFindNestedViewByName() throws Exception {
+        //given
+        String testNestedViewName = "right2ndNestedView";
+        View right2ndNestedView = mockedViewWithName(testNestedViewName);
+        //and
+        View left2ndNestedView = mockedViewWithName("left2ndNestedView");
+        DummyCompositeView rightNestedGroupView = new DummyCompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
+        //and
+        listView("leftTopLevelView");
+        j.jenkins.addView(rightNestedGroupView);
+        //when
+        View foundNestedView = j.jenkins.getView(testNestedViewName);
+        //then
+        assertEquals(right2ndNestedView, foundNestedView);
+    }
+
+    private View mockedViewWithName(String viewName) {
+        return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
+    }
+
+    //Duplication with ViewTest.CompositeView from core unit test module - unfortunately it is inaccessible from here
+    private static class DummyCompositeView extends View implements ViewGroup {
+
+        private View[] views;
+        private TopLevelItem[] jobs;
+
+        protected DummyCompositeView(final String name, View... views) {
+            super(name);
+            this.views = views;
+        }
+
+        private DummyCompositeView withJobs(TopLevelItem... jobs) {
+            this.jobs = jobs;
+            return this;
+        }
+
+        @Override
+        public Collection<TopLevelItem> getItems() {
+            return Arrays.asList(this.jobs);
+        }
+
+        @Override
+        public Collection<View> getViews() {
+            return Arrays.asList(this.views);
+        }
+
+        @Override
+        public boolean canDelete(View view) {
+            return false;
+        }
+
+        @Override
+        public void deleteView(View view) throws IOException {
+        }
+
+        @Override
+        public View getView(String name) {
+            return null;
+        }
+
+        @Override
+        public View getPrimaryView() {
+            return null;
+        }
+
+        @Override
+        public void onViewRenamed(View view, String oldName, String newName) {
+        }
+
+        @Override
+        public ViewsTabBar getViewsTabBar() {
+            return null;
+        }
+
+        @Override
+        public ItemGroup<? extends TopLevelItem> getItemGroup() {
+            return null;
+        }
+
+        @Override
+        public List<Action> getViewActions() {
+            return null;
+        }
+
+        @Override
+        public boolean contains(TopLevelItem item) {
+            return false;
+        }
+
+        @Override
+        protected void submit(StaplerRequest req) throws IOException, ServletException, Descriptor.FormException {
+        }
+
+        @Override
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            return null;
+        }
+    }
 }
