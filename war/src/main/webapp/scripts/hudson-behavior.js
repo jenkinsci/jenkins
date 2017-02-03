@@ -350,7 +350,14 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
+    return directionF(src,function(e){ 
+        if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
+            var r = 0;
+            while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
+                r = e.name.indexOf('_',r+8)+1;
+            return name == e.name.substring(r);
+        }
+        return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 }
 
 /**
