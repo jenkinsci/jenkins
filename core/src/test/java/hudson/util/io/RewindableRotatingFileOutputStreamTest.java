@@ -9,16 +9,20 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 
-/**
- * @author Kohsuke Kawaguchi
- */
-public class ReopenableRotatingFileOutputStreamTest {
+public class RewindableRotatingFileOutputStreamTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     @Test
     public void rotation() throws IOException, InterruptedException {
-        File base = File.createTempFile("test", "log");
-        ReopenableRotatingFileOutputStream os = new ReopenableRotatingFileOutputStream(base,3);
+        File base = tmp.newFile("test.log");
+        RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base,3);
         PrintWriter w = new PrintWriter(os,true);
         for (int i=0; i<=4; i++) {
             w.println("Content"+i);
@@ -35,4 +39,21 @@ public class ReopenableRotatingFileOutputStreamTest {
 
         os.deleteAll();
     }
+
+    @Issue("JENKINS-16634")
+    @Test
+    public void deletedFolder() throws Exception {
+        File dir = tmp.newFolder("dir");
+        File base = new File(dir, "x.log");
+        RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
+        for (int i = 0; i < 2; i++) {
+            FileUtils.deleteDirectory(dir);
+            os.write('.');
+            FileUtils.deleteDirectory(dir);
+            os.write('.');
+            FileUtils.deleteDirectory(dir);
+            os.rewind();
+        }
+    }
+
 }
