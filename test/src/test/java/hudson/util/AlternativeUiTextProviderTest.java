@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -72,6 +73,7 @@ public class AlternativeUiTextProviderTest {
      * Makes sure that {@link AlternativeUiTextProvider} actually works with a parameterized Job.
      */
     @Test
+    @Issue("JENKINS-41757")
     public void basicsWithParameter() throws Exception {
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
