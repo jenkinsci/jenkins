@@ -19,7 +19,7 @@ properties([[$class: 'jenkins.model.BuildDiscarderProperty', strategy: [$class: 
                                                                         artifactNumToKeepStr: '20']]])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
-def buildTypes = ['Linux'] // TODO add 'Windows'
+def buildTypes = ['Linux', 'Windows']
 
 def builds = [:]
 for(i = 0; i < buildTypes.size(); i++) {
