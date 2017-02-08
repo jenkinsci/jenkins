@@ -93,6 +93,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * Lazily obtained {@link ProcessKiller}s to be applied on this process tree.
      */
     private transient volatile List<ProcessKiller> killers;
+    
+    /**
+     * Lazily obtained {@link ProcessKillingVeto}ers to be applied on this process tree.
+     */
+    private transient volatile List<ProcessKillingVeto> vetoers;
 
     // instantiation only allowed for subtypes in this class
     private ProcessTree() {}
@@ -171,6 +176,28 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             }
         return killers;
     }
+    
+    final List<ProcessKillingVeto> getVetoers() throws InterruptedException {
+        if (vetoers==null)
+            try {
+                VirtualChannel channelToMaster = SlaveComputer.getChannelToMaster();
+                if (channelToMaster!=null) {
+                    vetoers = channelToMaster.call(new SlaveToMasterCallable<List<ProcessKillingVeto>, IOException>() {
+                        public List<ProcessKillingVeto> call() throws IOException {
+                            return new ArrayList<ProcessKillingVeto>(ProcessKillingVeto.all());
+                        }
+                    });
+                } else {
+                    // used in an environment that doesn't support talk-back to the master.
+                    // let's do with what we have.
+                    vetoers = Collections.emptyList();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to obtain vetoers",e);
+                vetoers = Collections.emptyList();
+            }
+        return vetoers;
+    }
 
     /**
      * Represents a process.
@@ -237,8 +264,8 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
          * @return The first non-null {@link VetoCause} provided by a process killing veto extension for this OSProcess. 
          * null if no one objects killing the process.
          */
-        protected @CheckForNull VetoCause getVeto() {
-            for (ProcessKillingVeto vetoExtension : ProcessKillingVeto.all()) {
+        protected @CheckForNull VetoCause getVeto() throws InterruptedException {
+            for (ProcessKillingVeto vetoExtension : getVetoers()) {
                 VetoCause cause = vetoExtension.vetoProcessKilling(this);
                 if (cause != null) {
                     if (LOGGER.isLoggable(FINEST))
