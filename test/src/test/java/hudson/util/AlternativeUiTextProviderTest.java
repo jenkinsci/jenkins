@@ -25,11 +25,14 @@ package hudson.util;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import jenkins.model.ParameterizedJobMixIn;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -58,9 +61,28 @@ public class AlternativeUiTextProviderTest {
      */
     @Test
     public void basics() throws Exception {
+        Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         assertThat(j.createWebClient().getPage(p).asText(), containsString("newschool:aaa"));
+
         Impl.oldschool = true;
         assertThat(j.createWebClient().getPage(p).asText(), containsString("oldschool:aaa"));
+    }
+
+    /**
+     * Makes sure that {@link AlternativeUiTextProvider} actually works with a parameterized Job.
+     */
+    @Test
+    @Issue("JENKINS-41757")
+    public void basicsWithParameter() throws Exception {
+        Impl.oldschool = false;
+        FreeStyleProject p = j.createFreeStyleProject("aaa");
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FOO", null)));
+        String pageText = j.createWebClient().getPage(p).asText();
+        assertThat(pageText, containsString("newschool:aaa"));
+
+        Impl.oldschool = true;
+        pageText = j.createWebClient().getPage(p).asText();
+        assertThat(pageText, containsString("oldschool:aaa"));
     }
 }
