@@ -318,7 +318,9 @@ public class InstallUtil {
     public static synchronized void persistInstallStatus(List<UpdateCenterJob> installingPlugins) {
         File installingPluginsFile = getInstallingPluginsFile();
 	if(installingPlugins == null || installingPlugins.isEmpty()) {
-		installingPluginsFile.delete();
+		if (!installingPluginsFile.delete()) {
+		    LOGGER.log(SEVERE, String.format("Failed to delete %s", installingPluginsFile.getAbsolutePath()));
+        }
 		return;
 	}
 	LOGGER.fine("Writing install state to: " + installingPluginsFile.getAbsolutePath());

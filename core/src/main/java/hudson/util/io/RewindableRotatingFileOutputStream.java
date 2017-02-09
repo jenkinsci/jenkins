@@ -25,6 +25,9 @@ package hudson.util.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.WARNING;
 
 /**
  * {@link ReopenableFileOutputStream} that does log rotation upon rewind.
@@ -36,6 +39,7 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
     /**
      * Number of log files to keep.
      */
+    private static final Logger LOGGER = Logger.getLogger(RewindableRotatingFileOutputStream.class.getName());
     private final int size;
 
     public RewindableRotatingFileOutputStream(File out, int size) {
@@ -55,7 +59,9 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
             File fi = getNumberedFileName(i);
             if (fi.exists()) {
                 File next = getNumberedFileName(i+1);
-                next.delete();
+                if (!next.delete()){
+                    throw new IOException(String.format("Could not delete %s", next.getAbsolutePath()));
+                }
                 fi.renameTo(next);
             }
         }
@@ -66,7 +72,9 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
      */
     public void deleteAll() {
         for (int i=0; i<=size; i++) {
-            getNumberedFileName(i).delete();
+            File f= getNumberedFileName(i);
+            if (!f.delete())
+                LOGGER.log(WARNING, String.format("Could not delete %s", f.getAbsolutePath()));
         }
     }
 }
