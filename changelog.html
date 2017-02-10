@@ -56,19 +56,38 @@ Upcoming changes</a>
 <!-- Record your changes in the trunk here. -->
 <div id="trunk" style="display:none"><!--=TRUNK-BEGIN=-->
 <ul class=image>
+  <li class=bug>
+    Failure to serialize a single <code>Action</code> could cause an entire REST export response to fail.
+    Upgraded to Stapler <code>1.249</code> with a fix.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40088">issue 40088</a>)
+</ul>
+</div><!--=TRUNK-END=-->
+<h3><a name=v2.45>What's new in 2.45</a> (2017/02/06)</h3>
+<ul class=image>
+  <li class=bug>
+    Delete obsolete pinning UI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34065">issue 34065</a>)
+  <li class=bug>
+    Don't try to set Agent Port when it is enforced, breaking form submission.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-41511">issue 41511</a>)
+  <li class=bug>
+    Use project-specific validation URL for SCM Trigger, so <code>H</code> is handled correctly in preview.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-26977">issue 26977</a>)
+  <li class=bug>
+    Fix completely wrong Basque translation.
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2731">pull 2731</a>)
+</ul>
+<h3><a name=v2.44>What's new in 2.44</a> (2017/02/01)</h3>
+<ul class=image>
    <li class="major bug">
      <strong>Important security fixes</strong>
      (<a href="https://wiki.jenkins-ci.org/display/SECURITY/Jenkins+Security+Advisory+2017-02-01">security advisory</a>)
 </ul>
-</div><!--=TRUNK-END=-->
-<h3><a name=v2.44>What's new in 2.44</a> (2017/02/01)</h3>
+<h3><a name=v2.43>What's new in 2.43</a> (2017/01/29)</h3>
 <ul class=image>
   <li class=rfe>
     Print stack traces in logical order, with the most important part on top.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1485">pull 1485</a>)
-</ul>
-<h3><a name=v2.43>What's new in 2.43</a> (2017/01/29)</h3>
-<ul class=image>
 </ul>
 <h3><a name=v2.42>What's new in 2.42</a> (2017/01/22)</h3>
 <ul class=image>
@@ -99,7 +118,7 @@ Upcoming changes</a>
   <li class="major rfe">
     Support displaying of warnings from the Update Site in the Plugin Manager
     and in administrative monitors.
-    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40404</a>,
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40494">issue 40494</a>,
     <a href="/blog/2017/01/10/security-warnings/">announcement blog post</a>)
   <li class=rfe>
     Do not print warnings about undefined parameters
