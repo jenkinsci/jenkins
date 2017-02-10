@@ -106,7 +106,7 @@ public class AbstractBuildRangeCommand2Test {
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1\n"));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
     }
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
@@ -124,7 +124,7 @@ public class AbstractBuildRangeCommand2Test {
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: \n"));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
 }
