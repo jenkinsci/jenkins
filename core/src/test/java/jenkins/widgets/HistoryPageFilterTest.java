@@ -54,6 +54,8 @@ import com.google.common.collect.Lists;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ *
+ * See also HistoryPageFilterInsensitiveSearchTest integration test.
  */
 public class HistoryPageFilterTest {
 
@@ -338,22 +340,6 @@ public class HistoryPageFilterTest {
 
         //then
         Assert.assertEquals(0, historyPageFilter.runs.size());
-    }
-
-    @Test
-    @Ignore //User with insensitiveSearch enabled needs to be injected
-    public void test_search_runs_by_build_result() throws IOException {
-        //TODO: Set user with insensitiveSearch enabled
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
-        assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
-    }
-
-    @Test
-    @Ignore //User with insensitiveSearch enabled needs to be injected
-    public void test_case_insensitivity_in_search_runs() throws IOException {
-        //TODO: Set user with insensitiveSearch enabled
-        List<ModelObject> runs = ImmutableList.<ModelObject>of(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
-        assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
     }
 
     @Test
