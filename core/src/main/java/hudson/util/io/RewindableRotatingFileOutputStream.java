@@ -59,9 +59,7 @@ public class RewindableRotatingFileOutputStream extends RewindableFileOutputStre
             File fi = getNumberedFileName(i);
             if (fi.exists()) {
                 File next = getNumberedFileName(i+1);
-                if (!next.delete()){
-                    throw new IOException(String.format("Could not delete %s", next.getAbsolutePath()));
-                }
+                next.delete();
                 fi.renameTo(next);
             }
         }
