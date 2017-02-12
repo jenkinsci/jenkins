@@ -47,6 +47,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -453,6 +454,7 @@ public class PluginManagerTest {
     }
 
     @Test public void uploadDependencyResolution() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
