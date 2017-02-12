@@ -819,100 +819,102 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
-        LOGGER.info("Attempting to dynamic load "+arc);
-        PluginWrapper p = null;
-        String sn;
-        try {
-            sn = strategy.getShortName(arc);
-        } catch (AbstractMethodError x) {
-            LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
-            p = strategy.createPluginWrapper(arc);
-            sn = p.getShortName();
-        }
-        PluginWrapper pw = getPlugin(sn);
-        if (pw!=null) {
-            if (removeExisting) { // try to load disabled plugins
-                for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
-                    pw = i.next();
-                    if(sn.equals(pw.getShortName())) {
-                        i.remove();
-                        pw = null;
+        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+            LOGGER.info("Attempting to dynamic load "+arc);
+            PluginWrapper p = null;
+            String sn;
+            try {
+                sn = strategy.getShortName(arc);
+            } catch (AbstractMethodError x) {
+                LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
+                p = strategy.createPluginWrapper(arc);
+                sn = p.getShortName();
+            }
+            PluginWrapper pw = getPlugin(sn);
+            if (pw!=null) {
+                if (removeExisting) { // try to load disabled plugins
+                    for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
+                        pw = i.next();
+                        if(sn.equals(pw.getShortName())) {
+                            i.remove();
+                            pw = null;
+                            break;
+                        }
+                    }
+                } else {
+                    throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+                }
+            }
+            if (p == null) {
+                p = strategy.createPluginWrapper(arc);
+            }
+            if (p.supportsDynamicLoad()== YesNoMaybe.NO)
+                throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
+
+            // there's no need to do cyclic dependency check, because we are deploying one at a time,
+            // so existing plugins can't be depending on this newly deployed one.
+
+            plugins.add(p);
+            if (p.isActive())
+                activePlugins.add(p);
+            synchronized (((UberClassLoader) uberClassLoader).loaded) {
+                ((UberClassLoader) uberClassLoader).loaded.clear();
+            }
+
+            try {
+                p.resolvePluginDependencies();
+                strategy.load(p);
+
+                Jenkins.getInstance().refreshExtensions();
+
+                p.getPlugin().postInitialize();
+            } catch (Exception e) {
+                failedPlugins.add(new FailedPlugin(sn, e));
+                activePlugins.remove(p);
+                plugins.remove(p);
+                throw new IOException("Failed to install "+ sn +" plugin",e);
+            }
+
+            // run initializers in the added plugin
+            Reactor r = new Reactor(InitMilestone.ordering());
+            final ClassLoader loader = p.classLoader;
+            r.addAll(new InitializerFinder(loader) {
+                @Override
+                protected boolean filter(Method e) {
+                    return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
+                }
+            }.discoverTasks(r));
+            try {
+                new InitReactorRunner().run(r);
+            } catch (ReactorException e) {
+                throw new IOException("Failed to initialize "+ sn +" plugin",e);
+            }
+
+            // recalculate dependencies of plugins optionally depending the newly deployed one.
+            for (PluginWrapper depender: plugins) {
+                if (depender.equals(p)) {
+                    // skip itself.
+                    continue;
+                }
+                for (Dependency d: depender.getOptionalDependencies()) {
+                    if (d.shortName.equals(p.getShortName())) {
+                        // this plugin depends on the newly loaded one!
+                        // recalculate dependencies!
+                        try {
+                            getPluginStrategy().updateDependency(depender, p);
+                        } catch (AbstractMethodError x) {
+                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
+                        }
                         break;
                     }
                 }
-            } else {
-                throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
             }
+
+            // Redo who depends on who.
+            resolveDependantPlugins();
+
+            LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
-        if (p == null) {
-            p = strategy.createPluginWrapper(arc);
-        }
-        if (p.supportsDynamicLoad()== YesNoMaybe.NO)
-            throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
-
-        // there's no need to do cyclic dependency check, because we are deploying one at a time,
-        // so existing plugins can't be depending on this newly deployed one.
-
-        plugins.add(p);
-        if (p.isActive())
-            activePlugins.add(p);
-        synchronized (((UberClassLoader) uberClassLoader).loaded) {
-            ((UberClassLoader) uberClassLoader).loaded.clear();
-        }
-
-        try {
-            p.resolvePluginDependencies();
-            strategy.load(p);
-
-            Jenkins.getInstance().refreshExtensions();
-
-            p.getPlugin().postInitialize();
-        } catch (Exception e) {
-            failedPlugins.add(new FailedPlugin(sn, e));
-            activePlugins.remove(p);
-            plugins.remove(p);
-            throw new IOException("Failed to install "+ sn +" plugin",e);
-        }
-
-        // run initializers in the added plugin
-        Reactor r = new Reactor(InitMilestone.ordering());
-        final ClassLoader loader = p.classLoader;
-        r.addAll(new InitializerFinder(loader) {
-            @Override
-            protected boolean filter(Method e) {
-                return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
-            }
-        }.discoverTasks(r));
-        try {
-            new InitReactorRunner().run(r);
-        } catch (ReactorException e) {
-            throw new IOException("Failed to initialize "+ sn +" plugin",e);
-        }
-
-        // recalculate dependencies of plugins optionally depending the newly deployed one.
-        for (PluginWrapper depender: plugins) {
-            if (depender.equals(p)) {
-                // skip itself.
-                continue;
-            }
-            for (Dependency d: depender.getOptionalDependencies()) {
-                if (d.shortName.equals(p.getShortName())) {
-                    // this plugin depends on the newly loaded one!
-                    // recalculate dependencies!
-                    try {
-                        getPluginStrategy().updateDependency(depender, p);
-                    } catch (AbstractMethodError x) {
-                        LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Redo who depends on who.
-        resolveDependantPlugins();
-
-        LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
     }
 
     @Restricted(NoExternalUse.class)
