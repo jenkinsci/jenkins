@@ -172,7 +172,7 @@ public class MavenTest {
         j.submit(f);
         verify();
 
-        // another submission and verfify it survives a roundtrip
+        // another submission and verify it survives a roundtrip
         p = j.createWebClient().goTo("configure");
         f = p.getFormByName("config");
         j.submit(f);
@@ -255,16 +255,16 @@ public class MavenTest {
         {
             GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
             assertNotNull("No global Maven Config available", globalMavenConfig);
-            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settigns.xml"));
-            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settigns.xml"));
+            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settings.xml"));
+            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settings.xml"));
             
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
             
             Maven m = p.getBuildersList().get(Maven.class);
             assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
-            assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
-            assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
+            assertEquals("/tmp/settings.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
+            assertEquals("/tmp/global-settings.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
         }
     }
 
@@ -286,7 +286,7 @@ public class MavenTest {
                 new StringParameterDefinition("exclamation_mark", "!"),
                 new StringParameterDefinition("at_sign", "@"),
                 new StringParameterDefinition("sharp", "#"),
-                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("dollar", "$"),
                 new StringParameterDefinition("percent", "%"),
                 new StringParameterDefinition("circumflex", "^"),
                 new StringParameterDefinition("ampersand", "&"),

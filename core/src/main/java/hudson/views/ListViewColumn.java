@@ -54,7 +54,7 @@ import net.sf.json.JSONObject;
  * the &lt;td> tag.
  *
  * <p>
- * This object may have an additional <tt>columHeader.jelly</tt>. The default ColmnHeader
+ * This object may have an additional <tt>columnHeader.jelly</tt>. The default ColumnHeader
  * will render {@link #getColumnCaption()}.
  *
  * <p>

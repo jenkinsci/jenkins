@@ -136,7 +136,7 @@ public class ItemListener implements ExtensionPoint {
 
     /**
      * @since 1.446
-     *      Called at the begenning of the orderly shutdown sequence to
+     *      Called at the beginning of the orderly shutdown sequence to
      *      allow plugins to clean up stuff
      */
     public void onBeforeShutdown() {

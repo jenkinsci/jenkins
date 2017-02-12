@@ -160,7 +160,7 @@ public class SCMTrigger extends Trigger<Item> {
 
     /**
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
-     * to trigger a build at a specific revisionn number.
+     * to trigger a build at a specific revision number.
      * 
      * @param additionalActions
      * @since 1.375
@@ -597,7 +597,7 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
-            // we can pre-emtively check the SCMDecisionHandler instances here
+            // we can preemptively check the SCMDecisionHandler instances here
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {

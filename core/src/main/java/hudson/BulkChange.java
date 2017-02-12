@@ -54,7 +54,7 @@ import java.io.IOException;
  *
  * <ol>
  * <li>
- * Mutater methods should invoke {@code this.save()} so that if the method is called outside
+ * Mutator methods should invoke {@code this.save()} so that if the method is called outside
  * a {@link BulkChange}, the result will be saved immediately.
  *
  * <li>
@@ -78,7 +78,7 @@ public class BulkChange implements Closeable {
     public BulkChange(Saveable saveable) {
         this.parent = current();
         this.saveable = saveable;
-        // rememeber who allocated this object in case
+        // remember who allocated this object in case
         // someone forgot to call save() at the end.
         allocator = new Exception();
 

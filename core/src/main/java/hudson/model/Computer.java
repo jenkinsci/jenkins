@@ -190,7 +190,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected final Object statusChangeLock = new Object();
 
     /**
-     * Keeps track of stack traces to track the tremination requests for this computer.
+     * Keeps track of stack traces to track the termination requests for this computer.
      *
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
@@ -1274,7 +1274,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          * and then it would need to be loaded, which pulls in {@link Jenkins} and loads that
          * and then that fails to load as you are not supposed to do that. Another option
          * would be to export the logger over remoting, with increased complexity as a result.
-         * Instead we just use a loger based on this class name and prevent any references to
+         * Instead we just use a logger based on this class name and prevent any references to
          * other classes from being transferred over remoting.
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());

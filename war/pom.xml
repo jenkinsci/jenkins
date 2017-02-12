@@ -467,7 +467,7 @@ THE SOFTWARE.
             </connector>
           </connectors>
           <additionalClassesDirectories>
-            <!-- load resoures straight from source -->
+            <!-- load resources straight from source -->
             <additionalClassesDirectory>../core/src/main/resources</additionalClassesDirectory>
 
             <!--

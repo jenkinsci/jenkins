@@ -211,7 +211,7 @@ Upcoming changes</a>
     Job configuration submission now does not fail when there is no parameters property.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39700">issue 39700</a>, regression in 1.637)
   <li class="bug">
-    Fix names of item loading and cleanup Jenkins initializatiion stages.
+    Fix names of item loading and cleanup Jenkins initialization stages.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40489">issue 40489</a>)
   <li class="bug">
     Performance: Use bulk change when submitting Job configurations
@@ -506,7 +506,7 @@ Upcoming changes</a>
     Performance: Avoid acquiring locks in <code>MaskingClassloader</code>.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23784">issue 23784</a>)
   <li class="rfe">
-    Performance: Update <code>XStream</code> driver to improve performance of XML serilization/deserialization.
+    Performance: Update <code>XStream</code> driver to improve performance of XML serialization/deserialization.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2561">pull 2561</a>)
   <li class="rfe">
     Harden checks of prohibited names in user creation logic.
@@ -541,7 +541,7 @@ Upcoming changes</a>
     Properly handle quotes and other special symbols in item names during form validation.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31871">issue 31871</a>)
   <li class="rfe">
-    Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run accross repositories.
+    Internal: Invoke <code>hpi:record-core-location</code> during the build in order to enabled coordinated run across repositories.
     (<a href="https://github.com/jenkinsci/jenkins/pull/1894">pull 1894</a>)
   <li class="rfe">
     Internal: Bulk cleanup of <code>@since</code> definitions in Javadoc.
@@ -580,13 +580,13 @@ Upcoming changes</a>
     Decrease connection timeout when changing the JNLP agent port via Groovy system scripts.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38473">issue 38473</a>)
   <li class="rfe">
-    Added Serbian locatization.
+    Added Serbian localization.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2554">PR #2554</a>)
   <li class="bug">
     Exclude <tt>/cli</tt> URL from CSRF protection crumb requirement, making the CLI work with CSRF protection enabled and JNLP port disabled.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-18114">issue 18114</a>)
   <li class="bug">
-    Prevent instatination of <code>jenkins.model.Jenkins</code> on agents in the <code>ProcessKillingVeto</code> extension point.
+    Prevent instantiation of <code>jenkins.model.Jenkins</code> on agents in the <code>ProcessKillingVeto</code> extension point.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-38534">issue 38534</a>)
   <li class="bug">
     Fix handling of the <code>jenkins.model.Jenkins.slaveAgentPort</code> system property, which was not honored.
@@ -646,12 +646,12 @@ Upcoming changes</a>
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37814">issue 37814</a>)
   <li class="bug">
     Print warnings to system logs and administrative monitors
-    when Jenkins initializarion does not reach the final milestone.
+    when Jenkins initialization does not reach the final milestone.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37874">issue 37874</a>,
      diagnostics for <a href="https://issues.jenkins-ci.org/browse/JENKINS-37759">issue-37759</a>)
   <li class="rfe">
     Developer API: <code>UpdateSite#getJsonSignatureValidator()</code> can be now
-    overriden and used in plugins.
+    overridden and used in plugins.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2532">PR #2532</a>)
 </ul>
 <h3><a name=v2.20>What's new in 2.20</a> (2016/08/28)</h3>
@@ -728,7 +728,7 @@ Upcoming changes</a>
     When checking Update Center, append <code>?uctest</code> parameter to HTTP and HTTPS URLs only.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37189">issue 37189</a>)
   <li class="bug">
-    Incorrect formatting of messages in the Upate Center and Setup Wizard.
+    Incorrect formatting of messages in the Update Center and Setup Wizard.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-36757">issue 36757</a>)
   <li class="bug">
     Massive cleanup of issues reported by FindBugs.
@@ -770,7 +770,7 @@ Upcoming changes</a>
     Don't load all builds to display the paginated build history widget.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-31791">issue 31791</a>)
   <li class="rfe">
-    Add dagnostic HTTP response to TCP agent listener.
+    Add diagnostic HTTP response to TCP agent listener.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37223">issue 37223</a>)
   <li class="rfe">
     Internal: Invoke FindBugs during core build.
@@ -1025,7 +1025,7 @@ Upcoming changes</a>
     Fix keyboard navigation in setup wizard.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-33947">issue 33947</a>)
   <li class="bug">
-    Cleanup of Javascript issues discovered by the JSHint static analyis tool.
+    Cleanup of Javascript issues discovered by the JSHint static analysis tool.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35020">issue 35020</a>)
   <li class="bug">
     <code>DelegatingComputerLauncher</code> now accepts child classes in its hooks
@@ -1038,7 +1038,7 @@ Upcoming changes</a>
     Internal: Add symbol annotation for <code>SystemInfoLink</code>.
     (<a href="https://github.com/jenkinsci/jenkins/pull/2375">PR #2375</a>)
   <li class="bug">
-    Internal: NodeJS build was malfunctional on Win x64.
+    Internal: NodeJS build was malfunctioning on Win x64.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-35201">issue 35201</a>)
 </ul>
 <h3><a name=v2.6>What's new in 2.6</a> (2016/05/22)</h3>
@@ -1050,7 +1050,7 @@ Upcoming changes</a>
   <li class="rfe">
     Improve extensibility of the Setup Wizard GUI: 
     <code>InstallState</code> and <code>InstallStateFilter</code> extension points. 
-    (<a href="https://github.com/jenkinsci/jenkins/pull/2281">PR 2281</a> as supplimentary change for 
+    (<a href="https://github.com/jenkinsci/jenkins/pull/2281">PR 2281</a> as supplementary change for 
     <a href="https://issues.jenkins-ci.org/browse/JENKINS-33663">issue 33663</a>)
   <li class="rfe">
     Improve User Experience in the New Item form. Submit button is always visible. 
@@ -1079,7 +1079,7 @@ Upcoming changes</a>
     Migrate the leftover system properties to the new engine introduced in 2.4.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34854">issue 34854</a>)
   <li class="bug">
-    Do not show warnings abot a missing Tool Installer if it is present in at least one Update Site.
+    Do not show warnings about a missing Tool Installer if it is present in at least one Update Site.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-34880">issue 34880</a>)
   <li class="bug">
     Prevent hanging of the installation wizard due to the plugin status update issue.
@@ -1858,7 +1858,7 @@ Upcoming changes</a>
     Label expression help is missing in recent Jenkins versions.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-29376">issue 29376</a>)
   <li class=bug>
-    Pre-emptively break memory cycles causing excessive live-set retention in remoting layer.
+    Preemptively break memory cycles causing excessive live-set retention in remoting layer.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-28844">issue 28844</a>)
   <li class=rfe>
     Don't run trigger for disabled/copied projects.
@@ -2779,10 +2779,10 @@ Upcoming changes</a>
     Move 'None' Source Code Management option to top position.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23434">issue 23434</a>)
   <li class=bug>
-    Fixed <code>NullPointerException</code> when <code>ArctifactArchiver</code> is called for a build with the undefined status.
+    Fixed <code>NullPointerException</code> when <code>ArtifactArchiver</code> is called for a build with the undefined status.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-23526">issue 23526</a>)
   <li class=rfe>
-    Allow disabling use of default exclude patterns in <code>ArctifactArchiver</code> (.git, .svn, etc.).
+    Allow disabling use of default exclude patterns in <code>ArtifactArchiver</code> (.git, .svn, etc.).
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-20086">issue 20086</a>)
   <li class=bug>
     Fixed <code>NullPointerException</code> when &quot;properties&quot; element is missing in a job's configuration submission by JSON

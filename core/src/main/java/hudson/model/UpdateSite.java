@@ -109,7 +109,7 @@ public class UpdateSite {
      *
      * <p>
      * There's normally some delay between when we send HTML that includes the check code,
-     * until we get the data back, so this variable is used to avoid asking too many browseres
+     * until we get the data back, so this variable is used to avoid asking too many browsers
      * all at once.
      */
     private transient volatile long lastAttempt;

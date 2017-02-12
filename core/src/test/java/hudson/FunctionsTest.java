@@ -273,7 +273,7 @@ public class FunctionsTest {
 
     @Test
     @PrepareForTest(Stapler.class)
-    public void testGetActionUrl_unparsable() throws Exception{
+    public void testGetActionUrl_unparseable() throws Exception{
         assertEquals(null, Functions.getActionUrl(null, createMockAction("http://nowhere.net/stuff?something=^woohoo")));
     }
 

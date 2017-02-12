@@ -276,7 +276,7 @@ public abstract class ParameterValue implements Serializable {
      *
      * <P>
      * This message is used as a tooltip to describe jobs in the queue. The text should be one line without
-     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returend.)
+     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returned.)
      *
      * @since 1.323
      */

@@ -553,7 +553,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param actions
      *      These actions can be used for associating information scoped to a particular build, to
      *      the task being queued. Upon the start of the build, these {@link Action}s will be automatically
-     *      added to the {@link Run} object, and hence avaialable to everyone.
+     *      added to the {@link Run} object, and hence available to everyone.
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
@@ -2822,7 +2822,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
-                              + "FindBugs recommends suppresing warnings in such case")
+                              + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);

@@ -141,7 +141,7 @@ public class Security218CliTest {
     
     //TODO: Fix the conversion layer (not urgent)
     // There is an issue in the conversion layer after the migration to another XALAN namespace
-    // with newer libs. SECURITY-218 does not apper in this case in manual tests anyway
+    // with newer libs. SECURITY-218 does not appear in this case in manual tests anyway
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-218")
@@ -252,7 +252,7 @@ public class Security218CliTest {
                 }
 
                 if (cause instanceof SecurityException) {
-                    // It should happen if the remote chanel reject a class.
+                    // It should happen if the remote channel reject a class.
                     // That's what we have done in SECURITY-218 => may be OK
                     if (cause.getMessage().contains("Rejected")) {
                         // OK
@@ -266,7 +266,7 @@ public class Security218CliTest {
                 final String message = cause.getMessage();
                 if (message != null && message.contains("cannot be cast to java.util.Set")) {
                     // We ignore this exception, because there is a known issue in the test payload
-                    // CommonsCollections1, CommonsCollections2 and Groovy1 fail witth this error,
+                    // CommonsCollections1, CommonsCollections2 and Groovy1 fail with this error,
                     // but actually it means that the conversion has been triggered
                     return EXIT_CODE_ASSIGNMENT_ISSUE;
                 } else {

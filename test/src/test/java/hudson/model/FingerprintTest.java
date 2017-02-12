@@ -269,7 +269,7 @@ public class FingerprintTest {
         try (ACLContext _ = ACL.as(user1)) {
             Fingerprint.BuildPtr original = fingerprint.getOriginal();
             assertThat("user1 should able to see the origin", fingerprint.getOriginal(), notNullValue());
-            assertThat("Job has been deleted, so Job reference shoud return null", fingerprint.getOriginal().getJob(), nullValue());
+            assertThat("Job has been deleted, so Job reference should return null", fingerprint.getOriginal().getJob(), nullValue());
             assertEquals("user1 sees the wrong original name with Item.DISCOVER", project.getFullName(), original.getName());
             assertEquals("user1 sees the wrong original number with Item.DISCOVER", build.getNumber(), original.getNumber());
             assertEquals("user1 should be able to see the job in usages", 1, fingerprint._getUsages().size());

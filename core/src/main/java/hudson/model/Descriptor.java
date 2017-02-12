@@ -456,7 +456,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     /**
-     * Used by Jelly to abstract away the handlign of global.jelly vs config.jelly databinding difference.
+     * Used by Jelly to abstract away the handling of global.jelly vs config.jelly databinding difference.
      */
     public @CheckForNull PropertyType getPropertyType(@Nonnull Object instance, @Nonnull String field) {
         // in global.jelly, instance==descriptor
@@ -792,7 +792,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     /**
      * Invoked when the global configuration page is submitted.
      *
-     * Can be overriden to store descriptor-specific information.
+     * Can be overridden to store descriptor-specific information.
      *
      * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.

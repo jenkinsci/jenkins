@@ -942,7 +942,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If the war file has any "/WEB-INF/plugins/[*.jpi | *.hpi]", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.jpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subversion.jpi"}
      * @throws Exception
      *      Any exception will be reported and halt the startup.
      */
@@ -1011,7 +1011,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
-        // It prevents getting into JENKINS-37332 due to the file desciptor leak 
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
         if (uc instanceof JarURLConnection) {
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
@@ -1050,7 +1050,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         
-        // It prevents file desciptor leak if the URL references a file within JAR
+        // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
         if (uc instanceof JarURLConnection) {
@@ -1225,7 +1225,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (PluginWrapper p : activePlugins) {
             if (p.classLoader==cl) {
                 if (oneAndOnly!=null)
-                    return null;    // ambigious
+                    return null;    // ambiguous
                 oneAndOnly = p;
             }
         }
@@ -1419,7 +1419,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
                     // There could be cases like:
                     // 'plugin.ambiguous.updatesite' where both
-                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
+                    // 'plugin' @ 'ambiguous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);

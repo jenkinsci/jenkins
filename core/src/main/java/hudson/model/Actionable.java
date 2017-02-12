@@ -165,7 +165,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
      * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
-     * and there is a desire to elide unneccessary persistence of unmodified objects.
+     * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
     @SuppressWarnings({"ConstantConditions", "deprecation"})
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")

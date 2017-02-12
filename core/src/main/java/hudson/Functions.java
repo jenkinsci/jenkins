@@ -1394,7 +1394,7 @@ public class Functions {
     }
 
     /**
-     * Resoruce path prefix.
+     * Resource path prefix.
      */
     public static String getResourcePath() {
         return Jenkins.RESOURCE_PATH;

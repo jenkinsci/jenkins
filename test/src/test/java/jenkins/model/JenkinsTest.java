@@ -610,9 +610,9 @@ public class JenkinsTest {
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
-        assertThat(protocolToDisable1 + " must be disaabled after the roundtrip", 
+        assertThat(protocolToDisable1 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
-        assertThat(protocolToDisable2 + " must be disaabled after the roundtrip", 
+        assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
     }
 }

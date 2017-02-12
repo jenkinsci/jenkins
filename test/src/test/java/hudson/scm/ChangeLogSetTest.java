@@ -22,7 +22,7 @@ public class ChangeLogSetTest {
     @Issue("JENKINS-17084")
     public void catchingExceptionDuringAnnotation() {
         EntryImpl change = new EntryImpl();
-        change.setParent(ChangeLogSet.createEmpty(null)); // otherwise test would actually test only NPE thrown when accessing paret.build
+        change.setParent(ChangeLogSet.createEmpty(null)); // otherwise test would actually test only NPE thrown when accessing parent.build
         boolean notCaught = false;
         try {
             change.getMsgAnnotated();

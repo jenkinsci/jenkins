@@ -84,7 +84,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * <p>
  * TODO: move out more stuff to {@link DumbSlave}.
  * 
- * On Febrary, 2016 a general renaming was done internally: the "slave" term was replaced by
+ * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
  * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">JENKINS-27268</a>.
@@ -123,7 +123,7 @@ public abstract class Slave extends Node implements Serializable {
     private Mode mode = Mode.NORMAL;
 
     /**
-     * Agent availablility strategy.
+     * Agent availability strategy.
      */
     private RetentionStrategy retentionStrategy;
 
@@ -496,7 +496,7 @@ public abstract class Slave extends Node implements Serializable {
          * @since 2.12
          */
         @Nonnull
-        @Restricted(NoExternalUse.class) // intedned for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
+        @Restricted(NoExternalUse.class) // intended for use by Jelly EL only (plus hack in DelegatingComputerLauncher)
         public final List<Descriptor<ComputerLauncher>> computerLauncherDescriptors(@CheckForNull Slave it) {
             DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> all =
                     Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(

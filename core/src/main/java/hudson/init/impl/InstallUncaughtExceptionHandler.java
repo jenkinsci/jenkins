@@ -45,7 +45,7 @@ public class InstallUncaughtExceptionHandler {
                                                        "Failed to set the default UncaughtExceptionHandler.  " + 
                                                        "If any threads die due to unhandled coding errors then there will be no logging of this information.  " +
                                                        "The lack of this diagnostic information will make it harder to track down issues which will reduce the supportability of Jenkins.  " + 
-                                                       "It is highly recomended that you consult the documentation that comes with you servlet container on how to allow the " + 
+                                                       "It is highly recommended that you consult the documentation that comes with you servlet container on how to allow the " + 
                                                        "`setDefaultUncaughtExceptionHandler` permission and enable it.", ex);
         }
     }

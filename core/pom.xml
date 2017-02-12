@@ -861,7 +861,7 @@ THE SOFTWARE.
           </plugin>
           <plugin>
             <!--
-              generate jelly taglib docs from src/main/resoruces.
+              generate jelly taglib docs from src/main/resources.
               this is necessary in addition to the <reporting> configuration
               to get the results deployed.
             -->
