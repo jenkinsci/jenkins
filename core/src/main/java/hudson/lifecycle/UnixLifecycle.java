@@ -67,7 +67,7 @@ public class UnixLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
-        Jenkins h = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
+        Jenkins jenkins = Jenkins.getInstanceOrNull(); // guard against repeated concurrent calls to restart
         try {
             if (jenkins != null) {
                 jenkins.cleanUp();

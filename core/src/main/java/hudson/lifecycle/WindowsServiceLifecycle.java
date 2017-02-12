@@ -117,7 +117,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         try {
             if (jenkins != null) {
                 jenkins.cleanUp();
