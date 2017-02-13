@@ -63,8 +63,33 @@ Upcoming changes</a>
 <ul class=image>
   <li class=bug>
     Failure to serialize a single <code>Action</code> could cause an entire REST export response to fail.
-    Upgraded to Stapler <code>1.249</code> with a fix.
+    Upgraded to Stapler <code>1.250</code> with a fix.
     (<a href="https://issues.jenkins-ci.org/browse/JENKINS-40088">issue 40088</a>)
+  <li class=bug>
+    Do not fail to write a log file just because something deleted the parent directory.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-16634">issue 16634</a>)
+  <li class=bug>
+    Use extensible <tt>BUILD_NOW_TEXT</tt> for parameterized jobs.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-41457">issue 41457</a>)
+  <li class=bug>
+    Display an informative message, rather than a Groovy exception, when <tt>View#getItems</tt> fails.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-41825">issue 41825</a>)
+  <li class=bug>
+    Don't consider a project to be parameterized if no parameters are defined.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-37590">issue 37590</a>)
+  <li class=bug>
+    Don't add all group names as HTTP headers on "access denied" pages.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-39402">issue 39402</a>)
+  <li class=bug>
+    Ensure that <tt>PluginManager#dynamicLoad</tt> runs as SYSTEM.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-41684">issue 41684</a>)
+  <li class=bug>
+    Add Usage Statistics section to the global configuration to make it easier to find.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-32938">issue 32938</a>)
+  <li class=bug>
+    Allow <tt>groovy</tt> CLI command via SSH CLI.
+    (<a href="https://issues.jenkins-ci.org/browse/JENKINS-41765">issue 41765</a>)
+
 </ul>
 <h3><a name=v2.45>What's new in 2.45</a> (2017/02/06)</h3>
 <ul class=image>
