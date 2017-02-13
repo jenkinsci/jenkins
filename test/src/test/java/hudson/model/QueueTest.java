@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
@@ -62,6 +63,7 @@ import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
@@ -378,7 +380,11 @@ public class QueueTest {
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
-        m.getBuildersList().add(new Shell("sleep 3"));
+        if (Functions.isWindows()) {
+            m.getBuildersList().add(new BatchFile("timeout /t 3"));
+        } else {
+            m.getBuildersList().add(new Shell("sleep 3"));
+        }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
         List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();

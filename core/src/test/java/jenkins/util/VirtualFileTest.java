@@ -24,6 +24,7 @@
 
 package jenkins.util;
 
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
 import java.io.File;
@@ -32,6 +33,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
+
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
@@ -42,6 +45,7 @@ public class VirtualFileTest {
     
     @Issue("SECURITY-162")
     @Test public void outsideSymlinks() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File ws = tmp.newFolder("ws");
         FileUtils.write(new File(ws, "safe"), "safe");
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);

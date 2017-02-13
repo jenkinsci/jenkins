@@ -210,6 +210,7 @@ public class PluginManagerTest {
     }
 
     @Test public void prevalidateConfig() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
