@@ -377,7 +377,6 @@ public class QueueTest {
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
-        //assumeFalse("This doesn't currently work on Windows", Functions.isWindows());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
