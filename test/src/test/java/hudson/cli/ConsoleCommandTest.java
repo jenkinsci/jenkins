@@ -197,9 +197,8 @@ public class ConsoleCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         //TODO: do we really want to sleep for 10 seconds?
         if(Functions.isWindows()) {
-            // the ver >NUL is to reset ERRORLEVEL so we don't fail (ping causes the error)
             project.getBuildersList().add(new BatchFile("echo start - %BUILD_NUMBER%\r\n"
-                    + "timeout /t 10\r\necho after sleep - %BUILD_NUMBER%"));
+                    + "timeout /t 10 /nobreak\r\necho after sleep - %BUILD_NUMBER%"));
         } else {
             project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10s\n"
                     + "echo after sleep - ${BUILD_NUMBER}"));
@@ -270,7 +269,7 @@ public class ConsoleCommandTest {
         if (Functions.isWindows()) {
             // the ver >NUL is to reset ERRORLEVEL so we don't fail (ping causes the error)
             project.getBuildersList().add(new BatchFile("echo 1\r\necho 2\r\necho 3\r\necho 4\r\necho 5\r\n"
-                    + "timeout /t 10\r\necho 6\r\necho 7\r\necho 8\r\necho 9"));
+                    + "timeout /t 10 /nobreak\r\necho 6\r\necho 7\r\necho 8\r\necho 9"));
         } else {
             project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5\n"
                     + "sleep 10s\n"
