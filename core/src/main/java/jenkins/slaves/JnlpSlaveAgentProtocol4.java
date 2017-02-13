@@ -101,7 +101,13 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
+        if (identityCertificate == null) {
+            throw new KeyStoreException("no X509Certificate found; perhaps instance-identity is missing or too old");
+        }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
+        if (privateKey == null) {
+            throw new KeyStoreException("no RSAPrivateKey found; perhaps instance-identity is missing or too old");
+        }
 
         // prepare our keyStore so we can provide our authentication
         keyStore = KeyStore.getInstance("JKS");
