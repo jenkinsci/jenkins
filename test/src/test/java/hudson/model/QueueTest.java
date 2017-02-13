@@ -120,6 +120,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -376,12 +377,13 @@ public class QueueTest {
 
     @Issue("JENKINS-8790")
     @Test public void flyweightTasks() throws Exception {
+        //assumeFalse("This doesn't currently work on Windows", Functions.isWindows());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
         if (Functions.isWindows()) {
-            m.getBuildersList().add(new BatchFile("timeout /t 3"));
+            m.getBuildersList().add(new BatchFile("ping -n 3 127.0.0.1 >nul"));
         } else {
             m.getBuildersList().add(new Shell("sleep 3"));
         }

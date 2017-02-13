@@ -359,14 +359,14 @@ public class ProjectTest {
     @Test
     public void testGetCauseOfBlockage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("timeout /t 10 /nobreak") : new Shell("sleep 10"));
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
         assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
-        downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("timeout /t 10 /nobreak") : new Shell("sleep 10"));
+        downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
         Jenkins.getInstance().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
