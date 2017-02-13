@@ -102,6 +102,7 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             }
             out.printf(
                 "<html><head>" +
+                "<meta http-equiv='Content-Type' content='text/html;charset=utf-8'>" +
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script>window.location.replace('%1$s');</script>" +
                 "</head>" +
