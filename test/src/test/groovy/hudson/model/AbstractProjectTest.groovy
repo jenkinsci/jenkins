@@ -320,7 +320,7 @@ public class AbstractProjectTest {
         def builds = j.createTmpDir();
         form.getInputByName("_.rawBuildsDir").valueAttribute = builds.toString() + "/\${ITEM_FULL_NAME}";
         j.submit(form);
-        assert builds.toString() + "/\${ITEM_FULL_NAME}" == jenkins.getRawBuildsDir();
+        assert builds.toString() + "/\${ITEM_FULL_NAME}" == j.jenkins.getRawBuildsDir();
         def p = j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
         def b1 = p.scheduleBuild2(0).get();
         def link = new File(p.rootDir, "lastStable");
