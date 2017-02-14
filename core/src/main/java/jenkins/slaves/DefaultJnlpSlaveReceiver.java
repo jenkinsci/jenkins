@@ -1,11 +1,9 @@
 package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ClassicPluginStrategy;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
-import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
@@ -27,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -149,6 +146,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            event.reject(new ConnectionRefusalException("beforeChannel: Jnlp connection in abnormal state (null), " +
+                    "rejecting the connection."));
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
@@ -167,6 +169,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void afterChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            event.reject(new ConnectionRefusalException("afterChannel: Jnlp connection in abnormal state (null), " +
+                    "rejecting the connection."));
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);
