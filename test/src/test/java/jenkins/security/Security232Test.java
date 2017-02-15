@@ -164,6 +164,7 @@ public class Security232Test {
                 long o2 = Long.parseLong(parts[ 1 ], 16);
                 short o3 = Short.parseShort(parts[ 2 ], 16);
 
+                // Need to find Windows equivalent.
                 exploit(new InetSocketAddress(isa.getAddress(), jrmpPort), obj, o1, o2, o3, new CommonsCollections1(), "touch " + pwned);
             }
 
