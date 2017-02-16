@@ -170,6 +170,14 @@ public class Security218CliTest {
         probe(Payload.Ldap, PayloadCaller.EXIT_CODE_REJECTED);
     }
 
+    @Ignore("TODO fails unless ^java[.]security[.]SignedObject is blacklisted")
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
+    @Test
+    @Issue("SECURITY-429")
+    public void jsonLibSignedObject() throws Exception {
+        probe(Payload.JsonLibSignedObject, PayloadCaller.EXIT_CODE_REJECTED);
+    }
+
     private void probe(Payload payload, int expectedResultCode) throws Exception {
         File file = File.createTempFile("security-218", payload + "-payload");
         File moved = new File(file.getAbsolutePath() + "-moved");
