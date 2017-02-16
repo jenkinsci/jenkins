@@ -77,17 +77,8 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class WebAppMain implements ServletContextListener {
+    private RingBufferLogHandler handler;
 
-    // use RingBufferLogHandler class name to configure for backward compatibility
-    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
-
-    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
-        @Override public synchronized void publish(LogRecord record) {
-            if (record.getLevel().intValue() >= Level.INFO.intValue()) {
-                super.publish(record);
-            }
-        }
-    };
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;
@@ -293,6 +284,17 @@ public class WebAppMain implements ServletContextListener {
      */
     @edu.umd.cs.findbugs.annotations.SuppressWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     private void installLogger() {
+        // use RingBufferLogHandler class name to configure for backward compatibility
+        int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+
+        handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
+            @Override public synchronized void publish(LogRecord record) {
+                if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+                    super.publish(record);
+                }
+            }
+        };
+
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
     }
@@ -387,7 +389,8 @@ public class WebAppMain implements ServletContextListener {
 
             // Logger is in the system classloader, so if we don't do this
             // the whole web app will never be undepoyed.
-            Logger.getLogger("").removeHandler(handler);
+            if (handler!=null)
+                Logger.getLogger("").removeHandler(handler);
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);
         }
