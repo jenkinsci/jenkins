@@ -213,7 +213,7 @@ THE SOFTWARE.
           </archive>
 
           <!-- exclude most of lib/*.jar except for what's needed in bootstrap -->
-          <packagingExcludes>%regex[WEB-INF/lib/(?!jenkins-core-bootstrap.*.jar)(?!version-number.*.jar).*.jar]</packagingExcludes>
+          <packagingExcludes>%regex[WEB-INF/lib/(?!jenkins-core-bootstrap.*.jar)(?!ant.*.jar)(?!version-number.*.jar).*.jar]</packagingExcludes>
 
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>
@@ -441,7 +441,7 @@ THE SOFTWARE.
             <configuration>
               <includeScope>runtime</includeScope>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jars</outputDirectory>
-              <excludeArtifactIds>jenkins-core-bootstrap</excludeArtifactIds>
+              <excludeArtifactIds>jenkins-core-bootstrap,ant,ant-launcher,version-number</excludeArtifactIds>
             </configuration>
           </execution>
         </executions>
