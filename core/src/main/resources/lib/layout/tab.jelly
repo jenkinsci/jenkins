@@ -22,24 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-<%@ attribute name="name" required="true" type="java.lang.String" %>
-<%@ attribute name="href" required="true" type="java.lang.String" %>
-<%@ attribute name="active" required="true" type="java.lang.Boolean" %>
-<%@ attribute name="title" required="false" type="java.lang.String" %>
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  <div class="tab${active?' active':''}">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation>
+    <st:attribute name="name" use="required">
+      The name of the tab
+    </st:attribute>
+    <st:attribute name="href" use="required">
+      The url of the tab
+    </st:attribute>
+    <st:attribute name="active" type="java.lang.Boolean">
+      Whether the tab is active or not
+    </st:attribute>
+    <st:attribute name="title">
+      The title of the tab
+    </st:attribute>
+  </st:documentation>
+  <div class="tab${attrs.active?' active':''}">
     <j:choose>
-      <j:when test="${active}">
+      <j:when test="${attrs.active}">
         <input type="radio" id="tab-${tabBarId}-${tabIndex}" name="tab-group-${tabBarId}" checked="checked" />
       </j:when>
       <j:otherwise>
         <input type="radio" id="tab-${tabBarId}-${tabIndex}" name="tab-group-${tabBarId}" />
       </j:otherwise>
     </j:choose>
-    <a href="${href}" class="${name.equals('+')?'addTab':''}">${name}</a>
+    <a href="${href}" class="${name.equals('+')?'addTab':''}" title="${attrs.title}">${attrs.name}</a>
   </div>
   <j:set scope="parent" var="tabIndex" value="${tabIndex+1}" />
 </j:jelly>

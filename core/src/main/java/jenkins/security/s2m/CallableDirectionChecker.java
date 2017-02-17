@@ -60,7 +60,7 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee https://jenkins.io/redirect/security-144 for more details");
     }
 
     /**

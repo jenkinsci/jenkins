@@ -23,6 +23,7 @@
  */
 package jenkins;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -31,6 +32,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -49,9 +51,22 @@ public class I18nTest {
 
     @Test
     public void test_baseName_unknown() throws IOException, SAXException {
-        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=com.acme.XyzWhatever").getJSONObject();
-        Assert.assertEquals("error", response.getString("status"));
-        Assert.assertTrue(response.getString("message").contains("com.acme.XyzWhatever"));
+        try {
+            JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=com.acme.XyzWhatever").getJSONObject();
+        } catch (FailingHttpStatusCodeException e) {
+            Assert.assertNotNull(e);
+            Assert.assertTrue(e.getMessage().contains("com.acme.XyzWhatever"));
+        }
+    }
+
+    @Issue("JENKINS-35270")
+    @Test
+    public void test_baseName_plugin() throws IOException, SAXException {
+        // ssh-slaves plugin is installed by default
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=hudson.plugins.sshslaves.Messages").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("The launch timeout must be a number.", data.getString("SSHConnector.LaunchTimeoutMustBeANumber"));
     }
 
     @Test
@@ -61,4 +76,32 @@ public class I18nTest {
         JSONObject data = response.getJSONObject("data");
         Assert.assertEquals("Initialisiere Log-Rekorder", data.getString("LogRecorderManager.init"));
     }
+
+    @Issue("JENKINS-39034")
+    @Test // variant testing
+    public void test_valid_region_variant() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=en_AU_variant").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("value_au_variant", data.getString("Key"));
+    }
+
+    @Issue("JENKINS-39034")
+    @Test //country testing with delimiter '-' instead of '_'
+    public void test_valid_region() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=en-AU").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("value_au", data.getString("Key"));
+    }
+
+    @Issue("JENKINS-39034")
+    @Test //fallthrough to default language if variant does not exit
+    public void test_valid_fallback() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=en_NZ_variant").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("value", data.getString("Key"));
+    }
+
 }

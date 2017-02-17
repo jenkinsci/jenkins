@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import java.io.File;
@@ -99,9 +100,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
                         execute(l);
                     } catch (IOException e) {
-                        e.printStackTrace(l.fatalError(e.getMessage()));
+                        Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                     } catch (InterruptedException e) {
-                        e.printStackTrace(l.fatalError("aborted"));
+                        Functions.printStackTrace(e, l.fatalError("aborted"));
                     } finally {
                         stopTime = System.currentTimeMillis();
                         try {

@@ -51,7 +51,7 @@ import jenkins.model.Jenkins;
  * This is an abstract class so that methods added in the future won't break existing listeners.
  *
  * <p>
- * Once instanciated, use the {@link #register()} method to start receiving events. 
+ * Once instantiated, use the {@link #register()} method to start receiving events. 
  *
  * @author Kohsuke Kawaguchi
  * @see jenkins.model.Jenkins#getSCMListeners()

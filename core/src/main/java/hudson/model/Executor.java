@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Queue.Executable;
 import hudson.model.queue.Executables;
@@ -289,7 +290,7 @@ public class Executor extends Thread implements ModelObject {
             } else {
                 pw.println("Termination trace follows:");
                 for (Computer.TerminationRequest request : owner.getTerminatedBy()) {
-                    request.printStackTrace(pw);
+                    Functions.printStackTrace(request, pw);
                 }
             }
         }
@@ -389,6 +390,9 @@ public class Executor extends Thread implements ModelObject {
                 }
 
                 if (executable instanceof Actionable) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(FINER, "when running {0} from {1} we are copying {2} actions whereas the item currently has {3}", new Object[] {executable, workUnit.context.item, workUnit.context.actions, workUnit.context.item.getAllActions()});
+                    }
                     for (Action action: workUnit.context.actions) {
                         ((Actionable) executable).addAction(action);
                     }

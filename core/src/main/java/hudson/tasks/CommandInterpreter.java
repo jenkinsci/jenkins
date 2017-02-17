@@ -28,6 +28,7 @@ import hudson.Launcher;
 import hudson.Proc;
 import hudson.Util;
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Node;
@@ -71,7 +72,7 @@ public abstract class CommandInterpreter extends Builder {
      *
      * Changing to {@link Result#UNSTABLE} does not abort the build, next steps are continued.
      *
-     * @since TODO
+     * @since 2.26
      */
     protected boolean isErrorlevelForUnstableBuild(int exitCode) {
         return false;
@@ -93,7 +94,7 @@ public abstract class CommandInterpreter extends Builder {
                 script = createScriptFile(ws);
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
+                Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToProduceScript()));
                 return false;
             }
 
@@ -113,7 +114,7 @@ public abstract class CommandInterpreter extends Builder {
                 }
             } catch (IOException e) {
                 Util.displayIOException(e, listener);
-                e.printStackTrace(listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
+                Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_CommandFailed()));
             }
             return r==0;
         } finally {
@@ -132,10 +133,10 @@ public abstract class CommandInterpreter extends Builder {
                     LOGGER.log(Level.FINE, "Script deletion failed", e);
                 } else {
                     Util.displayIOException(e,listener);
-                    e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
+                    Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)));
                 }
             } catch (Exception e) {
-                e.printStackTrace( listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)) );
+                Functions.printStackTrace(e, listener.fatalError(Messages.CommandInterpreter_UnableToDelete(script)));
             }
         }
     }

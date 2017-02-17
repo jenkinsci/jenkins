@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Functions;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -113,7 +114,7 @@ public final class FingerprintCleanupThread extends AsyncPeriodicWork {
                 return fp.trim();
             }
         } catch (IOException e) {
-            e.printStackTrace(listener.error("Failed to process " + fingerprintFile));
+            Functions.printStackTrace(e, listener.error("Failed to process " + fingerprintFile));
             return false;
         }
     }

@@ -61,7 +61,7 @@ import java.lang.reflect.Method;
  *
  * <p>
  * More traditional way of doing this is to use a lock file with PID in it, but unfortunately in Java,
- * there's no reliabe way to obtain PID.
+ * there's no reliable way to obtain PID.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.178

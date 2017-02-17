@@ -441,16 +441,16 @@ public class UtilTest {
             Util.WAIT_BETWEEN_DELETION_RETRIES = -1000;
             Util.GC_AFTER_FAILED_DELETE = true;
             final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
-            Thread deleteToBeInterupted = new Thread("deleteToBeInterupted") {
+            Thread deleteToBeInterrupted = new Thread("deleteToBeInterrupted") {
                 public void run() {
                     try { Util.deleteRecursive(dir); }
                     catch( Throwable x ) { thrown.set(x); }
                 }
             };
-            deleteToBeInterupted.start();
-            deleteToBeInterupted.interrupt();
-            deleteToBeInterupted.join(500);
-            assertFalse("deletion stopped", deleteToBeInterupted.isAlive());
+            deleteToBeInterrupted.start();
+            deleteToBeInterrupted.interrupt();
+            deleteToBeInterrupted.join(500);
+            assertFalse("deletion stopped", deleteToBeInterrupted.isAlive());
             assertTrue("d1f1 still exists", d1f1.exists());
             unlockFileForDeletion(d1f1);
             Throwable deletionInterruptedEx = thrown.get();

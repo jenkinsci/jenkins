@@ -39,8 +39,9 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
+ * CLI Command, which puts the Jenkins node offline.
  * @author pjanouse
- * @since TODO
+ * @since 2.15
  */
 @Extension
 public class OfflineNodeCommand extends CLICommand {
@@ -88,7 +89,7 @@ public class OfflineNodeCommand extends CLICommand {
         }
 
         if (errorOccurred) {
-            throw new AbortException("Error occured while performing this command, see previous stderr output.");
+            throw new AbortException(CLI_LISTPARAM_SUMMARY_ERROR_TEXT);
         }
         return 0;
     }

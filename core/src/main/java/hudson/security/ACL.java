@@ -24,6 +24,9 @@
 package hudson.security;
 
 import hudson.model.User;
+import hudson.model.View;
+import hudson.model.ViewDescriptor;
+import hudson.model.ViewGroup;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -93,7 +96,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
@@ -113,10 +116,46 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {
+        return true;
+    }
+
+    /**
+     * Checks if the current security principal has the permission to create views within the specified view group.
+     * <p>
+     * This is just a convenience function.
+     *
+     * @param c the container of the item.
+     * @param d the descriptor of the view to be created.
+     * @throws AccessDeniedException if the user doesn't have the permission.
+     * @since 1.607
+     */
+    public final void checkCreatePermission(@Nonnull ViewGroup c,
+                                            @Nonnull ViewDescriptor d) {
+        Authentication a = Jenkins.getAuthentication();
+        if (!hasCreatePermission(a, c, d)) {
+            throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
+                    View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
+        }
+    }
+
+    /**
+     * Checks if the given principal has the permission to create views within the specified view group.
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it can create anything anywhere.
+     * @param a the principal.
+     * @param c the container of the view.
+     * @param d the descriptor of the view to be created.
+     * @return false
+     *      if the user doesn't have the permission.
+     * @since 2.37
+     */
+    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ViewGroup c,
+                                       @Nonnull ViewDescriptor d) {
         return true;
     }
 

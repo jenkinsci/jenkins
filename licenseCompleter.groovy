@@ -1,5 +1,5 @@
 /*
-    This script auguments the missing license information in our dependencies.
+    This script augments the missing license information in our dependencies.
 */
 complete {
     // license constants

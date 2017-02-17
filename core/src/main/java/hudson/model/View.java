@@ -56,6 +56,7 @@ import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
 import hudson.widgets.Widget;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.item_category.Categories;
@@ -67,7 +68,11 @@ import jenkins.util.xml.XMLUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -234,6 +239,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @see #rename(String)
      */
     @Exported(visibility=2,name="name")
+    @Nonnull
     public String getViewName() {
         return name;
     }
@@ -411,7 +417,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If this view uses &lt;t:projectView> for rendering, this method returns columns to be displayed.
      */
     public Iterable<? extends ListViewColumn> getColumns() {
-        return ListViewColumn.createDefaultInitialColumnList();
+        return ListViewColumn.createDefaultInitialColumnList(this);
     }
 
     /**
@@ -1044,10 +1050,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @return A {@link Categories} entity that is shown as JSON file.
      */
     @Restricted(DoNotUse.class)
-    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
         getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
+        JellyContext ctx;
+
+        if (StringUtils.isNotBlank(iconStyle)) {
+            ctx = new JellyContext();
+            ctx.setVariable("resURL", req.getContextPath() + Jenkins.RESOURCE_PATH);
+        } else {
+            ctx = null;
+        }
         for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
@@ -1058,6 +1072,17 @@ public abstract class View extends AbstractModelObject implements AccessControll
             metadata.put("displayName", descriptor.getDisplayName());
             metadata.put("description", descriptor.getDescription());
             metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+            String iconClassName = descriptor.getIconClassName();
+            if (StringUtils.isNotBlank(iconClassName)) {
+                metadata.put("iconClassName", iconClassName);
+                if (ctx != null) {
+                    Icon icon = IconSet.icons
+                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                    if (icon != null) {
+                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
+                    }
+                }
+            }
 
             Category category = categories.getItem(ic.getId());
             if (category != null) {
@@ -1196,11 +1221,30 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Jenkins.getInstance().<View,ViewDescriptor>getDescriptorList(View.class);
     }
 
+    /**
+     * Returns the {@link ViewDescriptor} instances that can be instantiated for the {@link ViewGroup} in the current
+     * {@link StaplerRequest}.
+     * <p>
+     * <strong>NOTE: Historically this method is only ever called from a {@link StaplerRequest}</strong>
+     * @return the list of instantiable {@link ViewDescriptor} instances for the current {@link StaplerRequest}
+     */
+    @Nonnull
     public static List<ViewDescriptor> allInstantiable() {
         List<ViewDescriptor> r = new ArrayList<ViewDescriptor>();
-        for (ViewDescriptor d : all())
-            if(d.isInstantiable())
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if (request == null) {
+            throw new IllegalStateException("This method can only be invoked from a stapler request");
+        }
+        ViewGroup owner = request.findAncestorObject(ViewGroup.class);
+        if (owner == null) {
+            throw new IllegalStateException("This method can only be invoked from a request with a ViewGroup ancestor");
+        }
+        for (ViewDescriptor d : DescriptorVisibilityFilter.apply(owner, all())) {
+            if (d.isApplicableIn(owner) && d.isInstantiable()
+                    && owner.getACL().hasCreatePermission(Jenkins.getAuthentication(), owner, d)) {
                 r.add(d);
+            }
+        }
         return r;
     }
 
@@ -1245,6 +1289,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
+                owner.getACL().checkCreatePermission(owner, v.getDescriptor());
                 v.owner = owner;
                 rsp.setStatus(HttpServletResponse.SC_OK);
                 return v;
@@ -1253,7 +1298,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         View v;
-        if (mode!=null && mode.equals("copy")) {
+        if ("copy".equals(mode)) {
             v = copy(req, owner, name);
         } else {
             ViewDescriptor descriptor = all().findByName(mode);
@@ -1264,6 +1309,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // create a view
             v = descriptor.newInstance(req,req.getSubmittedForm());
         }
+        owner.getACL().checkCreatePermission(owner, v.getDescriptor());
         v.owner = owner;
 
         // redirect to the config screen

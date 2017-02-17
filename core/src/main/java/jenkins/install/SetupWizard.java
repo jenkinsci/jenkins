@@ -339,7 +339,7 @@ public class SetupWizard extends PageDecorator {
     
     /**
      * Gets the suggested plugin list from the update sites, falling back to a local version
-     * @return JSON array with the categorized plugon list
+     * @return JSON array with the categorized plugin list
      */
     @CheckForNull
     /*package*/ JSONArray getPlatformPluginList() {

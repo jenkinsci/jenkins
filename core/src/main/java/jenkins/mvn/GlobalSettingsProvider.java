@@ -24,7 +24,7 @@ public abstract class GlobalSettingsProvider extends AbstractDescribableImpl<Glo
      * configure maven launcher argument list with adequate settings path
      * 
      * @param build
-     *            the build to provide the settigns for
+     *            the build to provide the settings for
      * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
      */
     public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);

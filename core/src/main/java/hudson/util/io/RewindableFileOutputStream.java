@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  * {@link OutputStream} that writes to a file.
@@ -48,6 +49,7 @@ public class RewindableFileOutputStream extends OutputStream {
     private synchronized OutputStream current() throws IOException {
         if (current == null) {
             if (!closed) {
+                FileUtils.forceMkdir(out.getParentFile());
                 try {
                     current = new FileOutputStream(out,false);
                 } catch (FileNotFoundException e) {

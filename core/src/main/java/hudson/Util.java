@@ -27,7 +27,7 @@ import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -527,7 +527,7 @@ public class Util {
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
     }
 
-    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
             Path path = file.toPath();
@@ -1367,7 +1367,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
-            e.printStackTrace( log );
+            Functions.printStackTrace(e, log);
         }
     }
 
@@ -1598,6 +1598,7 @@ public class Util {
 
     /**
      * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@Nonnull String uri) {
         return !isAbsoluteUri(uri) && !uri.startsWith("//");
@@ -1631,7 +1632,7 @@ public class Util {
      * @param logger Logger, which receives the error
      * @param closeableName Name of the closeable item
      * @param closeableOwner String representation of the closeable holder
-     * @since TODO once merged to the master and un-restricted
+     * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
     public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 

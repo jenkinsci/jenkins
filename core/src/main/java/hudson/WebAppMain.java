@@ -309,7 +309,7 @@ public class WebAppMain implements BootLogic {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     private void installLogger() {
         // use RingBufferLogHandler class name to configure for backward compatibility
         int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
@@ -378,7 +378,7 @@ public class WebAppMain implements BootLogic {
             }
 
             // Logger is in the system classloader, so if we don't do this
-            // the whole web app will never be undepoyed.
+            // the whole web app will never be undeployed.
             if (handler!=null)
                 Logger.getLogger("").removeHandler(handler);
         } finally {

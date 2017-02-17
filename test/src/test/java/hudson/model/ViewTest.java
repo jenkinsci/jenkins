@@ -53,6 +53,9 @@ import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import static org.junit.Assert.*;
@@ -61,6 +64,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
@@ -73,6 +77,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class ViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
@@ -411,7 +417,7 @@ public class ViewTest {
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
-        assertNotNull("View should contains ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
+        assertNotNull("View should contain ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
     }
 
     private ListView listView(String name) throws IOException {
@@ -506,7 +512,34 @@ public class ViewTest {
     private void assertCheckJobName(ViewGroup context, String name, FormValidation.Kind expected) {
         assertEquals(expected, context.getPrimaryView().doCheckJobName(name).kind);
     }
-    
+
+    @Issue("JENKINS-41825")
+    @Test
+    public void brokenGetItems() throws Exception {
+        logging.capture(100).record("", Level.INFO);
+        j.jenkins.addView(new BrokenView());
+        j.createWebClient().goTo("view/broken/");
+        boolean found = false;
+        LOGS: for (LogRecord record : logging.getRecords()) {
+            for (Throwable t = record.getThrown(); t != null; t = t.getCause()) {
+                if (t instanceof IllegalStateException && BrokenView.ERR.equals(t.getMessage())) {
+                    found = true;
+                    break LOGS;
+                }
+            }
+        }
+        assertTrue(found);
+    }
+    private static class BrokenView extends ListView {
+        static final String ERR = "oops I cannot retrieve items";
+        BrokenView() {
+            super("broken");
+        }
+        @Override
+        public List<TopLevelItem> getItems() {
+            throw new IllegalStateException(ERR);
+        }
+    }
     
     @Test
     @Issue("JENKINS-36908")

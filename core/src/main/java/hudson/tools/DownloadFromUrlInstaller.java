@@ -37,7 +37,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     /**
      * Checks if the specified expected location already contains the installed version of the tool.
      *
-     * This check needs to run fairly efficiently. The current implementation uses the souce URL of {@link Installable},
+     * This check needs to run fairly efficiently. The current implementation uses the source URL of {@link Installable},
      * based on the assumption that released bits do not change its content.
      */
     protected boolean isUpToDate(FilePath expectedLocation, Installable i) throws IOException, InterruptedException {

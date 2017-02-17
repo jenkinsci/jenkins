@@ -23,10 +23,9 @@
  */
 package hudson.slaves;
 
-import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
-import edu.umd.cs.findbugs.annotations.When;
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.Computer;
@@ -68,6 +67,7 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +161,7 @@ public class SlaveComputer extends Computer {
      * {@inheritDoc}
      */
     @Override
-    @OverrideMustInvoke(When.ANYTIME)
+    @OverridingMethodsMustInvokeSuper
     public boolean isAcceptingTasks() {
         // our boolean flag is an override on any additional programmatic reasons why this agent might not be
         // accepting tasks.
@@ -265,13 +265,13 @@ public class SlaveComputer extends Computer {
                         throw e;
                     } catch (IOException e) {
                         Util.displayIOException(e,taskListener);
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                         throw e;
                     } catch (InterruptedException e) {
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                         throw e;
                     } catch (Exception e) {
-                        e.printStackTrace(taskListener.error(Messages.ComputerLauncher_unexpectedError()));
+                        Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                         throw e;
                     }
                 } finally {
@@ -495,7 +495,7 @@ public class SlaveComputer extends Computer {
                 // Orderly shutdown will have null exception
                 if (cause!=null) {
                     offlineCause = new ChannelTermination(cause);
-                    cause.printStackTrace(taskListener.error("Connection terminated"));
+                    Functions.printStackTrace(cause, taskListener.error("Connection terminated"));
                 } else {
                     taskListener.getLogger().println("Connection terminated");
                 }
@@ -557,7 +557,7 @@ public class SlaveComputer extends Computer {
         // update the data structure atomically to prevent others from seeing a channel that's not properly initialized yet
         synchronized(channelLock) {
             if(this.channel!=null) {
-                // check again. we used to have this entire method in a big sycnhronization block,
+                // check again. we used to have this entire method in a big synchronization block,
                 // but Channel constructor blocks for an external process to do the connection
                 // if CommandLauncher is used, and that cannot be interrupted because it blocks at InputStream.
                 // so if the process hangs, it hangs the thread in a lock, and since Hudson will try to relaunch,

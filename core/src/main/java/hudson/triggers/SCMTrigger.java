@@ -27,6 +27,7 @@ package hudson.triggers;
 import antlr.ANTLRException;
 import com.google.common.base.Preconditions;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AbstractBuild;
@@ -159,7 +160,7 @@ public class SCMTrigger extends Trigger<Item> {
 
     /**
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
-     * to trigger a build at a specific revisionn number.
+     * to trigger a build at a specific revision number.
      * 
      * @param additionalActions
      * @since 1.375
@@ -310,12 +311,24 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Restricted(NoExternalUse.class)
         public boolean isPollingThreadCountOptionVisible() {
+            if (getPollingThreadCount() != 0) {
+                // this is a user who already configured the option
+                return true;
+            }
             // unless you have a fair number of projects, this option is likely pointless.
             // so let's hide this option for new users to avoid confusing them
             // unless it was already changed
-            // TODO switch to check for SCMTriggerItem
-            return Jenkins.getInstance().getAllItems(AbstractProject.class).size() > 10
-                    || getPollingThreadCount() != 0;
+            int count = 0;
+            // we are faster walking some items with a lazy iterator than building a list of all items just to query
+            // the size. This also lets us check against SCMTriggerItem rather than AbstractProject
+            for (Item item: Jenkins.getInstance().allItems(Item.class)) {
+                if (item instanceof SCMTriggerItem) {
+                    if (++count > 10) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -568,7 +581,7 @@ public class SCMTrigger extends Trigger<Item> {
                         logger.println("No changes");
                     return result;
                 } catch (Error | RuntimeException e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    Functions.printStackTrace(e, listener.error("Failed to record SCM polling for " + job));
                     LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {
@@ -584,7 +597,7 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
-            // we can pre-emtively check the SCMDecisionHandler instances here
+            // we can preemptively check the SCMDecisionHandler instances here
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {

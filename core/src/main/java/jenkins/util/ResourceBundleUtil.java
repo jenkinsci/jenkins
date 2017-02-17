@@ -27,12 +27,16 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import hudson.PluginWrapper;
+import java.util.logging.Logger;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
+import jenkins.model.Jenkins;
 
 /**
  * Simple {@link java.util.ResourceBundle} utility class.
@@ -42,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Restricted(NoExternalUse.class)
 public class ResourceBundleUtil {
 
+    private static final Logger logger = Logger.getLogger("jenkins.util.ResourceBundle");
     private static final Map<String, JSONObject> bundles = new ConcurrentHashMap<>();
 
     private ResourceBundleUtil() {
@@ -72,7 +77,23 @@ public class ResourceBundleUtil {
             return bundleJSON;
         }
 
-        ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
+        ResourceBundle bundle = getBundle(baseName, locale, Jenkins.class.getClassLoader());
+        if (bundle == null) {
+            // Not in Jenkins core. Check the plugins.
+            Jenkins jenkins = Jenkins.getInstance(); // will never return null
+            if (jenkins != null) {
+                for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
+                    bundle = getBundle(baseName, locale, plugin.classLoader);
+                    if (bundle != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (bundle == null) {
+            throw new MissingResourceException("Can't find bundle for base name "
+                    + baseName + ", locale " + locale, baseName + "_" + locale, "");
+        }
 
         bundleJSON = toJSONObject(bundle);
         bundles.put(bundleKey, bundleJSON);
@@ -80,6 +101,30 @@ public class ResourceBundleUtil {
         return bundleJSON;
     }
 
+    /**
+     * Get a plugin bundle using the supplied Locale and classLoader
+     *
+     * @param baseName The bundle base name.
+     * @param locale The Locale.
+     * @param classLoader The classLoader
+     * @return The bundle JSON.
+     */
+    private static @CheckForNull ResourceBundle getBundle(@Nonnull String baseName, @Nonnull Locale locale, @Nonnull ClassLoader classLoader) {
+        try {
+            return ResourceBundle.getBundle(baseName, locale, classLoader);
+        } catch (MissingResourceException e) {
+            // fall through and return null.
+            logger.finer(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Create a JSON representation of a resource bundle
+     *
+     * @param bundle The resource bundle.
+     * @return The bundle JSON.
+     */
     private static JSONObject toJSONObject(@Nonnull ResourceBundle bundle) {
         JSONObject json = new JSONObject();
         for (String key : bundle.keySet()) {

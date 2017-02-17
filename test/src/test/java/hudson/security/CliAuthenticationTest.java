@@ -43,22 +43,16 @@ public class CliAuthenticationTest {
     }
 
     private int command(String... args) throws Exception {
-        CLI cli = new CLI(j.getURL());
-        try {
+        try (CLI cli = new CLI(j.getURL())) {
             return cli.execute(args);
-        } finally {
-            cli.close();
         }
     }
 
     private String commandAndOutput(String... args) throws Exception {
-        CLI cli = new CLI(j.getURL());
-        try {
+        try (CLI cli = new CLI(j.getURL())) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             cli.execute(Arrays.asList(args), new NullInputStream(0), baos, baos);
             return baos.toString();
-        } finally {
-            cli.close();
         }
     }
 

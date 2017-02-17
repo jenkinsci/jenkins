@@ -876,7 +876,7 @@ public class QueueTest {
         assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
     }
 
-    //let's make sure that the downstram project is not started before the upstream --> we want to simulate
+    //let's make sure that the downstream project is not started before the upstream --> we want to simulate
     // the case: buildable-->blocked-->buildable
     public static class BlockDownstreamProjectExecution extends NodeProperty<Slave> {
         @Override

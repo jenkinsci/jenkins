@@ -67,6 +67,7 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
@@ -818,100 +819,102 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
-        LOGGER.info("Attempting to dynamic load "+arc);
-        PluginWrapper p = null;
-        String sn;
-        try {
-            sn = strategy.getShortName(arc);
-        } catch (AbstractMethodError x) {
-            LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
-            p = strategy.createPluginWrapper(arc);
-            sn = p.getShortName();
-        }
-        PluginWrapper pw = getPlugin(sn);
-        if (pw!=null) {
-            if (removeExisting) { // try to load disabled plugins
-                for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
-                    pw = i.next();
-                    if(sn.equals(pw.getShortName())) {
-                        i.remove();
-                        pw = null;
+        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+            LOGGER.info("Attempting to dynamic load "+arc);
+            PluginWrapper p = null;
+            String sn;
+            try {
+                sn = strategy.getShortName(arc);
+            } catch (AbstractMethodError x) {
+                LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
+                p = strategy.createPluginWrapper(arc);
+                sn = p.getShortName();
+            }
+            PluginWrapper pw = getPlugin(sn);
+            if (pw!=null) {
+                if (removeExisting) { // try to load disabled plugins
+                    for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
+                        pw = i.next();
+                        if(sn.equals(pw.getShortName())) {
+                            i.remove();
+                            pw = null;
+                            break;
+                        }
+                    }
+                } else {
+                    throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+                }
+            }
+            if (p == null) {
+                p = strategy.createPluginWrapper(arc);
+            }
+            if (p.supportsDynamicLoad()== YesNoMaybe.NO)
+                throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
+
+            // there's no need to do cyclic dependency check, because we are deploying one at a time,
+            // so existing plugins can't be depending on this newly deployed one.
+
+            plugins.add(p);
+            if (p.isActive())
+                activePlugins.add(p);
+            synchronized (((UberClassLoader) uberClassLoader).loaded) {
+                ((UberClassLoader) uberClassLoader).loaded.clear();
+            }
+
+            try {
+                p.resolvePluginDependencies();
+                strategy.load(p);
+
+                Jenkins.getInstance().refreshExtensions();
+
+                p.getPlugin().postInitialize();
+            } catch (Exception e) {
+                failedPlugins.add(new FailedPlugin(sn, e));
+                activePlugins.remove(p);
+                plugins.remove(p);
+                throw new IOException("Failed to install "+ sn +" plugin",e);
+            }
+
+            // run initializers in the added plugin
+            Reactor r = new Reactor(InitMilestone.ordering());
+            final ClassLoader loader = p.classLoader;
+            r.addAll(new InitializerFinder(loader) {
+                @Override
+                protected boolean filter(Method e) {
+                    return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
+                }
+            }.discoverTasks(r));
+            try {
+                new InitReactorRunner().run(r);
+            } catch (ReactorException e) {
+                throw new IOException("Failed to initialize "+ sn +" plugin",e);
+            }
+
+            // recalculate dependencies of plugins optionally depending the newly deployed one.
+            for (PluginWrapper depender: plugins) {
+                if (depender.equals(p)) {
+                    // skip itself.
+                    continue;
+                }
+                for (Dependency d: depender.getOptionalDependencies()) {
+                    if (d.shortName.equals(p.getShortName())) {
+                        // this plugin depends on the newly loaded one!
+                        // recalculate dependencies!
+                        try {
+                            getPluginStrategy().updateDependency(depender, p);
+                        } catch (AbstractMethodError x) {
+                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
+                        }
                         break;
                     }
                 }
-            } else {
-                throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
             }
+
+            // Redo who depends on who.
+            resolveDependantPlugins();
+
+            LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
-        if (p == null) {
-            p = strategy.createPluginWrapper(arc);
-        }
-        if (p.supportsDynamicLoad()== YesNoMaybe.NO)
-            throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
-
-        // there's no need to do cyclic dependency check, because we are deploying one at a time,
-        // so existing plugins can't be depending on this newly deployed one.
-
-        plugins.add(p);
-        if (p.isActive())
-            activePlugins.add(p);
-        synchronized (((UberClassLoader) uberClassLoader).loaded) {
-            ((UberClassLoader) uberClassLoader).loaded.clear();
-        }
-
-        try {
-            p.resolvePluginDependencies();
-            strategy.load(p);
-
-            Jenkins.getInstance().refreshExtensions();
-
-            p.getPlugin().postInitialize();
-        } catch (Exception e) {
-            failedPlugins.add(new FailedPlugin(sn, e));
-            activePlugins.remove(p);
-            plugins.remove(p);
-            throw new IOException("Failed to install "+ sn +" plugin",e);
-        }
-
-        // run initializers in the added plugin
-        Reactor r = new Reactor(InitMilestone.ordering());
-        final ClassLoader loader = p.classLoader;
-        r.addAll(new InitializerFinder(loader) {
-            @Override
-            protected boolean filter(Method e) {
-                return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
-            }
-        }.discoverTasks(r));
-        try {
-            new InitReactorRunner().run(r);
-        } catch (ReactorException e) {
-            throw new IOException("Failed to initialize "+ sn +" plugin",e);
-        }
-
-        // recalculate dependencies of plugins optionally depending the newly deployed one.
-        for (PluginWrapper depender: plugins) {
-            if (depender.equals(p)) {
-                // skip itself.
-                continue;
-            }
-            for (Dependency d: depender.getOptionalDependencies()) {
-                if (d.shortName.equals(p.getShortName())) {
-                    // this plugin depends on the newly loaded one!
-                    // recalculate dependencies!
-                    try {
-                        getPluginStrategy().updateDependency(depender, p);
-                    } catch (AbstractMethodError x) {
-                        LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Redo who depends on who.
-        resolveDependantPlugins();
-
-        LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
     }
 
     @Restricted(NoExternalUse.class)
@@ -939,7 +942,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If the war file has any "/WEB-INF/plugins/[*.jpi | *.hpi]", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.jpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subversion.jpi"}
      * @throws Exception
      *      Any exception will be reported and halt the startup.
      */
@@ -1008,7 +1011,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         URLConnection uc = url.openConnection();
         InputStream in = null;
         // Magic, which allows to avoid using stream generated for JarURLConnection.
-        // It prevents getting into JENKINS-37332 due to the file desciptor leak 
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
         if (uc instanceof JarURLConnection) {
             final JarURLConnection jarURLConnection = (JarURLConnection) uc;
             final String entryName = jarURLConnection.getEntryName();
@@ -1047,7 +1050,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
         URLConnection uc = url.openConnection();
         
-        // It prevents file desciptor leak if the URL references a file within JAR
+        // It prevents file descriptor leak if the URL references a file within JAR
         // See JENKINS-37332  for more info
         // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
         if (uc instanceof JarURLConnection) {
@@ -1144,8 +1147,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Get the plugin instance with the given short name.
      * @param shortName the short name of the plugin
-     * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
+     * @return The plugin singleton or {@code null} if a plugin with the given short name does not exist.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(String shortName) {
         for (PluginWrapper p : getPlugins()) {
             if(p.getShortName().equals(shortName))
@@ -1158,8 +1164,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Get the plugin instance that implements a specific class, use to find your plugin singleton.
      * Note: beware the classloader fun.
      * @param pluginClazz The class that your plugin implements.
-     * @return The plugin singleton or <code>null</code> if for some reason the plugin is not loaded.
+     * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link Plugin#getWrapper()} and then {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(Class<? extends Plugin> pluginClazz) {
         for (PluginWrapper p : getPlugins()) {
             if(pluginClazz.isInstance(p.getPlugin()))
@@ -1216,7 +1225,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (PluginWrapper p : activePlugins) {
             if (p.classLoader==cl) {
                 if (oneAndOnly!=null)
-                    return null;    // ambigious
+                    return null;    // ambiguous
                 oneAndOnly = p;
             }
         }
@@ -1410,7 +1419,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
                     // There could be cases like:
                     // 'plugin.ambiguous.updatesite' where both
-                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
+                    // 'plugin' @ 'ambiguous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);
@@ -1524,9 +1533,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
 
-        return HttpResponses.redirectToContextRoot();
+        return new HttpRedirect("advanced");
     }
-
 
     @RequirePOST
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
@@ -1555,7 +1563,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
             // Parse the request
-            FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
+            FileItem fileItem = upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
@@ -1568,7 +1576,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
-            fileItem.write(t);
+            try {
+                fileItem.write(t);
+            } catch (Exception e) {
+                // Exception thrown is too generic so at least limit the scope where it can occur
+                throw new ServletException(e);
+            }
             fileItem.delete();
 
             final String baseName = identifyPluginShortName(t);
@@ -1604,9 +1617,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("../updateCenter");
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {// grrr. fileItem.write throws this
+        } catch (FileUploadException e) {
             throw new ServletException(e);
         }
     }

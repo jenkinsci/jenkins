@@ -552,7 +552,7 @@ public final class FilePath implements Serializable {
      * @see #unzip(FilePath)
      */
     public void unzipFrom(InputStream _in) throws IOException, InterruptedException {
-        final InputStream in = new RemoteInputStream(_in);
+        final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
         act(new SecureFileCallable<Void>() {
             public Void invoke(File dir, VirtualChannel channel) throws IOException {
                 unzip(dir, in);
@@ -718,7 +718,7 @@ public final class FilePath implements Serializable {
      */
     public void untarFrom(InputStream _in, final TarCompression compression) throws IOException, InterruptedException {
         try {
-            final InputStream in = new RemoteInputStream(_in);
+            final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
             act(new SecureFileCallable<Void>() {
                 public Void invoke(File dir, VirtualChannel channel) throws IOException {
                     readFromTar("input stream",dir, compression.extract(in));
@@ -831,7 +831,7 @@ public final class FilePath implements Serializable {
                     return true;
                 } catch (IOException x) {
                     if (listener != null) {
-                        x.printStackTrace(listener.error("Failed to download " + archive + " from agent; will retry from master"));
+                        Functions.printStackTrace(x, listener.error("Failed to download " + archive + " from agent; will retry from master"));
                     }
                 }
             }
@@ -1202,7 +1202,7 @@ public final class FilePath implements Serializable {
             deleteFile(deleting(dir));
         } catch (IOException e) {
             // if some of the child directories are big, it might take long enough to delete that
-            // it allows others to create new files, causing problemsl ike JENKINS-10113
+            // it allows others to create new files, causing problems like JENKINS-10113
             // so give it one more attempt before we give up.
             if(!isSymlink(dir))
                 deleteContentsRecursive(dir);
@@ -2257,7 +2257,7 @@ public final class FilePath implements Serializable {
 
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
-     * @since TODO supports large files > 10 GB, migration to commons-compress
+     * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
     private void readFromTar(String name, File baseDir, InputStream in) throws IOException {
 
@@ -2383,7 +2383,7 @@ public final class FilePath implements Serializable {
                         for (String token : Util.tokenize(fileMask))
                             matched &= hasMatch(dir,token,caseSensitive);
                         if(matched)
-                            return Messages.FilePath_validateAntFileMask_whitespaceSeprator();
+                            return Messages.FilePath_validateAntFileMask_whitespaceSeparator();
                     }
 
                     // a common mistake is to assume the wrong base dir, and there are two variations

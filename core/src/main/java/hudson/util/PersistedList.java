@@ -217,7 +217,7 @@ public class PersistedList<T> extends AbstractList<T> {
     /**
      * {@link Converter} implementation for XStream.
      *
-     * Serializaion form is compatible with plain {@link List}.
+     * Serialization form is compatible with plain {@link List}.
      */
     public static class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;

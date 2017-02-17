@@ -57,7 +57,6 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
         <jar href="${rootURL}jnlpJars/remoting.jar"/>
-        <property name="hudson.showWindowsServiceInstallLink" value="true" />
       </resources>
 
       <application-desc main-class="hudson.remoting.jnlp.Main">

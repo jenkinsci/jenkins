@@ -105,7 +105,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         }
 
         /**
-         * Checks if parameterised build choices are valid.
+         * Checks if parameterized build choices are valid.
          */
         public FormValidation doCheckChoices(@QueryParameter String value) {
             if (ChoiceParameterDefinition.areValidChoices(value)) {

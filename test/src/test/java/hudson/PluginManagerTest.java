@@ -30,7 +30,10 @@ import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
+import hudson.model.User;
 import hudson.scm.SubversionSCM;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
@@ -53,6 +56,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
@@ -442,6 +446,16 @@ public class PluginManagerTest {
         assertTrue(pluginInfo.getString("name") != null);
         assertTrue(pluginInfo.getString("title") != null);
         assertTrue(pluginInfo.getString("dependencies") != null);
+    }
+
+    @Issue("JENKINS-41684")
+    @Test
+    public void requireSystemDuringLoad() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
+        try (ACLContext context = ACL.as(User.get("underprivileged").impersonate())) {
+            dynamicLoad("require-system-during-load.hpi");
+        }
     }
 
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {

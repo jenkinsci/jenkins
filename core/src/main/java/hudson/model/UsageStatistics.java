@@ -158,14 +158,22 @@ public class UsageStatistics extends PageDecorator {
         o.put("plugins",plugins);
 
         JSONObject jobs = new JSONObject();
-        List<TopLevelItem> items = j.getAllItems(TopLevelItem.class);
-        for (TopLevelItemDescriptor d : Items.all()) {
-            int cnt=0;
-            for (TopLevelItem item : items) {
-                if(item.getDescriptor()==d)
-                    cnt++;
+        // capture the descriptors as these should be small compared with the number of items
+        // so we will walk all items only once and we can short-cut the search of descriptors
+        TopLevelItemDescriptor[] descriptors = Items.all().toArray(new TopLevelItemDescriptor[0]);
+        int counts[] = new int[descriptors.length];
+        for (TopLevelItem item: j.allItems(TopLevelItem.class)) {
+            TopLevelItemDescriptor d = item.getDescriptor();
+            for (int i = 0; i < descriptors.length; i++) {
+                if (d == descriptors[i]) {
+                    counts[i]++;
+                    // no point checking any more, we found the match
+                    break;
+                }
             }
-            jobs.put(d.getJsonSafeClassName(),cnt);
+        }
+        for (int i = 0; i < descriptors.length; i++) {
+            jobs.put(descriptors[i].getJsonSafeClassName(), counts[i]);
         }
         o.put("jobs",jobs);
 
@@ -198,7 +206,7 @@ public class UsageStatistics extends PageDecorator {
     }
 
     /**
-     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encrypt the first block.
      *
      * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
      * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.

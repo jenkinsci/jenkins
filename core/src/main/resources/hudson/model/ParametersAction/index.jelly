@@ -40,6 +40,7 @@ THE SOFTWARE.
 					<div class="col-xs-24 pane-header">${%Parameters}</div>
 					<div class="row col-xs-24 pane-content">
 						<table class="pane">
+                                                        <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
 							<j:forEach var="parameterValue" items="${it.parameters}">
 								<tbody>
 									<st:include it="${parameterValue}"
