@@ -87,7 +87,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">JENKINS-27268</a>.
+ * See <a href="https://jenkins-ci.org/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */

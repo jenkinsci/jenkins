@@ -858,7 +858,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "http://jenkins-ci.org/";
+                footerURL = "https://jenkins.io/";
             }
         }
         return footerURL;

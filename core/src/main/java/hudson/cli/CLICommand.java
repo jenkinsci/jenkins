@@ -319,7 +319,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     
     public Channel checkChannel() throws AbortException {
         if (channel==null)
-            throw new AbortException("This command can only run with Jenkins CLI. See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI");
+            throw new AbortException("This command can only run with Jenkins CLI. See https://jenkins.io/redirect/cli");
         return channel;
     }
 
