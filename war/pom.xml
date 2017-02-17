@@ -98,7 +98,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>3.3</version>
+      <version>3.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
