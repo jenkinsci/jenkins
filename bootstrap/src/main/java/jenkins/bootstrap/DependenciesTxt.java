@@ -31,13 +31,22 @@ class DependenciesTxt {
         try (Reader r = new InputStreamReader(i,"UTF-8");
              BufferedReader br = new BufferedReader(r)) {
 
-            // line that we care about has 5 components: groupId:artifactId:packaging:version:scope
+            // line that we care about has 5 components: groupId:artifactId:packaging[:classifier]:version:scope
             String line;
             while ((line=br.readLine())!=null) {
                 String[] tokens = line.trim().split(":");
-                if (tokens.length!=5)   continue;
 
-                Dependency d = new Dependency(tokens[0], tokens[1], tokens[3]);
+                Dependency d;
+                switch (tokens.length) {
+                case 5:
+                    d = new Dependency(tokens[0], tokens[1], tokens[3], null);
+                    break;
+                case 6:
+                    d = new Dependency(tokens[0], tokens[1], tokens[4], tokens[3]);
+                    break;
+                default:
+                    continue;
+                }
                 list.add(d);
                 jars.put(d.ga,d.vv);
             }
@@ -51,7 +60,7 @@ class DependenciesTxt {
      */
     public Dependency fromFileName(String jarFileName) {
         for (Dependency d : dependencies) {
-            if (jarFileName.equals(d.a+"-"+d.v+".jar"))
+            if (jarFileName.equals(d.getFileName()))
                 return d;
         }
         return null;
