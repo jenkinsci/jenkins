@@ -46,27 +46,21 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.1</version>
-    </dependency>
-
-    <dependency><!-- working around MCOMPILER-97 -->
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>core-annotation-processors</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-      <optional>true</optional>
+      <version>1.3</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
     </dependency>
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
