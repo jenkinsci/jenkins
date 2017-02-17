@@ -46,7 +46,7 @@ class Plugin {
     }
 
     void process(DependenciesTxt core, List<URL> jars, List<DependenciesTxt> overrides) throws IOException {
-        if (!isCoreComponentOverride())
+        if (!isCoreComponentOverride() || isDisabled())
             return;
 
         explode();
@@ -94,6 +94,11 @@ class Plugin {
     private boolean isCoreComponentOverride() throws IOException {
         Manifest mf = loadManifest();
         return "true".equals(mf.getMainAttributes().getValue("Core-Component"));
+    }
+
+    public boolean isDisabled() {
+        File disableFile = new File(archive.getPath() + ".disabled");
+        return disableFile.exists();
     }
 
     /**
