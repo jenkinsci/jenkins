@@ -117,9 +117,7 @@ public class WebAppMain implements BootLogic {
         setupServlet();
         setupFilters();
 
-        Bootstrap bootstrap = (Bootstrap) context.getAttribute(Bootstrap.class.getName());
-
-        final File home = bootstrap.getHome();
+        final File home = getHome();
         try {
 
             // use the current request to determine the language
@@ -278,6 +276,12 @@ public class WebAppMain implements BootLogic {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins", e);
             throw e;
         }
+    }
+
+    protected File getHome() {
+        Bootstrap bootstrap = (Bootstrap) context.getAttribute(Bootstrap.class.getName());
+
+        return bootstrap.getHome();
     }
 
     public void joinInit() throws InterruptedException {

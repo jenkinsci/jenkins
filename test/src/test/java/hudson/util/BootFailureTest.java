@@ -3,7 +3,6 @@ package hudson.util;
 import hudson.WebAppMain;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
-import static hudson.util.BootFailureTest.makeBootFail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,11 +50,11 @@ public class BootFailureTest {
             ServletContext ws = createWebServer();
             wa = new WebAppMain() {
                 @Override
-                public WebAppMain.FileAndDescription getHomeDir(ServletContextEvent event) {
+                protected File getHome() {
                     try {
-                        return new WebAppMain.FileAndDescription(homeLoader.allocate(), "test");
-                    } catch (Exception x) {
-                        throw new AssertionError(x);
+                        return homeLoader.allocate();
+                    } catch (Exception e) {
+                        throw new AssertionError(e);
                     }
                 }
             };
