@@ -48,6 +48,7 @@ THE SOFTWARE.
   </licenses>
 
   <modules>
+    <module>bootstrap</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>

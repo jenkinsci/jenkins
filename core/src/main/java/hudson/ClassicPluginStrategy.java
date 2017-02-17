@@ -591,6 +591,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     /**
      * Explodes the plugin into a directory, if necessary.
+     *
+     * This logic needs to be consistent with {@link jenkins.bootstrap.Plugin#explode()}.
      */
     private static void explode(File archive, File destDir) throws IOException {
         destDir.mkdirs();

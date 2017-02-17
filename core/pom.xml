@@ -59,6 +59,11 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-core-bootstrap</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>

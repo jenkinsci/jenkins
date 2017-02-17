@@ -33,8 +33,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import jenkins.bootstrap.BootLogic;
 import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -67,7 +69,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties implements ServletContextListener, OnMaster {
+@MetaInfServices
+public class SystemProperties implements BootLogic, OnMaster {
     // this class implements ServletContextListener and is declared in WEB-INF/web.xml
 
     /**
@@ -85,6 +88,12 @@ public class SystemProperties implements ServletContextListener, OnMaster {
      * Public for the servlet container.
      */
     public SystemProperties() {}
+
+    @Override
+    public float ordinal() {
+        // make sure we get to run before WebAppMain
+        return 100;
+    }
 
     /**
      * Called by the servlet container to initialize the {@link ServletContext}.

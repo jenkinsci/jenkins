@@ -47,6 +47,11 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core-bootstrap</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
       <version>1.34</version>
@@ -206,6 +211,10 @@ THE SOFTWARE.
               <Jenkins-Version>${project.version}</Jenkins-Version>
             </manifestEntries>
           </archive>
+
+          <!-- exclude most of lib/*.jar except for what's needed in bootstrap -->
+          <packagingExcludes>%regex[WEB-INF/lib/(?!jenkins-core-bootstrap.*.jar)(?!version-number.*.jar).*.jar]</packagingExcludes>
+
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
         </configuration>
       </plugin>
@@ -417,6 +426,22 @@ THE SOFTWARE.
               <overWriteIfNewer>true</overWriteIfNewer>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+          <execution>
+            <!--
+              put dependency jars into WEB-INF/jars (instead of normal WEB-INF/lib.
+              See maven-war-plugin config that excludes WEB-INF/lib/*.jar
+            -->
+            <id>WEB-INF/jar</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+              <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/jars</outputDirectory>
+              <excludeArtifactIds>jenkins-core-bootstrap</excludeArtifactIds>
             </configuration>
           </execution>
         </executions>

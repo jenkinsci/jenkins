@@ -24,6 +24,13 @@
 package hudson;
 
 import hudson.security.ACLContext;
+import hudson.security.HudsonFilter;
+import hudson.security.csrf.CrumbFilter;
+import hudson.util.CharacterEncodingFilter;
+import hudson.util.PluginServletFilter;
+import jenkins.JenkinsHttpSessionListener;
+import jenkins.bootstrap.BootLogic;
+import jenkins.bootstrap.Bootstrap;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
@@ -45,15 +52,23 @@ import hudson.util.ChartUtil;
 import hudson.util.AWTProblem;
 import jenkins.util.JenkinsJVM;
 import org.jvnet.localizer.LocaleProvider;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.stapler.DiagnosticThreadNameFilter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.compression.CompressionFilter;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -63,6 +78,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,24 +88,37 @@ import java.util.logging.LogRecord;
 import static java.util.logging.Level.*;
 
 /**
- * Entry point when Hudson is used as a webapp.
+ * Entry point when Jenkins is used as a webapp.
  *
  * @author Kohsuke Kawaguchi
  */
-public class WebAppMain implements ServletContextListener {
+@MetaInfServices
+public class WebAppMain implements BootLogic {
     private RingBufferLogHandler handler;
 
     private static final String APP = "app";
     private boolean terminated;
     private Thread initThread;
+    private ServletContext context;
+
+    @Override
+    public float ordinal() {
+        return 0;
+    }
 
     /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         JenkinsJVMAccess._setJenkinsJVM(true);
-        final ServletContext context = event.getServletContext();
-        File home=null;
+        context = event.getServletContext();
+
+        setupServlet();
+        setupFilters();
+
+        Bootstrap bootstrap = (Bootstrap) context.getAttribute(Bootstrap.class.getName());
+
+        final File home = bootstrap.getHome();
         try {
 
             // use the current request to determine the language
@@ -103,8 +132,8 @@ public class WebAppMain implements ServletContextListener {
             JVM jvm;
             try {
                 jvm = new JVM();
-                new URLClassLoader(new URL[0],getClass().getClassLoader());
-            } catch(SecurityException e) {
+                new URLClassLoader(new URL[0], getClass().getClassLoader());
+            } catch (SecurityException e) {
                 throw new InsufficientPermissionDetected(e);
             }
 
@@ -116,11 +145,6 @@ public class WebAppMain implements ServletContextListener {
 
             installLogger();
 
-            final FileAndDescription describedHomeDir = getHomeDir(event);
-            home = describedHomeDir.file.getAbsoluteFile();
-            home.mkdirs();
-            System.out.println("Jenkins home directory: "+home+" found at: "+describedHomeDir.description);
-
             // check that home exists (as mkdirs could have failed silently), otherwise throw a meaningful error
             if (!home.exists())
                 throw new NoHomeDir(home);
@@ -128,7 +152,7 @@ public class WebAppMain implements ServletContextListener {
             recordBootAttempt(home);
 
             // make sure that we are using XStream in the "enhanced" (JVM-specific) mode
-            if(jvm.bestReflectionProvider().getClass()==PureJavaReflectionProvider.class) {
+            if (jvm.bestReflectionProvider().getClass() == PureJavaReflectionProvider.class) {
                 throw new IncompatibleVMDetected(); // nope
             }
 
@@ -165,7 +189,7 @@ public class WebAppMain implements ServletContextListener {
 
             // make sure this is servlet 2.4 container or above
             try {
-                ServletResponse.class.getMethod("setCharacterEncoding",String.class);
+                ServletResponse.class.getMethod("setCharacterEncoding", String.class);
             } catch (NoSuchMethodException e) {
                 throw new IncompatibleServletVersionDetected(ServletResponse.class);
             }
@@ -178,7 +202,7 @@ public class WebAppMain implements ServletContextListener {
             }
 
             // make sure AWT is functioning, or else JFreeChart won't even load.
-            if(ChartUtil.awtProblemCause!=null) {
+            if (ChartUtil.awtProblemCause != null) {
                 throw new AWTProblem(ChartUtil.awtProblemCause);
             }
 
@@ -199,19 +223,21 @@ public class WebAppMain implements ServletContextListener {
                 // if this works we are all happy
             } catch (TransformerFactoryConfigurationError x) {
                 // no it didn't.
-                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details",x);
-                System.setProperty(TransformerFactory.class.getName(),"com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+                LOGGER.log(WARNING, "XSLT not configured correctly. Hudson will try to fix this. See http://issues.apache.org/bugzilla/show_bug.cgi?id=40895 for more details", x);
+                System.setProperty(TransformerFactory.class.getName(), "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
                 try {
                     TransformerFactory.newInstance();
                     LOGGER.info("XSLT is set to the JAXP RI in JRE");
-                } catch(TransformerFactoryConfigurationError y) {
+                } catch (TransformerFactoryConfigurationError y) {
                     LOGGER.log(SEVERE, "Failed to correct the problem.");
                 }
             }
 
+            context.addListener(new JenkinsHttpSessionListener());
+
             installExpressionFactory(event);
 
-            context.setAttribute(APP,new HudsonIsLoading());
+            context.setAttribute(APP, new HudsonIsLoading());
 
             final File _home = home;
             initThread = new Thread("Jenkins initialization thread") {
@@ -233,13 +259,13 @@ public class WebAppMain implements ServletContextListener {
                         LOGGER.info("Jenkins is fully up and running");
                         success = true;
                     } catch (Error e) {
-                        new HudsonFailedToLoad(e).publish(context,_home);
+                        new HudsonFailedToLoad(e).publish(context, _home);
                         throw e;
                     } catch (Exception e) {
-                        new HudsonFailedToLoad(e).publish(context,_home);
+                        new HudsonFailedToLoad(e).publish(context, _home);
                     } finally {
                         Jenkins instance = Jenkins.getInstanceOrNull();
-                        if(!success && instance!=null)
+                        if (!success && instance != null)
                             instance.cleanUp();
                     }
                 }
@@ -248,7 +274,7 @@ public class WebAppMain implements ServletContextListener {
         } catch (BootFailure e) {
             e.publish(context, home);
         } catch (Error | RuntimeException e) {
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins", e);
             throw e;
         }
     }
@@ -299,6 +325,34 @@ public class WebAppMain implements ServletContextListener {
         Logger.getLogger("").addHandler(handler);
     }
 
+    /**
+     * Registers servlets.
+     */
+    private void setupServlet() {
+        Dynamic r = context.addServlet("Stapler", Stapler.class);
+        r.setInitParameter("default-encodings","text/html=UTF-8");
+        r.setInitParameter("diagnosticThreadName","false");
+        r.setAsyncSupported(true);
+        r.addMapping("/*");
+    }
+
+    private void setupFilters() {
+        // TODO: should be turned into a proper ExtensionPoint, and clear up PluginServletFilter
+        addFilter(DiagnosticThreadNameFilter.class);
+        addFilter(CharacterEncodingFilter.class);
+        addFilter(CompressionFilter.class);
+        addFilter(HudsonFilter.class);
+        addFilter(CrumbFilter.class);
+        addFilter(PluginServletFilter.class);
+
+    }
+
+    private void addFilter(Class<? extends Filter> f) {
+        FilterRegistration.Dynamic r = context.addFilter(f.getName(), f);
+        r.setAsyncSupported(true);
+        r.addMappingForUrlPatterns(null, true, "/*");
+    }
+
     /** Add some metadata to a File, allowing to trace setup issues */
     public static class FileAndDescription {
         public final File file;
@@ -307,72 +361,6 @@ public class WebAppMain implements ServletContextListener {
             this.file = file;
             this.description = description;
         }
-    }
-
-    /**
-     * Determines the home directory for Jenkins.
-     *
-     * <p>
-     * We look for a setting that affects the smallest scope first, then bigger ones later.
-     *
-     * <p>
-     * People makes configuration mistakes, so we are trying to be nice
-     * with those by doing {@link String#trim()}.
-     * 
-     * <p>
-     * @return the File alongside with some description to help the user troubleshoot issues
-     */
-    public FileAndDescription getHomeDir(ServletContextEvent event) {
-        // check JNDI for the home directory first
-        for (String name : HOME_NAMES) {
-            try {
-                InitialContext iniCtxt = new InitialContext();
-                Context env = (Context) iniCtxt.lookup("java:comp/env");
-                String value = (String) env.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
-                // look at one more place. See issue #1314
-                value = (String) iniCtxt.lookup(name);
-                if(value!=null && value.trim().length()>0)
-                    return new FileAndDescription(new File(value.trim()),"JNDI/"+name);
-            } catch (NamingException e) {
-                // ignore
-            }
-        }
-
-        // next the system property
-        for (String name : HOME_NAMES) {
-            String sysProp = SystemProperties.getString(name);
-            if(sysProp!=null)
-                return new FileAndDescription(new File(sysProp.trim()),"SystemProperties.getProperty(\""+name+"\")");
-        }
-
-        // look at the env var next
-        for (String name : HOME_NAMES) {
-            String env = EnvVars.masterEnvVars.get(name);
-            if(env!=null)
-                return new FileAndDescription(new File(env.trim()).getAbsoluteFile(),"EnvVars.masterEnvVars.get(\""+name+"\")");
-        }
-
-        // otherwise pick a place by ourselves
-
-        String root = event.getServletContext().getRealPath("/WEB-INF/workspace");
-        if(root!=null) {
-            File ws = new File(root.trim());
-            if(ws.exists())
-                // Hudson <1.42 used to prefer this before ~/.hudson, so
-                // check the existence and if it's there, use it.
-                // otherwise if this is a new installation, prefer ~/.hudson
-                return new FileAndDescription(ws,"getServletContext().getRealPath(\"/WEB-INF/workspace\")");
-        }
-
-        File legacyHome = new File(new File(System.getProperty("user.home")),".hudson");
-        if (legacyHome.exists()) {
-            return new FileAndDescription(legacyHome,"$user.home/.hudson"); // before rename, this is where it was stored
-        }
-
-        File newHome = new File(new File(System.getProperty("user.home")),".jenkins");
-        return new FileAndDescription(newHome,"$user.home/.jenkins");
     }
 
     public void contextDestroyed(ServletContextEvent event) {
@@ -403,6 +391,4 @@ public class WebAppMain implements ServletContextListener {
             JenkinsJVM.setJenkinsJVM(jenkinsJVM);
         }
     }
-
-    private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }

@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.WebAppMain;
+import jenkins.bootstrap.Bootstrap;
 import jenkins.util.groovy.GroovyHookScript;
 import org.kohsuke.stapler.WebApp;
 
@@ -86,7 +87,7 @@ public abstract class BootFailure extends ErrorObject {
      * then when we boot, the file gets deleted.
      */
     public static File getBootFailureFile(File home) {
-        return new File(home, "failed-boot-attempts.txt");
+        return Bootstrap.getBootFailureFile(home);
     }
 
 }
