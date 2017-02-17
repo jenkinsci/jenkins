@@ -80,6 +80,8 @@ public class Bootstrap implements ServletContextListener {
             recordBootAttempt(home);
 
             coreClassLoader = buildCoreClassLoader();
+            Thread.currentThread().setContextClassLoader(coreClassLoader);
+
             bootLogics = loadBootLogics(coreClassLoader);
 
             for (BootLogic b : bootLogics) {

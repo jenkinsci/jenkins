@@ -28,6 +28,7 @@ import hudson.security.HudsonFilter;
 import hudson.security.csrf.CrumbFilter;
 import hudson.util.CharacterEncodingFilter;
 import hudson.util.PluginServletFilter;
+import jenkins.ContextClasssLoaderFilter;
 import jenkins.JenkinsHttpSessionListener;
 import jenkins.bootstrap.BootLogic;
 import jenkins.bootstrap.Bootstrap;
@@ -338,6 +339,7 @@ public class WebAppMain implements BootLogic {
 
     private void setupFilters() {
         // TODO: should be turned into a proper ExtensionPoint, and clear up PluginServletFilter
+        addFilter(ContextClasssLoaderFilter.class);
         addFilter(DiagnosticThreadNameFilter.class);
         addFilter(CharacterEncodingFilter.class);
         addFilter(CompressionFilter.class);
