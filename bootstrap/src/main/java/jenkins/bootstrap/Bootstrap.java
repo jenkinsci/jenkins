@@ -52,8 +52,20 @@ import static java.util.logging.Level.*;
  */
 public class Bootstrap implements ServletContextListener {
 
+    private static final Logger LOGGER = Logger.getLogger(Bootstrap.class.getName());
+
+    private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
+
+    /**
+     * Next step of the boot process.
+     */
     private List<BootLogic> bootLogics = Collections.emptyList();
+
     private ServletContext context;
+
+    /**
+     * ClassLoader that loads Jenkins core.
+     */
     private ClassLoader coreClassLoader;
     /**
      * JENKINS_HOME
@@ -306,8 +318,4 @@ public class Bootstrap implements ServletContextListener {
     public static File getBootFailureFile(File home) {
         return new File(home, "failed-boot-attempts.txt");
     }
-
-    private static final Logger LOGGER = Logger.getLogger(Bootstrap.class.getName());
-
-    private static final String[] HOME_NAMES = {"JENKINS_HOME","HUDSON_HOME"};
 }
