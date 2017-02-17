@@ -64,7 +64,10 @@ class Plugin {
             overrides.add(deps);
         }
 
-        File[] files = new File(destDir, "WEB-INF/lib").listFiles();
+
+        File lib = new File(destDir, "WEB-INF/lib");
+        LOGGER.info("Loading core overrides from "+lib);
+        File[] files = lib.listFiles();
         if (files!=null) {
             for (File jar : files) {
                 if (!jar.getName().endsWith(".jar"))
