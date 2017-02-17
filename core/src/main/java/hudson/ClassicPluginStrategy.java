@@ -184,6 +184,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
         // String export = manifest.getMainAttributes().getValue("Export");
 
         List<File> paths = new ArrayList<File>();
+        if (!isCoreComponentPlugin(manifest)) {
+            // core component plugins are loaded in the core classloader, so
+            // there's nothing more to load here.
+        } else
         if (isLinked) {
             parseClassPath(manifest, archive, paths, "Libraries", ",");
             parseClassPath(manifest, archive, paths, "Class-Path", " +"); // backward compatibility
@@ -237,6 +241,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
                 createClassLoader(paths, dependencyLoader, atts), disableFile, dependencies, optionalDependencies);
+    }
+
+    /**
+     * Needs to be consistent with {@link jenkins.bootstrap.Plugin#isCoreComponentOverride()}
+     */
+    private boolean isCoreComponentPlugin(Manifest manifest) {
+        return "true".equals(manifest.getMainAttributes().getValue("Core-Component"));
     }
 
     private static void fix(Attributes atts, List<PluginWrapper.Dependency> optionalDependencies) {
