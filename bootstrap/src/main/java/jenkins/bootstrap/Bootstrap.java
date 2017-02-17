@@ -87,12 +87,12 @@ public class Bootstrap implements ServletContextListener {
             for (BootLogic b : bootLogics) {
                 b.contextInitialized(event);
             }
-        } catch (Error | RuntimeException e) {
-            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
-            throw e;
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
             throw new Error(e);
+        } catch (final Throwable e) {
+            LOGGER.log(SEVERE, "Failed to initialize Jenkins",e);
+            throw e;
         }
     }
 
