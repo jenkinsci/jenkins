@@ -156,9 +156,16 @@ public class Bootstrap implements ServletContextListener {
             String justName = jar.substring(jar.lastIndexOf('/')+1);
 
             Dependency d = core.fromFileName(justName);
-            for (DependenciesTxt o : overrides) {
-                if (o.contains(d.ga))
-                    continue OUTER; // this jar got overriden
+            if (d==null) {
+                // a jar is present in WEB-INF/lib that's not accounted for in dependencies.txt
+                // perhaps somebody manually repackaged a war? let that be in the classpath so as
+                // not to block a desparate attempt by an admin
+                LOGGER.log(INFO, "Allowing unexpected core jar file without override check: "+jar);
+            } else {
+                for (DependenciesTxt o : overrides) {
+                    if (o.contains(d.ga))
+                        continue OUTER; // this jar got overriden
+                }
             }
 
             urls.add(context.getResource(jar));
