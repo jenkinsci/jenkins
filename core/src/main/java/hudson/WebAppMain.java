@@ -123,8 +123,7 @@ public class WebAppMain implements BootLogic {
         JenkinsJVMAccess._setJenkinsJVM(true);
         context = event.getServletContext();
 
-        setupServlet();
-        setupFilters();
+        registerToServletContainer();
 
         final File home = getHome();
         try {
@@ -241,8 +240,6 @@ public class WebAppMain implements BootLogic {
                 }
             }
 
-            context.addListener(new JenkinsHttpSessionListener());
-
             installExpressionFactory(event);
 
             context.setAttribute(APP, new HudsonIsLoading());
@@ -285,6 +282,15 @@ public class WebAppMain implements BootLogic {
             LOGGER.log(SEVERE, "Failed to initialize Jenkins", e);
             throw e;
         }
+    }
+
+    /**
+     * Register callbacks and hooks to the servlet container
+     */
+    protected void registerToServletContainer() {
+        setupServlet();
+        setupFilters();
+        context.addListener(new JenkinsHttpSessionListener());
     }
 
     protected File getHome() {
@@ -359,7 +365,6 @@ public class WebAppMain implements BootLogic {
         addFilter(HudsonFilter.class);
         addFilter(CrumbFilter.class);
         addFilter(PluginServletFilter.class);
-
     }
 
     private void addFilter(Class<? extends Filter> f) {

@@ -57,6 +57,11 @@ public class BootFailureTest {
                         throw new AssertionError(e);
                     }
                 }
+
+                @Override
+                protected void registerToServletContainer() {
+                    // too late to register servlets and so on, and we don't need those for this test
+                }
             };
             wa.contextInitialized(new ServletContextEvent(ws));
             wa.joinInit();
