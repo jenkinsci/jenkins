@@ -847,18 +847,6 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>process</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <!--
               generate jelly taglib docs from src/main/resources.

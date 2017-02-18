@@ -160,7 +160,7 @@ THE SOFTWARE.
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
@@ -496,11 +496,6 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
-          <artifactId>apt-maven-plugin</artifactId>
-          <version>1.0-alpha-5</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
           <artifactId>cobertura-maven-plugin</artifactId>
           <version>2.5.2</version>
         </plugin>
@@ -665,7 +660,7 @@ THE SOFTWARE.
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
-          <!-- default reuseCreated is more performant 
+          <!-- default reuseCreated is more performant
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
           -->
@@ -760,8 +755,8 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      
-      
+
+
     </plugins>
 
     <extensions>
