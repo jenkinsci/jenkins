@@ -184,7 +184,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         // String export = manifest.getMainAttributes().getValue("Export");
 
         List<File> paths = new ArrayList<File>();
-        if (!isCoreComponentPlugin(manifest)) {
+        if (isCoreComponentPlugin(manifest)) {
             // core component plugins are loaded in the core classloader, so
             // there's nothing more to load here.
         } else
