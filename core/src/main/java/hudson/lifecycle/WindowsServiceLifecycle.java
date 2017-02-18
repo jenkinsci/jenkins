@@ -117,6 +117,15 @@ public class WindowsServiceLifecycle extends Lifecycle {
 
     @Override
     public void restart() throws IOException, InterruptedException {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        try {
+            if (jenkins != null) {
+                jenkins.cleanUp();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+        }
+
         File me = getHudsonWar();
         File home = me.getParentFile();
 
