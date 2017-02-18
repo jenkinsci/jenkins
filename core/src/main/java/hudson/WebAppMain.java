@@ -108,6 +108,15 @@ public class WebAppMain implements BootLogic {
     }
 
     /**
+     * Entry point for jenkins-test-harness to set up filters &amp; servlets.
+     */
+    public void initForTest(ServletContext context) {
+        this.context = context;
+        setupServlet();
+        setupFilters();
+    }
+
+    /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
