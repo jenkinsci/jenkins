@@ -367,8 +367,12 @@ public class SCMTrigger extends Trigger<Item> {
         public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
                                                   @QueryParameter boolean ignorePostCommitHooks,
                                                   @AncestorInPath Item item) {
-            if (ignorePostCommitHooks && StringUtils.isBlank(value)) {
-                return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+            if (StringUtils.isBlank(value)) {
+                if (ignorePostCommitHooks) {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+                } else {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_hooks());
+                }
             } else {
                 return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
                         .doCheckSpec(value, item);
