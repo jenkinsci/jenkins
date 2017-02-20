@@ -358,6 +358,24 @@ public class SCMTrigger extends Trigger<Item> {
                 return FormValidation.ok();
             return FormValidation.validateNonNegativeInteger(value);
         }
+
+        /**
+         * Performs syntax check.
+         */
+        public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
+                                                  @QueryParameter boolean ignorePostCommitHooks,
+                                                  @AncestorInPath Item item) {
+            if (StringUtils.isBlank(value)) {
+                if (ignorePostCommitHooks) {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+                } else {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_hooks());
+                }
+            } else {
+                return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
+                        .doCheckSpec(value, item);
+            }
+        }
     }
 
     @Extension
