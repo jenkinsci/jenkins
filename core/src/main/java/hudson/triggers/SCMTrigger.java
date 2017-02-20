@@ -72,10 +72,12 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -357,6 +359,20 @@ public class SCMTrigger extends Trigger<Item> {
             if (value != null && "".equals(value.trim()))
                 return FormValidation.ok();
             return FormValidation.validateNonNegativeInteger(value);
+        }
+
+        /**
+         * Performs syntax check.
+         */
+        public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
+                                                  @QueryParameter boolean ignorePostCommitHooks,
+                                                  @AncestorInPath Item item) {
+            if (ignorePostCommitHooks && StringUtils.isBlank(value)) {
+                return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+            } else {
+                return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
+                        .doCheckSpec(value, item);
+            }
         }
     }
 
