@@ -460,9 +460,9 @@ public class CLI implements AutoCloseable {
             if(head.equals("-v")) {
                 args = args.subList(1,args.size());
                 Logger l = Logger.getLogger(ROOT_LOGGER_NAME);
-                l.setLevel(FINE);
+                l.setLevel(FINEST);
                 for (Handler h : l.getHandlers()) {
-                    h.setLevel(FINE);
+                    h.setLevel(FINEST);
                 }
                 continue;
             }
