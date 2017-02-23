@@ -90,7 +90,7 @@ public class AbstractBuildRangeCommand2Test {
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.01 >nul") : new Shell("echo 1\nsleep 10s"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10s"));
         assertThat("Job wasn't scheduled properly", project.scheduleBuild(0), equalTo(true));
 
         // Wait until classProject is started (at least 1s)
