@@ -252,7 +252,7 @@ public class UserTest {
         user.addProperty(prop);
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
         assertEquals("UserProperty1 should be assigned to its descriptor", prop, user.getProperties().get(prop.getDescriptor()));
-        assertTrue("User should should contains SomeUserProperty.", user.getAllProperties().contains(prop));
+        assertTrue("User should should contain SomeUserProperty.", user.getAllProperties().contains(prop));
         User.reload();
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
     }
@@ -402,7 +402,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doConfigSubmit(null, null);
-            fail("User should not have permission to configure antoher user.");
+            fail("User should not have permission to configure another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
@@ -440,7 +440,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doDoDelete(null, null);
-            fail("User should not have permission to delete antoher user.");
+            fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){

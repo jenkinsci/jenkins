@@ -200,7 +200,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Rebuilds the list by creating a fresh instances from the submitted form.
      *
      * <p>
-     * This version works with the the &lt;f:hetero-list> UI tag, where the user
+     * This version works with the &lt;f:hetero-list> UI tag, where the user
      * is allowed to create multiple instances of the same descriptor. Order is also
      * significant.
      */
@@ -249,7 +249,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     /**
      * {@link Converter} implementation for XStream.
      *
-     * Serializaion form is compatible with plain {@link List}.
+     * Serialization form is compatible with plain {@link List}.
      */
     public static class ConverterImpl extends AbstractCollectionConverter {
         CopyOnWriteList.ConverterImpl copyOnWriteListConverter;

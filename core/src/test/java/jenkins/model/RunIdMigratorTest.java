@@ -52,6 +52,7 @@ public class RunIdMigratorTest {
         TimeZone.setDefault(TimeZone.getTimeZone("EST"));
     }
 
+    // TODO could use LoggerRule only if it were extracted to an independent library
     @BeforeClass public static void logging() {
         RunIdMigrator.LOGGER.setLevel(Level.ALL);
         Handler handler = new ConsoleHandler();

@@ -67,14 +67,17 @@ public class Executables {
      * or if the executor thread exits prematurely, see JENKINS-30456
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
      * was compiled against Hudson < 1.383
-     *
+     * @param e Executable item
      * @return the estimated duration for a given executable, -1 if the executable is null
      */
     public static long getEstimatedDurationFor(@CheckForNull Executable e) {
+        if (e == null) {
+            return -1;
+        }
         try {
-            return (e != null) ? e.getEstimatedDuration() : -1;
+            return e.getEstimatedDuration();
         } catch (AbstractMethodError error) {
-            return (e != null) ? e.getParent().getEstimatedDuration() : -1;
+            return e.getParent().getEstimatedDuration();
         }
     }
 

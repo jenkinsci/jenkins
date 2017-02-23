@@ -4,10 +4,8 @@ import hudson.Extension;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.tools.ToolConfigurationCategory;
-import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
 
 //as close as it gets to the global Maven Project configuration
 @Extension(ordinal = 50) @Symbol("maven")
@@ -22,12 +20,6 @@ public class GlobalMavenConfig extends GlobalConfiguration {
     @Override
     public ToolConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(ToolConfigurationCategory.class);
-    }
-
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this, json);
-        return true;
     }
 
     public void setGlobalSettingsProvider(GlobalSettingsProvider globalSettingsProvider) {

@@ -421,7 +421,13 @@ var createPluginSetupWizard = function(appendTarget) {
 	var setupFirstUser = function() {
 		setPanel(firstUserPanel, {}, enableButtonsAfterFrameLoad);
 	};
-	
+
+	var showSetupCompletePanel = function(messages) {
+		pluginManager.getRestartStatus(function(restartStatus) {
+			setPanel(setupCompletePanel, $.extend(restartStatus, messages));
+		});
+	};
+
 	// used to handle displays based on current Jenkins install state
 	var stateHandlers = {
 		DEFAULT: function() {
@@ -430,8 +436,8 @@ var createPluginSetupWizard = function(appendTarget) {
 			$('.install-recommended').focus();
 		},
 		CREATE_ADMIN_USER: function() { setupFirstUser(); },
-		RUNNING: function() { setPanel(setupCompletePanel); },
-		INITIAL_SETUP_COMPLETED: function() { setPanel(setupCompletePanel); },
+		RUNNING: function() { showSetupCompletePanel(); },
+		INITIAL_SETUP_COMPLETED: function() { showSetupCompletePanel(); },
 		INITIAL_PLUGINS_INSTALLING: function() { showInstallProgress(); }
 	};
 	var showStatePanel = function(state) {
@@ -882,7 +888,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	var skipFirstUser = function() {
 		$('button').prop({disabled:true});
-		setPanel(setupCompletePanel, {message: translations.installWizard_firstUserSkippedMessage});
+		showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
 	};
 	
 	// call to setup the proxy
@@ -938,10 +944,14 @@ var createPluginSetupWizard = function(appendTarget) {
 			console.log('Waiting for Jenkins to come back online...');
 			console.log('-------------------');
 			var pingUntilRestarted = function() {
-				pluginManager.isRestartRequired(function(isRequired) {
-					if(this.isError || isRequired) {
-						console.log('Waiting...');
-						setTimeout(pingUntilRestarted, 1000);
+				pluginManager.getRestartStatus(function(restartStatus) {
+					if(this.isError || restartStatus.restartRequired) {
+						if (this.isError || restartStatus.restartSupported) {
+							console.log('Waiting...');
+							setTimeout(pingUntilRestarted, 1000);
+						} else if(!restartStatus.restartSupported) {
+							throw new Error(translations.installWizard_error_restartNotSupported);
+						}
 					}
 					else {
 						jenkins.goTo('/');
@@ -1030,10 +1040,9 @@ var createPluginSetupWizard = function(appendTarget) {
 	}
 	
 	var showInitialSetupWizard = function() {
-		// check for connectivity
-		//TODO: make the Update Center ID configurable
-		var siteId = 'default';
-		jenkins.testConnectivity(siteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
+		// check for connectivity to the configured default update site
+		/* globals defaultUpdateSiteId: true */
+		jenkins.testConnectivity(defaultUpdateSiteId, handleGenericError(function(isConnected, isFatal, errorMessage) {
 			if(!isConnected) {
 				if (isFatal) { // We cannot continue, show error
 					setPanel(errorPanel, { errorMessage: 'Default update site connectivity check failed with fatal error: ' + errorMessage + '. If you see this issue for the custom Jenkins WAR bundle, consider setting the correct value of the hudson.model.UpdateCenter.defaultUpdateSiteId system property (requires Jenkins restart). Otherwise please create a bug in Jenkins JIRA.' });

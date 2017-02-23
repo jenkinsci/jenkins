@@ -133,7 +133,7 @@ public abstract class FormFieldValidator {
                     throw new AccessDeniedException("No subject");
                 subject.checkPermission(permission);
             } catch (AccessDeniedException e) {
-                // if the user has hudson-wisde admin permission, all checks are allowed
+                // if the user has hudson-wide admin permission, all checks are allowed
                 // this is to protect Hudson administrator from broken ACL/SecurityRealm implementation/configuration.
                 if(!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER))
                     throw e;
@@ -481,7 +481,7 @@ public abstract class FormFieldValidator {
                     else                    warning(msg);
                 }
             } catch (InterruptedException e) {
-                ok(); // coundn't check
+                ok(); // couldn't check
             }
         }
 

@@ -1105,7 +1105,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     @Deprecated
     public static class BecauseOfBuildInProgress extends BlockedBecauseOfBuildInProgress {
-        public BecauseOfBuildInProgress(AbstractBuild<?, ?> build) {
+        public BecauseOfBuildInProgress(@Nonnull AbstractBuild<?, ?> build) {
             super(build);
         }
     }
@@ -1146,7 +1146,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
         if (isLogUpdated() && !isConcurrentBuild()) {
-            return new BlockedBecauseOfBuildInProgress(getLastBuild());
+            final R lastBuild = getLastBuild();
+            if (lastBuild != null) {
+                return new BlockedBecauseOfBuildInProgress(lastBuild);
+            } else {
+                // The build has been likely deleted after the isLogUpdated() call.
+                // Another cause may be an API implementation glitсh in the implementation for AbstractProject. 
+                // Anyway, we should let the code go then.
+                LOGGER.log(Level.FINE, "The last build has been deleted during the non-concurrent cause creation. The build is not blocked anymore");
+            }
         }
         if (blockBuildWhenDownstreamBuilding()) {
             AbstractProject<?,?> bup = getBuildingDownstream();
@@ -1362,11 +1370,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (IOException e) {
-            e.printStackTrace(listener.fatalError(e.getMessage()));
+            Functions.printStackTrace(e, listener.fatalError(e.getMessage()));
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
+            Functions.printStackTrace(e, listener.fatalError(Messages.AbstractProject_PollingABorted()));
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (RuntimeException e) {
@@ -1610,7 +1618,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Gets the specific trigger, or null if the propert is not configured for this job.
+     * Gets the specific trigger, or null if the property is not configured for this job.
      */
     public <T extends Trigger> T getTrigger(Class<T> clazz) {
         for (Trigger p : triggers()) {

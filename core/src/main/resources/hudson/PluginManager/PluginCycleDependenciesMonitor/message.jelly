@@ -28,7 +28,7 @@ THE SOFTWARE.
     ${%PluginCycles}
     <ul>
 	    <j:forEach var="p" items="${it.pluginsWithCycle}">
-	        <li><j:out value="${p}"/></li>
+	        <li><j:out value="${p.longName} v${p.version}"/></li>
 	    </j:forEach>
     </ul>
   </div>

@@ -32,6 +32,7 @@ import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 
@@ -219,15 +220,9 @@ public class ListViewTest {
         ListView v = new ListView("v", j.jenkins);
         v.add(p);
         j.jenkins.addView(v);
-        ACL.impersonate(User.get("alice").impersonate(), new Runnable() {
-            @Override public void run() {
-                try {
-                    p.renameTo("p2");
-                } catch (IOException x) {
-                    throw new RuntimeException(x);
-                }
-            }
-        });
+        try (ACLContext _ = ACL.as(User.get("alice"))) {
+            p.renameTo("p2");
+        }
         assertEquals(Collections.singletonList(p), v.getItems());
     }
     private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {

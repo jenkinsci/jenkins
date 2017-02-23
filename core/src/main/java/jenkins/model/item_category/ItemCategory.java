@@ -30,6 +30,8 @@ import hudson.ExtensionPoint;
 import hudson.model.TopLevelItemDescriptor;
 
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * A category for {@link hudson.model.Item}s.
@@ -38,6 +40,13 @@ import javax.annotation.Nonnull;
  */
 public abstract class ItemCategory implements ExtensionPoint {
 
+    /**
+     * This field indicates how much non-default categories are required in
+     * order to start showing them in Jenkins.
+     * This field is restricted for the internal use only, because all other changes would cause binary compatibility issues.
+     * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-36593">JENKINS-36593</a> for more info.
+     */
+    @Restricted(NoExternalUse.class)
     public static int MIN_TOSHOW = 1;
 
     /**

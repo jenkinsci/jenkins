@@ -35,11 +35,8 @@ public class ScriptLoader extends MasterToSlaveCallable<String,IOException> {
         } catch (MalformedURLException e) {
             throw new AbortException("Unable to find a script "+script);
         }
-        InputStream s = url.openStream();
-        try {
+        try (InputStream s = url.openStream()) {
             return IOUtils.toString(s);
-        } finally {
-            s.close();
         }
     }
 }

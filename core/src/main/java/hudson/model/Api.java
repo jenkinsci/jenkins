@@ -169,8 +169,7 @@ public class Api extends AbstractModelObject {
         }
 
         // switch to gzipped output
-        OutputStream o = rsp.getCompressedOutputStream(req);
-        try {
+        try (OutputStream o = rsp.getCompressedOutputStream(req)) {
             if (isSimpleOutput(result)) {
                 // simple output allowed
                 rsp.setContentType("text/plain;charset=UTF-8");
@@ -182,8 +181,6 @@ public class Api extends AbstractModelObject {
             // otherwise XML
             rsp.setContentType("application/xml;charset=UTF-8");
             new XMLWriter(o).write(result);
-        } finally {
-            o.close();
         }
     }
 

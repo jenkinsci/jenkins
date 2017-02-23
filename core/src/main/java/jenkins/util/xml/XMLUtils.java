@@ -233,6 +233,8 @@ public final class XMLUtils {
     private static void setDocumentBuilderFactoryFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean state) {
         try {
             documentBuilderFactory.setFeature(feature, state);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to set the XML Document Builder factory feature %s to %s", feature, state), e);
+        }
     }
 }

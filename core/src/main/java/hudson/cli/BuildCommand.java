@@ -147,7 +147,7 @@ public class BuildCommand extends CLICommand {
             SCMTriggerItem item = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
             if (item == null)
                 throw new AbortException(job.getFullDisplayName()+" has no SCM trigger, but checkSCM was specified");
-            // pre-emtively check for a polling veto
+            // preemptively check for a polling veto
             if (SCMDecisionHandler.firstShouldPollVeto(job) != null) {
                 return 0;
             }

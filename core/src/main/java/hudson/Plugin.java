@@ -280,7 +280,7 @@ public abstract class Plugin implements Saveable {
      * Controls the file where {@link #load()} and {@link #save()}
      * persists data.
      *
-     * This method can be also overriden if the plugin wants to
+     * This method can be also overridden if the plugin wants to
      * use a custom {@link XStream} instance to persist data.
      *
      * @since 1.245

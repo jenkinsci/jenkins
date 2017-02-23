@@ -24,10 +24,8 @@
 package jenkins.install;
 
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.model.UpdateSite;
-import hudson.security.ACL;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import java.io.ByteArrayOutputStream;
@@ -35,12 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,8 +54,6 @@ public class SetupWizardTest {
     @Rule
     public TemporaryFolder tmpdir = new TemporaryFolder();
     
-    BasicCredentialsProvider adminCredentialsProvider;
-    
     @Before 
     public void initSetupWizard() throws IOException, InterruptedException {
         final SetupWizard wizard = j.jenkins.getSetupWizard();
@@ -73,13 +64,6 @@ public class SetupWizardTest {
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
         final String password = ostream.toString();
-        
-        adminCredentialsProvider = new BasicCredentialsProvider() {
-            @Override
-            public Credentials getCredentials(AuthScope authscope) {
-                return new UsernamePasswordCredentials("admin", password);
-            }
-        };
     }
     
     @Test

@@ -52,7 +52,7 @@
         animation-iteration-count: infinite;
         animation-timing-function: linear;
     }
-
+    
     .no-spin() {
         -webkit-animation-name: none;
         -moz-animation-name: none;
@@ -123,6 +123,8 @@
 
           @media screen and (max-width: 992px) {
             padding:5%;
+            height: 20%;
+            max-height: 20%;
         h1{
           font-size:24px;
         }
@@ -410,22 +412,87 @@
                     }
                 }
 	
+				@badge-color: #555;
+				@badge-background: #f8f8f8;
+				@link-color: #337ab7;
+	
+					.website-link {
+						position: relative;
+						height: 15px;
+						width: 15px;
+						margin-left: 2px;
+					}
+					.website-link:before {
+						display: inline-block;
+						position: absolute;
+						width: 11px;
+						height: 11px;
+						content: '';
+						left: 2px;
+						top: 2px;
+						background: @badge-color;
+						border-radius: 4px;
+					}
+					.website-link:after {
+						content: '\f14c';
+						display: inline-block;
+						font: 15px FontAwesome;
+						text-indent: 0;
+						position: absolute;
+						top: 0;
+						left: 1px;
+						width: 14px;
+						height: 14px;
+						border-radius: 2px;
+						color: @badge-background;
+					}
+					.website-link:hover:before,.website-link:focus:before {
+						background: #fff;
+					}
+					.website-link:hover:after,.website-link:focus:after {
+						color: @link-color;
+						width: 16px;
+						height: 16px;
+						font-size: 17px;
+						left: 0px;
+						top: -1px;
+					}
 					.toggle-dependency-list {
 						position: absolute;
 						top: 0;
 						right: 0;
-						color: #777;
+						color: @badge-color;
 						border: 0;
 						text-decoration: none;
 						padding: 5px 13px;
+						margin: 0 0;
 						z-index: 100;
 						
 						.badge {
 							margin-left: 7px;
-						}
+							padding-left: 9px;
+							background: @badge-background;
+							color: @badge-color;
+							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
 						
-						&:hover, &:focus, &.active {
-							text-decoration: underline;
+							&:after {
+								content: '\f0d9';
+								font: 15px FontAwesome;
+								display: inline-block;
+								width: 13px; 
+								height: 13px; 
+								margin: -4px -2px 0px 1px;
+								vertical-align: middle;
+							}
+						}
+						&:hover, &.active, &:focus {
+							text-decoration: none;
+							outline: none;
+							
+							.badge {
+								background: @badge-color;
+								color: #fff;
+							}
 							outline: none;
 						}
 					}
@@ -439,29 +506,38 @@
 						padding: 10px 0 6px 0;
 						display: none;
 						
+						> h3 {
+							margin: 0 25px 4px 0;
+							color: #555555;
+							font-size: 14px;
+							border-bottom: 1px solid #fff;
+							border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+							padding-bottom: 5px;
+						}
+						
 						.badge {
 							padding: 4px 8px;
 							margin: 5px 3px 0 0;
+							background: @badge-background;
+							color: @badge-color;
+							box-shadow: 0 0 1px 0 rgba(0,0,0,.25);
+							
+							&:after {
+								content: '\f14c';
+								font: 11px FontAwesome;
+							}
 							
 							&:hover, &:active, &:focus {
 								color: #fff;
+								background: @link-color;
+								text-decoration: none;
 							}
 						}
 					}
-						
+					
 					&.show-dependencies {
-						.toggle-dependency-list:after {
-							content: '';
-							display: inline-block;
-							position: absolute;
-							top: 50%;
-							right: 100%;
-							width: 0; 
-							height: 0; 
-							border-left: 7px solid transparent;
-							border-right: 7px solid transparent;
-							border-top: 7px solid #999;
-							margin: -3px -3px 0 0;
+						.toggle-dependency-list .badge:after {
+							content: '\f0d7';
 						}
 						
 						.dep-list {
@@ -555,8 +631,10 @@
     
      @media screen and (max-width: 992px) {
        width: 100%;
-       position:static;
-       max-height:33%;
+       position: relative;
+       max-height: 40%;
+       height: 40%;
+       top: 0;
     }
 
         .selected {
@@ -609,8 +687,10 @@
 
         @media screen and (max-width: 992px) {
            width: 100%;
-           position:static;
-           max-height:33%;
+           position: relative;
+           height: 40%;
+           max-height: 40%;
+           top: 0;
         }
         &.success-panel {
             bottom: 0;

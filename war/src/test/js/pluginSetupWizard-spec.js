@@ -9,6 +9,9 @@ var getJQuery = function() {
     return $;
 };
 
+/* globals defaultUpdateSiteId: true */
+defaultUpdateSiteId = 'default';
+
 // Iterates through all responses until the end and returns the last response repeatedly
 var LastResponse = function(responses) {
     var counter = 0;
@@ -310,6 +313,78 @@ describe("pluginSetupWizard.js", function () {
 
             doit($, '.install-selected', 'click');
         });
+    });
+
+    it("restart required", function (done) {
+        var ajaxMappings = {
+            '/jenkins/setupWizard/restartStatus': {
+                status: 'ok',
+                data: {
+                    restartRequired: true,
+                    restartSupported: true,
+                }
+            },
+            '/jenkins/updateCenter/installStatus': {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_SETUP_COMPLETED',
+                    jobs: [],
+                }
+            },
+        };
+        test(function($) {
+            expect($('.install-done').size()).toBe(0);
+            expect($('.install-done-restart').size()).toBe(1);
+            done();
+        }, ajaxMappings);
+    });
+
+    it("restart required not supported", function (done) {
+        var ajaxMappings = {
+            '/jenkins/setupWizard/restartStatus': {
+                status: 'ok',
+                data: {
+                    restartRequired: true,
+                    restartSupported: false,
+                }
+            },
+            '/jenkins/updateCenter/installStatus': {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_SETUP_COMPLETED',
+                    jobs: [],
+                }
+            },
+        };
+        test(function($) {
+            expect($('.install-done').size()).toBe(0);
+            expect($('.install-done-restart').size()).toBe(0);
+            done();
+        }, ajaxMappings);
+    });
+
+    it("restart not required", function (done) {
+        var ajaxMappings = {
+            '/jenkins/setupWizard/restartStatus': {
+                status: 'ok',
+                data: {
+                    restartRequired: false,
+                    restartSupported: false,
+                }
+            },
+            '/jenkins/updateCenter/installStatus': {
+                status: 'ok',
+                data: {
+                    state: 'INITIAL_SETUP_COMPLETED',
+                    jobs: [],
+                }
+            },
+        };
+        test(function($) {
+            expect($('.install-done').size()).toBe(1);
+            expect($('.install-done-restart').size()).toBe(0);
+            done();
+        }, ajaxMappings);
     });
 
     it("resume install", function (done) {

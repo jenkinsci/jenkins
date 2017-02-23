@@ -24,6 +24,7 @@
 package jenkins.model;
 
 import hudson.Extension;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -49,6 +50,8 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
             return true;
         } catch (IOException e) {
             throw new FormException(e,"quietPeriod");
+        } catch (JSONException e) {
+            throw new FormException(e.getMessage(), "quietPeriod");
         }
     }
 }

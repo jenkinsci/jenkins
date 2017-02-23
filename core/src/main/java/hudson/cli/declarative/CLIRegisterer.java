@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
+import hudson.Functions;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
@@ -269,7 +270,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("");
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
-                                e.printStackTrace(stderr);
+                                Functions.printStackTrace(e, stderr);
                                 return 1;
                             }
                         }

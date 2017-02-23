@@ -23,6 +23,7 @@
  */
 package jenkins;
 
+import hudson.Functions;
 import hudson.Plugin;
 import org.kohsuke.MetaInfServices;
 
@@ -69,9 +70,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
                             try {
                                 write(e);
                             } catch (IOException x) {
-                                StringWriter sw = new StringWriter();
-                                x.printStackTrace(new PrintWriter(sw));
-                                processingEnv.getMessager().printMessage(Kind.ERROR,sw.toString(),e);
+                                processingEnv.getMessager().printMessage(Kind.ERROR, Functions.printThrowable(x), e);
                             }
                         }
                     }
@@ -111,11 +110,8 @@ public class PluginSubtypeMarker extends AbstractProcessor {
     private void write(TypeElement c) throws IOException {
         FileObject f = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
                 "", "META-INF/services/hudson.Plugin");
-        Writer w = new OutputStreamWriter(f.openOutputStream(),"UTF-8");
-        try {
+        try (Writer w = new OutputStreamWriter(f.openOutputStream(), "UTF-8")) {
             w.write(c.getQualifiedName().toString());
-        } finally {
-            w.close();
         }
     }
 

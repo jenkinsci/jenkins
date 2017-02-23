@@ -24,20 +24,23 @@ THE SOFTWARE.
 
 <!-- Confirm deletion of the build/run -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}" norefresh="true">
-		<st:include page="sidepanel.jelly" />
-		<l:main-panel>
+    <st:include page="sidepanel.jelly"/>
+    <l:main-panel>
       <j:set var="msg" value="${it.whyKeepLog}"/>
       <j:if test="${msg!=null}">
-		    <p class="warning">${%Warning}: ${msg}</p>
-		  </j:if>
+        <p class="warning">${%Warning}: ${msg}</p>
+      </j:if>
 
-		    <form method="post" action="doDelete">
-		      ${%Are you sure about deleting the build?}
-		      <f:submit value="${%Yes}" />
-		    </form>
+      <j:if test="${msg==null}">
+        <form method="post" action="doDelete">
+          ${%Are you sure about deleting the build?}
+          <f:submit value="${%Yes}"/>
+        </form>
+      </j:if>
 
-		</l:main-panel>
-	</l:layout>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

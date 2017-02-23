@@ -215,11 +215,8 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             File wss = new File(build.getRootDir(),"workspace.tgz");
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(wss));
-            try {
-                ws.archive(ArchiverFactory.TARGZ,os,glob);
-            } finally {
-                os.close();
+            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(wss))) {
+                ws.archive(ArchiverFactory.TARGZ, os, glob);
             }
             return new WorkspaceSnapshotImpl();
         }

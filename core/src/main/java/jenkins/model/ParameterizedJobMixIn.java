@@ -52,7 +52,7 @@ import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -178,7 +178,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         if (!asJob().isBuildable()) {
-            throw HttpResponses.error(SC_INTERNAL_SERVER_ERROR, new IOException(asJob().getFullName() + " is not buildable"));
+            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable"));
         }
 
         // if a build is parameterized, let that take over
@@ -215,6 +215,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         hudson.model.BuildAuthorizationToken.checkPermission(asJob(), asJob().getAuthToken(), req, rsp);
 
         ParametersDefinitionProperty pp = asJob().getProperty(ParametersDefinitionProperty.class);
+        if (!asJob().isBuildable()) {
+            throw HttpResponses.error(SC_CONFLICT, new IOException(asJob().getFullName() + " is not buildable!"));
+        }
         if (pp != null) {
             pp.buildWithParameters(req, rsp, delay);
         } else {
@@ -266,7 +269,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /**
      * Allows customization of the human-readable display name to be rendered in the <i>Build Now</i> link.
      * @see #getBuildNowText
-     * @since TODO
+     * @since 1.624
      */
     public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<ParameterizedJob>();
 
@@ -275,7 +278,8 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Uses {@link #BUILD_NOW_TEXT}.
      */
     public final String getBuildNowText() {
-        return isParameterized() ? Messages.ParameterizedJobMixIn_build_with_parameters() : AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_now());
+        return isParameterized() ? AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters())
+                : AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_now());
     }
 
     /**

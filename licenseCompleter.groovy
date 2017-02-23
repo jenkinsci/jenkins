@@ -1,5 +1,5 @@
 /*
-    This script auguments the missing license information in our dependencies.
+    This script augments the missing license information in our dependencies.
 */
 complete {
     // license constants
@@ -9,6 +9,7 @@ complete {
     def mitLicense = license("MIT License","http://www.opensource.org/licenses/mit-license.php")
     def bsdLicense = license("BSD License","http://opensource.org/licenses/BSD-2-Clause")
     def jenkinsLicense = license("MIT License","http://jenkins-ci.org/mit-license")
+    def ccby = license("Creative Commons Attribution License","http://creativecommons.org/licenses/by/2.5")
 
 
     match("asm:*") {
@@ -85,6 +86,9 @@ complete {
         rewriteLicense([license("CDDL or GPL 2 with Classpath Exception",null)],cddl);
     }
            
+    match("net.jcip:jcip-annotations") {
+        rewriteLicense([],ccby)
+    }
 
     //
     // Choose from multi-licensed modules

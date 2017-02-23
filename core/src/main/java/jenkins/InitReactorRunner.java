@@ -25,6 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Executes the {@link Reactor} for the purpose of bootup.
@@ -61,15 +63,15 @@ public class InitReactorRunner {
         r.add(new ReactorListener() {
             final Level level = Level.parse( Configuration.getStringConfigParameter("initLogLevel", "FINE") );
             public void onTaskStarted(Task t) {
-                LOGGER.log(level,"Started "+t.getDisplayName());
+                LOGGER.log(level, "Started {0}", getDisplayName(t));
             }
 
             public void onTaskCompleted(Task t) {
-                LOGGER.log(level,"Completed "+t.getDisplayName());
+                LOGGER.log(level, "Completed {0}", getDisplayName(t));
             }
 
             public void onTaskFailed(Task t, Throwable err, boolean fatal) {
-                LOGGER.log(SEVERE, "Failed "+t.getDisplayName(),err);
+                LOGGER.log(SEVERE, "Failed " + getDisplayName(t), err);
             }
 
             public void onAttained(Milestone milestone) {
@@ -84,6 +86,17 @@ public class InitReactorRunner {
             }
         });
         return new ReactorListener.Aggregator(r);
+    }
+
+    /** Like {@link Task#getDisplayName} but more robust. */
+    @Restricted(NoExternalUse.class)
+    public static String getDisplayName(Task t) {
+        try {
+            return t.getDisplayName();
+        } catch (RuntimeException | Error x) {
+            LOGGER.log(Level.WARNING, "failed to find displayName of " + t, x);
+            return t.toString();
+        }
     }
 
     /**

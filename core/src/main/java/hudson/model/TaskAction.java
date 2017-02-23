@@ -49,7 +49,7 @@ import hudson.security.ACL;
  */
 public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
-     * If non-null, that means either the activitiy is in progress
+     * If non-null, that means either the activity is in progress
      * asynchronously, or it failed unexpectedly and the thread is dead.
      */
     protected transient volatile TaskThread workerThread;
