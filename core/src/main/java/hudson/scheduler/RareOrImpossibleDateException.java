@@ -26,6 +26,28 @@ package hudson.scheduler;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import java.util.Calendar;
+
+/**
+ * This exception is thrown when trying to determine the previous or next occurrence of a given date determines
+ * that it's not happened, or going to happen, within some time period (e.g. within the next year).
+ *
+ * <p>This can typically have a few different reasons:</p>
+ *
+ * <ul>
+ *   <li>The date is impossible. For example, June 31 does never happen, so <tt>0 0 31 6 *</tt> will never happen</li>
+ *   <li>The date happens only rarely
+ *     <ul>
+ *       <li>February 29 being the obvious one</li>
+ *       <li>Cron tab patterns specifying all of month, day of month, and day of week can also occur so rarely to trigger this exception</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * @see CronTab#floor(Calendar)
+ * @see CronTab#ceil(Calendar)
+ * @since TODO
+ */
 @Restricted(NoExternalUse.class)
 public class RareOrImpossibleDateException extends RuntimeException {
 }
