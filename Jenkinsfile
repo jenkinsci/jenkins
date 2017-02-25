@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 /*
- * This Jenkinsfile is intended to run on https://ci.jenkins-ci.org and may fail anywhere else.
+ * This Jenkinsfile is intended to run on https://ci.jenkins.io and may fail anywhere else.
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  *
  * The required labels are "java" and "docker" - "java" would be any node that can run Java builds. It doesn't need

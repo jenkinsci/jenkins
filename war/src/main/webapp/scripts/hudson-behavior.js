@@ -2459,7 +2459,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
+//   see https://jenkins.io/redirect/developer/structured-form-submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elements as keys

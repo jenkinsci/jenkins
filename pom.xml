@@ -73,11 +73,6 @@ THE SOFTWARE.
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
   </issueManagement>
 
-  <ciManagement>
-      <system>jenkins</system>
-      <url>https://ci.jenkins-ci.org/job/jenkins_main_trunk/</url>
-  </ciManagement>
-
   <properties>
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
@@ -103,7 +98,7 @@ THE SOFTWARE.
 
     <java.level>7</java.level>
 
-    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
+    <changelog.url>https://jenkins.io/changelog</changelog.url>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -885,7 +880,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>
