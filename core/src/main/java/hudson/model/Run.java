@@ -413,13 +413,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Ordering based on build numbers.
+     * If numbers are equal order based on names of parent projects.
      */
     public int compareTo(@Nonnull RunT that) {
-        final int res = this.getParent().getFullName().compareTo(that.getParent().getFullName());
-        if (res != 0)
-            return res;
+        final int res = this.number - that.number;
+        if (res == 0)
+            return this.getParent().getFullName().compareTo(that.getParent().getFullName());
 
-        return this.number - that.number;
+        return res;
     }
 
     /**

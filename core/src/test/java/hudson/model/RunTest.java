@@ -29,7 +29,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -212,7 +214,8 @@ public class RunTest {
         assertEquals("c3", logLines.get(3));
     }
 
-    public void compareSameJob() throws Exception {
+    @Test
+    public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final ItemGroup group = Mockito.mock(ItemGroup.class);
         final Job j = Mockito.mock(Job.class);
 
@@ -223,11 +226,17 @@ public class RunTest {
         Run r1 = new Run(j) {};
         Run r2 = new Run(j) {};
 
+        final Set<Run> treeSet = new TreeSet<>();
+        treeSet.add(r1);
+        treeSet.add(r2);
+
         assertTrue(r1.compareTo(r2) < 0);
+        assertTrue(treeSet.size() == 2);
     }
 
+    @Issue("JENKINS-42319")
     @Test
-    public void compareDifferentJob() throws Exception {
+    public void compareRunsFromDifferentParentsWithSameNumber() throws Exception {
         final ItemGroup group1 = Mockito.mock(ItemGroup.class);
         final ItemGroup group2 = Mockito.mock(ItemGroup.class);
         final Job j1 = Mockito.mock(Job.class);
@@ -242,6 +251,11 @@ public class RunTest {
         Run r1 = new Run(j1) {};
         Run r2 = new Run(j2) {};
 
+        final Set<Run> treeSet = new TreeSet<>();
+        treeSet.add(r1);
+        treeSet.add(r2);
+
         assertTrue(r1.compareTo(r2) != 0);
+        assertTrue(treeSet.size() == 2);
     }
 }
