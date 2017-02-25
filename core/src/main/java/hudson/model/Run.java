@@ -415,6 +415,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Ordering based on build numbers.
      */
     public int compareTo(@Nonnull RunT that) {
+        final int res = this.getParent().getFullName().compareTo(that.getParent().getFullName());
+        if (res != 0)
+            return res;
+
         return this.number - that.number;
     }
 
