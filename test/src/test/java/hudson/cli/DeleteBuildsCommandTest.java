@@ -24,6 +24,7 @@
 
 package hudson.cli;
 
+import hudson.Functions;
 import hudson.model.ExecutorTest;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
@@ -43,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * @author pjanouse
@@ -135,6 +137,7 @@ public class DeleteBuildsCommandTest {
     }
 
     @Test public void deleteBuildsShouldSuccessEvenTheBuildIsRunning() throws Exception {
+        assumeFalse("You can't delete files that are in use on Windows", Functions.isWindows());
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         ExecutorTest.startBlockingBuild(project);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
