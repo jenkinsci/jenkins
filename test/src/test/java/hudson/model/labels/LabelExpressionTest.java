@@ -24,8 +24,10 @@
 package hudson.model.labels;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -189,6 +191,7 @@ public class LabelExpressionTest {
 
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
+        assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
         DumbSlave slave = new DumbSlave("abc def (xyz) : test", "dummy",
                 j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);

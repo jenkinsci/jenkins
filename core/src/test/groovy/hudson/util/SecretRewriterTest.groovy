@@ -2,12 +2,15 @@ package hudson.util
 
 import com.trilead.ssh2.crypto.Base64
 import hudson.FilePath
+import hudson.Functions
 import jenkins.security.ConfidentialStoreRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 import javax.crypto.Cipher
+
+import static org.junit.Assume.assumeFalse
 
 /**
  *
@@ -77,6 +80,7 @@ class SecretRewriterTest {
      */
     @Test
     void recursionDetection() {
+        assumeFalse("Symlinks don't work on Windows very well", Functions.isWindows())
         def sw = new SecretRewriter();
         def st = StreamTaskListener.fromStdout()
 

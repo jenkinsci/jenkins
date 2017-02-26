@@ -44,9 +44,9 @@ class TextFileTest {
         f.text = getClass().getResource("ascii.txt").text
 
         def t = new TextFile(f)
-        def tail35 = "la, vitae interdum quam rutrum id.\n"
-        assert t.fastTail(35).equals(tail35)
-        assert tail35.length()==35
+        def tailStr = "la, vitae interdum quam rutrum id." + System.lineSeparator()
+        assert t.fastTail(tailStr.length()).equals(tailStr)
+        assert tailStr.length()==(34 + System.lineSeparator().length())
     }
 
     @Test
