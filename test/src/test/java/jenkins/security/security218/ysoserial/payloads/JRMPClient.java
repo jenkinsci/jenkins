@@ -79,7 +79,7 @@ public class JRMPClient extends PayloadRunner implements ObjectPayload<Registry>
         String host;
         int port;
         int sep = command.indexOf(':');
-        if ( sep < 0 ) {
+        if ( sep < 0 || ((sep+1) < command.length() && !Character.isDigit(command.charAt(sep+1)))) {
             port = new Random().nextInt(65535);
             host = command;
         }

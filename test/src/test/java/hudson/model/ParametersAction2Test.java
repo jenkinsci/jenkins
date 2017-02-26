@@ -1,6 +1,8 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Launcher;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,7 +69,8 @@ public class ParametersAction2Test {
     public void backwardCompatibility() throws Exception {
         // Local data contains a parameterized job with two parameters (FOO and BAR) and one build
         // with pre-fix format (generated with 1.609.3) with FOO, BAR and UNDEF.
-        FreeStyleProject p = j.jenkins.getItemByFullName("parameterized", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "parameterized-windows" : "parameterized", FreeStyleProject.class);
+
         FreeStyleBuild b1 = p.getBuildByNumber(1);
         ParametersAction pa = b1.getAction(ParametersAction.class);
         hasParameterWithName(pa, "FOO");
