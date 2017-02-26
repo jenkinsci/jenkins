@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -117,9 +118,9 @@ public class SetupWizard extends PageDecorator {
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
     
-                    // Shut down all the ports we can by default:
-                    jenkins.setSlaveAgentPort(-1); // -1 to disable
-    
+                    // Disable jnlp by default, but honor system properties
+                    jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
+
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     
@@ -310,6 +311,19 @@ public class SetupWizard extends PageDecorator {
     }
     
     /**
+     * Returns whether the system needs a restart, and if it is supported
+     * e.g. { restartRequired: true, restartSupported: false }
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    public HttpResponse doRestartStatus() throws IOException {
+        JSONObject response = new JSONObject();
+        Jenkins jenkins = Jenkins.getInstance();
+        response.put("restartRequired", jenkins.getUpdateCenter().isRestartRequiredForCompletion());
+        response.put("restartSupported", jenkins.getLifecycle().canRestart());
+        return HttpResponses.okJSON(response);
+    }
+
+    /**
      * Provides the list of platform plugin updates from the last time
      * the upgrade was run.
      * @return {@code null} if the version range cannot be retrieved.
@@ -325,7 +339,7 @@ public class SetupWizard extends PageDecorator {
     
     /**
      * Gets the suggested plugin list from the update sites, falling back to a local version
-     * @return JSON array with the categorized plugon list
+     * @return JSON array with the categorized plugin list
      */
     @CheckForNull
     /*package*/ JSONArray getPlatformPluginList() {

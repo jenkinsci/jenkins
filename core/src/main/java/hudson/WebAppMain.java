@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.security.ACLContext;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
@@ -59,7 +60,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
@@ -77,7 +77,11 @@ import static java.util.logging.Level.*;
  * @author Kohsuke Kawaguchi
  */
 public class WebAppMain implements ServletContextListener {
-    private final RingBufferLogHandler handler = new RingBufferLogHandler() {
+
+    // use RingBufferLogHandler class name to configure for backward compatibility
+    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+
+    private final RingBufferLogHandler handler = new RingBufferLogHandler(DEFAULT_RING_BUFFER_SIZE) {
         @Override public synchronized void publish(LogRecord record) {
             if (record.getLevel().intValue() >= Level.INFO.intValue()) {
                 super.publish(record);
@@ -287,7 +291,7 @@ public class WebAppMain implements ServletContextListener {
 	/**
      * Installs log handler to monitor all Hudson logs.
      */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
     private void installLogger() {
         Jenkins.logRecords = handler.getView();
         Logger.getLogger("").addHandler(handler);
@@ -370,25 +374,26 @@ public class WebAppMain implements ServletContextListener {
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        try {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override
-                public void run() {
-                    terminated = true;
-                    Jenkins instance = Jenkins.getInstanceOrNull();
-                    if (instance != null)
-                        instance.cleanUp();
-                    Thread t = initThread;
-                    if (t != null && t.isAlive()) {
-                        LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
-                        t.interrupt();
-                    }
-
-                    // Logger is in the system classloader, so if we don't do this
-                    // the whole web app will never be undepoyed.
-                    Logger.getLogger("").removeHandler(handler);
+        try (ACLContext old = ACL.as(ACL.SYSTEM)) {
+            Jenkins instance = Jenkins.getInstanceOrNull();
+            try {
+                if (instance != null) {
+                    instance.cleanUp();
                 }
-            });
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+            }
+
+            terminated = true;
+            Thread t = initThread;
+            if (t != null && t.isAlive()) {
+                LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
+                t.interrupt();
+            }
+
+            // Logger is in the system classloader, so if we don't do this
+            // the whole web app will never be undeployed.
+            Logger.getLogger("").removeHandler(handler);
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);
         }

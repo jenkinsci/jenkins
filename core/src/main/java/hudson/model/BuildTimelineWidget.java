@@ -62,8 +62,8 @@ public class BuildTimelineWidget {
         TimelineEventList result = new TimelineEventList();
         for (Run r : builds.byTimestamp(min,max)) {
             Event e = new Event();
-            e.start = r.getTime();
-            e.end   = new Date(r.timestamp+r.getDuration());
+            e.start = new Date(r.getStartTimeInMillis());
+            e.end   = new Date(r.getStartTimeInMillis()+r.getDuration());
             e.title = r.getFullDisplayName();
             // what to put in the description?
             // e.description = "Longish description of event "+r.getFullDisplayName();

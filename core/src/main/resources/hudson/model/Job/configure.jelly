@@ -46,7 +46,7 @@ THE SOFTWARE.
 
             <j:if test="${it.isNameEditable()}">
               <f:entry title="${%name(it.pronoun)}">
-                <f:textbox name="name" value="${it.name}" />
+                <f:textbox name="name" value="${it.name}" autocomplete="on"/>
               </f:entry>
             </j:if>
             <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">

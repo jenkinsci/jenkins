@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import jenkins.util.SystemProperties;
@@ -137,7 +138,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 Jenkins.getInstance().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
-            e.printStackTrace(listener.error(Messages.Fingerprinter_Failed()));
+            Functions.printStackTrace(e, listener.error(Messages.Fingerprinter_Failed()));
             build.setResult(Result.FAILURE);
         }
 

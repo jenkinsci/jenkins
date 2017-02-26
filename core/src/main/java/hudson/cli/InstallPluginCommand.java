@@ -75,17 +75,20 @@ public class InstallPluginCommand extends CLICommand {
         h.checkPermission(PluginManager.UPLOAD_PLUGINS);
         PluginManager pm = h.getPluginManager();
 
+        if (sources.size() > 1 && name != null) {
+            throw new IllegalArgumentException("-name is incompatible with multiple sources");
+        }
+
         for (String source : sources) {
             // is this a file?
             if (channel!=null) {
                 FilePath f = new FilePath(channel, source);
                 if (f.exists()) {
                     stdout.println(Messages.InstallPluginCommand_InstallingPluginFromLocalFile(f));
-                    if (name==null)
-                        name = f.getBaseName();
-                    f.copyTo(getTargetFilePath());
+                    String n = name != null ? name : f.getBaseName();
+                    f.copyTo(getTargetFilePath(n));
                     if (dynamicLoad)
-                        pm.dynamicLoad(getTargetFile());
+                        pm.dynamicLoad(getTargetFile(n));
                     continue;
                 }
             }
@@ -94,16 +97,21 @@ public class InstallPluginCommand extends CLICommand {
             try {
                 URL u = new URL(source);
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
-                if (name==null) {
-                    name = u.getPath();
-                    name = name.substring(name.lastIndexOf('/')+1);
-                    name = name.substring(name.lastIndexOf('\\')+1);
-                    int idx = name.lastIndexOf('.');
-                    if (idx>0)  name = name.substring(0,idx);
+                String n;
+                if (name != null) {
+                    n = name;
+                } else {
+                    n = u.getPath();
+                    n = n.substring(n.lastIndexOf('/') + 1);
+                    n = n.substring(n.lastIndexOf('\\') + 1);
+                    int idx = n.lastIndexOf('.');
+                    if (idx > 0) {
+                        n = n.substring(0, idx);
+                    }
                 }
-                getTargetFilePath().copyFrom(u);
+                getTargetFilePath(n).copyFrom(u);
                 if (dynamicLoad)
-                    pm.dynamicLoad(getTargetFile());
+                    pm.dynamicLoad(getTargetFile(n));
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
@@ -149,11 +157,11 @@ public class InstallPluginCommand extends CLICommand {
         return 0; // all success
     }
 
-    private FilePath getTargetFilePath() {
-        return new FilePath(getTargetFile());
+    private static FilePath getTargetFilePath(String name) {
+        return new FilePath(getTargetFile(name));
     }
 
-    private File getTargetFile() {
+    private static File getTargetFile(String name) {
         return new File(Jenkins.getActiveInstance().getPluginManager().rootDir,name+".jpi");
     }
 }

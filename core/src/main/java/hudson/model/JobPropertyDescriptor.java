@@ -91,7 +91,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
             Class applicable = Types.erasure(Types.getTypeArgument(pt, 0));
             return applicable.isAssignableFrom(jobType);
         } else {
-            throw new AssertionError(clazz+" doesn't properly parameterize JobProperty. The isApplicable() method must be overriden.");
+            throw new AssertionError(clazz+" doesn't properly parameterize JobProperty. The isApplicable() method must be overridden.");
         }
     }
 

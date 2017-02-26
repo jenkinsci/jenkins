@@ -30,7 +30,7 @@ THE SOFTWARE.
   <st:documentation>
     single-line textbox that can be expanded into a multi-line textarea.
 
-    This control is useful for a field that expects multiple whitespaec-separated tokens
+    This control is useful for a field that expects multiple whitespace-separated tokens
     (such as URLs, glob patterns, etc.) When the user only enters a few tokens,
     they can keep it as a single line to save space, but to enter a large number of values,
     this can be turned into textarea for better visibility.

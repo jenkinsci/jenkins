@@ -1,0 +1,15 @@
+<FindBugsFilter>
+  <Match>
+    <Or>
+      <!-- Used for backward compatibility and extending utility classes -->
+      <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
+      <!-- Various debug probes have non final static fields -->
+      <!-- TODO: Replace by in-code annotations -->
+      <Bug pattern="MS_SHOULD_BE_FINAL"/>
+      <!-- Groovy generates this -->
+      <Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS"/>
+      <!-- TODO: It's a real issue, but the code is flooded by it right now-->
+      <Bug pattern="DM_DEFAULT_ENCODING"/>
+    </Or>
+  </Match>
+</FindBugsFilter>

@@ -43,12 +43,12 @@ import java.io.IOException;
 import java.net.URLEncoder;
 
 /**
- * Implements the dual authentcation mechanism.
+ * Implements the dual authentication mechanism.
  *
  * <p>
  * Jenkins supports both the HTTP basic authentication and the form-based authentication.
  * The former is for scripted clients, and the latter is for humans. Unfortunately,
- * because the servlet spec does not allow us to programatically authenticate users,
+ * because the servlet spec does not allow us to programmatically authenticate users,
  * we need to rely on some hack to make it work, and this is the class that implements
  * that hack.
  *

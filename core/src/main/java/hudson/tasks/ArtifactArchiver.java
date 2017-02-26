@@ -28,6 +28,7 @@ import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 
 import net.sf.json.JSONObject;
 import javax.annotation.Nonnull;
@@ -76,7 +78,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Possibly null 'excludes' pattern as in Ant.
      */
-    private String excludes = "";
+    private String excludes;
 
     @Deprecated
     private Boolean latestOnly;
@@ -154,11 +156,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         return artifacts;
     }
 
-    public String getExcludes() {
+    public @CheckForNull String getExcludes() {
         return excludes;
     }
 
-    @DataBoundSetter public final void setExcludes(String excludes) {
+    @DataBoundSetter public final void setExcludes(@CheckForNull String excludes) {
         this.excludes = Util.fixEmptyAndTrim(excludes);
     }
 
@@ -261,8 +263,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            e.printStackTrace(listener.error(
-                    Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+            Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
             return;
         }
@@ -347,7 +348,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

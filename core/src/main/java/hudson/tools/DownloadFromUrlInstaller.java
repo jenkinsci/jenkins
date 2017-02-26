@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.net.URL;
@@ -37,7 +38,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
     /**
      * Checks if the specified expected location already contains the installed version of the tool.
      *
-     * This check needs to run fairly efficiently. The current implementation uses the souce URL of {@link Installable},
+     * This check needs to run fairly efficiently. The current implementation uses the source URL of {@link Installable},
      * based on the assumption that released bits do not change its content.
      */
     protected boolean isUpToDate(FilePath expectedLocation, Installable i) throws IOException, InterruptedException {
@@ -169,42 +170,23 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
             return false;
         }
 
+        /**
+         * Merge a list of ToolInstallerList and removes duplicate tool installers (ie having the same id)
+         * @param jsonList the list of ToolInstallerList to merge
+         * @return the merged ToolInstallerList wrapped in a JSONObject
+         */
         private JSONObject reduce(List<JSONObject> jsonList) {
             List<ToolInstallerEntry> reducedToolEntries = new LinkedList<>();
-            //collect all tool installers objects from the multiple json objects
+
+            HashSet<String> processedIds = new HashSet<String>();
             for (JSONObject jsonToolList : jsonList) {
                 ToolInstallerList toolInstallerList = (ToolInstallerList) JSONObject.toBean(jsonToolList, ToolInstallerList.class);
-                reducedToolEntries.addAll(Arrays.asList(toolInstallerList.list));
-            }
-
-            while (Downloadable.hasDuplicates(reducedToolEntries, "id")) {
-                List<ToolInstallerEntry> tmpToolInstallerEntries = new LinkedList<>();
-                //we need to skip the processed entries
-                boolean processed[] = new boolean[reducedToolEntries.size()];
-                for (int i = 0; i < reducedToolEntries.size(); i++) {
-                    if (processed[i] == true) {
-                        continue;
-                    }
-                    ToolInstallerEntry data1 = reducedToolEntries.get(i);
-                    boolean hasDuplicate = false;
-                    for (int j = i + 1; j < reducedToolEntries.size(); j ++) {
-                        ToolInstallerEntry data2 = reducedToolEntries.get(j);
-                        //if we found a duplicate we choose the first one
-                        if (data1.id.equals(data2.id)) {
-                            hasDuplicate = true;
-                            processed[j] = true;
-                            tmpToolInstallerEntries.add(data1);
-                            //after the first duplicate has been found we break the loop since the duplicates are
-                            //processed two by two
-                            break;
-                        }
-                    }
-                    //if no duplicate has been found we just insert the entry in the tmp list
-                    if (!hasDuplicate) {
-                        tmpToolInstallerEntries.add(data1);
+                for(ToolInstallerEntry entry : toolInstallerList.list) {
+                    // being able to add the id into the processedIds set means this tool has not been processed before
+                    if (processedIds.add(entry.id)) {
+                        reducedToolEntries.add(entry);
                     }
                 }
-                reducedToolEntries = tmpToolInstallerEntries;
             }
 
             ToolInstallerList toolInstallerList = new ToolInstallerList();

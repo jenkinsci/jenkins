@@ -49,7 +49,7 @@ import java.util.logging.Logger;
  * and taking some action based on its result.
  *
  * @param <T>
- *     represents the the result of the monitoring.
+ *     represents the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {

@@ -44,14 +44,14 @@ import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
 /**
- * Represents write-once read-many file that can be optiionally compressed
+ * Represents write-once read-many file that can be optionally compressed
  * to save disk space. This is used for console output and other bulky data.
  *
  * <p>
  * In this class, the data on the disk can be one of two states:
  * <ol>
  * <li>Uncompressed, in which case the original data is available in the specified file name.
- * <li>Compressed, in which case the gzip-compressed data is available in the specifiled file name + ".gz" extension.
+ * <li>Compressed, in which case the gzip-compressed data is available in the specified file name + ".gz" extension.
  * </ol>
  *
  * Once the file is written and completed, it can be compressed asynchronously
@@ -138,13 +138,8 @@ public class CompressedFile {
         compressionThread.submit(new Runnable() {
             public void run() {
                 try {
-                    InputStream in = read();
-                    OutputStream out = new GZIPOutputStream(new FileOutputStream(gz));
-                    try {
-                        Util.copyStream(in,out);
-                    } finally {
-                        in.close();
-                        out.close();
+                    try (InputStream in = read(); OutputStream out = new GZIPOutputStream(new FileOutputStream(gz))) {
+                        Util.copyStream(in, out);
                     }
                     // if the compressed file is created successfully, remove the original
                     file.delete();

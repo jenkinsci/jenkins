@@ -45,10 +45,8 @@ import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
 import hudson.tools.ToolProperty;
 import hudson.tools.ToolPropertyDescriptor;
 import hudson.tools.InstallSourceProperty;
-import hudson.tools.ToolInstallation;
 import hudson.util.DescribableList;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import javax.xml.transform.Source;
@@ -63,13 +61,11 @@ import hudson.model.PasswordParameterDefinition;
 import org.jvnet.hudson.test.Issue;
 import static org.junit.Assert.*;
 
-import org.apache.tools.ant.filters.TokenFilter.ContainsString;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
-import org.jvnet.hudson.test.SingleFileSCM;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -176,7 +172,7 @@ public class MavenTest {
         j.submit(f);
         verify();
 
-        // another submission and verfify it survives a roundtrip
+        // another submission and verify it survives a roundtrip
         p = j.createWebClient().goTo("configure");
         f = p.getFormByName("config");
         j.submit(f);
@@ -259,16 +255,16 @@ public class MavenTest {
         {
             GlobalMavenConfig globalMavenConfig = GlobalMavenConfig.get();
             assertNotNull("No global Maven Config available", globalMavenConfig);
-            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settigns.xml"));
-            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settigns.xml"));
+            globalMavenConfig.setSettingsProvider(new FilePathSettingsProvider("/tmp/settings.xml"));
+            globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider("/tmp/global-settings.xml"));
             
             FreeStyleProject p = j.createFreeStyleProject();
             p.getBuildersList().add(new Maven("b", null, "b.pom", "c=d", "-e", true));
             
             Maven m = p.getBuildersList().get(Maven.class);
             assertEquals(FilePathSettingsProvider.class, m.getSettings().getClass());
-            assertEquals("/tmp/settigns.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
-            assertEquals("/tmp/global-settigns.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
+            assertEquals("/tmp/settings.xml", ((FilePathSettingsProvider)m.getSettings()).getPath());
+            assertEquals("/tmp/global-settings.xml", ((FilePathGlobalSettingsProvider)m.getGlobalSettings()).getPath());
         }
     }
 
@@ -290,7 +286,7 @@ public class MavenTest {
                 new StringParameterDefinition("exclamation_mark", "!"),
                 new StringParameterDefinition("at_sign", "@"),
                 new StringParameterDefinition("sharp", "#"),
-                new StringParameterDefinition("dolar", "$"),
+                new StringParameterDefinition("dollar", "$"),
                 new StringParameterDefinition("percent", "%"),
                 new StringParameterDefinition("circumflex", "^"),
                 new StringParameterDefinition("ampersand", "&"),
@@ -323,21 +319,41 @@ public class MavenTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.updateByXml((Source) new StreamSource(getClass().getResourceAsStream("MavenTest/doPassBuildVariablesOptionally.xml")));
         String log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue(p.getBuildersList().get(Maven.class).isInjectBuildVariables());
-        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+        assertTrue("Build variables injection should be enabled by default when loading from XML", p.getBuildersList().get(Maven.class).isInjectBuildVariables());
+        assertTrue("Build variables should be injected by default when loading from XML", log.contains("-DNAME=VALUE"));
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, false/*do not inject*/));
 
         log = j.buildAndAssertSuccess(p).getLog();
-        assertFalse("Build variables are not injected", log.contains("-DNAME=VALUE"));
+        assertFalse("Build variables should not be injected", log.contains("-DNAME=VALUE"));
 
         p.getBuildersList().clear();
         p.getBuildersList().add(new Maven("--help", maven.getName(), null, null, null, false, null, null, true/*do inject*/));
 
         log = j.buildAndAssertSuccess(p).getLog();
-        assertTrue("Build variables are injected", log.contains("-DNAME=VALUE"));
+        assertTrue("Build variables should be injected", log.contains("-DNAME=VALUE"));
 
-        assertFalse(new Maven("", "").isInjectBuildVariables());
+        assertFalse("Build variables injection should be disabled by default", new Maven("", "").isInjectBuildVariables());
+    }
+
+    @Test public void doAlwaysPassProperties() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        String properties = "TEST_PROP1=VAL1\nTEST_PROP2=VAL2";
+
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
+                null, false/*do not inject build variables*/));
+        String log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Properties should always be injected, even when build variables injection is disabled",
+                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+
+        p.getBuildersList().clear();
+        p.getBuildersList().add(new Maven("--help", maven.getName(), null, properties, null, false, null,
+                null, true/*do inject build variables*/));
+        log = j.buildAndAssertSuccess(p).getLog();
+        assertTrue("Properties should always be injected, even when build variables injection is enabled",
+                log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
     }
 }

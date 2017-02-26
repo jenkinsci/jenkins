@@ -362,10 +362,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public List<AbstractProject> getTiedJobs() {
         List<AbstractProject> r = new ArrayList<AbstractProject>();
-        for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+        for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
             if(p instanceof TopLevelItem && this.equals(p.getAssignedLabel()))
                 r.add(p);
         }
+        Collections.sort(r, Items.BY_FULL_NAME);
         return r;
     }
 
@@ -573,7 +574,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Convers a whitespace-separate list of tokens into a set of {@link Label}s.
+     * Convert a whitespace-separate list of tokens into a set of {@link Label}s.
      *
      * @param labels
      *      Strings like "abc def ghi". Can be empty or null.

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.13-SNAPSHOT</version>
+    <version>2.48-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -40,6 +40,7 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <jacocoSurefireArgs /><!-- empty by default -->
+    <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
   </properties>
 
   <dependencies>
@@ -62,7 +63,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.7</version>
+      <version>2.13</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -82,7 +83,7 @@ THE SOFTWARE.
       <artifactId>maven-plugin</artifactId>
       <version>${maven-plugin.version}</version>
       <exclusions>
-        <exclusion>
+        <exclusion> <!-- perhaps unnecessary as of JENKINS-35445? -->
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
         </exclusion>
@@ -133,6 +134,12 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>1.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jvnet.mock-javamail</groupId>
       <artifactId>mock-javamail</artifactId>
       <version>1.7</version>
@@ -168,6 +175,11 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.9</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.geb</groupId>

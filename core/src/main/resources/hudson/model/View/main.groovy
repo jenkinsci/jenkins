@@ -3,7 +3,9 @@ package hudson.model.View;
 t=namespace(lib.JenkinsTagLib)
 st=namespace("jelly:stapler")
 
-if (items.isEmpty()) {
+if (items == null) {
+    p(_('broken'))
+} else if (items.isEmpty()) {
     if (app.items.size() != 0) {
         set("views",my.owner.views);
         set("currentView",my);

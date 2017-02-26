@@ -147,7 +147,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	}
 
 	/**
-	 * Retrieves the RuntimeSpringConfiguration instance used the the BeanBuilder
+	 * Retrieves the RuntimeSpringConfiguration instance used by the BeanBuilder
 	 * @return The RuntimeSpringConfiguration instance
 	 */
 	public RuntimeSpringConfiguration getSpringConfig() {
@@ -198,7 +198,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 	/**
 	 * This class is used to defer the adding of a property to a bean definition until later
 	 * This is for a case where you assign a property to a list that may not contain bean references at
-	 * that point of asignment, but may later hence it would need to be managed
+	 * that point of assignment, but may later hence it would need to be managed
 	 *
 	 * @author Graeme Rocher
 	 */
