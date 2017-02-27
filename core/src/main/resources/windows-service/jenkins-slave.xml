@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2017, Sun Microsystems, Inc., Kohsuke Kawaguchi, Oleg Nenashev and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,22 @@ THE SOFTWARE.
 -->
 
 <!--
-  Windows service definition for Jenkins slave
+  Windows service definition for Jenkins agent.
+  The actual version of this definition has been moved to https://github.com/jenkinsci/windows-slave-installer-module/blob/master/src/main/resources/org/jenkinsci/modules/windows_slave_installer/jenkins-slave.xml.
+  This file is kept only for the compatibility reasons.
+  
+  This service is powered by the WinSW project: https://github.com/kohsuke/winsw/
+
+  You can find more information about available options here: https://github.com/kohsuke/winsw/blob/master/doc/xmlConfigFile.md
+  Configuration examples are available here: https://github.com/kohsuke/winsw/tree/master/examples
 
   To uninstall, run "jenkins-slave.exe stop" to stop the service, then "jenkins-slave.exe uninstall" to uninstall the service.
-  Both commands don't produce any output if the execution is successful. 
+  Both commands don't produce any output if the execution is successful.
 -->
 <service>
   <id>@ID@</id>
-  <name>Jenkins Slave</name>
-  <description>This service runs a slave for Jenkins continuous integration system.</description>
+  <name>Jenkins Agent (@ID@)</name>
+  <description>This service runs an agent for Jenkins automation server.</description>
   <!--
     if you'd like to run Jenkins with a specific version of Java, specify a full path to java.exe.
     The following value assumes that you have java in your PATH.
@@ -46,4 +53,31 @@ THE SOFTWARE.
   <logmode>rotate</logmode>
 
   <onfailure action="restart" />
+  
+  <!--
+    Download the Remoting version provided by the Jenkins master.
+    
+    NOTE: This option may fail to work correctly (e.g. if Jenkins is located behind HTTPS with untrusted certificate).
+    In such case the old agent version will be used. 
+    You can replace slave.jar manually or to specify another download URL.
+  -->
+  @AGENT_DOWNLOAD_URL@
+  
+  <!-- 
+    In the case WinSW gets terminated and leaks the process, we want to abort
+    these runaway JAR processes on startup to prevent "Slave is already connected errors" (JENKINS-28492).
+  -->
+  <extensions>
+    <!-- This is a sample configuration for the RunawayProcessKiller extension. -->
+    <extension enabled="true" 
+               className="winsw.Plugins.RunawayProcessKiller.RunawayProcessKillerExtension"
+               id="killOnStartup">
+      <pidfile>%BASE%\jenkins_agent.pid</pidfile>
+      <stopTimeout>5000</stopTimeout>
+      <stopParentFirst>false</stopParentFirst>
+    </extension>
+  </extensions>
+  
+  <!-- See the referenced examples for more options -->
+  
 </service>
