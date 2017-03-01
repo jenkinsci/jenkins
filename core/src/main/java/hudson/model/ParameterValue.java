@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
 import net.sf.json.JSONObject;
@@ -305,6 +306,7 @@ public abstract class ParameterValue implements Serializable {
      * If there's nothing that really fits the bill, the callee can return {@code this}.
      * @since 1.568
      */
+    @CheckForNull
     public Object getValue() {
         return null;
     }
