@@ -3,14 +3,24 @@
 
   <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <h1>${%HTTP Proxy Configuration}</h1>
-      <f:form method="post" action="/pluginManager/proxyConfigure" name="proxyConfigure">
-        <j:scope>
-          <j:set var="instance" value="${app.proxy}"/>
-          <j:set var="descriptor" value="${app.pluginManager.proxyDescriptor}"/>
-          <st:include from="${descriptor}" page="${descriptor.configPage}" />
-        </j:scope>
-      </f:form>
+      <style type="text/css">
+
+        #proxy-configuration {
+          margin: 8px;
+        }
+
+      </style>
+
+      <div id="proxy-configuration">
+        <h1>${%HTTP Proxy Configuration}</h1>
+        <f:form method="post" action="/pluginManager/proxyConfigure" name="proxyConfigure">
+          <j:scope>
+            <j:set var="instance" value="${app.proxy}"/>
+            <j:set var="descriptor" value="${app.pluginManager.proxyDescriptor}"/>
+            <st:include from="${descriptor}" page="${descriptor.configPage}" />
+          </j:scope>
+        </f:form>
+      </div>
     </l:main-panel>
   </l:layout>
 
