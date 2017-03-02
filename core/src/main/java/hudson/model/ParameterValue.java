@@ -303,7 +303,8 @@ public abstract class ParameterValue implements Serializable {
      * Returns the most natural Java object that represents the actual value, like
      * boolean, string, etc.
      *
-     * If there's nothing that really fits the bill, the callee can return {@code this}.
+     * @return if there is no natural value for this parameter type, {@code this} may be used;
+     *         {@code null} may be used when the value is normally defined but missing in this case for various reasons
      * @since 1.568
      */
     @CheckForNull
