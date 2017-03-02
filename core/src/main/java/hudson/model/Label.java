@@ -56,11 +56,11 @@ import org.kohsuke.stapler.export.ExportedBean;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Collection;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -583,11 +583,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * @since 1.308
      */
     public static Set<LabelAtom> parse(String labels) {
-        Set<LabelAtom> r = new TreeSet<LabelAtom>();
+        final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if(labels.length()>0)
-            for( String l : new QuotedStringTokenizer(labels).toArray())
-                r.add(Jenkins.getInstance().getLabelAtom(l));
+        if(labels.length()>0) {
+            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+            while (tokenizer.hasMoreTokens())
+                r.add(Jenkins.getInstance().getLabelAtom(tokenizer.nextToken()));
+            }
         return r;
     }
 
