@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright (c) 2004-2017, Sun Microsystems, Inc., CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import static hudson.Util.join;
 
 /**
- * Represents the result of the form field fill failure.
+ * Represents a failure in a form field doFillXYZ method.
  *
  * <p>
  * Use one of the factory methods to create an instance, then throw it from your <tt>doFillXyz</tt>

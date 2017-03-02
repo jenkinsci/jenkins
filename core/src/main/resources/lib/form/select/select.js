@@ -45,7 +45,7 @@ function updateListBox(listBox,url,config) {
         Behaviour.applySubtree(status);
         // deleting values can result in the data loss, so let's not do that unless instructed
         var header = rsp.getResponseHeader('X-Jenkins-Select-Error');
-        if (header && "clear".toUpperCase() === header.toUpperCase()) {
+        if (header && "clear" === header.toLowerCase()) {
             // clear the contents
             while (l.length > 0)   l.options[0] = null;
         }
