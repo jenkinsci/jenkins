@@ -5,9 +5,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.Util;
+import hudson.model.Cause;
+import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -18,6 +23,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.Issue;
@@ -116,17 +123,38 @@ public class ApiTokenPropertyTest {
         assertEquals("Update token response is incorrect", 
                 Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
     }
-    
+
+    @Test
+    public void postWithUsernameAndTokenInBasicAuthHeader() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("bar");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User.get("foo");
+
+        WebClient wc = createClientForUser("foo");
+        WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
+        wc.addCrumb(wr);
+
+        assertEquals(201, wc.getPage(wr).getWebResponse().getStatusCode());
+
+        j.waitUntilNoActivity();
+
+        Cause.UserIdCause triggeredBy = p.getBuildByNumber(1).getCause(Cause.UserIdCause.class);
+        assertEquals("foo", triggeredBy.getUserId());
+    }
+
     @Nonnull
     private WebClient createClientForUser(final String username) throws Exception {
-        User u = User.get(username);
-        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-        // Yes, we use the insecure call in the test stuff
-        final String token = t.getApiTokenInsecure();
-        
+        final String token = getUserToken(username);
+
         WebClient wc = j.createWebClient();
         wc.addRequestHeader("Authorization", "Basic " + Scrambler.scramble(username + ":" + token));
         return wc;
     }
 
+    private String getUserToken(String username) {
+        User u = User.get(username);
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        // Yes, we use the insecure call in the test stuff
+        return t.getApiTokenInsecure();
+    }
 }
