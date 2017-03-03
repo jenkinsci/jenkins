@@ -24,6 +24,53 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+
+    <style>
+        .copiable {
+            font-family: "courier", "sans-serif";
+            width: 60%;
+            border: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+        function addCopyCommandTo(selector) {
+        console.log('Selecting: ', selector);
+            document.querySelector(selector).select();
+            document.execCommand("copy");
+        }
+
+        document.addEventListener("DOMContentLoaded", function(event) {
+
+            var copiables = document.querySelectorAll('textarea.copiable');
+            if(copiables) {
+                var i = 1;
+                copiables.forEach (function(element) {
+                    console.log("Adding copy feature to ", element);
+
+                    var dataAttr = 'copiable' + i
+                    element.setAttribute('data-copiable', dataAttr);
+
+                    var fragment = document.createDocumentFragment();
+                    var button = document.createElement("button");
+                    var selector = 'textarea[data-copiable="' + dataAttr + '"]';
+                    button.setAttribute('onclick','addCopyCommandTo(\''+selector+'\');' );
+                    button.textContent = "Copy";
+                    fragment.appendChild(button)
+
+                    element.parentNode.insertBefore(fragment, element.nextSibling);
+
+                    i++;
+                });
+            }
+        });
+
+        function switchText(selector, attributeNameToUse) {
+          document.querySelectorAll(selector).forEach(function(element) {
+            element.value=element.getAttribute(attributeNameToUse).replace('\\n', '\n');
+          });
+        }
+    </script>
   <j:choose>
     <j:when test="${app.slaveAgentPort==-1}">
       <div class="error">
@@ -51,13 +98,17 @@ THE SOFTWARE.
                 <p>
                   ${%Run from agent command line:}
                 </p>
-                <pre>javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+                <textarea class="copiable" readonly="readonly">javaws ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</textarea>
               </li>
               <li>
                 <p>
                   ${%Or if the agent is headless:}
                 </p>
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp</pre>
+                  <textarea class="copiable" readonly="readonly"
+                            data-windows="Invoke-WebRequest -Uri $theurl -OutFile slave.jar\njava${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp"
+                            data-linux="curl -O ${h.inferHudsonURL(request)}jnlpJars/slave.jar\njava${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp">curl -O ${h.inferHudsonURL(request)}jnlpJars/slave.jar
+java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp
+                  </textarea>
               </li>
             </j:when>
             <j:otherwise>
@@ -66,10 +117,16 @@ THE SOFTWARE.
                   ${%Run from agent command line:}
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/slave.jar">slave.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}</pre>
+                <textarea class="copiable" readonly="readonly"
+                data-windows="Invoke-WebRequest -Uri $theurl -OutFile \njava${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}"
+                data-linux="curl -O ${h.inferHudsonURL(request)}jnlpJars/slave.jar\njava${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}">curl -O ${h.inferHudsonURL(request)}jnlpJars/slave.jar
+java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar -jnlpUrl ${h.inferHudsonURL(request)}${it.url}slave-agent.jnlp -secret ${it.jnlpMac}
+                </textarea>
               </li>
             </j:otherwise>
           </j:choose>
+          <button id="linux"   style="width:10em" onclick="switchText('textarea.copiable[data-linux]','data-linux');  ">Linux</button>
+          <button id="windows" style="width:10em" onclick="switchText('textarea.copiable[data-linux]','data-windows');">Windows</button>
         </ul>
         <!--
         <p>
