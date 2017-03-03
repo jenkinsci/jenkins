@@ -15,7 +15,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import static org.junit.Assume.assumeFalse
+import static org.junit.Assume.assumeFalse;
 
 public class RewindableRotatingFileOutputStreamTest {
 
