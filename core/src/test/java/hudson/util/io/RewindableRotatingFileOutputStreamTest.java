@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import hudson.FilePath;
+import hudson.Functions;
 import org.junit.Test;
 
 import java.io.File;
@@ -13,6 +14,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+
+import static org.junit.Assume.assumeFalse
 
 public class RewindableRotatingFileOutputStreamTest {
 
@@ -43,6 +46,8 @@ public class RewindableRotatingFileOutputStreamTest {
     @Issue("JENKINS-16634")
     @Test
     public void deletedFolder() throws Exception {
+        assumeFalse("Windows does not allow deleting a directory with a "
+            + "file open, so this case should never occur", Functions.isWindows());
         File dir = tmp.newFolder("dir");
         File base = new File(dir, "x.log");
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
