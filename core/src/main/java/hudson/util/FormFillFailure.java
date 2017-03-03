@@ -36,8 +36,6 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import static hudson.Util.join;
-
 /**
  * Represents a failure in a form field doFillXYZ method.
  *
@@ -59,7 +57,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
     }
 
     public static FormFillFailure warning(@Nonnull String message) {
-        return warningWithMarkup(message==null?null:Util.escape(message));
+        return warningWithMarkup(Util.escape(message));
     }
 
     /**
@@ -67,11 +65,11 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      * by formatting it with {@link String#format(String, Object[])}
      */
     public static FormFillFailure error(String format, Object... args) {
-        return error(String.format(format,args));
+        return error(String.format(format, args));
     }
 
     public static FormFillFailure warning(String format, Object... args) {
-        return warning(String.format(format,args));
+        return warning(String.format(format, args));
     }
 
     /**
@@ -79,7 +77,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      *
      * <p>
      * Use this with caution, so that anonymous users do not gain too much insights into the state of the system,
-     * as error stack trace often reveals a lot of information. Consider if a check operation needs to be exposed
+     * as error stack trace often reveals a lot of information. Consider if an error needs to be exposed
      * to everyone or just those who have higher access to job/hudson/etc.
      */
     public static FormFillFailure error(Throwable e, String message) {
@@ -91,23 +89,25 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
     }
 
     private static FormFillFailure _error(FormValidation.Kind kind, Throwable e, String message) {
-        if (e==null)    return _errorWithMarkup(Util.escape(message),kind);
+        if (e == null) {
+            return _errorWithMarkup(Util.escape(message), kind);
+        }
 
-        return _errorWithMarkup(Util.escape(message)+
-            " <a href='#' class='showDetails'>"
-            + Messages.FormValidation_Error_Details()
-            + "</a><pre style='display:none'>"
-            + Util.escape(Functions.printThrowable(e)) +
-            "</pre>",kind
+        return _errorWithMarkup(Util.escape(message) +
+                " <a href='#' class='showDetails'>"
+                + Messages.FormValidation_Error_Details()
+                + "</a><pre style='display:none'>"
+                + Util.escape(Functions.printThrowable(e)) +
+                "</pre>", kind
         );
     }
 
     public static FormFillFailure error(Throwable e, String format, Object... args) {
-        return error(e,String.format(format,args));
+        return error(e, String.format(format, args));
     }
 
     public static FormFillFailure warning(Throwable e, String format, Object... args) {
-        return warning(e,String.format(format,args));
+        return warning(e, String.format(format, args));
     }
 
     /**
@@ -117,9 +117,8 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
      * This method must be used with care to avoid cross-site scripting
      * attack.
      *
-     * @param message
-     *      Human readable message to be sent. <tt>error(null)</tt>
-     *      can be used as <tt>ok()</tt>.
+     * @param message Human readable message to be sent. <tt>error(null)</tt>
+     *                can be used as <tt>ok()</tt>.
      */
     public static FormFillFailure errorWithMarkup(String message) {
         return _errorWithMarkup(message, FormValidation.Kind.ERROR);
@@ -137,11 +136,13 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
                     return message;
                 }
                 // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class="+ getKind().name().toLowerCase(Locale.ENGLISH) +"><img src='"+
-                        req.getContextPath()+ Jenkins.RESOURCE_PATH+"/images/none.gif' height=16 width=1>"+
-                        message+"</div>";
+                return "<div class=" + getKind().name().toLowerCase(Locale.ENGLISH) + "><img src='" +
+                        req.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                        message + "</div>";
             }
-            @Override public String toString() {
+
+            @Override
+            public String toString() {
                 return kind + ": " + message;
             }
         };
@@ -155,7 +156,9 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
             public String renderHtml() {
                 return html;
             }
-            @Override public String toString() {
+
+            @Override
+            public String toString() {
                 return getKind() + ": " + html;
             }
         };
@@ -166,6 +169,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
 
     /**
      * Instances should be created via one of the factory methods above.
+     *
      * @param kind the kind
      */
     private FormFillFailure(FormValidation.Kind kind) {
@@ -177,7 +181,8 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         this.kind = kind;
     }
 
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
+            throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         rsp.setHeader("X-Jenkins-Select-Error", selectionCleared ? "clear" : "retain");
@@ -192,6 +197,11 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         return selectionCleared;
     }
 
+    /**
+     * Flags this failure as requiring that the select options should be cleared out.
+     *
+     * @return {@code this} for method chaining.
+     */
     public FormFillFailure withSelectionCleared() {
         this.selectionCleared = true;
         return this;
