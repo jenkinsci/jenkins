@@ -53,7 +53,7 @@ THE SOFTWARE.
       (The permission will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
-      Available values: two-column (by default), one-column (full-width size) or full-screen.
+      Available values: two-column (by default), one-column (full-width size) or full-screen (since TODO).
     </st:attribute>
   </st:documentation>
 <st:setHeader name="Expires" value="0" />
