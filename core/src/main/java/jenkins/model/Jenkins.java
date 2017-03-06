@@ -2827,6 +2827,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             });
         }
 
+        // We do not need to have log rotation finished before switching to the COMPLETED state
         g.requires(JOB_LOADED).add("Cleaning up old builds",new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
@@ -2842,7 +2843,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
-        g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
+        // Once we finalize the setup, we transfer initialization to the COMPLETED state
+        g.requires(JOB_LOADED).attains(COMPLETED).add("Finalizing set up",new Executable() {
             public void run(Reactor session) throws Exception {
                 rebuildDependencyGraph();
 
@@ -2895,7 +2897,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     if (!actions.contains(a)) actions.add(a);
             }
         });
-
+        
         return g;
     }
 

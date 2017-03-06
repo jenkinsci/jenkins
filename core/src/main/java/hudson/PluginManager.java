@@ -561,7 +561,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             });
 
             // All plugins are loaded. Now we can figure out who depends on who.
-            requires(PLUGINS_PREPARED).attains(COMPLETED).add("Resolving Dependant Plugins Graph", new Executable() {
+            requires(PLUGINS_STARTED).attains(EXTENSIONS_AUGMENTED).add("Resolving Dependant Plugins Graph", new Executable() {
                 @Override
                 public void run(Reactor reactor) throws Exception {
                     resolveDependantPlugins();
