@@ -1719,6 +1719,12 @@ table#legend-table td {
   vertical-align: middle;
 }
 
+#description, .disable-project-container {
+    display: inline-block;
+    float: right;
+    clear: right;
+}
+
 /* ========================= Button styles ================= */
 .btn-box {
   display:block; 
