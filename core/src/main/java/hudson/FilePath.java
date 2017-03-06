@@ -1387,6 +1387,58 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Creates a temporary script file in this directory (or the system temporary
+     * directory) and set the contents to the given text (encoded in the
+     * platform command encoding derived from the sun.jnu.encoding property when present)
+     *
+     * @param prefix
+     *      The prefix string to be used in generating the file's name; must be
+     *      at least three characters long
+     * @param suffix
+     *      The suffix string to be used in generating the file's name; may be
+     *      null, in which case the suffix ".tmp" will be used
+     * @param contents
+     *      The initial contents of the temporary file.
+     * @param inThisDirectory
+     *      If true, then create this temporary in the directory pointed to by
+     *      this.
+     *      If false, then the temporary file is created in the system temporary
+     *      directory (java.io.tmpdir)
+     * @return
+     *      The new FilePath pointing to the temporary file
+     * @see File#createTempFile(String, String)
+     */
+    public FilePath createScriptTempFile(final String prefix, final String suffix, final String contents, final boolean inThisDirectory) throws IOException, InterruptedException {
+        try {
+            return new FilePath(channel,act(new SecureFileCallable<String>() {
+                private static final long serialVersionUID = 1L;
+                public String invoke(File dir, VirtualChannel channel) throws IOException {
+                    if(!inThisDirectory)
+                        dir = new File(System.getProperty("java.io.tmpdir"));
+                    else
+                        mkdirs(dir);
+
+                    File f;
+                    try {
+                        f = creating(File.createTempFile(prefix, suffix, dir));
+                    } catch (IOException e) {
+                        throw new IOException("Failed to create a temporary directory in "+dir,e);
+                    }
+
+                    try (Writer w = new OutputStreamWriter(new FileOutputStream(writing(f)),System.getProperty("sun.jnu.encoding", System.getProperty("file.encoding","UTF-8")))) {
+                       w.write(contents);
+                    }
+
+                    return f.getAbsolutePath();
+                }
+            }));
+        } catch (IOException e) {
+            throw new IOException("Failed to create a temp file on "+remote,e);
+        }
+    }
+
+    
+    /**
      * Creates a temporary directory inside the directory represented by 'this'
      *
      * @param prefix
