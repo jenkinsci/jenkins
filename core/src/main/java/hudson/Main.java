@@ -133,7 +133,7 @@ public class Main {
         }
 
         // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("hudson","log");
+        File tmpFile = File.createTempFile("jenkins","log");
         try {
             FileOutputStream os = new FileOutputStream(tmpFile);
 
