@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.PrintStream;
 import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -170,7 +169,6 @@ public class Security218CliTest {
         probe(Payload.Ldap, PayloadCaller.EXIT_CODE_REJECTED);
     }
 
-    @Ignore("TODO fails unless ^java[.]security[.]SignedObject is blacklisted")
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-429")

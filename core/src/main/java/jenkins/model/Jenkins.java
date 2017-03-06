@@ -295,8 +295,10 @@ import java.util.logging.Logger;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
+import hudson.remoting.ClassFilter;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
+import java.util.regex.Pattern;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -811,6 +813,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
+
+            ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
 
             // initialization consists of ...
             executeReactor( is,
