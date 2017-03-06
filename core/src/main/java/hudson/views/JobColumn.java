@@ -24,7 +24,10 @@
 package hudson.views;
 
 import hudson.Extension;
+import hudson.model.AbstractItem;
 import hudson.model.Item;
+import hudson.model.ListView;
+import hudson.model.View;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -34,6 +37,24 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class JobColumn extends ListViewColumn {
     @DataBoundConstructor
     public JobColumn() {
+    }
+
+    public String columnCaption(View view) {
+        String metaName = null;
+        for (Item item : view.getItems()) {
+            String m = item instanceof AbstractItem
+                    ? ((AbstractItem) item).getMetaName()
+                    : Messages.JobColumn_DisplayName();
+            if (metaName == null) {
+                metaName = m;
+            } else if (!metaName.equals(m)) {
+                return Messages.JobColumn_DisplayName();
+            }
+        }
+        if (metaName == null) {
+            return Messages.JobColumn_DisplayName();
+        }
+        return metaName;
     }
 
     // put this in the middle of icons and properties
