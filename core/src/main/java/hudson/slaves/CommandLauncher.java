@@ -157,6 +157,7 @@ public class CommandLauncher extends ComputerLauncher {
                 msg = "";
             } else {
                 msg = " : " + msg;
+                // FIXME TODO i18n what is this!?
             }
             msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
