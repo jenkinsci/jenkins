@@ -1736,7 +1736,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public <T extends Item> Iterable<T> allItems(Class<T> type) {
         return Items.allItems(this, type);
@@ -1754,7 +1754,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Gets all the items unordered, lazily and recursively.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public Iterable<Item> allItems() {
         return allItems(Item.class);
@@ -4463,7 +4463,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * http://wiki.jenkins-ci.org/display/JENKINS/Tomcat#Tomcat-i18n
      */
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.37")
     @Deprecated
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
         return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).doCheckURIEncoding(request);
@@ -4473,7 +4473,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Does not check when system default encoding is "ISO-8859-1".
      */
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("since TODO")
+    @RestrictedSince("2.37")
     @Deprecated
     public static boolean isCheckURIEncodingEnabled() {
         return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).isCheckEnabled();
@@ -4570,7 +4570,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Test a path to see if it is subject to mandatory read permission checks by container-managed security
      * @param restOfPath the URI, excluding the Jenkins root URI and query string
      * @return true if the path is subject to mandatory read permission checks
-     * @since TODO
+     * @since 2.37
      */
     public boolean isSubjectToMandatoryReadPermissionCheck(String restOfPath) {
         for (String name : ALWAYS_READABLE_PATHS) {
