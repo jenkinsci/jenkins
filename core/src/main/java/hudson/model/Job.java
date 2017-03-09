@@ -86,6 +86,7 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
+import jenkins.model.CauseOfInterruption;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
@@ -678,20 +679,20 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // clear any items in the queue so they do not get picket up
             Queue.getInstance().cancel((Queue.Task) this);
             // interrupt any builds in progress
-            Map<Queue.Executable, Executor> building = new LinkedHashMap<>();
+            Map<Executor, Queue.Executable> building = new LinkedHashMap<>();
             for (Computer c : Jenkins.getInstance().getComputers()) {
                 for (Executor e : c.getOneOffExecutors()) {
                     WorkUnit workUnit = e.getCurrentWorkUnit();
                     if (workUnit != null && (workUnit.work == this || workUnit.work.getOwnerTask() == this)) {
-                        building.put(e.getCurrentExecutable(), e);
-                        e.interrupt();
+                        building.put(e, e.getCurrentExecutable());
+                        e.interrupt(Result.ABORTED);
                     }
                 }
                 for (Executor e : c.getExecutors()) {
                     WorkUnit workUnit = e.getCurrentWorkUnit();
                     if (workUnit != null && (workUnit.work == this || workUnit.work.getOwnerTask() == this)) {
-                        building.put(e.getCurrentExecutable(), e);
-                        e.interrupt();
+                        building.put(e, e.getCurrentExecutable());
+                        e.interrupt(Result.ABORTED);
                     }
                 }
             }
@@ -701,15 +702,17 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // comparison with executor.getCurrentExecutable() == computation currently should always be true
                 // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
                 while (!building.isEmpty() && expiration - System.nanoTime() > 0L) {
-                    for (Iterator<Map.Entry<Queue.Executable, Executor>> iterator = building.entrySet().iterator();
+                    for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator = building.entrySet().iterator();
                          iterator.hasNext(); ) {
-                        Map.Entry<Queue.Executable, Executor> entry = iterator.next();
+                        Map.Entry<Executor, Queue.Executable> entry = iterator.next();
                         // comparison with executor.getCurrentExecutable() == executable currently should always be true
                         // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
 
-                        if (!entry.getValue().isAlive() || entry.getKey() != entry.getValue().getCurrentExecutable()) {
+                        if (!entry.getKey().isAlive() || entry.getValue() != entry.getKey().getCurrentExecutable()) {
                             iterator.remove();
                         }
+                        // I don't know why, but we have to keep interrupting
+                        entry.getKey().interrupt(Result.ABORTED);
                     }
                     Thread.sleep(50L);
                 }
