@@ -24,6 +24,7 @@
 package hudson.model;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
+import hudson.AbortException;
 import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -36,6 +37,7 @@ import hudson.model.Fingerprint.Range;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.ItemListener;
+import hudson.model.queue.WorkUnit;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -70,10 +72,13 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -260,20 +265,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             }
         }
-    }
-
-    @Override
-    protected void performDelete() throws IOException, InterruptedException {
-        // if a build is in progress. Cancel it.
-        RunT lb = getLastBuild();
-        if (lb != null) {
-            Executor e = lb.getExecutor();
-            if (e != null) {
-                e.interrupt();
-                // should we block until the build is cancelled?
-            }
-        }
-        super.performDelete();
     }
 
     /*package*/ TextFile getNextBuildNumberFile() {
@@ -679,7 +670,54 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    @Override public void delete() throws IOException, InterruptedException {
+    @Override
+    public void delete() throws IOException, InterruptedException {
+        checkPermission(DELETE);
+        // if a build is in progress. Cancel it.
+        if (this instanceof Queue.Task) {
+            // clear any items in the queue so they do not get picket up
+            Queue.getInstance().cancel((Queue.Task) this);
+            // interrupt any builds in progress
+            Map<Queue.Executable, Executor> building = new LinkedHashMap<>();
+            for (Computer c : Jenkins.getInstance().getComputers()) {
+                for (Executor e : c.getOneOffExecutors()) {
+                    WorkUnit workUnit = e.getCurrentWorkUnit();
+                    if (workUnit != null && (workUnit.work == this || workUnit.work.getOwnerTask() == this)) {
+                        building.put(e.getCurrentExecutable(), e);
+                        e.interrupt();
+                    }
+                }
+                for (Executor e : c.getExecutors()) {
+                    WorkUnit workUnit = e.getCurrentWorkUnit();
+                    if (workUnit != null && (workUnit.work == this || workUnit.work.getOwnerTask() == this)) {
+                        building.put(e.getCurrentExecutable(), e);
+                        e.interrupt();
+                    }
+                }
+            }
+            if (!building.isEmpty()) {
+                // give them 15 seconds or so to respond to the interrupt
+                long expiration = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+                // comparison with executor.getCurrentExecutable() == computation currently should always be true
+                // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
+                while (!building.isEmpty() && expiration - System.nanoTime() > 0L) {
+                    for (Iterator<Map.Entry<Queue.Executable, Executor>> iterator = building.entrySet().iterator();
+                         iterator.hasNext(); ) {
+                        Map.Entry<Queue.Executable, Executor> entry = iterator.next();
+                        // comparison with executor.getCurrentExecutable() == executable currently should always be true
+                        // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
+
+                        if (!entry.getValue().isAlive() || entry.getKey() != entry.getValue().getCurrentExecutable()) {
+                            iterator.remove();
+                        }
+                    }
+                    Thread.sleep(50L);
+                }
+                if (!building.isEmpty()) {
+                    throw new AbortException(Messages.Job_FailureToStopBuilds(building.size(), getFullDisplayName()));
+                }
+            }
+        }
         super.delete();
         Util.deleteRecursive(getBuildDir());
     }
