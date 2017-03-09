@@ -43,7 +43,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * Use one of the factory methods to create an instance, then throw it from your <tt>doFillXyz</tt>
  * method.
  *
- * @since FIXME
+ * @since 2.50
  */
 public abstract class FormFillFailure extends IOException implements HttpResponse {
 
