@@ -193,6 +193,15 @@ public class ItemListener implements ExtensionPoint {
         });
     }
 
+    /**
+     * Call before a job is copied into a new parent, to allow the {@link ItemListener} implementations the ability
+     * to veto the copy operation before it starts.
+     *
+     * @param src    the item being copied
+     * @param parent the proposed parent
+     * @throws Failure if the copy operation has been vetoed.
+     * @since TODO
+     */
     public static void checkBeforeCopy(final Item src, final ItemGroup parent) throws Failure {
         for (ItemListener l : all()) {
             try {
