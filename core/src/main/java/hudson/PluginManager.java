@@ -117,7 +117,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1952,7 +1951,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Stores {@link Plugin} instances.
      */
     /*package*/ static final class PluginInstanceStore {
-        final Map<PluginWrapper,Plugin> store = new Hashtable<PluginWrapper,Plugin>();
+        final Map<PluginWrapper,Plugin> store = new ConcurrentHashMap<PluginWrapper,Plugin>();
     }
 
     /**
