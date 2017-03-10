@@ -667,8 +667,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         Thread.sleep(50L);
                     }
                     if (!buildsInProgress.isEmpty()) {
-                        throw new Failure(
-                                Messages.Job_FailureToStopBuilds(buildsInProgress.size(), getFullDisplayName()));
+                        throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
+                                buildsInProgress.size(), getFullDisplayName()
+                        ));
                     }
                 }
             }
