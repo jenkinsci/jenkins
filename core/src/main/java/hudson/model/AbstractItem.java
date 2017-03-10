@@ -589,7 +589,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         boolean ownsRegistration = ItemDeletion.register(this);
         if (!ownsRegistration && ItemDeletion.isRegistered(this)) {
             // we are not the owning thread and somebody else is concurrently deleting this exact item
-            throw new AbortException(Messages.AbstractItem_BeingDeleted(getPronoun()));
+            throw new Failure(Messages.AbstractItem_BeingDeleted(getPronoun()));
         }
         try {
             // if a build is in progress. Cancel it.
@@ -667,7 +667,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         Thread.sleep(50L);
                     }
                     if (!buildsInProgress.isEmpty()) {
-                        throw new AbortException(
+                        throw new Failure(
                                 Messages.Job_FailureToStopBuilds(buildsInProgress.size(), getFullDisplayName()));
                     }
                 }
