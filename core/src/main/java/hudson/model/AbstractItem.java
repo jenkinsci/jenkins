@@ -646,8 +646,8 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     // comparison with executor.getCurrentExecutable() == computation currently should always be true
                     // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
                     while (!buildsInProgress.isEmpty() && expiration - System.nanoTime() > 0L) {
-                        // we know that DeleteBlocker will prevent any new builds in the queue
-                        // DeleteBlocker happens-before Queue.cancel so we know that the Queue will stay clear
+                        // we know that ItemDeletion will prevent any new builds in the queue
+                        // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
                         // Queue.cancel happens-before collecting the buildsInProgress list
                         // thus buildsInProgress contains the complete set we need to interrupt and wait for
                         for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
