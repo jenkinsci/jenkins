@@ -143,7 +143,8 @@ public class CLI implements AutoCloseable {
         try {
             _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
         } catch (IOException e) {
-            LOGGER.log(Level.FINE,"Failed to connect via CLI port. Falling back to HTTP",e);
+            System.err.println("Failed to connect via CLI port. Falling back to HTTP: " + e.getMessage());
+            LOGGER.log(Level.FINE, null, e);
             try {
                 _channel = connectViaHttp(url);
             } catch (IOException e2) {
@@ -559,9 +560,9 @@ public class CLI implements AutoCloseable {
             return -1;
         }
 
-        System.err.println("Connecting to: " + endpointDescription);
+        System.err.println("Connecting via SSH to: " + endpointDescription);
 
-        int sshPort = Integer.valueOf(endpointDescription.split(":")[1]);
+        int sshPort = Integer.parseInt(endpointDescription.split(":")[1]);
         String sshHost = endpointDescription.split(":")[0];
 
         StringBuilder command = new StringBuilder();
