@@ -32,6 +32,7 @@ import hudson.remoting.RemoteInputStream;
 import hudson.remoting.RemoteOutputStream;
 import hudson.remoting.SocketChannelStream;
 import hudson.remoting.SocketOutputStream;
+import hudson.util.QuotedStringTokenizer;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -57,6 +58,8 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
@@ -70,11 +73,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.channel.ClientChannel;
+import org.apache.sshd.client.channel.ClientChannelEvent;
+import org.apache.sshd.client.future.ConnectFuture;
+import org.apache.sshd.client.keyverifier.DefaultKnownHostsServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
+import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.future.WaitableFuture;
+import org.apache.sshd.common.util.io.NoCloseInputStream;
+import org.apache.sshd.common.util.io.NoCloseOutputStream;
 
 /**
  * CLI entry point to Jenkins.
@@ -403,11 +418,20 @@ public class CLI implements AutoCloseable {
         
         boolean tryLoadPKey = true;
 
+        boolean useRemoting = false;
+
+        String user = null;
+
         while(!args.isEmpty()) {
             String head = args.get(0);
             if (head.equals("-version")) {
                 System.out.println("Version: "+computeVersion());
                 return 0;
+            }
+            if (head.equals("-remoting")) {
+                useRemoting = true;
+            	args = args.subList(1,args.size());
+            	continue;
             }
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
@@ -446,6 +470,11 @@ public class CLI implements AutoCloseable {
                 sshAuthRequestedExplicitly = true;
                 continue;
             }
+            if (head.equals("-user") && args.size() >= 2) {
+                user = args.get(1);
+                args = args.subList(2, args.size());
+                continue;
+            }
             if(head.equals("-p") && args.size()>=2) {
                 httpProxy = args.get(1);
                 args = args.subList(2,args.size());
@@ -464,6 +493,19 @@ public class CLI implements AutoCloseable {
 
         if (tryLoadPKey && !provider.hasKeys())
             provider.readFromDefaultLocations();
+
+        if (!useRemoting) {
+            if (user == null) {
+                // TODO SshCliAuthenticator already autodetects the user based on public key; why cannot AsynchronousCommand.getCurrentUser do the same?
+                System.err.println("-user required when not using -remoting");
+                return -1;
+            }
+            return sshConnection(url, user, args, provider);
+        }
+
+        if (user != null) {
+            System.err.println("Warning: -user ignored when using -remoting");
+        }
 
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
         String userInfo = new URL(url).getUserInfo();
@@ -504,6 +546,75 @@ public class CLI implements AutoCloseable {
             return cli.execute(args, System.in, System.out, System.err);
         } finally {
             cli.close();
+        }
+    }
+
+    private static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider) throws IOException {
+        URL url = new URL(jenkinsUrl + "/login");
+        URLConnection conn = url.openConnection();
+        String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
+
+        if (endpointDescription == null) {
+            System.err.println("No header 'X-SSH-Endpoint' returned by Jenkins");
+            return -1;
+        }
+
+        System.err.println("Connecting to: " + endpointDescription);
+
+        int sshPort = Integer.valueOf(endpointDescription.split(":")[1]);
+        String sshHost = endpointDescription.split(":")[0];
+
+        StringBuilder command = new StringBuilder();
+
+        for (String arg : args) {
+            command.append(QuotedStringTokenizer.quote(arg));
+            command.append(' ');
+        }
+
+        try(SshClient client = SshClient.setUpDefaultClient()) {
+
+            KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
+                @Override
+                public boolean verifyServerKey(ClientSession clientSession, SocketAddress remoteAddress, PublicKey serverKey) {
+                    /** unknown key is okay, but log */
+                    LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
+                    // TODO should not trust unknown hosts by default; this should be opt-in
+                    return true;
+                }
+            }, true);
+
+            client.setServerKeyVerifier(verifier);
+            client.start();
+
+            ConnectFuture cf = client.connect(user, sshHost, sshPort);
+            cf.await();
+            try (ClientSession session = cf.getSession()) {
+                for (KeyPair pair : provider.getKeys()) {
+                    System.err.println("Offering " + pair.getPrivate().getAlgorithm() + " private key");
+                    session.addPublicKeyIdentity(pair);
+                }
+                session.auth().verify(10000L);
+
+                try (ClientChannel channel = session.createExecChannel(command.toString())) {
+                    channel.setIn(new NoCloseInputStream(System.in));
+                    channel.setOut(new NoCloseOutputStream(System.out));
+                    channel.setErr(new NoCloseOutputStream(System.err));
+                    WaitableFuture wf = channel.open();
+                    wf.await();
+
+                    Set waitMask = channel.waitFor(Collections.singletonList(ClientChannelEvent.CLOSED), 0L);
+
+                    if(waitMask.contains(ClientChannelEvent.TIMEOUT)) {
+                        throw new SocketTimeoutException("Failed to retrieve command result in time: " + command);
+                    }
+
+                    Integer exitStatus = channel.getExitStatus();
+                    return exitStatus;
+
+                }
+            } finally {
+                client.stop();
+            }
         }
     }
 

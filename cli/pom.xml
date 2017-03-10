@@ -50,6 +50,17 @@
       <version>1.24</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>1.2.0</version> <!-- TODO 1.3.0 requires Java 8 -->
+      <optional>true</optional> <!-- do not expose to core -->
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <optional>true</optional> <!-- ditto -->
+    </dependency>
+    <dependency> <!-- TODO remove and replace PrivateKeyProvider with SecurityUtils.createFileKeyPairProvider() as in SshClient -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
       <version>build214-jenkins-1</version>
