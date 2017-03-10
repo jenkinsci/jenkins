@@ -941,12 +941,7 @@ public class Executor extends Thread implements ModelObject {
             return null;
         }
         for (Computer computer : jenkins.getComputers()) {
-            for (Executor executor : computer.getExecutors()) {
-                if (executor.getCurrentExecutable() == executable) {
-                    return executor;
-                }
-            }
-            for (Executor executor : computer.getOneOffExecutors()) {
+            for (Executor executor : computer.getAllExecutors()) {
                 if (executor.getCurrentExecutable() == executable) {
                     return executor;
                 }

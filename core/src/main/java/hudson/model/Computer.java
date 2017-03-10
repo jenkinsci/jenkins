@@ -958,6 +958,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Gets the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
+     *
+     * @return the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
+     * @since TODO
+     */
+    public List<Executor> getAllExecutors() {
+        List<Executor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
+        result.addAll(executors);
+        result.addAll(oneOffExecutors);
+        return result;
+    }
+
+    /**
      * Used to render the list of executors.
      * @return a snapshot of the executor display information
      * @since 1.607

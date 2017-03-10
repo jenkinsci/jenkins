@@ -55,12 +55,7 @@ public abstract class RestartListener implements ExtensionPoint {
         public boolean isReadyToRestart() throws IOException, InterruptedException {
             for (Computer c : Jenkins.getInstance().getComputers()) {
                 if (c.isOnline()) {
-                    for (Executor e : c.getExecutors()) {
-                        if (blocksRestart(e)) {
-                            return false;
-                        }
-                    }
-                    for (Executor e : c.getOneOffExecutors()) {
+                    for (Executor e : c.getAllExecutors()) {
                         if (blocksRestart(e)) {
                             return false;
                         }
