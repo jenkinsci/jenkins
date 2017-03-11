@@ -62,6 +62,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -76,6 +77,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
@@ -105,6 +107,7 @@ public class CLI implements AutoCloseable {
     private final String httpsProxyTunnel;
     private final String authorization;
 
+    /** Connection via {@link Mode#REMOTING}, for tests only. */
     public CLI(URL jenkins) throws IOException, InterruptedException {
         this(jenkins,null);
     }
@@ -126,7 +129,8 @@ public class CLI implements AutoCloseable {
     public CLI(URL jenkins, ExecutorService exec, String httpsProxyTunnel) throws IOException, InterruptedException {
         this(new CLIConnectionFactory().url(jenkins).executorService(exec).httpsProxyTunnel(httpsProxyTunnel));
     }
-    
+
+    /** Connection via {@link Mode#REMOTING}. */
     /*package*/ CLI(CLIConnectionFactory factory) throws IOException, InterruptedException {
         URL jenkins = factory.jenkins;
         this.httpsProxyTunnel = factory.httpsProxyTunnel;
@@ -162,9 +166,8 @@ public class CLI implements AutoCloseable {
     }
 
     private Channel connectViaHttp(String url) throws IOException {
-        LOGGER.log(FINE, "Trying to connect to {0} via HTTP", url);
-        url+="cli";
-        URL jenkins = new URL(url);
+        LOGGER.log(FINE, "Trying to connect to {0} via Remoting over HTTP", url);
+        URL jenkins = new URL(url + "cli?remoting=true");
 
         FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins,authorization);
         Channel ch = new Channel("Chunked connection to "+jenkins,
@@ -181,7 +184,7 @@ public class CLI implements AutoCloseable {
     }
 
     private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
-        LOGGER.log(FINE, "Trying to connect directly via TCP/IP to {0}", clip.endpoint);
+        LOGGER.log(FINE, "Trying to connect directly via Remoting over TCP/IP to {0}", clip.endpoint);
         final Socket s = new Socket();
         // this prevents a connection from silently terminated by the router in between or the other peer
         // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
@@ -391,12 +394,6 @@ public class CLI implements AutoCloseable {
     }
 
     public static void main(final String[] _args) throws Exception {
-//        Logger l = Logger.getLogger(Channel.class.getName());
-//        l.setLevel(ALL);
-//        ConsoleHandler h = new ConsoleHandler();
-//        h.setLevel(ALL);
-//        l.addHandler(h);
-//
         try {
             System.exit(_main(_args));
         } catch (Throwable t) {
@@ -406,6 +403,7 @@ public class CLI implements AutoCloseable {
         }
     }
 
+    private enum Mode {HTTP, SSH, REMOTING}
     public static int _main(String[] _args) throws Exception {
         List<String> args = Arrays.asList(_args);
         PrivateKeyProvider provider = new PrivateKeyProvider();
@@ -419,7 +417,7 @@ public class CLI implements AutoCloseable {
         
         boolean tryLoadPKey = true;
 
-        boolean useRemoting = false;
+        Mode mode = null;
 
         String user = null;
 
@@ -429,10 +427,29 @@ public class CLI implements AutoCloseable {
                 System.out.println("Version: "+computeVersion());
                 return 0;
             }
+            if (head.equals("-http")) {
+                if (mode != null) {
+                    printUsage("-http clashes with previously defined mode " + mode);
+                    return -1;
+                }
+                mode = Mode.HTTP;
+                args = args.subList(1, args.size());
+            }
+            if (head.equals("-ssh")) {
+                if (mode != null) {
+                    printUsage("-ssh clashes with previously defined mode " + mode);
+                    return -1;
+                }
+                mode = Mode.SSH;
+                args = args.subList(1, args.size());
+            }
             if (head.equals("-remoting")) {
-                useRemoting = true;
-            	args = args.subList(1,args.size());
-            	continue;
+                if (mode != null) {
+                    printUsage("-remoting clashes with previously defined mode " + mode);
+                    return -1;
+                }
+                mode = Mode.REMOTING;
+                args = args.subList(1, args.size());
             }
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
@@ -481,6 +498,17 @@ public class CLI implements AutoCloseable {
                 args = args.subList(2,args.size());
                 continue;
             }
+            if (head.equals("-logger") && args.size() >= 2) {
+                Level level = parse(args.get(1));
+                ConsoleHandler h = new ConsoleHandler();
+                h.setLevel(level);
+                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER}) { // perhaps also Channel
+                    logger.setLevel(level);
+                    logger.addHandler(h);
+                }
+                args = args.subList(2, args.size());
+                continue;
+            }
             break;
         }
 
@@ -495,23 +523,33 @@ public class CLI implements AutoCloseable {
         if (tryLoadPKey && !provider.hasKeys())
             provider.readFromDefaultLocations();
 
-        if (!useRemoting) {
+        if (mode == null) {
+            mode = Mode.HTTP;
+        }
+
+        LOGGER.log(FINE, "using connection mode {0}", mode);
+
+        if (mode == Mode.SSH) {
             if (user == null) {
                 // TODO SshCliAuthenticator already autodetects the user based on public key; why cannot AsynchronousCommand.getCurrentUser do the same?
-                System.err.println("-user required when not using -remoting");
+                System.err.println("-user required when using -ssh");
                 return -1;
             }
             return sshConnection(url, user, args, provider);
         }
 
         if (user != null) {
-            System.err.println("Warning: -user ignored when using -remoting");
+            System.err.println("Warning: -user ignored unless using -ssh");
         }
 
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
         String userInfo = new URL(url).getUserInfo();
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
+        }
+
+        if (mode == Mode.HTTP) {
+            return plainHttpConnection(url, args, factory);
         }
 
         CLI cli = factory.connect();
@@ -560,7 +598,7 @@ public class CLI implements AutoCloseable {
             return -1;
         }
 
-        System.err.println("Connecting via SSH to: " + endpointDescription);
+        LOGGER.log(FINE, "Connecting via SSH to: {0}", endpointDescription);
 
         int sshPort = Integer.parseInt(endpointDescription.split(":")[1]);
         String sshHost = endpointDescription.split(":")[0];
@@ -617,6 +655,61 @@ public class CLI implements AutoCloseable {
                 client.stop();
             }
         }
+    }
+
+    private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
+        LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
+        URL jenkins = new URL(url + "cli?remoting=false");
+        FullDuplexHttpStream streams = new FullDuplexHttpStream(jenkins, factory.authorization);
+        class ClientSideImpl extends PlainCLIProtocol.ClientSide {
+            int exit = -1;
+            ClientSideImpl(InputStream is, OutputStream os) throws IOException {
+                super(is, os);
+                if (is.read() != 0) { // cf. FullDuplexHttpService
+                    throw new IOException("expected to see initial zero byte");
+                }
+            }
+            @Override
+            protected synchronized void onExit(int code) {
+                this.exit = code;
+                notify();
+            }
+            @Override
+            protected void onStdout(byte[] chunk) throws IOException {
+                System.out.write(chunk);
+            }
+            @Override
+            protected void onStderr(byte[] chunk) throws IOException {
+                System.err.write(chunk);
+            }
+        }
+        final ClientSideImpl connection = new ClientSideImpl(streams.getInputStream(), streams.getOutputStream());
+        for (String arg : args) {
+            connection.sendArg(arg);
+        }
+        connection.sendEncoding(Charset.defaultCharset().name());
+        connection.sendLocale(Locale.getDefault().toString());
+        connection.sendStart();
+        connection.begin();
+        final OutputStream stdin = connection.streamStdin();
+        new Thread("input reader") {
+            @Override
+            public void run() {
+                try {
+                    int c;
+                    while ((c = System.in.read()) != -1) {
+                       stdin.write(c);
+                    }
+                    connection.sendEndStdin();
+                } catch (IOException x) {
+                    x.printStackTrace();
+                }
+            }
+        }.start();
+        synchronized (connection) {
+            connection.wait();
+        }
+        return connection.exit;
     }
 
     private static String computeVersion() {

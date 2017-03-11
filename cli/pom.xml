@@ -35,6 +35,10 @@
       <version>1.4</version>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
       <!-- specified in the parent -->

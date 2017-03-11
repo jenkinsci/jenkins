@@ -71,6 +71,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Base class for Hudson CLI.
@@ -158,6 +160,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * The locale of the client. Messages should be formatted with this resource.
      */
     public transient Locale locale;
+
+    /**
+     * The encoding of the client, if defined.
+     */
+    private transient @CheckForNull Charset encoding;
 
     /**
      * Set by the caller of the CLI system if the transport already provides
@@ -482,7 +489,18 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         private static final long serialVersionUID = 1L;
     }
 
-    protected Charset getClientCharset() throws IOException, InterruptedException {
+    /**
+     * Define the encoding for the command.
+     * @since FIXME
+     */
+    public void setClientCharset(@Nonnull Charset encoding) {
+        this.encoding = encoding;
+    }
+
+    protected @Nonnull Charset getClientCharset() throws IOException, InterruptedException {
+        if (encoding != null) {
+            return encoding;
+        }
         if (channel==null)
             // for SSH, assume the platform default encoding
             // this is in-line with the standard SSH behavior

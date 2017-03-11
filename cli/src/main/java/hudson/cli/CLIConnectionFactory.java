@@ -32,6 +32,7 @@ public class CLIConnectionFactory {
     
     /**
      * This {@link ExecutorService} is used to execute closures received from the server.
+     * Used only in Remoting mode.
      */
     public CLIConnectionFactory executorService(ExecutorService es) {
         this.exec = es;
@@ -67,7 +68,10 @@ public class CLIConnectionFactory {
     public CLIConnectionFactory basicAuth(String userInfo) {
         return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
     }
-    
+
+    /**
+     * Used only in Remoting mode.
+     */
     public CLI connect() throws IOException, InterruptedException {
         return new CLI(this);
     }
