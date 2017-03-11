@@ -2,8 +2,10 @@ package hudson.util.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.FilePath;
+import hudson.Functions;
 import org.junit.Test;
 
 import java.io.File;
@@ -43,6 +45,7 @@ public class RewindableRotatingFileOutputStreamTest {
     @Issue("JENKINS-16634")
     @Test
     public void deletedFolder() throws Exception {
+        assumeFalse(Functions.isWindows()); // TODO make work on Windows
         File dir = tmp.newFolder("dir");
         File base = new File(dir, "x.log");
         RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
