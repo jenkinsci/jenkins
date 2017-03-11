@@ -728,7 +728,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void updateSnapshot() {
-        snapshot = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+        Snapshot revised = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "{0} → {1}; leftItems={2}", new Object[] {snapshot, revised, leftItems.asMap()});
+        }
+        snapshot = revised;
     }
 
     public boolean cancel(Item item) {
@@ -1443,9 +1447,11 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 // pending -> buildable
                 for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.FINE,
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE,
                             "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
                             p.task.getFullDisplayName());
+                    }
                     p.isPending = false;
                     pendings.remove(p);
                     makeBuildable(p); // TODO whatever this is for, the return value is being ignored, so this does nothing at all
@@ -1464,7 +1470,7 @@ public class Queue extends ResourceController implements Saveable {
                     Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
                 }
                 for (BlockedItem p : blockedItems) {
-                    String taskDisplayName = p.task.getFullDisplayName();
+                    String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
                     LOGGER.log(Level.FINEST, "Current blocked item: {0}", taskDisplayName);
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                         LOGGER.log(Level.FINEST,
@@ -1499,7 +1505,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
-                    String topTaskDisplayName = top.task.getFullDisplayName();
+                    String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
                     if (r != null) {
                         LOGGER.log(Level.FINEST, "Executing runnable {0}", topTaskDisplayName);
                         r.run();
