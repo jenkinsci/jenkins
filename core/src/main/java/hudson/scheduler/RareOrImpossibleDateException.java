@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Martin Eigenbrodt
- * 
+ *
+ * Copyright (c) 2017 CloudBees, Inc.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,30 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.views;
+package hudson.scheduler;
 
-import hudson.Extension;
-import hudson.model.AbstractItem;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public class BuildButtonColumn extends ListViewColumn {
-    @DataBoundConstructor
-    public BuildButtonColumn() {
-    }
+import java.util.Calendar;
 
-    public String taskNoun(Object job) {
-        if (job instanceof AbstractItem) {
-            return ((AbstractItem) job).getTaskNoun();
-        }
-        return hudson.model.Messages.AbstractItem_TaskNoun();
-    }
-
-    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ACTIONS_START-1) @Symbol("buildButton")
-    public static class DescriptorImpl extends ListViewColumnDescriptor {
-        @Override
-        public String getDisplayName() {
-            return Messages.BuildButtonColumn_DisplayName();
-        }
-    }
+/**
+ * This exception is thrown when trying to determine the previous or next occurrence of a given date determines
+ * that it's not happened, or going to happen, within some time period (e.g. within the next year).
+ *
+ * <p>This can typically have a few different reasons:</p>
+ *
+ * <ul>
+ *   <li>The date is impossible. For example, June 31 does never happen, so <tt>0 0 31 6 *</tt> will never happen</li>
+ *   <li>The date happens only rarely
+ *     <ul>
+ *       <li>February 29 being the obvious one</li>
+ *       <li>Cron tab patterns specifying all of month, day of month, and day of week can also occur so rarely to trigger this exception</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * @see CronTab#floor(Calendar)
+ * @see CronTab#ceil(Calendar)
+ * @since 2.49
+ */
+@Restricted(NoExternalUse.class)
+public class RareOrImpossibleDateException extends RuntimeException {
 }

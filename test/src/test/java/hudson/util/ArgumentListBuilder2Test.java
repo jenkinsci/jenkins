@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
@@ -45,6 +46,7 @@ import com.google.common.base.Joiner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.net.URL;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -90,9 +92,18 @@ public class ArgumentListBuilder2Test {
     }
 
     public String echoArgs(String... arguments) throws Exception {
-        ArgumentListBuilder args = new ArgumentListBuilder(JavaEnvUtils.getJreExecutable("java"), "-cp", "target/test-classes/", "hudson.util.EchoCommand");
-        args.add(arguments);
-        args = args.toWindowsCommand();
+        String testHarnessJar = Class.forName("hudson.util.EchoCommand")
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .getFile()
+                .replaceAll("^/", "");
+
+        ArgumentListBuilder args = new ArgumentListBuilder(
+                    JavaEnvUtils.getJreExecutable("java").replaceAll("^\"|\"$", ""),
+                    "-cp", testHarnessJar, "hudson.util.EchoCommand")
+                .add(arguments)
+                .toWindowsCommand();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         final StreamTaskListener listener = new StreamTaskListener(out);

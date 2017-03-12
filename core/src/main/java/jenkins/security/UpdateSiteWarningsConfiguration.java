@@ -46,7 +46,7 @@ import java.util.Set;
  *
  * @see UpdateSiteWarningsMonitor
  *
- * @since TODO
+ * @since 2.40
  */
 @Extension
 @Restricted(NoExternalUse.class)

@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import hudson.Functions;
 import hudson.Util;
 import hudson.util.StreamTaskListener;
 import java.io.File;
@@ -38,6 +39,8 @@ import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -79,6 +82,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void legacy() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         write("2014-01-02_03-04-05/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <number>99</number>\n  <otherstuff>ok</otherstuff>\n</run>");
         link("99", "2014-01-02_03-04-05");
         link("lastFailedBuild", "-1");
@@ -97,6 +101,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void reRunMigration() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         write("2014-01-02_03-04-04/build.xml", "<run>\n  <number>98</number>\n</run>");
         link("98", "2014-01-02_03-04-04");
         write("99/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
@@ -108,6 +113,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void reverseImmediately() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File root = dir;
         dir = new File(dir, "jobs/somefolder/jobs/someproject/promotions/OK/builds");
         write("99/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <id>2014-01-02_03-04-05</id>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
@@ -120,6 +126,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void reverseAfterNewBuilds() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File root = dir;
         dir = new File(dir, "jobs/someproject/modules/test$test/builds");
         write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
@@ -130,6 +137,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void reverseMatrixAfterNewBuilds() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File root = dir;
         dir = new File(dir, "jobs/someproject/Environment=prod/builds");
         write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
@@ -140,6 +148,7 @@ public class RunIdMigratorTest {
     }
 
     @Test public void reverseMavenAfterNewBuilds() throws Exception {
+        assumeFalse("Symlinks don't work well on Windows", Functions.isWindows());
         File root = dir;
         dir = new File(dir, "jobs/someproject/test$test/builds");
         write("1/build.xml", "<?xml version='1.0' encoding='UTF-8'?>\n<run>\n  <stuff>ok</stuff>\n  <timestamp>1388649845000</timestamp>\n  <otherstuff>ok</otherstuff>\n</run>");
