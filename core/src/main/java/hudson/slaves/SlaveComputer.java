@@ -86,6 +86,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 
 
 /**
@@ -94,6 +96,12 @@ import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
  * @author Kohsuke Kawaguchi
  */
 public class SlaveComputer extends Computer {
+    
+    /**
+     * Reference to the {@link Channel} of this computer.
+     * It may be {@code null} if the computer is offline
+     */
+    @CheckForNull
     private volatile Channel channel;
     private volatile transient boolean acceptingTasks = true;
     private Charset defaultCharset;
@@ -136,6 +144,8 @@ public class SlaveComputer extends Computer {
 
     private transient volatile String absoluteRemoteFs;
 
+    private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
+    
     public SlaveComputer(Slave slave) {
         super(slave);
         this.log = new RewindableRotatingFileOutputStream(getLogFile(), 10);
@@ -392,18 +402,27 @@ public class SlaveComputer extends Computer {
 
     /**
      * Shows {@link Channel#classLoadingCount}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public int getClassLoadingCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingCount(false));
     }
 
     /**
      * Shows {@link Channel#classLoadingPrefetchCacheCount}.
-     * @return -1 in case that capability is not supported
+     * @return {@code -1} in case that capability is not supported or if the agent is offline
      * @since 1.519
      */
+    @CheckReturnValue
     public int getClassLoadingPrefetchCacheCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         if (!channel.remoteCapability.supportsPrefetch()) {
             return -1;
         }
@@ -412,25 +431,40 @@ public class SlaveComputer extends Computer {
 
     /**
      * Shows {@link Channel#resourceLoadingCount}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public int getResourceLoadingCount() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingCount(true));
     }
 
     /**
      * Shows {@link Channel#classLoadingTime}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public long getClassLoadingTime() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingTime(false));
     }
 
     /**
      * Shows {@link Channel#resourceLoadingTime}.
+     * @return Requested value or {@code -1} if the agent is offline.
      * @since 1.495
      */
+    @CheckReturnValue
     public long getResourceLoadingTime() throws IOException, InterruptedException {
+        if (channel == null) {
+            return -1;
+        }
         return channel.call(new LoadingTime(true));
     }
 
@@ -749,27 +783,64 @@ public class SlaveComputer extends Computer {
     }
 
     /**
-     * Get the agent version
+     * Get the agent version.
+     * @return Agent version if the agent is online and has a modern remoting version (2.0+).
+     *         Otherwise it may return a diagnostics information.
      */
+    @Nonnull
     public String getSlaveVersion() throws IOException, InterruptedException {
+        if (channel == null) {
+            return "Unknown (agent is offline)";
+        }
         return channel.call(new SlaveVersion());
+    }
+    
+    //TODO: move to public API and deprecate the old one after the merge to master
+    //TODO: Likely such old remoting versions won't work anyway
+    /**
+     * Get the agent version.
+     * @return Agent version as a string.
+     *         {@code null} if the version cannot be determined.
+     *         It may happen when the agent is offline or if the remoting version is below 2.x
+     */
+    @CheckForNull
+    private String getAgentVersion() throws IOException, InterruptedException {
+        return channel != null ? channel.call(new AgentVersion()) : null;
     }
 
     /**
      * Get the OS description.
      */
+    @Nonnull
     public String getOSDescription() throws IOException, InterruptedException {
+        if (channel == null) {
+            return "Unknown (agent is offline)";
+        }
         return channel.call(new DetectOS()) ? "Unix" : "Windows";
     }
 
-    private static final Logger logger = Logger.getLogger(SlaveComputer.class.getName());
-
+    /**
+     * @deprecated To be replaced by {@link AgentVersion}.
+     */
+    @Deprecated
     private static final class SlaveVersion extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older slave.jar won't have VERSION
         }
     }
+    
+    private static final class AgentVersion extends MasterToSlaveCallable<String,IOException> {
+        public String call() throws IOException {
+            try { 
+                return Launcher.VERSION; 
+            }
+            catch (Throwable ex) { 
+                return null; 
+            } // Older slave.jar won't have VERSION
+        }
+    }
+    
     private static final class DetectOS extends MasterToSlaveCallable<Boolean,IOException> {
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
