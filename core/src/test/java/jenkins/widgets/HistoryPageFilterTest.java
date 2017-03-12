@@ -326,24 +326,19 @@ public class HistoryPageFilterTest {
     }
 
     @Test
-    public void test_search_should_be_case_sensitive_for_anonymous_user() throws IOException {
-        //given
-        HistoryPageFilter<ModelObject> historyPageFilter = newPage(5, null, null);
-        //and
-        historyPageFilter.setSearchString("failure");
-        //and
+    public void should_be_case_insensitive_by_default() throws IOException {
         List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
-        List<Queue.Item> queueItems = newQueueItems(3, 4);
-
-        //when
-        historyPageFilter.add(runs, queueItems);
-
-        //then
-        Assert.assertEquals(0, historyPageFilter.runs.size());
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
     }
 
     @Test
-    public void test_search_builds_by_build_variables() throws IOException {
+    public void should_lower_case_search_string_in_case_insensitive_search() throws IOException {
+        List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
+        assertOneMatchingBuildForGivenSearchStringAndRunItems("FAILure", runs);
+    }
+
+    @Test
+    public void should_search_builds_by_build_variables() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
                 new MockBuild(1).withBuildVariables(ImmutableMap.of("env", "otherEnv")));
@@ -351,7 +346,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
-    public void test_search_builds_by_build_params() throws IOException {
+    public void should_search_builds_by_build_params() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
                 new MockBuild(1).withBuildParameters(ImmutableMap.of("env", "otherEnv")));
@@ -359,7 +354,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
-    public void test_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
+    public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
