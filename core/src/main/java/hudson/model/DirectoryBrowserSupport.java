@@ -509,7 +509,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         // find all empty intermediate directory
                         List<Path> l = new ArrayList<Path>();
                         l.add(p);
-                        String relPath = Util.rawEncode(f.getName());
+                        StringBuilder relPath = new StringBuilder(Util.rawEncode(f.getName()));
                         while(true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             List<VirtualFile> sub = new ArrayList<VirtualFile>();
@@ -522,8 +522,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                             if (sub.size() !=1 || !sub.get(0).isDirectory())
                                 break;
                             f = sub.get(0);
-                            relPath += '/'+Util.rawEncode(f.getName());
-                            l.add(new Path(relPath,f.getName(),true,0, f.canRead()));
+                            relPath.append('/').append(Util.rawEncode(f.getName()));
+                            l.add(new Path(relPath.toString(), f.getName(),true,0, f.canRead()));
                         }
                         r.add(l);
                     }
