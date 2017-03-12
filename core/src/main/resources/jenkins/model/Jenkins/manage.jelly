@@ -32,15 +32,15 @@ THE SOFTWARE.
     <!-- table to show a map -->
     <d:tag name="feature">
       <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}"/>
-      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,requiresConfirmation,requiresConfirmation) : null}
+      ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,post,requiresConfirmation) : null}
       <!-- TODO summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
       <j:set var="_href" value="${href}"/>
       <t:summary icon="${icon}"
-                 href="${requiresConfirmation ? null : href}" iconOnly="true">
+                 href="${requiresConfirmation || post ? null : href}" iconOnly="true">
         <div class="link">
           <j:choose>
             <j:when test="${requiresConfirmation}">
-              <l:confirmationLink href="${_href}" post="true" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
+              <l:confirmationLink href="${_href}" post="${post}" message="${%are.you.sure(title)}">${title}</l:confirmationLink>
             </j:when>
             <j:otherwise>
               <f:link href="${_href}" post="${post}">${title}</f:link>
@@ -59,19 +59,6 @@ THE SOFTWARE.
   </j:if>
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
-    <j:if test="${it.checkURIEncodingEnabled}">
-      <script>
-        var url='checkURIEncoding';
-        var params= {value : '\u57f7\u4e8b'};
-        var checkAjax=new Ajax.Updater(
-          'message', url,
-          {
-            method: 'get', parameters: params
-          }
-        );
-      </script>
-      <span id="message"></span>
-    </j:if>
 
     <j:forEach var="am" items="${app.administrativeMonitors}">
       <j:if test="${am.isActivated() and am.isEnabled()}">

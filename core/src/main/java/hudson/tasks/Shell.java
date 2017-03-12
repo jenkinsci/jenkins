@@ -24,7 +24,6 @@
 package hudson.tasks;
 
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
@@ -35,6 +34,7 @@ import java.io.ObjectStreamException;
 import hudson.util.LineEndingConversion;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -125,7 +125,9 @@ public class Shell extends CommandInterpreter {
     }
 
     private Object readResolve() throws ObjectStreamException {
-        return new Shell(command);
+        Shell shell = new Shell(command);
+        shell.setUnstableReturn(unstableReturn);
+        return shell;
     }
 
     @Extension @Symbol("shell")
@@ -153,8 +155,9 @@ public class Shell extends CommandInterpreter {
          */
         @Deprecated
         public String getShellOrDefault() {
-            if(shell==null)
-                return Functions.isWindows() ?"sh":"/bin/sh";
+            if (shell == null) {
+                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+            }
             return shell;
         }
 
@@ -229,7 +232,7 @@ public class Shell extends CommandInterpreter {
             private static final long serialVersionUID = 1L;
 
             public String call() throws IOException {
-                return Functions.isWindows() ? "sh" : "/bin/sh";
+                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
             }
         }
 

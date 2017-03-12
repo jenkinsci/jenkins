@@ -24,12 +24,20 @@
 package hudson.views;
 
 import hudson.Extension;
+import hudson.model.AbstractItem;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class BuildButtonColumn extends ListViewColumn {
     @DataBoundConstructor
     public BuildButtonColumn() {
+    }
+
+    public String taskNoun(Object job) {
+        if (job instanceof AbstractItem) {
+            return ((AbstractItem) job).getTaskNoun();
+        }
+        return hudson.model.Messages.AbstractItem_TaskNoun();
     }
 
     @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ACTIONS_START-1) @Symbol("buildButton")

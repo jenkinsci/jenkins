@@ -375,10 +375,16 @@ public class WebAppMain implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent event) {
         try (ACLContext old = ACL.as(ACL.SYSTEM)) {
-            terminated = true;
             Jenkins instance = Jenkins.getInstanceOrNull();
-            if (instance != null)
-                instance.cleanUp();
+            try {
+                if (instance != null) {
+                    instance.cleanUp();
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+            }
+
+            terminated = true;
             Thread t = initThread;
             if (t != null && t.isAlive()) {
                 LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
@@ -386,7 +392,7 @@ public class WebAppMain implements ServletContextListener {
             }
 
             // Logger is in the system classloader, so if we don't do this
-            // the whole web app will never be undepoyed.
+            // the whole web app will never be undeployed.
             Logger.getLogger("").removeHandler(handler);
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);

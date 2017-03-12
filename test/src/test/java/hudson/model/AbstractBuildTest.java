@@ -60,8 +60,8 @@ public class AbstractBuildTest {
     @SuppressWarnings("deprecation")
     public void reportErrorShouldNotFailForNonPublisherClass() throws Exception {
         FreeStyleProject prj = j.createFreeStyleProject();
-        ErroneousJobProperty errorneousJobProperty = new ErroneousJobProperty();
-        prj.addProperty(errorneousJobProperty);
+        ErroneousJobProperty erroneousJobProperty = new ErroneousJobProperty();
+        prj.addProperty(erroneousJobProperty);
         QueueTaskFuture<FreeStyleBuild> future = prj.scheduleBuild2(0);     
         assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
         FreeStyleBuild build = future.get();

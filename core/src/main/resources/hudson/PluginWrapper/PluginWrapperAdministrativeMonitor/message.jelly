@@ -1,12 +1,12 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <div class="error">
         <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <div style="float:right">
                 <f:submit name="correct" value="${%Correct}"/>
             </div>
         </form>
-        There are dependency errors loading some plugins:
+        ${%Dependency errors}:
         <ul>
             <j:forEach items="${it.plugins}" var="plugin">
                 <li>${plugin.longName} v${plugin.version}

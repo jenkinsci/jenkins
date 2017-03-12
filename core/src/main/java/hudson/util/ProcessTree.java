@@ -788,6 +788,14 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             private static final byte PR_MODEL_LP64 = 2;
 
             /*
+             * An arbitrary upper-limit on how many characters readLine() will
+             * try reading before giving up. This avoids having readLine() loop
+             * over the entire process address space if this class has bugs.
+             */
+            private final int LINE_LENGTH_LIMIT =
+                SystemProperties.getInteger(Solaris.class.getName()+".lineLimit", 10000);
+
+            /*
              * True if target process is 64-bit (Java process may be different).
              */
             private final boolean b64;
@@ -900,7 +908,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         for( int n=0; n<argc; n++ ) {
                             // read a pointer to one entry
                             LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(argp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
 
                             arguments.add(readLine(fd, addr, "argv["+ n +"]"));
                         }
@@ -935,7 +943,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                         for( int n=0; ; n++ ) {
                             // read a pointer to one entry
                             LIBC.pread(fd, m, new NativeLong(psize), new NativeLong(envp+n*psize));
-                            long addr = b64 ? m.getLong(0) : m.getInt(0);
+                            long addr = b64 ? m.getLong(0) : to64(m.getInt(0));
                             if (addr == 0) // completed the walk
                                 break;
 
@@ -959,7 +967,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 Memory m = new Memory(1);
                 byte ch = 1;
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                int i = 0;
                 while(true) {
+                    if (i++ > LINE_LENGTH_LIMIT) {
+                        LOGGER.finest("could not find end of line, giving up");
+                        throw new IOException("could not find end of line, giving up");
+                    }
+
                     LIBC.pread(fd, m, new NativeLong(1), new NativeLong(addr));
                     ch = m.getByte(0);
                     if (ch == 0)
@@ -1096,7 +1110,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
                     if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
-                        throw new IOException("Failed to get kernl.argmax: "+LIBC.strerror(Native.getLastError()));
+                        throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
 
@@ -1187,7 +1201,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             arguments.add(m.readString());
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please run 'ps e "+pid+"' and report this to https://issues.jenkins-ci.org/browse/JENKINS-9634",e);
+                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please see https://jenkins.io/redirect/troubleshooting/darwin-failed-to-parse-arguments",e);
                     }
 
                     // read env vars that follow

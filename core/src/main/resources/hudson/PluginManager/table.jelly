@@ -110,6 +110,15 @@ THE SOFTWARE.
                       <j:if test="${p.isNeededDependenciesForNewerJenkins()}">
                         <div class="compatWarning">${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}</div>
                       </j:if>
+                      <j:if test="${p.hasWarnings()}">
+                        <div class="securityWarning">${%securityWarning}
+                          <ul>
+                            <j:forEach var="warning" items="${p.getWarnings()}">
+                              <li><a href="${warning.url}" target="_blank">${warning.message}</a></li>
+                            </j:forEach>
+                          </ul>
+                        </div>
+                      </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
                     <j:if test="${isUpdates}">
@@ -139,18 +148,18 @@ THE SOFTWARE.
           </table>
         </div>
 
-        <j:if test="${!empty(list)}">
-          <div id="bottom-sticker" >
-            <div class="bottom-sticker-inner">
+        <div id="bottom-sticker" >
+          <div class="bottom-sticker-inner">
+            <j:if test="${!empty(list)}">
               <j:if test="${!isUpdates}">
                 <f:submit value="${%Install without restart}" name="dynamicLoad" />
                 <span style="margin-left:2em;"></span>
               </j:if>
               <f:submit value="${%Download now and install after restart}" />
-              <st:include page="check.jelly"/>
+            </j:if>
+            <st:include page="check.jelly"/>
             </div>
           </div>
-        </j:if>
         <d:invokeBody />
       </form>
     </l:main-panel>

@@ -58,7 +58,8 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since 2.27
+ * @since 2.27 available as the experimental protocol 
+ * @since TODO enabled by default
  */
 @Extension
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
@@ -100,7 +101,13 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
+        if (identityCertificate == null) {
+            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
+        }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
+        if (privateKey == null) {
+            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+        }
 
         // prepare our keyStore so we can provide our authentication
         keyStore = KeyStore.getInstance("JKS");
@@ -156,7 +163,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return true;
+        return false;
     }
 
     /**

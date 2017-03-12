@@ -61,6 +61,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseLabelIsOffline;
 import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
+import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
@@ -122,10 +123,10 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.util.SystemProperties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import jenkins.model.queue.AsynchronousExecution;
+import jenkins.model.queue.CompositeCauseOfBlockage;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -219,7 +220,7 @@ public class Queue extends ResourceController implements Saveable {
      * to assign a work. Once a work is assigned, the executor actually gets
      * started to carry out the task in question.
      */
-    public class JobOffer extends MappingWorksheet.ExecutorSlot {
+    public static class JobOffer extends MappingWorksheet.ExecutorSlot {
         public final Executor executor;
 
         /**
@@ -246,20 +247,44 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         /**
-         * Verifies that the {@link Executor} represented by this object is capable of executing the given task.
+         * @deprecated discards information; prefer {@link #getCauseOfBlockage}
          */
+        @Deprecated
         public boolean canTake(BuildableItem item) {
+            return getCauseOfBlockage(item) == null;
+        }
+
+        /**
+         * Checks whether the {@link Executor} represented by this object is capable of executing the given task.
+         * @return a reason why it cannot, or null if it could
+         * @since 2.37
+         */
+        public @CheckForNull CauseOfBlockage getCauseOfBlockage(BuildableItem item) {
             Node node = getNode();
-            if (node==null)     return false;   // this executor is about to die
-
-            if(node.canTake(item)!=null)
-                return false;   // this node is not able to take the task
-
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all())
-                if (d.canTake(node,item)!=null)
-                    return false;
-
-            return isAvailable();
+            if (node == null) {
+                return CauseOfBlockage.fromMessage(Messages._Queue_node_has_been_removed_from_configuration(executor.getOwner().getDisplayName()));
+            }
+            CauseOfBlockage reason = node.canTake(item);
+            if (reason != null) {
+                return reason;
+            }
+            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+                reason = d.canTake(node, item);
+                if (reason != null) {
+                    return reason;
+                }
+            }
+            // inlining isAvailable:
+            if (workUnit != null) { // unlikely in practice (should not have even found this executor if so)
+                return CauseOfBlockage.fromMessage(Messages._Queue_executor_slot_already_in_use());
+            }
+            if (executor.getOwner().isOffline()) {
+                return new CauseOfBlockage.BecauseNodeIsOffline(node);
+            }
+            if (!executor.getOwner().isAcceptingTasks()) { // Node.canTake (above) does not consider RetentionStrategy.isAcceptingTasks
+                return new CauseOfBlockage.BecauseNodeIsNotAcceptingTasks(node);
+            }
+            return null;
         }
 
         /**
@@ -528,7 +553,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param actions
      *      These actions can be used for associating information scoped to a particular build, to
      *      the task being queued. Upon the start of the build, these {@link Action}s will be automatically
-     *      added to the {@link Run} object, and hence avaialable to everyone.
+     *      added to the {@link Run} object, and hence available to everyone.
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
@@ -1521,13 +1546,18 @@ public class Queue extends ResourceController implements Saveable {
                     }
                 } else {
 
-                    List<JobOffer> candidates = new ArrayList<JobOffer>(parked.size());
+                    List<JobOffer> candidates = new ArrayList<>(parked.size());
+                    List<CauseOfBlockage> reasons = new ArrayList<>(parked.size());
                     for (JobOffer j : parked.values()) {
-                        if (j.canTake(p)) {
+                        CauseOfBlockage reason = j.getCauseOfBlockage(p);
+                        if (reason == null) {
                             LOGGER.log(Level.FINEST,
                                     "{0} is a potential candidate for task {1}",
-                                    new Object[]{j.executor.getDisplayName(), taskDisplayName});
+                                    new Object[]{j, taskDisplayName});
                             candidates.add(j);
+                        } else {
+                            LOGGER.log(Level.FINEST, "{0} rejected {1}: {2}", new Object[] {j, taskDisplayName, reason});
+                            reasons.add(reason);
                         }
                     }
 
@@ -1539,6 +1569,7 @@ public class Queue extends ResourceController implements Saveable {
                         // check if we can execute other projects
                         LOGGER.log(Level.FINER, "Failed to map {0} to executors. candidates={1} parked={2}",
                                 new Object[]{p, candidates, parked.values()});
+                        p.transientCausesOfBlockage = reasons.isEmpty() ? null : reasons;
                         continue;
                     }
 
@@ -1562,8 +1593,8 @@ public class Queue extends ResourceController implements Saveable {
                     // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
-                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://jenkins-ci.org/issue/27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                     // for alternative fixes of this issue.
                     updateSnapshot();
                 }
@@ -2465,6 +2496,12 @@ public class Queue extends ResourceController implements Saveable {
          */
         private boolean isPending;
 
+        /**
+         * Reasons why the last call to {@link #maintain} left this buildable (but not blocked or executing).
+         * May be null but not empty.
+         */
+        private transient volatile @CheckForNull List<CauseOfBlockage> transientCausesOfBlockage;
+
         public BuildableItem(WaitingItem wi) {
             super(wi);
         }
@@ -2478,6 +2515,8 @@ public class Queue extends ResourceController implements Saveable {
             if(isBlockedByShutdown(task))
                 return CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown());
 
+            List<CauseOfBlockage> causesOfBlockage = transientCausesOfBlockage;
+
             Label label = getAssignedLabel();
             List<Node> allNodes = jenkins.getNodes();
             if (allNodes.isEmpty())
@@ -2489,9 +2528,14 @@ public class Queue extends ResourceController implements Saveable {
                     if (nodes.size() != 1)      return new BecauseLabelIsOffline(label);
                     else                        return new BecauseNodeIsOffline(nodes.iterator().next());
                 } else {
+                    if (causesOfBlockage != null && label.getIdleExecutors() > 0) {
+                        return new CompositeCauseOfBlockage(causesOfBlockage);
+                    }
                     if (nodes.size() != 1)      return new BecauseLabelIsBusy(label);
                     else                        return new BecauseNodeIsBusy(nodes.iterator().next());
                 }
+            } else if (causesOfBlockage != null && new ComputerSet().getIdleExecutors() > 0) {
+                return new CompositeCauseOfBlockage(causesOfBlockage);
             } else {
                 return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
             }
@@ -2778,7 +2822,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
-                              + "FindBugs recommends suppresing warnings in such case")
+                              + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);

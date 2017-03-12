@@ -26,6 +26,7 @@ package hudson.tasks;
 
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -266,7 +267,7 @@ public class ArtifactArchiverTest {
 
     @LocalData
     @Test public void fingerprintMigration() throws Exception {
-        FreeStyleProject p = j.jenkins.getItemByFullName("sample", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
         assertNotNull(p);
         String xml = p.getConfigFile().asString();
         assertFalse(xml, xml.contains("<recordBuildArtifacts>"));

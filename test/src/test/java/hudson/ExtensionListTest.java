@@ -142,7 +142,7 @@ public class ExtensionListTest {
         assertEquals(3,list.size());
         assertNotNull(list.get(Sishamo.DescriptorImpl.class));
 
-        // all 3 should be visisble from LIST, too
+        // all 3 should be visible from LIST, too
         assertEquals(3,LIST.size());
         assertNotNull(LIST.findByName(Tai.class.getName()));
         assertNotNull(LIST.findByName(Sishamo.class.getName()));

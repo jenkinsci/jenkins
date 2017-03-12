@@ -568,7 +568,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the specific property, or null if the propert is not configured for
+     * Gets the specific property, or null if the property is not configured for
      * this job.
      */
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
@@ -1224,28 +1224,27 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         JSONObject json = req.getSubmittedForm();
 
         try {
-            setDisplayName(json.optString("displayNameOrNull"));
+            try (BulkChange bc = new BulkChange(this)) {
+                setDisplayName(json.optString("displayNameOrNull"));
 
-            logRotator = null;
+                logRotator = null;
 
-            DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
-            JSONObject jsonProperties = json.optJSONObject("properties");
-            if (jsonProperties != null) {
-            	//This handles the situation when Parameterized build checkbox is checked but no parameters are selected. User will be redirected to an error page with proper error message.
-            	Job.checkForEmptyParameters(jsonProperties);
-              t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
-            } else {
-              t.clear();
+                DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
+                JSONObject jsonProperties = json.optJSONObject("properties");
+                if (jsonProperties != null) {
+                  t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+                } else {
+                  t.clear();
+                }
+                properties.clear();
+                for (JobProperty p : t) {
+                    p.setOwner(this);
+                    properties.add(p);
+                }
+
+                submit(req, rsp);
+                bc.commit();
             }
-            properties.clear();
-            for (JobProperty p : t) {
-                p.setOwner(this);
-                properties.add(p);
-            }
-
-            submit(req, rsp);
-
-            save();
             ItemListener.fireOnUpdated(this);
 
             String newName = req.getParameter("name");
@@ -1537,18 +1536,4 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
-    
-    /**
-     * This handles the situation when Parameterized build checkbox is checked 
-     * but no parameters are selected. User will be redirected to an error page
-     * with proper error message.
-     * @param jsonProperties
-     * @throws FormException 
-     */
-    private static void checkForEmptyParameters(JSONObject jsonProperties) throws FormException{
-        JSONObject parameterDefinitionProperty = jsonProperties.getJSONObject("hudson-model-ParametersDefinitionProperty");
-        if ((parameterDefinitionProperty.getBoolean("specified") == true)&& !parameterDefinitionProperty.has("parameterDefinitions")) {
-		    throw new FormException(Messages.Hudson_NoParamsSpecified(),"parameterDefinitions");
-        }
-    }
 }

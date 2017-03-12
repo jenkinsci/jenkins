@@ -58,7 +58,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      *
      * <p>
      * When multiple resolvers are installed, they are consulted in order and
-     * the search will be over when a name is found by someoene.
+     * the search will be over when a name is found by someone.
      *
      * <p>
      * Since {@link UserNameResolver} is singleton, this method can be invoked concurrently

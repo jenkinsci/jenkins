@@ -26,6 +26,7 @@ package hudson.tasks;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.XmlFile;
@@ -293,14 +294,18 @@ public class FingerprinterTest {
     @Issue("JENKINS-17125")
     @LocalData
     @Test public void actionSerialization() throws Exception {
-        FreeStyleProject job = j.jenkins.getItemByFullName("j", FreeStyleProject.class);
+        FreeStyleProject job = j.jenkins.getItemByFullName(Functions.isWindows() ? "j-windows" : "j", FreeStyleProject.class);
         assertNotNull(job);
         FreeStyleBuild build = job.getBuildByNumber(2);
         assertNotNull(build);
         Fingerprinter.FingerprintAction action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         assertEquals(build, action.getBuild());
-        assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
+        if (Functions.isWindows()) {
+            assertEquals("{a=603bc9e16cc05bdbc5e595969f42e3b8}", action.getRecords().toString());
+        } else {
+            assertEquals("{a=2d5fac981a2e865baf0e15db655c7d63}", action.getRecords().toString());
+        }
         j.assertBuildStatusSuccess(job.scheduleBuild2(0));
         job._getRuns().purgeCache(); // force build records to be reloaded
         build = job.getBuildByNumber(3);
@@ -309,7 +314,11 @@ public class FingerprinterTest {
         action = build.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(action);
         assertEquals(build, action.getBuild());
-        assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
+        if (Functions.isWindows()) {
+            assertEquals("{a=a97a39fb51de0eee9fd908174dccc304}", action.getRecords().toString());
+        } else {
+            assertEquals("{a=f31efcf9afe30617d6c46b919e702822}", action.getRecords().toString());
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -326,7 +335,8 @@ public class FingerprinterTest {
         j.assertBuildStatusSuccess(p2.scheduleBuild2(0));
         j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
 
-        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+"\n"));
+        Fingerprint f = j.jenkins._getFingerprint(Util.getDigestOf(singleContents[0]+System.lineSeparator()));
+        assertNotNull(f);
         assertEquals(3,f.getUsages().size());
 
         j.jenkins.rebuildDependencyGraph();
@@ -373,9 +383,15 @@ public class FingerprinterTest {
         StringBuilder targets = new StringBuilder();
         for (int i = 0; i < contents.length; i++) {
             if (project instanceof MatrixProject) {
-                ((MatrixProject)project).getBuildersList().add(new Shell("echo " + contents[i] + " > " + files[i]));
+                ((MatrixProject)project).getBuildersList().add(
+                        Functions.isWindows()
+                                ? new BatchFile("echo " + contents[i] + "> " + files[i])
+                                : new Shell("echo " + contents[i] + " > " + files[i]));
             } else {
-                ((FreeStyleProject)project).getBuildersList().add(new Shell("echo " + contents[i] + " > " + files[i]));                
+                ((FreeStyleProject)project).getBuildersList().add(
+                        Functions.isWindows()
+                                ? new BatchFile("echo " + contents[i] + "> " + files[i])
+                                : new Shell("echo " + contents[i] + " > " + files[i]));
             }
             
             targets.append(files[i]).append(',');

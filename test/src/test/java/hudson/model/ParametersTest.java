@@ -1,24 +1,29 @@
 package hudson.model;
 
-import static org.junit.Assert.*;
-
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlOption;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import hudson.markup.MarkupFormatter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.httpclient.HttpStatus;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
+import org.junit.rules.ErrorCollector;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
-
-import java.util.Set;
 
 /**
  * @author huybrechts
@@ -27,6 +32,9 @@ public class ParametersTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public ErrorCollector collector = new ErrorCollector();
 
     @Test
     public void parameterTypes() throws Exception {
@@ -216,4 +224,52 @@ public class ParametersTest {
         final HtmlForm form = page.getFormByName("parameters");
         HtmlFormUtil.submit(form, HtmlFormUtil.getButtonByCaption(form, "Build"));
     }
+
+    @Issue("SECURITY-353")
+    @Test
+    public void xss() throws Exception {
+        j.jenkins.setMarkupFormatter(new MyMarkupFormatter());
+        FreeStyleProject p = j.createFreeStyleProject("p");
+        StringParameterDefinition param = new StringParameterDefinition("<param name>", "<param default>", "<param description>");
+        assertEquals("<b>[</b>param description<b>]</b>", param.getFormattedDescription());
+        p.addProperty(new ParametersDefinitionProperty(param));
+        WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = wc.getPage(p, "build?delay=0sec");
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpStatus.SC_METHOD_NOT_ALLOWED)); // 405 to dissuade scripts from thinking this triggered the build
+        String text = page.getWebResponse().getContentAsString();
+        collector.checkThat("build page should escape param name", text, containsString("&lt;param name&gt;"));
+        collector.checkThat("build page should not leave param name unescaped", text, not(containsString("<param name>")));
+        collector.checkThat("build page should escape param default", text, containsString("&lt;param default&gt;"));
+        collector.checkThat("build page should not leave param default unescaped", text, not(containsString("<param default>")));
+        collector.checkThat("build page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>"));
+        collector.checkThat("build page should not leave param description unescaped", text, not(containsString("<param description>")));
+        HtmlForm form = page.getFormByName("parameters");
+        HtmlTextInput value = form.getInputByValue("<param default>");
+        value.setText("<param value>");
+        j.submit(form);
+        j.waitUntilNoActivity();
+        FreeStyleBuild b = p.getBuildByNumber(1);
+        page = j.createWebClient().getPage(b, "parameters/");
+        text = page.getWebResponse().getContentAsString();
+        collector.checkThat("parameters page should escape param name", text, containsString("&lt;param name&gt;"));
+        collector.checkThat("parameters page should not leave param name unescaped", text, not(containsString("<param name>")));
+        collector.checkThat("parameters page should escape param value", text, containsString("&lt;param value&gt;"));
+        collector.checkThat("parameters page should not leave param value unescaped", text, not(containsString("<param value>")));
+        collector.checkThat("parameters page should mark up param description", text, containsString("<b>[</b>param description<b>]</b>"));
+        collector.checkThat("parameters page should not leave param description unescaped", text, not(containsString("<param description>")));
+    }
+    static class MyMarkupFormatter extends MarkupFormatter {
+        @Override
+        public void translate(String markup, Writer output) throws IOException {
+            Matcher m = Pattern.compile("[<>]").matcher(markup);
+            StringBuffer buf = new StringBuffer();
+            while (m.find()) {
+                m.appendReplacement(buf, m.group().equals("<") ? "<b>[</b>" : "<b>]</b>");
+            }
+            m.appendTail(buf);
+            output.write(buf.toString());
+        }
+    }
+
 }

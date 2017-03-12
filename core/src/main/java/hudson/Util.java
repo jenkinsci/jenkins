@@ -565,7 +565,7 @@ public class Util {
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {
-        File tmp = File.createTempFile("hudson", "tmp");
+        File tmp = File.createTempFile("jenkins", "tmp");
         if(!tmp.delete())
             throw new IOException("Failed to delete "+tmp);
         if(!tmp.mkdirs())
@@ -1367,7 +1367,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
-            e.printStackTrace( log );
+            Functions.printStackTrace(e, log);
         }
     }
 

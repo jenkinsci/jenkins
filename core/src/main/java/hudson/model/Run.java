@@ -73,7 +73,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -480,6 +479,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull List<BuildBadgeAction> getBadgeActions() {
         List<BuildBadgeAction> r = getActions(BuildBadgeAction.class);
         if(isKeepLog()) {
+            r = new ArrayList<>(r);
             r.add(new KeepLogBuildBadge());
         }
         return r;
@@ -688,7 +688,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         String truncDesc = description;
 
-        // Could not find a preferred truncable index, force a trunc at maxTruncLength
+        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
             lastTruncatablePoint = maxTruncLength;
 
@@ -1213,7 +1213,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 //                        continue OUTER; // collision. Increase n and try again
 //                }
 //
-//                // this n successfully diambiguates
+//                // this n successfully disambiguates
 //                for (int i = 0; i < tokens.length; i++) {
 //                    String[] token = tokens[i];
 //                    get(i).displayPath = combineLast(token,n);
@@ -1864,7 +1864,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
-            e.printStackTrace(listener.fatalError(e.getMessage()));
+            Functions.printStackTrace(e, listener.fatalError(e.getMessage()));
         } else {
             LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }
@@ -2193,9 +2193,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             delete();
         }
         catch(IOException ex){
-            StringWriter writer = new StringWriter();
-            ex.printStackTrace(new PrintWriter(writer));
-            req.setAttribute("stackTraces", writer);
+            req.setAttribute("stackTraces", Functions.printThrowable(ex));
             req.getView(this, "delete-retry.jelly").forward(req, rsp);  
             return;
         }

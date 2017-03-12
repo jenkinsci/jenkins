@@ -19,6 +19,7 @@ import java.lang.reflect.Proxy;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.rmi.activation.ActivationDesc;
@@ -34,6 +35,7 @@ import static jenkins.security.security218.Payload.CommonsCollections1;
 import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
 import jenkins.security.security218.ysoserial.payloads.ObjectPayload;
 import static org.junit.Assert.*;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -82,7 +84,11 @@ public class Security232Test {
             dos.writeUTF("Protocol:CLI-connect");
 
             ExecutorService cp = Executors.newCachedThreadPool();
-            c = new ChannelBuilder("EXPLOIT", cp).withMode(Mode.BINARY).build(s.getInputStream(), outputStream);
+            try {
+                c = new ChannelBuilder("EXPLOIT", cp).withMode(Mode.BINARY).build(s.getInputStream(), outputStream);
+            } catch (SocketException x) {
+                Assume.assumeNoException("failed to connect to CLI", x);
+            }
 
             System.err.println("* Channel open");
 
@@ -164,6 +170,7 @@ public class Security232Test {
                 long o2 = Long.parseLong(parts[ 1 ], 16);
                 short o3 = Short.parseShort(parts[ 2 ], 16);
 
+                // Need to find Windows equivalent.
                 exploit(new InetSocketAddress(isa.getAddress(), jrmpPort), obj, o1, o2, o3, new CommonsCollections1(), "touch " + pwned);
             }
 

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.Queue.Executable;
 import hudson.model.queue.Executables;
@@ -289,7 +290,7 @@ public class Executor extends Thread implements ModelObject {
             } else {
                 pw.println("Termination trace follows:");
                 for (Computer.TerminationRequest request : owner.getTerminatedBy()) {
-                    request.printStackTrace(pw);
+                    Functions.printStackTrace(request, pw);
                 }
             }
         }

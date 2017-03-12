@@ -43,10 +43,13 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.regex.Pattern;
+
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Issue;
@@ -74,10 +77,18 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
     @Extension
     public static final class DescriptorImpl extends Descriptor<PasswordTest> {}
 
-    @Issue("SECURITY-266")
+    @Issue({"SECURITY-266", "SECURITY-304"})
     public void testExposedCiphertext() throws Exception {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         try {
+
+            //final String plain_regex_match = ".*\\{[A-Za-z0-9+/]+={0,2}}.*";
+            final String xml_regex_match = "\\{[A-Za-z0-9+/]+={0,2}}";
+            final Pattern xml_regex_pattern = Pattern.compile(xml_regex_match);
+            final String staticTest = "\n\nvalue=\"{AQAAABAAAAAgXhXgopokysZkduhl+v1gm0UhUBBbjKDVpKz7bGk3mIO53cNTRdlu7LC4jZYEc+vF}\"\n";
+            //Just a quick verification on what could be on the page and that the regexp is correctly set up
+            assertThat(xml_regex_pattern.matcher(staticTest).find(), is(true));
+
             jenkins.setSecurityRealm(createDummySecurityRealm());
             // TODO 1.645+ use MockAuthorizationStrategy
             GlobalMatrixAuthorizationStrategy pmas = new GlobalMatrixAuthorizationStrategy();
@@ -89,7 +100,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             pmas.add(Item.CREATE, "dev"); // so we can show CopyJobCommand would barf; more realistic would be to grant it only in a subfolder
             jenkins.setAuthorizationStrategy(pmas);
             Secret s = Secret.fromString("s3cr3t");
-            String sEnc = s.getEncryptedValue();
+            //String sEnc = s.getEncryptedValue();
             FreeStyleProject p = createFreeStyleProject("p");
             p.setDisplayName("Unicode here ←");
             p.setDescription("This+looks+like+Base64+but+is+not+a+secret");
@@ -98,14 +109,15 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             // Control case: an administrator can read and write configuration freely.
             wc.login("admin");
             HtmlPage configure = wc.getPage(p, "configure");
-            assertThat(configure.getWebResponse().getContentAsString(), containsString(sEnc));
+            assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(true));
             submit(configure.getFormByName("config"));
             VulnerableProperty vp = p.getProperty(VulnerableProperty.class);
             assertNotNull(vp);
             assertEquals(s, vp.secret);
             Page configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
             String xmlAdmin = configXml.getWebResponse().getContentAsString();
-            assertThat(xmlAdmin, containsString("<secret>" + sEnc + "</secret>"));
+
+            assertThat(Pattern.compile("<secret>" + xml_regex_match + "</secret>").matcher(xmlAdmin).find(), is(true));
             assertThat(xmlAdmin, containsString("<displayName>" + p.getDisplayName() + "</displayName>"));
             assertThat(xmlAdmin, containsString("<description>" + p.getDescription() + "</description>"));
             // CLICommandInvoker does not work here, as it sets up its own SecurityRealm + AuthorizationStrategy.
@@ -127,11 +139,11 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
             wc.login("dev");
             configure = wc.getPage(p, "configure");
-            assertThat(configure.getWebResponse().getContentAsString(), not(containsString(sEnc)));
+            assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(false));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
             String xmlDev = configXml.getWebResponse().getContentAsString();
-            assertThat(xmlDev, not(containsString(sEnc)));
-            assertEquals(xmlAdmin.replace(sEnc, "********"), xmlDev);
+            assertThat(xml_regex_pattern.matcher(xmlDev).find(), is(false));
+            assertEquals(xmlAdmin.replaceAll(xml_regex_match, "********"), xmlDev);
             getJobCommand = new GetJobCommand();
             Authentication devAuth = User.get("dev").impersonate();
             getJobCommand.setTransportAuth(devAuth);
