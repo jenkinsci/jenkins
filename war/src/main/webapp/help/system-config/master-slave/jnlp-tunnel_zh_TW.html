@@ -1,16 +1,16 @@
 <div>
-    Slave 透過 JNLP 啟動時，其代理程式會試著連回 Jenkins 特定的 TCP 連接埠，建立通訊通道。
-    但是某些安全敏感的網路可能不能讓您這樣建立連線。
-    Jenkins 在負載平衡器、
-    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">Apache 反向代理</a>到
-    <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a> 等環境中也可能無法建立連線。
+    Slave &#x900F;&#x904E; JNLP &#x555F;&#x52D5;&#x6642;&#xFF0C;&#x5176;&#x4EE3;&#x7406;&#x7A0B;&#x5F0F;&#x6703;&#x8A66;&#x8457;&#x9023;&#x56DE; Jenkins &#x7279;&#x5B9A;&#x7684; TCP &#x9023;&#x63A5;&#x57E0;&#xFF0C;&#x5EFA;&#x7ACB;&#x901A;&#x8A0A;&#x901A;&#x9053;&#x3002;
+    &#x4F46;&#x662F;&#x67D0;&#x4E9B;&#x5B89;&#x5168;&#x654F;&#x611F;&#x7684;&#x7DB2;&#x8DEF;&#x53EF;&#x80FD;&#x4E0D;&#x80FD;&#x8B93;&#x60A8;&#x9019;&#x6A23;&#x5EFA;&#x7ACB;&#x9023;&#x7DDA;&#x3002;
+    Jenkins &#x5728;&#x8CA0;&#x8F09;&#x5E73;&#x8861;&#x5668;&#x3001;
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">Apache &#x53CD;&#x5411;&#x4EE3;&#x7406;</a>&#x5230;
+    <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a> &#x7B49;&#x74B0;&#x5883;&#x4E2D;&#x4E5F;&#x53EF;&#x80FD;&#x7121;&#x6CD5;&#x5EFA;&#x7ACB;&#x9023;&#x7DDA;&#x3002;
 
     <p>
-    Tunneling 選項可以讓您把連線繞到其他主機或連接埠，適用上述幾種情境。
-    欄位內容可以是 "<code>HOST:PORT</code>", "<code>:PORT</code>" 或 "<code>HOST:</code>"。
-    第一種格式讓 JNLP Slave 代理程式連到指定主機上的指定埠，假定您已經將該埠的網路設定導到 Jenkins JNLP Slave TCP 連接埠。
+    Tunneling &#x9078;&#x9805;&#x53EF;&#x4EE5;&#x8B93;&#x60A8;&#x628A;&#x9023;&#x7DDA;&#x7E5E;&#x5230;&#x5176;&#x4ED6;&#x4E3B;&#x6A5F;&#x6216;&#x9023;&#x63A5;&#x57E0;&#xFF0C;&#x9069;&#x7528;&#x4E0A;&#x8FF0;&#x5E7E;&#x7A2E;&#x60C5;&#x5883;&#x3002;
+    &#x6B04;&#x4F4D;&#x5167;&#x5BB9;&#x53EF;&#x4EE5;&#x662F; "<code>HOST:PORT</code>", "<code>:PORT</code>" &#x6216; "<code>HOST:</code>"&#x3002;
+    &#x7B2C;&#x4E00;&#x7A2E;&#x683C;&#x5F0F;&#x8B93; JNLP Slave &#x4EE3;&#x7406;&#x7A0B;&#x5F0F;&#x9023;&#x5230;&#x6307;&#x5B9A;&#x4E3B;&#x6A5F;&#x4E0A;&#x7684;&#x6307;&#x5B9A;&#x57E0;&#xFF0C;&#x5047;&#x5B9A;&#x60A8;&#x5DF2;&#x7D93;&#x5C07;&#x8A72;&#x57E0;&#x7684;&#x7DB2;&#x8DEF;&#x8A2D;&#x5B9A;&#x5C0E;&#x5230; Jenkins JNLP Slave TCP &#x9023;&#x63A5;&#x57E0;&#x3002;
 
     <p>
-    後面兩種格式中，不指定的部分就代表使用預設值 (主機部分就是 Jenkins 執行的機器，TCP 連接埠就是 Jenkins 開啟的那個)。
-    <code>HOST:</code> 格式幾乎是專為 Jenkins 在別的機器上跑的 HTTP 反向代理環境設計的。
+    &#x5F8C;&#x9762;&#x5169;&#x7A2E;&#x683C;&#x5F0F;&#x4E2D;&#xFF0C;&#x4E0D;&#x6307;&#x5B9A;&#x7684;&#x90E8;&#x5206;&#x5C31;&#x4EE3;&#x8868;&#x4F7F;&#x7528;&#x9810;&#x8A2D;&#x503C; (&#x4E3B;&#x6A5F;&#x90E8;&#x5206;&#x5C31;&#x662F; Jenkins &#x57F7;&#x884C;&#x7684;&#x6A5F;&#x5668;&#xFF0C;TCP &#x9023;&#x63A5;&#x57E0;&#x5C31;&#x662F; Jenkins &#x958B;&#x555F;&#x7684;&#x90A3;&#x500B;)&#x3002;
+    <code>HOST:</code> &#x683C;&#x5F0F;&#x5E7E;&#x4E4E;&#x662F;&#x5C08;&#x70BA; Jenkins &#x5728;&#x5225;&#x7684;&#x6A5F;&#x5668;&#x4E0A;&#x8DD1;&#x7684; HTTP &#x53CD;&#x5411;&#x4EE3;&#x7406;&#x74B0;&#x5883;&#x8A2D;&#x8A08;&#x7684;&#x3002;
 </div>
