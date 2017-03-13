@@ -50,6 +50,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
                 new ImpersonatingUserDetailsService(this));
     }
 
+    @Deprecated
     @Override
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {

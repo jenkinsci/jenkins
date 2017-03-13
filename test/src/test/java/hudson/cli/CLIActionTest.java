@@ -124,14 +124,14 @@ public class CLIActionTest {
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN));
         j.createFreeStyleProject("p");
         // CLICommand with @Argument:
         assertExitCode(3, false, jar, "-remoting", "get-job", "p"); // IllegalArgumentException from GenericItemOptionHandler
         assertExitCode(3, false, jar, "get-job", "p"); // ditto under new protocol
-        assertExitCode(3, false, jar, "-remoting", "get-job", "--username", "admin", "--password", "admin", "p"); // JENKINS-12543: too late
-        assertExitCode(3, false, jar, "get-job", "--username", "admin", "--password", "admin", "p"); // same
-        assertExitCode(0, false, jar, "-remoting", "login", "--username", "admin", "--password", "admin");
+        assertExitCode(3, false, jar, "-remoting", "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // JENKINS-12543: too late
+        assertExitCode(3, false, jar, "get-job", "--username", ADMIN, "--password", ADMIN, "p"); // same
+        assertExitCode(0, false, jar, "-remoting", "login", "--username", ADMIN, "--password", ADMIN);
         try {
             assertExitCode(3, false, jar, "-remoting", "get-job", "p"); // ClientAuthenticationCache also used too late
         } finally {
@@ -142,9 +142,9 @@ public class CLIActionTest {
         // @CLIMethod:
         assertExitCode(6, false, jar, "-remoting", "disable-job", "p"); // AccessDeniedException from CLIRegisterer?
         assertExitCode(6, false, jar, "disable-job", "p");
-        assertExitCode(0, false, jar, "-remoting", "disable-job", "--username", "admin", "--password", "admin", "p"); // works from CliAuthenticator
-        assertExitCode(0, false, jar, "disable-job", "--username", "admin", "--password", "admin", "p");
-        assertExitCode(0, false, jar, "-remoting", "login", "--username", "admin", "--password", "admin");
+        assertExitCode(0, false, jar, "-remoting", "disable-job", "--username", ADMIN, "--password", ADMIN, "p"); // works from CliAuthenticator
+        assertExitCode(0, false, jar, "disable-job", "--username", ADMIN, "--password", ADMIN, "p");
+        assertExitCode(0, false, jar, "-remoting", "login", "--username", ADMIN, "--password", ADMIN);
         try {
             assertExitCode(0, false, jar, "-remoting", "disable-job", "p"); // or from ClientAuthenticationCache
         } finally {
@@ -153,12 +153,12 @@ public class CLIActionTest {
         assertExitCode(6, true, jar, "-remoting", "disable-job", "p");
         assertExitCode(0, true, jar, "disable-job", "p");
         // If we have anonymous read access, then the situation is simpler.
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin").grant(Jenkins.READ, Item.READ).everywhere().toEveryone());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to(ADMIN).grant(Jenkins.READ, Item.READ).everywhere().toEveryone());
         assertExitCode(6, false, jar, "-remoting", "get-job", "p"); // AccessDeniedException from AbstractItem.writeConfigDotXml
         assertExitCode(6, false, jar, "get-job", "p");
-        assertExitCode(0, false, jar, "-remoting", "get-job", "--username", "admin", "--password", "admin", "p");
-        assertExitCode(0, false, jar, "get-job", "--username", "admin", "--password", "admin", "p");
-        assertExitCode(0, false, jar, "-remoting", "login", "--username", "admin", "--password", "admin");
+        assertExitCode(0, false, jar, "-remoting", "get-job", "--username", ADMIN, "--password", ADMIN, "p");
+        assertExitCode(0, false, jar, "get-job", "--username", ADMIN, "--password", ADMIN, "p");
+        assertExitCode(0, false, jar, "-remoting", "login", "--username", ADMIN, "--password", ADMIN);
         try {
             assertExitCode(0, false, jar, "-remoting", "get-job", "p");
         } finally {
@@ -168,9 +168,9 @@ public class CLIActionTest {
         assertExitCode(0, true, jar, "get-job", "p"); // but does under new protocol
         assertExitCode(6, false, jar, "-remoting", "disable-job", "p"); // AccessDeniedException from AbstractProject.doDisable
         assertExitCode(6, false, jar, "disable-job", "p");
-        assertExitCode(0, false, jar, "-remoting", "disable-job", "--username", "admin", "--password", "admin", "p");
-        assertExitCode(0, false, jar, "disable-job", "--username", "admin", "--password", "admin", "p");
-        assertExitCode(0, false, jar, "-remoting", "login", "--username", "admin", "--password", "admin");
+        assertExitCode(0, false, jar, "-remoting", "disable-job", "--username", ADMIN, "--password", ADMIN, "p");
+        assertExitCode(0, false, jar, "disable-job", "--username", ADMIN, "--password", ADMIN, "p");
+        assertExitCode(0, false, jar, "-remoting", "login", "--username", ADMIN, "--password", ADMIN);
         try {
             assertExitCode(0, false, jar, "-remoting", "disable-job", "p");
         } finally {
@@ -184,12 +184,14 @@ public class CLIActionTest {
         assertExitCode(0, true, jar, "-remoting", "disable-job", "p");
     }
 
+    private static final String ADMIN = "admin@mycorp.com";
+
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        String url = j.getURL().toString();
+        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* not covering SSH keys in this test */ "-noKeyAuth");
         if (useApiToken) {
-            url = url.replace("://localhost:", "://admin:" + User.get("admin").getProperty(ApiTokenProperty.class).getApiToken() + "@localhost:");
+            commands.add("-auth");
+            commands.add(ADMIN + ":" + User.get(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
         }
-        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", url, /* not covering SSH keys in this test */ "-noKeyAuth");
         commands.addAll(Arrays.asList(args));
         assertEquals(code, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(commands).stdout(System.out).stderr(System.err).join());
     }

@@ -60,11 +60,16 @@ public class CLIConnectionFactory {
 
     /**
      * Convenience method to call {@link #authorization} with the HTTP basic authentication.
+     * Currently unused.
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
         return basicAuth(username+':'+password);
     }
 
+    /**
+     * Convenience method to call {@link #authorization} with the HTTP basic authentication.
+     * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     */
     public CLIConnectionFactory basicAuth(String userInfo) {
         return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
     }

@@ -81,6 +81,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
+import org.apache.commons.io.FileUtils;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.channel.ClientChannelEvent;
@@ -185,6 +186,11 @@ public class CLI implements AutoCloseable {
 
     private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
         LOGGER.log(FINE, "Trying to connect directly via Remoting over TCP/IP to {0}", clip.endpoint);
+
+        if (authorization != null) {
+            System.err.println("Warning: -auth ignored when using JNLP agent port");
+        }
+
         final Socket s = new Socket();
         // this prevents a connection from silently terminated by the router in between or the other peer
         // and that goes without unnoticed. However, the time out is often very long (for example 2 hours
@@ -420,6 +426,7 @@ public class CLI implements AutoCloseable {
         Mode mode = null;
 
         String user = null;
+        String auth = null;
 
         while(!args.isEmpty()) {
             String head = args.get(0);
@@ -496,6 +503,11 @@ public class CLI implements AutoCloseable {
                 args = args.subList(2, args.size());
                 continue;
             }
+            if (head.equals("-auth") && args.size() >= 2) {
+                auth = args.get(1);
+                args = args.subList(2, args.size());
+                continue;
+            }
             if(head.equals("-p") && args.size()>=2) {
                 httpProxy = args.get(1);
                 args = args.subList(2,args.size());
@@ -532,6 +544,10 @@ public class CLI implements AutoCloseable {
 
         LOGGER.log(FINE, "using connection mode {0}", mode);
 
+        if (user != null && auth != null) {
+            System.err.println("-user and -auth are mutually exclusive");
+        }
+
         if (mode == Mode.SSH) {
             if (user == null) {
                 // TODO SshCliAuthenticator already autodetects the user based on public key; why cannot AsynchronousCommand.getCurrentUser do the same?
@@ -549,6 +565,8 @@ public class CLI implements AutoCloseable {
         String userInfo = new URL(url).getUserInfo();
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
+        } else if (auth != null) {
+            factory = factory.basicAuth(auth.startsWith("@") ? FileUtils.readFileToString(new File(auth.substring(1))).trim() : auth);
         }
 
         if (mode == Mode.HTTP) {

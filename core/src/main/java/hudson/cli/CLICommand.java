@@ -333,7 +333,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     /**
      * Loads the persisted authentication information from {@link ClientAuthenticationCache}
      * if the current transport provides {@link Channel}.
+     * @deprecated Assumes Remoting, and vulnerable to JENKINS-12543.
      */
+    @Deprecated
     protected Authentication loadStoredAuthentication() throws InterruptedException {
         try {
             if (channel!=null)
