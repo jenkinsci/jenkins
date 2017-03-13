@@ -178,6 +178,10 @@ public class CLIActionTest {
         }
         assertExitCode(6, true, jar, "-remoting", "disable-job", "p");
         assertExitCode(0, true, jar, "disable-job", "p");
+        // Show that API tokens do work in Remoting-over-HTTP mode (just not over the JNLP port):
+        j.jenkins.setSlaveAgentPort(-1);
+        assertExitCode(0, true, jar, "-remoting", "get-job", "p");
+        assertExitCode(0, true, jar, "-remoting", "disable-job", "p");
     }
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
