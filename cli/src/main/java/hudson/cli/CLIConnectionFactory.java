@@ -75,8 +75,9 @@ public class CLIConnectionFactory {
     }
 
     /**
-     * Used only in Remoting mode.
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     public CLI connect() throws IOException, InterruptedException {
         return new CLI(this);
     }

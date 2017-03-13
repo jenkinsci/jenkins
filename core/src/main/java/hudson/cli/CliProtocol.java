@@ -26,7 +26,9 @@ import java.net.Socket;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
+@Deprecated
 @Extension @Symbol("cli")
 public class CliProtocol extends AgentProtocol {
     @Inject

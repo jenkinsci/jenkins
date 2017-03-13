@@ -153,7 +153,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * See {@link #checkChannel()} to get a channel and throw an user-friendly
      * exception
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     public transient Channel channel;
 
     /**
@@ -323,7 +325,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected CmdLineParser getCmdLineParser() {
         return new CmdLineParser(this);
     }
-    
+
+    /**
+     * @deprecated Specific to Remoting-based protocol.
+     */
+    @Deprecated
     public Channel checkChannel() throws AbortException {
         if (channel==null)
             throw new AbortException("This command can only run with Jenkins CLI. See https://jenkins.io/redirect/cli-command-requires-channel");
@@ -362,7 +368,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      Always non-null.
      *      If the underlying transport had already performed authentication, this object is something other than
      *      {@link jenkins.model.Jenkins#ANONYMOUS}.
+     * @deprecated Unused.
      */
+    @Deprecated
     protected boolean shouldPerformAuthentication(Authentication auth) {
         return auth== Jenkins.ANONYMOUS;
     }
@@ -472,7 +480,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Convenience method for subtypes to obtain the system property of the client.
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     protected String getClientSystemProperty(String name) throws IOException, InterruptedException {
         return checkChannel().call(new GetSystemProperty(name));
     }
@@ -527,7 +537,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Convenience method for subtypes to obtain environment variables of the client.
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     protected String getClientEnvironmentVariable(String name) throws IOException, InterruptedException {
         return checkChannel().call(new GetEnvironmentVariable(name));
     }

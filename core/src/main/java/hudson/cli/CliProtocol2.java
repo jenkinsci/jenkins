@@ -20,7 +20,9 @@ import java.security.Signature;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
+@Deprecated
 @Extension @Symbol("cli2")
 public class CliProtocol2 extends CliProtocol {
     @Override

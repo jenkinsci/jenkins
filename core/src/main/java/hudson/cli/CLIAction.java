@@ -196,6 +196,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 };
             } else {
                 return new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    @SuppressWarnings("deprecation")
                     @Override
                     protected void main(Channel channel) throws IOException, InterruptedException {
                         // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()

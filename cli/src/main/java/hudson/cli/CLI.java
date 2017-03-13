@@ -108,7 +108,11 @@ public class CLI implements AutoCloseable {
     private final String httpsProxyTunnel;
     private final String authorization;
 
-    /** Connection via {@link Mode#REMOTING}, for tests only. */
+    /**
+     * For tests only.
+     * @deprecated Specific to {@link Mode#REMOTING}.
+     */
+    @Deprecated
     public CLI(URL jenkins) throws IOException, InterruptedException {
         this(jenkins,null);
     }
@@ -131,7 +135,10 @@ public class CLI implements AutoCloseable {
         this(new CLIConnectionFactory().url(jenkins).executorService(exec).httpsProxyTunnel(httpsProxyTunnel));
     }
 
-    /** Connection via {@link Mode#REMOTING}. */
+    /**
+     * @deprecated Specific to {@link Mode#REMOTING}.
+     */
+    @Deprecated
     /*package*/ CLI(CLIConnectionFactory factory) throws IOException, InterruptedException {
         URL jenkins = factory.jenkins;
         this.httpsProxyTunnel = factory.httpsProxyTunnel;
@@ -166,6 +173,10 @@ public class CLI implements AutoCloseable {
             throw new IOException(Messages.CLI_VersionMismatch());
     }
 
+    /**
+     * @deprecated Specific to {@link Mode#REMOTING}.
+     */
+    @Deprecated
     private Channel connectViaHttp(String url) throws IOException {
         LOGGER.log(FINE, "Trying to connect to {0} via Remoting over HTTP", url);
         URL jenkins = new URL(url + "cli?remoting=true");
@@ -184,6 +195,10 @@ public class CLI implements AutoCloseable {
         return ch;
     }
 
+    /**
+     * @deprecated Specific to {@link Mode#REMOTING}.
+     */
+    @Deprecated
     private Channel connectViaCliPort(URL jenkins, CliPort clip) throws IOException {
         LOGGER.log(FINE, "Trying to connect directly via Remoting over TCP/IP to {0}", clip.endpoint);
 
@@ -777,7 +792,9 @@ public class CLI implements AutoCloseable {
      *
      * @return
      *      identity of the server represented as a public key.
+     * @deprecated Specific to {@link Mode#REMOTING}.
      */
+    @Deprecated
     public PublicKey authenticate(Iterable<KeyPair> privateKeys) throws IOException, GeneralSecurityException {
         Pipe c2s = Pipe.createLocalToRemote();
         Pipe s2c = Pipe.createRemoteToLocal();
@@ -803,6 +820,10 @@ public class CLI implements AutoCloseable {
         }
     }
 
+    /**
+     * @deprecated Specific to {@link Mode#REMOTING}.
+     */
+    @Deprecated
     public PublicKey authenticate(KeyPair key) throws IOException, GeneralSecurityException {
         return authenticate(Collections.singleton(key));
     }
