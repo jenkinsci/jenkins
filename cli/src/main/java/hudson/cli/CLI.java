@@ -708,7 +708,7 @@ public class CLI implements AutoCloseable {
             @Override
             protected synchronized void onExit(int code) {
                 this.exit = code;
-                notify();
+                notifyAll();
             }
             @Override
             protected void onStdout(byte[] chunk) throws IOException {

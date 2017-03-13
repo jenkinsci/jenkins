@@ -157,7 +157,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                             }
                             @Override
                             protected synchronized void onStart() {
-                                notify();
+                                notifyAll();
                             }
                             @Override
                             protected void onStdin(byte[] chunk) throws IOException {
