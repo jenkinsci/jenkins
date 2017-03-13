@@ -772,7 +772,6 @@ THE SOFTWARE.
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
           <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
-          <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
