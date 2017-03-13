@@ -332,7 +332,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     @Deprecated
     public Channel checkChannel() throws AbortException {
         if (channel==null)
-            throw new AbortException("This command can only run with Jenkins CLI. See https://jenkins.io/redirect/cli-command-requires-channel");
+            throw new AbortException("This command is requesting the deprecated -remoting mode. See https://jenkins.io/redirect/cli-command-requires-channel");
         return channel;
     }
 
