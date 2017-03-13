@@ -434,6 +434,7 @@ public class CLI implements AutoCloseable {
                 }
                 mode = Mode.HTTP;
                 args = args.subList(1, args.size());
+                continue;
             }
             if (head.equals("-ssh")) {
                 if (mode != null) {
@@ -442,6 +443,7 @@ public class CLI implements AutoCloseable {
                 }
                 mode = Mode.SSH;
                 args = args.subList(1, args.size());
+                continue;
             }
             if (head.equals("-remoting")) {
                 if (mode != null) {
@@ -450,6 +452,7 @@ public class CLI implements AutoCloseable {
                 }
                 mode = Mode.REMOTING;
                 args = args.subList(1, args.size());
+                continue;
             }
             if(head.equals("-s") && args.size()>=2) {
                 url = args.get(1);
@@ -697,7 +700,7 @@ public class CLI implements AutoCloseable {
             public void run() {
                 try {
                     int c;
-                    while ((c = System.in.read()) != -1) {
+                    while ((c = System.in.read()) != -1) { // TODO use InputStream.available
                        stdin.write(c);
                     }
                     connection.sendEndStdin();
