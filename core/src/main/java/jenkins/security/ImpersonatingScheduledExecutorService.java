@@ -33,7 +33,7 @@ import org.acegisecurity.Authentication;
 
 /**
  * Variant of {@link ImpersonatingExecutorService} for scheduled services.
- * @since FIXME
+ * @since 2.51
  */
 public final class ImpersonatingScheduledExecutorService extends InterceptingScheduledExecutorService {
 

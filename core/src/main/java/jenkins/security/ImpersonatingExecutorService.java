@@ -34,7 +34,7 @@ import org.acegisecurity.Authentication;
 /**
  * Uses {@link ACL#impersonate(Authentication)} for all tasks.
  * @see SecurityContextExecutorService
- * @since FIXME
+ * @since 2.51
  */
 public final class ImpersonatingExecutorService extends InterceptingExecutorService {
 
