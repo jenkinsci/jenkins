@@ -120,7 +120,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -631,26 +630,30 @@ public class QueueTest {
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
-        // ACL that allow anyone to do anything except Alice can't build.
-        final SparseACL aliceCantBuild = new SparseACL(null);
-        aliceCantBuild.add(new PrincipalSid(alice), Computer.BUILD, false);
-        aliceCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
-
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {
-            @Override
-            public ACL getACL(Node node) {
-                if (node==b1.getBuiltOn())
-                    return aliceCantBuild;
-                return super.getACL(node);
-            }
-        };
-        auth.add(Jenkins.ADMINISTER,"anonymous");
-        r.jenkins.setAuthorizationStrategy(auth);
+        r.jenkins.setAuthorizationStrategy(new AliceCannotBuild(b1.getBuiltOnStr()));
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
             FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
+        }
+    }
+    private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
+        private final String blocked;
+        AliceCannotBuild(String blocked) {
+            add(Jenkins.ADMINISTER, "anonymous");
+            this.blocked = blocked;
+        }
+        @Override
+        public ACL getACL(Node node) {
+            if (node.getNodeName().equals(blocked)) {
+                // ACL that allow anyone to do anything except Alice can't build.
+                SparseACL acl = new SparseACL(null);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
+                acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
+                return acl;
+            }
+            return super.getACL(node);
         }
     }
 
