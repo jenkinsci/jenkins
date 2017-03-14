@@ -113,7 +113,7 @@ public class ClientAuthenticationCache implements Serializable {
     String getPropertyKey() {
         String url = Jenkins.getInstance().getRootUrl();
         if (url!=null)  return url;
-        return Secret.fromString("key").toString();
+        return Secret.fromString("key").getEncryptedValue();
     }
 
     /**

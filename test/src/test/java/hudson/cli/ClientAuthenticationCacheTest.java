@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import static org.hamcrest.Matchers.containsString;
@@ -100,6 +101,15 @@ public class ClientAuthenticationCacheTest {
         } finally {
             assertCLI(0, null, jar, "logout");
         }
+    }
+
+    @Test
+    public void getPropertyKey() throws Exception {
+        ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
+        assertEquals(r.getURL().toString(), cache.getPropertyKey());
+        JenkinsLocationConfiguration.get().setUrl(null);
+        String key = cache.getPropertyKey();
+        assertTrue(key, Secret.decrypt(key) != null);
     }
 
     private void assertCLI(int code, @CheckForNull String output, File jar, String... args) throws Exception {
