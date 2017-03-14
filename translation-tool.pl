@@ -193,7 +193,7 @@ sub processFile {
          if (!$okeys{$_}) {
             if (!defined($okeys{$_})) {
                print F "# $ekeys{$_}\n" if ($ekeys{$_} && $ekeys{$_} ne "");
-               print F "$_=";
+               print F "$_=\n";
                if (defined($cache{$_})) {
                   print F $cache{$_}."\n";
                } else {
