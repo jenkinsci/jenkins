@@ -75,7 +75,7 @@ import java.util.Set;
  *   <li>Intersection of active and inapplicable
  * </ul>
  *
- * @since TODO
+ * @since 2.40
  */
 @Extension
 @Restricted(NoExternalUse.class)

@@ -83,7 +83,7 @@ public class RunList<R extends Run> extends AbstractList<R> {
      * @param <J> the base class of job.
      * @param <R> the base class of run.
      * @return the run list.
-     * @since FIXME
+     * @since 2.37
      */
     public static <J extends Job<J,R>, R extends Run<J,R>> RunList<R> fromJobs(Iterable<? extends J> jobs) {
         List<Iterable<R>> runLists = new ArrayList<>();
