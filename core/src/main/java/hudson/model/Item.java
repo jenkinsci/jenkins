@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.security.PermissionScope;
+import jenkins.util.io.OnMaster;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -67,7 +68,7 @@ import hudson.util.Secret;
  * @see Items
  * @see ItemVisitor
  */
-public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled {
+public interface Item extends PersistenceRoot, SearchableModelObject, AccessControlled, OnMaster {
     /**
      * Gets the parent that contains this item.
      */
@@ -230,7 +231,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     Permission DISCOVER = new Permission(PERMISSIONS, "Discover", Messages._AbstractProject_DiscoverPermission_Description(), READ, PermissionScope.ITEM);
     /**
      * Ability to view configuration details.
-     * If the user lacks {@link CONFIGURE} then any {@link Secret}s must be masked out, even in encrypted form.
+     * If the user lacks {@link #CONFIGURE} then any {@link Secret}s must be masked out, even in encrypted form.
      * @see Secret#ENCRYPTED_VALUE_PATTERN
      */
     Permission EXTENDED_READ = new Permission(PERMISSIONS,"ExtendedRead", Messages._AbstractProject_ExtendedReadPermission_Description(), CONFIGURE, SystemProperties.getBoolean("hudson.security.ExtendedReadPermission"), new PermissionScope[]{PermissionScope.ITEM});

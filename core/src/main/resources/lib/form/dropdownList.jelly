@@ -56,8 +56,7 @@ THE SOFTWARE.
 
     <!-- generate the actual form entries -->
     <tr class="dropdownList-container">
-      <td colspan="2"/>
-      <td colspan="2">
+      <td colspan="4">
         <table width="100%" name="${name}">
             <j:set var="dropdownListMode" value="generateEntries"/>
             <d:invokeBody/>

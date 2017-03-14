@@ -222,6 +222,15 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
         @Override
+        public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            if (prop != null && prop.parameterDefinitions.isEmpty()) {
+                return null;
+            }
+            return prop;
+        }
+
+        @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);
         }

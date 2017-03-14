@@ -29,6 +29,7 @@ import hudson.cli.CLI;
 import hudson.cli.CliPort;
 import hudson.remoting.BinarySafeStream;
 import hudson.util.DaemonThreadFactory;
+import hudson.util.NamingThreadFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -40,13 +41,17 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.security218.ysoserial.payloads.CommonsCollections1;
 import jenkins.security.security218.ysoserial.util.Serializables;
+import org.junit.AfterClass;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -60,7 +65,22 @@ public class Security218BlackBoxTest {
         assertTrue("$JENKINS_URL and $JENKINS_HOME must both be defined together", (overrideURL == null) == (overrideHome == null));
     }
 
-    private static final ExecutorService executors = Executors.newCachedThreadPool(new DaemonThreadFactory());
+    private static ExecutorService executors;
+    private static List<AutoCloseable> closables;
+
+    @BeforeClass public static void startExecutors() throws Exception {
+        executors = Executors.newCachedThreadPool(new NamingThreadFactory(new DaemonThreadFactory(), "Security218BlackBoxTest.executors"));
+        closables = new ArrayList<>();
+    }
+
+    @AfterClass public static void shutdownExecutors() throws Exception {
+        for (AutoCloseable c : closables) {
+            c.close();
+        }
+        closables = null;
+        executors.shutdownNow();
+        executors.awaitTermination(5, TimeUnit.MINUTES); // >3m test timeout, so we will get a failure + thread dump if this does not work
+    }
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
@@ -81,18 +101,25 @@ public class Security218BlackBoxTest {
         for (int round = 0; round < 2; round++) {
             final int _round = round;
             final ServerSocket proxySocket = new ServerSocket(0);
+            closables.add(proxySocket);
             executors.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         Socket proxy = proxySocket.accept();
+                        closables.add(proxy);
                         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                         String host = conn.getHeaderField("X-Jenkins-CLI-Host");
                         Socket real = new Socket(host == null ? url.getHost() : host, conn.getHeaderFieldInt("X-Jenkins-CLI-Port", -1));
+                        closables.add(real);
                         final InputStream realIS = real.getInputStream();
+                        closables.add(realIS);
                         final OutputStream realOS = real.getOutputStream();
+                        closables.add(realOS);
                         final InputStream proxyIS = proxy.getInputStream();
+                        closables.add(proxyIS);
                         final OutputStream proxyOS = proxy.getOutputStream();
+                        closables.add(proxyOS);
                         executors.submit(new Runnable() {
                             @Override
                             public void run() {
@@ -248,12 +275,14 @@ public class Security218BlackBoxTest {
                         // Bypassing _main because it does nothing interesting here.
                         // Hardcoding CLI protocol version 1 (CliProtocol) because it is easier to sniff.
                         try {
-                            new CLI(r.getURL()) {
+                            CLI cli = new CLI(r.getURL()) {
                                 @Override
                                 protected CliPort getCliTcpPort(String url) throws IOException {
                                     return new CliPort(new InetSocketAddress(proxySocket.getInetAddress(), proxySocket.getLocalPort()), /* ignore identity */ null, 1);
                                 }
-                            }.execute("help");
+                            };
+                            closables.add(cli);
+                            cli.execute("help");
                         } catch (Exception x) {
                             x.printStackTrace();
                         }

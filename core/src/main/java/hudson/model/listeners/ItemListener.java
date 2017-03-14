@@ -136,7 +136,7 @@ public class ItemListener implements ExtensionPoint {
 
     /**
      * @since 1.446
-     *      Called at the begenning of the orderly shutdown sequence to
+     *      Called at the beginning of the orderly shutdown sequence to
      *      allow plugins to clean up stuff
      */
     public void onBeforeShutdown() {
@@ -240,11 +240,7 @@ public class ItemListener implements ExtensionPoint {
             }
         });
         if (rootItem instanceof ItemGroup) {
-            for (final Item child : ACL.impersonate(ACL.SYSTEM, new NotReallyRoleSensitiveCallable<List<Item>,RuntimeException>() {
-                @Override public List<Item> call() {
-                    return Items.getAllItems((ItemGroup) rootItem, Item.class);
-                }
-            })) {
+            for (final Item child : Items.allItems(ACL.SYSTEM, (ItemGroup)rootItem, Item.class)) {
                 final String childNew = child.getFullName();
                 assert childNew.startsWith(newFullName);
                 assert childNew.charAt(newFullName.length()) == '/';

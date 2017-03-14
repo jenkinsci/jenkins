@@ -24,17 +24,16 @@
 
 package hudson.slaves;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-@SuppressWarnings("DM_DEFAULT_ENCODING")
 public class ComputerLauncherTest {
 
     @Test public void jdk7() throws IOException {

@@ -60,7 +60,7 @@ import antlr.ANTLRException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Items;
 import jenkins.model.ParameterizedJobMixIn;
 import org.jenkinsci.Symbol;
@@ -90,7 +90,11 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         this.job = project;
 
         try {// reparse the tabs with the job as the hash
-            this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
+            if (spec != null) {
+                this.tabs = CronTabList.create(spec, Hash.from(project.getFullName()));
+            } else {
+                LOGGER.log(Level.WARNING, "The job {0} has a null crontab spec which is incorrect", job.getFullName());
+            }
         } catch (ANTLRException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
@@ -262,7 +266,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
-        for (ParameterizedJobMixIn.ParameterizedJob p : inst.getAllItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+        for (ParameterizedJobMixIn.ParameterizedJob p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
             for (Trigger t : p.getTriggers().values()) {
                 if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t !=null && t.spec != null && t.tabs != null) {
@@ -281,7 +285,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                             LOGGER.log(Level.FINER, "did not trigger {0}", p);
                         }
                     } else {
-                            LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
+                        LOGGER.log(Level.WARNING, "The job {0} has a syntactically incorrect config and is missing the cron spec for a trigger", p.getFullName());
                     }
                 }
             }

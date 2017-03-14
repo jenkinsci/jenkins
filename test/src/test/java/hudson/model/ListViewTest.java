@@ -37,26 +37,40 @@ import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+
 import org.acegisecurity.Authentication;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule public TestName testName = new TestName();
 
     @Issue("JENKINS-15309")
     @LocalData
@@ -225,6 +239,26 @@ public class ListViewTest {
         }
         assertEquals(Collections.singletonList(p), v.getItems());
     }
+
+    @Issue("JENKINS-41128")
+    @Test public void addJobUsingAPI() throws Exception {
+        ListView v = new ListView("view", j.jenkins);
+        j.jenkins.addView(v);
+        StaplerRequest req = mock(StaplerRequest.class);
+        StaplerResponse rsp = mock(StaplerResponse.class);
+
+        String configXml = IOUtils.toString(getClass().getResourceAsStream(String.format("%s/%s/config.xml", getClass().getSimpleName(), testName.getMethodName())), "UTF-8");
+
+        when(req.getMethod()).thenReturn("POST");
+        when(req.getParameter("name")).thenReturn("job1");
+        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml)));
+        when(req.getContentType()).thenReturn("application/xml");
+        v.doCreateItem(req, rsp);
+        List<TopLevelItem> items = v.getItems();
+        assertEquals(1, items.size());
+        assertEquals("job1", items.get(0).getName());
+    }
+
     private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {
         @Override public ACL getRootACL() {
             return UNSECURED.getRootACL();
@@ -238,6 +272,31 @@ public class ListViewTest {
                     return a.equals(SYSTEM);
                 }
             };
+        }
+    }
+
+    private static class Stream extends ServletInputStream {
+        private final InputStream inner;
+
+        public Stream(final InputStream inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return inner.read();
+        }
+        @Override
+        public boolean isFinished() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean isReady() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            throw new UnsupportedOperationException();
         }
     }
 

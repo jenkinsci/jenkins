@@ -147,7 +147,7 @@ public class Maven extends Builder {
      *
      * Defaults to false unless user requests otherwise. Old configurations are set to true to mimic the legacy behaviour.
      *
-     * @since TODO
+     * @since 2.12
      */
     private @Nonnull Boolean injectBuildVariables;
 
@@ -298,7 +298,7 @@ public class Maven extends Builder {
         int startIndex = 0;
         int endIndex;
         do {
-            // split targets into multiple invokations of maven separated by |
+            // split targets into multiple invocations of maven separated by |
             endIndex = targets.indexOf('|', startIndex);
             if (-1 == endIndex) {
                 endIndex = targets.length();
@@ -340,12 +340,16 @@ public class Maven extends Builder {
                 }
             }
 
+            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+            // Inject environment variables only if chosen to do so
             if (isInjectBuildVariables()) {
-                Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-                args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-                final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
-                args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
+                args.addKeyValuePairs("-D", build.getBuildVariables(), sensitiveVars);
             }
+
+            // Add properties from builder configuration, AFTER the injected build variables.
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
 
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
@@ -366,7 +370,7 @@ public class Maven extends Builder {
                 }
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError(Messages.Maven_ExecFailed()) );
+                Functions.printStackTrace(e, listener.fatalError(Messages.Maven_ExecFailed()));
                 return false;
             }
             startIndex = endIndex + 1;

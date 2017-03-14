@@ -114,6 +114,20 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         return firstTransientBuildKey;
     }
 
+    /**
+     * Calculates the first transient build record. Everything >= this will be discarded when AJAX call is made.
+     *
+     * @param historyPageFilter
+     *      The history page filter containing the list of builds.
+     * @return
+     *      The history page filter that was passed in.
+     */
+    @SuppressWarnings("unchecked")
+    protected HistoryPageFilter updateFirstTransientBuildKey(HistoryPageFilter historyPageFilter) {
+        updateFirstTransientBuildKey(historyPageFilter.runs);
+        return historyPageFilter;
+    }
+
     private Iterable<HistoryPageEntry<T>> updateFirstTransientBuildKey(Iterable<HistoryPageEntry<T>> source) {
         String key=null;
         for (HistoryPageEntry<T> t : source) {
@@ -166,7 +180,7 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
 
         historyPageFilter.add(baseList);
         historyPageFilter.widget = this;
-        return historyPageFilter;
+        return updateFirstTransientBuildKey(historyPageFilter);
     }
 
     protected HistoryPageFilter<T> newPageFilter() {
@@ -238,7 +252,6 @@ public class HistoryWidget<O extends ModelObject,T> extends Widget {
         }
 
         HistoryPageFilter page = getHistoryPageFilter();
-        updateFirstTransientBuildKey(page.runs);
         req.getView(page,"ajaxBuildHistory.jelly").forward(req,rsp);
     }
 

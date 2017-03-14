@@ -26,8 +26,18 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("TCP port for JNLP agents"), field:"slaveAgentPort") {
-                    f.serverTcpPort()
+                f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
+                    if (my.slaveAgentPortEnforced) {
+                        if (my.slaveAgentPort == -1) {
+                            text(_("slaveAgentPortEnforcedDisabled"))
+                        } else if (my.slaveAgentPort == 0) {
+                            text(_("slaveAgentPortEnforcedRandom"))
+                        } else {
+                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
+                        }
+                    } else {
+                        f.serverTcpPort()
+                    }
                 }
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {

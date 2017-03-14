@@ -149,7 +149,7 @@ public class WorkspaceCleanupThreadTest {
         assertFalse(ws.exists());
     }
 
-    @Test @WithoutJenkins public void reocurencePeriodIsInhours() {
+    @Test @WithoutJenkins public void recurrencePeriodIsInHours() {
         assertEquals(
                 WorkspaceCleanupThread.recurrencePeriodHours * 60 * 60 * 1000 ,
                 new WorkspaceCleanupThread().getRecurrencePeriod()

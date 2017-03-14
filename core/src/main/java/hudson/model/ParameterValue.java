@@ -31,11 +31,17 @@ import hudson.scm.SCM;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.util.VariableResolver;
+import java.io.IOException;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import jenkins.model.Jenkins;
 
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -70,6 +76,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean(defaultVisibility=3)
 public abstract class ParameterValue implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
+
     protected final String name;
 
     private String description;
@@ -89,6 +98,16 @@ public abstract class ParameterValue implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Restricted(DoNotUse.class) // for value.jelly
+    public String getFormattedDescription() {
+        try {
+            return Jenkins.getInstance().getMarkupFormatter().translate(description);
+        } catch (IOException e) {
+            LOGGER.warning("failed to translate description using configured markup formatter");
+            return "";
+        }
     }
 
     /**
@@ -258,7 +277,7 @@ public abstract class ParameterValue implements Serializable {
      *
      * <P>
      * This message is used as a tooltip to describe jobs in the queue. The text should be one line without
-     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returend.)
+     * new line. No HTML allowed (the caller will perform necessary HTML escapes, so any text can be returned.)
      *
      * @since 1.323
      */
@@ -284,9 +303,11 @@ public abstract class ParameterValue implements Serializable {
      * Returns the most natural Java object that represents the actual value, like
      * boolean, string, etc.
      *
-     * If there's nothing that really fits the bill, the callee can return {@code this}.
+     * @return if there is no natural value for this parameter type, {@code this} may be used;
+     *         {@code null} may be used when the value is normally defined but missing in this case for various reasons
      * @since 1.568
      */
+    @CheckForNull
     public Object getValue() {
         return null;
     }

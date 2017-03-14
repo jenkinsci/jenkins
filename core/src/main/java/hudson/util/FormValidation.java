@@ -511,7 +511,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
-         * Implement the actual form validation logic, by using other convenience methosd defined in this class.
+         * Implement the actual form validation logic, by using other convenience methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
         protected abstract FormValidation check() throws IOException, ServletException;
@@ -638,7 +638,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         public String toStemUrl() {
             if (names==null)    return null;
-            return jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + '/' + relativePath();
+            return Descriptor.getCurrentDescriptorByNameUrl() + '/' + relativePath();
         }
 
         public String getDependsOn() {

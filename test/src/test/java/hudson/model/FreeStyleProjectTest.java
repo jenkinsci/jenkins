@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
@@ -115,7 +114,6 @@ public class FreeStyleProjectTest {
 
     @Test
     @Issue("JENKINS-15817")
-    @SuppressWarnings("DM_DEFAULT_ENCODING")
     public void minimalConfigXml() throws Exception {
         // Make sure it can be created without exceptions:
         FreeStyleProject project = (FreeStyleProject) j.jenkins.createProjectFromXML("stuff", new ByteArrayInputStream("<project/>".getBytes()));

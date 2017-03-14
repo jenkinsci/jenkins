@@ -205,7 +205,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public Object readResolve() {
         if (secretPassword == null)
-            // backward compatibility : get crambled password and store it encrypted
+            // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
         return this;

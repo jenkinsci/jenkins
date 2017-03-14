@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.18-SNAPSHOT</version>
+    <version>2.51-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,9 +39,9 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.243</stapler.version>
+    <stapler.version>1.250</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.7</groovy.version>
+    <groovy.version>2.4.8</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
     <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
@@ -65,7 +65,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.1</version>
+      <version>1.3</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -159,7 +159,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -212,7 +212,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.23</version>
+      <version>1.24</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>
@@ -491,12 +491,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.22</version>
+      <version>1.24</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -541,7 +541,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.11</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -591,12 +591,6 @@ THE SOFTWARE.
       <version>1.3.1-jenkins-1</version>
     </dependency>
 
-    <dependency>
-        <groupId>org.mindrot</groupId>
-        <artifactId>jbcrypt</artifactId>
-        <version>0.3m</version>
-    </dependency>
-
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
@@ -606,10 +600,15 @@ THE SOFTWARE.
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
 
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
       <groupId>com.jcraft</groupId>
@@ -647,6 +646,7 @@ THE SOFTWARE.
           <execution>
             <goals>
               <goal>generate-taglib-interface</goal>
+              <goal>record-core-location</goal>
             </goals>
           </execution>
         </executions>
@@ -696,6 +696,7 @@ THE SOFTWARE.
             <configuration>
               <fileMask>Messages.properties</fileMask>
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
+              <accessModifierAnnotations>true</accessModifierAnnotations>
             </configuration>
           </execution>
         </executions>
@@ -754,7 +755,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.16</version>
+                  <version>2.0.2</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -771,6 +772,7 @@ THE SOFTWARE.
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
           <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
+          <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -845,21 +847,9 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>process</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <!--
-              generate jelly taglib docs from src/main/resoruces.
+              generate jelly taglib docs from src/main/resources.
               this is necessary in addition to the <reporting> configuration
               to get the results deployed.
             -->

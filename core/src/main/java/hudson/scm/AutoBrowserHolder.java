@@ -76,7 +76,7 @@ final class AutoBrowserHolder {
      *      null if no applicable configuration was found.
      */
     private RepositoryBrowser infer() {
-        for( AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class) ) {
+        for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) ) {
             SCM scm = p.getScm();
             if (scm!=null && scm.getClass()==owner.getClass() && scm.getBrowser()!=null &&
                     ((SCMDescriptor)scm.getDescriptor()).isBrowserReusable(scm,owner)) {

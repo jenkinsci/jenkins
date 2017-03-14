@@ -50,7 +50,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.google.common.collect.Lists.newArrayList;
+import com.google.common.collect.Lists;
 import static com.google.common.collect.Sets.newHashSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -67,6 +67,16 @@ import jenkins.util.SystemProperties;
 @ExportedBean
 public class ParametersAction implements RunAction2, Iterable<ParameterValue>, QueueAction, EnvironmentContributingAction, LabelAssignmentAction {
 
+    /**
+     * Three state variable (null, false, true).
+     *
+     * If explicitly set to true, it will keep all variable, explicitly set to
+     * false it will drop all of them (except if they are marked safe).
+     * If null, and they are not safe, it will log a warning in logs to the user
+     * to let him choose the behavior
+     *
+     * @since 2.3
+     */
     @Restricted(NoExternalUse.class)
     public static final String KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME = ParametersAction.class.getName() +
             ".keepUndefinedParameters";
@@ -107,7 +117,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      *
      * @param parameters the parameters
      * @param additionalSafeParameters additional safe parameters
-     * @since TODO
+     * @since 1.651.2, 2.3
      */
     public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
@@ -169,7 +179,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Exported(visibility=2)
     public List<ParameterValue> getParameters() {
-        return Collections.unmodifiableList(filter(parameters));
+        return Collections.<ParameterValue>unmodifiableList(filter(parameters));
     }
 
     public ParameterValue getParameter(String name) {
@@ -231,7 +241,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             parametersAction.safeParameters = this.safeParameters;
             return parametersAction;
         }
-        List<ParameterValue> combinedParameters = newArrayList(overrides);
+        List<ParameterValue> combinedParameters = Lists.<ParameterValue>newArrayList(overrides);
         Set<String> names = newHashSet();
 
         for(ParameterValue v : overrides) {
@@ -306,7 +316,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             return parameters;
         }
 
-        if (SystemProperties.getBoolean(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME)) {
+        String shouldKeepFlag = SystemProperties.getString(KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME);
+        if ("true".equalsIgnoreCase(shouldKeepFlag)) {
             return parameters;
         }
 
@@ -315,10 +326,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         for (ParameterValue v : this.parameters) {
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
-            } else {
+            } else if ("false".equalsIgnoreCase(shouldKeepFlag)) {
                 LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
                         + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
-                        + "even though it represents a security breach",
+                        + "even though it represents a security breach or `-D{2}=false` to no longer show this message.",
                         new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
             }
         }
@@ -334,7 +345,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * caller could inject any parameter (using any key) here. <strong>Treat it as untrusted data</strong>.
      *
      * @return all parameters defined here.
-     * @since TODO
+     * @since 1.651.2, 2.3
      */
     public List<ParameterValue> getAllParameters() {
         return Collections.unmodifiableList(parameters);

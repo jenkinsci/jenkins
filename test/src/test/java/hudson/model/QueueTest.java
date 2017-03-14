@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
@@ -62,6 +63,7 @@ import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
@@ -118,6 +120,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -378,7 +381,11 @@ public class QueueTest {
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
-        m.getBuildersList().add(new Shell("sleep 3"));
+        if (Functions.isWindows()) {
+            m.getBuildersList().add(new BatchFile("ping -n 3 127.0.0.1 >nul"));
+        } else {
+            m.getBuildersList().add(new Shell("sleep 3"));
+        }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
         List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
@@ -876,7 +883,7 @@ public class QueueTest {
         assertTrue(Queue.getInstance().getBuildableItems().get(0).task.getDisplayName().equals(matrixProject.displayName));
     }
 
-    //let's make sure that the downstram project is not started before the upstream --> we want to simulate
+    //let's make sure that the downstream project is not started before the upstream --> we want to simulate
     // the case: buildable-->blocked-->buildable
     public static class BlockDownstreamProjectExecution extends NodeProperty<Slave> {
         @Override

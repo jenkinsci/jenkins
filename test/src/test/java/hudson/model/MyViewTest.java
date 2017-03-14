@@ -101,8 +101,8 @@ public class MyViewTest {
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job.getDisplayName(), view.getItems().contains(job));
         assertFalse("View " + view.getDisplayName() + " should not contains job " + job2.getDisplayName(), view.getItems().contains(job2));
         auth.add(Job.CONFIGURE, "User1");
-        assertTrue("View " + view.getDisplayName() + " should contains job " + job.getDisplayName(), view.getItems().contains(job));
-        assertTrue("View " + view.getDisplayName() + " should contains job " + job2.getDisplayName(), view.getItems().contains(job2));
+        assertTrue("View " + view.getDisplayName() + " should contain job " + job.getDisplayName(), view.getItems().contains(job));
+        assertTrue("View " + view.getDisplayName() + " should contain job " + job2.getDisplayName(), view.getItems().contains(job2));
     }
     
     

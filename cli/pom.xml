@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.18-SNAPSHOT</version>
+    <version>2.51-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
@@ -25,6 +25,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>access-modifier-annotation</artifactId>
+        <version>1.7</version>
+    </dependency>
+    <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.4</version>
@@ -42,7 +47,7 @@
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.23</version>
+      <version>1.24</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -88,6 +93,7 @@
             <configuration>
               <fileMask>Messages.properties</fileMask>
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
+              <accessModifierAnnotations>true</accessModifierAnnotations>
             </configuration>
           </execution>
         </executions>

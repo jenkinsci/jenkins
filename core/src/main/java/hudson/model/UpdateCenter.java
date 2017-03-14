@@ -30,6 +30,7 @@ import hudson.Functions;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
+import hudson.security.ACLContext;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -157,8 +158,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
     /**
      * {@linkplain UpdateSite#getId() ID} of the default update site.
-     * @since 1.483 - public property
-     * @since TODO - configurable via system property
+     * @since 1.483; configurable via system property since 2.4
      */
     public static final String ID_DEFAULT = SystemProperties.getString(UpdateCenter.class.getName()+".defaultUpdateSiteId", PREDEFINED_UPDATE_SITE_ID);
 
@@ -213,7 +213,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * Connection status check has been skipped.
          * As example, it may happen if there is no connection check URL defined for the site.
-         * @since TODO
+         * @since 2.4
          */
         SKIPPED,
         /**
@@ -249,13 +249,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      * Creates an update center.
      * @param config Requested configuration. May be {@code null} if defaults should be used
      * @return Created Update center. {@link UpdateCenter} by default, but may be overridden
-     * @since TODO
+     * @since 2.4
      */
     @Nonnull
     public static UpdateCenter createUpdateCenter(@CheckForNull UpdateCenterConfiguration config) {
         String requiredClassName = SystemProperties.getString(UpdateCenter.class.getName()+".className", null);
         if (requiredClassName == null) {
-            // Use the defaul Update Center
+            // Use the default Update Center
             LOGGER.log(Level.FINE, "Using the default Update Center implementation");
             return createDefaultUpdateCenter(config);
         }
@@ -752,14 +752,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     public String getBackupVersion() {
         try {
-            JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"));
-            try {
+            try (JarFile backupWar = new JarFile(new File(Lifecycle.get().getHudsonWar() + ".bak"))) {
                 Attributes attrs = backupWar.getManifest().getMainAttributes();
                 String v = attrs.getValue("Jenkins-Version");
-                if (v==null)    v = attrs.getValue("Hudson-Version");
+                if (v == null)   v = attrs.getValue("Hudson-Version");
                 return v;
-            } finally {
-                backupWar.close();
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to read backup version ", e);
@@ -823,7 +820,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     }
 
     public String getDisplayName() {
-        return "Update center";
+        return Messages.UpdateCenter_DisplayName();
     }
 
     public String getSearchUrl() {
@@ -986,6 +983,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      */
     @Extension @Symbol("coreUpdate")
     public static final class CoreUpdateMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.UpdateCenter_CoreUpdateMonitor_DisplayName();
+        }
+
         public boolean isActivated() {
             Data data = getData();
             return data!=null && data.hasCoreUpdates();
@@ -1042,7 +1045,23 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if a connection to the update center server can't be established.
          */
         public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
-            testConnection(new URL(updateCenterUrl + "?uctest"));
+            testConnection(toUpdateCenterCheckUrl(updateCenterUrl));
+        }
+
+        /**
+         * Converts an update center URL into the URL to use for checking its connectivity.
+         * @param updateCenterUrl the URL to convert.
+         * @return the converted URL.
+         * @throws MalformedURLException if the supplied URL is malformed.
+         */
+        static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
+            URL url;
+            if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
+                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
+            } else {
+                url = new URL(updateCenterUrl);
+            }
+            return url;
         }
 
         /**
@@ -1350,6 +1369,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public volatile RestartJenkinsJobStatus status = new Pending();
 
         /**
+         * The name of the user that started this job
+         */
+        private String authentication;
+
+        /**
          * Cancel job
          */
         public synchronized boolean cancel() {
@@ -1362,6 +1386,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         public RestartJenkinsJob(UpdateSite site) {
             super(site);
+            this.authentication = Jenkins.getAuthentication().getName();
         }
 
         public synchronized void run() {
@@ -1370,7 +1395,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             }
             status = new Running();
             try {
-                Jenkins.getInstance().safeRestart();
+                // safeRestart records the current authentication for the log, so set it to the managing user
+                try (ACLContext _ = ACL.as(User.get(authentication, false, Collections.emptyMap()))) {
+                    Jenkins.getInstance().safeRestart();
+                }
             } catch (RestartNotSupportedException exception) {
                 // ignore if restart is not allowed
                 status = new Failure();
@@ -1594,7 +1622,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         /**
          * During download, an attempt is made to compute the SHA-1 checksum of the file.
          *
-         * @since TODO
+         * @since 1.641
          */
         @CheckForNull
         protected String getComputedSHA1() {
@@ -1883,7 +1911,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         /**
          * Indicates there is another installation job for this plugin
-         * @since TODO
+         * @since 2.1
          */
         protected boolean wasInstalled() {
             synchronized(UpdateCenter.this) {

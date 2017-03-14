@@ -27,7 +27,7 @@ import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
@@ -198,14 +198,11 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile),charset));
-        try {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile), charset))) {
             char[] buf = new char[1024];
             int len;
-            while((len=r.read(buf,0,buf.length))>0)
-               str.append(buf,0,len);
-        } finally {
-            r.close();
+            while ((len = r.read(buf, 0, buf.length)) > 0)
+                str.append(buf, 0, len);
         }
 
         return str.toString();
@@ -492,16 +489,29 @@ public class Util {
      */
     //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
+        /*
+         *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
+         *  Unfortunately, the Java 7 NIO2 API function isSymbolicLink does not treat them as such.
+         *  It thinks of them as normal directories.  To use the NIO2 API & treat it like a symlink,
+         *  you have to go through BasicFileAttributes and do the following check:
+         *     isSymbolicLink() || isOther()
+         *  The isOther() call will include Windows reparse points, of which a directory junction is.
+         *
+         *  Since we already have a function that detects Windows junctions or symlinks and treats them
+         *  both as symlinks, let's use that function and always call it before calling down to the
+         *  NIO2 API.
+         *
+         */
         if (Functions.isWindows()) {
             try {
                 return Kernel32Utils.isJunctionOrSymlink(file);
             } catch (UnsupportedOperationException | LinkageError e) {
                 // fall through
             }
+        }
+        Boolean r = isSymlinkJava7(file);
+        if (r != null) {
+            return r;
         }
         String name = file.getName();
         if (name.equals(".") || name.equals(".."))
@@ -517,7 +527,7 @@ public class Util {
         return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
     }
 
-    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
             Path path = file.toPath();
@@ -555,7 +565,7 @@ public class Util {
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {
-        File tmp = File.createTempFile("hudson", "tmp");
+        File tmp = File.createTempFile("jenkins", "tmp");
         if(!tmp.delete())
             throw new IOException("Failed to delete "+tmp);
         if(!tmp.mkdirs())
@@ -755,12 +765,9 @@ public class Util {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
 
             byte[] buffer = new byte[1024];
-            DigestInputStream in =new DigestInputStream(source,md5);
-            try {
-                while(in.read(buffer)>=0)
+            try (DigestInputStream in = new DigestInputStream(source, md5)) {
+                while (in.read(buffer) >= 0)
                     ; // simply discard the input
-            } finally {
-                in.close();
             }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
@@ -793,11 +800,8 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
+        try (InputStream is = new FileInputStream(file)) {
             return getDigestOf(new BufferedInputStream(is));
-        } finally {
-            is.close();
         }
     }
 
@@ -1363,7 +1367,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
-            e.printStackTrace( log );
+            Functions.printStackTrace(e, log);
         }
     }
 
@@ -1594,6 +1598,7 @@ public class Util {
 
     /**
      * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@Nonnull String uri) {
         return !isAbsoluteUri(uri) && !uri.startsWith("//");
@@ -1618,6 +1623,28 @@ public class Util {
         Properties p = new Properties();
         p.load(new StringReader(properties));
         return p;
+    }
+    
+    /**
+     * Closes the item and logs error to the log in the case of error.
+     * Logging will be performed on the {@code WARNING} level.
+     * @param toClose Item to close. Nothing will happen if it is {@code null}
+     * @param logger Logger, which receives the error
+     * @param closeableName Name of the closeable item
+     * @param closeableOwner String representation of the closeable holder
+     * @since 2.19, but TODO update once un-restricted
+     */
+    @Restricted(NoExternalUse.class)
+    public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 
+            @Nonnull String closeableName, @Nonnull String closeableOwner) {
+        if (toClose == null) {
+            return;
+        }
+        try {
+            toClose.close();
+        } catch(IOException ex) {
+            logger.log(Level.WARNING, String.format("Failed to close %s of %s", closeableName, closeableOwner), ex);
+        }
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));

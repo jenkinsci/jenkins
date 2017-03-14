@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.18-SNAPSHOT</version>
+  <version>2.51-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -73,13 +73,8 @@ THE SOFTWARE.
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
   </issueManagement>
 
-  <ciManagement>
-      <system>jenkins</system>
-      <url>https://ci.jenkins-ci.org/job/jenkins_main_trunk/</url>
-  </ciManagement>
-
   <properties>
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
+    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build.type>private</build.type>
@@ -91,8 +86,9 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
+    <guavaVersion>11.0.1</guavaVersion>
     <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <maven-plugin.version>2.7.1</maven-plugin.version>
+    <maven-plugin.version>2.14</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
@@ -102,7 +98,7 @@ THE SOFTWARE.
 
     <java.level>7</java.level>
 
-    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
+    <changelog.url>https://jenkins.io/changelog</changelog.url>
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -159,7 +155,7 @@ THE SOFTWARE.
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
@@ -180,19 +176,24 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.61</version>
+        <version>3.7</version>
       </dependency>
 
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>${guavaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>${guavaVersion}</version>
       </dependency>
 
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0-beta</version>
+        <version>4.0</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
@@ -468,7 +469,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.23</version>
+          <version>1.24</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -487,11 +488,6 @@ THE SOFTWARE.
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>antlr-maven-plugin</artifactId>
           <version>2.1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>apt-maven-plugin</artifactId>
-          <version>1.0-alpha-5</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -539,7 +535,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.116</version>
+          <version>1.120</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -659,7 +655,7 @@ THE SOFTWARE.
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
-          <!-- default reuseCreated is more performant 
+          <!-- default reuseCreated is more performant
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
           -->
@@ -754,8 +750,8 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      
-      
+
+
     </plugins>
 
     <extensions>
@@ -884,7 +880,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>

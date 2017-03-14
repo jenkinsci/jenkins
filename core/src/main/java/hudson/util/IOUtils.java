@@ -71,7 +71,7 @@ public class IOUtils {
      *
      * <p>
      * {@link InputStream#skip(long)} has two problems. One is that
-     * it doesn't let us reliably differentiate "hit EOF" case vs "inpustream just returning 0 since there's no data
+     * it doesn't let us reliably differentiate "hit EOF" case vs "inputstream just returning 0 since there's no data
      * currently available at hand", and some subtypes (such as {@link FileInputStream#skip(long)} returning -1.
      *
      * <p>
@@ -136,12 +136,9 @@ public class IOUtils {
      * @since 1.422
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
-        BufferedReader reader = new BufferedReader(
-                encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding));
-        try {
+        try (BufferedReader reader = new BufferedReader(
+                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
-        } finally {
-            reader.close();
         }
     }
 

@@ -26,6 +26,7 @@
 package hudson.model;
 
 import hudson.ClassicPluginStrategy;
+import hudson.ExtensionList;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.Util;
@@ -46,7 +47,9 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -55,17 +58,24 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import jenkins.model.Jenkins;
 import jenkins.model.DownloadSettings;
+import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.SystemProperties;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -99,7 +109,7 @@ public class UpdateSite {
      *
      * <p>
      * There's normally some delay between when we send HTML that includes the check code,
-     * until we get the data back, so this variable is used to avoid asking too many browseres
+     * until we get the data back, so this variable is used to avoid asking too many browsers
      * all at once.
      */
     private transient volatile long lastAttempt;
@@ -130,6 +140,10 @@ public class UpdateSite {
      */
     private final String url;
 
+    /**
+     * the prefix for the signature validator name
+     */
+    private static final String signatureValidatorPrefix = "update site";
 
 
     public UpdateSite(String id, String url) {
@@ -242,10 +256,28 @@ public class UpdateSite {
     /**
      * Let sub-classes of UpdateSite provide their own signature validator.
      * @return the signature validator.
+     * @deprecated use {@link #getJsonSignatureValidator(@CheckForNull String)} instead.
      */
+    @Deprecated
     @Nonnull
     protected JSONSignatureValidator getJsonSignatureValidator() {
-        return new JSONSignatureValidator("update site '"+id+"'");
+        return getJsonSignatureValidator(null);
+    }
+
+    /**
+     * Let sub-classes of UpdateSite provide their own signature validator.
+     * @param name, the name for the JSON signature Validator object.
+     *              if name is null, then the default name will be used,
+     *              which is "update site" followed by the update site id
+     * @return the signature validator.
+     * @since 2.21
+     */
+    @Nonnull
+    protected JSONSignatureValidator getJsonSignatureValidator(@CheckForNull String name) {
+        if (name == null) {
+            name = signatureValidatorPrefix + " '" + id + "'";
+        }
+        return new JSONSignatureValidator(name);
     }
 
     /**
@@ -422,6 +454,28 @@ public class UpdateSite {
         return url;
     }
 
+
+    /**
+     * URL which exposes the metadata location in a specific update site.
+     * @param downloadable, the downloadable id of a specific metatadata json (e.g. hudson.tasks.Maven.MavenInstaller.json)
+     * @return the location
+     * @since 2.20
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public String getMetadataUrlForDownloadable(String downloadable) {
+        String siteUrl = getUrl();
+        String updateSiteMetadataUrl = null;
+        int baseUrlEnd = siteUrl.indexOf("update-center.json");
+        if (baseUrlEnd != -1) {
+            String siteBaseUrl = siteUrl.substring(0, baseUrlEnd);
+            updateSiteMetadataUrl = siteBaseUrl + "updates/" + downloadable;
+        } else {
+            LOGGER.log(Level.WARNING, "Url {0} does not look like an update center:", siteUrl);
+        }
+        return updateSiteMetadataUrl;
+    }
+
     /**
      * Where to actually download the update center?
      *
@@ -469,6 +523,12 @@ public class UpdateSite {
          * Plugins in the repository, keyed by their artifact IDs.
          */
         public final Map<String,Plugin> plugins = new TreeMap<String,Plugin>(String.CASE_INSENSITIVE_ORDER);
+        /**
+         * List of warnings (mostly security) published with the update site.
+         *
+         * @since 2.40
+         */
+        private final Set<Warning> warnings = new HashSet<Warning>();
 
         /**
          * If this is non-null, Jenkins is going to check the connectivity to this URL to make sure
@@ -484,6 +544,18 @@ public class UpdateSite {
             } else {
                 core = null;
             }
+
+            JSONArray w = o.optJSONArray("warnings");
+            if (w != null) {
+                for (int i = 0; i < w.size(); i++) {
+                    try {
+                        warnings.add(new Warning(w.getJSONObject(i)));
+                    } catch (JSONException ex) {
+                        LOGGER.log(Level.WARNING, "Failed to parse JSON for warning", ex);
+                    }
+                }
+            }
+
             for(Map.Entry<String,JSONObject> e : (Set<Map.Entry<String,JSONObject>>)o.getJSONObject("plugins").entrySet()) {
                 Plugin p = new Plugin(sourceId, e.getValue());
                 // JENKINS-33308 - include implied dependencies for older plugins that may need them
@@ -499,6 +571,16 @@ public class UpdateSite {
             }
 
             connectionCheckUrl = (String)o.get("connectionCheckUrl");
+        }
+
+        /**
+         * Returns the set of warnings
+         * @return the set of warnings
+         * @since 2.40
+         */
+        @Restricted(NoExternalUse.class)
+        public Set<Warning> getWarnings() {
+            return this.warnings;
         }
 
         /**
@@ -571,7 +653,7 @@ public class UpdateSite {
         /**
          * The base64 encoded binary SHA-1 checksum of the file.
          * Can be null if not provided by the update site.
-         * @since TODO
+         * @since 1.641 (and 1.625.3 LTS)
          */
         // TODO @Exported assuming we want this in the API
         public String getSha1() {
@@ -600,6 +682,232 @@ public class UpdateSite {
             return new Api(this);
         }
 
+    }
+
+    /**
+     * A version range for {@code Warning}s indicates which versions of a given plugin are affected
+     * by it.
+     *
+     * {@link #name}, {@link #firstVersion} and {@link #lastVersion} fields are only used for administrator notices.
+     *
+     * The {@link #pattern} is used to determine whether a given warning applies to the current installation.
+     *
+     * @since 2.40
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class WarningVersionRange {
+        /**
+         * Human-readable English name for this version range, e.g. 'regular', 'LTS', '2.6 line'.
+         */
+        @Nullable
+        public final String name;
+
+        /**
+         * First version in this version range to be subject to the warning.
+         */
+        @Nullable
+        public final String firstVersion;
+
+        /**
+         * Last version in this version range to be subject to the warning.
+         */
+        @Nullable
+        public final String lastVersion;
+
+        /**
+         * Regular expression pattern for this version range that matches all included version numbers.
+         */
+        @Nonnull
+        private final Pattern pattern;
+
+        public WarningVersionRange(JSONObject o) {
+            this.name = Util.fixEmpty(o.optString("name"));
+            this.firstVersion = Util.fixEmpty(o.optString("firstVersion"));
+            this.lastVersion = Util.fixEmpty(o.optString("lastVersion"));
+            Pattern p;
+            try {
+                p = Pattern.compile(o.getString("pattern"));
+            } catch (PatternSyntaxException ex) {
+                LOGGER.log(Level.WARNING, "Failed to compile pattern '" + o.getString("pattern") + "', using '.*' instead", ex);
+                p = Pattern.compile(".*");
+            }
+            this.pattern = p;
+        }
+
+        public boolean includes(VersionNumber number) {
+            return pattern.matcher(number.toString()).matches();
+        }
+    }
+
+    /**
+     * Represents a warning about a certain component, mostly related to known security issues.
+     *
+     * @see UpdateSiteWarningsConfiguration
+     * @see jenkins.security.UpdateSiteWarningsMonitor
+     *
+     * @since 2.40
+     */
+    @Restricted(NoExternalUse.class)
+    public static final class Warning {
+
+        public enum Type {
+            CORE,
+            PLUGIN,
+            UNKNOWN
+        }
+
+        /**
+         * The type classifier for this warning.
+         */
+        @Nonnull
+        public /* final */ Type type;
+
+        /**
+         * The globally unique ID of this warning.
+         *
+         * <p>This is typically the CVE identifier or SECURITY issue (Jenkins project);
+         * possibly with a unique suffix (e.g. artifactId) if either applies to multiple components.</p>
+         */
+        @Exported
+        @Nonnull
+        public final String id;
+
+        /**
+         * The name of the affected component.
+         * <ul>
+         *   <li>If type is 'core', this is 'core' by convention.
+         *   <li>If type is 'plugin', this is the artifactId of the affected plugin
+         * </ul>
+         */
+        @Exported
+        @Nonnull
+        public final String component;
+
+        /**
+         * A short, English language explanation for this warning.
+         */
+        @Exported
+        @Nonnull
+        public final String message;
+
+        /**
+         * A URL with more information about this, typically a security advisory. For use in administrator notices
+         * only, so
+         */
+        @Exported
+        @Nonnull
+        public final String url;
+
+        /**
+         * A list of named version ranges specifying which versions of the named component this warning applies to.
+         *
+         * If this list is empty, all versions of the component are considered to be affected by this warning.
+         */
+        @Exported
+        @Nonnull
+        public final List<WarningVersionRange> versionRanges;
+
+        /**
+         *
+         * @param o the {@link JSONObject} representing the warning
+         * @throws JSONException if the argument does not match the expected format
+         */
+        @Restricted(NoExternalUse.class)
+        public Warning(JSONObject o) {
+            try {
+                this.type = Type.valueOf(o.getString("type").toUpperCase(Locale.US));
+            } catch (IllegalArgumentException ex) {
+                this.type = Type.UNKNOWN;
+            }
+            this.id = o.getString("id");
+            this.component = o.getString("name");
+            this.message = o.getString("message");
+            this.url = o.getString("url");
+
+            if (o.has("versions")) {
+                List<WarningVersionRange> ranges = new ArrayList<>();
+                JSONArray versions = o.getJSONArray("versions");
+                for (int i = 0; i < versions.size(); i++) {
+                    WarningVersionRange range = new WarningVersionRange(versions.getJSONObject(i));
+                    ranges.add(range);
+                }
+                this.versionRanges = Collections.unmodifiableList(ranges);
+            } else {
+                this.versionRanges = Collections.emptyList();
+            }
+        }
+
+        /**
+         * Two objects are considered equal if they are the same type and have the same ID.
+         *
+         * @param o the other object
+         * @return true iff this object and the argument are considered equal
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Warning)) return false;
+
+            Warning warning = (Warning) o;
+
+            return id.equals(warning.id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
+
+        public boolean isPluginWarning(@Nonnull String pluginName) {
+            return type == Type.PLUGIN && pluginName.equals(this.component);
+        }
+
+        /**
+         * Returns true if this warning is relevant to the current configuration
+         * @return true if this warning is relevant to the current configuration
+         */
+        public boolean isRelevant() {
+            switch (this.type) {
+                case CORE:
+                    VersionNumber current = Jenkins.getVersion();
+
+                    if (!isRelevantToVersion(current)) {
+                        return false;
+                    }
+                    return true;
+                case PLUGIN:
+
+                    // check whether plugin is installed
+                    PluginWrapper plugin = Jenkins.getInstance().getPluginManager().getPlugin(this.component);
+                    if (plugin == null) {
+                        return false;
+                    }
+
+                    // check whether warning is relevant to installed version
+                    VersionNumber currentCore = plugin.getVersionNumber();
+                    if (!isRelevantToVersion(currentCore)) {
+                        return false;
+                    }
+                    return true;
+                case UNKNOWN:
+                default:
+                    return false;
+            }
+        }
+
+        public boolean isRelevantToVersion(@Nonnull VersionNumber version) {
+            if (this.versionRanges.isEmpty()) {
+                // no version ranges specified, so all versions are affected
+                return true;
+            }
+
+            for (UpdateSite.WarningVersionRange range : this.versionRanges) {
+                if (range.includes(version)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     public final class Plugin extends Entry {
@@ -817,6 +1125,49 @@ public class UpdateSite {
                     return false;
             }
             return true;
+        }
+
+        /**
+         * @since 2.40
+         */
+        @CheckForNull
+        @Restricted(NoExternalUse.class)
+        public Set<Warning> getWarnings() {
+            ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
+            if (list.size() == 0) {
+                return Collections.emptySet();
+            }
+
+            Set<Warning> warnings = new HashSet<>();
+
+            UpdateSiteWarningsConfiguration configuration = list.get(0);
+
+            for (Warning warning: configuration.getAllWarnings()) {
+                if (configuration.isIgnored(warning)) {
+                    // warning is currently being ignored
+                    continue;
+                }
+                if (!warning.isPluginWarning(this.name)) {
+                    // warning is not about this plugin
+                    continue;
+                }
+
+                if (!warning.isRelevantToVersion(new VersionNumber(this.version))) {
+                    // warning is not relevant to this version
+                    continue;
+                }
+                warnings.add(warning);
+            }
+
+            return warnings;
+        }
+
+        /**
+         * @since 2.40
+         */
+        @Restricted(DoNotUse.class)
+        public boolean hasWarnings() {
+            return getWarnings().size() > 0;
         }
 
         /**

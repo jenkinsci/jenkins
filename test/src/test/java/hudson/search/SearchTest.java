@@ -32,11 +32,20 @@ import static org.junit.Assert.fail;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 
+import java.io.IOException;
 import java.net.URL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import hudson.model.User;
+import hudson.model.View;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
@@ -46,6 +55,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
 import com.gargoylesoftware.htmlunit.AlertHandler;
@@ -241,7 +251,7 @@ public class SearchTest {
         assertEquals(2, jsonArray.size());
         
         boolean foundProjectName = false;
-        boolean foundDispayName = false;
+        boolean foundDisplayName = false;
         for(Object suggestion : jsonArray) {
             JSONObject jsonSuggestion = (JSONObject)suggestion;
             
@@ -250,12 +260,12 @@ public class SearchTest {
                 foundProjectName = true;
             }
             else if(displayName.equals(name)) {
-                foundDispayName = true;
+                foundDisplayName = true;
             }
         }
 
         assertTrue(foundProjectName);
-        assertTrue(foundDispayName);
+        assertTrue(foundDisplayName);
     }
 
     @Issue("JENKINS-24433")
@@ -378,6 +388,37 @@ public class SearchTest {
 
         assertTrue(suggest(j.jenkins.getSearchIndex(),"foo").contains(p));
     }
+
+    @Issue("SECURITY-385")
+    @Test
+    public void testInaccessibleViews() throws IOException {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        GlobalMatrixAuthorizationStrategy strategy = new GlobalMatrixAuthorizationStrategy();
+        strategy.add(Jenkins.READ, "alice");
+        j.jenkins.setAuthorizationStrategy(strategy);
+
+        j.jenkins.addView(new ListView("foo", j.jenkins));
+
+        // SYSTEM can see all the views
+        assertEquals("two views exist", 2, Jenkins.getInstance().getViews().size());
+        List<SearchItem> results = new ArrayList<>();
+        j.jenkins.getSearchIndex().suggest("foo", results);
+        assertEquals("nonempty results list", 1, results.size());
+
+
+        // Alice can't
+        assertFalse("no permission", j.jenkins.getView("foo").getACL().hasPermission(User.get("alice").impersonate(), View.READ));
+        ACL.impersonate(User.get("alice").impersonate(), new Runnable() {
+            @Override
+            public void run() {
+                assertEquals("no visible views", 0, Jenkins.getInstance().getViews().size());
+
+                List<SearchItem> results = new ArrayList<>();
+                j.jenkins.getSearchIndex().suggest("foo", results);
+                assertEquals("empty results list", Collections.emptyList(), results);
+            }
+        });
+    }
     
     @Test
     public void testSearchWithinFolders() throws Exception {
@@ -388,6 +429,24 @@ public class SearchTest {
         List<SearchItem> suggest = suggest(j.jenkins.getSearchIndex(), "myjob");
         assertTrue(suggest.contains(p1));
         assertTrue(suggest.contains(p2));
+    }
+
+
+    @Test
+    @Issue("JENKINS-7874")
+    public void adminOnlyLinksNotShownToRegularUser() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
+        mas.grant(Jenkins.READ).onRoot().toEveryone();
+        j.jenkins.setAuthorizationStrategy(mas);
+
+        try(ACLContext _ = ACL.as(User.get("alice"))) {
+            List<SearchItem> results = new ArrayList<>();
+            j.jenkins.getSearchIndex().find("config", results);
+            j.jenkins.getSearchIndex().find("manage", results);
+            j.jenkins.getSearchIndex().find("log", results);
+            assertEquals("empty results list", 0, results.size());
+        }
     }
 
     private List<SearchItem> suggest(SearchIndex index, String term) {

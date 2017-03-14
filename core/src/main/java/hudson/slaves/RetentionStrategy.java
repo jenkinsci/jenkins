@@ -181,7 +181,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         private static final Logger logger = Logger.getLogger(Demand.class.getName());
 
         /**
-         * The delay (in minutes) for which the agent must be in demand before tring to launch it.
+         * The delay (in minutes) for which the agent must be in demand before trying to launch it.
          */
         private final long inDemandDelay;
 

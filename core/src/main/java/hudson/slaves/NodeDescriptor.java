@@ -99,7 +99,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
     public FormValidation doCheckName(@QueryParameter String value ) {
         String name = Util.fixEmptyAndTrim(value);
         if(name==null)
-            return FormValidation.error(Messages.NodeDescripter_CheckName_Mandatory());
+            return FormValidation.error(Messages.NodeDescriptor_CheckName_Mandatory());
         try {
             Jenkins.checkGoodName(name);
         } catch (Failure f) {

@@ -50,7 +50,7 @@ import java.util.Collection;
  *
  * <pre><xmp>
  * <select id='foo'>
- *   <option>Fetching values...</optoin>
+ *   <option>Fetching values...</option>
  * </select>
  * </xmp></pre>
  *

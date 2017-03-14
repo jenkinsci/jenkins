@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.18-SNAPSHOT</version>
+    <version>2.51-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -40,6 +40,7 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <jacocoSurefireArgs /><!-- empty by default -->
+    <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
   </properties>
 
   <dependencies>
@@ -174,6 +175,11 @@ THE SOFTWARE.
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>0.9.9</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.geb</groupId>

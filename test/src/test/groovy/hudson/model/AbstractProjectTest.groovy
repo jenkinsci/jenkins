@@ -27,6 +27,7 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod
 import com.gargoylesoftware.htmlunit.WebRequest;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
 import com.gargoylesoftware.htmlunit.html.HtmlPage
@@ -48,9 +49,10 @@ import hudson.triggers.TriggerDescriptor;
 import hudson.util.StreamTaskListener;
 import hudson.util.OneShotEvent
 import jenkins.model.Jenkins
-import org.junit.Assert;
-import org.jvnet.hudson.test.HudsonTestCase
-import org.jvnet.hudson.test.Issue;
+import org.junit.Rule
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet
@@ -59,15 +61,22 @@ import org.junit.Assume;
 import org.jvnet.hudson.test.MockFolder
 import org.kohsuke.args4j.CmdLineException
 
+import static org.junit.Assert.fail
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Kohsuke Kawaguchi
  */
-public class AbstractProjectTest extends HudsonTestCase {
+public class AbstractProjectTest {
+
+    @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Test
     public void testConfigRoundtrip() {
-        def project = createFreeStyleProject();
-        def l = jenkins.getLabel("foo && bar");
+        def project = j.createFreeStyleProject();
+        def l = j.jenkins.getLabel("foo && bar");
         project.assignedLabel = l;
-        configRoundtrip((Item) project);
+        j.configRoundtrip((Item) project);
 
         assert l == project.getAssignedLabel();
     }
@@ -75,9 +84,10 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests the workspace deletion.
      */
+    @Test
     public void testWipeWorkspace() {
-        def project = createFreeStyleProject();
-        project.buildersList.add(new Shell("echo hello"));
+        def project = j.createFreeStyleProject();
+        project.buildersList.add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
         def b = project.scheduleBuild2(0).get();
 
@@ -91,17 +101,18 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Makes sure that the workspace deletion is protected.
      */
+    @Test
     @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void testWipeWorkspaceProtected() {
-        def project = createFreeStyleProject();
-        project.getBuildersList().add(new Shell("echo hello"));
+        def project = j.createFreeStyleProject();
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
         def b = project.scheduleBuild2(0).get();
 
         assert b.getWorkspace().exists(): "Workspace should exist by now";
 
         // make sure that the action link is protected
-        com.gargoylesoftware.htmlunit.WebClient wc = createWebClient();
+        com.gargoylesoftware.htmlunit.WebClient wc = j.createWebClient();
         try {
             wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
             fail("Expected HTTP status code 403")
@@ -114,16 +125,17 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Makes sure that the workspace deletion link is not provided
      * when the user doesn't have an access.
      */
+    @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void testWipeWorkspaceProtected2() {
-        ((GlobalMatrixAuthorizationStrategy) jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
+        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(AbstractProject.WORKSPACE,"anonymous");
 
         // make sure that the deletion is protected in the same way
         testWipeWorkspaceProtected();
 
         // there shouldn't be any "wipe out workspace" link for anonymous user
-        def webClient = createWebClient();
-        HtmlPage page = webClient.getPage(jenkins.getItem("test0"));
+        def webClient = j.createWebClient();
+        HtmlPage page = webClient.getPage(j.jenkins.getItem("test0"));
 
         page = (HtmlPage)page.getAnchorByText("Workspace").click();
         try {
@@ -138,11 +150,12 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests the &lt;optionalBlock @field> round trip behavior by using {@link AbstractProject#concurrentBuild}
      */
+    @Test
     public void testOptionalBlockDataBindingRoundtrip() {
-        def p = createFreeStyleProject();
+        def p = j.createFreeStyleProject();
         [true,false].each { b ->
             p.concurrentBuild = b;
-            submit(createWebClient().getPage(p,"configure").getFormByName("config"));
+            j.submit(j.createWebClient().getPage(p,"configure").getFormByName("config"));
             assert b==p.isConcurrentBuild();
         }
     }
@@ -150,20 +163,21 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Tests round trip configuration of the blockBuildWhenUpstreamBuilding field
      */
+    @Test
     @Issue("JENKINS-4423")
     public void testConfiguringBlockBuildWhenUpstreamBuildingRoundtrip() {
-        def p = createFreeStyleProject();
+        def p = j.createFreeStyleProject();
         p.blockBuildWhenUpstreamBuilding = false;
 
-        def form = createWebClient().getPage(p, "configure").getFormByName("config");
+        def form = j.createWebClient().getPage(p, "configure").getFormByName("config");
         def input = form.getInputByName("blockBuildWhenUpstreamBuilding");
         assert !input.isChecked(): "blockBuildWhenUpstreamBuilding check box is checked.";
 
         input.setChecked(true);
-        submit(form);
+        j.submit(form);
         assert p.blockBuildWhenUpstreamBuilding: "blockBuildWhenUpstreamBuilding was not updated from configuration form";
 
-        form = createWebClient().getPage(p, "configure").getFormByName("config");
+        form = j.createWebClient().getPage(p, "configure").getFormByName("config");
         input = form.getInputByName("blockBuildWhenUpstreamBuilding");
         assert input.isChecked(): "blockBuildWhenUpstreamBuilding check box is not checked.";
     }
@@ -172,12 +186,13 @@ public class AbstractProjectTest extends HudsonTestCase {
      * Unless the concurrent build option is enabled, polling and build should be mutually exclusive
      * to avoid allocating unnecessary workspaces.
      */
+    @Test
     @Issue("JENKINS-4202")
     public void testPollingAndBuildExclusion() {
         final OneShotEvent sync = new OneShotEvent();
 
-        final FreeStyleProject p = createFreeStyleProject();
-        def b1 = buildAndAssertSuccess(p);
+        final FreeStyleProject p = j.createFreeStyleProject();
+        def b1 = j.buildAndAssertSuccess(p);
 
         p.scm = new NullSCM() {
             @Override
@@ -217,7 +232,7 @@ public class AbstractProjectTest extends HudsonTestCase {
             // release the polling
             sync.signal();
 
-            def b2 = assertBuildStatusSuccess(f);
+            def b2 = j.assertBuildStatusSuccess(f);
 
             // they should have used the same workspace.
             assert b1.workspace == b2.workspace;
@@ -226,11 +241,12 @@ public class AbstractProjectTest extends HudsonTestCase {
         }
     }
 
+    @Test
     @Issue("JENKINS-1986")
     public void testBuildSymlinks() {
         Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
-        def job = createFreeStyleProject();
+        def job = j.createFreeStyleProject();
         job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
         def build = job.scheduleBuild2(0, new Cause.UserCause()).get();
         File lastSuccessful = new File(job.rootDir, "lastSuccessful"),
@@ -260,12 +276,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert s.contains("Build #" + buildNumber + "\n") : "link should point to build #$buildNumber, but link was: ${Util.resolveSymlink(file, TaskListener.NULL)}\nand log was:\n$s";
     }
 
+    @Test
     @Issue("JENKINS-2543")
     public void testSymlinkForPostBuildFailure() {
         Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // Links should be updated after post-build actions when final build result is known
-        def job = createFreeStyleProject();
+        def job = j.createFreeStyleProject();
         job.buildersList.add(new Shell("echo \"Build #\$BUILD_NUMBER\"\n"));
         def build = job.scheduleBuild2(0, new Cause.UserCause()).get();
         assert Result.SUCCESS == build.result;
@@ -284,25 +301,27 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     /* TODO too slow, seems capable of causing testWorkspaceLock to time out:
+    @Test
     @Issue("JENKINS-15156")
     public void testGetBuildAfterGC() {
-        FreeStyleProject job = createFreeStyleProject();
+        FreeStyleProject job = j.createFreeStyleProject();
         job.scheduleBuild2(0, new Cause.UserIdCause()).get();
-        jenkins.queue.clearLeftItems();
+        j.jenkins.queue.clearLeftItems();
         MemoryAssert.assertGC(new WeakReference(job.getLastBuild()));
         assert job.lastBuild != null;
     }
     */
 
+    @Test
     @Issue("JENKINS-17137")
     public void testExternalBuildDirectorySymlinks() {
-        // TODO when using JUnit 4 add: Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
-        def form = createWebClient().goTo("configure").getFormByName("config");
-        def builds = createTmpDir();
+        Assume.assumeFalse(Functions.isWindows()); // symlinks may not be available
+        def form = j.createWebClient().goTo("configure").getFormByName("config");
+        def builds = j.createTmpDir();
         form.getInputByName("_.rawBuildsDir").valueAttribute = builds.toString() + "/\${ITEM_FULL_NAME}";
-        submit(form);
-        assert builds.toString() + "/\${ITEM_FULL_NAME}" == jenkins.getRawBuildsDir();
-        def p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
+        j.submit(form);
+        assert builds.toString() + "/\${ITEM_FULL_NAME}" == j.jenkins.getRawBuildsDir();
+        def p = j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "p");
         def b1 = p.scheduleBuild2(0).get();
         def link = new File(p.rootDir, "lastStable");
         assert link.exists();
@@ -325,14 +344,15 @@ public class AbstractProjectTest extends HudsonTestCase {
         }
     }
 
+    @Test
     @Issue("JENKINS-17138")
     public void testExternalBuildDirectoryRenameDelete() {
-        def form = createWebClient().goTo("configure").getFormByName("config");
-        def builds = createTmpDir();
+        def form = j.createWebClient().goTo("configure").getFormByName("config");
+        def builds = j.createTmpDir();
         form.getInputByName("_.rawBuildsDir").setValueAttribute(builds.toString() + "/\${ITEM_FULL_NAME}");
-        submit(form);
-        assert builds.toString() + "/\${ITEM_FULL_NAME}" == jenkins.rawBuildsDir;
-        def p = jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
+        j.submit(form);
+        assert builds.toString() + "/\${ITEM_FULL_NAME}" == j.jenkins.rawBuildsDir;
+        def p = j.jenkins.createProject(MockFolder.class, "d").createProject(FreeStyleProject.class, "prj");
         def b = p.scheduleBuild2(0).get();
         def oldBuildDir = new File(builds, "d/prj");
         assert new File(oldBuildDir, b.id) == b.rootDir;
@@ -345,30 +365,32 @@ public class AbstractProjectTest extends HudsonTestCase {
         assert !b.rootDir.isDirectory();
     }
 
+    @Test
     @Issue("JENKINS-18678")
     public void testRenameJobLostBuilds() throws Exception {
-        def p = createFreeStyleProject("initial");
-        assertBuildStatusSuccess(p.scheduleBuild2(0));
+        def p = j.createFreeStyleProject("initial");
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(1, p.getBuilds().size());
         p.renameTo("edited");
         p._getRuns().purgeCache();
         assertEquals(1, p.getBuilds().size());
-        def d = jenkins.createProject(MockFolder.class, "d");
+        def d = j.jenkins.createProject(MockFolder.class, "d");
         Items.move(p, d);
-        assertEquals(p, jenkins.getItemByFullName("d/edited"));
+        assertEquals(p, j.jenkins.getItemByFullName("d/edited"));
         p._getRuns().purgeCache();
         assertEquals(1, p.getBuilds().size());
         d.renameTo("d2");
-        p = jenkins.getItemByFullName("d2/edited");
+        p = j.jenkins.getItemByFullName("d2/edited");
         p._getRuns().purgeCache();
         assertEquals(1, p.getBuilds().size());
     }
 
+    @Test
     @Issue("JENKINS-17575")
     public void testDeleteRedirect() {
-        createFreeStyleProject("j1");
+        j.createFreeStyleProject("j1");
         assert "" == deleteRedirectTarget("job/j1");
-        createFreeStyleProject("j2");
+        j.createFreeStyleProject("j2");
         Jenkins.getInstance().addView(new AllView("v1"));
         assert "view/v1/" == deleteRedirectTarget("view/v1/job/j2");
         MockFolder d = Jenkins.getInstance().createProject(MockFolder.class, "d");
@@ -381,19 +403,20 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     private String deleteRedirectTarget(String job) {
-        def wc = createWebClient();
+        def wc = j.createWebClient();
         String base = wc.getContextPath();
         String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base): loc;
         return loc.substring(base.length());
     }
 
+    @Test
     @Issue("JENKINS-18407")
     public void testQueueSuccessBehavior() {
         // prevent any builds to test the behaviour
-        jenkins.numExecutors = 0;
+        j.jenkins.numExecutors = 0;
 
-        def p = createFreeStyleProject()
+        def p = j.createFreeStyleProject()
         def f = p.scheduleBuild2(0)
         assert f!=null;
         def g = p.scheduleBuild2(0)
@@ -406,26 +429,27 @@ public class AbstractProjectTest extends HudsonTestCase {
     /**
      * Do the same as {@link #testQueueSuccessBehavior()} but over HTTP
      */
+    @Test
     @Issue("JENKINS-18407")
     public void testQueueSuccessBehaviorOverHTTP() {
         // prevent any builds to test the behaviour
-        jenkins.numExecutors = 0;
+        j.jenkins.numExecutors = 0;
 
-        def p = createFreeStyleProject()
-        def wc = createWebClient();
+        def p = j.createFreeStyleProject()
+        def wc = j.createWebClient();
 
-        def rsp = wc.getPage("${getURL()}${p.url}build").webResponse
+        def rsp = wc.getPage("${j.getURL()}${p.url}build").webResponse
         assert rsp.statusCode==201;
         assert rsp.getResponseHeaderValue("Location")!=null;
 
-        def rsp2 = wc.getPage("${getURL()}${p.url}build").webResponse
+        def rsp2 = wc.getPage("${j.getURL()}${p.url}build").webResponse
         assert rsp2.statusCode==201;
         assert rsp.getResponseHeaderValue("Location")==rsp2.getResponseHeaderValue("Location")
 
         p.makeDisabled(true)
 
         try {
-            wc.getPage("${getURL()}${p.url}build")
+            wc.getPage("${j.getURL()}${p.url}build")
             fail();
         } catch (FailingHttpStatusCodeException e) {
             // request should fail
@@ -436,51 +460,56 @@ public class AbstractProjectTest extends HudsonTestCase {
      * We used to store {@link AbstractProject#triggers} as {@link Vector}, so make sure
      * we can still read back the configuration from that.
      */
+    @Test
     public void testVectorTriggers() {
-        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
-        assert j.triggers().size()==1
-        def t = j.triggers()[0]
+        AbstractProject p = j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+        assert p.triggers().size()==1
+        def t = p.triggers()[0]
         assert t.class==SCMTrigger.class;
         assert t.spec=="*/10 * * * *"
     }
 
+    @Test
     @Issue("JENKINS-18813")
     public void testRemoveTrigger() {
-        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+        AbstractProject p = j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
-        TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(SCMTrigger.class)
-        j.removeTrigger(SCM_TRIGGER_DESCRIPTOR);
-        assert j.triggers().size()==0
+        TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = j.jenkins.getDescriptorOrDie(SCMTrigger.class)
+        p.removeTrigger(SCM_TRIGGER_DESCRIPTOR);
+        assert p.triggers().size()==0
     }
 
+    @Test
     @Issue("JENKINS-18813")
     public void testAddTriggerSameType() {
-        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+        AbstractProject p = j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
         def newTrigger = new SCMTrigger("H/5 * * * *")
-        j.addTrigger(newTrigger);
+        p.addTrigger(newTrigger);
 
-        assert j.triggers().size()==1
-        def t = j.triggers()[0]
+        assert p.triggers().size()==1
+        def t = p.triggers()[0]
         assert t.class==SCMTrigger.class;
         assert t.spec=="H/5 * * * *"
     }
 
+    @Test
     @Issue("JENKINS-18813")
     public void testAddTriggerDifferentType() {
-        AbstractProject j = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
+        AbstractProject p = j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"))
 
         def newTrigger = new TimerTrigger("20 * * * *")
-        j.addTrigger(newTrigger);
+        p.addTrigger(newTrigger);
 
-        assert j.triggers().size()==2
-        def t = j.triggers()[1]
+        assert p.triggers().size()==2
+        def t = p.triggers()[1]
         assert t == newTrigger
     }
 
+    @Test
     @Issue("JENKINS-10615")
     public void testWorkspaceLock() {
-        def p = createFreeStyleProject()
+        def p = j.createFreeStyleProject()
         p.concurrentBuild = true;
         def e1 = new OneShotEvent(), e2=new OneShotEvent()
         def done = new OneShotEvent()
@@ -519,45 +548,13 @@ public class AbstractProjectTest extends HudsonTestCase {
         done.signal()
     }
 
-    public void testRenameToPrivileged() {
-        def secret = jenkins.createProject(FreeStyleProject.class,"secret");
-        def regular = jenkins.createProject(FreeStyleProject.class,"regular")
-
-        jenkins.securityRealm = createDummySecurityRealm();
-        def auth = new ProjectMatrixAuthorizationStrategy();
-        jenkins.authorizationStrategy = auth;
-
-        auth.add(Jenkins.ADMINISTER, "alice");
-        auth.add(Jenkins.READ, "bob");
-
-        // bob the regular user can only see regular jobs
-        regular.addProperty(new AuthorizationMatrixProperty([(Job.READ) : ["bob"] as Set]));
-
-        def wc = createWebClient()
-        wc.login("bob")
-        wc.executeOnServer {
-            assert jenkins.getItem("secret")==null;
-            try {
-                regular.renameTo("secret")
-                fail("rename as an overwrite should have failed");
-            } catch (Exception e) {
-                // expected rename to fail in some non-descriptive generic way
-                e.printStackTrace()
-            }
-        }
-
-        // those two jobs should still be there
-        assert jenkins.getItem("regular")!=null;
-        assert jenkins.getItem("secret")!=null;
-    }
-
-
     /**
      * Trying to POST to config.xml by a different job type should fail.
      */
+    @Test
     public void testConfigDotXmlSubmissionToDifferentType() {
-        jenkins.crumbIssuer = null
-        def p = createFreeStyleProject()
+        j.jenkins.crumbIssuer = null
+        def p = j.createFreeStyleProject()
 
         HttpURLConnection con = postConfigDotXml(p, "<maven2-moduleset />")
 
@@ -575,7 +572,7 @@ public class AbstractProjectTest extends HudsonTestCase {
     }
 
     private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) {
-        HttpURLConnection con = new URL(getURL(), "job/${p.name}/config.xml").openConnection()
+        HttpURLConnection con = new URL(j.getURL(), "job/${p.name}/config.xml").openConnection()
         con.requestMethod = "POST"
         con.setRequestProperty("Content-Type", "application/xml")
         con.doOutput = true
@@ -585,13 +582,15 @@ public class AbstractProjectTest extends HudsonTestCase {
         return con
     }
 
+    @Test
     @Issue("JENKINS-27549")
     public void testLoadingWithNPEOnTriggerStart() {
-        AbstractProject project = jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"))
+        AbstractProject project = j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"))
 
         assert project.triggers().size() == 1
     }
 
+    @Test
     @Issue("JENKINS-30742")
     public void testResolveForCLI() {
         try {
@@ -601,7 +600,7 @@ public class AbstractProjectTest extends HudsonTestCase {
             assert e.getMessage().contentEquals("No such job \u2018never_created\u2019 exists.");
         }
 
-        AbstractProject project = jenkins.createProject(FreeStyleProject.class, "never_created");
+        AbstractProject project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
         try {
             AbstractProject not_found = AbstractProject.resolveForCLI("never_created1");
             fail("Exception should occur before!");
@@ -611,7 +610,7 @@ public class AbstractProjectTest extends HudsonTestCase {
 
     }
 
-    static class MockBuildTriggerThrowsNPEOnStart<Item> extends Trigger {
+    static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {
         @Override
         public void start(hudson.model.Item project, boolean newInstance) { throw new NullPointerException(); }
 

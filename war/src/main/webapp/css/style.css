@@ -462,6 +462,9 @@ table.stripped-even tr:nth-child(even) {
 table.stripped-odd tr:nth-child(odd) {
   background: #fbfbfb;
 }
+table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+  background: #e8e8e8 !important;
+}
 
 div.pane-header {
   font-weight: bold;
@@ -647,7 +650,7 @@ div.behavior-loading {
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
-  box-shaodw:#fff 0 0 0 10px
+  box-shadow:#fff 0 0 0 10px
 }
 
 @-webkit-keyframes sk-scaleout {
@@ -1021,7 +1024,7 @@ table.parameters > tbody:hover {
   padding: 3px 4px 3px 4px;
 }
 
-.build-row:hover, .build-row.model-link-active {
+.build-row.model-link-active {
   background: #e8e8e8 !important;
 }
 
@@ -1160,8 +1163,8 @@ table.parameters > tbody:hover {
 .comboBoxList {
   border: 1px solid #000;
   overflow: visible;
-  color: MenuText;
-  background-color: Menu;
+  background-color: white;
+  color: black;
 }
 .comboBoxSelectedItem {
   background-color: Highlight;
@@ -1385,7 +1388,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 2 deep == */
+/* == nested repeatable elements / 2 deep == */
 .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1395,7 +1398,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 3 deep == */
+/* == nested repeatable elements / 3 deep == */
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1406,7 +1409,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /*
-    <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly
+    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
@@ -1577,6 +1580,13 @@ TEXTAREA.rich-editor {
     color: #FF0000;
 }
 
+#plugins .securityWarning {
+    white-space: normal;
+    margin-top: 0.5em;
+    padding-left: 2em;
+    color: #FF0000;
+}
+
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
@@ -1707,6 +1717,17 @@ td.matrix-cell {
 /* ========================= legend.jelly ================== */
 table#legend-table td {
   vertical-align: middle;
+}
+
+/* ========================= select.jelly ================== */
+select.select-ajax-pending {
+  padding-left: 1.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: transparent;
+  background-image: url(../images/spinner.gif); /* this is why here and not in an adjunct */
+  background-repeat: no-repeat;
+  background-position: 2px;
 }
 
 /* ========================= Button styles ================= */

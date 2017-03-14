@@ -107,11 +107,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
         if (isLinked(archive)) {
             manifest = loadLinkedManifest(archive);
         } else {
-            JarFile jf = new JarFile(archive, false);
-            try {
+            try (JarFile jf = new JarFile(archive, false)) {
                 manifest = jf.getManifest();
-            } finally {
-                jf.close();
             }
         }
         return PluginWrapper.computeShortName(manifest, archive.getName());
@@ -176,11 +173,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         "Plugin installation failed. No manifest at "
                                 + manifestFile);
             }
-            FileInputStream fin = new FileInputStream(manifestFile);
-            try {
+            try (FileInputStream fin = new FileInputStream(manifestFile)) {
                 manifest = new Manifest(fin);
-            } finally {
-                fin.close();
             }
         }
 
@@ -646,14 +640,13 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        final ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
+        try (ZipOutputStream wrappedZOut = new ZipOutputStream(new NullOutputStream()) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime+1999);   // roundup
                 super.putNextEntry(ze);
             }
-        };
-        try {
+        }) {
             Zip z = new Zip() {
                 /**
                  * Forces the fixed timestamp for directories to make sure
@@ -672,8 +665,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();
-        } finally {
-            wrappedZOut.close();
         }
     }
 

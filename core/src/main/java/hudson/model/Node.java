@@ -372,7 +372,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public CauseOfBlockage canTake(Queue.BuildableItem item) {
         Label l = item.getAssignedLabel();
         if(l!=null && !l.contains(this))
-            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getNodeName(),l));   // the task needs to be executed on label that this node doesn't have.
+            return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getDisplayName(), l));   // the task needs to be executed on label that this node doesn't have.
 
         if(l==null && getMode()== Mode.EXCLUSIVE) {
             // flyweight tasks need to get executed somewhere, if every node
@@ -381,14 +381,14 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
                             || Jenkins.getInstance().getNumExecutors() < 1
                             || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
             )) {
-                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getNodeName()));   // this node is reserved for tasks that are tied to it
+                return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName()));   // this node is reserved for tasks that are tied to it
             }
         }
 
         Authentication identity = item.authenticate();
         if (!getACL().hasPermission(identity,Computer.BUILD)) {
             // doesn't have a permission
-            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(),getNodeName()));
+            return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));
         }
 
         // Check each NodeProperty to see whether they object to this node
@@ -399,7 +399,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
 
         if (!isAcceptingTasks()) {
-            return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsNotAcceptingTasks(getNodeName()));
+            return new CauseOfBlockage.BecauseNodeIsNotAcceptingTasks(this);
         }
 
         // Looks like we can take the task
@@ -450,6 +450,47 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * Gets the {@link NodeProperty} instances configured for this {@link Node}.
      */
     public abstract @Nonnull DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties();
+
+    /**
+     * Gets the specified property or null if the property is not configured for this Node.
+     * 
+     * @param clazz the type of the property
+     * 
+     * @return null if the property is not configured
+     * 
+     * @since 2.37
+     */
+    @CheckForNull
+    public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
+    {
+        for (NodeProperty p: getNodeProperties()) {
+            if (clazz.isInstance(p)) {
+                return clazz.cast(p);
+            }
+        }
+        return null;      
+    }
+
+    /**
+     * Gets the property from the given classname or null if the property 
+     * is not configured for this Node.
+     * 
+     * @param className The classname of the property
+     * 
+     * @return null if the property is not configured
+     * 
+     * @since 2.37
+     */
+    @CheckForNull
+    public NodeProperty getNodeProperty(String className)
+    {
+        for (NodeProperty p: getNodeProperties()) {
+            if (p.getClass().getName().equals(className)) {
+                return p;
+            }
+        }
+        return null;      
+    }
 
     // used in the Jelly script to expose descriptors
     public List<NodePropertyDescriptor> getNodePropertyDescriptors() {

@@ -103,7 +103,8 @@ public class ProcStarterTest {
 
         @Override
         public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            Launcher.ProcStarter starter = launcher.launch().cmds("echo", "Hello");
+            String[] cmds = Functions.isWindows() ? new String[] { "cmd.exe", "/C", "echo", "Hello" } : new String[] { "echo", "Hello" };
+            Launcher.ProcStarter starter = launcher.launch().cmds(cmds);
             starter.start();
             starter.join();
             return new Environment() {
@@ -148,7 +149,9 @@ public class ProcStarterTest {
 
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-            Launcher.ProcStarter starter = launcher.launch().cmds("echo", "Hello").pwd(new File("/this/path/doesnt/exist"));
+            String[] cmds = Functions.isWindows() ? new String[] { "cmd.exe", "/C", "echo", "Hello" } : new String[] { "echo", "Hello" };
+            String path = Functions.isWindows() ? "C:\\this\\path\\doesn't\\exist" : "/this/path/doesnt/exist";
+            Launcher.ProcStarter starter = launcher.launch().cmds(cmds).pwd(new File(path));
             starter.start();
             starter.join();
             return true;
