@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Generalization of {@link InterceptingExecutorService} tp scheduled services.
+ * Generalization of {@link InterceptingExecutorService} to scheduled services.
  * @since FIXME
  */
 public abstract class InterceptingScheduledExecutorService extends InterceptingExecutorService implements ScheduledExecutorService {
