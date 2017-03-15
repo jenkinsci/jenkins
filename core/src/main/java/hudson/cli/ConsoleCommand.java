@@ -76,6 +76,7 @@ public class ConsoleCommand extends CLICommand {
                 do {
                     logText = run.getLogText();
                     pos = logText.writeLogTo(pos, w);
+                    // TODO should sleep as in Run.writeWholeLogTo
                 } while (!logText.isComplete());
             } else {
                 try (InputStream logInputStream = run.getLogInputStream()) {
