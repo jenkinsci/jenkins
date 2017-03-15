@@ -55,6 +55,7 @@ import java.util.Collections;
  */
 public abstract class ParserConfigurator implements ExtensionPoint, Serializable {
     private static final long serialVersionUID = -2523542286453177108L;
+    private static volatile Collection<ParserConfigurator> cache;
 
     /**
      * Configures the given {@link SAXReader}
@@ -73,22 +74,37 @@ public abstract class ParserConfigurator implements ExtensionPoint, Serializable
     }
 
     public static void applyConfiguration(SAXReader reader, Object context) throws IOException, InterruptedException {
-        Collection<ParserConfigurator> all = Collections.emptyList();
+        Collection<ParserConfigurator> all;
 
-        if (Jenkins.getInstanceOrNull()==null) {
-            Channel ch = Channel.current();
-            if (ch!=null)
-                all = ch.call(new SlaveToMasterCallable<Collection<ParserConfigurator>, IOException>() {
-
-                    private static final long serialVersionUID = -2178106894481500733L;
-
-                    public Collection<ParserConfigurator> call() throws IOException {
-                        return new ArrayList<ParserConfigurator>(all());
-                    }
-                });
+        if (Jenkins.getInstanceOrNull() == null) {
+            all = fromCacheOrRemote();
         } else
             all = all();
+
         for (ParserConfigurator pc : all)
             pc.configure(reader,context);
+    }
+
+    private static Collection<ParserConfigurator> fromCacheOrRemote() throws IOException, InterruptedException {
+        if (cache != null) {
+            return cache;
+        }
+        Channel ch = Channel.current();
+        if (ch == null) {
+            return Collections.emptyList();
+        }
+        Collection<ParserConfigurator> fromRemote = fromRemote(ch);
+        cache = fromRemote;
+        return fromRemote;
+    }
+
+    private static Collection<ParserConfigurator> fromRemote(Channel ch) throws IOException, InterruptedException {
+        return ch.call(new SlaveToMasterCallable<Collection<ParserConfigurator>, IOException>() {
+            private static final long serialVersionUID = -2178106894481500733L;
+
+            public Collection<ParserConfigurator> call() throws IOException {
+                return new ArrayList<ParserConfigurator>(all());
+            }
+        });
     }
 }
