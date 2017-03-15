@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.jvnet.localizer.Localizable;
 
 /**
@@ -39,6 +41,8 @@ import org.jvnet.localizer.Localizable;
  */
 public final class PermissionGroup implements Iterable<Permission>, Comparable<PermissionGroup> {
     private final SortedSet<Permission> permissions = new TreeSet<Permission>(Permission.ID_COMPARATOR);
+
+    @Nonnull
     public final Class owner;
 
     /**
@@ -53,7 +57,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @param title sets {@link #title}
      * @throws IllegalStateException if this group was already registered
      */
-    public PermissionGroup(Class owner, Localizable title) throws IllegalStateException {
+    public PermissionGroup(@Nonnull Class owner, Localizable title) throws IllegalStateException {
         this.owner = owner;
         this.title = title;
         register(this);
