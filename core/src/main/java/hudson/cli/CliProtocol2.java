@@ -27,7 +27,7 @@ import java.security.Signature;
 public class CliProtocol2 extends CliProtocol {
     @Override
     public String getName() {
-        return jenkins.CLI.DISABLED ? null : "CLI2-connect";
+        return jenkins.CLI.get().isEnabled() ? "CLI2-connect" : null;
     }
 
     /**

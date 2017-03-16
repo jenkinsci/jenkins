@@ -58,6 +58,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.FullDuplexHttpService;
+import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Shows usage of CLI and commands.
@@ -81,7 +82,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     public String getUrlName() {
-        return jenkins.CLI.DISABLED ? null : "cli";
+        return "cli";
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
@@ -105,18 +106,106 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         StaplerRequest req = Stapler.getCurrentRequest();
         if (req.getRestOfPath().length()==0 && "POST".equals(req.getMethod())) {
             // CLI connection request
-            throw new CliEndpointResponse();
+            if ("false".equals(req.getParameter("remoting"))) {
+                throw new PlainCliEndpointResponse();
+            } else if (jenkins.CLI.get().isEnabled()) {
+                throw new RemotingCliEndpointResponse();
+            } else {
+                throw HttpResponses.forbidden();
+            }
         } else {
             return this;
         }
     }
 
     /**
-     * Serves CLI-over-HTTP response.
+     * Serves {@link PlainCLIProtocol} response.
      */
-    private class CliEndpointResponse extends FullDuplexHttpService.Response {
+    private class PlainCliEndpointResponse extends FullDuplexHttpService.Response {
 
-        CliEndpointResponse() {
+        PlainCliEndpointResponse() {
+            super(duplexServices);
+        }
+
+        @Override
+        protected FullDuplexHttpService createService(StaplerRequest req, UUID uuid) throws IOException {
+            return new FullDuplexHttpService(uuid) {
+                @Override
+                protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
+                    class ServerSideImpl extends PlainCLIProtocol.ServerSide {
+                        List<String> args = new ArrayList<>();
+                        Locale locale = Locale.getDefault();
+                        Charset encoding = Charset.defaultCharset();
+                        final PipedInputStream stdin = new PipedInputStream();
+                        final PipedOutputStream stdinMatch = new PipedOutputStream();
+                        ServerSideImpl(InputStream is, OutputStream os) throws IOException {
+                            super(is, os);
+                            stdinMatch.connect(stdin);
+                        }
+                        @Override
+                        protected void onArg(String text) {
+                            args.add(text);
+                        }
+                        @Override
+                        protected void onLocale(String text) {
+                            // TODO what is the opposite of Locale.toString()?
+                        }
+                        @Override
+                        protected void onEncoding(String text) {
+                            try {
+                                encoding = Charset.forName(text);
+                            } catch (UnsupportedCharsetException x) {
+                                LOGGER.log(Level.WARNING, "unknown client charset {0}", text);
+                            }
+                        }
+                        @Override
+                        protected synchronized void onStart() {
+                            notifyAll();
+                        }
+                        @Override
+                        protected void onStdin(byte[] chunk) throws IOException {
+                            stdinMatch.write(chunk);
+                        }
+                        @Override
+                        protected void onEndStdin() throws IOException {
+                            stdinMatch.close();
+                        }
+                    }
+                    ServerSideImpl connection = new ServerSideImpl(upload, download);
+                    connection.begin();
+                    synchronized (connection) {
+                        connection.wait(); // TODO this can wait indefinitely even when the connection is broken
+                    }
+                    PrintStream stdout = new PrintStream(connection.streamStdout(), false, connection.encoding.name());
+                    PrintStream stderr = new PrintStream(connection.streamStderr(), true, connection.encoding.name());
+                    String commandName = connection.args.get(0);
+                    CLICommand command = CLICommand.clone(commandName);
+                    if (command == null) {
+                        stderr.println("No such command " + commandName);
+                        connection.sendExit(2);
+                        return;
+                    }
+                    command.setTransportAuth(Jenkins.getAuthentication());
+                    command.setClientCharset(connection.encoding);
+                    CLICommand orig = CLICommand.setCurrent(command);
+                    try {
+                        int exit = command.main(connection.args.subList(1, connection.args.size()), connection.locale, connection.stdin, stdout, stderr);
+                        stdout.flush();
+                        connection.sendExit(exit);
+                    } finally {
+                        CLICommand.setCurrent(orig);
+                    }
+                }
+            };
+        }
+    }
+
+    /**
+     * Serves Remoting-over-HTTP response.
+     */
+    private class RemotingCliEndpointResponse extends FullDuplexHttpService.Response {
+
+        RemotingCliEndpointResponse() {
             super(duplexServices);
         }
 
@@ -125,86 +214,16 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             // do not require any permission to establish a CLI connection
             // the actual authentication for the connecting Channel is done by CLICommand
 
-            if ("false".equals(req.getParameter("remoting"))) {
-                return new FullDuplexHttpService(uuid) {
-                    @Override
-                    protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
-                        class ServerSideImpl extends PlainCLIProtocol.ServerSide {
-                            List<String> args = new ArrayList<>();
-                            Locale locale = Locale.getDefault();
-                            Charset encoding = Charset.defaultCharset();
-                            final PipedInputStream stdin = new PipedInputStream();
-                            final PipedOutputStream stdinMatch = new PipedOutputStream();
-                            ServerSideImpl(InputStream is, OutputStream os) throws IOException {
-                                super(is, os);
-                                stdinMatch.connect(stdin);
-                            }
-                            @Override
-                            protected void onArg(String text) {
-                                args.add(text);
-                            }
-                            @Override
-                            protected void onLocale(String text) {
-                                // TODO what is the opposite of Locale.toString()?
-                            }
-                            @Override
-                            protected void onEncoding(String text) {
-                                try {
-                                    encoding = Charset.forName(text);
-                                } catch (UnsupportedCharsetException x) {
-                                    LOGGER.log(Level.WARNING, "unknown client charset {0}", text);
-                                }
-                            }
-                            @Override
-                            protected synchronized void onStart() {
-                                notifyAll();
-                            }
-                            @Override
-                            protected void onStdin(byte[] chunk) throws IOException {
-                                stdinMatch.write(chunk);
-                            }
-                            @Override
-                            protected void onEndStdin() throws IOException {
-                                stdinMatch.close();
-                            }
-                        }
-                        ServerSideImpl connection = new ServerSideImpl(upload, download);
-                        connection.begin();
-                        synchronized (connection) {
-                            connection.wait(); // TODO this can wait indefinitely even when the connection is broken
-                        }
-                        PrintStream stdout = new PrintStream(connection.streamStdout(), false, connection.encoding.name());
-                        PrintStream stderr = new PrintStream(connection.streamStderr(), true, connection.encoding.name());
-                        String commandName = connection.args.get(0);
-                        CLICommand command = CLICommand.clone(commandName);
-                        if (command == null) {
-                            stderr.println("No such command " + commandName);
-                            connection.sendExit(2);
-                            return;
-                        }
-                        command.setTransportAuth(Jenkins.getAuthentication());
-                        command.setClientCharset(connection.encoding);
-                        CLICommand orig = CLICommand.setCurrent(command);
-                        try {
-                            int exit = command.main(connection.args.subList(1, connection.args.size()), connection.locale, connection.stdin, stdout, stderr);
-                            stdout.flush();
-                            connection.sendExit(exit);
-                        } finally {
-                            CLICommand.setCurrent(orig);
-                        }
-                    }
-                };
-            } else {
-                return new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
-                    @SuppressWarnings("deprecation")
-                    @Override
-                    protected void main(Channel channel) throws IOException, InterruptedException {
-                        // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
-                        channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION, Jenkins.getAuthentication());
-                        channel.setProperty(CliEntryPoint.class.getName(), new CliManagerImpl(channel));
-                    }
-                };
-            }
+            return new FullDuplexHttpChannel(uuid, !Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+                @SuppressWarnings("deprecation")
+                @Override
+                protected void main(Channel channel) throws IOException, InterruptedException {
+                    // capture the identity given by the transport, since this can be useful for SecurityRealm.createCliAuthenticator()
+                    channel.setProperty(CLICommand.TRANSPORT_AUTHENTICATION, Jenkins.getAuthentication());
+                    channel.setProperty(CliEntryPoint.class.getName(), new CliManagerImpl(channel));
+                }
+            };
         }
     }
+
 }
