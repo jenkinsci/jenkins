@@ -36,7 +36,6 @@ import hudson.model.Item;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.User;
-import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.util.Secret;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -53,6 +52,8 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -80,6 +81,7 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
     @Issue({"SECURITY-266", "SECURITY-304"})
     public void testExposedCiphertext() throws Exception {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
+        Item.EXTENDED_READ.setEnabled(true);
         try {
 
             //final String plain_regex_match = ".*\\{[A-Za-z0-9+/]+={0,2}}.*";
@@ -89,16 +91,12 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             //Just a quick verification on what could be on the page and that the regexp is correctly set up
             assertThat(xml_regex_pattern.matcher(staticTest).find(), is(true));
 
-            jenkins.setSecurityRealm(createDummySecurityRealm());
-            // TODO 1.645+ use MockAuthorizationStrategy
-            GlobalMatrixAuthorizationStrategy pmas = new GlobalMatrixAuthorizationStrategy();
-            pmas.add(Jenkins.ADMINISTER, "admin");
-            pmas.add(Jenkins.READ, "dev");
-            pmas.add(Item.READ, "dev");
-            Item.EXTENDED_READ.setEnabled(true);
-            pmas.add(Item.EXTENDED_READ, "dev");
-            pmas.add(Item.CREATE, "dev"); // so we can show CopyJobCommand would barf; more realistic would be to grant it only in a subfolder
-            jenkins.setAuthorizationStrategy(pmas);
+            jenkins.setSecurityRealm(new JenkinsRule().createDummySecurityRealm());
+            jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                grant(Jenkins.ADMINISTER).everywhere().to("admin").
+                grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ,
+                    Item.CREATE // so we can show CopyJobCommand would barf; more realistic would be to grant it only in a subfolder
+                ).everywhere().to("dev"));
             Secret s = Secret.fromString("s3cr3t");
             //String sEnc = s.getEncryptedValue();
             FreeStyleProject p = createFreeStyleProject("p");

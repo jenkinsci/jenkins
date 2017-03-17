@@ -2534,6 +2534,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // for binary compatibility, this method cannot throw a checked exception
             throw new AcegiSecurityException("Failed to configure filter",e) {};
         }
+        saveQuietly();
     }
 
     public void setAuthorizationStrategy(AuthorizationStrategy a) {
@@ -2541,6 +2542,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             a = AuthorizationStrategy.UNSECURED;
         useSecurity = true;
         authorizationStrategy = a;
+        saveQuietly();
     }
 
     public boolean isDisableRememberMe() {
@@ -3146,6 +3148,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
+    private void saveQuietly() {
+        try {
+            save();
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, null, x);
+        }
+    }
 
     /**
      * Called to shut down the system.
