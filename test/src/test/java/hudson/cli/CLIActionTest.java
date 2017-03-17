@@ -40,6 +40,9 @@ import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 public class CLIActionTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    { // authentication() can take a while on a loaded machine
+        j.timeout = System.getProperty("maven.surefire.debug") == null ? 300 : 0;
+    }
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
