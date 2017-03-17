@@ -63,7 +63,7 @@ public abstract class FileSystemProvisionerDescriptor extends Descriptor<FileSys
      * @param listener
      *      The status of the operation, error message, etc., should go here.
      * @return
-     *      true if this {@link FileSystemProvisionerDescriptor} is responsible for de-alocating the workspace.
+     *      true if this {@link FileSystemProvisionerDescriptor} is responsible for de-allocating the workspace.
      *      false otherwise, in which case the other {@link FileSystemProvisionerDescriptor}s are asked to
      *      clean up the workspace.
      */

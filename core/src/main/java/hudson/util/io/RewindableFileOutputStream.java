@@ -28,11 +28,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  * {@link OutputStream} that writes to a file.
  * <p>
  * Allows the caller to rewind the stream and override previous content with fresh new data.
+ * @since 2.18
  */
 public class RewindableFileOutputStream extends OutputStream {
     protected final File out;
@@ -47,6 +49,7 @@ public class RewindableFileOutputStream extends OutputStream {
     private synchronized OutputStream current() throws IOException {
         if (current == null) {
             if (!closed) {
+                FileUtils.forceMkdir(out.getParentFile());
                 try {
                     current = new FileOutputStream(out,false);
                 } catch (FileNotFoundException e) {

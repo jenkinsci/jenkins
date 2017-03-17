@@ -25,6 +25,7 @@ package hudson.cli;
 
 import hudson.cli.client.Messages;
 import hudson.remoting.Channel;
+import hudson.remoting.NamingThreadFactory;
 import hudson.remoting.PingThread;
 import hudson.remoting.Pipe;
 import hudson.remoting.RemoteInputStream;
@@ -71,6 +72,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
@@ -80,7 +83,7 @@ import static java.util.logging.Level.*;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class CLI {
+public class CLI implements AutoCloseable {
     private final ExecutorService pool;
     private final Channel channel;
     private final CliEntryPoint entryPoint;
@@ -121,7 +124,7 @@ public class CLI {
         if(!url.endsWith("/"))  url+='/';
 
         ownsPool = exec==null;
-        pool = exec!=null ? exec : Executors.newCachedThreadPool();
+        pool = exec!=null ? exec : Executors.newCachedThreadPool(new NamingThreadFactory(Executors.defaultThreadFactory(), "CLI.pool"));
 
         Channel _channel;
         try {
@@ -176,9 +179,10 @@ public class CLI {
 
         if (httpsProxyTunnel!=null) {
             String[] tokens = httpsProxyTunnel.split(":");
+            LOGGER.log(Level.FINE, "Using HTTP proxy {0}:{1} to connect to CLI port", new Object[]{tokens[0], tokens[1]});
             s.connect(new InetSocketAddress(tokens[0], Integer.parseInt(tokens[1])));
             PrintStream o = new PrintStream(s.getOutputStream());
-            o.print("CONNECT " + clip.endpoint.getHostName() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
+            o.print("CONNECT " + clip.endpoint.getHostString() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
 
             // read the response from the proxy
             ByteArrayOutputStream rsp = new ByteArrayOutputStream();
@@ -188,11 +192,15 @@ public class CLI {
                 rsp.write(ch);
             }
             String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
+
             if (head == null) {
                 throw new IOException("Unexpected empty response");
             }
-            if (!head.startsWith("HTTP/1.0 200 "))
-                throw new IOException("Failed to establish a connection through HTTP proxy: "+rsp);
+            if (!(head.startsWith("HTTP/1.0 200 ") || head.startsWith("HTTP/1.1 200 "))) {
+                s.close();
+                LOGGER.log(Level.SEVERE, "Failed to tunnel the CLI port through the HTTP proxy. Falling back to HTTP.");
+                throw new IOException("Failed to establish a connection through HTTP proxy: " + rsp);
+            }
 
             // HTTP proxies (at least the one I tried --- squid) doesn't seem to do half-close very well.
             // So instead of relying on it, we'll just send the close command and then let the server
@@ -377,12 +385,12 @@ public class CLI {
     }
 
     public static void main(final String[] _args) throws Exception {
-//        Logger l = Logger.getLogger(Channel.class.getName());
-//        l.setLevel(ALL);
-//        ConsoleHandler h = new ConsoleHandler();
-//        h.setLevel(ALL);
-//        l.addHandler(h);
-//
+        Logger l = Logger.getLogger(ROOT_LOGGER_NAME);
+        l.setLevel(SEVERE);
+        ConsoleHandler h = new ConsoleHandler();
+        h.setLevel(SEVERE);
+        l.addHandler(h);
+
         try {
             System.exit(_main(_args));
         } catch (Throwable t) {
@@ -417,7 +425,7 @@ public class CLI {
                 continue;
             }
             if (head.equals("-noCertificateCheck")) {
-                System.out.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+                System.err.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
@@ -451,6 +459,15 @@ public class CLI {
             if(head.equals("-p") && args.size()>=2) {
                 httpProxy = args.get(1);
                 args = args.subList(2,args.size());
+                continue;
+            }
+            if(head.equals("-v")) {
+                args = args.subList(1,args.size());
+                Logger l = Logger.getLogger(ROOT_LOGGER_NAME);
+                l.setLevel(FINEST);
+                for (Handler h : l.getHandlers()) {
+                    h.setLevel(FINEST);
+                }
                 continue;
             }
             break;
@@ -589,4 +606,5 @@ public class CLI {
     }
 
     private static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
+    private static final String ROOT_LOGGER_NAME = CLI.class.getPackage().getName();
 }

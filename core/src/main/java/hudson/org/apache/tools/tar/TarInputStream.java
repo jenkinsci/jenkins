@@ -53,7 +53,7 @@ public class TarInputStream extends FilterInputStream {
 
     /**
      * This contents of this array is not used at all in this class,
-     * it is only here to avoid repreated object creation during calls
+     * it is only here to avoid repeated object creation during calls
      * to the no-arg read method.
      */
     protected byte[] oneBuf;
@@ -126,7 +126,7 @@ public class TarInputStream extends FilterInputStream {
      * is left in the entire archive, only in the current entry.
      * This value is determined from the entry's size header field
      * and the amount of data already read from the current entry.
-     * Integer.MAX_VALUE is returen in case more than Integer.MAX_VALUE
+     * Integer.MAX_VALUE is returned in case more than Integer.MAX_VALUE
      * bytes are left in the current entry in the archive.
      *
      * @return The number of available bytes for the current entry.
@@ -246,7 +246,7 @@ public class TarInputStream extends FilterInputStream {
             this.currEntry = new TarEntry(headerBuf);
 
             if (this.debug) {
-                System.err.println("TarInputStream: SET CURRENTRY '"
+                System.err.println("TarInputStream: SET currENTRY '"
                         + this.currEntry.getName()
                         + "' size = "
                         + this.currEntry.getSize());

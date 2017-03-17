@@ -44,7 +44,6 @@ import hudson.util.Secret;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.Authentication;
 import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
@@ -75,7 +74,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
@@ -133,6 +131,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, Messages.AbstractItem_Pronoun());
+    }
+
+    /**
+     * Gets the term used in the UI to represent the kind of {@link Queue.Task} associated with this kind of
+     * {@link Item}. Must start with a capital letter. Defaults to "Build".
+     * @since2.50 
+     */
+    public String getTaskNoun() {
+        return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
     }
 
     @Exported
@@ -235,27 +242,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                // the test to see if the project already exists or not needs to be done in escalated privilege
-                // to avoid overwriting
-                ACL.impersonate(ACL.SYSTEM,new NotReallyRoleSensitiveCallable<Void,IOException>() {
-                    final Authentication user = Jenkins.getAuthentication();
-                    @Override
-                    public Void call() throws IOException {
-                        Item existing = parent.getItem(newName);
-                        if (existing != null && existing!=AbstractItem.this) {
-                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
-                                // the look up is case insensitive, so we need "existing!=this"
-                                // to allow people to rename "Foo" to "foo", for example.
-                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                                throw new IllegalArgumentException("Job " + newName + " already exists");
-                            else {
-                                // can't think of any real way to hide this, but at least the error message could be vague.
-                                throw new IOException("Unable to rename to " + newName);
-                            }
-                        }
-                        return null;
-                    }
-                });
+                // the lookup is case insensitive, so we should not fail if this item was the “existing” one
+                // to allow people to rename "Foo" to "foo", for example.
+                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
                 File oldRoot = this.getRootDir();
 
@@ -354,12 +344,14 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public abstract Collection<? extends Job> getAllJobs();
 
+    @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
         if(n.length()==0)   return getName();
         else                return n+'/'+getName();
     }
 
+    @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
         if(n.length()==0)   return getDisplayName();
@@ -673,9 +665,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             try {
                 XMLUtils.safeTransform(source, new StreamResult(out));
                 out.close();
-            } catch (TransformerException e) {
-                throw new IOException("Failed to persist config.xml", e);
-            } catch (SAXException e) {
+            } catch (TransformerException | SAXException e) {
                 throw new IOException("Failed to persist config.xml", e);
             }
 
@@ -767,5 +757,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
+    /**
+     * Replaceable noun for describing the kind of task that this item represents. Defaults to "Build".
+     */
+    public static final Message<AbstractItem> TASK_NOUN = new Message<>();
 
 }

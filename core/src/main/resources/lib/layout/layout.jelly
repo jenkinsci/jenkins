@@ -153,6 +153,7 @@ ${h.initPageVariables(context)}
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:if test="${extensionsAvailable}">

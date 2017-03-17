@@ -420,7 +420,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             private void locationChanged(Item item, String oldFullName, String newFullName) {
                 // update BuildTrigger of other projects that point to this object.
                 // can't we generalize this?
-                for( Project<?,?> p : Jenkins.getInstance().getAllItems(Project.class) ) {
+                for( Project<?,?> p : Jenkins.getInstance().allItems(Project.class) ) {
                     BuildTrigger t = p.getPublishersList().get(BuildTrigger.class);
                     if(t!=null) {
                         String cp2 = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.childProjects, p.getParent());

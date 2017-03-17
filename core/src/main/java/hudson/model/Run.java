@@ -36,13 +36,16 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Functions;
+import hudson.console.AnnotatedLargeText;
+import hudson.console.ConsoleLogFilter;
+import hudson.console.ConsoleNote;
+import hudson.console.ModelHyperlinkNote;
+import hudson.console.PlainTextConsoleOutputStream;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIMethod;
-import hudson.console.*;
 import hudson.model.Descriptor.FormException;
-import hudson.model.Run.RunExecution;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Executables;
@@ -58,7 +61,7 @@ import hudson.util.FormApply;
 import hudson.util.LogTaskListener;
 import hudson.util.ProcessTree;
 import hudson.util.XStream2;
-import java.io.BufferedReader;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,8 +71,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -83,7 +86,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -113,9 +115,14 @@ import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -349,7 +356,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     ((RunAction2) a).onLoad(this);
                 } catch (RuntimeException x) {
                     LOGGER.log(WARNING, "failed to load " + a + " from " + getDataFile(), x);
-                    getActions().remove(a); // if possible; might be in an inconsistent state
+                    removeAction(a); // if possible; might be in an inconsistent state
                 }
             } else if (a instanceof RunAction) {
                 ((RunAction) a).onLoad();
@@ -472,6 +479,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     public @Nonnull List<BuildBadgeAction> getBadgeActions() {
         List<BuildBadgeAction> r = getActions(BuildBadgeAction.class);
         if(isKeepLog()) {
+            r = new ArrayList<>(r);
             r.add(new KeepLogBuildBadge());
         }
         return r;
@@ -680,7 +688,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         String truncDesc = description;
 
-        // Could not find a preferred truncable index, force a trunc at maxTruncLength
+        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
             lastTruncatablePoint = maxTruncLength;
 
@@ -1205,7 +1213,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 //                        continue OUTER; // collision. Increase n and try again
 //                }
 //
-//                // this n successfully diambiguates
+//                // this n successfully disambiguates
 //                for (int i = 0; i < tokens.length; i++) {
 //                    String[] token = tokens[i];
 //                    get(i).displayPath = combineLast(token,n);
@@ -1856,7 +1864,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if(e instanceof IOException)
                 Util.displayIOException((IOException)e,listener);
 
-            e.printStackTrace(listener.fatalError(e.getMessage()));
+            Functions.printStackTrace(e, listener.fatalError(e.getMessage()));
         } else {
             LOGGER.log(SEVERE, getDisplayName()+" failed to build and we don't even have a listener",e);
         }
@@ -1930,34 +1938,54 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @throws IOException If there is a problem reading the log file.
      */
     public @Nonnull List<String> getLog(int maxLines) throws IOException {
-        int lineCount = 0;
-        List<String> logLines = new LinkedList<String>();
         if (maxLines == 0) {
-            return logLines;
+            return Collections.emptyList();
         }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(getLogFile()),getCharset()));
-        try {
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                logLines.add(line);
-                ++lineCount;
-                // If we have too many lines, remove the oldest line.  This way we
-                // never have to hold the full contents of a huge log file in memory.
-                // Adding to and removing from the ends of a linked list are cheap
-                // operations.
-                if (lineCount > maxLines)
-                    logLines.remove(0);
+
+        int lines = 0;
+        long filePointer;
+        final List<String> lastLines = new ArrayList<>(Math.min(maxLines, 128));
+        final List<Byte> bytes = new ArrayList<>();
+
+        try (RandomAccessFile fileHandler = new RandomAccessFile(getLogFile(), "r")) {
+            long fileLength = fileHandler.length() - 1;
+
+            for (filePointer = fileLength; filePointer != -1 && maxLines != lines; filePointer--) {
+                fileHandler.seek(filePointer);
+                byte readByte = fileHandler.readByte();
+
+                if (readByte == 0x0A) {
+                    if (filePointer < fileLength) {
+                        lines = lines + 1;
+                        lastLines.add(convertBytesToString(bytes));
+                        bytes.clear();
+                    }
+                } else if (readByte != 0xD) {
+                    bytes.add(readByte);
+                }
             }
-        } finally {
-            reader.close();
         }
+
+        if (lines != maxLines) {
+            lastLines.add(convertBytesToString(bytes));
+        }
+
+        Collections.reverse(lastLines);
 
         // If the log has been truncated, include that information.
         // Use set (replaces the first element) rather than add so that
         // the list doesn't grow beyond the specified maximum number of lines.
-        if (lineCount > maxLines)
-            logLines.set(0, "[...truncated " + (lineCount - (maxLines - 1)) + " lines...]");
+        if (lines == maxLines) {
+            lastLines.set(0, "[...truncated " + Functions.humanReadableByteSize(filePointer)+ "...]");
+        }
 
-        return ConsoleNote.removeNotes(logLines);
+        return ConsoleNote.removeNotes(lastLines);
+    }
+
+    private String convertBytesToString(List<Byte> bytes) {
+        Collections.reverse(bytes);
+        Byte[] byteArray = bytes.toArray(new Byte[bytes.size()]);
+        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
     }
 
     public void doBuildStatus( StaplerRequest req, StaplerResponse rsp ) throws IOException {
@@ -2165,9 +2193,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             delete();
         }
         catch(IOException ex){
-            StringWriter writer = new StringWriter();
-            ex.printStackTrace(new PrintWriter(writer));
-            req.setAttribute("stackTraces", writer);
+            req.setAttribute("stackTraces", Functions.printThrowable(ex));
             req.getView(this, "delete-retry.jelly").forward(req, rsp);  
             return;
         }

@@ -50,6 +50,11 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
 @Extension @Symbol("nullId")
 public class NullIdDescriptorMonitor extends AdministrativeMonitor {
 
+    @Override
+    public String getDisplayName() {
+        return Messages.NullIdDescriptorMonitor_DisplayName();
+    }
+
     private final List<Descriptor> problems = new ArrayList<Descriptor>();
 
     @Override

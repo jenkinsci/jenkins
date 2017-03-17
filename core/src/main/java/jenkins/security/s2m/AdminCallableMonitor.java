@@ -9,6 +9,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "Agent \u2192 Master Access Control";
+        return Messages.AdminCallableMonitor_DisplayName();
     }
 
     // bind this to URL
@@ -48,8 +49,9 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Depending on whether the user said "examin" or "dismiss", send him to the right place.
+     * Depending on whether the user said "examine" or "dismiss", send him to the right place.
      */
+    @RequirePOST
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {
         if(dismiss!=null) {
             disable(true);

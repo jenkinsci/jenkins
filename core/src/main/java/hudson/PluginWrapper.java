@@ -417,7 +417,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the required Jenkins core version of this plugin.
      * @return the required Jenkins core version of this plugin.
-     * @since XXX
+     * @since 2.16
      */
     @Exported
     public @CheckForNull String getRequiredCoreVersion() {
@@ -576,7 +576,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), d.version));
+                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()));
                     break;
                 } else {
                     dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
@@ -708,11 +708,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         File backup = getBackupFile();
         if (backup.exists()) {
             try {
-                JarFile backupPlugin = new JarFile(backup);
-                try {
+                try (JarFile backupPlugin = new JarFile(backup)) {
                     return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
-                } finally {
-                    backupPlugin.close();
                 }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
@@ -746,6 +743,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         public boolean isActivated() {
             return !plugins.isEmpty();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
         }
 
         public Collection<PluginWrapper> getPlugins() {

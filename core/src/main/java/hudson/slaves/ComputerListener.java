@@ -143,7 +143,7 @@ public abstract class ComputerListener implements ExtensionPoint {
      * Starting Hudson 1.312, this method is also invoked for the master, not just for agents.
      *
      * @param listener
-     *      This is connected to the launch log of the computer.
+     *      This is connected to the launch log of the computer or Jenkins master.
      *      Since this method is called synchronously from the thread
      *      that launches a computer, if this method performs a time-consuming
      *      operation, this listener should be notified of the progress.

@@ -25,10 +25,14 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -42,6 +46,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -51,6 +56,7 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.LegacySecurityRealm;
 import hudson.security.Permission;
@@ -70,8 +76,15 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import org.junit.Assume;
 
 /**
  * @author kingfai
@@ -80,6 +93,28 @@ import java.net.URL;
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Issue("SECURITY-406")
+    @Test
+    public void testUserCreationFromUrlForAdmins() throws Exception {
+        WebClient wc = j.createWebClient();
+
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        wc.assertFails("user/nonexistent", 404);
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+
+        try {
+            User.ALLOW_USER_CREATION_VIA_URL = true;
+
+            // expected to work
+            wc.goTo("user/nonexistent2");
+
+            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+
+        } finally {
+            User.ALLOW_USER_CREATION_VIA_URL = false;
+        }
+    }
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
@@ -451,5 +486,133 @@ public class JenkinsTest {
 
         assertThat(rsp.getContentAsString(), containsString("Node is offline"));
         assertThat(rsp.getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    @Issue("JENKINS-38487")
+    public void startupShouldNotFailOnFailingOnlineListener() {
+        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+        // boot failure if the issue is not fixed.
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
+    public static final class FailingOnOnlineListener extends ComputerListener {
+        
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            throw new IOException("Something happened (the listener always throws this exception)");
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP3-connect")));
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add("JNLP3-connect");
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertThat("JNLP3-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have additional enabled protocol", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP3-connect"));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("At least one protocol is enabled", defaultProtocols.size(), greaterThan(0));
+        
+        final String protocolToDisable = defaultProtocols.iterator().next();
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertThat(protocolToDisable + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled one protocol", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
+        assertThat(protocolToDisable + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP3-connect")));
+        Assume.assumeThat("We assume that JNLP4-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP4-connect")));
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add("JNLP3-connect");
+        newProtocols.add("JNLP4-connect");
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertThat("JNLP3-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
+        assertThat("JNLP4-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP4-connect"));
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have two additional enabled protocols", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP3-connect"));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP4-connect"));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("At least two protocol should be enabled", defaultProtocols.size(), greaterThan(1));
+        
+        Iterator<String> iterator = defaultProtocols.iterator();
+        final String protocolToDisable1 = iterator.next();
+        final String protocolToDisable2 = iterator.next();
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable1);
+        newProtocols.remove(protocolToDisable2);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertThat(protocolToDisable1 + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
+        assertThat(protocolToDisable2 + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled two protocols", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
+        assertThat(protocolToDisable1 + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
+        assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
     }
 }

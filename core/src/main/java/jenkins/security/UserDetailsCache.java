@@ -47,7 +47,7 @@ import static com.google.common.cache.CacheBuilder.newBuilder;
 /**
  * Cache layer for {@link org.acegisecurity.userdetails.UserDetails} lookup.
  *
- * @since TODO
+ * @since 2.15
  */
 @Extension
 public final class UserDetailsCache {
@@ -59,7 +59,7 @@ public final class UserDetailsCache {
      */
     private static /*not final*/ Integer EXPIRE_AFTER_WRITE_SEC = SystemProperties.getInteger(SYS_PROP_NAME, (int)TimeUnit.MINUTES.toSeconds(2));
     private final Cache<String, UserDetails> detailsCache;
-    private final Cache<String, Boolean> existanceCache;
+    private final Cache<String, Boolean> existenceCache;
 
     /**
      * Constructor intended to be instantiated by Jenkins only.
@@ -75,7 +75,7 @@ public final class UserDetailsCache {
             }
         }
         detailsCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
-        existanceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
+        existenceCache = newBuilder().softValues().expireAfterWrite(EXPIRE_AFTER_WRITE_SEC, TimeUnit.SECONDS).build();
     }
 
     /**
@@ -97,7 +97,7 @@ public final class UserDetailsCache {
      */
     @CheckForNull
     public UserDetails getCached(String idOrFullName) throws UsernameNotFoundException {
-        Boolean exists = existanceCache.getIfPresent(idOrFullName);
+        Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if (exists != null && !exists) {
             throw new UserMayOrMayNotExistException(String.format("\"%s\" does not exist", idOrFullName));
         } else {
@@ -119,7 +119,7 @@ public final class UserDetailsCache {
      */
     @Nonnull
     public UserDetails loadUserByUsername(String idOrFullName) throws UsernameNotFoundException, DataAccessException, ExecutionException {
-        Boolean exists = existanceCache.getIfPresent(idOrFullName);
+        Boolean exists = existenceCache.getIfPresent(idOrFullName);
         if(exists != null && !exists) {
             throw new UsernameNotFoundException(String.format("\"%s\" does not exist", idOrFullName));
         } else {
@@ -141,7 +141,7 @@ public final class UserDetailsCache {
      * Discards all entries in the cache.
      */
     public void invalidateAll() {
-        existanceCache.invalidateAll();
+        existenceCache.invalidateAll();
         detailsCache.invalidateAll();
     }
 
@@ -150,7 +150,7 @@ public final class UserDetailsCache {
      * @param idOrFullName the key
      */
     public void invalidate(final String idOrFullName) {
-        existanceCache.invalidate(idOrFullName);
+        existenceCache.invalidate(idOrFullName);
         detailsCache.invalidate(idOrFullName);
     }
 
@@ -171,17 +171,17 @@ public final class UserDetailsCache {
                 Jenkins jenkins = Jenkins.getInstance();
                 UserDetails userDetails = jenkins.getSecurityRealm().loadUserByUsername(idOrFullName);
                 if (userDetails == null) {
-                    existanceCache.put(this.idOrFullName, Boolean.FALSE);
+                    existenceCache.put(this.idOrFullName, Boolean.FALSE);
                     throw new NullPointerException("hudson.security.SecurityRealm should never return null. "
                                                    + jenkins.getSecurityRealm() + " returned null for idOrFullName='" + idOrFullName + "'");
                 }
-                existanceCache.put(this.idOrFullName, Boolean.TRUE);
+                existenceCache.put(this.idOrFullName, Boolean.TRUE);
                 return userDetails;
             } catch (UsernameNotFoundException e) {
-                existanceCache.put(this.idOrFullName, Boolean.FALSE);
+                existenceCache.put(this.idOrFullName, Boolean.FALSE);
                 throw e;
             } catch (DataAccessException e) {
-                existanceCache.invalidate(this.idOrFullName);
+                existenceCache.invalidate(this.idOrFullName);
                 throw e;
             }
         }

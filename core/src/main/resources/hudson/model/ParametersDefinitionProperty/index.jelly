@@ -45,6 +45,7 @@ THE SOFTWARE.
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
               tableClass="parameters">
         <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
+          <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
           <tbody>
             <st:include it="${parameterDefinition}"
                         page="${parameterDefinition.descriptor.valuePage}" />

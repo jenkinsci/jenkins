@@ -43,8 +43,8 @@ public class FileParameterValueTest {
         final FileParameterValue param1 = new FileParameterValue(paramName, new File("ws_param1.txt"), "param1.txt");
         final FileParameterValue param2 = new FileParameterValue(paramName, new File("ws_param2.txt"), "param2.txt");
         
-        assertNotEquals("Files with same locations shoud be considered as different", param1, param2);
-        assertNotEquals("Files with same locations shoud be considered as different", param2, param1);
+        assertNotEquals("Files with same locations should be considered as different", param1, param2);
+        assertNotEquals("Files with same locations should be considered as different", param2, param1);
     }
     
     @Test public void compareNullParams() {

@@ -29,6 +29,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
@@ -124,6 +125,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      */
     public transient PrintStream stdout,stderr;
 
+    /**
+     * Shared text, which is reported back to CLI if an error happens in commands 
+     * taking lists of parameters.
+     * @since 2.26
+     */
+    static final String CLI_LISTPARAM_SUMMARY_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
+    
     /**
      * Connected to stdin of the CLI agent.
      *
@@ -291,7 +299,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("");
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
-            e.printStackTrace(stderr);
+            Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
             if(sc != null)
@@ -311,7 +319,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     
     public Channel checkChannel() throws AbortException {
         if (channel==null)
-            throw new AbortException("This command can only run with Jenkins CLI. See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI");
+            throw new AbortException("This command can only run with Jenkins CLI. See https://jenkins.io/redirect/cli-command-requires-channel");
         return channel;
     }
 
@@ -325,7 +333,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 return new ClientAuthenticationCache(channel).get();
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
-            e.printStackTrace(stderr);  // recover
+            Functions.printStackTrace(e, stderr);  // recover
         }
         return Jenkins.ANONYMOUS;
     }
@@ -393,11 +401,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @throws IllegalArgumentException
      *      If the execution can't continue due to wrong input parameter (job doesn't exist etc.)
      * @throws IllegalStateException
-     *      If the execution can't continue due to an incorect state of Jenkins, job, build etc.
+     *      If the execution can't continue due to an incorrect state of Jenkins, job, build etc.
      * @throws AbortException
      *      If the execution can't continue due to an other (rare, but foreseeable) issue
      * @throws AccessDeniedException
-     *      If the caller doesn't have sufficent rights for requested action
+     *      If the caller doesn't have sufficient rights for requested action
      * @throws BadCredentialsException
      *      If bad credentials were provided to CLI
      */

@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.View;
 import hudson.model.ViewGroup;
+import java.util.Locale;
+import java.util.logging.Level;
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
@@ -99,6 +101,15 @@ public abstract class ViewGroupMixIn {
             View pv = getPrimaryView();
             if (pv instanceof ViewGroup)
                 return ((ViewGroup)pv).getView(name);
+            if (pv instanceof AllView && AllView.DEFAULT_VIEW_NAME.equals(pv.name)) {
+                // JENKINS-38606: primary view is the default AllView, is somebody using an old link to localized form?
+                for (Locale l : Locale.getAvailableLocales()) {
+                    if (name.equals(Messages._Hudson_ViewName().toString(l))) {
+                        // why yes they are, let's keep that link working
+                        return pv;
+                    }
+                }
+            }
         }
         return null;
     }

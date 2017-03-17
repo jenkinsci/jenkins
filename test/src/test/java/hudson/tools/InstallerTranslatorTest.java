@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
@@ -32,9 +33,12 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.RetentionStrategy;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -64,38 +68,81 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-17667")
     @Test public void multipleSlavesAndTools() throws Exception {
+        String jdk1Path = Functions.isWindows() ? "C:\\jdk1" : "/opt/jdk1";
+        String jdk2Path = Functions.isWindows() ? "C:\\jdk2" : "/opt/jdk2";
         Node slave1 = r.createSlave();
         Node slave2 = r.createSlave();
-        JDK jdk1 = new JDK("jdk1", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "echo installed jdk1", "/opt/jdk1")))));
-        JDK jdk2 = new JDK("jdk2", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "echo installed jdk2", "/opt/jdk2")))));
+        JDK jdk1 = new JDK("jdk1", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(Functions.isWindows() ? new BatchCommandInstaller(null, "echo installed jdk1", jdk1Path) : new CommandInstaller(null, "echo installed jdk1", jdk1Path)))));
+        JDK jdk2 = new JDK("jdk2", null, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(Functions.isWindows() ? new BatchCommandInstaller(null, "echo installed jdk2", jdk2Path) : new CommandInstaller(null, "echo installed jdk2", jdk2Path)))));
         r.jenkins.getJDKs().add(jdk1);
         r.jenkins.getJDKs().add(jdk2);
         FreeStyleProject p = r.createFreeStyleProject();
         p.setJDK(jdk1);
-        p.getBuildersList().add(new Shell("echo $JAVA_HOME"));
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
         p.setAssignedNode(slave1);
         FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk1", b1);
-        r.assertLogContains("/opt/jdk1", b1);
+        r.assertLogContains(jdk1Path, b1);
         p.setJDK(jdk2);
         FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk2", b2);
-        r.assertLogContains("/opt/jdk2", b2);
+        r.assertLogContains(jdk2Path, b2);
         FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
         // An installer is run for every build, and it is up to a CommandInstaller configuration to do any up-to-date check.
         r.assertLogContains("installed jdk2", b3);
-        r.assertLogContains("/opt/jdk2", b3);
+        r.assertLogContains(jdk2Path, b3);
         p.setAssignedNode(slave2);
         FreeStyleBuild b4 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk2", b4);
-        r.assertLogContains("/opt/jdk2", b4);
+        r.assertLogContains(jdk2Path, b4);
         p.setJDK(jdk1);
         FreeStyleBuild b5 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk1", b5);
-        r.assertLogContains("/opt/jdk1", b5);
+        r.assertLogContains(jdk1Path, b5);
         FreeStyleBuild b6 = r.buildAndAssertSuccess(p);
         r.assertLogContains("installed jdk1", b6);
-        r.assertLogContains("/opt/jdk1", b6);
+        r.assertLogContains(jdk1Path, b6);
+    }
+
+    @Issue("JENKINS-26940")
+    @Test
+    public void testMessageLoggedWhenNoInstallerFound() throws Exception {
+        final CommandInstaller ci = new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
+        final BatchCommandInstaller bci = new BatchCommandInstaller("wrong2", "echo hello", "/opt/jdk2");
+        InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, bci));
+
+        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        r.jenkins.getJDKs().add(jdk);
+
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setJDK(jdk);
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        r.assertLogContains(hudson.tools.Messages.CannotBeInstalled(ci.getDescriptor().getDisplayName(), jdk.getName(), r.jenkins.getDisplayName()), b1);
+        r.assertLogContains(hudson.tools.Messages.CannotBeInstalled(bci.getDescriptor().getDisplayName(), jdk.getName(), r.jenkins.getDisplayName()), b1);
+    }
+
+    @Issue("JENKINS-26940")
+    @Test
+    public void testNoMessageLoggedWhenAnyInstallerFound() throws Exception {
+        final AbstractCommandInstaller ci = Functions.isWindows()
+                ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
+                : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
+        final AbstractCommandInstaller ci2 = Functions.isWindows()
+                ? new BatchCommandInstaller("master", "echo hello", "C:\\jdk2")
+                : new CommandInstaller("master", "echo hello", "/opt/jdk2");
+        InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
+
+        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        r.jenkins.getJDKs().add(jdk);
+
+
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setJDK(jdk);
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo %JAVA_HOME%") : new Shell("echo $JAVA_HOME"));
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
+        r.assertLogNotContains(ci.getDescriptor().getDisplayName(), b1);
     }
 
 }

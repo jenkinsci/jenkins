@@ -1151,7 +1151,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 return new BlockedBecauseOfBuildInProgress(lastBuild);
             } else {
                 // The build has been likely deleted after the isLogUpdated() call.
-                // Another cause may be an API implemetation glitсh in the implementation for AbstractProject. 
+                // Another cause may be an API implementation glitсh in the implementation for AbstractProject. 
                 // Anyway, we should let the code go then.
                 LOGGER.log(Level.FINE, "The last build has been deleted during the non-concurrent cause creation. The build is not blocked anymore");
             }
@@ -1370,11 +1370,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (IOException e) {
-            e.printStackTrace(listener.fatalError(e.getMessage()));
+            Functions.printStackTrace(e, listener.fatalError(e.getMessage()));
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.fatalError(Messages.AbstractProject_PollingABorted()));
+            Functions.printStackTrace(e, listener.fatalError(Messages.AbstractProject_PollingABorted()));
             SCMPollListener.firePollingFailed(this, listener,e);
             return NO_CHANGES;
         } catch (RuntimeException e) {
@@ -1618,7 +1618,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Gets the specific trigger, or null if the propert is not configured for this job.
+     * Gets the specific trigger, or null if the property is not configured for this job.
      */
     public <T extends Trigger> T getTrigger(Class<T> clazz) {
         for (Trigger p : triggers()) {

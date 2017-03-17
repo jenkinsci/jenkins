@@ -63,12 +63,11 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     }
 
     public String getDisplayName() {
-
         return "Jenkins CLI";
     }
 
     public String getUrlName() {
-        return "cli";
+        return jenkins.CLI.DISABLED ? null : "cli";
     }
 
     public void doCommand(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {

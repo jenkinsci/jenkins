@@ -39,12 +39,12 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.
-      path is interprted as relative to the context root. e.g.,
+      path is interpreted as relative to the context root. e.g.,
 
       {noformat}&lt;l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">{noformat}
 
       This was originally added to allow plugins to load their stylesheets, but
-      *the use of thie attribute is discouraged now.*
+      *the use of this attribute is discouraged now.*
       plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
       in &lt;l:header/> tag.
     </st:attribute>
@@ -147,6 +147,7 @@ ${h.initPageVariables(context)}
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
     </l:hasPermission>
     <meta name="ROBOTS" content="INDEX,NOFOLLOW" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <j:set var="mode" value="header" />
     <d:invokeBody />
     <j:if test="${extensionsAvailable}">

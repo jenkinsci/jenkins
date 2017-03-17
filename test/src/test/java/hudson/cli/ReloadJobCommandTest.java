@@ -25,8 +25,11 @@
 package hudson.cli;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Builder;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Before;
@@ -58,7 +61,7 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobShouldFailWithoutJobConfigurePermission() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1"));
+        project.getBuildersList().add(createScriptBuilder("echo 1"));
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
 
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
@@ -77,7 +80,7 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobShouldFailWithoutJobReadPermission() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1"));
+        project.getBuildersList().add(createScriptBuilder("echo 1"));
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
 
         changeProjectOnTheDisc(project, "echo 1", "echo 2");
@@ -96,7 +99,7 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobShouldSucceed() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1"));
+        project.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
 
@@ -134,13 +137,12 @@ public class ReloadJobCommandTest {
     }
 
     @Test public void reloadJobManyShouldSucceed() throws Exception {
-
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project3 = j.createFreeStyleProject("aProject3");
-        project3.getBuildersList().add(new Shell("echo 1"));
+        project3.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -164,9 +166,9 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -181,7 +183,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -190,9 +192,9 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -207,7 +209,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -216,9 +218,9 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -233,7 +235,7 @@ public class ReloadJobCommandTest {
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -242,9 +244,9 @@ public class ReloadJobCommandTest {
     @Test public void reloadJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
 
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -260,18 +262,17 @@ public class ReloadJobCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("never_created1: No such job \u2018never_created1\u2019 exists."));
         assertThat(result.stderr(), containsString("never_created2: No such job \u2018never_created2\u2019 exists."));
-        assertThat(result.stderr(), containsString("ERROR: Error occured while performing this command, see previous stderr output."));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
     }
 
     @Test public void reloadJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {
-
         FreeStyleProject project1 = j.createFreeStyleProject("aProject1");
-        project1.getBuildersList().add(new Shell("echo 1"));
+        project1.getBuildersList().add(createScriptBuilder("echo 1"));
         FreeStyleProject project2 = j.createFreeStyleProject("aProject2");
-        project2.getBuildersList().add(new Shell("echo 1"));
+        project2.getBuildersList().add(createScriptBuilder("echo 1"));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
         assertThat(project2.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
@@ -302,5 +303,14 @@ public class ReloadJobCommandTest {
 
         FilePath fp = new FilePath(new File(project.getRootDir()+"/config.xml"));
         fp.write(fp.readToString().replace(oldstr, newstr), null);
+    }
+
+    /**
+     * Create a script based builder (either Shell or BatchFile) depending on platform
+     * @param script the contents of the script to run
+     * @return A Builder instance of either Shell or BatchFile
+     */
+    private Builder createScriptBuilder(String script) {
+        return Functions.isWindows() ? new BatchFile(script) : new Shell(script);
     }
 }

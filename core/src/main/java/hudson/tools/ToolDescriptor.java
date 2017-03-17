@@ -100,7 +100,7 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Lists up {@link ToolPropertyDescriptor}s that are applicable to this {@link ToolInstallation}.
      */
     public List<ToolPropertyDescriptor> getPropertyDescriptors() {
-        return PropertyDescriptor.for_(ToolProperty.all(),clazz);
+        return PropertyDescriptor.<ToolPropertyDescriptor, ToolInstallation>for_(ToolProperty.all(), clazz);
     }
 
 

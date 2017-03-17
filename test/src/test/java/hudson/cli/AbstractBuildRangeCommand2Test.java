@@ -25,10 +25,12 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.labels.LabelAtom;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import org.junit.Before;
@@ -88,7 +90,7 @@ public class AbstractBuildRangeCommand2Test {
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1\nsleep 10s"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10s"));
         assertThat("Job wasn't scheduled properly", project.scheduleBuild(0), equalTo(true));
 
         // Wait until classProject is started (at least 1s)
@@ -106,7 +108,7 @@ public class AbstractBuildRangeCommand2Test {
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1\n"));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
     }
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
@@ -124,7 +126,7 @@ public class AbstractBuildRangeCommand2Test {
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: \n"));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
 }

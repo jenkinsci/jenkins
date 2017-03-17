@@ -67,6 +67,7 @@ import net.sf.json.JSONObject;
 
 import org.acegisecurity.Authentication;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
@@ -116,7 +117,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -141,6 +141,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import static hudson.init.InitMilestone.*;
 import hudson.model.DownloadService;
 import hudson.util.FormValidation;
+import java.io.ByteArrayInputStream;
+import java.net.JarURLConnection;
+import java.net.URLConnection;
+import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
@@ -814,100 +818,102 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class)
     public void dynamicLoad(File arc, boolean removeExisting) throws IOException, InterruptedException, RestartRequiredException {
-        LOGGER.info("Attempting to dynamic load "+arc);
-        PluginWrapper p = null;
-        String sn;
-        try {
-            sn = strategy.getShortName(arc);
-        } catch (AbstractMethodError x) {
-            LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
-            p = strategy.createPluginWrapper(arc);
-            sn = p.getShortName();
-        }
-        PluginWrapper pw = getPlugin(sn);
-        if (pw!=null) {
-            if (removeExisting) { // try to load disabled plugins
-                for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
-                    pw = i.next();
-                    if(sn.equals(pw.getShortName())) {
-                        i.remove();
-                        pw = null;
+        try (ACLContext context = ACL.as(ACL.SYSTEM)) {
+            LOGGER.info("Attempting to dynamic load "+arc);
+            PluginWrapper p = null;
+            String sn;
+            try {
+                sn = strategy.getShortName(arc);
+            } catch (AbstractMethodError x) {
+                LOGGER.log(WARNING, "JENKINS-12753 fix not active: {0}", x.getMessage());
+                p = strategy.createPluginWrapper(arc);
+                sn = p.getShortName();
+            }
+            PluginWrapper pw = getPlugin(sn);
+            if (pw!=null) {
+                if (removeExisting) { // try to load disabled plugins
+                    for (Iterator<PluginWrapper> i = plugins.iterator(); i.hasNext();) {
+                        pw = i.next();
+                        if(sn.equals(pw.getShortName())) {
+                            i.remove();
+                            pw = null;
+                            break;
+                        }
+                    }
+                } else {
+                    throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
+                }
+            }
+            if (p == null) {
+                p = strategy.createPluginWrapper(arc);
+            }
+            if (p.supportsDynamicLoad()== YesNoMaybe.NO)
+                throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
+
+            // there's no need to do cyclic dependency check, because we are deploying one at a time,
+            // so existing plugins can't be depending on this newly deployed one.
+
+            plugins.add(p);
+            if (p.isActive())
+                activePlugins.add(p);
+            synchronized (((UberClassLoader) uberClassLoader).loaded) {
+                ((UberClassLoader) uberClassLoader).loaded.clear();
+            }
+
+            try {
+                p.resolvePluginDependencies();
+                strategy.load(p);
+
+                Jenkins.getInstance().refreshExtensions();
+
+                p.getPlugin().postInitialize();
+            } catch (Exception e) {
+                failedPlugins.add(new FailedPlugin(sn, e));
+                activePlugins.remove(p);
+                plugins.remove(p);
+                throw new IOException("Failed to install "+ sn +" plugin",e);
+            }
+
+            // run initializers in the added plugin
+            Reactor r = new Reactor(InitMilestone.ordering());
+            final ClassLoader loader = p.classLoader;
+            r.addAll(new InitializerFinder(loader) {
+                @Override
+                protected boolean filter(Method e) {
+                    return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
+                }
+            }.discoverTasks(r));
+            try {
+                new InitReactorRunner().run(r);
+            } catch (ReactorException e) {
+                throw new IOException("Failed to initialize "+ sn +" plugin",e);
+            }
+
+            // recalculate dependencies of plugins optionally depending the newly deployed one.
+            for (PluginWrapper depender: plugins) {
+                if (depender.equals(p)) {
+                    // skip itself.
+                    continue;
+                }
+                for (Dependency d: depender.getOptionalDependencies()) {
+                    if (d.shortName.equals(p.getShortName())) {
+                        // this plugin depends on the newly loaded one!
+                        // recalculate dependencies!
+                        try {
+                            getPluginStrategy().updateDependency(depender, p);
+                        } catch (AbstractMethodError x) {
+                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
+                        }
                         break;
                     }
                 }
-            } else {
-                throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
             }
+
+            // Redo who depends on who.
+            resolveDependantPlugins();
+
+            LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
         }
-        if (p == null) {
-            p = strategy.createPluginWrapper(arc);
-        }
-        if (p.supportsDynamicLoad()== YesNoMaybe.NO)
-            throw new RestartRequiredException(Messages._PluginManager_PluginDoesntSupportDynamicLoad_RestartRequired(sn));
-
-        // there's no need to do cyclic dependency check, because we are deploying one at a time,
-        // so existing plugins can't be depending on this newly deployed one.
-
-        plugins.add(p);
-        if (p.isActive())
-            activePlugins.add(p);
-        synchronized (((UberClassLoader) uberClassLoader).loaded) {
-            ((UberClassLoader) uberClassLoader).loaded.clear();
-        }
-
-        try {
-            p.resolvePluginDependencies();
-            strategy.load(p);
-
-            Jenkins.getInstance().refreshExtensions();
-
-            p.getPlugin().postInitialize();
-        } catch (Exception e) {
-            failedPlugins.add(new FailedPlugin(sn, e));
-            activePlugins.remove(p);
-            plugins.remove(p);
-            throw new IOException("Failed to install "+ sn +" plugin",e);
-        }
-
-        // run initializers in the added plugin
-        Reactor r = new Reactor(InitMilestone.ordering());
-        final ClassLoader loader = p.classLoader;
-        r.addAll(new InitializerFinder(loader) {
-            @Override
-            protected boolean filter(Method e) {
-                return e.getDeclaringClass().getClassLoader() != loader || super.filter(e);
-            }
-        }.discoverTasks(r));
-        try {
-            new InitReactorRunner().run(r);
-        } catch (ReactorException e) {
-            throw new IOException("Failed to initialize "+ sn +" plugin",e);
-        }
-
-        // recalculate dependencies of plugins optionally depending the newly deployed one.
-        for (PluginWrapper depender: plugins) {
-            if (depender.equals(p)) {
-                // skip itself.
-                continue;
-            }
-            for (Dependency d: depender.getOptionalDependencies()) {
-                if (d.shortName.equals(p.getShortName())) {
-                    // this plugin depends on the newly loaded one!
-                    // recalculate dependencies!
-                    try {
-                        getPluginStrategy().updateDependency(depender, p);
-                    } catch (AbstractMethodError x) {
-                        LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Redo who depends on who.
-        resolveDependantPlugins();
-
-        LOGGER.info("Plugin " + p.getShortName()+":"+p.getVersion() + " dynamically installed");
     }
 
     @Restricted(NoExternalUse.class)
@@ -935,7 +941,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * If the war file has any "/WEB-INF/plugins/[*.jpi | *.hpi]", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subvesrion.jpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.hpi","subversion.jpi"}
      * @throws Exception
      *      Any exception will be reported and halt the startup.
      */
@@ -948,7 +954,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
-        long lastModified = src.openConnection().getLastModified();
+        long lastModified = getModificationDate(src);
         File file = new File(rootDir, fileName);
 
         // normalization first, if the old file exists.
@@ -959,7 +965,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         //  - bundled version and current version differs (by timestamp).
         if (!file.exists() || file.lastModified() != lastModified) {
             FileUtils.copyURLToFile(src, file);
-            file.setLastModified(src.openConnection().getLastModified());
+            file.setLastModified(getModificationDate(src));
             // lastModified is set for two reasons:
             // - to avoid unpacking as much as possible, but still do it on both upgrade and downgrade
             // - to make sure the value is not changed after each restart, so we can avoid
@@ -970,19 +976,19 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         // See https://groups.google.com/d/msg/jenkinsci-dev/kRobm-cxFw8/6V66uhibAwAJ
     }
 
-    private static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
+    /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
         try {
             URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi});
             InputStream in=null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
                 if (res!=null) {
-                    in = res.openStream();
+                    in = getBundledJpiManifestStream(res);
                     Manifest manifest = new Manifest(in);
                     return manifest;
                 }
             } finally {
-                IOUtils.closeQuietly(in);
+                Util.closeAndLogFailures(in, LOGGER, PluginWrapper.MANIFEST_FILENAME, bundledJpi.toString());
                 if (cl instanceof Closeable)
                     ((Closeable)cl).close();
             }
@@ -990,6 +996,81 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(WARNING, "Failed to parse manifest of "+bundledJpi, e);
         }
         return null;
+    }
+    
+    /**
+     * Retrieves input stream for the Manifest url.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the manifest file
+     * @return Input stream, which allows to retrieve manifest. This stream must be closed outside
+     * @throws IOException Operation error
+     */
+    @Nonnull
+    /*package*/ static InputStream getBundledJpiManifestStream(@Nonnull URL url) throws IOException {
+        URLConnection uc = url.openConnection();
+        InputStream in = null;
+        // Magic, which allows to avoid using stream generated for JarURLConnection.
+        // It prevents getting into JENKINS-37332 due to the file descriptor leak 
+        if (uc instanceof JarURLConnection) {
+            final JarURLConnection jarURLConnection = (JarURLConnection) uc;
+            final String entryName = jarURLConnection.getEntryName();
+            
+            try(final JarFile jarFile = jarURLConnection.getJarFile()) {
+                final JarEntry entry = (entryName != null && jarFile != null) ? jarFile.getJarEntry(entryName) : null;
+                if (entry != null && jarFile != null) {
+                    try(InputStream i = jarFile.getInputStream(entry)) {
+                        byte[] manifestBytes = IOUtils.toByteArray(i);
+                        in = new ByteArrayInputStream(manifestBytes);
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Failed to locate the JAR file for {0}"
+                            + "The default URLConnection stream access will be used, file descriptor may be leaked.",
+                               url);
+                }
+            }
+        } 
+
+        // If input stream is undefined, use the default implementation
+        if (in == null) {
+            in = url.openStream();
+        }
+        
+        return in;
+    }
+    
+    /**
+     * Retrieves modification date of the specified file.
+     * The method intelligently handles the case of {@link JarURLConnection} pointing to files within JAR.
+     * @param url Url of the file
+     * @return Modification date
+     * @throws IOException Operation error
+     */
+    @Nonnull
+    /*package*/ static long getModificationDate(@Nonnull URL url) throws IOException {
+        URLConnection uc = url.openConnection();
+        
+        // It prevents file descriptor leak if the URL references a file within JAR
+        // See JENKINS-37332  for more info
+        // The code idea is taken from https://github.com/jknack/handlebars.java/pull/394
+        if (uc instanceof JarURLConnection) {
+            final JarURLConnection connection = (JarURLConnection) uc;
+            final URL jarURL = connection.getJarFileURL();
+            if (jarURL.getProtocol().equals("file")) {
+                uc = null;
+                String file = jarURL.getFile();
+                return new File(file).lastModified();
+            } else {
+                // We access the data without file protocol
+                if (connection.getEntryName() != null) {
+                    LOGGER.log(WARNING, "Accessing modification date of {0} file, which is an entry in JAR file. "
+                        + "The access protocol is not file:, falling back to the default logic (risk of file descriptor leak).",
+                            url);
+                }
+            }
+        }
+        
+        // Fallbak to the default implementation
+        return uc.getLastModified();
     }
 
     /**
@@ -1065,8 +1146,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Get the plugin instance with the given short name.
      * @param shortName the short name of the plugin
-     * @return The plugin singleton or <code>null</code> if a plugin with the given short name does not exist.
+     * @return The plugin singleton or {@code null} if a plugin with the given short name does not exist.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(String shortName) {
         for (PluginWrapper p : getPlugins()) {
             if(p.getShortName().equals(shortName))
@@ -1079,8 +1163,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Get the plugin instance that implements a specific class, use to find your plugin singleton.
      * Note: beware the classloader fun.
      * @param pluginClazz The class that your plugin implements.
-     * @return The plugin singleton or <code>null</code> if for some reason the plugin is not loaded.
+     * @return The plugin singleton or {@code null} if for some reason the plugin is not loaded.
+     *         The fact the plugin is loaded does not mean it is enabled and fully initialized for the current Jenkins session.
+     *         Use {@link Plugin#getWrapper()} and then {@link PluginWrapper#isActive()} to check it.
      */
+    @CheckForNull
     public PluginWrapper getPlugin(Class<? extends Plugin> pluginClazz) {
         for (PluginWrapper p : getPlugins()) {
             if(pluginClazz.isInstance(p.getPlugin()))
@@ -1137,7 +1224,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (PluginWrapper p : activePlugins) {
             if (p.classLoader==cl) {
                 if (oneAndOnly!=null)
-                    return null;    // ambigious
+                    return null;    // ambiguous
                 oneAndOnly = p;
             }
         }
@@ -1331,7 +1418,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     UpdateSite.Plugin plugin = getPlugin(pluginName, siteName);
                     // There could be cases like:
                     // 'plugin.ambiguous.updatesite' where both
-                    // 'plugin' @ 'ambigiuous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
+                    // 'plugin' @ 'ambiguous.updatesite' and 'plugin.ambiguous' @ 'updatesite' resolve to valid plugins
                     if (plugin != null) {
                         if (p != null) {
                             throw new Failure("Ambiguous plugin: " + n);
@@ -1445,9 +1532,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
         sites.add(new UpdateSite(UpdateCenter.ID_DEFAULT, site));
 
-        return HttpResponses.redirectToContextRoot();
+        return new HttpRedirect("advanced");
     }
-
 
     @RequirePOST
     public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
@@ -1476,7 +1562,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
 
             // Parse the request
-            FileItem fileItem = (FileItem) upload.parseRequest(req).get(0);
+            FileItem fileItem = upload.parseRequest(req).get(0);
             String fileName = Util.getFileName(fileItem.getName());
             if("".equals(fileName)){
                 return new HttpRedirect("advanced");
@@ -1489,7 +1575,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
-            fileItem.write(t);
+            try {
+                fileItem.write(t);
+            } catch (Exception e) {
+                // Exception thrown is too generic so at least limit the scope where it can occur
+                throw new ServletException(e);
+            }
             fileItem.delete();
 
             final String baseName = identifyPluginShortName(t);
@@ -1525,9 +1616,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
             return new HttpRedirect("../updateCenter");
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {// grrr. fileItem.write throws this
+        } catch (FileUploadException e) {
             throw new ServletException(e);
         }
     }
@@ -1862,7 +1951,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * Stores {@link Plugin} instances.
      */
     /*package*/ static final class PluginInstanceStore {
-        final Map<PluginWrapper,Plugin> store = new Hashtable<PluginWrapper,Plugin>();
+        final Map<PluginWrapper,Plugin> store = new ConcurrentHashMap<PluginWrapper,Plugin>();
     }
 
     /**
@@ -1870,6 +1959,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Extension @Symbol("pluginCycleDependencies")
     public static final class PluginCycleDependenciesMonitor extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginCycleDependenciesMonitor_DisplayName();
+        }
 
         private transient volatile boolean isActive = false;
 
@@ -1928,6 +2022,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         public boolean isActivated() {
             return !pluginsToBeUpdated.isEmpty();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_PluginUpdateMonitor_DisplayName();
         }
 
         /**

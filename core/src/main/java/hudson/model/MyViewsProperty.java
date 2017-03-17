@@ -83,9 +83,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
             views = new CopyOnWriteArrayList<View>();
 
-        if (views.isEmpty())
+        if (views.isEmpty()) {
             // preserve the non-empty invariant
-            views.add(new AllView(Messages.Hudson_ViewName(), this));
+            views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
+        }
+        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }

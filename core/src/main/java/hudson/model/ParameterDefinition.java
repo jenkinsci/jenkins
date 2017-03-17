@@ -79,7 +79,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  * through XStream.
  *
  *
- * <h2>Assocaited Views</h2>
+ * <h2>Associated Views</h2>
  * <h4>config.jelly</h4>
  * <p>
  * {@link ParameterDefinition} class uses <tt>config.jelly</tt> to contribute a form

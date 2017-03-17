@@ -23,7 +23,7 @@
  */
 package hudson.model;
 
-import hudson.ExtensionList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -65,23 +66,21 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * This method by default returns only <em>persistent</em> actions
      * (though some subclasses override it to return an extended unmodifiable list).
      *
-     * @return
-     *      may be empty but never null.
+     * @return a possibly empty list
      * @deprecated Normally outside code should not call this method any more.
      *             Use {@link #getAllActions}, or {@link #addAction}, or {@link #replaceAction}.
      *             May still be called for compatibility reasons from subclasses predating {@link TransientActionFactory}.
      */
     @Deprecated
-	public List<Action> getActions() {
-		if(actions == null) {
-			synchronized (this) {
-				if(actions == null) {
-					actions = new CopyOnWriteArrayList<Action>();
-				}
-			}
-		}
-		return actions;
-	}
+    @Nonnull
+    public List<Action> getActions() {
+        synchronized (this) {
+            if(actions == null) {
+                actions = new CopyOnWriteArrayList<Action>();
+            }
+            return actions;
+        }
+    }
 
     /**
      * Gets all actions, transient or persistent.
@@ -90,61 +89,223 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 1.548
      */
     @Exported(name="actions")
+    @Nonnull
     public final List<? extends Action> getAllActions() {
-        List<Action> _actions = new ArrayList<Action>(getActions());
-        for (TransientActionFactory<?> taf : ExtensionList.lookup(TransientActionFactory.class)) {
-            if (taf.type().isInstance(this)) {
-                try {
-                    _actions.addAll(createFor(taf));
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Could not load actions from " + taf + " for " + this, e);
+        List<Action> _actions = getActions();
+        boolean adding = false;
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
+            Collection<? extends Action> additions = createFor(taf);
+            if (!additions.isEmpty()) {
+                if (!adding) { // need to make a copy
+                    adding = true;
+                    _actions = new ArrayList<>(_actions);
                 }
+                _actions.addAll(additions);
             }
         }
         return Collections.unmodifiableList(_actions);
     }
+
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
-        return taf.createFor(taf.type().cast(this));
+        try {
+            Collection<? extends Action> result = taf.createFor(taf.type().cast(this));
+            for (Action a : result) {
+                if (!taf.actionType().isInstance(a)) {
+                    LOGGER.log(Level.WARNING, "Actions from {0} for {1} included {2} not assignable to {3}", new Object[] {taf, this, a, taf.actionType()});
+                    return Collections.emptySet();
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Could not load actions from " + taf + " for " + this, e);
+            return Collections.emptySet();
+        }
     }
 
     /**
      * Gets all actions of a specified type that contributed to this object.
      *
      * @param type The type of action to return.
-     * @return
-     *      may be empty but never null.
+     * @return an unmodifiable, possible empty list
      * @see #getAction(Class)
      */
+    @Nonnull
     public <T extends Action> List<T> getActions(Class<T> type) {
-        return Util.filter(getAllActions(), type);
+        List<T> _actions = Util.filter(getActions(), type);
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
+            _actions.addAll(Util.filter(createFor(taf), type));
+        }
+        return Collections.unmodifiableList(_actions);
     }
 
     /**
      * Adds a new action.
-     *
-     * The default implementation calls {@code getActions().add(a)}.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * <strong>Note: this method will always modify the actions</strong>
      */
-    public void addAction(Action a) {
-        if(a==null) throw new IllegalArgumentException();
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void addAction(@Nonnull Action a) {
+        if(a==null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         getActions().add(a);
     }
 
     /**
-     * Add an action, replacing any existing action of the (exact) same class.
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}.
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
      * @param a an action to add/replace
      * @since 1.548
+     * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
+     * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
+     * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
-    public void replaceAction(Action a) {
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public void replaceAction(@Nonnull Action a) {
+        addOrReplaceAction(a);
+    }
+
+    /**
+     * Add an action, replacing any existing actions of the (exact) same class.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param a an action to add/replace
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean addOrReplaceAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<Action>(1);
         List<Action> current = getActions();
+        boolean found = false;
         for (Action a2 : current) {
-            if (a2.getClass() == a.getClass()) {
+            if (!found && a.equals(a2)) {
+                found = true;
+            } else  if (a2.getClass() == a.getClass()) {
                 old.add(a2);
             }
         }
         current.removeAll(old);
-        addAction(a);
+        if (!found) {
+            addAction(a);
+        }
+        return !found || !old.isEmpty();
+    }
+
+    /**
+     * Remove an action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param a an action to remove (if {@code null} then this will be a no-op)
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings("deprecation")
+    public boolean removeAction(@Nullable Action a) {
+        if (a == null) {
+            return false;
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        return getActions().removeAll(Collections.singleton(a));
+    }
+
+    /**
+     * Removes any actions of the specified type.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param clazz the type of actions to remove
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean removeActions(@Nonnull Class<? extends Action> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        for (Action a : current) {
+            if (clazz.isInstance(a)) {
+                old.add(a);
+            }
+        }
+        return current.removeAll(old);
+    }
+
+    /**
+     * Replaces any actions of the specified type by the supplied action.
+     * Note: calls to {@link #getAllActions()} that happen before calls to this method may not see the update.
+     * Note: this method does not affect transient actions contributed by a {@link TransientActionFactory}
+     * Note: this method cannot provide concurrency control due to the backing storage being a
+     * {@link CopyOnWriteArrayList} so concurrent calls to any of the mutation methods may produce surprising results
+     * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
+     * some form of transactions or a different backing type).
+     *
+     * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
+     *              this class)
+     * @param a     the action to replace with
+     * @return {@code true} if this actions changed as a result of the call
+     * @since 2.29
+     */
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    public boolean replaceActions(@Nonnull Class<? extends Action> clazz, @Nonnull Action a) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Action type must be non-null");
+        }
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
+        List<Action> old = new ArrayList<Action>();
+        List<Action> current = getActions();
+        boolean found = false;
+        for (Action a1 : current) {
+            if (!found) {
+                if (a.equals(a1)) {
+                    found = true;
+                } else if (clazz.isInstance(a1)) {
+                    old.add(a1);
+                }
+            } else if (clazz.isInstance(a1) && !a.equals(a1)) {
+                old.add(a1);
+            }
+        }
+        current.removeAll(old);
+        if (!found) {
+            addAction(a);
+        }
+        return !(old.isEmpty() && found);
     }
 
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
@@ -162,9 +323,20 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @see #getActions(Class)
      */
     public <T extends Action> T getAction(Class<T> type) {
-        for (Action a : getAllActions())
-            if (type.isInstance(a))
+        // Shortcut: if the persisted list has one, return it.
+        for (Action a : getActions()) {
+            if (type.isInstance(a)) {
                 return type.cast(a);
+            }
+        }
+        // Otherwise check transient factories.
+        for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), type)) {
+            for (Action a : createFor(taf)) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+        }
         return null;
     }
 

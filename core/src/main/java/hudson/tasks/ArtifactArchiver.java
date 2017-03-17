@@ -29,6 +29,7 @@ import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
@@ -266,8 +267,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             }
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            e.printStackTrace(listener.error(
-                    Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+            Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
             return;
         }
@@ -352,7 +352,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Extension public static final class Migrator extends ItemListener {
         @SuppressWarnings("deprecation")
         @Override public void onLoaded() {
-            for (AbstractProject<?,?> p : Jenkins.getInstance().getAllItems(AbstractProject.class)) {
+            for (AbstractProject<?,?> p : Jenkins.getInstance().allItems(AbstractProject.class)) {
                 try {
                     ArtifactArchiver aa = p.getPublishersList().get(ArtifactArchiver.class);
                     if (aa != null && aa.latestOnly != null) {

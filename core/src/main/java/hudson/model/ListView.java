@@ -141,7 +141,9 @@ public class ListView extends View implements DirectlyModifiableView {
 
     protected void initColumns() {
         if (columns == null)
-            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,ListViewColumn.createDefaultInitialColumnList());
+            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
+                    ListViewColumn.createDefaultInitialColumnList(getClass())
+            );
     }
 
     protected void initJobFilters() {
@@ -302,17 +304,46 @@ public class ListView extends View implements DirectlyModifiableView {
         return statusFilter;
     }
 
+    /**
+     * Determines the initial state of the checkbox.
+     *
+     * @return true when the view is empty or already contains jobs specified by name.
+     */
+    @Restricted(NoExternalUse.class) // called from newJob_button-bar view
+    @SuppressWarnings("unused") // called from newJob_button-bar view
+    public boolean isAddToCurrentView() {
+        synchronized(this) {
+            return !jobNames.isEmpty() || // There are already items in this view specified by name
+                    (jobFilters.isEmpty() && includePattern == null) // No other way to include items is used
+                    ;
+        }
+    }
+
+    private boolean needToAddToCurrentView(StaplerRequest req) throws ServletException {
+        String json = req.getParameter("json");
+        if (json != null && json.length() > 0) {
+            // Submitted via UI
+            JSONObject form = req.getSubmittedForm();
+            return form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
+        } else {
+            // Submitted via API
+            return true;
+        }
+    }
+
     @Override
     @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
         if (ig instanceof ModifiableItemGroup) {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
-            if(item!=null) {
-                synchronized (this) {
-                    jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+            if (item!=null) {
+                if (needToAddToCurrentView(req)) {
+                    synchronized (this) {
+                        jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+                    }
+                    owner.save();
                 }
-                owner.save();
             }
             return item;
         }
@@ -440,7 +471,7 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Deprecated
     public static List<ListViewColumn> getDefaultColumns() {
-        return ListViewColumn.createDefaultInitialColumnList();
+        return ListViewColumn.createDefaultInitialColumnList(ListView.class);
     }
 
     @Restricted(NoExternalUse.class)
@@ -459,7 +490,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
@@ -503,7 +534,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     deleteViewItem(item, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
