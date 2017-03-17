@@ -132,7 +132,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
                         .setMasterKillSwitch(false);
                 
-                    jenkins.save(); // !!
+                    jenkins.save(); // TODO could probably be removed since some of the above setters already call save
                     bc.commit();
                 }
             }
