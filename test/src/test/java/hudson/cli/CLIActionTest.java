@@ -12,6 +12,7 @@ import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.util.StreamTaskListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -34,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 
@@ -197,6 +199,36 @@ public class CLIActionTest {
         }
         commands.addAll(Arrays.asList(args));
         assertEquals(code, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(commands).stdout(System.out).stderr(System.err).join());
+    }
+
+    @Issue("JENKINS-41745")
+    @Test
+    public void encodingAndLocale() throws Exception {
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),"-noKeyAuth", "test-diagnostic").
+            stdout(baos).stderr(System.err).join());
+        assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString().trim());
+        // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
+        // -ssh mode does not pass client locale or encoding
+    }
+
+    @TestExtension("encodingAndLocale")
+    public static class TestDiagnosticCommand extends CLICommand {
+
+        @Override
+        public String getShortDescription() {
+            return "Print information about the command environment.";
+        }
+
+        @Override
+        protected int run() throws Exception {
+            stdout.println("encoding=" + getClientCharset() + " locale=" + locale);
+            return 0;
+        }
+
     }
 
 }

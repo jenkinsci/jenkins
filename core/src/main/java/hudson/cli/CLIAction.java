@@ -148,7 +148,13 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                         }
                         @Override
                         protected void onLocale(String text) {
-                            // TODO what is the opposite of Locale.toString()?
+                            for (Locale _locale : Locale.getAvailableLocales()) {
+                                if (_locale.toString().equals(text)) {
+                                    locale = _locale;
+                                    return;
+                                }
+                            }
+                            LOGGER.log(Level.WARNING, "unknown client locale {0}", text);
                         }
                         @Override
                         protected void onEncoding(String text) {
