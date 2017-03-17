@@ -27,6 +27,7 @@ package hudson.cli;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class InstallPluginCommandTest {
@@ -34,6 +35,7 @@ public class InstallPluginCommandTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
+    @Issue("JENKINS-41745")
     @Test
     public void fromStdin() throws Exception {
         assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
