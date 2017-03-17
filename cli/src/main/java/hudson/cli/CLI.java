@@ -217,9 +217,10 @@ public class CLI implements AutoCloseable {
 
         if (httpsProxyTunnel!=null) {
             String[] tokens = httpsProxyTunnel.split(":");
+            LOGGER.log(Level.FINE, "Using HTTP proxy {0}:{1} to connect to CLI port", new Object[]{tokens[0], tokens[1]});
             s.connect(new InetSocketAddress(tokens[0], Integer.parseInt(tokens[1])));
             PrintStream o = new PrintStream(s.getOutputStream());
-            o.print("CONNECT " + clip.endpoint.getHostName() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
+            o.print("CONNECT " + clip.endpoint.getHostString() + ":" + clip.endpoint.getPort() + " HTTP/1.0\r\n\r\n");
 
             // read the response from the proxy
             ByteArrayOutputStream rsp = new ByteArrayOutputStream();
@@ -229,8 +230,11 @@ public class CLI implements AutoCloseable {
                 rsp.write(ch);
             }
             String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
-            if (!head.startsWith("HTTP/1.0 200 "))
-                throw new IOException("Failed to establish a connection through HTTP proxy: "+rsp);
+            if (!(head.startsWith("HTTP/1.0 200 ") || head.startsWith("HTTP/1.1 200 "))) {
+                s.close();
+                LOGGER.log(Level.SEVERE, "Failed to tunnel the CLI port through the HTTP proxy. Falling back to HTTP.");
+                throw new IOException("Failed to establish a connection through HTTP proxy: " + rsp);
+            }
 
             // HTTP proxies (at least the one I tried --- squid) doesn't seem to do half-close very well.
             // So instead of relying on it, we'll just send the close command and then let the server
