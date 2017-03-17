@@ -155,8 +155,7 @@ public class CLI implements AutoCloseable {
         try {
             _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
         } catch (IOException e) {
-            System.err.println("Failed to connect via CLI port. Falling back to HTTP: " + e.getMessage());
-            LOGGER.log(Level.FINE, null, e);
+            LOGGER.log(Level.FINE, "Failed to connect via CLI port. Falling back to HTTP", e);
             try {
                 _channel = connectViaHttp(url);
             } catch (IOException e2) {
@@ -203,7 +202,7 @@ public class CLI implements AutoCloseable {
         LOGGER.log(FINE, "Trying to connect directly via Remoting over TCP/IP to {0}", clip.endpoint);
 
         if (authorization != null) {
-            System.err.println("Warning: -auth ignored when using JNLP agent port");
+            LOGGER.warning("-auth ignored when using JNLP agent port");
         }
 
         final Socket s = new Socket();
@@ -486,7 +485,7 @@ public class CLI implements AutoCloseable {
                 continue;
             }
             if (head.equals("-noCertificateCheck")) {
-                System.err.println("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
+                LOGGER.info("Skipping HTTPS certificate checks altogether. Note that this is not secure at all.");
                 SSLContext context = SSLContext.getInstance("TLS");
                 context.init(null, new TrustManager[]{new NoCheckTrustManager()}, new SecureRandom());
                 HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
@@ -564,20 +563,20 @@ public class CLI implements AutoCloseable {
         LOGGER.log(FINE, "using connection mode {0}", mode);
 
         if (user != null && auth != null) {
-            System.err.println("-user and -auth are mutually exclusive");
+            LOGGER.warning("-user and -auth are mutually exclusive");
         }
 
         if (mode == Mode.SSH) {
             if (user == null) {
                 // TODO SshCliAuthenticator already autodetects the user based on public key; why cannot AsynchronousCommand.getCurrentUser do the same?
-                System.err.println("-user required when using -ssh");
+                LOGGER.warning("-user required when using -ssh");
                 return -1;
             }
             return sshConnection(url, user, args, provider);
         }
 
         if (user != null) {
-            System.err.println("Warning: -user ignored unless using -ssh");
+            LOGGER.warning("Warning: -user ignored unless using -ssh");
         }
 
         CLIConnectionFactory factory = new CLIConnectionFactory().url(url).httpsProxyTunnel(httpProxy);
@@ -600,22 +599,21 @@ public class CLI implements AutoCloseable {
                     cli.authenticate(provider.getKeys());
                 } catch (IllegalStateException e) {
                     if (sshAuthRequestedExplicitly) {
-                        System.err.println("The server doesn't support public key authentication");
+                        LOGGER.warning("The server doesn't support public key authentication");
                         return -1;
                     }
                 } catch (UnsupportedOperationException e) {
                     if (sshAuthRequestedExplicitly) {
-                        System.err.println("The server doesn't support public key authentication");
+                        LOGGER.warning("The server doesn't support public key authentication");
                         return -1;
                     }
                 } catch (GeneralSecurityException e) {
                     if (sshAuthRequestedExplicitly) {
-                        System.err.println(e.getMessage());
-                        LOGGER.log(FINE,e.getMessage(),e);
+                        LOGGER.log(WARNING, null, e);
                         return -1;
                     }
-                    System.err.println("[WARN] Failed to authenticate with your SSH keys. Proceeding as anonymous");
-                    LOGGER.log(FINE,"Failed to authenticate with your SSH keys.",e);
+                    LOGGER.warning("Failed to authenticate with your SSH keys. Proceeding as anonymous");
+                    LOGGER.log(FINE, null, e);
                 }
             }
 
@@ -634,7 +632,7 @@ public class CLI implements AutoCloseable {
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
 
         if (endpointDescription == null) {
-            System.err.println("No header 'X-SSH-Endpoint' returned by Jenkins");
+            LOGGER.warning("No header 'X-SSH-Endpoint' returned by Jenkins");
             return -1;
         }
 
@@ -669,7 +667,7 @@ public class CLI implements AutoCloseable {
             cf.await();
             try (ClientSession session = cf.getSession()) {
                 for (KeyPair pair : provider.getKeys()) {
-                    System.err.println("Offering " + pair.getPrivate().getAlgorithm() + " private key");
+                    LOGGER.log(FINE, "Offering {0} private key", pair.getPrivate().getAlgorithm());
                     session.addPublicKeyIdentity(pair);
                 }
                 session.auth().verify(10000L);
