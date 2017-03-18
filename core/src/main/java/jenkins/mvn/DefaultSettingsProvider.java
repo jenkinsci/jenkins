@@ -20,7 +20,7 @@ public class DefaultSettingsProvider extends SettingsProvider {
     }
 
     @Override
-    public FilePath supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener) {
+    public FilePath supplySettings(Run<?, ?> build, FilePath workspace, TaskListener listener) {
         return null;
     }
 

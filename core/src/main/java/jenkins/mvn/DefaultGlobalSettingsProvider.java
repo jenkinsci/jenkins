@@ -22,7 +22,7 @@ public class DefaultGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public FilePath supplySettings(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
+    public FilePath supplySettings(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull TaskListener listener) {
         return null;
     }
 
