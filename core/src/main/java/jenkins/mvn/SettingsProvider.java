@@ -31,25 +31,25 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      *
      * <p>Implementations should
      * <ul>Be aware that this method might get called multiple times during a build.</ul>
-     * <ul>Implement this method. This class provides a default implementation throwing an {@link UnsupportedOperationException}
-     * so that implementations have time to adapt.</ul>
+     * <ul>Implement this method. This class provides a default implementation when the given {@code build} is an {@link AbstractBuild}
+     * delegating to {@link #supplySettings(AbstractBuild, TaskListener)} so that implementations have time to adapt.</ul>
      * </p>
      *
-     * @param run       the build / run to provide the settings for
-     * @param workspace the workspace in which the build / run takes place
-     * @param listener the listener of this given build / run
-     * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
-     * @throws IOException typically occur when the {@code supplySettings()} implementation accesses to the
-     *         build environment on the build agent (copying a file to disk...)
-     * @throws InterruptedException typically occur when the {@code supplySettings()} implementation accesses to the
-     *         build environment on the build agent (copying a file to disk...)
+     * @param build       the build to provide the settings for
+     * @param workspace the workspace in which the build takes place
+     * @param listener the listener of this given build
+     * @return the filepath to the provided file. {@code null} if no settings will be provided.
+     * @throws IOException typically occur when the {@link #supplySettings(Run, FilePath, TaskListener)} implementation
+     *         accesses to the build environment on the build agent (copying a file to disk...)
+     * @throws InterruptedException typically occur when the {@link #supplySettings(Run, FilePath, TaskListener)} implementation
+     *         accesses to the build environment on the build agent (copying a file to disk...)
      * @since TODO
      */
     @CheckForNull
-    public FilePath supplySettings(@Nonnull Run<?, ?> run,  @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        if (run instanceof AbstractBuild && Util.isOverridden(SettingsProvider.class, this.getClass() , "supplySettings",AbstractBuild.class, TaskListener.class)) {
-            AbstractBuild build = (AbstractBuild) run;
-            return supplySettings(build, listener);
+    public FilePath supplySettings(@Nonnull Run<?, ?> build,  @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && Util.isOverridden(SettingsProvider.class, this.getClass() , "supplySettings",AbstractBuild.class, TaskListener.class)) {
+            AbstractBuild abstractBuild = (AbstractBuild) build;
+            return supplySettings(abstractBuild, listener);
         } else {
             throw new AbstractMethodError("Class " + getClass() + " must override the new method supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener)");
         }
@@ -59,10 +59,10 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.
      *
      * @param build
-     * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * @return the filepath to the provided file. {@code null} if no settings will be provided.
      * @throws RuntimeException if an {@link IOException} or an {@link InterruptedException} occurs. These {@link IOException}
-     *         or {@link InterruptedException} can typically occur when the {@code supplySettings()} implementation accesses to the
-     *         build environment on the build agent (copying a file to disk...)
+     *         or {@link InterruptedException} can typically occur when the {@link #supplySettings(AbstractBuild, TaskListener)}
+     *         implementation accesses to the build environment on the build agent (copying a file to disk...)
      * @deprecated use {@link #supplySettings(Run, FilePath, TaskListener)}
      */
     @Deprecated
@@ -87,7 +87,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
     }
 
     /**
-     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * Convenience method handling all {@code null} checks. Provides the path on the (possible) remote settings file.
      * 
      * @param settings
      *            the provider to be used
@@ -96,7 +96,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
-     * @deprecated directly invoke {@link SettingsProvider#supplySettings(Run, FilePath, TaskListener)}
+     * @deprecated directly invoke {@link #supplySettings(Run, FilePath, TaskListener)}
      */
     @Deprecated
     public static final FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
@@ -118,7 +118,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
     }
 
     /**
-     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * Convenience method handling all {@code null} checks. Provides the path on the (possible) remote settings file.
      * 
      * @param settings
      *            the provider to be used
@@ -127,7 +127,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
-     * @deprecated directly invoke {@link SettingsProvider#supplySettings(Run, FilePath, TaskListener)}
+     * @deprecated directly invoke {@link #supplySettings(Run, FilePath, TaskListener)}
      */
     @Deprecated
     public static final String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
