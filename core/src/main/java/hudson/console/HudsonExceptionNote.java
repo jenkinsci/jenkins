@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010-2011, CloudBees, Inc.
+ * Copyright (c) 2010-2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,24 @@ import org.jenkinsci.Symbol;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// TODO: consider providing alternate search mechanisms (JIRA, grepcode, etc.) as proposed in 
+// https://github.com/jenkinsci/jenkins/pull/2808#pullrequestreview-27467560
 /**
- * Placed on the beginning of the exception stack trace produced by Hudson, which in turn produces hyperlinked stack trace.
+ * Placed on the beginning of the exception stack trace produced by Jenkins, 
+ * which in turn produces hyperlinked stack trace.
  *
  * <p>
  * Exceptions in the user code (like junit etc) should be handled differently. This is only for exceptions
- * that occur inside Hudson.
+ * that occur inside Jenkins.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.349
+ * @since 1.349 - produces search hyperlinks to the http://stacktrace.jenkins-ci.org service
+ * @since TODO - does nothing due to JENKINS-42861
+ * @deprecated This ConsoleNote used to provide hyperlinks to the
+ *             <code>http://stacktrace.jenkins-ci.org/</code> service, which is dead now (JENKINS-42861).
+ *             This console note does nothing right now.
  */
+@Deprecated
 public class HudsonExceptionNote extends ConsoleNote<Object> {
 
     @Override
@@ -59,7 +67,12 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
         text.addHyperlinkLowKey(charPos,end,annotateClassName(line.substring(charPos,end)));
 
         return new ConsoleAnnotator() {
+            @Override
             public ConsoleAnnotator annotate(Object context, MarkupText text) {
+                // TODO: the code below is deprecated due to JENKINS-42861
+                return null;
+                
+                /*
                 String line = text.getText();
 
                 Matcher m = STACK_TRACE_ELEMENT.matcher(line);
@@ -82,6 +95,7 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
 
                 // looks like we are done with the stack trace
                 return null;
+                */
             }
         };
     }
