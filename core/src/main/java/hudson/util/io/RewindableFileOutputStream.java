@@ -28,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -51,7 +53,7 @@ public class RewindableFileOutputStream extends OutputStream {
             if (!closed) {
                 FileUtils.forceMkdir(out.getParentFile());
                 try {
-                    current = new FileOutputStream(out,false);
+                    current = Files.newOutputStream(out.toPath(), StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (FileNotFoundException e) {
                     throw new IOException("Failed to open "+out,e);
                 }
