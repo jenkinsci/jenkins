@@ -54,7 +54,7 @@ public class RewindableFileOutputStream extends OutputStream {
             if (!closed) {
                 FileUtils.forceMkdir(out.getParentFile());
                 try {
-                    current = Files.newOutputStream(out.toPath(), StandardOpenOption.TRUNCATE_EXISTING);
+                    current = Files.newOutputStream(out.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (FileNotFoundException | NoSuchFileException e) {
                     throw new IOException("Failed to open "+out,e);
                 }
