@@ -1,17 +1,14 @@
 package jenkins.mvn;
 
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Util;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.util.IOUtils;
-
-import java.io.File;
-
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -19,6 +16,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 1.491
  */
 public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
+    protected final static Logger LOGGER = Logger.getLogger(FilePathGlobalSettingsProvider.class.getName());
 
     private final String path;
 
@@ -32,34 +30,10 @@ public class FilePathGlobalSettingsProvider extends GlobalSettingsProvider {
     }
 
     @Override
-    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
-        if (StringUtils.isEmpty(path)) {
-            return null;
-        }
-
-        try {
-            EnvVars env = build.getEnvironment(listener);
-            String targetPath = Util.replaceMacro(this.path, build.getBuildVariableResolver());
-            targetPath = env.expand(targetPath);
-
-            if (IOUtils.isAbsolute(targetPath)) {
-                return new FilePath(new File(targetPath));
-            } else {
-                FilePath mrSettings = build.getModuleRoot().child(targetPath);
-                FilePath wsSettings = build.getWorkspace().child(targetPath);
-                try {
-                    if (!wsSettings.exists() && mrSettings.exists()) {
-                        wsSettings = mrSettings;
-                    }
-                } catch (Exception e) {
-                    throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote());
-                }
-                return wsSettings;
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("failed to prepare global settings.xml");
-        }
-
+    public FilePath supplySettings(Run<?, ?> build, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        FilePath mavenGlobalSettingsFile = SettingsProviderHelper.supplySettings(this.path, build, workspace, listener);
+        LOGGER.log(Level.FINE, "Supply Maven global settings.xml file {0} to {1}", new Object[]{mavenGlobalSettingsFile, build});
+        return mavenGlobalSettingsFile;
     }
 
     @Extension(ordinal = 10)
