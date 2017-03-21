@@ -24,7 +24,10 @@
  */
 package hudson;
 
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -491,9 +494,13 @@ public class UtilTest {
         // On unix, can't use "chattr +u" because ext fs ignores it.
         // On Windows, we can't delete files that are open for reading, so we use that.
         assert Functions.isWindows();
-        final InputStream s = Files.newInputStream(f.toPath());
+        final FileChannel channel = FileChannel.open(f.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
+        final FileLock lock = channel.lock();
         unlockFileCallables.put(f, new Callable<Void>() {
-            public Void call() throws IOException { s.close(); return null; };
+            public Void call() throws IOException {
+                lock.release();
+                channel.close();
+                return null; };
         });
     }
 
