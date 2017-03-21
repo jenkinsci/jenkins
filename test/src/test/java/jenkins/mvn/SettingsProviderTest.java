@@ -106,7 +106,7 @@ public class SettingsProviderTest {
      * the failure of the job
      */
     @Test
-    public void maven_build_with_settings_defined_globally_with_an_invalid_file_fails() throws Exception {
+    public void maven_build_with_global_settings_defined_globally_with_an_invalid_file_fails() throws Exception {
 
         SettingsProviderHelper.ABSOlUTE_PATH_BACKWARD_COMPATIBILITY = true;
         try {
@@ -114,7 +114,7 @@ public class SettingsProviderTest {
             URL settingsFile = Thread.currentThread().getContextClassLoader().getResource("jenkins/mvn/random-text-file.txt");
             globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider(settingsFile.getFile()));
 
-            MavenModuleSet project = jenkinsRule.createProject(MavenModuleSet.class, "maven-build-project-with-settings-defined-globally-with-an-invalid-file");
+            MavenModuleSet project = jenkinsRule.createProject(MavenModuleSet.class, "maven-build-project-with-global-settings-defined-globally-with-an-invalid-file");
             URL pomFile = Thread.currentThread().getContextClassLoader().getResource("jenkins/mvn/pom.xml");
             project.setScm(new SingleFileSCM("pom.xml", pomFile));
             project.setGoals("clean");
@@ -135,7 +135,7 @@ public class SettingsProviderTest {
         URL settingsFile = Thread.currentThread().getContextClassLoader().getResource("jenkins/mvn/settings.xml");
         globalMavenConfig.setGlobalSettingsProvider(new FilePathGlobalSettingsProvider(settingsFile.getFile()));
 
-        MavenModuleSet project = jenkinsRule.createProject(MavenModuleSet.class, "maven-build-project-with-settings-defined-globally");
+        MavenModuleSet project = jenkinsRule.createProject(MavenModuleSet.class, "maven-build-project-with-global-settings-defined-globally");
         URL pomFile = Thread.currentThread().getContextClassLoader().getResource("jenkins/mvn/pom.xml");
         project.setScm(new SingleFileSCM("pom.xml", pomFile));
         project.setGoals("clean");
