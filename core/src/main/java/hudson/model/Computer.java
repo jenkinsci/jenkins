@@ -1068,6 +1068,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Returns the {@link Node} description for this computer
+     */
+    @Restricted(DoNotUse.class)
+    @Exported
+    public @Nonnull String getDescription() {
+        Node node = getNode();
+        return (node != null) ? node.getNodeDescription() : null;
+    }
+
+
+    /**
      * Called by {@link Executor} to kill excessive executors from this computer.
      */
     protected void removeExecutor(final Executor e) {
