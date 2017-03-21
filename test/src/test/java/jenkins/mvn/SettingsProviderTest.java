@@ -2,18 +2,10 @@ package jenkins.mvn;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
-import hudson.model.Node;
 import hudson.model.Result;
-import hudson.plugins.sshslaves.SSHLauncher;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.RetentionStrategy;
 import hudson.tasks.Maven;
-import org.jenkinsci.test.acceptance.docker.DockerRule;
-import org.jenkinsci.test.acceptance.docker.fixtures.JavaContainer;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -22,7 +14,6 @@ import org.jvnet.hudson.test.SingleFileSCM;
 import org.jvnet.hudson.test.ToolInstallations;
 
 import java.net.URL;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -37,9 +28,6 @@ public class SettingsProviderTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
-
-    @Rule
-    public DockerRule<JavaContainer> slaveRule = new DockerRule<>(JavaContainer.class);
 
     @Before
     public void setup() throws Exception {
@@ -77,32 +65,6 @@ public class SettingsProviderTest {
         assertNotNull(build);
         jenkinsRule.assertBuildStatusSuccess(build);
         jenkinsRule.assertLogContains("apache-maven-3.0.1", build);
-    }
-
-    /**
-     * TODO Fix "IllegalArgumentException: Argument for @Nonnull parameter 'primaryView'..."
-     * See https://gist.github.com/cyrille-leclerc/9dbb8d9dc5eed5973d59eb21da91e73d
-     */
-    @Ignore
-    @Test
-    public void basic_maven_build_on_remote_agent_succeeds() throws Exception {
-        JavaContainer slaveContainer = slaveRule.get();
-
-        DumbSlave remoteAgent = new DumbSlave("remote", "", "/home/test/slave", "1", Node.Mode.NORMAL, "",
-                new SSHLauncher(slaveContainer.ipBound(22), slaveContainer.port(22), "test", "test", "", ""),
-                RetentionStrategy.INSTANCE, Collections.<NodeProperty<?>>emptyList());
-
-        jenkinsRule.jenkins.addNode(remoteAgent);
-
-        MavenModuleSet project = jenkinsRule.createProject(MavenModuleSet.class, "maven-project");
-        URL pomFile = Thread.currentThread().getContextClassLoader().getResource("jenkins/mvn/pom.xml");
-        project.setScm(new SingleFileSCM("pom.xml", pomFile));
-        project.setGoals("clean");
-        project.setAssignedNode(remoteAgent);
-
-        MavenModuleSetBuild build = project.scheduleBuild2(0).get(1, TimeUnit.MINUTES);
-        assertNotNull(build);
-        jenkinsRule.assertBuildStatusSuccess(build);
     }
 
     @Test
