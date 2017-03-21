@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 
 /**
@@ -56,7 +57,7 @@ import java.nio.file.StandardOpenOption;
             try {
                 current = Files.newOutputStream(out.toPath(), StandardOpenOption.CREATE,
                         appendOnNextOpen ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException | NoSuchFileException e) {
                 throw new IOException("Failed to open "+out,e);
             }
         return current;
