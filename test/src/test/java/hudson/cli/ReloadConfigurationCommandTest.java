@@ -48,6 +48,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author pjanouse
@@ -59,13 +60,17 @@ public class ReloadConfigurationCommandTest {
     @Rule public final JenkinsRule j = new JenkinsRule();
 
     @Before public void setUp() {
-        command = new CLICommandInvoker(j, "reload-configuration");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        ReloadConfigurationCommand cmd = new ReloadConfigurationCommand();
+        cmd.setTransportAuth(User.get("user").impersonate()); // TODO https://github.com/jenkinsci/jenkins-test-harness/pull/53 use CLICommandInvoker.asUser
+        command = new CLICommandInvoker(j, cmd);
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
     }
 
     @Test
     public void reloadConfigurationShouldFailWithoutAdministerPermission() throws Exception {
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ).invoke();
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.READ).everywhere().toAuthenticated());
+        final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
@@ -165,8 +170,7 @@ public class ReloadConfigurationCommandTest {
     }
 
     private void reloadJenkinsConfigurationViaCliAndWait() throws Exception {
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER).invoke();
+        final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, succeededSilently());
 

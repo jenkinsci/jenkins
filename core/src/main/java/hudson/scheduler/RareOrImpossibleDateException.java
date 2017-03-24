@@ -46,7 +46,7 @@ import java.util.Calendar;
  *
  * @see CronTab#floor(Calendar)
  * @see CronTab#ceil(Calendar)
- * @since TODO
+ * @since 2.49
  */
 @Restricted(NoExternalUse.class)
 public class RareOrImpossibleDateException extends RuntimeException {

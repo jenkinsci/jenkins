@@ -133,6 +133,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return AlternativeUiTextProvider.get(PRONOUN, this, Messages.AbstractItem_Pronoun());
     }
 
+    /**
+     * Gets the term used in the UI to represent the kind of {@link Queue.Task} associated with this kind of
+     * {@link Item}. Must start with a capital letter. Defaults to "Build".
+     * @since2.50 
+     */
+    public String getTaskNoun() {
+        return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
+    }
+
     @Exported
     /**
      * @return The display name of this object, or if it is not set, the name
@@ -748,5 +757,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
+    /**
+     * Replaceable noun for describing the kind of task that this item represents. Defaults to "Build".
+     */
+    public static final Message<AbstractItem> TASK_NOUN = new Message<>();
 
 }
