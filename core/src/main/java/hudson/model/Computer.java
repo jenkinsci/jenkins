@@ -25,6 +25,7 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
@@ -267,6 +268,18 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     	}
     	return Collections.unmodifiableList(result);
     }
+
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @Override
+    public void addAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        super.getActions().add(a);
+    }
+
+    // TODO implement addOrReplaceAction, removeAction, removeActions, replaceActions
 
     /**
      * This is where the log from the remote agent goes.
