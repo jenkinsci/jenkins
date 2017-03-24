@@ -37,8 +37,8 @@ import hudson.model.Run;
 import hudson.model.StringParameterValue;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -326,6 +326,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
+    @Issue("JENKINS-42645")
     public void should_be_case_insensitive_by_default() throws IOException {
         List<ModelObject> runs = Lists.<ModelObject>newArrayList(new MockRun(2, Result.FAILURE), new MockRun(1, Result.SUCCESS));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("failure", runs);
@@ -338,6 +339,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
+    @Issue("JENKINS-40718")
     public void should_search_builds_by_build_variables() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildVariables(ImmutableMap.of("env", "dummyEnv")),
@@ -346,6 +348,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
+    @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("env", "dummyEnv")),
@@ -354,6 +357,7 @@ public class HistoryPageFilterTest {
     }
 
     @Test
+    @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
         List<ModelObject> runs = ImmutableList.<ModelObject>of(
                 new MockBuild(2).withBuildParameters(ImmutableMap.of("plainPassword", "pass1plain")),

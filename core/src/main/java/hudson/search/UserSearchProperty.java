@@ -12,7 +12,7 @@ import org.kohsuke.stapler.export.Exported;
 
 public class UserSearchProperty extends hudson.model.UserProperty {
 
-    private static final boolean CASE_INSENSITIVE_SEARCH_MODE = true;
+    private static final boolean DEFAULT_SEARCH_CASE_INSENSITIVE_MODE = true;
 
     private final boolean insensitiveSearch;
 
@@ -29,7 +29,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
         User user = User.current();
 
         if (user == null) {
-            return CASE_INSENSITIVE_SEARCH_MODE;
+            return DEFAULT_SEARCH_CASE_INSENSITIVE_MODE;
         }
 
         return user.getProperty(UserSearchProperty.class).getInsensitiveSearch();
@@ -43,7 +43,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
         }
 
         public UserProperty newInstance(User user) {
-            return new UserSearchProperty(CASE_INSENSITIVE_SEARCH_MODE);
+            return new UserSearchProperty(DEFAULT_SEARCH_CASE_INSENSITIVE_MODE);
         }
 
         @Override
