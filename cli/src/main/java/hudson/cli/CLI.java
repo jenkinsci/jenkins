@@ -445,6 +445,7 @@ public class CLI implements AutoCloseable {
 
         String user = null;
         String auth = null;
+        boolean strictHostKey = false;
 
         while(!args.isEmpty()) {
             String head = args.get(0);
@@ -516,6 +517,11 @@ public class CLI implements AutoCloseable {
                 sshAuthRequestedExplicitly = true;
                 continue;
             }
+            if (head.equals("-strictHostKey")) {
+                strictHostKey = true;
+                args = args.subList(1, args.size());
+                continue;
+            }
             if (head.equals("-user") && args.size() >= 2) {
                 user = args.get(1);
                 args = args.subList(2, args.size());
@@ -572,7 +578,11 @@ public class CLI implements AutoCloseable {
                 LOGGER.warning("-user required when using -ssh");
                 return -1;
             }
-            return sshConnection(url, user, args, provider);
+            return sshConnection(url, user, args, provider, strictHostKey);
+        }
+
+        if (strictHostKey) {
+            LOGGER.warning("-strictHostKey meaningful only with -ssh");
         }
 
         if (user != null) {
@@ -626,7 +636,7 @@ public class CLI implements AutoCloseable {
         }
     }
 
-    private static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider) throws IOException {
+    private static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
         URL url = new URL(jenkinsUrl + "/login");
         URLConnection conn = url.openConnection();
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
@@ -653,10 +663,8 @@ public class CLI implements AutoCloseable {
             KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
                 @Override
                 public boolean verifyServerKey(ClientSession clientSession, SocketAddress remoteAddress, PublicKey serverKey) {
-                    /** unknown key is okay, but log */
                     LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
-                    // TODO should not trust unknown hosts by default; this should be opt-in
-                    return true;
+                    return !strictHostKey;
                 }
             }, true);
 

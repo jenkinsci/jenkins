@@ -193,11 +193,6 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-nop</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
         <version>${slf4jVersion}</version>
       </dependency>
