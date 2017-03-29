@@ -59,16 +59,15 @@ public abstract class CollectionSearchIndex<SMT extends SearchableModelObject> i
     }
 
     public void suggest(String token, List<SearchItem> result) {
-        boolean isCaseSensitive = UserSearchProperty.isCaseInsensitive();
-        if(isCaseSensitive){
-          token = token.toLowerCase();
-        }
+        //Search case insensitively
+        token = token.toLowerCase();
+
         for (SMT o : allAsIterable()) {
             String name = getName(o);
-            if(isCaseSensitive)
-                name=name.toLowerCase();
-            if(o!=null && name.contains(token))
+            name=name.toLowerCase();
+            if(o!=null && name.contains(token)) {
                 result.add(o);
+            }
         }
     }
 
