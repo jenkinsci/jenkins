@@ -483,6 +483,15 @@ THE SOFTWARE.
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
           <version>1.13</version>
+          <!-- workaround waiting for a release with https://github.com/infradna/bridge-method-injector/pull/14 -->
+          <dependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm-debug-all</artifactId>
+              <version>5.2</version>
+            </dependency>
+          </dependencies>
+          <!-- end workaround -->
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
