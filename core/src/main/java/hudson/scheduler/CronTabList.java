@@ -131,7 +131,7 @@ public final class CronTabList {
     public @CheckForNull Calendar previous() {
         Calendar nearest = null;
         for (CronTab tab : tabs) {
-            Calendar scheduled = tab.floor(Calendar.getInstance());
+            Calendar scheduled = tab.floor(tab.getTimeZone() == null ? Calendar.getInstance() : Calendar.getInstance(tab.getTimeZone()));
             if (nearest == null || nearest.before(scheduled)) {
                 nearest = scheduled;
             }
@@ -143,7 +143,7 @@ public final class CronTabList {
     public @CheckForNull Calendar next() {
         Calendar nearest = null;
         for (CronTab tab : tabs) {
-            Calendar scheduled = tab.ceil(Calendar.getInstance());
+            Calendar scheduled = tab.ceil(tab.getTimeZone() == null ? Calendar.getInstance() : Calendar.getInstance(tab.getTimeZone()));
             if (nearest == null || nearest.after(scheduled)) {
                 nearest = scheduled;
             }
