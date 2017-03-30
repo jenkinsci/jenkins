@@ -1,5 +1,6 @@
 package jenkins.util.io;
 
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -56,7 +57,7 @@ public class FileBoolean {
     public void on() {
         try {
             file.getParentFile().mkdirs();
-            new FileOutputStream(file).close();
+            Files.newOutputStream(file.toPath()).close();
             get();  // update state
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to touch "+file);

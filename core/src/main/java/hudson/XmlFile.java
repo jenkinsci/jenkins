@@ -33,6 +33,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
+import java.nio.file.Files;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -138,7 +139,7 @@ public final class XmlFile {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Reading "+file);
         }
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
         } catch (XStreamException | Error e) {
             throw new IOException("Unable to read "+file,e);
@@ -154,7 +155,7 @@ public final class XmlFile {
      */
     public Object unmarshal( Object o ) throws IOException {
 
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
         } catch (XStreamException | Error e) {
@@ -201,7 +202,7 @@ public final class XmlFile {
      * @return Reader for the file. should be close externally once read.
      */
     public Reader readRaw() throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(file);
+        InputStream fileInputStream = Files.newInputStream(file.toPath());
         try {
             return new InputStreamReader(fileInputStream, sniffEncoding());
         } catch(IOException ex) {
@@ -247,7 +248,7 @@ public final class XmlFile {
             }
         }
 
-        try (InputStream in = new FileInputStream(file)) {
+        try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {

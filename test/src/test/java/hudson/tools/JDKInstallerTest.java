@@ -8,6 +8,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tools.JDKInstaller.DescriptorImpl;
 
+import java.io.InputStream;
+import java.nio.file.Files;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,8 +56,7 @@ public class JDKInstallerTest {
             LOGGER.warning(f+" doesn't exist. Skipping JDK installation tests");
         } else {
             Properties prop = new Properties();
-            FileInputStream in = new FileInputStream(f);
-            try {
+            try (InputStream in = Files.newInputStream(f.toPath())) {
                 prop.load(in);
                 String u = prop.getProperty("oracle.userName");
                 String p = prop.getProperty("oracle.password");
@@ -65,8 +66,6 @@ public class JDKInstallerTest {
                     DescriptorImpl d = j.jenkins.getDescriptorByType(DescriptorImpl.class);
                     d.doPostCredential(u,p);
                 }
-            } finally {
-                in.close();
             }
         }
     }

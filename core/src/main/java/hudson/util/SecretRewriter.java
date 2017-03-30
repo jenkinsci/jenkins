@@ -4,6 +4,8 @@ import com.trilead.ssh2.crypto.Base64;
 import hudson.Functions;
 import hudson.model.TaskListener;
 
+import java.io.InputStream;
+import java.nio.file.Files;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;
@@ -84,7 +86,7 @@ public class SecretRewriter {
 
             boolean modified = false; // did we actually change anything?
             try (PrintWriter out = new PrintWriter(new BufferedWriter(w))) {
-                try (FileInputStream fin = new FileInputStream(f)) {
+                try (InputStream fin = Files.newInputStream(f.toPath())) {
                     BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
                     String line;
                     StringBuilder buf = new StringBuilder();

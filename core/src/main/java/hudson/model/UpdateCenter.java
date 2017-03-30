@@ -31,6 +31,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
+import java.nio.file.Files;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -1127,7 +1128,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
-                out = new FileOutputStream(tmp);
+                out = Files.newOutputStream(tmp.toPath());
                 if (sha1 != null) {
                     out = new DigestOutputStream(out, sha1);
                 }

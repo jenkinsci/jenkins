@@ -24,6 +24,9 @@
 package hudson;
 
 import hudson.security.ACLContext;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
@@ -273,14 +276,10 @@ public class WebAppMain implements ServletContextListener {
      * @see BootFailure
      */
     private void recordBootAttempt(File home) {
-        FileOutputStream o=null;
-        try {
-            o = new FileOutputStream(BootFailure.getBootFailureFile(home), true);
+        try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             o.write((new Date().toString() + System.getProperty("line.separator", "\n")).toString().getBytes());
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
-        } finally {
-            IOUtils.closeQuietly(o);
         }
     }
 

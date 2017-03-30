@@ -29,6 +29,7 @@ import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import java.nio.file.Files;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -495,7 +496,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public void disable() throws IOException {
         // creates an empty file
-        OutputStream os = new FileOutputStream(disableFile);
+        OutputStream os = Files.newOutputStream(disableFile.toPath());
         os.close();
     }
 

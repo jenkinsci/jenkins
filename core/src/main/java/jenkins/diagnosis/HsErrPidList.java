@@ -6,6 +6,9 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -49,7 +52,7 @@ public class HsErrPidList extends AdministrativeMonitor {
             return;
         }
         try {
-            try (FileChannel ch = new FileInputStream(getSecretKeyFile()).getChannel()) {
+            try (FileChannel ch = FileChannel.open(getSecretKeyFile().toPath(), StandardOpenOption.READ)) {
                 map = ch.map(MapMode.READ_ONLY,0,1);
             }
                 
