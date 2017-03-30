@@ -1934,8 +1934,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                         throw new RuntimeException(e);
                                     }
                                 }
+                                // Must check for success, otherwise may have failed installation
+                                if (ij.status instanceof Success) {
+                                    return true;
+                                }
                             }
-                            return true;
                         }
                     }
                 }
