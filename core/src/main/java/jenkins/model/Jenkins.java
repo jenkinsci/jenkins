@@ -3366,6 +3366,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
     @CLIMethod(name="restart")
+    @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if (req != null && req.getMethod().equals("GET")) {
@@ -3387,6 +3388,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.332
      */
     @CLIMethod(name="safe-restart")
+    @RequirePOST
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if (req != null && req.getMethod().equals("GET"))
