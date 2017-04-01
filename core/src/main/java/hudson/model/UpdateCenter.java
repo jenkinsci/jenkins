@@ -395,6 +395,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Cancel all scheduled jenkins restarts
      */
+    @RequirePOST
     public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {

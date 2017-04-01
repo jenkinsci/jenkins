@@ -2900,6 +2900,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
@@ -3040,6 +3041,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Backward compatibility. Redirect to the thread dump.
      */
+    // TODO annotate @GET once baseline includes Stapler version XXX
     public void doClassicThreadDump(StaplerResponse rsp) throws IOException, ServletException {
         rsp.sendRedirect2("threadDump");
     }
