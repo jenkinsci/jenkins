@@ -4059,6 +4059,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
+        @RequirePOST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
             Jenkins.getInstance().doConfigExecutorsSubmit(req, rsp);
         }
