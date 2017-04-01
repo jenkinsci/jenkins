@@ -59,6 +59,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
@@ -264,6 +265,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
      * this is someone creating another user.
      */
+    @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
