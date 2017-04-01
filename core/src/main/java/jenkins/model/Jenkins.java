@@ -3367,8 +3367,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      */
-    @CLIMethod(name="restart")
-    @RequirePOST
     public void doRestart(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if (req != null && req.getMethod().equals("GET")) {
@@ -3376,10 +3374,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
-        restart();
+        if (req != null && req.getMethod().equals("POST")) {
+            restart();
+        }
 
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(".");
+        rsp.sendRedirect2(".");
+    }
+
+    @CLIMethod(name="restart")
+    @Restricted(NoExternalUse.class)
+    public void cliRestart() throws RestartNotSupportedException {
+        checkPermission(ADMINISTER);
+        restart();
     }
 
     /**
@@ -3389,16 +3395,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 1.332
      */
-    @CLIMethod(name="safe-restart")
-    @RequirePOST
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(ADMINISTER);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
-        safeRestart();
+        if (req != null && req.getMethod().equals("POST")) {
+            safeRestart();
+        }
 
         return HttpResponses.redirectToDot();
+    }
+
+    @CLIMethod(name="safe-restart")
+    @Restricted(NoExternalUse.class)
+    public void cliSafeRestart() throws RestartNotSupportedException {
+        checkPermission(ADMINISTER);
+        safeRestart();
     }
 
     /**
