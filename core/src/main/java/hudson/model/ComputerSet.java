@@ -280,6 +280,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Really creates a new slave.
      */
+    @RequirePOST
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
