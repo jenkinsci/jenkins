@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.XmlFile;
 import hudson.matrix.Axis;
@@ -62,6 +63,7 @@ import hudson.slaves.DummyCloudImpl;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import hudson.slaves.NodeProvisionerRule;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.Shell;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
@@ -378,7 +380,11 @@ public class QueueTest {
         m.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition("FOO","value")
         ));
-        m.getBuildersList().add(new Shell("sleep 3"));
+        if (Functions.isWindows()) {
+            m.getBuildersList().add(new BatchFile("ping -n 3 127.0.0.1 >nul"));
+        } else {
+            m.getBuildersList().add(new Shell("sleep 3"));
+        }
         m.setAxes(new AxisList(new TextAxis("DoesntMatter", "aaa","bbb")));
 
         List<Future<MatrixBuild>> futures = new ArrayList<Future<MatrixBuild>>();
@@ -624,26 +630,30 @@ public class QueueTest {
         // scheduling algorithm would prefer running the same job on the same node
         // kutzi: 'prefer' != 'enforce', therefore disabled this assertion: assertSame(b1.getBuiltOn(),b2.getBuiltOn());
 
-        // ACL that allow anyone to do anything except Alice can't build.
-        final SparseACL aliceCantBuild = new SparseACL(null);
-        aliceCantBuild.add(new PrincipalSid(alice), Computer.BUILD, false);
-        aliceCantBuild.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
-
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy() {
-            @Override
-            public ACL getACL(Node node) {
-                if (node==b1.getBuiltOn())
-                    return aliceCantBuild;
-                return super.getACL(node);
-            }
-        };
-        auth.add(Jenkins.ADMINISTER,"anonymous");
-        r.jenkins.setAuthorizationStrategy(auth);
+        r.jenkins.setAuthorizationStrategy(new AliceCannotBuild(b1.getBuiltOnStr()));
 
         // now that we prohibit alice to do a build on the same node, the build should run elsewhere
         for (int i=0; i<3; i++) {
             FreeStyleBuild b3 = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotSame(b3.getBuiltOnStr(), b1.getBuiltOnStr());
+        }
+    }
+    private static class AliceCannotBuild extends GlobalMatrixAuthorizationStrategy {
+        private final String blocked;
+        AliceCannotBuild(String blocked) {
+            add(Jenkins.ADMINISTER, "anonymous");
+            this.blocked = blocked;
+        }
+        @Override
+        public ACL getACL(Node node) {
+            if (node.getNodeName().equals(blocked)) {
+                // ACL that allow anyone to do anything except Alice can't build.
+                SparseACL acl = new SparseACL(null);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
+                acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
+                return acl;
+            }
+            return super.getACL(node);
         }
     }
 
@@ -756,7 +766,6 @@ public class QueueTest {
     @Test public void testBlockBuildWhenUpstreamBuildingLock() throws Exception {
         final String prefix = "JENKINS-27871";
         r.getInstance().setNumExecutors(4);
-        r.getInstance().save();
         
         final FreeStyleProject projectA = r.createFreeStyleProject(prefix+"A");
         projectA.getBuildersList().add(new SleepBuilder(5000));

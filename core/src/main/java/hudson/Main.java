@@ -23,6 +23,9 @@
  */
 package hudson;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
@@ -133,13 +136,11 @@ public class Main {
         }
 
         // write the output to a temporary file first.
-        File tmpFile = File.createTempFile("hudson","log");
+        File tmpFile = File.createTempFile("jenkins","log");
         try {
-            FileOutputStream os = new FileOutputStream(tmpFile);
-
-            Writer w = new OutputStreamWriter(os,"UTF-8");
             int ret;
-            try {
+            try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
+                 Writer w = new OutputStreamWriter(os,"UTF-8")) {
                 w.write("<?xml version='1.0' encoding='UTF-8'?>");
                 w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
                 w.flush();
@@ -156,8 +157,6 @@ public class Main {
                 ret = proc.join();
 
                 w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
-            } finally {
-                IOUtils.closeQuietly(w);
             }
 
             URL location = new URL(jobURL, "postBuildResult");
@@ -174,11 +173,8 @@ public class Main {
                     con.setFixedLengthStreamingMode((int)tmpFile.length());
                     con.connect();
                     // send the data
-                    FileInputStream in = new FileInputStream(tmpFile);
-                    try {
+                    try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
                         Util.copyStream(in,con.getOutputStream());
-                    } finally {
-                        IOUtils.closeQuietly(in);
                     }
 
                     if(con.getResponseCode()!=200) {

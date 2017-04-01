@@ -234,6 +234,7 @@ public abstract class ItemGroupMixIn {
         }
         src.getDescriptor().checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, src.getDescriptor());
+        ItemListener.checkBeforeCopy(src, parent);
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 

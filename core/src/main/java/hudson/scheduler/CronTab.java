@@ -326,10 +326,19 @@ public final class CronTab {
      * See {@link #ceil(long)}.
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years after it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in TODO
      */
     public Calendar ceil(Calendar cal) {
+        Calendar twoYearsFuture = (Calendar) cal.clone();
+        twoYearsFuture.add(Calendar.YEAR, 2);
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsFuture) > 0) {
+                // we went too far into the future
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.ceil(this,cur);
@@ -378,10 +387,20 @@ public final class CronTab {
      * See {@link #floor(long)}
      *
      * This method modifies the given calendar and returns the same object.
+     *
+     * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years before it indicates an impossible
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in TODO
      */
     public Calendar floor(Calendar cal) {
+        Calendar twoYearsAgo = (Calendar) cal.clone();
+        twoYearsAgo.add(Calendar.YEAR, -2);
+
         OUTER:
         while (true) {
+            if (cal.compareTo(twoYearsAgo) < 0) {
+                // we went too far into the past
+                throw new RareOrImpossibleDateException();
+            }
             for (CalendarField f : CalendarField.ADJUST_ORDER) {
                 int cur = f.valueOf(cal);
                 int next = f.floor(this,cur);

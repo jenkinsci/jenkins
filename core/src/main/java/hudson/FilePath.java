@@ -25,7 +25,6 @@
  */
 package hudson;
 
-import jenkins.util.SystemProperties;
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
@@ -59,29 +58,9 @@ import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
-import jenkins.FilePathFilter;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.SlaveToMasterFileCallable;
-import jenkins.SoloFilePathFilter;
-import jenkins.model.Jenkins;
-import jenkins.util.ContextResettingExecutorService;
-import jenkins.util.VirtualFile;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.io.input.CountingInputStream;
-import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
-import org.apache.tools.zip.ZipEntry;
-import org.apache.tools.zip.ZipFile;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Stapler;
-
-import javax.annotation.CheckForNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -99,6 +78,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -116,16 +96,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static hudson.FilePath.TarCompression.*;
-import static hudson.Util.*;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import jenkins.FilePathFilter;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.SlaveToMasterFileCallable;
+import jenkins.SoloFilePathFilter;
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.SystemProperties;
+import jenkins.util.VirtualFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
 import org.jenkinsci.remoting.RoleSensitive;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.Stapler;
+
+import static hudson.FilePath.TarCompression.GZIP;
+import static hudson.Util.deleteFile;
+import static hudson.Util.fixEmpty;
+import static hudson.Util.isSymlink;
         
 /**
  * {@link File} like object with remoting support.
@@ -1470,7 +1471,7 @@ public final class FilePath implements Serializable {
             private static final long serialVersionUID = -5094638816500738429L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 if(!f.exists())
-                    new FileOutputStream(creating(f)).close();
+                    Files.newOutputStream(creating(f).toPath()).close();
                 if(!stating(f).setLastModified(timestamp))
                     throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
                 return null;
@@ -1751,7 +1752,7 @@ public final class FilePath implements Serializable {
      */
     public InputStream read() throws IOException, InterruptedException {
         if(channel==null)
-            return new FileInputStream(reading(new File(remote)));
+            return Files.newInputStream(reading(new File(remote)).toPath());
 
         final Pipe p = Pipe.createRemoteToLocal();
         actAsync(new SecureFileCallable<Void>() {
@@ -1759,9 +1760,9 @@ public final class FilePath implements Serializable {
 
             @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                FileInputStream fis = null;
+                InputStream fis = null;
                 try {
-                    fis = new FileInputStream(reading(f));
+                    fis = Files.newInputStream(reading(f).toPath());
                     Util.copyStream(fis, p.getOut());
                 } catch (Exception x) {
                     p.error(x);
@@ -1876,7 +1877,7 @@ public final class FilePath implements Serializable {
         if(channel==null) {
             File f = new File(remote).getAbsoluteFile();
             mkdirs(f.getParentFile());
-            return new FileOutputStream(writing(f));
+            return Files.newOutputStream(writing(f).toPath());
         }
 
         return act(new SecureFileCallable<OutputStream>() {
@@ -1884,7 +1885,7 @@ public final class FilePath implements Serializable {
             public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
                 f = f.getAbsoluteFile();
                 mkdirs(f.getParentFile());
-                FileOutputStream fos = new FileOutputStream(writing(f));
+                OutputStream fos = Files.newOutputStream(writing(f).toPath());
                 return new RemoteOutputStream(fos);
             }
         });
@@ -1902,8 +1903,8 @@ public final class FilePath implements Serializable {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 mkdirs(f.getParentFile());
-                FileOutputStream fos = new FileOutputStream(writing(f));
-                try (Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
+                try (OutputStream fos = Files.newOutputStream(writing(f).toPath());
+                     Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
                     w.write(content);
                 }
                 return null;
@@ -2005,9 +2006,9 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 4088559042349254141L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                FileInputStream fis = null;
+                InputStream fis = null;
                 try {
-                    fis = new FileInputStream(reading(f));
+                    fis = Files.newInputStream(reading(f).toPath());
                     Util.copyStream(fis,out);
                     return null;
                 } finally {

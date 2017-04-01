@@ -3,6 +3,7 @@ package hudson.util;
 import hudson.Functions;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
+import java.nio.file.Files;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
@@ -26,20 +27,14 @@ public class IOUtils {
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
-        FileInputStream in = new FileInputStream(src);
-        try {
+        try (InputStream in = Files.newInputStream(src.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, out);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(in);
         }
     }
 
     public static void copy(InputStream in, File out) throws IOException {
-        FileOutputStream fos = new FileOutputStream(out);
-        try {
+        try (OutputStream fos = Files.newOutputStream(out.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, fos);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(fos);
         }
     }
 

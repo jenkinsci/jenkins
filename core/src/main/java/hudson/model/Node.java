@@ -458,7 +458,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * 
      * @return null if the property is not configured
      * 
-     * @since TODO
+     * @since 2.37
      */
     @CheckForNull
     public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
@@ -479,7 +479,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * 
      * @return null if the property is not configured
      * 
-     * @since TODO
+     * @since 2.37
      */
     @CheckForNull
     public NodeProperty getNodeProperty(String className)
