@@ -366,6 +366,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * @since 1.432
      */
+    @RequirePOST
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (UpdateSite site : sites) {

@@ -745,6 +745,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         LogFactory.release(uberClassLoader);
     }
 
+    @RequirePOST
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -767,6 +768,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Performs the installation of the plugins.
      */
+    @RequirePOST
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         boolean dynamicLoad = req.getParameter("dynamicLoad")!=null;
 
