@@ -41,6 +41,8 @@ import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -413,9 +415,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Ordering based on build numbers.
+     * If numbers are equal order based on names of parent projects.
      */
     public int compareTo(@Nonnull RunT that) {
-        return this.number - that.number;
+        final int res = this.number - that.number;
+        if (res == 0)
+            return this.getParent().getFullName().compareTo(that.getParent().getFullName());
+
+        return res;
     }
 
     /**
@@ -1362,7 +1369,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	
     	if (logFile.exists() ) {
     	    // Checking if a ".gz" file was return
-    	    FileInputStream fis = new FileInputStream(logFile);
+    	    InputStream fis = Files.newInputStream(logFile.toPath());
     	    if (logFile.getName().endsWith(".gz")) {
     	        return new GZIPInputStream(fis);
     	    } else {
@@ -1802,7 +1809,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        OutputStream logger = new FileOutputStream(getLogFile(), true);
+        OutputStream logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         RunT build = job.getBuild();
 
         // Global log filters

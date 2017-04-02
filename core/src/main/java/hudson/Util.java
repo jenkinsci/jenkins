@@ -198,7 +198,7 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile), charset))) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(logfile.toPath()), charset))) {
             char[] buf = new char[1024];
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
@@ -800,7 +800,7 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        try (InputStream is = new FileInputStream(file)) {
+        try (InputStream is = Files.newInputStream(file.toPath())) {
             return getDigestOf(new BufferedInputStream(is));
         }
     }
@@ -1134,7 +1134,7 @@ public class Util {
      * Creates an empty file.
      */
     public static void touch(@Nonnull File file) throws IOException {
-        new FileOutputStream(file).close();
+        Files.newOutputStream(file.toPath()).close();
     }
 
     /**

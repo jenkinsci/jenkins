@@ -63,6 +63,7 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
+import java.nio.file.Files;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -376,7 +377,7 @@ public class Queue extends ResourceController implements Saveable {
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)))) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(queueFile.toPath())))) {
                     String line;
                     while ((line = in.readLine()) != null) {
                         AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);

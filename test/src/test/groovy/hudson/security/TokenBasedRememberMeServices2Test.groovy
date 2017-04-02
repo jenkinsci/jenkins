@@ -9,6 +9,7 @@ import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices
 import org.acegisecurity.userdetails.User
 import org.acegisecurity.userdetails.UserDetails
 import org.acegisecurity.userdetails.UsernameNotFoundException
+import org.junit.Before
 import com.gargoylesoftware.htmlunit.util.Cookie
 import org.junit.Rule
 import org.junit.Test
@@ -33,7 +34,10 @@ class TokenBasedRememberMeServices2Test {
     @Rule
     public LoggerRule logging = new LoggerRule()
 
-    private boolean failureInduced;
+    private static boolean failureInduced;
+
+    @Before
+    public void resetFailureInduced() {failureInduced = false}
 
     @Test
     public void rememberMeAutoLoginFailure()  {
@@ -66,7 +70,7 @@ class TokenBasedRememberMeServices2Test {
         wc.cookieManager.getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY)
     }
 
-    private class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
+    private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             if (username==password)
@@ -115,7 +119,7 @@ class TokenBasedRememberMeServices2Test {
         }
     }
 
-    private class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
+    private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             failureInduced = true

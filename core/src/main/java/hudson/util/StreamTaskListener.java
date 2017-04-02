@@ -30,7 +30,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -42,6 +41,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
@@ -94,7 +96,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        this(new FileOutputStream(out),charset);
+        this(Files.newOutputStream(out.toPath()),charset);
     }
 
     /**
@@ -110,7 +112,12 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        this(new FileOutputStream(out, append),charset);
+        this(Files.newOutputStream(
+                out.toPath(),
+                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND: StandardOpenOption.TRUNCATE_EXISTING
+                ),
+                charset
+        );
     }
 
     public StreamTaskListener(Writer w) throws IOException {

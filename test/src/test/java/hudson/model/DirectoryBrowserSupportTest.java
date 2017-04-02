@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.zip.ZipFile;
 
 import org.junit.Assume;
@@ -204,7 +205,7 @@ public class DirectoryBrowserSupportTest {
 
         File file = File.createTempFile("DirectoryBrowserSupport", "zipDownload");
         file.delete();
-        Util.copyStreamAndClose(page.getInputStream(), new FileOutputStream(file));
+        Util.copyStreamAndClose(page.getInputStream(), Files.newOutputStream(file.toPath()));
 
         return file;
     }

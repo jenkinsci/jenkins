@@ -23,25 +23,23 @@
  */
 package hudson.util;
 
+import com.jcraft.jzlib.GZIPInputStream;
+import com.jcraft.jzlib.GZIPOutputStream;
 import hudson.Util;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 
 /**
  * Represents write-once read-many file that can be optionally compressed
@@ -78,10 +76,10 @@ public class CompressedFile {
     /**
      * Gets the OutputStream to write to the file.
      */
-    public OutputStream write() throws FileNotFoundException {
+    public OutputStream write() throws IOException {
         if(gz.exists())
             gz.delete();
-        return new FileOutputStream(file);
+        return Files.newOutputStream(file.toPath());
     }
 
     /**
@@ -89,11 +87,11 @@ public class CompressedFile {
      */
     public InputStream read() throws IOException {
         if(file.exists())
-            return new FileInputStream(file);
+            return Files.newInputStream(file.toPath());
 
         // check if the compressed file exists
         if(gz.exists())
-            return new GZIPInputStream(new FileInputStream(gz));
+            return new GZIPInputStream(Files.newInputStream(gz.toPath()));
 
         // no such file
         throw new FileNotFoundException(file.getName());
@@ -138,7 +136,8 @@ public class CompressedFile {
         compressionThread.submit(new Runnable() {
             public void run() {
                 try {
-                    try (InputStream in = read(); OutputStream out = new GZIPOutputStream(new FileOutputStream(gz))) {
+                    try (InputStream in = read();
+                         OutputStream out = new GZIPOutputStream(Files.newOutputStream(gz.toPath()))) {
                         Util.copyStream(in, out);
                     }
                     // if the compressed file is created successfully, remove the original
