@@ -183,7 +183,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Reader)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Reader input) {
@@ -191,7 +191,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Writer)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Writer output) {
@@ -199,7 +199,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.InputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(InputStream input) {
@@ -207,7 +207,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.OutputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(OutputStream output) {

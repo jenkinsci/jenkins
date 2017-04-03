@@ -25,7 +25,6 @@ package hudson;
 
 import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
@@ -645,6 +644,10 @@ public class Util {
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
@@ -652,6 +655,10 @@ public class Util {
             out.write(buf,0,len);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         char[] buf = new char[8192];
         int len;
@@ -659,21 +666,29 @@ public class Util {
             out.write(buf,0,len);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
         try {
             copyStream(in,out);
         } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
+            in.close();
+            out.close();
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         try {
             copyStream(in,out);
         } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
+            in.close();
+            out.close();
         }
     }
 

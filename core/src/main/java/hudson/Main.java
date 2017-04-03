@@ -33,8 +33,6 @@ import com.thoughtworks.xstream.core.util.Base64Encoder;
 import hudson.util.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -174,11 +172,11 @@ public class Main {
                     con.connect();
                     // send the data
                     try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
-                        Util.copyStream(in,con.getOutputStream());
+                        org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
                     }
 
                     if(con.getResponseCode()!=200) {
-                        Util.copyStream(con.getErrorStream(),System.err);
+                        org.apache.commons.io.IOUtils.copy(con.getErrorStream(), System.err);
                     }
 
                     return ret;

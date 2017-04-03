@@ -25,7 +25,6 @@ package hudson.util;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
-import hudson.Util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -112,14 +111,12 @@ public class CompressedFile {
 
         StringBuilder str = new StringBuilder((int)sizeGuess);
 
-        Reader r = new InputStreamReader(read());
-        try {
+        try (InputStream is = read();
+             Reader r = new InputStreamReader(is)) {
             char[] buf = new char[8192];
             int len;
             while((len=r.read(buf,0,buf.length))>0)
                 str.append(buf,0,len);
-        } finally {
-            IOUtils.closeQuietly(r);
         }
 
         return str.toString();
@@ -137,8 +134,9 @@ public class CompressedFile {
             public void run() {
                 try {
                     try (InputStream in = read();
-                         OutputStream out = new GZIPOutputStream(Files.newOutputStream(gz.toPath()))) {
-                        Util.copyStream(in, out);
+                         OutputStream os = Files.newOutputStream(gz.toPath());
+                         OutputStream out = new GZIPOutputStream(os)) {
+                        org.apache.commons.io.IOUtils.copy(in, out);
                     }
                     // if the compressed file is created successfully, remove the original
                     file.delete();

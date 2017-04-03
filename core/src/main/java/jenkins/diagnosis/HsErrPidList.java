@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -123,9 +124,8 @@ public class HsErrPidList extends AdministrativeMonitor {
     private void scanFile(File log) {
         LOGGER.fine("Scanning "+log);
 
-        BufferedReader r=null;
-        try {
-            r = new BufferedReader(new FileReader(log));
+        try (Reader rawReader = new FileReader(log);
+             BufferedReader r = new BufferedReader(rawReader)) {
 
             if (!findHeader(r))
                 return;
@@ -144,8 +144,6 @@ public class HsErrPidList extends AdministrativeMonitor {
         } catch (IOException e) {
             // not a big enough deal.
             LOGGER.log(Level.FINE, "Failed to parse hs_err_pid file: " + log, e);
-        } finally {
-            IOUtils.closeQuietly(r);
         }
     }
 
