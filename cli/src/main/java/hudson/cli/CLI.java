@@ -541,7 +541,7 @@ public class CLI implements AutoCloseable {
                 Level level = parse(args.get(1));
                 ConsoleHandler h = new ConsoleHandler();
                 h.setLevel(level);
-                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER}) { // perhaps also Channel
+                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
                     logger.addHandler(h);
                 }

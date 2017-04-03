@@ -29,6 +29,8 @@ import hudson.model.User;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,6 +38,7 @@ import static org.hamcrest.Matchers.containsString;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -57,10 +60,15 @@ public class CLITest {
         File home = tmp.newFolder();
         // Seems it gets created automatically but with inappropriate permissions:
         File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
-        assertTrue(known_hosts.getParentFile().mkdir());
-        assertTrue(known_hosts.createNewFile());
-        assertTrue(known_hosts.setWritable(false, false));
-        assertTrue(known_hosts.setWritable(true, true));
+        assumeTrue(known_hosts.getParentFile().mkdir());
+        assumeTrue(known_hosts.createNewFile());
+        assumeTrue(known_hosts.setWritable(false, false));
+        assumeTrue(known_hosts.setWritable(true, true));
+        try {
+            Files.getOwner(known_hosts.toPath());
+        } catch (IOException x) {
+            assumeNoException("Sometimes on Windows KnownHostsServerKeyVerifier.acceptIncompleteHostKeys says WARNING: Failed (FileSystemException) to reload server keys from …\\\\.ssh\\\\known_hosts: … Incorrect function.", x);
+        }
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
@@ -74,7 +82,7 @@ public class CLITest {
         ).stdout(System.out).stderr(System.err).join());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath(), "who-am-i"
+            "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath(), "-logger", "FINEST",  "who-am-i"
         ).stdout(baos).stderr(System.err).join());
         assertThat(baos.toString(), containsString("Authenticated as: admin"));
         baos = new ByteArrayOutputStream();
