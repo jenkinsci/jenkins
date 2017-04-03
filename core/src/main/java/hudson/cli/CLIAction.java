@@ -55,6 +55,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.FullDuplexHttpService;
@@ -132,6 +133,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
             return new FullDuplexHttpService(uuid) {
                 @Override
                 protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
+                    final AtomicReference<Thread> runningThread = new AtomicReference<>();
                     class ServerSideImpl extends PlainCLIProtocol.ServerSide {
                         List<String> args = new ArrayList<>();
                         Locale locale = Locale.getDefault();
@@ -176,30 +178,46 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                         protected void onEndStdin() throws IOException {
                             stdinMatch.close();
                         }
+                        @Override
+                        protected synchronized void handleClose() {
+                            notifyAll();
+                            Thread t = runningThread.get();
+                            if (t != null) {
+                                t.interrupt();
+                            }
+                        }
                     }
-                    ServerSideImpl connection = new ServerSideImpl(upload, download);
-                    connection.begin();
-                    synchronized (connection) {
-                        connection.wait(); // TODO this can wait indefinitely even when the connection is broken
-                    }
-                    PrintStream stdout = new PrintStream(connection.streamStdout(), false, connection.encoding.name());
-                    PrintStream stderr = new PrintStream(connection.streamStderr(), true, connection.encoding.name());
-                    String commandName = connection.args.get(0);
-                    CLICommand command = CLICommand.clone(commandName);
-                    if (command == null) {
-                        stderr.println("No such command " + commandName);
-                        connection.sendExit(2);
-                        return;
-                    }
-                    command.setTransportAuth(Jenkins.getAuthentication());
-                    command.setClientCharset(connection.encoding);
-                    CLICommand orig = CLICommand.setCurrent(command);
-                    try {
-                        int exit = command.main(connection.args.subList(1, connection.args.size()), connection.locale, connection.stdin, stdout, stderr);
-                        stdout.flush();
-                        connection.sendExit(exit);
-                    } finally {
-                        CLICommand.setCurrent(orig);
+                    try (ServerSideImpl connection = new ServerSideImpl(upload, download)) {
+                        connection.begin();
+                        synchronized (connection) {
+                            connection.wait();
+                        }
+                        PrintStream stdout = new PrintStream(connection.streamStdout(), false, connection.encoding.name());
+                        PrintStream stderr = new PrintStream(connection.streamStderr(), true, connection.encoding.name());
+                        if (connection.args.isEmpty()) {
+                            stderr.println("Connection closed before arguments received");
+                            connection.sendExit(2);
+                            return;
+                        }
+                        String commandName = connection.args.get(0);
+                        CLICommand command = CLICommand.clone(commandName);
+                        if (command == null) {
+                            stderr.println("No such command " + commandName);
+                            connection.sendExit(2);
+                            return;
+                        }
+                        command.setTransportAuth(Jenkins.getAuthentication());
+                        command.setClientCharset(connection.encoding);
+                        CLICommand orig = CLICommand.setCurrent(command);
+                        try {
+                            runningThread.set(Thread.currentThread());
+                            int exit = command.main(connection.args.subList(1, connection.args.size()), connection.locale, connection.stdin, stdout, stderr);
+                            stdout.flush();
+                            connection.sendExit(exit);
+                        } finally {
+                            CLICommand.setCurrent(orig);
+                            runningThread.set(null);
+                        }
                     }
                 }
             };

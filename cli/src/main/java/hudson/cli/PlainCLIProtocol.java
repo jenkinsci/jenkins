@@ -25,12 +25,14 @@
 package hudson.cli;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.ReadPendingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
@@ -68,7 +70,7 @@ class PlainCLIProtocol {
         STDERR
     }
 
-    static abstract class EitherSide {
+    static abstract class EitherSide implements Closeable {
 
         private final CountingInputStream cis;
         private final FlightRecorderInputStream flightRecorder;
@@ -83,50 +85,70 @@ class PlainCLIProtocol {
         }
 
         final void begin() {
-            new Thread("PlainCLIProtocol") { // TODO set distinctive Thread.name
-                @Override
-                public void run() {
-                    try {
-                        while (true) {
-                            LOGGER.finest("reading frame");
-                            int framelen;
-                            try {
-                                framelen = dis.readInt();
-                            } catch (EOFException x) {
-                                break; // TODO verify that we hit EOF immediately, not partway into framelen
-                            }
-                            if (framelen < 0) {
-                                throw new IOException("corrupt stream: negative frame length");
-                            }
-                            byte b = dis.readByte();
-                            if (b < 0) { // i.e., >127
-                                throw new IOException("corrupt stream: negative operation code");
-                            }
-                            if (b >= Op.values().length) {
-                                LOGGER.log(Level.WARNING, "unknown operation #{0}: {1}", new Object[] {b, HexDump.toHex(flightRecorder.getRecord())});
-                                IOUtils.skipFully(dis, framelen);
-                                continue;
-                            }
-                            Op op = Op.values()[b];
-                            long start = cis.getByteCount();
-                            LOGGER.log(Level.FINEST, "handling frame with {0} of length {1}", new Object[] {op, framelen});
-                            boolean handled = handle(op, framelen);
-                            if (handled) {
-                                long actuallyRead = cis.getByteCount() - start;
-                                if (actuallyRead != framelen) {
-                                    throw new IOException("corrupt stream: expected to read " + framelen + " bytes from " + op + " but read " + actuallyRead);
-                                }
-                            } else {
-                                LOGGER.log(Level.WARNING, "unexpected {0}: {1}", new Object[] {op, HexDump.toHex(flightRecorder.getRecord())});
-                                IOUtils.skipFully(dis, framelen);
-                            }
-                    }
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
-                    }
-                }
-            }.start();
+            new Reader().start();
         }
+
+        private class Reader extends Thread {
+
+            Reader() {
+                super("PlainCLIProtocol"); // TODO set distinctive Thread.name
+            }
+
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        LOGGER.finest("reading frame");
+                        int framelen;
+                        try {
+                            framelen = dis.readInt();
+                        } catch (EOFException x) {
+                            handleClose();
+                            break; // TODO verify that we hit EOF immediately, not partway into framelen
+                        } catch (ReadPendingException x) {
+                            LOGGER.log(Level.FINE, null, x);
+                            // TODO what does this signify? Seems to be thrown randomly by org.eclipse.jetty.io.FillInterest.register. No obvious impact.
+                            // Check https://github.com/eclipse/jetty.project/issues/1047 in 9.4.3.v20170317 but cf. https://github.com/joakime/jetty-async-bug/issues/1
+                            handleClose();
+                            break;
+                        }
+                        if (framelen < 0) {
+                            throw new IOException("corrupt stream: negative frame length");
+                        }
+                        byte b = dis.readByte();
+                        if (b < 0) { // i.e., >127
+                            throw new IOException("corrupt stream: negative operation code");
+                        }
+                        if (b >= Op.values().length) {
+                            LOGGER.log(Level.WARNING, "unknown operation #{0}: {1}", new Object[] {b, HexDump.toHex(flightRecorder.getRecord())});
+                            IOUtils.skipFully(dis, framelen);
+                            continue;
+                        }
+                        Op op = Op.values()[b];
+                        long start = cis.getByteCount();
+                        LOGGER.log(Level.FINEST, "handling frame with {0} of length {1}", new Object[] {op, framelen});
+                        boolean handled = handle(op, framelen);
+                        if (handled) {
+                            long actuallyRead = cis.getByteCount() - start;
+                            if (actuallyRead != framelen) {
+                                throw new IOException("corrupt stream: expected to read " + framelen + " bytes from " + op + " but read " + actuallyRead);
+                            }
+                        } else {
+                            LOGGER.log(Level.WARNING, "unexpected {0}: {1}", new Object[] {op, HexDump.toHex(flightRecorder.getRecord())});
+                            IOUtils.skipFully(dis, framelen);
+                        }
+                    }
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
+                } catch (ReadPendingException x) { // as above
+                    LOGGER.log(Level.FINE, null, x);
+                    handleClose();
+                }
+            }
+
+        }
+
+        protected abstract void handleClose();
 
         protected abstract boolean handle(Op op, int framelen) throws IOException;
 
@@ -165,6 +187,7 @@ class PlainCLIProtocol {
         }
 
         protected final byte[] readChunk(int framelen) throws IOException {
+            assert Thread.currentThread() instanceof EitherSide.Reader;
             byte[] buf = new byte[framelen];
             dis.readFully(buf);
             return buf;
@@ -187,6 +210,11 @@ class PlainCLIProtocol {
             };
         }
 
+        @Override
+        public synchronized void close() throws IOException {
+            dos.close();
+        }
+
     }
 
     static abstract class ServerSide extends EitherSide {
@@ -197,6 +225,7 @@ class PlainCLIProtocol {
 
         @Override
         protected final boolean handle(Op op, int framelen) throws IOException {
+            assert Thread.currentThread() instanceof EitherSide.Reader;
             switch (op) {
             case ARG:
                 onArg(dis.readUTF());
@@ -255,6 +284,7 @@ class PlainCLIProtocol {
 
         @Override
         protected boolean handle(Op op, int framelen) throws IOException {
+            assert Thread.currentThread() instanceof EitherSide.Reader;
             switch (op) {
             case EXIT:
                 onExit(dis.readInt());

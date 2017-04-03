@@ -728,34 +728,39 @@ public class CLI implements AutoCloseable {
             protected void onStderr(byte[] chunk) throws IOException {
                 System.err.write(chunk);
             }
-        }
-        final ClientSideImpl connection = new ClientSideImpl(streams.getInputStream(), streams.getOutputStream());
-        for (String arg : args) {
-            connection.sendArg(arg);
-        }
-        connection.sendEncoding(Charset.defaultCharset().name());
-        connection.sendLocale(Locale.getDefault().toString());
-        connection.sendStart();
-        connection.begin();
-        final OutputStream stdin = connection.streamStdin();
-        new Thread("input reader") {
             @Override
-            public void run() {
-                try {
-                    int c;
-                    while ((c = System.in.read()) != -1) { // TODO use InputStream.available
-                       stdin.write(c);
-                    }
-                    connection.sendEndStdin();
-                } catch (IOException x) {
-                    x.printStackTrace();
-                }
+            protected synchronized void handleClose() {
+                notifyAll();
             }
-        }.start();
-        synchronized (connection) {
-            connection.wait();
         }
-        return connection.exit;
+        try (final ClientSideImpl connection = new ClientSideImpl(streams.getInputStream(), streams.getOutputStream())) {
+            for (String arg : args) {
+                connection.sendArg(arg);
+            }
+            connection.sendEncoding(Charset.defaultCharset().name());
+            connection.sendLocale(Locale.getDefault().toString());
+            connection.sendStart();
+            connection.begin();
+            final OutputStream stdin = connection.streamStdin();
+            new Thread("input reader") {
+                @Override
+                public void run() {
+                    try {
+                        int c;
+                        while ((c = System.in.read()) != -1) { // TODO use InputStream.available
+                           stdin.write(c);
+                        }
+                        connection.sendEndStdin();
+                    } catch (IOException x) {
+                        x.printStackTrace();
+                    }
+                }
+            }.start();
+            synchronized (connection) {
+                connection.wait();
+            }
+            return connection.exit;
+        }
     }
 
     private static String computeVersion() {

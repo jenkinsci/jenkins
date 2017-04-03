@@ -120,9 +120,7 @@ public class CLITest {
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
         doInterrupt(jar, p, "-remoting", "-i", privkey.getAbsolutePath());
         doInterrupt(jar, p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
-        /* TODO does not yet work in HTTP mode:
         doInterrupt(jar, p, "-http", "-auth", "admin:admin");
-        */
     }
     private void doInterrupt(File jar, FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
