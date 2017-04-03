@@ -187,8 +187,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             baseResourceURL = resolve(archive,atts.getValue("Resource-Path")).toURI().toURL();
         } else {
             File classes = new File(expandDir, "WEB-INF/classes");
-            if (classes.exists())
+            if (classes.exists()) { // should not normally happen, due to createClassJarFromWebInfClasses
+                LOGGER.log(Level.WARNING, "Deprecated unpacked classes directory found in {0}", classes);
                 paths.add(classes);
+            }
             File lib = new File(expandDir, "WEB-INF/lib");
             File[] libs = lib.listFiles(JAR_FILTER);
             if (libs != null)
@@ -661,6 +663,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();
+        }
+        if (classesJar.isFile()) {
+            LOGGER.log(Level.WARNING, "Created {0}; update plugin to a version created with a newer harness", classesJar);
         }
     }
 

@@ -63,7 +63,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.13</version>
+      <version>2.20-20170403.192014-1</version> <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/54 -->
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -104,12 +104,6 @@ THE SOFTWARE.
           <artifactId>commons-codec</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency> <!-- TODO seems to be used only by PluginManagerTest -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>subversion</artifactId>
-      <version>1.45</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
