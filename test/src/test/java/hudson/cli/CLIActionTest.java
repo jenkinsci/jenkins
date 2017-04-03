@@ -7,14 +7,17 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.common.collect.Lists;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.Proc;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -23,8 +26,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
+import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.runtime.Security218;
 import static org.hamcrest.Matchers.containsString;
@@ -198,7 +203,29 @@ public class CLIActionTest {
             commands.add(ADMIN + ":" + User.get(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
         }
         commands.addAll(Arrays.asList(args));
-        assertEquals(code, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(commands).stdout(System.out).stderr(System.err).join());
+        final Launcher.LocalLauncher launcher = new Launcher.LocalLauncher(StreamTaskListener.fromStderr());
+        final Proc proc = launcher.launch().cmds(commands).stdout(System.out).stderr(System.err).start();
+        if (!Functions.isWindows()) {
+            // Try to get a thread dump of the client if it hangs.
+            Timer.get().schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (proc.isAlive()) {
+                            Field procF = Proc.LocalProc.class.getDeclaredField("proc");
+                            procF.setAccessible(true);
+                            ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
+                            if (osp != null) {
+                                launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
+                            }
+                        }
+                    } catch (Exception x) {
+                        throw new AssertionError(x);
+                    }
+                }
+            }, 1, TimeUnit.MINUTES);
+        }
+        assertEquals(code, proc.join());
     }
 
     @Issue("JENKINS-41745")
