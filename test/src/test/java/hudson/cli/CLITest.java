@@ -24,29 +24,42 @@
 
 package hudson.cli;
 
+import com.google.common.collect.Lists;
 import hudson.Launcher;
+import hudson.Proc;
+import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import static org.hamcrest.Matchers.containsString;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SleepBuilder;
 
 public class CLITest {
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
     
     @Rule
     public JenkinsRule r = new JenkinsRule();
@@ -90,6 +103,39 @@ public class CLITest {
             "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath(), "-strictHostKey", "who-am-i"
         ).stdout(baos).stderr(System.err).join());
         assertThat(baos.toString(), containsString("Authenticated as: admin"));
+    }
+
+    @Issue("JENKINS-41745")
+    @Test
+    public void interrupt() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
+        SSHD.get().setPort(0);
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        File privkey = tmp.newFile("id_rsa");
+        FileUtils.copyURLToFile(CLITest.class.getResource("id_rsa"), privkey);
+        User.get("admin").addProperty(new UserPropertyImpl(IOUtils.toString(CLITest.class.getResource("id_rsa.pub"))));
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
+        doInterrupt(jar, p, "-remoting", "-i", privkey.getAbsolutePath());
+        doInterrupt(jar, p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
+        /* TODO does not yet work in HTTP mode:
+        doInterrupt(jar, p, "-http", "-auth", "admin:admin");
+        */
+    }
+    private void doInterrupt(File jar, FreeStyleProject p, String... modeArgs) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        List<String> args = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString());
+        args.addAll(Arrays.asList(modeArgs));
+        args.addAll(Arrays.asList("build", "-s", "-v", "p"));
+        Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
+        while (!baos.toString().contains("Sleeping ")) {
+            Thread.sleep(100);
+        }
+        System.err.println("Killing client");
+        proc.kill();
+        r.waitForCompletion(p.getLastBuild());
     }
 
 }
