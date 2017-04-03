@@ -4,6 +4,9 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
 import hudson.util.TextFile;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 
 import javax.crypto.Cipher;
@@ -72,11 +75,11 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     @Override
     protected void store(ConfidentialKey key, byte[] payload) throws IOException {
         CipherOutputStream cos=null;
-        FileOutputStream fos=null;
+        OutputStream fos=null;
         try {
             Cipher sym = Secret.getCipher("AES");
             sym.init(Cipher.ENCRYPT_MODE, masterKey);
-            cos = new CipherOutputStream(fos=new FileOutputStream(getFileFor(key)), sym);
+            cos = new CipherOutputStream(fos= Files.newOutputStream(getFileFor(key).toPath()), sym);
             cos.write(payload);
             cos.write(MAGIC);
         } catch (GeneralSecurityException e) {
@@ -96,14 +99,14 @@ public class DefaultConfidentialStore extends ConfidentialStore {
     @Override
     protected byte[] load(ConfidentialKey key) throws IOException {
         CipherInputStream cis=null;
-        FileInputStream fis=null;
+        InputStream fis=null;
         try {
             File f = getFileFor(key);
             if (!f.exists())    return null;
 
             Cipher sym = Secret.getCipher("AES");
             sym.init(Cipher.DECRYPT_MODE, masterKey);
-            cis = new CipherInputStream(fis=new FileInputStream(f), sym);
+            cis = new CipherInputStream(fis=Files.newInputStream(f.toPath()), sym);
             byte[] bytes = IOUtils.toByteArray(cis);
             return verifyMagic(bytes);
         } catch (GeneralSecurityException e) {

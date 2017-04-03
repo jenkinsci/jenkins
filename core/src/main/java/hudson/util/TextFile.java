@@ -25,6 +25,7 @@ package hudson.util;
 
 import com.google.common.collect.*;
 
+import java.nio.file.Files;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,7 +68,7 @@ public class TextFile {
     public String read() throws IOException {
         StringWriter out = new StringWriter();
         PrintWriter w = new PrintWriter(out);
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath()), "UTF-8"))) {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
@@ -83,7 +84,8 @@ public class TextFile {
             @Override
             public Iterator<String> iterator() {
                 try {
-                    final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+                    final BufferedReader in = new BufferedReader(new InputStreamReader(
+                            Files.newInputStream(file.toPath()),"UTF-8"));
 
                     return new AbstractIterator<String>() {
                         @Override

@@ -43,6 +43,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -134,12 +135,12 @@ public class FilePathTest {
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
-        FileOutputStream os = new FileOutputStream(file);
-        byte[] buf = new byte[size];
-        for (int i=0; i<buf.length; i++)
-            buf[i] = (byte)(i%256);
-        os.write(buf);
-        os.close();
+        try (OutputStream os = Files.newOutputStream(file.toPath())) {
+            byte[] buf = new byte[size];
+            for (int i = 0; i < buf.length; i++)
+                buf[i] = (byte) (i % 256);
+            os.write(buf);
+        }
     }
     
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
@@ -369,7 +370,7 @@ public class FilePathTest {
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(tmpDir);
-        int tar = tmpDirPath.tar(new FileOutputStream(tarFile), tempFile.getName());
+        int tar = tmpDirPath.tar(Files.newOutputStream(tarFile.toPath()), tempFile.getName());
         assertEquals("One file should have been compressed", 1, tar);
 
         // Decompress
@@ -725,7 +726,7 @@ public class FilePathTest {
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(srcFolder);
-        int tarred = tmpDirPath.tar(new FileOutputStream(archive), "**");
+        int tarred = tmpDirPath.tar(Files.newOutputStream(archive.toPath()), "**");
         assertEquals("One file should have been compressed", 3, tarred);
 
         // Decompress

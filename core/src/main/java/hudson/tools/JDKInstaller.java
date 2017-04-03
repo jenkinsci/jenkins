@@ -39,6 +39,8 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -519,7 +521,7 @@ public class JDKInstaller extends ToolInstaller {
                     File tmp = new File(cache.getPath()+".tmp");
                     try {
                         tmp.getParentFile().mkdirs();
-                        try (FileOutputStream out = new FileOutputStream(tmp)) {
+                        try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
                         }
 

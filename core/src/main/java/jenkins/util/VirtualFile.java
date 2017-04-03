@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
@@ -295,7 +296,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 if (isIllegalSymlink()) {
                     throw new FileNotFoundException(f.getPath());
                 }
-                return new FileInputStream(f);
+                return Files.newInputStream(f.toPath());
             }
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {

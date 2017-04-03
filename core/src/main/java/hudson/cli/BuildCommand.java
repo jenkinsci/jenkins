@@ -44,6 +44,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.util.EditDistance;
 import hudson.util.StreamTaskListener;
 
+import java.nio.file.NoSuchFileException;
 import jenkins.scm.SCMDecisionHandler;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -189,7 +190,7 @@ public class BuildCommand extends CLICommand {
                                 b.writeWholeLogTo(stdout);
                                 break;
                             }
-                            catch (FileNotFoundException e) {
+                            catch (FileNotFoundException | NoSuchFileException e) {
                                 if ( i == retryCnt ) {
                                     Exception myException = new AbortException();
                                     myException.initCause(e);
