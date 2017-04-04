@@ -135,6 +135,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {
                     final AtomicReference<Thread> runningThread = new AtomicReference<>();
                     class ServerSideImpl extends PlainCLIProtocol.ServerSide {
+                        boolean ready;
                         List<String> args = new ArrayList<>();
                         Locale locale = Locale.getDefault();
                         Charset encoding = Charset.defaultCharset();
@@ -167,8 +168,8 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                             }
                         }
                         @Override
-                        protected synchronized void onStart() {
-                            notifyAll();
+                        protected void onStart() {
+                            ready();
                         }
                         @Override
                         protected void onStdin(byte[] chunk) throws IOException {
@@ -179,18 +180,24 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                             stdinMatch.close();
                         }
                         @Override
-                        protected synchronized void handleClose() {
-                            notifyAll();
+                        protected void handleClose() {
+                            ready();
                             Thread t = runningThread.get();
                             if (t != null) {
                                 t.interrupt();
                             }
                         }
+                        private synchronized void ready() {
+                            ready = true;
+                            notifyAll();
+                        }
                     }
                     try (ServerSideImpl connection = new ServerSideImpl(upload, download)) {
                         connection.begin();
                         synchronized (connection) {
-                            connection.wait();
+                            while (!connection.ready) {
+                                connection.wait();
+                            }
                         }
                         PrintStream stdout = new PrintStream(connection.streamStdout(), false, connection.encoding.name());
                         PrintStream stderr = new PrintStream(connection.streamStderr(), true, connection.encoding.name());

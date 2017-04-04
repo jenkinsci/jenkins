@@ -712,6 +712,7 @@ public class CLI implements AutoCloseable {
         URL jenkins = new URL(url + "cli?remoting=false");
         FullDuplexHttpStream streams = new FullDuplexHttpStream(jenkins, factory.authorization);
         class ClientSideImpl extends PlainCLIProtocol.ClientSide {
+            boolean complete;
             int exit = -1;
             ClientSideImpl(InputStream is, OutputStream os) throws IOException {
                 super(is, os);
@@ -720,9 +721,9 @@ public class CLI implements AutoCloseable {
                 }
             }
             @Override
-            protected synchronized void onExit(int code) {
+            protected void onExit(int code) {
                 this.exit = code;
-                notifyAll();
+                finished();
             }
             @Override
             protected void onStdout(byte[] chunk) throws IOException {
@@ -733,7 +734,11 @@ public class CLI implements AutoCloseable {
                 System.err.write(chunk);
             }
             @Override
-            protected synchronized void handleClose() {
+            protected void handleClose() {
+                finished();
+            }
+            private synchronized void finished() {
+                complete = true;
                 notifyAll();
             }
         }
@@ -761,7 +766,9 @@ public class CLI implements AutoCloseable {
                 }
             }.start();
             synchronized (connection) {
-                connection.wait();
+                while (!connection.complete) {
+                    connection.wait();
+                }
             }
             return connection.exit;
         }
