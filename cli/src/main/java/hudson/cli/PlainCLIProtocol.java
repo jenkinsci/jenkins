@@ -135,12 +135,12 @@ class PlainCLIProtocol {
                     }
                 } catch (ClosedChannelException x) {
                     LOGGER.log(Level.FINE, null, x);
+                    handleClose();
                 } catch (IOException x) {
                     LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
                 } catch (ReadPendingException x) {
+                    // in case trick in CLIAction does not work
                     LOGGER.log(Level.FINE, null, x);
-                    // TODO what does this signify? Seems to be thrown randomly by org.eclipse.jetty.io.FillInterest.register. No obvious impact.
-                    // Contrary to https://github.com/eclipse/jetty.project/issues/1047 this still happens in 9.4.3.v20170317 as in https://github.com/joakime/jetty-async-bug/issues/1
                     handleClose();
                 }
             }

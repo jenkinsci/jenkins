@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import jenkins.util.Timer;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
@@ -53,6 +55,9 @@ public class CLIActionTest {
 
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     private ExecutorService pool;
 
@@ -131,6 +136,7 @@ public class CLIActionTest {
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
     public void authentication() throws Exception {
+        logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());

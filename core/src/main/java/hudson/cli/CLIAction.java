@@ -221,6 +221,11 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                             int exit = command.main(connection.args.subList(1, connection.args.size()), connection.locale, connection.stdin, stdout, stderr);
                             stdout.flush();
                             connection.sendExit(exit);
+                            try { // seems to avoid ReadPendingException from Jetty
+                                Thread.sleep(1000);
+                            } catch (InterruptedException x) {
+                                // expected; ignore
+                            }
                         } finally {
                             CLICommand.setCurrent(orig);
                             runningThread.set(null);
