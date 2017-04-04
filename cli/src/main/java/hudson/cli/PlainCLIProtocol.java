@@ -140,7 +140,7 @@ class PlainCLIProtocol {
                 } catch (ReadPendingException x) {
                     LOGGER.log(Level.FINE, null, x);
                     // TODO what does this signify? Seems to be thrown randomly by org.eclipse.jetty.io.FillInterest.register. No obvious impact.
-                    // Check https://github.com/eclipse/jetty.project/issues/1047 in 9.4.3.v20170317 but cf. https://github.com/joakime/jetty-async-bug/issues/1
+                    // Contrary to https://github.com/eclipse/jetty.project/issues/1047 this still happens in 9.4.3.v20170317 as in https://github.com/joakime/jetty-async-bug/issues/1
                     handleClose();
                 }
             }
