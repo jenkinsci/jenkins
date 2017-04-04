@@ -3280,10 +3280,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Do a finger-print check.
      */
+    @RequirePOST
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
         if(isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
+            // TODO investigate whether this check can be removed
             rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
         }
         try {
