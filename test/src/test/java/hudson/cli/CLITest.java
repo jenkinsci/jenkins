@@ -68,9 +68,8 @@ public class CLITest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Issue("JENKINS-41745")
-    @Test
-    public void strictHostKey() throws Exception {
+    /** Sets up a fake {@code user.home} so that tests {@code -ssh} mode does not get confused by the developer’s real {@code ~/.ssh/known_hosts}. */
+    private File tempHome() throws IOException {
         File home = tmp.newFolder();
         // Seems it gets created automatically but with inappropriate permissions:
         File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
@@ -85,6 +84,13 @@ public class CLITest {
         }
         assumeThat("or on Windows DefaultKnownHostsServerKeyVerifier.reloadKnownHosts says invalid file permissions: Owner violation (Administrators)",
             ModifiableFileWatcher.validateStrictConfigFilePermissions(known_hosts.toPath()), nullValue());
+        return home;
+    }
+
+    @Issue("JENKINS-41745")
+    @Test
+    public void strictHostKey() throws Exception {
+        File home = tempHome();
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
@@ -111,6 +117,7 @@ public class CLITest {
     @Issue("JENKINS-41745")
     @Test
     public void interrupt() throws Exception {
+        File home = tempHome();
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
@@ -121,13 +128,13 @@ public class CLITest {
         User.get("admin").addProperty(new UserPropertyImpl(IOUtils.toString(CLITest.class.getResource("id_rsa.pub"))));
         FreeStyleProject p = r.createFreeStyleProject("p");
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
-        doInterrupt(jar, p, "-remoting", "-i", privkey.getAbsolutePath());
-        doInterrupt(jar, p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
-        doInterrupt(jar, p, "-http", "-auth", "admin:admin");
+        doInterrupt(jar, home, p, "-remoting", "-i", privkey.getAbsolutePath());
+        doInterrupt(jar, home, p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
+        doInterrupt(jar, home, p, "-http", "-auth", "admin:admin");
     }
-    private void doInterrupt(File jar, FreeStyleProject p, String... modeArgs) throws Exception {
+    private void doInterrupt(File jar, File home, FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        List<String> args = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString());
+        List<String> args = Lists.newArrayList("java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString());
         args.addAll(Arrays.asList(modeArgs));
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
