@@ -2990,7 +2990,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         getPrimaryView().doSubmitDescription(req, rsp);
     }
 
-    @RequirePOST // TODO does not seem to work on _either_ overload!
+    @RequirePOST
     public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);

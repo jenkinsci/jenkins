@@ -172,7 +172,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #doQuietDown()} instead.
      */
     @Deprecated
-    @RequirePOST // Shouldn't be used anyway, but better be safe
+    @RequirePOST
     public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
         doQuietDown().generateResponse(null, rsp, this);
     }
