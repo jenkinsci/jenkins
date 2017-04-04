@@ -96,7 +96,7 @@ THE SOFTWARE.
     <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
 
-    <java.level>7</java.level>
+    <java.level>8</java.level>
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
   </properties>
@@ -482,7 +482,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.13</version>
+          <version>1.15</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -673,7 +673,7 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.7.0</version>
+                  <version>1.8.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
