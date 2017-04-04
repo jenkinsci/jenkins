@@ -101,7 +101,7 @@ THE SOFTWARE.
       <artifactId>instance-identity</artifactId>
       <version>2.1</version>
     </dependency>
-    <dependency>
+    <dependency> <!-- Only used for deprecated Remoting-based CLI. -->
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>ssh-cli-auth</artifactId>
       <version>1.2</version>
