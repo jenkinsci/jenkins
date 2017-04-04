@@ -127,7 +127,7 @@ public abstract class FullDuplexHttpService {
 
         // wait until we are done
         while (!completed) {
-            wait(); // TODO this can wait indefinitely even after the connection is broken
+            wait();
         }
     }
 
