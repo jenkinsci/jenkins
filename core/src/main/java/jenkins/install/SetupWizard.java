@@ -60,6 +60,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A Jenkins instance used during first-run to provide a limited set of services while
@@ -216,6 +217,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Called during the initial setup to create an admin user
      */
+    @RequirePOST
     public void doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
