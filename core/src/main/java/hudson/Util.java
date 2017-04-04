@@ -671,11 +671,8 @@ public class Util {
      */
     @Deprecated
     public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
-        try {
+        try (InputStream _in = in; OutputStream _out = out) { // make sure both are closed, and use Throwable.addSuppressed
             copyStream(in,out);
-        } finally {
-            in.close();
-            out.close();
         }
     }
 
@@ -684,11 +681,8 @@ public class Util {
      */
     @Deprecated
     public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
-        try {
+        try (Reader _in = in; Writer _out = out) {
             copyStream(in,out);
-        } finally {
-            in.close();
-            out.close();
         }
     }
 

@@ -1129,15 +1129,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
-                try {
-                    try (OutputStream _out = Files.newOutputStream(tmp.toPath());
-                         OutputStream out = sha1 != null ? new DigestOutputStream(_out, sha1) : _out;
-                         InputStream in = con.getInputStream();
-                         CountingInputStream cin = new CountingInputStream(in)) {
-                        while ((len = cin.read(buf)) >= 0) {
-                            out.write(buf, 0, len);
-                            job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
-                        }
+                try (OutputStream _out = Files.newOutputStream(tmp.toPath());
+                     OutputStream out = sha1 != null ? new DigestOutputStream(_out, sha1) : _out;
+                     InputStream in = con.getInputStream();
+                     CountingInputStream cin = new CountingInputStream(in)) {
+                    while ((len = cin.read(buf)) >= 0) {
+                        out.write(buf,0,len);
+                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
                     }
                 } catch (IOException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
