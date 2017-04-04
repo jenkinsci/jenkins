@@ -41,7 +41,8 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.hamcrest.Matchers.containsString;
+import org.apache.sshd.common.util.io.ModifiableFileWatcher;
+import static org.hamcrest.Matchers.*;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
 import static org.junit.Assert.*;
@@ -82,6 +83,8 @@ public class CLITest {
         } catch (IOException x) {
             assumeNoException("Sometimes on Windows KnownHostsServerKeyVerifier.acceptIncompleteHostKeys says WARNING: Failed (FileSystemException) to reload server keys from …\\\\.ssh\\\\known_hosts: … Incorrect function.", x);
         }
+        assumeThat("or on Windows DefaultKnownHostsServerKeyVerifier.reloadKnownHosts says invalid file permissions: Owner violation (Administrators)",
+            ModifiableFileWatcher.validateStrictConfigFilePermissions(known_hosts.toPath()), nullValue());
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
