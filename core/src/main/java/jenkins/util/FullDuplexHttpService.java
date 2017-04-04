@@ -153,7 +153,7 @@ public abstract class FullDuplexHttpService {
                 // the actual authentication for the connecting Channel is done by CLICommand
 
                 UUID uuid = UUID.fromString(req.getHeader("Session"));
-                rsp.setHeader("Hudson-Duplex", ""); // set the header so that the client would know
+                rsp.setHeader("Hudson-Duplex", "true"); // set the header so that the client would know
 
                 if (req.getHeader("Side").equals("download")) {
                     FullDuplexHttpService service = createService(req, uuid);
