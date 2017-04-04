@@ -229,6 +229,10 @@ public class CLI implements AutoCloseable {
                 rsp.write(ch);
             }
             String head = new BufferedReader(new StringReader(rsp.toString("ISO-8859-1"))).readLine();
+
+            if (head == null) {
+                throw new IOException("Unexpected empty response");
+            }
             if (!(head.startsWith("HTTP/1.0 200 ") || head.startsWith("HTTP/1.1 200 "))) {
                 s.close();
                 LOGGER.log(Level.SEVERE, "Failed to tunnel the CLI port through the HTTP proxy. Falling back to HTTP.");
