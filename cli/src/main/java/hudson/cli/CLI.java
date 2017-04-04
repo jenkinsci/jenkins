@@ -91,6 +91,7 @@ import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.future.WaitableFuture;
+import org.apache.sshd.common.util.SecurityUtils;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 
@@ -641,6 +642,7 @@ public class CLI implements AutoCloseable {
     }
 
     private static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
+        Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
         URL url = new URL(jenkinsUrl + "/login");
         URLConnection conn = url.openConnection();
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
