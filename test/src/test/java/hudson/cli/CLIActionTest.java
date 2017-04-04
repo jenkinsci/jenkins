@@ -87,7 +87,7 @@ public class CLIActionTest {
 
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"}) // intentionally passing an unreifiable argument here
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"}) // intentionally passing an unreifiable argument here; Remoting-based constructor intentional
     @Test
     public void security218_take2() throws Exception {
         pool = Executors.newCachedThreadPool();

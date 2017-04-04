@@ -85,7 +85,7 @@ public class Security218BlackBoxTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @SuppressWarnings("deprecation") // really mean to use getPage(String)
+    @SuppressWarnings("deprecation") // really mean to use getPage(String), and Remoting-based CLI
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // TODO userContent inaccessible without authentication otherwise
     @Test
     public void probe() throws Exception {
