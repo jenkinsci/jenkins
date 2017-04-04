@@ -32,6 +32,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadPendingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,6 +133,8 @@ class PlainCLIProtocol {
                             IOUtils.skipFully(dis, framelen);
                         }
                     }
+                } catch (ClosedChannelException x) {
+                    LOGGER.log(Level.FINE, null, x);
                 } catch (IOException x) {
                     LOGGER.log(Level.WARNING, null, flightRecorder.analyzeCrash(x, "broken stream"));
                 } catch (ReadPendingException x) {
