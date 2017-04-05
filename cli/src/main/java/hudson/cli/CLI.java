@@ -763,7 +763,7 @@ public class CLI implements AutoCloseable {
                         }
                         connection.sendEndStdin();
                     } catch (IOException x) {
-                        x.printStackTrace();
+                        LOGGER.log(Level.WARNING, null, x);
                     }
                 }
             }.start();
