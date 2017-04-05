@@ -77,7 +77,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.*;
@@ -544,11 +544,11 @@ public class CLI implements AutoCloseable {
             }
             if (head.equals("-logger") && args.size() >= 2) {
                 Level level = parse(args.get(1));
-                ConsoleHandler h = new ConsoleHandler();
-                h.setLevel(level);
+                for (Handler h : Logger.getLogger("").getHandlers()) {
+                    h.setLevel(level);
+                }
                 for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
-                    logger.addHandler(h);
                 }
                 args = args.subList(2, args.size());
                 continue;
