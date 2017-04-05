@@ -146,19 +146,16 @@ public class CLI implements AutoCloseable {
         this.authorization = factory.authorization;
         ExecutorService exec = factory.exec;
         
-        String url = jenkins.toExternalForm();
-        if(!url.endsWith("/"))  url+='/';
-
         ownsPool = exec==null;
         pool = exec!=null ? exec : Executors.newCachedThreadPool(new NamingThreadFactory(Executors.defaultThreadFactory(), "CLI.pool"));
 
         Channel _channel;
         try {
-            _channel = connectViaCliPort(jenkins, getCliTcpPort(url));
+            _channel = connectViaCliPort(jenkins, getCliTcpPort(jenkins));
         } catch (IOException e) {
             LOGGER.log(Level.FINE, "Failed to connect via CLI port. Falling back to HTTP", e);
             try {
-                _channel = connectViaHttp(url);
+                _channel = connectViaHttp(jenkins);
             } catch (IOException e2) {
                 e.addSuppressed(e2);
                 throw e;
@@ -177,12 +174,11 @@ public class CLI implements AutoCloseable {
      * @deprecated Specific to {@link Mode#REMOTING}.
      */
     @Deprecated
-    private Channel connectViaHttp(String url) throws IOException {
+    private Channel connectViaHttp(URL url) throws IOException {
         LOGGER.log(FINE, "Trying to connect to {0} via Remoting over HTTP", url);
-        URL jenkins = new URL(url + "cli?remoting=true");
 
-        FullDuplexHttpStream con = new FullDuplexHttpStream(jenkins,authorization);
-        Channel ch = new Channel("Chunked connection to "+jenkins,
+        FullDuplexHttpStream con = new FullDuplexHttpStream(url, "cli?remoting=true", authorization);
+        Channel ch = new Channel("Chunked connection to " + url,
                 pool,con.getInputStream(),con.getOutputStream());
         final long interval = 15*1000;
         final long timeout = (interval * 3) / 4;
@@ -303,13 +299,14 @@ public class CLI implements AutoCloseable {
 
     /**
      * If the server advertises CLI endpoint, returns its location.
+     * @deprecated Specific to {@link Mode#REMOTING}.
      */
-    protected CliPort getCliTcpPort(String url) throws IOException {
-        URL _url = new URL(url);
-        if (_url.getHost()==null || _url.getHost().length()==0) {
+    @Deprecated
+    protected CliPort getCliTcpPort(URL url) throws IOException {
+        if (url.getHost()==null || url.getHost().length()==0) {
             throw new IOException("Invalid URL: "+url);
         }
-        URLConnection head = _url.openConnection();
+        URLConnection head = url.openConnection();
         try {
             head.connect();
         } catch (IOException e) {
@@ -561,6 +558,10 @@ public class CLI implements AutoCloseable {
             return -1;
         }
 
+        if (!url.endsWith("/")) {
+            url += '/';
+        }
+
         if(args.isEmpty())
             args = Arrays.asList("help"); // default to help
 
@@ -643,7 +644,7 @@ public class CLI implements AutoCloseable {
 
     private static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
-        URL url = new URL(jenkinsUrl + "/login");
+        URL url = new URL(jenkinsUrl + "login");
         URLConnection conn = url.openConnection();
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
 
@@ -711,8 +712,7 @@ public class CLI implements AutoCloseable {
 
     private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
-        URL jenkins = new URL(url + "cli?remoting=false");
-        FullDuplexHttpStream streams = new FullDuplexHttpStream(jenkins, factory.authorization);
+        FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
         class ClientSideImpl extends PlainCLIProtocol.ClientSide {
             boolean complete;
             int exit = -1;

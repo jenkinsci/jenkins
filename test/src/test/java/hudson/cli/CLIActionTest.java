@@ -68,7 +68,7 @@ public class CLIActionTest {
     public void testDuplexHttp() throws Exception {
         pool = Executors.newCachedThreadPool();
         try {
-            FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(j.getURL(), "cli"), null);
+            FullDuplexHttpStream con = new FullDuplexHttpStream(j.getURL(), "cli", null);
             Channel ch = new ChannelBuilder("test connection", pool).build(con.getInputStream(), con.getOutputStream());
             ch.close();
         } finally {
@@ -80,7 +80,7 @@ public class CLIActionTest {
     public void security218() throws Exception {
         pool = Executors.newCachedThreadPool();
         try {
-            FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(j.getURL(), "cli"), null);
+            FullDuplexHttpStream con = new FullDuplexHttpStream(j.getURL(), "cli", null);
             Channel ch = new ChannelBuilder("test connection", pool).build(con.getInputStream(), con.getOutputStream());
             ch.call(new Security218());
             fail("Expected the call to be rejected");
@@ -241,7 +241,8 @@ public class CLIActionTest {
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),"-noKeyAuth", "test-diagnostic").
+            "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
+                "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "-noKeyAuth", "test-diagnostic").
             stdout(baos).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString().trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)

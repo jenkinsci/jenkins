@@ -109,7 +109,7 @@ public class CLITest {
         assertThat(baos.toString(), containsString("Authenticated as: admin"));
         baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath(), "-strictHostKey", "who-am-i"
+            "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString()./* just checking */replaceFirst("/$", ""), "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath(), "-strictHostKey", "who-am-i"
         ).stdout(baos).stderr(System.err).join());
         assertThat(baos.toString(), containsString("Authenticated as: admin"));
     }

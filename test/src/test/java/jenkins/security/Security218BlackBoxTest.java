@@ -277,7 +277,7 @@ public class Security218BlackBoxTest {
                         try {
                             CLI cli = new CLI(r.getURL()) {
                                 @Override
-                                protected CliPort getCliTcpPort(String url) throws IOException {
+                                protected CliPort getCliTcpPort(URL url) throws IOException {
                                     return new CliPort(new InetSocketAddress(proxySocket.getInetAddress(), proxySocket.getLocalPort()), /* ignore identity */ null, 1);
                                 }
                             };
