@@ -719,7 +719,7 @@ public class CLI implements AutoCloseable {
             ClientSideImpl(InputStream is, OutputStream os) throws IOException {
                 super(is, os);
                 if (is.read() != 0) { // cf. FullDuplexHttpService
-                    throw new IOException("expected to see initial zero byte");
+                    throw new IOException("expected to see initial zero byte; perhaps you are connecting to an old server which does not support -http?");
                 }
             }
             @Override
