@@ -17,6 +17,9 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -32,6 +35,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.TeeOutputStream;
 import org.codehaus.groovy.runtime.Security218;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
@@ -248,6 +252,33 @@ public class CLIActionTest {
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString().trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
         // -ssh mode does not pass client locale or encoding
+    }
+
+    @Issue("JENKINS-41745")
+    @Test
+    public void interleavedStdio() throws Exception {
+        File jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PipedInputStream pis = new PipedInputStream();
+        PipedOutputStream pos = new PipedOutputStream(pis);
+        PrintWriter pw = new PrintWriter(new TeeOutputStream(pos, System.err), true);
+        Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-noKeyAuth", "groovysh").
+            stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
+        while (!baos.toString().contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
+            Thread.sleep(100);
+        }
+        pw.println("11 * 11");
+        while (!baos.toString().contains("121")) { // ditto not "===> 121"
+            Thread.sleep(100);
+        }
+        pw.println("11 * 11 * 11");
+        while (!baos.toString().contains("1331")) {
+            Thread.sleep(100);
+        }
+        pw.println(":q");
+        assertEquals(0, proc.join());
     }
 
     @TestExtension("encodingAndLocale")
