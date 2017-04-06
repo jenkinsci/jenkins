@@ -38,8 +38,8 @@ for(i = 0; i < buildTypes.size(); i++) {
                     timeout(time: 180, unit: 'MINUTES') {
                         // See below for what this method does - we're passing an arbitrary environment
                         // variable to it so that JAVA_OPTS and MAVEN_OPTS are set correctly.
-                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m",
-                                    "MAVEN_OPTS=-Xmx1536m -Xms512m -XX:MaxPermSize=1024m"]) {
+                        withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
+                                    "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
                             // .repository directory at the root of the build (which it gets from the

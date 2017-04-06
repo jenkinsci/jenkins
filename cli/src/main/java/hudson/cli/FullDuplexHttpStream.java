@@ -137,8 +137,7 @@ public class FullDuplexHttpStream {
             if (authorization != null) {
                 con.addRequestProperty("Authorization", authorization);
             }
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
                 String line = reader.readLine();
                 String nextLine = reader.readLine();
                 if (nextLine != null) {

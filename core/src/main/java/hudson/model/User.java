@@ -655,7 +655,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @Nonnull RunList getBuilds() {
-        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
