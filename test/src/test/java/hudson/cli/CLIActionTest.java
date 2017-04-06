@@ -257,6 +257,7 @@ public class CLIActionTest {
     @Issue("JENKINS-41745")
     @Test
     public void interleavedStdio() throws Exception {
+        logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -273,6 +274,7 @@ public class CLIActionTest {
         while (!baos.toString().contains("121")) { // ditto not "===> 121"
             Thread.sleep(100);
         }
+        Thread.sleep(31_000); // aggravate org.eclipse.jetty.io.IdleTimeout (cf. AbstractConnector._idleTimeout)
         pw.println("11 * 11 * 11");
         while (!baos.toString().contains("1331")) {
             Thread.sleep(100);
