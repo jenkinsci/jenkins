@@ -48,9 +48,15 @@ public class FullDuplexHttpStream {
         return null;
     }
 
+    /**
+     * @param target something like {@code http://jenkins/cli?remoting=true}
+     *               which we then need to split into {@code http://jenkins/} + {@code cli?remoting=true}
+     *               in order to construct a crumb issuer request
+     * @deprecated use {@link #FullDuplexHttpStream(URL, String, String)} instead
+     */
     @Deprecated
     public FullDuplexHttpStream(URL target, String authorization) throws IOException {
-        this(new URL(target.toString().replaceFirst("/cli.*$", "")), target.toString().replaceFirst("(.+)/cli.*$", "$1"), authorization);
+        this(new URL(target.toString().replaceFirst("/cli.*$", "/")), target.toString().replaceFirst("^.+/(cli.*)$", "$1"), authorization);
     }
 
     /**
@@ -92,8 +98,9 @@ public class FullDuplexHttpStream {
         con.getOutputStream().close();
         input = con.getInputStream();
         // make sure we hit the right URL
-        if(con.getHeaderField("Hudson-Duplex")==null)
-            throw new IOException(target+" doesn't look like Jenkins");
+        if (con.getHeaderField("Hudson-Duplex") == null) {
+            throw new IOException(target + " does not look like Jenkins, or is not serving the HTTP Duplex transport");
+        }
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();

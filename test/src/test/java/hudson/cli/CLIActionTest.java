@@ -68,7 +68,8 @@ public class CLIActionTest {
     public void testDuplexHttp() throws Exception {
         pool = Executors.newCachedThreadPool();
         try {
-            FullDuplexHttpStream con = new FullDuplexHttpStream(j.getURL(), "cli", null);
+            @SuppressWarnings("deprecation") // to verify compatibility of original constructor
+            FullDuplexHttpStream con = new FullDuplexHttpStream(new URL(j.getURL(), "cli"), null);
             Channel ch = new ChannelBuilder("test connection", pool).build(con.getInputStream(), con.getOutputStream());
             ch.close();
         } finally {
