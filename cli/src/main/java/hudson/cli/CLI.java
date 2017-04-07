@@ -54,11 +54,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -401,6 +397,9 @@ public class CLI implements AutoCloseable {
     }
 
     public static int _main(String[] _args) throws Exception {
+
+        Authenticator.setDefault(new ProxyAuthenticator());
+
         List<String> args = Arrays.asList(_args);
         PrivateKeyProvider provider = new PrivateKeyProvider();
         boolean sshAuthRequestedExplicitly = false;
