@@ -191,11 +191,6 @@ THE SOFTWARE.
       <version>4.0</version>
       <scope>test</scope>
     </dependency>
-    <dependency> <!-- to be able to run hudson.cli.CLI in process -->
-      <groupId>org.apache.sshd</groupId>
-      <artifactId>sshd-core</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
