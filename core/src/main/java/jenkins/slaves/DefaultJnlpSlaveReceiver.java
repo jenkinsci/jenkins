@@ -1,11 +1,9 @@
 package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ClassicPluginStrategy;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
-import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
@@ -23,11 +21,9 @@ import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.IOUtils;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -173,7 +169,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         } catch (IOException | InterruptedException e) {
             PrintWriter logw = new PrintWriter(state.getLog(), true);
             Functions.printStackTrace(e, logw);
-            IOUtils.closeQuietly(event.getChannel());
+            try {
+                event.getChannel().close();
+            } catch (IOException x) {
+                LOGGER.log(Level.WARNING, null, x);
+            }
         }
     }
 

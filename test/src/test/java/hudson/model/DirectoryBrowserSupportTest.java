@@ -29,13 +29,11 @@ import static org.junit.Assert.assertTrue;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -53,6 +51,8 @@ import org.jvnet.hudson.test.TestBuilder;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.UnexpectedPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.io.OutputStream;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -205,7 +205,10 @@ public class DirectoryBrowserSupportTest {
 
         File file = File.createTempFile("DirectoryBrowserSupport", "zipDownload");
         file.delete();
-        Util.copyStreamAndClose(page.getInputStream(), Files.newOutputStream(file.toPath()));
+        try (InputStream is = page.getInputStream();
+             OutputStream os = Files.newOutputStream(file.toPath())) {
+            IOUtils.copy(is, os);
+        }
 
         return file;
     }

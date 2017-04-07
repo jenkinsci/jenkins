@@ -7,7 +7,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.PermalinkProjectAction.Permalink;
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
@@ -117,8 +116,7 @@ public class ConsoleCommand extends CLICommand {
         }
         RingBuffer rb = new RingBuffer();
 
-        InputStream in = run.getLogInputStream();
-        try {
+        try (InputStream in = run.getLogInputStream()) {
             byte[] buf = new byte[4096];
             int len;
             byte prev=0;
@@ -137,8 +135,6 @@ public class ConsoleCommand extends CLICommand {
             }
 
             return rb.get();
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(in);
         }
     }
 

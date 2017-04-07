@@ -61,7 +61,6 @@ import hudson.util.io.ArchiverFactory;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -728,7 +727,7 @@ public final class FilePath implements Serializable {
                 private static final long serialVersionUID = 1L;
             });
         } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(_in);
+            _in.close();
         }
     }
 
@@ -1760,15 +1759,11 @@ public final class FilePath implements Serializable {
 
             @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                InputStream fis = null;
-                try {
-                    fis = Files.newInputStream(reading(f).toPath());
-                    Util.copyStream(fis, p.getOut());
+                try (InputStream fis = Files.newInputStream(reading(f).toPath());
+                     OutputStream out = p.getOut()) {
+                    org.apache.commons.io.IOUtils.copy(fis, out);
                 } catch (Exception x) {
                     p.error(x);
-                } finally {
-                    org.apache.commons.io.IOUtils.closeQuietly(fis);
-                    org.apache.commons.io.IOUtils.closeQuietly(p.getOut());
                 }
                 return null;
             }
@@ -1822,10 +1817,9 @@ public final class FilePath implements Serializable {
             private static final long serialVersionUID = 1L;
 
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                final OutputStream out = new java.util.zip.GZIPOutputStream(p.getOut(), 8192);
-                RandomAccessFile raf = null;
-                try {
-                    raf = new RandomAccessFile(reading(f), "r");
+                try (OutputStream os = p.getOut();
+                     OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                     RandomAccessFile raf = new RandomAccessFile(reading(f), "r")) {
                     raf.seek(offset);
                     byte[] buf = new byte[8192];
                     int len;
@@ -1833,15 +1827,6 @@ public final class FilePath implements Serializable {
                         out.write(buf, 0, len);
                     }
                     return null;
-                } finally {
-                    IOUtils.closeQuietly(out);
-                    if (raf != null) {
-                        try {
-                            raf.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
                 }
             }
         });
@@ -2006,14 +1991,11 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 4088559042349254141L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                InputStream fis = null;
-                try {
-                    fis = Files.newInputStream(reading(f).toPath());
-                    Util.copyStream(fis,out);
+                try (InputStream fis = Files.newInputStream(reading(f).toPath())) {
+                    org.apache.commons.io.IOUtils.copy(fis, out);
                     return null;
                 } finally {
-                    org.apache.commons.io.IOUtils.closeQuietly(fis);
-                    org.apache.commons.io.IOUtils.closeQuietly(out);
+                    out.close();
                 }
             }
         });

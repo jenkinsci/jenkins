@@ -371,11 +371,8 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 VirtualFile f = dir.child(n);
                 e.setTime(f.lastModified());
                 zos.putNextEntry(e);
-                InputStream in = f.open();
-                try {
-                    Util.copyStream(in, zos);
-                } finally {
-                    IOUtils.closeQuietly(in);
+                try (InputStream in = f.open()) {
+                    IOUtils.copy(in, zos);
                 }
                 zos.closeEntry();
             }

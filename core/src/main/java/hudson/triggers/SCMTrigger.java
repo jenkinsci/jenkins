@@ -42,13 +42,13 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -450,12 +450,10 @@ public class SCMTrigger extends Trigger<Item> {
          */
         public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-            FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-            try {
+            try (OutputStream os = rsp.getCompressedOutputStream(req);
+                 // Prevent jelly from flushing stream so Content-Length header can be added afterwards
+                 FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);
-            } finally {
-                IOUtils.closeQuietly(out);
             }
         }
 

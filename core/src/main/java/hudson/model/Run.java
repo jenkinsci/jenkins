@@ -66,8 +66,6 @@ import hudson.util.XStream2;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1398,11 +1396,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 			// try to fall back to the old getLogInputStream()
 			// mainly to support .gz compressed files
 			// In this case, console annotation handling will be turned off.
-			InputStream input = getLogInputStream();
-			try {
+			try (InputStream input = getLogInputStream()) {
 				IOUtils.copy(input, out.asWriter());
-			} finally {
-				IOUtils.closeQuietly(input);
 			}
 		}
     }
@@ -2123,14 +2118,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(rsp.getCompressedOutputStream(req));
-        InputStream input = getLogInputStream();
-        try {
+        ;
+        try (InputStream input = getLogInputStream();
+             OutputStream os = rsp.getCompressedOutputStream(req);
+             PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
             IOUtils.copy(input, out);
-            out.flush();
-        } finally {
-            IOUtils.closeQuietly(input);
-            IOUtils.closeQuietly(out);
         }
     }
 
