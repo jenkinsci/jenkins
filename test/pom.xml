@@ -45,20 +45,9 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <!--
-        put hudson.war in the classpath. we can't pull in the war artifact directly
-        because Maven excludes all wars from classpath automatically. so we need a jar artifact.
-      -->
       <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-war</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
-      <classifier>war-for-test</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.modules</groupId>
-          <artifactId>sshd</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -196,6 +185,11 @@ THE SOFTWARE.
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
       <version>4.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
