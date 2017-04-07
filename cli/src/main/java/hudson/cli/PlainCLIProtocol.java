@@ -53,23 +53,28 @@ class PlainCLIProtocol {
     /** One-byte operation to send to the other side. */
     private enum Op {
         /** UTF-8 command name or argument. */
-        ARG,
+        ARG(true),
         /** UTF-8 locale identifier. */
-        LOCALE,
+        LOCALE(true),
         /** UTF-8 client encoding. */
-        ENCODING,
+        ENCODING(true),
         /** Start running command. */
-        START,
+        START(true),
         /** Exit code, as int. */
-        EXIT,
+        EXIT(false),
         /** Chunk of stdin, as int length followed by bytes. */
-        STDIN,
+        STDIN(true),
         /** EOF on stdin. */
-        END_STDIN,
+        END_STDIN(true),
         /** Chunk of stdout. */
-        STDOUT,
+        STDOUT(false),
         /** Chunk of stderr. */
-        STDERR
+        STDERR(false);
+        /** True if sent from the client to the server; false if sent from the server to the client. */
+        final boolean clientSide;
+        Op(boolean clientSide) {
+            this.clientSide = clientSide;
+        }
     }
 
     static abstract class EitherSide implements Closeable {
@@ -149,6 +154,9 @@ class PlainCLIProtocol {
                 } catch (ReadPendingException x) {
                     // in case trick in CLIAction does not work
                     LOGGER.log(Level.FINE, null, x);
+                    handleClose();
+                } catch (RuntimeException x) {
+                    LOGGER.log(Level.WARNING, null, x);
                     handleClose();
                 }
             }
@@ -233,6 +241,7 @@ class PlainCLIProtocol {
         @Override
         protected final boolean handle(Op op, int framelen) throws IOException {
             assert Thread.currentThread() instanceof EitherSide.Reader;
+            assert op.clientSide;
             switch (op) {
             case ARG:
                 onArg(dis.readUTF());
@@ -292,6 +301,7 @@ class PlainCLIProtocol {
         @Override
         protected boolean handle(Op op, int framelen) throws IOException {
             assert Thread.currentThread() instanceof EitherSide.Reader;
+            assert !op.clientSide;
             switch (op) {
             case EXIT:
                 onExit(dis.readInt());
