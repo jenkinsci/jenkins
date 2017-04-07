@@ -69,12 +69,12 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm i
 
                 if (passwordFile!=null)
                     try {
-                        password = new FilePath(command.channel,passwordFile).readToString().trim();
+                        password = new FilePath(command.checkChannel(), passwordFile).readToString().trim();
                     } catch (IOException e) {
                         throw new BadCredentialsException("Failed to read "+passwordFile,e);
                     }
                 if (password==null)
-                    password = command.channel.call(new InteractivelyAskForPassword());
+                    password = command.checkChannel().call(new InteractivelyAskForPassword());
 
                 if (password==null)
                     throw new BadCredentialsException("No password specified");
