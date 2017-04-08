@@ -31,7 +31,9 @@ import jenkins.security.HMACConfidentialKey;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.351
+ * @deprecated Assumes Remoting, and vulnerable to JENKINS-12543.
  */
+@Deprecated
 public class ClientAuthenticationCache implements Serializable {
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ClientAuthenticationCache.class, "MAC");

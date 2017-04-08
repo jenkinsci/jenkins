@@ -20,7 +20,7 @@ import org.apache.commons.codec.binary.Base64;
  * @author Kohsuke Kawaguchi
  */
 public class FullDuplexHttpStream {
-    private final URL target;
+    private final URL base;
     /**
      * Authorization header value needed to get through the HTTP layer.
      */
@@ -49,14 +49,35 @@ public class FullDuplexHttpStream {
     }
 
     /**
+     * @param target something like {@code http://jenkins/cli?remoting=true}
+     *               which we then need to split into {@code http://jenkins/} + {@code cli?remoting=true}
+     *               in order to construct a crumb issuer request
+     * @deprecated use {@link #FullDuplexHttpStream(URL, String, String)} instead
+     */
+    @Deprecated
+    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
+        this(new URL(target.toString().replaceFirst("/cli.*$", "/")), target.toString().replaceFirst("^.+/(cli.*)$", "$1"), authorization);
+    }
+
+    /**
+     * @param base the base URL of Jenkins
      * @param target
      *      The endpoint that we are making requests to.
      * @param authorization
      *      The value of the authorization header, if non-null.
      */
-    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
-        this.target = target;
+    public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
+        if (!base.toString().endsWith("/")) {
+            throw new IllegalArgumentException(base.toString());
+        }
+        if (relativeTarget.startsWith("/")) {
+            throw new IllegalArgumentException(relativeTarget);
+        }
+
+        this.base = base;
         this.authorization = authorization;
+
+        URL target = new URL(base, relativeTarget);
 
         CrumbData crumbData = new CrumbData();
 
@@ -77,8 +98,9 @@ public class FullDuplexHttpStream {
         con.getOutputStream().close();
         input = con.getInputStream();
         // make sure we hit the right URL
-        if(con.getHeaderField("Hudson-Duplex")==null)
-            throw new IOException(target+" doesn't look like Jenkins");
+        if (con.getHeaderField("Hudson-Duplex") == null) {
+            throw new IOException(target + " does not look like Jenkins, or is not serving the HTTP Duplex transport");
+        }
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();
@@ -128,8 +150,7 @@ public class FullDuplexHttpStream {
     	}
 
     	private String createCrumbUrlBase() {
-            String url = target.toExternalForm();    		
-            return new StringBuilder(url.substring(0, url.lastIndexOf("/cli"))).append("/crumbIssuer/api/xml/").toString();
+            return base + "crumbIssuer/api/xml/";
     	}
 
     	private String readData(String dest) throws IOException {

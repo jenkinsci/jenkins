@@ -11,8 +11,10 @@ import hudson.model.StringParameterDefinition
 import hudson.tasks.Shell
 import jenkins.model.JenkinsLocationConfiguration
 import org.junit.Assert
+import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
+import org.jvnet.hudson.test.BuildWatcher
 import org.jvnet.hudson.test.JenkinsRule
 import org.jvnet.hudson.test.TestBuilder
 
@@ -22,6 +24,9 @@ import org.jvnet.hudson.test.TestBuilder
 public class SetBuildParameterCommandTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @ClassRule
+    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @Test
     public void cli()  {
@@ -39,9 +44,9 @@ public class SetBuildParameterCommandTest {
         });
         List<ParameterDefinition> pd = [new StringParameterDefinition("a", ""), new StringParameterDefinition("b", "")];
         p.addProperty(new ParametersDefinitionProperty(pd))
-        p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter a b"))
-        p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter a x"))
-        p.buildersList.add(new Shell("java -jar cli.jar set-build-parameter b y"))
+        p.buildersList.add(new Shell("java -jar cli.jar -remoting -noKeyAuth set-build-parameter a b"))
+        p.buildersList.add(new Shell("java -jar cli.jar -remoting -noKeyAuth set-build-parameter a x"))
+        p.buildersList.add(new Shell("java -jar cli.jar -remoting -noKeyAuth set-build-parameter b y"))
 
         def r = [:];
 
@@ -50,8 +55,9 @@ public class SetBuildParameterCommandTest {
 
         assert r.equals(["a":"x", "b":"y"]);
 
-        p.buildersList.add(new Shell("BUILD_NUMBER=1 java -jar cli.jar set-build-parameter a b"));
+        p.buildersList.add(new Shell("BUILD_NUMBER=1 java -jar cli.jar -remoting -noKeyAuth set-build-parameter a b"))
         def b2 = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.assertLogContains("#1 is not currently being built", b2)
         r = [:];
         b.getAction(ParametersAction.class).parameters.each { v -> r[v.name]=v.value }
         assert r.equals(["a":"x", "b":"y"]);

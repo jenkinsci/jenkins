@@ -40,7 +40,6 @@ THE SOFTWARE.
     <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
     <jacocoSurefireArgs /><!-- empty by default -->
-    <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
   </properties>
 
   <dependencies>
@@ -53,12 +52,6 @@ THE SOFTWARE.
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
       <classifier>war-for-test</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.modules</groupId>
-          <artifactId>sshd</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
