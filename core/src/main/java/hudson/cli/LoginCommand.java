@@ -1,6 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
+import java.io.PrintStream;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
@@ -10,12 +11,20 @@ import org.kohsuke.args4j.CmdLineException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.351
+ * @deprecated Assumes Remoting, and vulnerable to JENKINS-12543.
  */
 @Extension
+@Deprecated
 public class LoginCommand extends CLICommand {
     @Override
     public String getShortDescription() {
         return Messages.LoginCommand_ShortDescription();
+    }
+
+    @Override
+    protected void printUsageSummary(PrintStream stderr) {
+        super.printUsageSummary(stderr);
+        stderr.println(Messages.LoginCommand_FullDescription());
     }
 
     /**

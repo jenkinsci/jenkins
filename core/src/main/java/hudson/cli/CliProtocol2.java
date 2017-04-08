@@ -20,12 +20,14 @@ import java.security.Signature;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
+@Deprecated
 @Extension @Symbol("cli2")
 public class CliProtocol2 extends CliProtocol {
     @Override
     public String getName() {
-        return jenkins.CLI.DISABLED ? null : "CLI2-connect";
+        return jenkins.CLI.get().isEnabled() ? "CLI2-connect" : null;
     }
 
     /**

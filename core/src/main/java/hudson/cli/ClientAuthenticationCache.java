@@ -27,7 +27,9 @@ import java.util.Properties;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.351
+ * @deprecated Assumes Remoting, and vulnerable to JENKINS-12543.
  */
+@Deprecated
 public class ClientAuthenticationCache implements Serializable {
     /**
      * Where the store should be placed.

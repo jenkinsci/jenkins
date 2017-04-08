@@ -189,7 +189,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null. By default, this method returns a no-op authenticator that always authenticates
      *      the session as authenticated by the transport (which is often just {@link jenkins.model.Jenkins#ANONYMOUS}.)
+     * @deprecated See {@link CliAuthenticator}.
      */
+    @Deprecated
     public CliAuthenticator createCliAuthenticator(final CLICommand command) {
         return new CliAuthenticator() {
             public Authentication authenticate() {

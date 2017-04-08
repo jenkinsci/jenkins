@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,26 @@
 
 package hudson.cli;
 
-import hudson.Extension;
-import hudson.model.Result;
-import hudson.model.Run;
-import org.kohsuke.args4j.Argument;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
-/**
- * Sets the result of the current build. Works only if invoked from within a build.
- * 
- * @author Kohsuke Kawaguchi
- * @deprecated Limited to Remoting-based protocol.
- */
-@Deprecated
-@Extension
-public class SetBuildResultCommand extends CommandDuringBuild {
-    @Argument(metaVar="RESULT",required=true)
-    public Result result;
+public class InstallPluginCommandTest {
 
-    @Override
-    public String getShortDescription() {
-        return Messages.SetBuildResultCommand_ShortDescription();
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
+
+    @Issue("JENKINS-41745")
+    @Test
+    public void fromStdin() throws Exception {
+        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+        assertThat(new CLICommandInvoker(r, "install-plugin").
+                withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).
+                invokeWithArgs("-name", "token-macro", "-deploy", "="),
+            CLICommandInvoker.Matcher.succeeded());
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
     }
 
-    @Override
-    protected int run() throws Exception {
-        Run r = getCurrentlyBuilding();
-        r.checkPermission(Run.UPDATE);
-        r.setResult(result);
-        return 0;
-    }
 }
