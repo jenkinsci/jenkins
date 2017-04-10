@@ -55,13 +55,14 @@ import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -303,7 +304,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", Arrays.asList("label1"))
+                new LabelAxis("label", asList("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
@@ -589,50 +590,60 @@ public class ViewTest {
     //Duplication with ViewTest.CompositeView from core unit test module - unfortunately it is inaccessible from here
     private static class DummyCompositeView extends View implements ViewGroup {
 
-        private View[] views;
-        private TopLevelItem[] jobs;
+        private final List<View> views;
+        private List<TopLevelItem> jobs;
+        private String primaryView;
 
-        protected DummyCompositeView(final String name, View... views) {
+        private transient final ViewGroupMixIn viewGroupMixIn = new ViewGroupMixIn(this) {
+            protected List<View> views() { return views; }
+            protected String primaryView() { return primaryView; }
+            protected void primaryView(String name) { primaryView = name; }
+        };
+
+        DummyCompositeView(final String name, View... views) {
             super(name);
-            this.views = views;
+            this.primaryView = views[0].getViewName();
+            this.views = asList(views);
         }
 
         private DummyCompositeView withJobs(TopLevelItem... jobs) {
-            this.jobs = jobs;
+            this.jobs = asList(jobs);
             return this;
         }
 
         @Override
         public Collection<TopLevelItem> getItems() {
-            return Arrays.asList(this.jobs);
+            return this.jobs;
         }
 
         @Override
         public Collection<View> getViews() {
-            return Arrays.asList(this.views);
+            return viewGroupMixIn.getViews();
         }
 
         @Override
         public boolean canDelete(View view) {
-            return false;
+            return viewGroupMixIn.canDelete(view);
         }
 
         @Override
         public void deleteView(View view) throws IOException {
+            viewGroupMixIn.deleteView(view);
         }
 
         @Override
         public View getView(String name) {
-            return null;
+            return viewGroupMixIn.getView(name);
         }
 
         @Override
         public View getPrimaryView() {
-            return null;
+            return viewGroupMixIn.getPrimaryView();
         }
 
         @Override
         public void onViewRenamed(View view, String oldName, String newName) {
+            viewGroupMixIn.onViewRenamed(view, oldName, newName);
         }
 
         @Override

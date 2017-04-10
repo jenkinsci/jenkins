@@ -23,11 +23,7 @@
  */
 package hudson.model;
 
-import hudson.model.ItemGroupMixIn;
-import hudson.model.View;
-import hudson.model.ViewGroup;
 import java.util.Locale;
-import java.util.logging.Level;
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
@@ -92,9 +88,16 @@ public abstract class ViewGroupMixIn {
     }
 
     public View getView(String name) {
-        for (View v : getAllViews()) {
+        for (View v : views()) {
             if (v.getViewName().equals(name)) {
                 return v;
+            }
+            //getAllViews() cannot be used as it filters jobs by permission which is bad e.g. when trying to add a new job
+            if (v instanceof ViewGroup) {
+                View nestedView = ((ViewGroup) v).getView(name);
+                if (nestedView != null) {
+                    return nestedView;
+                }
             }
         }
         if (name != null && !name.equals(primaryView())) {
@@ -121,18 +124,13 @@ public abstract class ViewGroupMixIn {
     @Exported
     public Collection<View> getViews() {
         List<View> orig = views();
-        List<View> copy = new ArrayList<View>(orig.size());
+        List<View> copy = new ArrayList<>(orig.size());
         for (View v : orig) {
             if (v.hasPermission(View.READ))
                 copy.add(v);
         }
         Collections.sort(copy, View.SORTER);
         return copy;
-    }
-
-    //Already implemented in ViewGroup interface - can be private
-    private Collection<View> getAllViews() {
-        return owner.getAllViews();
     }
 
     /**
