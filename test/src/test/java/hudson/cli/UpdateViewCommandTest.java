@@ -83,7 +83,7 @@ public class UpdateViewCommandTest {
                 .withStdin(this.getClass().getResourceAsStream("/hudson/cli/testview-foo.xml"))
                 .invokeWithArgs("tView");
 
-        assertThat(result, failedWith(0));
+        assertThat(result, succeededSilently());
     }
 
     @Test public void updateViewWithWrongViewTypeShouldFail() throws Exception {
