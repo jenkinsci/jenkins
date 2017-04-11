@@ -77,8 +77,8 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
      * given job type.
      * 
      * <p>
-     * The default implementation of this method checks if the given job type is assignable to 'J' of
-     * {@link JobProperty}<tt>&lt;J></tt>, but subtypes can extend this to change this behavior.
+     * The default implementation of this method checks if the given job type is assignable to {@code J} of
+     * {@link JobProperty}{@code <J>}, but subtypes can extend this to change this behavior.
      *
      * @return
      *      true to indicate applicable, in which case the property will be

@@ -436,7 +436,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Set the queue item ID.
-     * <p/>
+     * <p>
      * Mapped from the {@link Queue.Item#getId()}.
      * @param queueId The queue item ID.
      */
@@ -523,7 +523,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
      * an executor holds on to {@link Run} some more time even after the build is finished (for example to
      * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
-     * @see Executables#getExecutor
+     * @see Executor#of
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
@@ -929,7 +929,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'.
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}.
      * 
      * @param numberOfBuilds the desired number of builds
      * @param threshold the build result threshold
@@ -1407,7 +1407,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * If someone is still writing to the log, this method will not return until the whole log
      * file gets written out.
-     * <p/>
+     * <p>
      * The method does not close the {@link OutputStream}.
      */
     public void writeWholeLogTo(@Nonnull OutputStream out) throws IOException, InterruptedException {
@@ -1682,7 +1682,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * @deprecated as of 1.467
-     *      Use {@link #execute(RunExecution)}
+     *      Use {@link #execute(hudson.model.Run.RunExecution)}
      */
     @Deprecated
     protected final void run(@Nonnull Runner job) {

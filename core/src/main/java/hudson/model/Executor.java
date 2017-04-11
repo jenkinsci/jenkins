@@ -958,7 +958,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Returns the estimated duration for the executable.
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
-     * was compiled against Hudson < 1.383
+     * was compiled against Hudson prior to 1.383
      *
      * @deprecated as of 1.388
      *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}

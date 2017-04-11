@@ -66,7 +66,7 @@ public class Executables {
      * This can happen if Computer.getIdleStartMilliseconds() is called before the executable is set to non-null in Computer.run()
      * or if the executor thread exits prematurely, see JENKINS-30456
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
-     * was compiled against Hudson < 1.383
+     * was compiled against Hudson prior to 1.383
      * @param e Executable item
      * @return the estimated duration for a given executable, -1 if the executable is null
      */

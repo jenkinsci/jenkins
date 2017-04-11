@@ -284,7 +284,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * This is where the log from the remote agent goes.
      * The method also creates a log directory if required.
-     * @see #getLogDir(), #relocateOldLogs()
+     * @see #getLogDir()
+     * @see #relocateOldLogs()
      */
     public @Nonnull File getLogFile() {
         return new File(getLogDir(),"slave.log");

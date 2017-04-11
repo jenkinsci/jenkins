@@ -61,7 +61,7 @@ public class FullDuplexHttpStream {
 
     /**
      * @param base the base URL of Jenkins
-     * @param target
+     * @param relativeTarget
      *      The endpoint that we are making requests to.
      * @param authorization
      *      The value of the authorization header, if non-null.

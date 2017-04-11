@@ -505,7 +505,7 @@ public class Maven extends Builder {
 
         /**
          * @deprecated as of 1.308.
-         *      Use {@link #Maven.MavenInstallation(String, String, List)}
+         *      Use {@link #MavenInstallation(String, String, List)}
          */
         @Deprecated
         public MavenInstallation(String name, String home) {
