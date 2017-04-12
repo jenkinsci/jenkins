@@ -1291,6 +1291,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
 
+        @RequirePOST
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
             j.forceSetSlaveAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
