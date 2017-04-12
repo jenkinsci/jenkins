@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
+import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -257,7 +258,7 @@ public class CLIActionTest {
     @Issue("JENKINS-41745")
     @Test
     public void interleavedStdio() throws Exception {
-        logging.record(PlainCLIProtocol.class, Level.FINE);
+        logging.record(PlainCLIProtocol.class, Level.FINE).record(FullDuplexHttpService.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
