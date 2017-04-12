@@ -121,6 +121,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
+import hudson.remoting.ClassFilter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -256,6 +257,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -292,13 +294,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
-import hudson.remoting.ClassFilter;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
-import java.util.regex.Pattern;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -814,7 +815,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
-            ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
+            // TODO pending move to standard blacklist, or API to append filter
+            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) {
+                try {
+                    Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
+                    blacklistPatternsF.setAccessible(true);
+                    @SuppressWarnings("unchecked")
+                    List<Pattern> blacklistPatterns = (List) blacklistPatternsF.get(ClassFilter.DEFAULT);
+                    blacklistPatterns.add(Pattern.compile("java[.]security[.]SignedObject"));
+                } catch (NoSuchFieldException | IllegalAccessException x) {
+                    throw new Error(x);
+                }
+            }
 
             // initialization consists of ...
             executeReactor( is,
