@@ -520,7 +520,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.122-20170411.132219-2</version> <!-- TODO https://github.com/jenkinsci/maven-hpi-plugin/pull/58 -->
+          <version>1.122</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
