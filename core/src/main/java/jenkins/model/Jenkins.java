@@ -840,7 +840,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         }
                     }
                 } catch (NoSuchFieldException | IllegalAccessException x) {
-                    throw new Error(x);
+                    throw new Error("Unexpected ClassFilter implementation in bundled remoting.jar: " + x, x);
                 }
             }
 
