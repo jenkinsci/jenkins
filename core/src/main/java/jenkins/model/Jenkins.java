@@ -820,9 +820,25 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 try {
                     Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
                     blacklistPatternsF.setAccessible(true);
-                    @SuppressWarnings("unchecked")
-                    List<Pattern> blacklistPatterns = (List) blacklistPatternsF.get(ClassFilter.DEFAULT);
-                    blacklistPatterns.add(Pattern.compile("java[.]security[.]SignedObject"));
+                    Object blacklistPatterns = blacklistPatternsF.get(ClassFilter.DEFAULT);
+                    if (blacklistPatterns instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Pattern> blacklistPatternsL = (List) blacklistPatterns;
+                        blacklistPatternsL.add(Pattern.compile("java[.]security[.]SignedObject"));
+                    } else { // remoting 2.62+
+                        Object[] blacklistPatternsA = (Object[]) blacklistPatterns;
+                        boolean found = false;
+                        for (int i = 0; i < blacklistPatternsA.length; i++) {
+                            if (blacklistPatternsA[i] instanceof Pattern) {
+                                blacklistPatternsA[i] = Pattern.compile(blacklistPatternsA[i] + "|java[.]security[.]SignedObject");
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            throw new Error("no Pattern found among " + Arrays.toString(blacklistPatternsA));
+                        }
+                    }
                 } catch (NoSuchFieldException | IllegalAccessException x) {
                     throw new Error(x);
                 }
