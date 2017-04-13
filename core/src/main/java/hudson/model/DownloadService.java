@@ -57,6 +57,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -376,6 +377,7 @@ public class DownloadService extends PageDecorator {
         /**
          * This is where the browser sends us the data. 
          */
+        @RequirePOST
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             DownloadSettings.checkPostBackAccess();
             long dataTimestamp = System.currentTimeMillis();
