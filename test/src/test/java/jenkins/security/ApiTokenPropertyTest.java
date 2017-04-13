@@ -6,6 +6,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.DownloadedContent;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.HttpWebConnection;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -142,7 +143,17 @@ public class ApiTokenPropertyTest {
         
         // Make sure that Admin can reset a token of another user
         WebClient wc = createClientForUser("bar");
-        HtmlPage res = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        assertEquals("method should not be allowed", 405, requirePOST.getWebResponse().getStatusCode());
+
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
+        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
+        wc.addCrumb(request);
+        HtmlPage res = wc.getPage(request);
+
+        // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
+//        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
         assertEquals("Update token response is incorrect", 
                 Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
     }

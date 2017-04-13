@@ -636,6 +636,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
      *
      * @since 1.432
      */
+    @RequirePOST
     public HttpResponse doInvalidateData() {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         for (UpdateSite site : sites) {
@@ -649,6 +650,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Schedules a Jenkins restart.
      */
+    @RequirePOST
     public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
         synchronized (jobs) {
             if (!isRestartScheduled()) {
@@ -663,6 +665,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Cancel all scheduled jenkins restarts
      */
+    @RequirePOST
     public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
@@ -737,6 +740,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Performs hudson downgrade.
      */
+    @RequirePOST
     public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication());
