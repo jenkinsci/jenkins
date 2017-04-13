@@ -392,7 +392,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Gets the minimum required version for the current version of Jenkins.
          *
          * @return the minimum required version for the current version of Jenkins.
-         * @sice 2.16
+         * @since 2.16
          */
         public VersionNumber getRequiredVersion() {
             return new VersionNumber(requiredVersion);

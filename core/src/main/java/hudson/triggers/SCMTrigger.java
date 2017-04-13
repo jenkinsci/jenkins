@@ -93,7 +93,7 @@ import static java.util.logging.Level.WARNING;
  * You can add UI elements under the SCM section by creating a
  * config.jelly or config.groovy in the resources area for
  * your class that inherits from SCMTrigger and has the 
- * @{@link hudson.model.Extension} annotation. The UI should 
+ * {@link Extension} annotation. The UI should 
  * be wrapped in an f:section element to denote it.
  *
  * @author Kohsuke Kawaguchi

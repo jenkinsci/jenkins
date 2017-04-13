@@ -172,7 +172,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
     /**
      * Returns true if this {@link View} type is applicable in the specific {@link ViewGroup}.
      * <p>
-     * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup#getClass()}.
+     * Default implementation returns {@link #isApplicable(Class)} for the {@link ViewGroup}’s {@link Object#getClass}.
      *
      * @return true to indicate applicable, in which case the view will be instantiable within the given owner.
      * @since 2.37

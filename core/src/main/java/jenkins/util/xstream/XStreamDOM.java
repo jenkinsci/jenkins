@@ -90,15 +90,15 @@ import java.util.Stack;
  *
  * With the following XML:
  *
- * <pre>
- * &lt;foo>
- *   &lt;bar>
- *     &lt;payload>
+ * <pre>{@code
+ * <foo>
+ *   <bar>
+ *     <payload>
  *       ...
- *     &lt;/payload>
- *   &lt;/bar>
- * &lt;/foo>
- * </pre>
+ *     </payload>
+ *   </bar>
+ * </foo>
+ * }</pre>
  *
  * <p>
  * The {@link XStreamDOM} object in the bar field will have the "payload" element in its tag name

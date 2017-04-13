@@ -319,9 +319,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * If the implementation needs to redirect the user to a different URL
      * for signing up, use the following jelly script as <tt>signup.jelly</tt>
      *
-     * <pre><xmp>
+     * <pre>{@code <xmp>
      * <st:redirect url="http://www.sun.com/" xmlns:st="jelly:stapler"/>
-     * </xmp></pre>
+     * </xmp>}</pre>
      */
     public boolean allowsSignup() {
         Class clz = getClass();
@@ -355,8 +355,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * If this {@link SecurityRealm} supports a look up of {@link GroupDetails} by their names, override this method
      * to provide the look up.
-     * <p/>
-     * <p/>
+     * <p>
      * This information, when available, can be used by {@link AuthorizationStrategy}s to improve the UI and
      * error diagnostics for the user.
      *

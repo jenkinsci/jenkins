@@ -296,7 +296,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method is called after source code is checked out for the given build (that is, after
-     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} has finished successfully.)
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} has finished successfully.)
      *
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
@@ -539,12 +539,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Often SCMs have to create a directory inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- CVS
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
@@ -605,7 +605,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Some SCMs support checking out multiple modules inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- .svn
@@ -613,7 +613,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *  +- abc    <- second module from different SCM root
      *      +- .svn
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * This method takes the workspace root as a parameter, and is expected to return
      * all the module roots that were checked out from SCM.

@@ -136,7 +136,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Gets the term used in the UI to represent the kind of {@link Queue.Task} associated with this kind of
      * {@link Item}. Must start with a capital letter. Defaults to "Build".
-     * @since2.50 
+     * @since 2.50
      */
     public String getTaskNoun() {
         return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());

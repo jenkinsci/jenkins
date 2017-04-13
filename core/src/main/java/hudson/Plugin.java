@@ -196,7 +196,7 @@ public abstract class Plugin implements Saveable {
      *
      * <p>
      * The following is a sample <tt>config.jelly</tt> that you can start yours with:
-     * <pre><xmp>
+     * <pre>{@code <xmp>
      * <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
      *   <f:section title="Locale">
      *     <f:entry title="${%Default Language}" help="/plugin/locale/help/default-language.html">
@@ -204,7 +204,7 @@ public abstract class Plugin implements Saveable {
      *     </f:entry>
      *   </f:section>
      * </j:jelly>
-     * </xmp></pre>
+     * </xmp>}</pre>
      *
      * <p>
      * This allows you to access data as {@code formData.getString("systemLocale")}

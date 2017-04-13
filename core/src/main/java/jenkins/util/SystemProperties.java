@@ -39,7 +39,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Centralizes calls to {@link System#getProperty()} and related calls.
+ * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
  * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not

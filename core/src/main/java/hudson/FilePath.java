@@ -167,7 +167,7 @@ import static hudson.Util.isSymlink;
  * }
  * // if 'file' is on a different node, this FileCallable will
  * // be transferred to that node and executed there.
- * private static final class Freshen implements FileCallable&lt;Void> {
+ * private static final class Freshen implements FileCallable&lt;Void&gt; {
  *     private static final long serialVersionUID = 1;
  *     &#64;Override public Void invoke(File f, VirtualChannel channel) {
  *         // f and file represent the same thing
@@ -933,7 +933,7 @@ public final class FilePath implements Serializable {
     /**
      * Code that gets executed on the machine where the {@link FilePath} is local.
      * Used to act on {@link FilePath}.
-     * <strong>Warning:</code> implementations must be serializable, so prefer a static nested class to an inner class.
+     * <strong>Warning:</strong> implementations must be serializable, so prefer a static nested class to an inner class.
      *
      * <p>
      * Subtypes would likely want to extend from either {@link MasterToSlaveCallable}
@@ -2314,7 +2314,7 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Same as {@link #validateFileMask(String, int, boolean)} with caseSensitive set to true
+     * Same as {@link #validateAntFileMask(String, int, boolean)} with caseSensitive set to true
      */
     public String validateAntFileMask(final String fileMasks, final int bound) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, bound, true);
@@ -2523,7 +2523,7 @@ public final class FilePath implements Serializable {
     }
     
     /**
-     * Shortcut for {@link #validateFileMask(String,true,boolean)} as the left-hand side can be null.
+     * Shortcut for {@link #validateFileMask(String,boolean,boolean)} with {@code errorIfNotExist} true, as the left-hand side can be null.
      */
     public static FormValidation validateFileMask(@CheckForNull FilePath path, String value, boolean caseSensitive) throws IOException {
         if(path==null) return FormValidation.ok();
