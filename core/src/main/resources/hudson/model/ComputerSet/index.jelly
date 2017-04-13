@@ -96,7 +96,7 @@ THE SOFTWARE.
     </table>
     <j:if test="${app.hasPermission(app.ADMINISTER)}">
       <div align="right" style="margin-top:0.5em">
-        <form method="get" action="updateNow">
+        <form method="post" action="updateNow">
           <s:submit value="${%Refresh status}"/>
         </form>
       </div>

@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.PrintStream;
 import jenkins.security.security218.Payload;
 import org.jenkinsci.remoting.RoleChecker;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -168,6 +167,13 @@ public class Security218CliTest {
         // with a proper fix, this should fail with EXIT_CODE_REJECTED
         // otherwise this will fail with -1 exit code
         probe(Payload.Ldap, PayloadCaller.EXIT_CODE_REJECTED);
+    }
+
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
+    @Test
+    @Issue("SECURITY-429")
+    public void jsonLibSignedObject() throws Exception {
+        probe(Payload.JsonLibSignedObject, PayloadCaller.EXIT_CODE_REJECTED);
     }
 
     private void probe(Payload payload, int expectedResultCode) throws Exception {

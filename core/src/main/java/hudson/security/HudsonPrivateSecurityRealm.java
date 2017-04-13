@@ -59,6 +59,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.dao.DataAccessException;
 
 import javax.servlet.Filter;
@@ -214,6 +215,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an account and associates that with the given identity. Used in conjunction
      * with {@link #commenceSignup}.
      */
+    @RequirePOST
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
         if (u!=null)
@@ -226,6 +228,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates an user account. Used for self-registration.
      */
+    @RequirePOST
     public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return _doCreateAccount(req, rsp, "signup.jelly");
     }
@@ -264,6 +267,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
      * this is someone creating another user.
      */
+    @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         if(createAccount(req, rsp, false, "addUser.jelly")!=null) {
@@ -277,6 +281,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * <p>
      * This can be run by anyone, but only to create the very first user account.
      */
+    @RequirePOST
     public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED,"First user was already created");

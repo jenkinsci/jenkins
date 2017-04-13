@@ -48,6 +48,7 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Remembers the API token for this user, that can be used like a password to login.
@@ -179,6 +180,7 @@ public class ApiTokenProperty extends UserProperty {
             return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
+        @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p==null) {
