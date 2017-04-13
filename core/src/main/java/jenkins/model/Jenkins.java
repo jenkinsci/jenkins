@@ -830,7 +830,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         boolean found = false;
                         for (int i = 0; i < blacklistPatternsA.length; i++) {
                             if (blacklistPatternsA[i] instanceof Pattern) {
-                                blacklistPatternsA[i] = Pattern.compile(blacklistPatternsA[i] + "|java[.]security[.]SignedObject");
+                                blacklistPatternsA[i] = Pattern.compile("(" + blacklistPatternsA[i] + ")|(java[.]security[.]SignedObject)");
                                 found = true;
                                 break;
                             }
