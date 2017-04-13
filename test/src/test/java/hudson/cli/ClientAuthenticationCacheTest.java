@@ -116,7 +116,7 @@ public class ClientAuthenticationCacheTest {
     }
 
     private void assertCLI(int code, @CheckForNull String output, File jar, String... args) throws Exception {
-        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-noKeyAuth");
+        List<String> commands = Lists.newArrayList("java", "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString(), "-noKeyAuth", "-remoting");
         commands.addAll(Arrays.asList(args));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(code, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(commands).stdout(new TeeOutputStream(System.out, baos)).stderr(System.err).join());
