@@ -33,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import javax.annotation.CheckForNull;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -45,6 +46,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class ClientAuthenticationCacheTest {
 
@@ -54,7 +56,8 @@ public class ClientAuthenticationCacheTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    // TODO 2.19.x+ use LoggerRule on ClientAuthenticationCache
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(ClientAuthenticationCache.class, Level.FINER);
 
     @Issue("SECURITY-466")
     @Test
