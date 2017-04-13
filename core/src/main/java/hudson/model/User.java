@@ -333,6 +333,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
 
