@@ -876,7 +876,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
             // TODO pending move to standard blacklist, or API to append filter
-            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // TODO 2.4+ SystemProperties
+            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
                 try {
                     Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
                     blacklistPatternsF.setAccessible(true);
