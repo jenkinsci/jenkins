@@ -106,6 +106,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
+import hudson.remoting.ClassFilter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -251,6 +252,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -286,6 +288,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
@@ -900,6 +903,35 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
+            // TODO pending move to standard blacklist, or API to append filter
+            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
+                try {
+                    Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
+                    blacklistPatternsF.setAccessible(true);
+                    Object blacklistPatterns = blacklistPatternsF.get(ClassFilter.DEFAULT);
+                    if (blacklistPatterns instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Pattern> blacklistPatternsL = (List) blacklistPatterns;
+                        blacklistPatternsL.add(Pattern.compile("java[.]security[.]SignedObject"));
+                    } else { // remoting 2.62+
+                        Object[] blacklistPatternsA = (Object[]) blacklistPatterns;
+                        boolean found = false;
+                        for (int i = 0; i < blacklistPatternsA.length; i++) {
+                            if (blacklistPatternsA[i] instanceof Pattern) {
+                                blacklistPatternsA[i] = Pattern.compile("(" + blacklistPatternsA[i] + ")|(java[.]security[.]SignedObject)");
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            throw new Error("no Pattern found among " + Arrays.toString(blacklistPatternsA));
+                        }
+                    }
+                } catch (NoSuchFieldException | IllegalAccessException x) {
+                    throw new Error("Unexpected ClassFilter implementation in bundled remoting.jar: " + x, x);
+                }
+            }
+
             // initialization consists of ...
             executeReactor( is,
                     pluginManager.initTasks(is),    // loading and preparing plugins
@@ -1270,6 +1302,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
         }
 
+        @RequirePOST
         public void doAct(StaplerRequest req, StaplerResponse rsp) throws IOException {
             j.forceSetSlaveAgentPort(getExpectedPort());
             rsp.sendRedirect2(req.getContextPath() + "/manage");
@@ -3596,6 +3629,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Accepts submission from the configuration page.
      */
+    @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         BulkChange bc = new BulkChange(this);
         try {
@@ -3683,7 +3717,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         getPrimaryView().doSubmitDescription(req, rsp);
     }
 
-    @RequirePOST // TODO does not seem to work on _either_ overload!
+    @RequirePOST
     public synchronized HttpRedirect doQuietDown() throws IOException {
         try {
             return doQuietDown(false,0);
@@ -3739,6 +3773,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Backward compatibility. Redirect to the thread dump.
      */
+    // TODO annotate @GET once baseline includes Stapler version XXX
     public void doClassicThreadDump(StaplerResponse rsp) throws IOException, ServletException {
         rsp.sendRedirect2("threadDump");
     }
@@ -3976,10 +4011,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Do a finger-print check.
      */
+    @RequirePOST
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
         MultipartFormDataParser p = new MultipartFormDataParser(req);
         if(isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
+            // TODO investigate whether this check can be removed
             rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
         }
         try {
@@ -4071,10 +4108,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return;
         }
 
-        restart();
+        if (req == null || req.getMethod().equals("POST")) {
+            restart();
+        }
 
-        if (rsp != null) // null for CLI
-            rsp.sendRedirect2(".");
+        rsp.sendRedirect2(".");
     }
 
     /**
@@ -4090,7 +4128,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this,"_safeRestart.jelly");
 
-        safeRestart();
+        if (req == null || req.getMethod().equals("POST")) {
+            safeRestart();
+        }
 
         return HttpResponses.redirectToDot();
     }
@@ -4758,6 +4798,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
+        @RequirePOST
         public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
             Jenkins.getInstance().doConfigExecutorsSubmit(req, rsp);
         }
