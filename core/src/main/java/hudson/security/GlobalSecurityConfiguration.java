@@ -47,6 +47,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Security configuration.
@@ -72,6 +73,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().isDisableRememberMe();
     }
 
+    @RequirePOST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         BulkChange bc = new BulkChange(Jenkins.getInstance());

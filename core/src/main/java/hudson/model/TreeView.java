@@ -153,6 +153,7 @@ public class TreeView extends View implements ViewGroup {
         // noop
     }
 
+    @RequirePOST
     public void doCreateView( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         checkPermission(View.CREATE);
         views.add(View.create(req,rsp,this));
