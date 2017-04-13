@@ -529,9 +529,9 @@ THE SOFTWARE.
       <version>1.8</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.libzfs</groupId>
+      <groupId>org.kohsuke</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.5</version>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
