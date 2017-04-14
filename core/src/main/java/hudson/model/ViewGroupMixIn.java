@@ -88,10 +88,14 @@ public abstract class ViewGroupMixIn {
     }
 
     public View getView(String name) {
-        for (View v : views()) {
+        //Top level views returned first if match
+        List<View> views = views();
+        for (View v : views) {
             if (v.getViewName().equals(name)) {
                 return v;
             }
+        }
+        for (View v : views) {
             //getAllViews() cannot be used as it filters jobs by permission which is bad e.g. when trying to add a new job
             if (v instanceof ViewGroup) {
                 View nestedView = ((ViewGroup) v).getView(name);
