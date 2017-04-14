@@ -174,7 +174,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-429")
     public void jsonLibSignedObject() throws Exception {
-        probe(Payload.JsonLibSignedObject, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.JsonLibSignedObject, 1);
     }
 
     private void probe(Payload payload, int expectedResultCode) throws Exception {
