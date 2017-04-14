@@ -36,7 +36,7 @@ $.when(getItems()).done(function(data) {
       if (desc.indexOf('&lt;a href="') === -1) {
         return desc;
       }
-      var newDesc = desc.replace(/\&lt;/g,'<').replace(/\&gt;/g,'>');
+      var newDesc = desc.replace(/\&lt;/g,'<').replace(/&gt;/g,'>');
       return newDesc;
     }
 
@@ -46,7 +46,7 @@ $.when(getItems()).done(function(data) {
 
     function isItemNameEmpty() {
       var itemName = $('input[name="name"]', '#createItem').val();
-      return (itemName === '') ? true : false;
+      return (itemName === '');
     }
 
     function getFieldValidationStatus(fieldId) {
@@ -80,7 +80,7 @@ $.when(getItems()).done(function(data) {
 
     // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
     function doSticky() {
-      var decorator = $('form .footer .btn-decorator');
+      var decorator = $('form .footer .yui-submit-button .submit-button .primary');
       var pos = decorator.offset();
       var vpH = $(window).height();
       if (pos.top >= vpH) {
@@ -101,16 +101,16 @@ $.when(getItems()).done(function(data) {
     }
 
     function enableSubmit(status) {
-      var btn = $('form .footer .btn-decorator button[type=submit]');
+      var btn = $('form .footer .yui-button .yui-submit-button .submit-button .primary');
       if (status === true) {
-        if (btn.hasClass('disabled')) {
-          btn.removeClass('disabled');
-          btn.prop('disabled', false);
+        if (btn.hasClass('yui-button-disabled')) {
+          btn.removeClass('yui-button-disabled');
+          btn.prop('yui-button-disabled', false);
         }
       } else {
-        if (!btn.hasClass('disabled')) {
-          btn.addClass('disabled');
-          btn.prop('disabled', true);
+        if (!btn.hasClass('yui-button-disabled')) {
+          btn.addClass('yui-button-disabled');
+          btn.prop('yui-button-disabled', true);
         }
       }
     }

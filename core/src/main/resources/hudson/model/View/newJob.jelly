@@ -65,7 +65,7 @@ THE SOFTWARE.
             </j:if>
 
             <div class="footer">
-              <div class="btn-decorator">
+              <div class="yui-button yui-submit-button submit-button primary">
                 <st:include page="newJobButtonBar.jelly"/>
               </div>
             </div>

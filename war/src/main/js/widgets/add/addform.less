@@ -21,49 +21,27 @@
     background: #eeeeee;
     height: 110px;
 
-    .btn-decorator {
-      position: absolute;
-      bottom: 0px;
-      padding: 20px 30px;
-      width: auto;
-      border-top-right-radius: 10px;
-      border: 1px solid #aaccbb;
-      background: rgba(245, 249, 239, 0.75);
-      text-align: center;
-      z-index: 10;
-
-      input[type=checkbox] {
-        width: auto;
-        min-width: auto;
-        margin-right: 0px;
+    .yui-button.primary{
+      button{
+        background:@middle-blue;
+        border-color:@dark-blue;
       }
+    }
+    .yui-button.yui-button-disabled{
+      button{
+        background:@light-background;
+        border-color:@solid-border;
+        color:@solid-border;
+      }
+    }
 
-      button[type=submit] {
+    .yui-button{
+      margin-right:10px;
+
+      button {
         padding: 5px 20px;
-        background-color: rgb(204, 221, 238);
-        border-color: rgb(102, 153, 204);
-        border-radius: 3px;
-        border-width: 1px;
-        border-style: solid;
-        color: rgb(80, 80, 80);
-        font-weight: bold;
-        font-size: 12px;
-        line-height: 27px;
-      }
-
-      button[type=submit]:hover:not(.disabled), button[type=submit]:focus:not(.disabled) {
-        background-color: rgb(68, 119, 136);
-        border-color: rgb(51, 85, 102);
-        color: rgb(238, 238, 238);
-        cursor: pointer;
-      }
-
-      button[type=submit].disabled {
-        background-color: #ccc;
-        border-color: #aaa;
-        color: rgb(140, 140, 140);
-        cursor: auto;
-        opacity: 0.75;
+        background: @pale-blue;
+        border-color: @line-blue;
       }
     }
   }
