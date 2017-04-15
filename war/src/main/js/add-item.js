@@ -80,7 +80,7 @@ $.when(getItems()).done(function(data) {
 
     // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
     function doSticky() {
-      var decorator = $('form .footer .yui-submit-button .submit-button .primary');
+      var decorator = $('form .footer .yui-button');
       var pos = decorator.offset();
       var vpH = $(window).height();
       if (pos.top >= vpH) {
@@ -101,25 +101,17 @@ $.when(getItems()).done(function(data) {
     }
 
     function enableSubmit(status) {
-      var btn = $('form .footer .yui-button .yui-submit-button .submit-button .primary');
+      var btn = $('form .footer .yui-button #ok-button');
       if (status === true) {
-        if (btn.hasClass('yui-button-disabled')) {
-          btn.removeClass('yui-button-disabled');
-          btn.prop('yui-button-disabled', false);
-        }
+        btn.parent().removeClass("yui-button-disabled");
       } else {
-        if (!btn.hasClass('yui-button-disabled')) {
-          btn.addClass('yui-button-disabled');
-          btn.prop('yui-button-disabled', true);
-        }
+        btn.parent().addClass("yui-button-disabled");
       }
+      btn.prop("disabled", !status);
     }
 
     function getFormValidationStatus() {
-      if (getFieldValidationStatus('name') && (getFieldValidationStatus('items') || getFieldValidationStatus('from'))) {
-          return true;
-      }
-      return false;
+      return !!(getFieldValidationStatus('name') && (getFieldValidationStatus('items') || getFieldValidationStatus('from')));
     }
 
     function cleanItemSelection() {
