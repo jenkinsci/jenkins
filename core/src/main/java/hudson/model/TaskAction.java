@@ -35,6 +35,7 @@ import java.io.IOException;
 
 import hudson.security.Permission;
 import hudson.security.ACL;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Partial {@link Action} implementation for those who kick some
@@ -137,6 +138,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Clears the error status.
      */
+    @RequirePOST
     public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         getACL().checkPermission(getPermission());
 
