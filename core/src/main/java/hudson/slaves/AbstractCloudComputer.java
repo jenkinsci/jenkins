@@ -27,6 +27,7 @@ import hudson.model.Computer;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import javax.annotation.CheckForNull;
@@ -53,6 +54,7 @@ public class AbstractCloudComputer<T extends AbstractCloudSlave> extends SlaveCo
      * When the agent is deleted, free the node right away.
      */
     @Override
+    @RequirePOST
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(DELETE);
         try {
