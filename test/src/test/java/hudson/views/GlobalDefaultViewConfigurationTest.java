@@ -57,7 +57,7 @@ public class GlobalDefaultViewConfigurationTest {
             c.configure(create, params);
         } catch(Descriptor.FormException ex) {
             assertThat("Wrong exception message for the form failure", 
-                    ex.getMessage(), containsString("The specified primary view does not exist: " + viewName));
+                    ex.getMessage(), containsString(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName)));
             return;
         }
         Assert.fail("Expected FormException");

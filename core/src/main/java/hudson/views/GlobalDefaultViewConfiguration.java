@@ -46,7 +46,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
             final String viewName = json.getString("primaryView");
             final View newPrimaryView = j.getView(viewName);
             if (newPrimaryView == null) {
-                throw new FormException("The specified primary view does not exist: " + viewName, "primaryView");
+                throw new FormException(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName), "primaryView");
             }
             j.setPrimaryView(newPrimaryView);
         } else {
