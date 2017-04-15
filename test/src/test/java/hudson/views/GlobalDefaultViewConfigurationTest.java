@@ -50,7 +50,7 @@ public class GlobalDefaultViewConfigurationTest {
         String viewName = "NonExistentView";
         GlobalDefaultViewConfiguration c = new GlobalDefaultViewConfiguration();
         
-        StaplerRequest create = new MockStaplerRequestBuilder(j).build();
+        StaplerRequest create = new MockStaplerRequestBuilder(j, "/configure").build();
         JSONObject params = new JSONObject();
         params.accumulate("primaryView", viewName);
         try {
@@ -58,6 +58,7 @@ public class GlobalDefaultViewConfigurationTest {
         } catch(Descriptor.FormException ex) {
             assertThat("Wrong exception message for the form failure", 
                     ex.getMessage(), containsString("The specified primary view does not exist: " + viewName));
+            return;
         }
         Assert.fail("Expected FormException");
     }
