@@ -7,9 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
-import hudson.cli.ClientAuthenticationCache;
-import hudson.cli.LoginCommand;
-import hudson.cli.LogoutCommand;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.NullInputStream;
@@ -25,6 +22,7 @@ import java.util.Arrays;
 /**
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("deprecation") // Remoting-based CLI usages intentional
 public class CliAuthenticationTest {
 
     @Rule
@@ -88,7 +86,7 @@ public class CliAuthenticationTest {
     }
 
     @Test
-    @For({LoginCommand.class, LogoutCommand.class, ClientAuthenticationCache.class})
+    @For({hudson.cli.LoginCommand.class, hudson.cli.LogoutCommand.class, hudson.cli.ClientAuthenticationCache.class})
     public void login() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 

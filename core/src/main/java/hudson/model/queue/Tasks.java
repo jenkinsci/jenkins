@@ -23,9 +23,11 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
+import javax.annotation.CheckForNull;
 import org.acegisecurity.Authentication;
 
 import java.util.Collection;
@@ -33,6 +35,8 @@ import java.util.Collections;
 import javax.annotation.Nonnull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+
+import static hudson.model.queue.Executables.getParentOf;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -64,6 +68,27 @@ public class Tasks {
         } catch (AbstractMethodError e) {
             return (Task)t;
         }
+    }
+
+    /**
+     * Gets the {@link hudson.model.Item} most closely associated with the supplied {@link SubTask}.
+     * @param t the {@link SubTask}.
+     * @return the {@link hudson.model.Item} associated with the {@link SubTask} or {@code null} if this
+     * {@link SubTask} is not associated with an {@link hudson.model.Item}
+     * @since TODO
+     */
+    @CheckForNull
+    public static hudson.model.Item getItemOf(@Nonnull SubTask t) {
+        // TODO move to default method on SubTask once code level is Java 8
+        Queue.Task p = getOwnerTaskOf(t);
+        while (!(p instanceof hudson.model.Item)) {
+            Queue.Task o = getOwnerTaskOf(p);
+            if (o == p) {
+                break;
+            }
+            p = o;
+        }
+        return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
     }
 
     /**

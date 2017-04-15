@@ -31,6 +31,7 @@ import hudson.model.Describable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
 import hudson.util.io.ArchiverFactory;
+import java.nio.file.Files;
 import jenkins.model.Jenkins;
 import hudson.model.listeners.RunListener;
 import hudson.scm.SCM;
@@ -52,7 +53,7 @@ import java.io.OutputStream;
  * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
- *   -> probably per agent.
+ *   → probably per agent.
  *
  * <h2>Design Problems</h2>
  * <ol>
@@ -215,7 +216,7 @@ public abstract class FileSystemProvisioner implements ExtensionPoint, Describab
          */
         public WorkspaceSnapshot snapshot(AbstractBuild<?, ?> build, FilePath ws, String glob, TaskListener listener) throws IOException, InterruptedException {
             File wss = new File(build.getRootDir(),"workspace.tgz");
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(wss))) {
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(wss.toPath()))) {
                 ws.archive(ArchiverFactory.TARGZ, os, glob);
             }
             return new WorkspaceSnapshotImpl();

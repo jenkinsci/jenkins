@@ -116,7 +116,7 @@ public abstract class Build <P extends Project<P,B>,B extends Build<P,B>>
 
     /**
      * @deprecated as of 1.467
-     *      Override the {@link #run()} method by calling {@link #execute(RunExecution)} with
+     *      Override the {@link #run()} method by calling {@link #execute(hudson.model.Run.RunExecution)} with
      *      proper execution object.
      */
     @Restricted(NoExternalUse.class)

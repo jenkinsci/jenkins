@@ -25,10 +25,10 @@ package hudson.util;
 
 import com.google.common.collect.*;
 
+import java.nio.file.Files;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -67,7 +67,7 @@ public class TextFile {
     public String read() throws IOException {
         StringWriter out = new StringWriter();
         PrintWriter w = new PrintWriter(out);
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath()), "UTF-8"))) {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
@@ -83,7 +83,8 @@ public class TextFile {
             @Override
             public Iterator<String> iterator() {
                 try {
-                    final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
+                    final BufferedReader in = new BufferedReader(new InputStreamReader(
+                            Files.newInputStream(file.toPath()),"UTF-8"));
 
                     return new AbstractIterator<String>() {
                         @Override
@@ -127,9 +128,7 @@ public class TextFile {
     public @Nonnull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        Reader r = new FileReader(file);
-
-        try {
+        try (Reader r = new FileReader(file)) {
             while (read<numChars) {
                 int d = r.read(buf,read,buf.length-read);
                 if (d<0)
@@ -138,8 +137,6 @@ public class TextFile {
             }
 
             return new String(buf,0,read);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(r);
         }
     }
 

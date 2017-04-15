@@ -414,14 +414,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * If this view uses &lt;t:projectView> for rendering, this method returns columns to be displayed.
+     * If this view uses {@code <t:projectView>} for rendering, this method returns columns to be displayed.
      */
     public Iterable<? extends ListViewColumn> getColumns() {
         return ListViewColumn.createDefaultInitialColumnList(this);
     }
 
     /**
-     * If this view uses &lt;t:projectView> for rendering, this method returns the indenter used
+     * If this view uses {@code t:projectView} for rendering, this method returns the indenter used
      * to indent each row.
      */
     public Indenter getIndenter() {

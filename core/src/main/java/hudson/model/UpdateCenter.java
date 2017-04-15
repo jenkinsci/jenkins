@@ -31,11 +31,11 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
+import java.nio.file.Files;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 
 import hudson.init.Initializer;
@@ -51,7 +51,6 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.NamingThreadFactory;
 import hudson.util.IOException2;
-import hudson.util.IOUtils;
 import hudson.util.PersistedList;
 import hudson.util.XStream2;
 import jenkins.MissingDependencyException;
@@ -77,8 +76,8 @@ import javax.annotation.Nonnull;
 import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
@@ -113,6 +112,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
@@ -1110,8 +1110,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // to be handled by caller
             }
 
-            CountingInputStream in = null;
-            OutputStream out = null;
             URLConnection con = null;
             try {
                 con = connect(job,src);
@@ -1121,30 +1119,27 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 con.setReadTimeout(PLUGIN_DOWNLOAD_READ_TIMEOUT);
                 
                 int total = con.getContentLength();
-                in = new CountingInputStream(con.getInputStream());
                 byte[] buf = new byte[8192];
                 int len;
 
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath()+".tmp");
-                out = new FileOutputStream(tmp);
-                if (sha1 != null) {
-                    out = new DigestOutputStream(out, sha1);
-                }
 
                 LOGGER.info("Downloading "+job.getName());
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
-                try {
-                    while((len=in.read(buf))>=0) {
+                try (OutputStream _out = Files.newOutputStream(tmp.toPath());
+                     OutputStream out = sha1 != null ? new DigestOutputStream(_out, sha1) : _out;
+                     InputStream in = con.getInputStream();
+                     CountingInputStream cin = new CountingInputStream(in)) {
+                    while ((len = cin.read(buf)) >= 0) {
                         out.write(buf,0,len);
-                        job.status = job.new Installing(total==-1 ? -1 : in.getCount()*100/total);
+                        job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
                     }
                 } catch (IOException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
                 } finally {
-                    IOUtils.closeQuietly(out);
                     t.setName(oldName);
                 }
 
@@ -1170,9 +1165,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     extraMessage = " (redirected to: " + con.getURL() + ")";
                 }
                 throw new IOException2("Failed to download from "+src+extraMessage,e);
-            } finally {
-                IOUtils.closeQuietly(in);
-                IOUtils.closeQuietly(out);
             }
         }
 
@@ -1261,7 +1253,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
                     }
                 } else {
-                    Util.copyStreamAndClose(connection.getInputStream(),new NullOutputStream());
+                    try (InputStream is = connection.getInputStream()) {
+                        IOUtils.copy(is, new NullOutputStream());
+                    }
                 }
             } catch (SSLHandshakeException e) {
                 if (e.getMessage().contains("PKIX path building failed"))
@@ -1869,7 +1863,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 // Do this first so we can avoid duplicate downloads, too
                 // check to see if the plugin is already installed at the same version and skip it
                 LOGGER.info("Skipping duplicate install of: " + plugin.getDisplayName() + "@" + plugin.version);
-                //throw new Skipped(); // TODO set skipped once we have a status indicator for it
                 return;
             }
             try {

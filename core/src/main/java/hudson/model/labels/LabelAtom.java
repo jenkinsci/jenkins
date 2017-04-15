@@ -106,6 +106,8 @@ public class LabelAtom extends Label implements Saveable {
         return Collections.unmodifiableList(actions);
     }
 
+    // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
+
     protected void updateTransientActions() {
         Vector<Action> ta = new Vector<Action>();
 

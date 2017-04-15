@@ -155,7 +155,6 @@ import hudson.util.FormValidation;
 import hudson.util.Futures;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
-import hudson.util.IOUtils;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
 import hudson.util.Memoizer;
@@ -2875,7 +2874,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the user of the given name.
      *
      * @return the user of the given name (which may or may not be an id), if that person exists; else null
-     * @see User#get(String,boolean), {@link User#getById(String, boolean)}
+     * @see User#get(String,boolean)
+     * @see User#getById(String, boolean)
      */
     public @CheckForNull User getUser(String name) {
         return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
@@ -3994,15 +3994,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void doDoFingerprintCheck( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         // Parse the request
-        MultipartFormDataParser p = new MultipartFormDataParser(req);
-        if(isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
-            rsp.sendError(HttpServletResponse.SC_FORBIDDEN,"No crumb found");
-        }
-        try {
+        try (MultipartFormDataParser p = new MultipartFormDataParser(req)) {
+            if (isUseCrumbs() && !getCrumbIssuer().validateCrumb(req, p)) {
+                rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
+            }
             rsp.sendRedirect2(req.getContextPath()+"/fingerprint/"+
                 Util.getDigestOf(p.getFileItem("name").getInputStream())+'/');
-        } finally {
-            p.cleanUp();
         }
     }
 
@@ -4867,15 +4864,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static void computeVersion(ServletContext context) {
         // set the version
         Properties props = new Properties();
-        InputStream is = null;
-        try {
-            is = Jenkins.class.getResourceAsStream("jenkins-version.properties");
+        try (InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties")) {
             if(is!=null)
                 props.load(is);
         } catch (IOException e) {
             e.printStackTrace(); // if the version properties is missing, that's OK.
-        } finally {
-            IOUtils.closeQuietly(is);
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver = UNCOMPUTED_VERSION;
