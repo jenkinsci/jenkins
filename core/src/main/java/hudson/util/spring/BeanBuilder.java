@@ -57,18 +57,18 @@ import java.util.Map.Entry;
  *
  * BeanBuilder builder = new BeanBuilder()
  * builder.beans {
- *   dataSource(BasicDataSource) {                  // <--- invokeMethod
+ *   dataSource(BasicDataSource) {                  // ← invokeMethod
  *      driverClassName = "org.hsqldb.jdbcDriver"
  *      url = "jdbc:hsqldb:mem:grailsDB"
- *      username = "sa"                            // <-- setProperty
+ *      username = "sa"                            // ← setProperty
  *      password = ""
  *      settings = [mynew:"setting"]
  *  }
  *  sessionFactory(SessionFactory) {
- *  	   dataSource = dataSource                 // <-- getProperty for retrieving refs
+ *  	   dataSource = dataSource                 // ← getProperty for retrieving refs
  *  }
  *  myService(MyService) {
- *      nestedBean = { AnotherBean bean->          // <-- setProperty with closure for nested bean
+ *      nestedBean = { AnotherBean bean-&gt;          // ← setProperty with closure for nested bean
  *      		dataSource = dataSource
  *      }
  *  }

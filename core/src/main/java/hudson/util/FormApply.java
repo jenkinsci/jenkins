@@ -31,7 +31,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
- * Server-side code related to the &lt;f:apply> button.
+ * Server-side code related to the {@code <f:apply>} button.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.453

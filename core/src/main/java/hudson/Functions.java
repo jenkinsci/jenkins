@@ -1798,7 +1798,7 @@ public class Functions {
     }
 
     /**
-     * Generate a series of &lt;script> tags to include <tt>script.js</tt>
+     * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
@@ -1839,7 +1839,7 @@ public class Functions {
     }
 
     /**
-     * Used by &lt;f:password/> so that we send an encrypted value to the client.
+     * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
         if (o==null)    return null;
@@ -1997,7 +1997,7 @@ public class Functions {
     /**
      * Get a string that can be safely broken to several lines when necessary.
      *
-     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * This implementation inserts {@code <wbr>} tags into string. It allows browsers
      * to wrap line before any sequence of punctuation characters or anywhere
      * in the middle of prolonged sequences of word characters.
      *

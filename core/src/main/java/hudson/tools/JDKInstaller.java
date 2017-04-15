@@ -694,7 +694,7 @@ public class JDKInstaller extends ToolInstaller {
 
     public static final class JDKRelease {
         /**
-         * the list of {@Link JDKFile}s
+         * the list of {@link JDKFile}s
          */
         public JDKFile[] files;
         /**
@@ -813,7 +813,7 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         /**
-         * @{inheritDoc}
+         * {@inheritDoc}
          */
         @Override
         public JSONObject reduce (List<JSONObject> jsonObjectList) {

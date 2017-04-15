@@ -8,6 +8,7 @@ import hudson.model.queue.CauseOfBlockage;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
@@ -77,7 +78,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
-     * Called when {@link NodeProvisioner.PlannedNode#future#get()} throws an exception.
+     * Called when {@link NodeProvisioner.PlannedNode#future} {@link Future#get()} throws an exception.
      *
      * @param plannedNode the planned node which failed to provision
      * @param t the exception

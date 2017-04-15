@@ -309,7 +309,7 @@ public final class CronTab {
      * More precisely, given the time 't', computes another smallest time x such that:
      *
      * <ul>
-     * <li>x >= t (inclusive)
+     * <li>x ≥ t (inclusive)
      * <li>x matches this crontab
      * </ul>
      *

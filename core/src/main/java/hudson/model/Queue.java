@@ -141,7 +141,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * <p>
  * Items in queue goes through several stages, as depicted below:
- * <pre>
+ * <pre>{@code
  * (enter) --> waitingList --+--> blockedProjects
  *                           |        ^
  *                           |        |
@@ -150,7 +150,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *                                    ^              |
  *                                    |              |
  *                                    +---(rarely)---+
- * </pre>
+ * }</pre>
  *
  * <p>
  * Note: In the normal case of events pending items only move to left. However they can move back
@@ -1014,7 +1014,7 @@ public class Queue extends ResourceController implements Saveable {
     
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
-     * <p/>
+     * <p>
      * The implementation is quite similar to {@link #countBuildableItemsFor(hudson.model.Label)},
      * but it has another behavior for null parameters.
      * @param l Label to be checked. If null, only jobs without assigned labels

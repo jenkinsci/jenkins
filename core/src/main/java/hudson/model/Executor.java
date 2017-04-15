@@ -941,12 +941,7 @@ public class Executor extends Thread implements ModelObject {
             return null;
         }
         for (Computer computer : jenkins.getComputers()) {
-            for (Executor executor : computer.getExecutors()) {
-                if (executor.getCurrentExecutable() == executable) {
-                    return executor;
-                }
-            }
-            for (Executor executor : computer.getOneOffExecutors()) {
+            for (Executor executor : computer.getAllExecutors()) {
                 if (executor.getCurrentExecutable() == executable) {
                     return executor;
                 }
@@ -958,7 +953,7 @@ public class Executor extends Thread implements ModelObject {
     /**
      * Returns the estimated duration for the executable.
      * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
-     * was compiled against Hudson < 1.383
+     * was compiled against Hudson prior to 1.383
      *
      * @deprecated as of 1.388
      *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}

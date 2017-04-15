@@ -199,7 +199,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * For a remote file, this can be much faster than doing the corresponding operations one by one as separate requests.
      * The default implementation just calls the block directly.
      * @param <V> a value type
-     * @param <T> the exception type
      * @param callable something to run all at once (only helpful if any mentioned files are on the same system)
      * @return the callable result
      * @throws IOException if remote communication failed
