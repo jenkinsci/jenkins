@@ -454,7 +454,6 @@ public class SetupWizard extends PageDecorator {
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
-    @RequirePOST
     public HttpResponse doCompleteInstall() throws IOException, ServletException {
         completeSetup();
         return HttpResponses.okJSON();
