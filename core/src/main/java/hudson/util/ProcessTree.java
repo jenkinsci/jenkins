@@ -67,6 +67,7 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -406,7 +407,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     };
 
-    static class WindowsProcess extends OSProcess {
+    private static class WindowsProcess extends OSProcess {
         
         private final WinProcess p;
         private EnvVars env;
@@ -454,6 +455,15 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         @Override
         public synchronized EnvVars getEnvironmentVariables() {
+            try {
+               return getEnvironmentVariables2();
+            } catch (WindowsProcessException e) {
+               LOGGER.log(FINE, "Failed to get the environment variables ", e);
+            }
+            return null;
+        }
+        
+        private synchronized EnvVars getEnvironmentVariables2() throws WindowsProcessException {
             if(env !=null) {
               return env;
             }
@@ -462,9 +472,38 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                env.putAll(p.getEnvironmentVariables());
             } catch (WinpException e) {
-               LOGGER.log(FINE, "Failed to get the environment variables ", e);
+               throw new WindowsProcessException("Failed to get the environment variables ", e);
             }
             return env;
+        }
+        
+        private boolean hasMatchingEnvVars2(Map<String,String> modelEnvVar) throws WindowsProcessException {
+            if(modelEnvVar.isEmpty())
+                // sanity check so that we don't start rampage.
+                return false;
+
+            SortedMap<String,String> envs = getEnvironmentVariables2();
+            for (Entry<String,String> e : modelEnvVar.entrySet()) {
+                String v = envs.get(e.getKey());
+                if(v==null || !v.equals(e.getValue()))
+                    return false;   // no match
+            }
+
+            return true;
+        }
+    }
+    
+    //TODO: Cleanup once Winp provides proper API 
+    /**
+     * Wrapper for runtime {@link WinpException}.
+     */
+    private static class WindowsProcessException extends Exception {
+        WindowsProcessException(WinpException ex) {
+            super(ex);
+        }
+        
+        WindowsProcessException(String message, WinpException ex) {
+            super(message, ex);
         }
     }
 
@@ -492,23 +531,39 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
                 boolean matched;
                 try {
-                    matched = p.hasMatchingEnvVars(modelEnvVars);
-                } catch (WinpException e) {
+                    matched = hasMatchingEnvVars(p, modelEnvVars);
+                } catch (WindowsProcessException e) {
                     // likely a missing privilege
+                    // TODO: not a minor issue - causes process termination error in JENKINS-30782
                     LOGGER.log(FINEST,"  Failed to check environment variable match",e);
                     continue;
                 }
 
-                if(matched)
+                if(matched) {
                     p.killRecursively();
-                else
-                    LOGGER.finest("Environment variable didn't match");
-
+                } else {
+                    LOGGER.finest("Environment variable didn't matcha");
+                }
             }
         }
 
         static {
             WinProcess.enableDebugPrivilege();
+        }
+        
+        private static boolean hasMatchingEnvVars(@Nonnull OSProcess p, @Nonnull Map<String, String> modelEnvVars)
+                throws WindowsProcessException {
+            if (p instanceof WindowsProcess) {
+                return ((WindowsProcess)p).hasMatchingEnvVars2(modelEnvVars);
+            } else {
+                // Should never happen, but there is a risk of getting such class during deserialization
+                try {
+                    return p.hasMatchingEnvVars(modelEnvVars);
+                } catch (WinpException e) {
+                    // likely a missing privilege
+                    throw new WindowsProcessException(e);
+                }
+            }
         }
     }
 
