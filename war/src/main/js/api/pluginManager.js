@@ -219,7 +219,7 @@ exports.installPluginsDone = function(handler) {
  * Restart Jenkins
  */
 exports.restartJenkins = function(handler) {
-	jenkins.get('/updateCenter/safeRestart', function() {
+	jenkins.post('/updateCenter/safeRestart', {}, function() {
 		handler.call({ isError: false });
 	}, {
 		timeout: pluginManagerErrorTimeoutMillis,
