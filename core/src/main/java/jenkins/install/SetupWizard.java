@@ -42,6 +42,7 @@ import hudson.model.User;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
+import hudson.security.csrf.CrumbIssuer;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.util.HttpResponses;
 import hudson.util.PluginServletFilter;
@@ -220,7 +221,7 @@ public class SetupWizard extends PageDecorator {
      * Called during the initial setup to create an admin user
      */
     @RequirePOST
-    public void doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
         
@@ -233,7 +234,7 @@ public class SetupWizard extends PageDecorator {
                 admin.delete(); // assume the new user may well be 'admin'
             }
             
-            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", req.getContextPath() + "/");
+            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", null);
             if (u != null) {
                 if(admin != null) {
                     admin = null;
@@ -252,6 +253,11 @@ public class SetupWizard extends PageDecorator {
                 Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
                 a = securityRealm.getSecurityComponents().manager.authenticate(a);
                 SecurityContextHolder.getContext().setAuthentication(a);
+                CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+                JSONObject data = new JSONObject().accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+                return HttpResponses.okJSON(data);
+            } else {
+                return HttpResponses.okJSON();
             }
         } finally {
             if(admin != null) {
@@ -458,6 +464,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Remove the setupWizard filter, ensure all updates are written to disk, etc
      */
+    @RequirePOST
     public HttpResponse doCompleteInstall() throws IOException, ServletException {
         completeSetup();
         return HttpResponses.okJSON();
