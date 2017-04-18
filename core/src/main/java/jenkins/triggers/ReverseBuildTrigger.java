@@ -66,6 +66,7 @@ import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -113,7 +114,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             return false;
         }
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
-        boolean downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        boolean downstreamVisible = false;
+        try {
+            downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        } catch (AccessDeniedException ex) {
+            // ignore, we will fall-back later
+        }
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
@@ -202,7 +208,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
-        
+
         static RunListenerImpl get() {
             return ExtensionList.lookup(RunListener.class).get(RunListenerImpl.class);
         }
