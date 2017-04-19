@@ -152,6 +152,41 @@ public class ReverseBuildTriggerTest {
         r.waitUntilNoActivity();
         assertEquals(3, downstream.getLastBuild().number);
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
+
+        // Alice can only DISCOVER upstream, so downstream does not get built, but the upstream build cannot DISCOVER downstream
+        perms = new HashMap<Permission,Set<String>>();
+        perms.put(Item.DISCOVER, new HashSet<String>(Arrays.asList("alice")));
+        perms.put(Item.READ, new HashSet<String>(Arrays.asList("bob")));
+        upstream.removeProperty(AuthorizationMatrixProperty.class);
+        upstream.addProperty(new AuthorizationMatrixProperty(perms));
+        perms = new HashMap<Permission,Set<String>>();
+        perms.put(Item.READ, new HashSet<String>(Arrays.asList("alice")));
+        downstream.removeProperty(AuthorizationMatrixProperty.class);
+        downstream.addProperty(new AuthorizationMatrixProperty(perms));
+        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig.put(upstreamName, User.get("bob").impersonate());
+        qiaConfig.put(downstreamName, User.get("alice").impersonate());
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        b = r.buildAndAssertSuccess(upstream);
+        r.assertLogNotContains(downstreamName, b);
+        r.waitUntilNoActivity();
+        assertEquals(3, downstream.getLastBuild().number);
+
+        // A QIA is configured but does not specify any authentication for downstream, anonymous can only DISCOVER upstream
+        // so no message is printed about it, and no Exception neither (JENKINS-42707)
+        perms = new HashMap<Permission,Set<String>>();
+        perms.put(Item.DISCOVER, new HashSet<String>(Arrays.asList("anonymous")));
+        perms.put(Item.READ, new HashSet<String>(Arrays.asList("bob")));
+        upstream.removeProperty(AuthorizationMatrixProperty.class);
+        upstream.addProperty(new AuthorizationMatrixProperty(perms));
+        qiaConfig = new HashMap<String,Authentication>();
+        qiaConfig.put(upstreamName, User.get("bob").impersonate());
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
+        b = r.buildAndAssertSuccess(upstream);
+        r.assertLogNotContains(downstreamName, b);
+        r.assertLogNotContains("Please login to access job " + upstreamName, b);
+        r.waitUntilNoActivity();
+        assertEquals(3, downstream.getLastBuild().number);
     }
 
     @Issue("JENKINS-29876")
