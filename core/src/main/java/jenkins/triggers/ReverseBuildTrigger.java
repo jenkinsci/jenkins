@@ -113,33 +113,46 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         if (job == null) {
             return false;
         }
-        // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
+
         boolean downstreamVisible = false;
+        boolean downstreamDiscoverable = false;
+
+        // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
         try {
             downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
         } catch (AccessDeniedException ex) {
-            // ignore, we will fall-back later
+            // Fails because of missing Item.READ but upstream user has Item.DISCOVER
+            downstreamDiscoverable = true;
         }
+
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
         if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
             auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
         }
+
         SecurityContext orig = ACL.impersonate(auth);
+        Item authUpstream = null;
         try {
-            if (jenkins.getItemByFullName(upstream.getFullName()) != upstream) {
-                if (downstreamVisible) {
-                    // TODO ModelHyperlink
-                    listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(), upstream.getFullName(), job.getFullName()));
-                } else {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2} (but cannot tell {3} that)", new Object[] {auth.getName(), upstream, job, originalAuth.getName()});
-                }
-                return false;
-            }
+            authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
+        } catch (AccessDeniedException ade) {
+            // Fails because of missing Item.READ but downstream user has Item.DISCOVER
         } finally {
             SecurityContextHolder.setContext(orig);
+        }
+
+        if(authUpstream != upstream) {
+            if (downstreamVisible) {
+                // TODO ModelHyperlink
+                listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(),
+                        upstream.getFullName(), job.getFullName()));
+            } else  {
+                LOGGER.log(Level.WARNING, Messages.ReverseBuildTrigger_running_as_cannot_even_see_but_cannot_tell(auth.getName(),
+                        downstreamDiscoverable ? "READ" : "DISCOVER", upstream, job, originalAuth.getName()));
+            }
+            return false;
         }
         Result result = upstreamBuild.getResult();
         return result != null && result.isBetterOrEqualTo(threshold);
