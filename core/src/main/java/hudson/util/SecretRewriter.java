@@ -6,6 +6,7 @@ import hudson.model.TaskListener;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;
@@ -112,6 +113,8 @@ public class SecretRewriter {
                         buf.append(line.substring(copied));
                         out.println(buf.toString());
                     }
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             }
 
@@ -141,7 +144,7 @@ public class SecretRewriter {
         String canonical;
         try {
             canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             canonical = dir.getAbsolutePath(); //
         }
         if (!callstack.add(canonical)) {

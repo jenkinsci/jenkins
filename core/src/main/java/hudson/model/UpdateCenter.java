@@ -32,6 +32,7 @@ import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -1137,7 +1138,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                         out.write(buf,0,len);
                         job.status = job.new Installing(total == -1 ? -1 : cin.getCount() * 100 / total);
                     }
-                } catch (IOException e) {
+                } catch (IOException | InvalidPathException e) {
                     throw new IOException("Failed to load "+src+" to "+tmp,e);
                 } finally {
                     t.setName(oldName);
