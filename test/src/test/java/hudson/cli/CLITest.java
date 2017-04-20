@@ -25,7 +25,6 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
@@ -42,6 +41,7 @@ import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.sshd.common.util.io.ModifiableFileWatcher;
 import static org.hamcrest.Matchers.*;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
@@ -82,11 +82,8 @@ public class CLITest {
         } catch (IOException x) {
             assumeNoException("Sometimes on Windows KnownHostsServerKeyVerifier.acceptIncompleteHostKeys says WARNING: Failed (FileSystemException) to reload server keys from …\\\\.ssh\\\\known_hosts: … Incorrect function.", x);
         }
-        /* TODO impossible to do this until the bundled sshd module uses a sufficiently new version of sshd-core:
         assumeThat("or on Windows DefaultKnownHostsServerKeyVerifier.reloadKnownHosts says invalid file permissions: Owner violation (Administrators)",
             ModifiableFileWatcher.validateStrictConfigFilePermissions(known_hosts.toPath()), nullValue());
-        */
-        assumeFalse(Functions.isWindows()); // TODO can remove when above check is restored
         return home;
     }
 

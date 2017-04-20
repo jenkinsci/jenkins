@@ -47,9 +47,9 @@ import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.future.WaitableFuture;
-import org.apache.sshd.common.util.SecurityUtils;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
+import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
  * Implements SSH connection mode of {@link CLI}.
