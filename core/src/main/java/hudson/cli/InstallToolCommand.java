@@ -48,7 +48,9 @@ import org.kohsuke.args4j.Argument;
  * Performs automatic tool installation on demand.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Limited to Remoting-based protocol.
  */
+@Deprecated
 @Extension
 public class InstallToolCommand extends CLICommand {
     @Argument(index=0,metaVar="KIND",usage="The type of the tool to install, such as 'Ant'")

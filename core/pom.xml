@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.54-SNAPSHOT</version>
+    <version>2.56-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -529,9 +529,9 @@ THE SOFTWARE.
       <version>1.8</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.libzfs</groupId>
+      <groupId>org.kohsuke</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.5</version>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
@@ -772,7 +772,6 @@ THE SOFTWARE.
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
           <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
-          <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->

@@ -938,12 +938,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if(url!=null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
-                InputStream in = url.openStream();
-                try {
+                try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in,"UTF-8");
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
                 return;
             }
@@ -993,7 +990,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     /**
-     * Used to build {@link Describable} instance list from &lt;f:hetero-list> tag.
+     * Used to build {@link Describable} instance list from {@code <f:hetero-list>} tag.
      *
      * @param req
      *      Request that represents the form submission.

@@ -131,7 +131,7 @@ public abstract class ItemGroupMixIn {
     }
 
     /**
-     * {@link Item} -> name function.
+     * {@link Item} → name function.
      */
     public static final Function1<String,Item> KEYED_BY_NAME = new Function1<String, Item>() {
         public String call(Item item) {

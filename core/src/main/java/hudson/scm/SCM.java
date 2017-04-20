@@ -48,7 +48,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
-import hudson.util.IOUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -297,7 +296,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method is called after source code is checked out for the given build (that is, after
-     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} has finished successfully.)
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} has finished successfully.)
      *
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
@@ -540,12 +539,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Often SCMs have to create a directory inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- CVS
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
@@ -606,7 +605,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Some SCMs support checking out multiple modules inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- .svn
@@ -614,7 +613,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *  +- abc    <- second module from different SCM root
      *      +- .svn
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * This method takes the workspace root as a parameter, and is expected to return
      * all the module roots that were checked out from SCM.
@@ -683,13 +682,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.568
      */
     protected final void createEmptyChangeLog(@Nonnull File changelogFile, @Nonnull TaskListener listener, @Nonnull String rootTag) throws IOException {
-        FileWriter w = null;
-        try {
-            w = new FileWriter(changelogFile);
+        try (FileWriter w = new FileWriter(changelogFile)) {
             w.write("<"+rootTag +"/>");
-            w.close();
-        } finally {
-            IOUtils.closeQuietly(w);
         }
     }
 

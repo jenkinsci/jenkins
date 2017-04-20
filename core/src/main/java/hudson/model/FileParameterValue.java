@@ -30,8 +30,6 @@ import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -206,8 +204,7 @@ public class FileParameterValue extends ParameterValue {
             AbstractBuild build = (AbstractBuild)request.findAncestor(AbstractBuild.class).getObject();
             File fileParameter = getLocationUnderBuild(build);
             if (fileParameter.isFile()) {
-                InputStream data = Files.newInputStream(fileParameter.toPath());
-                try {
+                try (InputStream data = Files.newInputStream(fileParameter.toPath())) {
                     long lastModified = fileParameter.lastModified();
                     long contentLength = fileParameter.length();
                     if (request.hasParameter("view")) {
@@ -215,8 +212,6 @@ public class FileParameterValue extends ParameterValue {
                     } else {
                         response.serveFile(request, data, lastModified, contentLength, originalFileName);
                     }
-                } finally {
-                    IOUtils.closeQuietly(data);
                 }
             }
         }

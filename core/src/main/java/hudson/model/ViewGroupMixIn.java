@@ -44,19 +44,20 @@ import java.util.List;
  * <ol>
  * <li>
  * Create three data fields in your class:
- * <pre>
+ * <pre>{@code
  * private String primaryView;
- * private CopyOnWriteArrayList&lt;View> views;
+ * private CopyOnWriteArrayList<View> views;
  * private ViewsTabBar viewsTabBar;
- * </pre>
+ * }</pre>
  * <li>
  * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
- *     List&lt;View> views() { return views; }
+ *     List&lt;View&gt; views() { return views; }
  *     ...
  * }
  * </pre>
+ * </ol>
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */

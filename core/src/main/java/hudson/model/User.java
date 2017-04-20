@@ -708,7 +708,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Is the ID allowed? Some are prohibited for security reasons. See SECURITY-166.
-     * <p/>
+     * <p>
      * Note that this is only enforced when saving. These users are often created
      * via the constructor (and even listed on /asynchPeople), but our goal is to
      * prevent anyone from logging in as these users. Therefore, we prevent

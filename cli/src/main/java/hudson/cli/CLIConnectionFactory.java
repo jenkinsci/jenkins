@@ -32,6 +32,7 @@ public class CLIConnectionFactory {
     
     /**
      * This {@link ExecutorService} is used to execute closures received from the server.
+     * Used only in Remoting mode.
      */
     public CLIConnectionFactory executorService(ExecutorService es) {
         this.exec = es;
@@ -59,15 +60,24 @@ public class CLIConnectionFactory {
 
     /**
      * Convenience method to call {@link #authorization} with the HTTP basic authentication.
+     * Currently unused.
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
         return basicAuth(username+':'+password);
     }
 
+    /**
+     * Convenience method to call {@link #authorization} with the HTTP basic authentication.
+     * Cf. {@code BasicHeaderApiTokenAuthenticator}.
+     */
     public CLIConnectionFactory basicAuth(String userInfo) {
         return authorization("Basic " + new String(Base64.encodeBase64((userInfo).getBytes())));
     }
-    
+
+    /**
+     * @deprecated Specific to Remoting-based protocol.
+     */
+    @Deprecated
     public CLI connect() throws IOException, InterruptedException {
         return new CLI(this);
     }

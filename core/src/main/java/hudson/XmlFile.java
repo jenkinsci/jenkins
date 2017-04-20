@@ -45,16 +45,15 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Represents an XML data file that Jenkins uses as a data file.
@@ -228,7 +227,7 @@ public final class XmlFile {
      */
     public void writeRawTo(Writer w) throws IOException {
         try (Reader r = readRaw()) {
-            Util.copyStream(r, w);
+            IOUtils.copy(r, w);
         }
     }
 

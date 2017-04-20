@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.54-SNAPSHOT</version>
+  <version>2.56-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -189,11 +189,6 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-nop</artifactId>
         <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
@@ -381,6 +376,7 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
           </configuration>
         </plugin>
         <plugin>
@@ -524,7 +520,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.120</version>
+          <version>1.122</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

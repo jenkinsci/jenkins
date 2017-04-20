@@ -53,7 +53,7 @@ import java.io.OutputStream;
  * STILL A WORK IN PROGRESS. SUBJECT TO CHANGE! DO NOT EXTEND.
  *
  * TODO: is this per {@link Computer}? Per {@link Job}?
- *   -> probably per agent.
+ *   → probably per agent.
  *
  * <h2>Design Problems</h2>
  * <ol>
