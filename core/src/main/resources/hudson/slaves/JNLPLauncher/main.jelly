@@ -125,7 +125,7 @@ java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar slave.jar
               </li>
             </j:otherwise>
           </j:choose>
-          <button id="linux"   style="width:10em" onclick="switchText('textarea.copiable[data-linux]','data-linux');  ">Linux</button>
+          <button id="linux"   style="width:10em" onclick="switchText('textarea.copiable[data-linux]','data-linux');  ">cURL</button>
           <button id="windows" style="width:10em" onclick="switchText('textarea.copiable[data-linux]','data-windows');">Windows</button>
         </ul>
         <!--
