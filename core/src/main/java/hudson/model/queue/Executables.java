@@ -27,6 +27,8 @@ import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -36,10 +38,20 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  */
 public class Executables {
+    
+    private static final Logger LOGGER = Logger.getLogger(Executables.class.getName());
+    
     /**
      * Due to the return type change in {@link Executable}, the caller needs a special precaution now.
+     * @param e Executable
+     * @throws Error Executable type does not offer the {@link Executable#getParent()} method or it fails with {@link Error}
+     * @throws RuntimeException {@link Executable#getParent()} method fails with {@link Error}
+     * @deprecated This method may throw Runtime exceptions for old cores
+     *      Use {@link #getParentOfOrFail(hudson.model.Queue.Executable)} or {@link #getParentOfOrNull(hudson.model.Queue.Executable)} instead.
      */
-    public static @Nonnull SubTask getParentOf(Executable e) {
+    @Deprecated
+    public static @Nonnull SubTask getParentOf(@Nonnull Executable e) 
+            throws Error, RuntimeException {
         try {
             return e.getParent();
         } catch (AbstractMethodError _) {
@@ -59,6 +71,49 @@ public class Executables {
             }
         }
     }
+    
+    /**
+     * Get parent subtask from which the executable has been created.
+     * @param e Executable.
+     * @return Parent subtask from which the executable has been created.
+     *         {@code null} if the Executable is {@code null} OR has incompatible API (old plugin depending on a core older than 1.377)
+     * @since TODO
+     * @see #getParentOfOrFail(hudson.model.Queue.Executable) 
+     */
+    @CheckForNull
+    public static SubTask getParentOfOrNull(@CheckForNull Executable e) {
+        if (e == null) {
+            return null;
+        }
+        try {
+            return getParentOf(e);
+        } catch(RuntimeException | Error ex) {
+            LOGGER.log(Level.WARNING, formatUnsupportedExecutableAPIMessage(e), ex);
+            return null;
+        }
+    }
+    
+    /**
+     * Get parent subtask from which the executable has been created.
+     * @param e Executable
+     * @return Parent subtask from which the executable has been created
+     * @throws InvocationTargetException Operation failure due to the usage of incompatible API for old plugin depending on a core older than 1.377
+     * @since TODO
+     */
+    @Nonnull
+    public static SubTask getParentOfOrFail(@Nonnull Executable e) throws InvocationTargetException {
+       try {
+            return getParentOf(e);
+        } catch(RuntimeException | Error ex) {
+            throw new InvocationTargetException(ex, formatUnsupportedExecutableAPIMessage(e));
+        } 
+    }
+    
+    @Nonnull
+    private static String formatUnsupportedExecutableAPIMessage(@Nonnull Executable e) {
+        return String.format("Cannot retrieve parent subtask of executable %s implementing API version below 1.377 (%s)", 
+                    new Object[] {e, e.getClass()});
+    }
 
     /**
      * Returns the estimated duration for the executable.
@@ -77,6 +132,7 @@ public class Executables {
         try {
             return e.getEstimatedDuration();
         } catch (AbstractMethodError error) {
+            // TODO: according to the code above, e.getparent() may fail. The method also needs to be reworked
             return e.getParent().getEstimatedDuration();
         }
     }

@@ -86,7 +86,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import static hudson.model.queue.Executables.getParentOf;
+import static hudson.model.queue.Executables.getParentOfOrNull;
+import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
@@ -620,9 +621,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
                 for (Computer c : Jenkins.getInstance().getComputers()) {
                     for (Executor e : c.getAllExecutors()) {
-                        WorkUnit workUnit = e.getCurrentWorkUnit();
-                        if (workUnit != null) {
-                            Item item = Tasks.getItemOf(getParentOf(workUnit.getExecutable()));
+                        final WorkUnit workUnit = e.getCurrentWorkUnit();
+                        final SubTask subtask = workUnit != null ? getParentOfOrNull(workUnit.getExecutable()) : null;
+                        if (subtask != null) {        
+                            Item item = Tasks.getItemOf(subtask);
                             if (item != null) {
                                 while (item != null) {
                                     if (item == this) {
