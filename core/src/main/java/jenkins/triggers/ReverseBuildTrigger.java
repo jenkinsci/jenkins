@@ -149,8 +149,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                 listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(),
                         upstream.getFullName(), job.getFullName()));
             } else  {
-                LOGGER.log(Level.WARNING, Messages.ReverseBuildTrigger_running_as_cannot_even_see_but_cannot_tell(auth.getName(),
-                        downstreamDiscoverable ? "READ" : "DISCOVER", upstream, job, originalAuth.getName()));
+                LOGGER.log(Level.WARNING, "Running as {0} cannot even {1} {2} for trigger from {3}, (but cannot tell {4} that)",
+                        new Object [] { auth.getName(), downstreamDiscoverable ? "READ" : "DISCOVER", upstream, job, originalAuth.getName()});
             }
             return false;
         }
