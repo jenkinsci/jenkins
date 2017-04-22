@@ -78,6 +78,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1469,8 +1470,13 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = -5094638816500738429L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                if(!f.exists())
-                    Files.newOutputStream(creating(f).toPath()).close();
+                if(!f.exists()) {
+                    try {
+                        Files.newOutputStream(creating(f).toPath()).close();
+                    } catch (InvalidPathException e) {
+                        throw new IOException(e);
+                    }
+                }
                 if(!stating(f).setLastModified(timestamp))
                     throw new IOException("Failed to set the timestamp of "+f+" to "+timestamp);
                 return null;
@@ -1750,8 +1756,13 @@ public final class FilePath implements Serializable {
      * Reads this file.
      */
     public InputStream read() throws IOException, InterruptedException {
-        if(channel==null)
-            return Files.newInputStream(reading(new File(remote)).toPath());
+        if(channel==null) {
+            try {
+                return Files.newInputStream(reading(new File(remote)).toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
+        }
 
         final Pipe p = Pipe.createRemoteToLocal();
         actAsync(new SecureFileCallable<Void>() {
@@ -1762,6 +1773,8 @@ public final class FilePath implements Serializable {
                 try (InputStream fis = Files.newInputStream(reading(f).toPath());
                      OutputStream out = p.getOut()) {
                     org.apache.commons.io.IOUtils.copy(fis, out);
+                } catch (InvalidPathException e) {
+                    p.error(new IOException(e));
                 } catch (Exception x) {
                     p.error(x);
                 }
@@ -1862,7 +1875,11 @@ public final class FilePath implements Serializable {
         if(channel==null) {
             File f = new File(remote).getAbsoluteFile();
             mkdirs(f.getParentFile());
-            return Files.newOutputStream(writing(f).toPath());
+            try {
+                return Files.newOutputStream(writing(f).toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
 
         return act(new SecureFileCallable<OutputStream>() {
@@ -1870,8 +1887,12 @@ public final class FilePath implements Serializable {
             public OutputStream invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
                 f = f.getAbsoluteFile();
                 mkdirs(f.getParentFile());
-                OutputStream fos = Files.newOutputStream(writing(f).toPath());
-                return new RemoteOutputStream(fos);
+                try {
+                    OutputStream fos = Files.newOutputStream(writing(f).toPath());
+                    return new RemoteOutputStream(fos);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
+                }
             }
         });
     }
@@ -1891,6 +1912,8 @@ public final class FilePath implements Serializable {
                 try (OutputStream fos = Files.newOutputStream(writing(f).toPath());
                      Writer w = encoding != null ? new OutputStreamWriter(fos, encoding) : new OutputStreamWriter(fos)) {
                     w.write(content);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
                 return null;
             }
@@ -1994,6 +2017,8 @@ public final class FilePath implements Serializable {
                 try (InputStream fis = Files.newInputStream(reading(f).toPath())) {
                     org.apache.commons.io.IOUtils.copy(fis, out);
                     return null;
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 } finally {
                     out.close();
                 }

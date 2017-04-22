@@ -28,6 +28,7 @@ import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 
@@ -75,6 +76,8 @@ final class ZipArchiver extends Archiver {
                 int len;
                 while((len=in.read(buf))>=0)
                     zip.write(buf,0,len);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
             zip.closeEntry();
         }
