@@ -25,7 +25,6 @@ package hudson.util;
 
 import hudson.CloseProofOutputStream;
 import hudson.console.ConsoleNote;
-import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import java.io.Closeable;
@@ -149,14 +148,6 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         out.print(prefix);
         out.println(msg);
 
-        // the idiom in Hudson is to use the returned writer for writing stack trace,
-        // so put the marker here to indicate an exception. if the stack trace isn't actually written,
-        // HudsonExceptionNote.annotate recovers gracefully.
-        try {
-            annotate(new HudsonExceptionNote());
-        } catch (IOException e) {
-            // for signature compatibility, we have to swallow this error
-        }
         return new PrintWriter(
             charset!=null ? new OutputStreamWriter(out,charset) : new OutputStreamWriter(out),true);
     }
