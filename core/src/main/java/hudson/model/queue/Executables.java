@@ -27,8 +27,6 @@ import hudson.model.Queue.Executable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
@@ -40,8 +38,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 public class Executables {
-    
-    private static final Logger LOGGER = Logger.getLogger(Executables.class.getName());
     
     // TODO: Deprecate getParentOf() and make the new API public
     // @deprecated This method may throw Runtime exceptions for old cores
@@ -73,25 +69,6 @@ public class Executables {
                 if (y instanceof RuntimeException)     throw (RuntimeException)y;
                 throw new Error(x);
             }
-        }
-    }
-    
-    /**
-     * Get parent subtask from which the executable has been created.
-     * @param e Executable.
-     * @return Parent subtask from which the executable has been created.
-     *         {@code null} if the Executable has incompatible API (old plugin depending on a core older than 1.377)
-     * @since TODO
-     * @see #getParentOfOrFail(hudson.model.Queue.Executable) 
-     */
-    @CheckForNull
-    @Restricted(NoExternalUse.class)
-    public static SubTask getParentOfOrNull(@Nonnull Executable e) {
-        try {
-            return getParentOf(e);
-        } catch(RuntimeException | Error ex) {
-            LOGGER.log(Level.WARNING, formatUnsupportedExecutableAPIMessage(e), ex);
-            return null;
         }
     }
     
