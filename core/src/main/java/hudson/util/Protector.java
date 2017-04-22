@@ -26,12 +26,11 @@ package hudson.util;
 import javax.crypto.SecretKey;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
-import com.trilead.ssh2.crypto.Base64;
 
 /**
  * Encrypt/decrypt data by using a "session" key that only lasts for
@@ -49,10 +48,8 @@ public class Protector {
         try {
             Cipher cipher = Secret.getCipher(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, DES_KEY);
-            return new String(Base64.encode(cipher.doFinal((secret+ MAGIC).getBytes("UTF-8"))));
+            return new String(Base64.getEncoder().encode(cipher.doFinal((secret+ MAGIC).getBytes(StandardCharsets.UTF_8))));
         } catch (GeneralSecurityException e) {
-            throw new Error(e); // impossible
-        } catch (UnsupportedEncodingException e) {
             throw new Error(e); // impossible
         }
     }
@@ -65,15 +62,11 @@ public class Protector {
         try {
             Cipher cipher = Secret.getCipher(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, DES_KEY);
-            String plainText = new String(cipher.doFinal(Base64.decode(data.toCharArray())), "UTF-8");
+            String plainText = new String(cipher.doFinal(Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
             if(plainText.endsWith(MAGIC))
                 return plainText.substring(0,plainText.length()-3);
             return null;
-        } catch (GeneralSecurityException e) {
-            return null;
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e); // impossible
-        } catch (IOException e) {
+        } catch (GeneralSecurityException | IllegalArgumentException e) {
             return null;
         }
     }

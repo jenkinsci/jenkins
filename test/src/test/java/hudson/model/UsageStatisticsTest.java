@@ -24,12 +24,13 @@
 package hudson.model;
 
 import com.google.common.io.Resources;
-import com.trilead.ssh2.crypto.Base64;
 import hudson.ClassicPluginStrategy;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
-import hudson.util.VersionNumber;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -85,7 +86,7 @@ public class UsageStatisticsTest {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         RSAPrivateKey priv = (RSAPrivateKey)keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
 
-        byte[] cipherText = Base64.decode(data.toCharArray());
+        byte[] cipherText = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
                 new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), "UTF-8");
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));

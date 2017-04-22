@@ -31,7 +31,6 @@ import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.util.BootFailure;

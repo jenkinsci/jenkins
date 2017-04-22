@@ -622,9 +622,9 @@ public abstract class FormFieldValidator {
                     return;
                 }
                 
-                com.trilead.ssh2.crypto.Base64.decode(v.toCharArray());
+                java.util.Base64.getDecoder().decode(v);
                 ok();
-            } catch (IOException e) {
+            } catch (IOException | IllegalArgumentException e) {
                 fail();
             }
         }

@@ -1,10 +1,10 @@
 package hudson.util;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.Functions;
 import hudson.model.TaskListener;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import javax.crypto.Cipher;
@@ -12,13 +12,13 @@ import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.LinkOption;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,8 +62,8 @@ public class SecretRewriter {
 
         byte[] in;
         try {
-            in = Base64.decode(s.toCharArray());
-        } catch (IOException e) {
+            in = Base64.getDecoder().decode(s.getBytes(StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException e) {
             return s;   // not a valid base64
         }
         cipher.init(Cipher.DECRYPT_MODE, key);

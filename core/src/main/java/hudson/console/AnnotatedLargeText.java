@@ -25,7 +25,6 @@
  */
 package hudson.console;
 
-import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
 import hudson.util.TimeUnit2;
@@ -48,6 +47,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
 
@@ -118,16 +120,15 @@ public class AnnotatedLargeText<T> extends LargeText {
             if (base64!=null) {
                 Cipher sym = PASSING_ANNOTATOR.decrypt();
 
-                ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
-                        new CipherInputStream(new ByteArrayInputStream(Base64.decode(base64.toCharArray())),sym)),
-                        Jenkins.getInstance().pluginManager.uberClassLoader);
-                try {
+                try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(
+                        new CipherInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8))), sym)),
+                        Jenkins.getInstance().pluginManager.uberClassLoader)) {
                     long timestamp = ois.readLong();
-                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis() - timestamp))
                         // don't deserialize something too old to prevent a replay attack
-                        return (ConsoleAnnotator)ois.readObject();
-                } finally {
-                    ois.close();
+                        return (ConsoleAnnotator) ois.readObject();
+                } catch (IllegalArgumentException ex) {
+                    throw new IOException("Could not decode input", ex);
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -175,7 +176,7 @@ public class AnnotatedLargeText<T> extends LargeText {
         oos.close();
         StaplerResponse rsp = Stapler.getCurrentResponse();
         if (rsp!=null)
-            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.encode(baos.toByteArray())));
+            rsp.setHeader("X-ConsoleAnnotator", new String(Base64.getEncoder().encode(baos.toByteArray())));
         return r;
     }
 

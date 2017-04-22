@@ -5,7 +5,6 @@ import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.trilead.ssh2.crypto.Base64;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.util.Secret;
@@ -21,6 +20,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.Base64;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertThat;
@@ -154,7 +154,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     private String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.encode(cipher.doFinal((str + "::::MAGIC::::").getBytes("UTF-8"))));
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes("UTF-8"))));
     }
 
     private String encryptNew(String str) {

@@ -1,6 +1,5 @@
 package hudson.util
 
-import com.trilead.ssh2.crypto.Base64
 import hudson.FilePath
 import hudson.Functions
 import jenkins.security.ConfidentialStoreRule
@@ -68,7 +67,7 @@ class SecretRewriterTest {
     String encryptOld(str) {
         def cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, HistoricalSecrets.legacyKey);
-        return new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
+        return new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
     }
 
     String encryptNew(str) {

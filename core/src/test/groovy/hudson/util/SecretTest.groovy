@@ -23,7 +23,6 @@
  */
 package hudson.util
 
-import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
@@ -123,7 +122,7 @@ public class SecretTest {
         ["Hello world","","\u0000unprintable"].each { str ->
             def cipher = Secret.getCipher("AES");
             cipher.init(Cipher.ENCRYPT_MODE, legacy);
-            def old = new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
+            def old = new String(Base64.getEncoder().encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
             def s = Secret.fromString(old)
             assert s.plainText==str : "secret by the old key should decrypt"
             assert s.encryptedValue!=old : "but when encrypting, ConfidentialKey should be in use"

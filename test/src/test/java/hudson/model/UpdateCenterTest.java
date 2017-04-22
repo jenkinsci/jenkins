@@ -23,14 +23,15 @@
  */
 package hudson.model;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.util.TimeUnit2;
 import net.sf.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Date;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
@@ -66,7 +67,7 @@ public class UpdateCenterTest {
         CertificateFactory cf = CertificateFactory.getInstance("X509");
         JSONObject signature = json.getJSONObject("signature");
         for (Object cert : signature.getJSONArray("certificates")) {
-            X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
+            X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(cert.toString().getBytes(StandardCharsets.UTF_8))));
             c.checkValidity(new Date(System.currentTimeMillis() + TimeUnit2.DAYS.toMillis(30)));
         }
     }

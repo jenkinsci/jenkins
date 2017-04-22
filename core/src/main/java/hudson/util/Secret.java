@@ -29,7 +29,6 @@ import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.trilead.ssh2.crypto.Base64;
 import jenkins.util.SystemProperties;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
@@ -42,6 +41,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Base64;
 import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -144,7 +144,7 @@ public final class Secret implements Serializable {
             System.arraycopy(iv, 0, payload, pos, iv.length);
             pos+=iv.length;
             System.arraycopy(encrypted, 0, payload, pos, encrypted.length);
-            return "{"+new String(Base64.encode(payload))+"}";
+            return "{"+new String(Base64.getEncoder().encode(payload))+"}";
         } catch (GeneralSecurityException e) {
             throw new Error(e); // impossible
         }
@@ -170,8 +170,8 @@ public final class Secret implements Serializable {
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
             try {
-                payload = Base64.decode(data.substring(1, data.length()-1).toCharArray());
-            } catch (IOException e) {
+                payload = Base64.getDecoder().decode(data.substring(1, data.length()-1));
+            } catch (IllegalArgumentException e) {
                 return null;
             }
             switch (payload[0]) {

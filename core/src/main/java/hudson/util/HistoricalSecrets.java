@@ -24,7 +24,6 @@
  */
 package hudson.util;
 
-import com.trilead.ssh2.crypto.Base64;
 import hudson.Util;
 import jenkins.model.Jenkins;
 import jenkins.security.CryptoConfidentialKey;
@@ -34,7 +33,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,7 +46,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class HistoricalSecrets {
 
     /*package*/ static Secret decrypt(String data, CryptoConfidentialKey key) throws IOException, GeneralSecurityException {
-        byte[] in = Base64.decode(data.toCharArray());
+        byte[] in;
+        try {
+            in = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException ex) {
+            throw new IOException("Could not decode secret", ex);
+        }
         Secret s = tryDecrypt(key.decrypt(), in);
         if (s!=null)    return s;
 
