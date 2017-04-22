@@ -149,7 +149,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         out.print(prefix);
         out.println(msg);
 
-        // the idiom in Hudson is to use the returned writer for writing stack trace,
+        // the idiom in Jenkins is to use the returned writer for writing stack trace,
         // so put the marker here to indicate an exception. if the stack trace isn't actually written,
         // HudsonExceptionNote.annotate recovers gracefully.
         try {
