@@ -31,6 +31,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Convenience methods around {@link Executable}.
@@ -41,15 +43,17 @@ public class Executables {
     
     private static final Logger LOGGER = Logger.getLogger(Executables.class.getName());
     
+    // TODO: Deprecate getParentOf() and make the new API public
+    // @deprecated This method may throw Runtime exceptions for old cores
+    // Use {@link #getParentOfOrFail(hudson.model.Queue.Executable)} or {@link #getParentOfOrNull(hudson.model.Queue.Executable)} instead.
+    
     /**
      * Due to the return type change in {@link Executable}, the caller needs a special precaution now.
      * @param e Executable
+     * @return Discovered subtask
      * @throws Error Executable type does not offer the {@link Executable#getParent()} method or it fails with {@link Error}
      * @throws RuntimeException {@link Executable#getParent()} method fails with {@link Error}
-     * @deprecated This method may throw Runtime exceptions for old cores
-     *      Use {@link #getParentOfOrFail(hudson.model.Queue.Executable)} or {@link #getParentOfOrNull(hudson.model.Queue.Executable)} instead.
      */
-    @Deprecated
     public static @Nonnull SubTask getParentOf(@Nonnull Executable e) 
             throws Error, RuntimeException {
         try {
@@ -76,15 +80,13 @@ public class Executables {
      * Get parent subtask from which the executable has been created.
      * @param e Executable.
      * @return Parent subtask from which the executable has been created.
-     *         {@code null} if the Executable is {@code null} OR has incompatible API (old plugin depending on a core older than 1.377)
+     *         {@code null} if the Executable has incompatible API (old plugin depending on a core older than 1.377)
      * @since TODO
      * @see #getParentOfOrFail(hudson.model.Queue.Executable) 
      */
     @CheckForNull
-    public static SubTask getParentOfOrNull(@CheckForNull Executable e) {
-        if (e == null) {
-            return null;
-        }
+    @Restricted(NoExternalUse.class)
+    public static SubTask getParentOfOrNull(@Nonnull Executable e) {
         try {
             return getParentOf(e);
         } catch(RuntimeException | Error ex) {
@@ -101,6 +103,7 @@ public class Executables {
      * @since TODO
      */
     @Nonnull
+    @Restricted(NoExternalUse.class)
     public static SubTask getParentOfOrFail(@Nonnull Executable e) throws InvocationTargetException {
        try {
             return getParentOf(e);
