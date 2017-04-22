@@ -33,19 +33,13 @@ import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
-import hudson.security.AuthorizationMatrixProperty;
-import hudson.security.Permission;
-import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.Authentication;
@@ -58,6 +52,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 
 public class ReverseBuildTriggerTest {
@@ -85,23 +80,17 @@ public class ReverseBuildTriggerTest {
     /** @see BuildTriggerTest#testDownstreamProjectSecurity */
     @Test public void upstreamProjectSecurity() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
-        auth.add(Jenkins.READ, "alice");
-        auth.add(Computer.BUILD, "alice");
-        auth.add(Jenkins.ADMINISTER, "admin");
-        auth.add(Jenkins.READ, "bob");
-        auth.add(Computer.BUILD, "bob");
+        MockAuthorizationStrategy auth = new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("alice", "bob")
+                .grant(Computer.BUILD).everywhere().to("alice", "bob")
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin");
         r.jenkins.setAuthorizationStrategy(auth);
         String upstreamName = "upstr3@m"; // do not clash with English messages!
         final FreeStyleProject upstream = r.createFreeStyleProject(upstreamName);
         String downstreamName = "d0wnstr3am";
         FreeStyleProject downstream = r.createFreeStyleProject(downstreamName);
-        Map<Permission,Set<String>> perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.READ, Collections.singleton("alice"));
-        downstream.addProperty(new AuthorizationMatrixProperty(perms));
-        perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.READ, Collections.singleton("bob"));
-        upstream.addProperty(new AuthorizationMatrixProperty(perms));
+        auth.grant(Item.READ).onItems(downstream).to("alice")
+            .grant(Item.READ).onItems(upstream).to("bob");
         @SuppressWarnings("rawtypes") Trigger<Job> t = new ReverseBuildTrigger(upstreamName, Result.SUCCESS);
         downstream.addTrigger(t);
         t.start(downstream, true); // as in AbstractProject.submit
@@ -129,10 +118,7 @@ public class ReverseBuildTriggerTest {
         r.waitUntilNoActivity();
         assertEquals(1, downstream.getLastBuild().number);
         // Alice can see upstream, so downstream gets built, but the upstream build cannot see downstream:
-        perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.READ, new HashSet<String>(Arrays.asList("alice", "bob")));
-        upstream.removeProperty(AuthorizationMatrixProperty.class);
-        upstream.addProperty(new AuthorizationMatrixProperty(perms));
+        auth.grant(Item.READ).onItems(upstream).to("alice", "bob");
         Map<String,Authentication> qiaConfig = new HashMap<String,Authentication>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
@@ -154,15 +140,14 @@ public class ReverseBuildTriggerTest {
         assertEquals(new Cause.UpstreamCause((Run) b), downstream.getLastBuild().getCause(Cause.UpstreamCause.class));
 
         // Alice can only DISCOVER upstream, so downstream does not get built, but the upstream build cannot DISCOVER downstream
-        perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.DISCOVER, new HashSet<String>(Arrays.asList("alice")));
-        perms.put(Item.READ, new HashSet<String>(Arrays.asList("bob")));
-        upstream.removeProperty(AuthorizationMatrixProperty.class);
-        upstream.addProperty(new AuthorizationMatrixProperty(perms));
-        perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.READ, new HashSet<String>(Arrays.asList("alice")));
-        downstream.removeProperty(AuthorizationMatrixProperty.class);
-        downstream.addProperty(new AuthorizationMatrixProperty(perms));
+        auth = new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().to("alice", "bob")
+                .grant(Computer.BUILD).everywhere().to("alice", "bob")
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
+                .grant(Item.READ).onItems(upstream).to("bob")
+                .grant(Item.DISCOVER).onItems(upstream).to("alice");
+        r.jenkins.setAuthorizationStrategy(auth);
+        auth.grant(Item.READ).onItems(downstream).to("alice");
         qiaConfig = new HashMap<String,Authentication>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         qiaConfig.put(downstreamName, User.get("alice").impersonate());
@@ -174,11 +159,8 @@ public class ReverseBuildTriggerTest {
 
         // A QIA is configured but does not specify any authentication for downstream, anonymous can only DISCOVER upstream
         // so no message is printed about it, and no Exception neither (JENKINS-42707)
-        perms = new HashMap<Permission,Set<String>>();
-        perms.put(Item.DISCOVER, new HashSet<String>(Arrays.asList("anonymous")));
-        perms.put(Item.READ, new HashSet<String>(Arrays.asList("bob")));
-        upstream.removeProperty(AuthorizationMatrixProperty.class);
-        upstream.addProperty(new AuthorizationMatrixProperty(perms));
+        auth.grant(Item.READ).onItems(upstream).to("bob");
+        auth.grant(Item.DISCOVER).onItems(upstream).to("anonymous");
         qiaConfig = new HashMap<String,Authentication>();
         qiaConfig.put(upstreamName, User.get("bob").impersonate());
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(qiaConfig));
