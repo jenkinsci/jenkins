@@ -29,8 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Convenience methods around {@link Executable}.
@@ -39,19 +37,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 public class Executables {
     
-    // TODO: Investigate if there are still plugins, which do not implement new API (last occurrence: JENKINS-8100)
-    // If yes, improve API by bits, which were proposed in https://github.com/jenkinsci/jenkins/pull/2854
-    
     /**
      * Due to the return type change in {@link Executable} in 1.377, the caller needs a special precaution now.
      * @param e Executable
      * @return Discovered subtask
-     * @throws Error Executable type does not offer the {@link Executable#getParent()} method or it fails with {@link Error}.
-     *         It may happen if and only if there is a plugin implementing old Executable API (for Jenkins older than 1.377). 
-     *         Last occurrence - JENKINS-8100 
-     * @throws RuntimeException {@link Executable#getParent()} method fails with {@link Error}
-     *         It may happen if and only if there is a plugin implementing old Executable API (for Jenkins older than 1.377). 
-     *         Last occurrence - JENKINS-8100 
      */
     public static @Nonnull SubTask getParentOf(@Nonnull Executable e) 
             throws Error, RuntimeException {
