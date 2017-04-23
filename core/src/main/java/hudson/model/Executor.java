@@ -844,7 +844,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                Tasks.getOwnerTaskOf(getParentOfOrFail(executable)).checkAbortPermission();
+                Tasks.getOwnerTaskOf(getParentOf(executable)).checkAbortPermission();
                 interrupt();
             }
         } finally {
