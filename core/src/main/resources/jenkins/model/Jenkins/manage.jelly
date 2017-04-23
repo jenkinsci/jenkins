@@ -35,8 +35,7 @@ THE SOFTWARE.
       ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href,iconUrl,title,post,requiresConfirmation) : null}
       <!-- TODO summary.jelly should be modified to accept requiresConfirmation so the icon link can be included -->
       <j:set var="_href" value="${href}"/>
-      <t:summary icon="${icon}"
-                 href="${requiresConfirmation || post ? null : href}" iconOnly="true">
+      <t:summary icon="${icon}" href="${requiresConfirmation || post ? null : href}" iconOnly="true">
         <div class="link">
           <j:choose>
             <j:when test="${requiresConfirmation}">
@@ -68,12 +67,75 @@ THE SOFTWARE.
 
     <st:include page="downgrade.jelly" />
 
-    <table style="padding-left: 2em;" id="management-links">
+    <style type="text/css">
+      .manage-option {
+        border: 1px solid transparent;
+        margin-bottom: 4px;
+      }
+      .manage-option:hover {
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background-color: #fafafa;
+      }
+      .manage-option dl {
+        padding: 0;
+        margin: 0 0 0 62px;
+        min-height: 48px;
+      }
+      .manage-option dl dt {
+        font-size: 16px;
+        line-height: 24px;
+      }
+      .manage-option dl dd {
+        margin-left: 0;
+        line-height: 20px;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .manage-option a, .manage-option a:visited {
+        display: block;
+        padding: 8px;
+        margin: 0;
+        text-decoration: none;
+        color: #000;
+        outline: 0;
+      }
+      .manage-option .icon {
+        display: block;
+        float: left;
+        position: relative;
+        width: 48px;
+        height: 48px;
+      }
+
+    </style>
+
+    <j:forEach var="m" items="${it.managementLinks}">
+      <l:hasPermission permission="${m.requiredPermission}">
+        <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
+        <j:if test="${icon!=null}">
+          <div class="manage-option">
+            <a href="${m.urlName}" title="">
+            <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}" />
+            <img class="icon" src="${iconUrl}" />
+            <dl>
+              <dt>${m.displayName}</dt>
+              <dd><j:out value="${m.description}"/></dd>
+            </dl>
+            </a>
+          </div>
+        </j:if>
+      </l:hasPermission>
+    </j:forEach>
+
+
+    <table style="padding-left: 2em; display: none;" id="management-links">
       <j:forEach var="m" items="${it.managementLinks}">
         <l:hasPermission permission="${m.requiredPermission}">
           <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}"/>
           <j:if test="${icon!=null}">
-            <local:feature icon="${icon}"      href="${m.urlName}"   title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}" post="${m.requiresPOST}">
+            <local:feature icon="${icon}" href="${m.urlName}" title="${m.displayName}" requiresConfirmation="${m.requiresConfirmation}" post="${m.requiresPOST}">
               <j:out value="${m.description}"/>
               <st:include it="${m}" page="info.jelly" optional="true"/>
             </local:feature>
