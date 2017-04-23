@@ -1800,7 +1800,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets a view by the specified name.
-     * The method iterates through {@link ViewGroup}s if required.
+     * The method iterates through {@link hudson.model.ViewGroup}s if required.
      * @param name Name of the view
      * @return View instance or {@code null} if it is missing
      */
