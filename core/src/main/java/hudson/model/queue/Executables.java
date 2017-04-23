@@ -39,16 +39,19 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 public class Executables {
     
-    // TODO: Deprecate getParentOf() and make the new API public
-    // @deprecated This method may throw Runtime exceptions for old cores
-    // Use {@link #getParentOfOrFail(hudson.model.Queue.Executable)} or {@link #getParentOfOrNull(hudson.model.Queue.Executable)} instead.
+    // TODO: Investigate if there are still plugins, which do not implement new API (last occurrence: JENKINS-8100)
+    // If yes, improve API by bits, which were proposed in https://github.com/jenkinsci/jenkins/pull/2854
     
     /**
-     * Due to the return type change in {@link Executable}, the caller needs a special precaution now.
+     * Due to the return type change in {@link Executable} in 1.377, the caller needs a special precaution now.
      * @param e Executable
      * @return Discovered subtask
-     * @throws Error Executable type does not offer the {@link Executable#getParent()} method or it fails with {@link Error}
+     * @throws Error Executable type does not offer the {@link Executable#getParent()} method or it fails with {@link Error}.
+     *         It may happen if and only if there is a plugin implementing old Executable API (for Jenkins older than 1.377). 
+     *         Last occurrence - JENKINS-8100 
      * @throws RuntimeException {@link Executable#getParent()} method fails with {@link Error}
+     *         It may happen if and only if there is a plugin implementing old Executable API (for Jenkins older than 1.377). 
+     *         Last occurrence - JENKINS-8100 
      */
     public static @Nonnull SubTask getParentOf(@Nonnull Executable e) 
             throws Error, RuntimeException {
@@ -70,29 +73,6 @@ public class Executables {
                 throw new Error(x);
             }
         }
-    }
-    
-    /**
-     * Get parent subtask from which the executable has been created.
-     * @param e Executable
-     * @return Parent subtask from which the executable has been created
-     * @throws InvocationTargetException Operation failure due to the usage of incompatible API for old plugin depending on a core older than 1.377
-     * @since TODO
-     */
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public static SubTask getParentOfOrFail(@Nonnull Executable e) throws InvocationTargetException {
-       try {
-            return getParentOf(e);
-        } catch(RuntimeException | Error ex) {
-            throw new InvocationTargetException(ex, formatUnsupportedExecutableAPIMessage(e));
-        } 
-    }
-    
-    @Nonnull
-    private static String formatUnsupportedExecutableAPIMessage(@Nonnull Executable e) {
-        return String.format("Cannot retrieve parent subtask of executable %s implementing API version below 1.377 (%s)", 
-                    new Object[] {e, e.getClass()});
     }
 
     /**

@@ -64,7 +64,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
@@ -845,13 +844,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                final SubTask parentOf;
-                try {
-                   parentOf = getParentOfOrFail(executable);
-                } catch(InvocationTargetException ex) {
-                    return HttpResponses.error(500, ex);
-                }
-                Tasks.getOwnerTaskOf(parentOf).checkAbortPermission();
+                Tasks.getOwnerTaskOf(getParentOfOrFail(executable)).checkAbortPermission();
                 interrupt();
             }
         } finally {

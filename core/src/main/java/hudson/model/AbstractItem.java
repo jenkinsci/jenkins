@@ -87,7 +87,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import static hudson.model.queue.Executables.getParentOfOrFail;
+import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
 import java.lang.reflect.InvocationTargetException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -625,15 +625,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     for (Executor e : c.getAllExecutors()) {
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
                         final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
-                        SubTask subtask = null;
-                        if (executable != null) {
-                            try {
-                                subtask = getParentOfOrFail(executable);
-                            } catch(InvocationTargetException ex) {
-                                // Executable is not compatible with API changes in 1.377+
-                                LOGGER.log(Level.WARNING, "Cannot determine subtask for the executable with obsolete API implementation", ex);
-                            }
-                        }
+                        final SubTask subtask = executable != null ? getParentOf(executable) : null;
                                 
                         if (subtask != null) {        
                             Item item = Tasks.getItemOf(subtask);
