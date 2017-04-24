@@ -1824,7 +1824,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return names;
     }
 
-    public View getView(String name) {
+    /**
+     * Gets a view by the specified name.
+     * The method iterates through {@link hudson.model.ViewGroup}s if required.
+     * @param name Name of the view
+     * @return View instance or {@code null} if it is missing
+     */
+    @CheckForNull
+    public View getView(@CheckForNull String name) {
         return viewGroupMixIn.getView(name);
     }
 
@@ -1883,7 +1890,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return viewGroupMixIn.getPrimaryView();
      }
 
-    public void setPrimaryView(View v) {
+    public void setPrimaryView(@Nonnull View v) {
         this.primaryView = v.getViewName();
     }
 

@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import jenkins.model.Jenkins;
@@ -55,6 +56,8 @@ public class HsErrPidList extends AdministrativeMonitor {
         try {
             try (FileChannel ch = FileChannel.open(getSecretKeyFile().toPath(), StandardOpenOption.READ)) {
                 map = ch.map(MapMode.READ_ONLY,0,1);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
                 
             scan("./hs_err_pid%p.log");

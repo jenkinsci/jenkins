@@ -3,6 +3,7 @@ package jenkins.util;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.NullOutputStream;
@@ -177,6 +178,8 @@ public class JSONSignatureValidator {
                 Certificate certificate;
                 try (InputStream in = Files.newInputStream(cert.toPath())) {
                     certificate = cf.generateCertificate(in);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 } catch (CertificateException e) {
                     LOGGER.log(Level.WARNING, String.format("Files in %s are expected to be either "
                                     + "certificates or .txt files documenting the certificates, "

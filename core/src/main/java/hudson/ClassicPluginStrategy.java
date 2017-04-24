@@ -25,6 +25,7 @@ package hudson;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
@@ -127,6 +128,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 String firstLine;
                 try (InputStream manifestHeaderInput = Files.newInputStream(archive.toPath())) {
                     firstLine = IOUtils.readFirstLine(manifestHeaderInput, "UTF-8");
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
                 if (firstLine.startsWith("Manifest-Version:")) {
                     // this is the manifest already
@@ -138,6 +141,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 // Read the manifest
                 try (InputStream manifestInput = Files.newInputStream(archive.toPath())) {
                     return new Manifest(manifestInput);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             } catch (IOException e) {
                 throw new IOException("Failed to load " + archive, e);
@@ -171,6 +176,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             }
             try (InputStream fin = Files.newInputStream(manifestFile.toPath())) {
                 manifest = new Manifest(fin);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
         }
 

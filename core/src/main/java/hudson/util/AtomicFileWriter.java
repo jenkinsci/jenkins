@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 
 /**
  * Buffered {@link FileWriter} that supports atomic operations.
@@ -71,7 +72,11 @@ public class AtomicFileWriter extends Writer {
         destFile = f;
         if (encoding==null)
             encoding = Charset.defaultCharset().name();
-        core = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(tmpFile.toPath()),encoding));
+        try {
+            core = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(tmpFile.toPath()), encoding));
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override

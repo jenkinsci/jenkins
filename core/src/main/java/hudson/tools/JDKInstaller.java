@@ -40,6 +40,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -519,6 +520,8 @@ public class JDKInstaller extends ToolInstaller {
                         tmp.getParentFile().mkdirs();
                         try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
+                        } catch (InvalidPathException e) {
+                            throw new IOException(e);
                         }
 
                         tmp.renameTo(cache);

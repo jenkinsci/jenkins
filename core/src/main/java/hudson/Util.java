@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
 
@@ -202,6 +203,8 @@ public class Util {
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
                 str.append(buf, 0, len);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
 
         return str.toString();
@@ -283,7 +286,11 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
-                Files.deleteIfExists(f.toPath());
+                try {
+                    Files.deleteIfExists(f.toPath());
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
+                }
 
                 // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
@@ -811,6 +818,8 @@ public class Util {
     public static String getDigestOf(@Nonnull File file) throws IOException {
         try (InputStream is = Files.newInputStream(file.toPath())) {
             return getDigestOf(new BufferedInputStream(is));
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -1143,7 +1152,11 @@ public class Util {
      * Creates an empty file.
      */
     public static void touch(@Nonnull File file) throws IOException {
-        Files.newOutputStream(file.toPath()).close();
+        try {
+            Files.newOutputStream(file.toPath()).close();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
