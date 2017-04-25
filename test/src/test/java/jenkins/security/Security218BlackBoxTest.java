@@ -85,7 +85,7 @@ public class Security218BlackBoxTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
-    @SuppressWarnings("deprecation") // really mean to use getPage(String)
+    @SuppressWarnings("deprecation") // really mean to use getPage(String), and Remoting-based CLI
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY) // TODO userContent inaccessible without authentication otherwise
     @Test
     public void probe() throws Exception {
@@ -277,7 +277,7 @@ public class Security218BlackBoxTest {
                         try {
                             CLI cli = new CLI(r.getURL()) {
                                 @Override
-                                protected CliPort getCliTcpPort(String url) throws IOException {
+                                protected CliPort getCliTcpPort(URL url) throws IOException {
                                     return new CliPort(new InetSocketAddress(proxySocket.getInetAddress(), proxySocket.getLocalPort()), /* ignore identity */ null, 1);
                                 }
                             };

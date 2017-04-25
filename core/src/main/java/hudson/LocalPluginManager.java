@@ -70,7 +70,7 @@ public class LocalPluginManager extends PluginManager {
      * If the war file has any "/WEB-INF/plugins/*.jpi", extract them into the plugin directory.
      *
      * @return
-     *      File names of the bundled plugins. Like {"ssh-slaves.jpi","subvesrion.jpi"}
+     *      File names of the bundled plugins. Like {"ssh-slaves.jpi","subversion.jpi"}
      */
     @Override
     protected Collection<String> loadBundledPlugins() {

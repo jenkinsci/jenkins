@@ -8,6 +8,7 @@ import hudson.model.queue.CauseOfBlockage;
 import jenkins.model.Jenkins;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
@@ -70,14 +71,14 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
      * @param node the node which has been provisioned by the cloud
      *
-     * @since TODO
+     * @since 2.37
      */
     public void onCommit(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node) {
         // Noop by default
     }
 
     /**
-     * Called when {@link NodeProvisioner.PlannedNode#future#get()} throws an exception.
+     * Called when {@link NodeProvisioner.PlannedNode#future} {@link Future#get()} throws an exception.
      *
      * @param plannedNode the planned node which failed to provision
      * @param t the exception
@@ -93,7 +94,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @param node the node which has been provisioned by the cloud
      * @param t the exception
      *
-     * @since TODO
+     * @since 2.37
      */
     public void onRollback(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node,
                            @Nonnull Throwable t) {

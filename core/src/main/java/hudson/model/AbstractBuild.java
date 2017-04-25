@@ -823,7 +823,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
 	/*
-     * No need to to lock the entire AbstractBuild on change set calculcation
+     * No need to lock the entire AbstractBuild on change set calculation
      */
     private transient Object changeSetLock = new Object();
     
@@ -1022,7 +1022,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AbstractTestResultAction}.
      */
     @Deprecated
     public Action getTestResultAction() {
@@ -1034,7 +1034,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AggregatedTestResultAction}.
      */
     @Deprecated
     public Action getAggregatedTestResultAction() {

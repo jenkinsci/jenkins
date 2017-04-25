@@ -109,7 +109,7 @@ public class UpdateSite {
      *
      * <p>
      * There's normally some delay between when we send HTML that includes the check code,
-     * until we get the data back, so this variable is used to avoid asking too many browseres
+     * until we get the data back, so this variable is used to avoid asking too many browsers
      * all at once.
      */
     private transient volatile long lastAttempt;
@@ -526,7 +526,7 @@ public class UpdateSite {
         /**
          * List of warnings (mostly security) published with the update site.
          *
-         * @since TODO
+         * @since 2.40
          */
         private final Set<Warning> warnings = new HashSet<Warning>();
 
@@ -576,7 +576,7 @@ public class UpdateSite {
         /**
          * Returns the set of warnings
          * @return the set of warnings
-         * @since TODO
+         * @since 2.40
          */
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
@@ -692,7 +692,7 @@ public class UpdateSite {
      *
      * The {@link #pattern} is used to determine whether a given warning applies to the current installation.
      *
-     * @since TODO
+     * @since 2.40
      */
     @Restricted(NoExternalUse.class)
     public static final class WarningVersionRange {
@@ -745,7 +745,7 @@ public class UpdateSite {
      * @see UpdateSiteWarningsConfiguration
      * @see jenkins.security.UpdateSiteWarningsMonitor
      *
-     * @since TODO
+     * @since 2.40
      */
     @Restricted(NoExternalUse.class)
     public static final class Warning {
@@ -1128,7 +1128,7 @@ public class UpdateSite {
         }
 
         /**
-         * @since TODO
+         * @since 2.40
          */
         @CheckForNull
         @Restricted(NoExternalUse.class)
@@ -1163,7 +1163,7 @@ public class UpdateSite {
         }
 
         /**
-         * @since TODO
+         * @since 2.40
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {

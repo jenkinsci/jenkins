@@ -131,7 +131,7 @@ public abstract class ItemGroupMixIn {
     }
 
     /**
-     * {@link Item} -> name function.
+     * {@link Item} → name function.
      */
     public static final Function1<String,Item> KEYED_BY_NAME = new Function1<String, Item>() {
         public String call(Item item) {
@@ -234,6 +234,7 @@ public abstract class ItemGroupMixIn {
         }
         src.getDescriptor().checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, src.getDescriptor());
+        ItemListener.checkBeforeCopy(src, parent);
 
         T result = (T)createProject(src.getDescriptor(),name,false);
 
@@ -260,10 +261,7 @@ public abstract class ItemGroupMixIn {
         acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
-        if (parent.getItem(name) != null) {
-            throw new IllegalArgumentException(parent.getDisplayName() + " already contains an item '" + name + "'");
-        }
-        // TODO what if we have no DISCOVER permission on the existing job?
+        Items.verifyItemDoesNotAlreadyExist(parent, name, null);
 
         // place it as config.xml
         File configXml = Items.getConfigFile(getRootDirFor(name)).getFile();
@@ -316,9 +314,7 @@ public abstract class ItemGroupMixIn {
         acl.getACL().checkCreatePermission(parent, type);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
-        if(parent.getItem(name)!=null)
-            throw new IllegalArgumentException("Project of the name "+name+" already exists");
-        // TODO problem with DISCOVER as noted above
+        Items.verifyItemDoesNotAlreadyExist(parent, name, null);
 
         TopLevelItem item = type.newInstance(parent, name);
         try {

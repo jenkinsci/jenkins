@@ -38,7 +38,6 @@ import static java.util.logging.Level.*;
  * to authenticate the same header differently and fail.
  *
  * @author Kohsuke Kawaguchi
- * @see ZD-19640
  */
 public class BasicHeaderProcessor implements Filter {
     // these fields are supposed to be injected by Spring

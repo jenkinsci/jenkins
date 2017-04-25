@@ -126,7 +126,7 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: Jenkins does not allow to delete '"+AllView.DEFAULT_VIEW_NAME+"' view"));
     }
 
-    @Test public void deleteViewShoudlFailIfViewNameIsEmpty() {
+    @Test public void deleteViewShouldFailIfViewNameIsEmpty() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs("")
@@ -137,7 +137,7 @@ public class DeleteViewCommandTest {
         assertThat(result.stderr(), containsString("ERROR: View name is empty"));
     }
 
-    @Test public void deleteViewShoudlFailIfViewNameIsSpace() {
+    @Test public void deleteViewShouldFailIfViewNameIsSpace() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(View.READ, View.DELETE, Jenkins.READ)
                 .invokeWithArgs(" ")

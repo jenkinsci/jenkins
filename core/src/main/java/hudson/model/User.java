@@ -128,14 +128,14 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * The username of the 'unknown' user used to avoid null user references.
      */
-    private static final String UKNOWN_USERNAME = "unknown";
+    private static final String UNKNOWN_USERNAME = "unknown";
 
     /**
      * These usernames should not be used by real users logging into Jenkins. Therefore, we prevent
      * users with these names from being saved.
      */
     private static final String[] ILLEGAL_PERSISTED_USERNAMES = new String[]{ACL.ANONYMOUS_USERNAME,
-            ACL.SYSTEM_USERNAME, UKNOWN_USERNAME};
+            ACL.SYSTEM_USERNAME, UNKNOWN_USERNAME};
     private transient final String id;
 
     private volatile String fullName;
@@ -353,7 +353,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * This is used to avoid null {@link User} instance.
      */
     public static @Nonnull User getUnknown() {
-        return getById(UKNOWN_USERNAME, true);
+        return getById(UNKNOWN_USERNAME, true);
     }
 
     /**
@@ -655,7 +655,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @Nonnull RunList getBuilds() {
-        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
@@ -708,7 +708,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Is the ID allowed? Some are prohibited for security reasons. See SECURITY-166.
-     * <p/>
+     * <p>
      * Note that this is only enforced when saving. These users are often created
      * via the constructor (and even listed on /asynchPeople), but our goal is to
      * prevent anyone from logging in as these users. Therefore, we prevent
@@ -720,7 +720,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        //TODO: StringUtils.isBlank() checks the null falue, but FindBugs is not smart enough. Remove it later
+        //TODO: StringUtils.isBlank() checks the null value, but FindBugs is not smart enough. Remove it later
         if (id == null || StringUtils.isBlank(id)) {
             return false;
         }
@@ -1015,7 +1015,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
-         * context key for realm (domain) where idOrFullName has been retreived from.
+         * context key for realm (domain) where idOrFullName has been retrieved from.
          * Can be used (for example) to distinguish ambiguous committer ID using the SCM URL.
          * Associated Value is a {@link String}
          */
@@ -1122,5 +1122,20 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * JENKINS-22346.
      */
     public static boolean ALLOW_NON_EXISTENT_USER_TO_LOGIN = SystemProperties.getBoolean(User.class.getName()+".allowNonExistentUserToLogin");
-}
 
+    /**
+     * Jenkins historically created a (usually) ephemeral user record when an user with Overall/Administer permission
+     * accesses a /user/arbitraryName URL.
+     * <p>
+     * Unfortunately this constitutes a CSRF vulnerability, as malicious users can make admins create arbitrary numbers
+     * of ephemeral user records, so the behavior was changed in Jenkins 2.TODO / 2.32.2.
+     * <p>
+     * As some users may be relying on the previous behavior, setting this to true restores the previous behavior. This
+     * is not recommended.
+     *
+     * SECURITY-406.
+     */
+    @Restricted(NoExternalUse.class)
+    public static boolean ALLOW_USER_CREATION_VIA_URL = SystemProperties.getBoolean(User.class.getName() + ".allowUserCreationViaUrl");
+
+}

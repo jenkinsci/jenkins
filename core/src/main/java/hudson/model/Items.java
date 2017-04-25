@@ -85,7 +85,7 @@ public class Items {
      * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
      * need to restore the sort order of a further filtered result, you probably want {@link #BY_FULL_NAME}.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public static final Comparator<Item> BY_NAME = new Comparator<Item>() {
         @Override public int compare(Item i1, Item i2) {
@@ -103,7 +103,7 @@ public class Items {
     /**
      * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getFullName()}.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public static final Comparator<Item> BY_FULL_NAME = new Comparator<Item>() {
         @Override public int compare(Item i1, Item i2) {
@@ -430,7 +430,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since FIXME
+     * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
         return allItems(Jenkins.getAuthentication(), root, type);
@@ -448,7 +448,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since FIXME
+     * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
         return new AllItemsIterable<>(root, authentication, type);
@@ -493,9 +493,7 @@ public class Items {
             throw new IllegalArgumentException();
         }
         String name = item.getName();
-        if (destination.getItem(name) != null) {
-            throw new IllegalArgumentException(name + " already exists");
-        }
+        verifyItemDoesNotAlreadyExist(destination, name, null);
         String oldFullName = item.getFullName();
         // TODO AbstractItem.renameTo has a more baroque implementation; factor it out into a utility method perhaps?
         File destDir = destination.getRootDirFor(item);
@@ -620,6 +618,30 @@ public class Items {
                 }
             }
 
+        }
+    }
+
+    /**
+     * Securely check for the existence of an item before trying to create one with the same name.
+     * @param parent the folder where we are about to create/rename/move an item
+     * @param newName the proposed new name
+     * @param variant if not null, an existing item which we accept could be there
+     * @throws IllegalArgumentException if there is already something there, which you were supposed to know about
+     * @throws Failure if there is already something there but you should not be told details
+     */
+    static void verifyItemDoesNotAlreadyExist(@Nonnull ItemGroup<?> parent, @Nonnull String newName, @CheckForNull Item variant) throws IllegalArgumentException, Failure {
+        Item existing;
+        try (ACLContext ctxt = ACL.as(ACL.SYSTEM)) {
+            existing = parent.getItem(newName);
+        }
+        if (existing != null && existing != variant) {
+            if (existing.hasPermission(Item.DISCOVER)) {
+                String prefix = parent.getFullName();
+                throw new IllegalArgumentException((prefix.isEmpty() ? "" : prefix + "/") + newName + " already exists");
+            } else {
+                // Cannot hide its existence, so at least be as vague as possible.
+                throw new Failure("");
+            }
         }
     }
 

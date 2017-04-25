@@ -1110,7 +1110,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // for some reason, I was never able to get sysctlbyname work.
 //        if(LIBC.sysctlbyname("kern.argmax", argmaxRef.getPointer(), size, NULL, _)!=0)
                     if(LIBC.sysctl(new int[]{CTL_KERN,KERN_ARGMAX},2, argmaxRef.getPointer(), size, NULL, _)!=0)
-                        throw new IOException("Failed to get kernl.argmax: "+LIBC.strerror(Native.getLastError()));
+                        throw new IOException("Failed to get kern.argmax: "+LIBC.strerror(Native.getLastError()));
 
                     int argmax = argmaxRef.getValue();
 
@@ -1201,7 +1201,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                             arguments.add(m.readString());
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please run 'ps e "+pid+"' and report this to https://issues.jenkins-ci.org/browse/JENKINS-9634",e);
+                        throw new IllegalStateException("Failed to parse arguments: pid="+pid+", arg0="+args0+", arguments="+arguments+", nargs="+argc+". Please see https://jenkins.io/redirect/troubleshooting/darwin-failed-to-parse-arguments",e);
                     }
 
                     // read env vars that follow

@@ -164,7 +164,7 @@ public class AllView extends View {
                         // bingo JENKINS-38606 detected
                         LOGGER.log(Level.INFO,
                                 "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
-                                new Object[]{allView.owner.getUrl(), DEFAULT_VIEW_NAME});
+                                new Object[]{allView.owner.getUrl(), primaryView, DEFAULT_VIEW_NAME});
                         allView.name = DEFAULT_VIEW_NAME;
                         return DEFAULT_VIEW_NAME;
                     }

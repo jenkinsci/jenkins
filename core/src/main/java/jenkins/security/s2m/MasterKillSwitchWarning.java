@@ -5,6 +5,7 @@ import hudson.model.AdministrativeMonitor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class MasterKillSwitchWarning extends AdministrativeMonitor {
         return Messages.MasterKillSwitchWarning_DisplayName();
     }
 
+    @RequirePOST
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {
         if(dismiss!=null) {
             disable(true);

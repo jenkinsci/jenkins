@@ -36,6 +36,7 @@ import org.kohsuke.stapler.StaplerProxy;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 
@@ -115,7 +116,12 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         Computer c;
         c = byNameMap.get(n.getNodeName());
         if (c!=null) {
-            c.setNode(n); // reuse
+            try {
+                c.setNode(n); // reuse
+                used.add(c);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Error updating node " + n.getNodeName() + ", continuing", e);
+            }
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
             if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
@@ -131,8 +137,8 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                     }
                 }
             }
+            used.add(c);
         }
-        used.add(c);
     }
 
     /*package*/ void removeComputer(final Computer computer) {

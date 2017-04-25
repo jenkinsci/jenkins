@@ -52,7 +52,7 @@ import jenkins.security.security218.ysoserial.payloads.util.Reflections;
  * - writeOldB64;destFile;base64-data
  * 
  * Yields:
- * - copy an arbitraty file to an arbitrary directory (source file is deleted if possible)
+ * - copy an arbitrary file to an arbitrary directory (source file is deleted if possible)
  * - pre 1.3.1 (+ old JRE): write data to an arbitrary file
  * - 1.3.1+: write data to a more or less random file in an arbitrary directory
  * 

@@ -650,7 +650,7 @@ div.behavior-loading {
   border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
-  box-shaodw:#fff 0 0 0 10px
+  box-shadow:#fff 0 0 0 10px
 }
 
 @-webkit-keyframes sk-scaleout {
@@ -1388,7 +1388,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 2 deep == */
+/* == nested repeatable elements / 2 deep == */
 .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1398,7 +1398,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .show-if-not-only      { visibility: visible; }
 .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
-/* == nested erpeatable elements / 3 deep == */
+/* == nested repeatable elements / 3 deep == */
 .repeated-chunk .repeated-chunk .repeated-chunk .show-if-last      { visibility: hidden; }
 .repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
 
@@ -1409,7 +1409,7 @@ TABLE.fingerprint-in-build TD {
 .repeated-chunk .repeated-chunk .repeated-chunk.only .show-if-not-only { visibility: hidden; }
 
 /*
-    <DIV>s marked with to-be-removed is used in conjunction with repetable.jelly and hetero-list.jelly
+    <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
@@ -1717,6 +1717,17 @@ td.matrix-cell {
 /* ========================= legend.jelly ================== */
 table#legend-table td {
   vertical-align: middle;
+}
+
+/* ========================= select.jelly ================== */
+select.select-ajax-pending {
+  padding-left: 1.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: transparent;
+  background-image: url(../images/spinner.gif); /* this is why here and not in an adjunct */
+  background-repeat: no-repeat;
+  background-position: 2px;
 }
 
 /* ========================= Button styles ================= */

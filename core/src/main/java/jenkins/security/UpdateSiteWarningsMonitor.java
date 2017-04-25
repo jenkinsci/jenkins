@@ -58,7 +58,7 @@ import java.util.Set;
  *   <li>Inapplicable warnings are those that are not applicable.
  * </ul>
  *
- * <p></p>The following sets may be non-empty:</p>
+ * <p>The following sets may be non-empty:</p>
  *
  * <ul>
  *   <li>Intersection of applicable and active
@@ -75,7 +75,7 @@ import java.util.Set;
  *   <li>Intersection of active and inapplicable
  * </ul>
  *
- * @since TODO
+ * @since 2.40
  */
 @Extension
 @Restricted(NoExternalUse.class)

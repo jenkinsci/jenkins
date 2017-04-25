@@ -26,7 +26,9 @@ import java.net.Socket;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
+@Deprecated
 @Extension @Symbol("cli")
 public class CliProtocol extends AgentProtocol {
     @Inject
@@ -42,7 +44,7 @@ public class CliProtocol extends AgentProtocol {
 
     @Override
     public String getName() {
-        return jenkins.CLI.DISABLED ? null : "CLI-connect";
+        return jenkins.CLI.get().isEnabled() ? "CLI-connect" : null;
     }
 
     /**

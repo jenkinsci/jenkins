@@ -39,7 +39,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Centralizes calls to {@link System#getProperty()} and related calls.
+ * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
  * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not
@@ -140,7 +140,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
      * @param      key   the name of the system property.
      * @param      def   a default value.
      * @return     the string value of the system property,
-     *             or {@code null} if the the property is missing and the default value is {@code null}.
+     *             or {@code null} if the property is missing and the default value is {@code null}.
      *
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.
@@ -158,7 +158,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
      * @param      def   a default value.
      * @param      logLevel the level of the log if the provided key is not found.
      * @return     the string value of the system property,
-     *             or {@code null} if the the property is missing and the default value is {@code null}.
+     *             or {@code null} if the property is missing and the default value is {@code null}.
      *
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.

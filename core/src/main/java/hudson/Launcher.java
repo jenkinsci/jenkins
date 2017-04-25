@@ -299,7 +299,7 @@ public abstract class Launcher {
          * Sets the environment variable overrides.
          *
          * <p>
-         * In adition to what the current process
+         * In addition to what the current process
          * is inherited (if this is going to be launched from a agent agent, that
          * becomes the "current" process), these variables will be also set.
          */
@@ -1064,7 +1064,7 @@ public abstract class Launcher {
      * A launcher which delegates to a provided inner launcher. 
      * Allows subclasses to only implement methods they want to override.
      * Originally, this launcher has been implemented in 
-     * <a href="https://wiki.jenkins-ci.org/display/JENKINS/Custom+Tools+Plugin">
+     * <a href="https://plugins.jenkins.io/custom-tools-plugin">
      * Custom Tools Plugin</a>.
      * 
      * @author rcampbell

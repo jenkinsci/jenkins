@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -268,7 +269,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         /**
          * Does this version range contain a version more than the given number of releases ago?
          * @param threshold Number of releases
-         * @return True if the major version# differs or the minor# differs by >= threshold
+         * @return True if the major version# differs or the minor# differs by ≥ threshold
          */
         public boolean isOld(int threshold) {
             return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)

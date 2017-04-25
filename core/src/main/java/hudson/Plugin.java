@@ -53,8 +53,8 @@ import org.kohsuke.stapler.HttpResponses;
  * <p>
  * A plugin may {@linkplain #Plugin derive from this class}, or it may directly define extension
  * points annotated with {@link hudson.Extension}. For a list of extension
- * points, see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Extension+points">
- * https://wiki.jenkins-ci.org/display/JENKINS/Extension+points</a>.
+ * points, see <a href="https://jenkins.io/redirect/developer/extension-points">
+ * https://jenkins.io/redirect/developer/extension-points</a>.
  *
  * <p>
  * One instance of a plugin is created by Hudson, and used as the entry point
@@ -196,7 +196,7 @@ public abstract class Plugin implements Saveable {
      *
      * <p>
      * The following is a sample <tt>config.jelly</tt> that you can start yours with:
-     * <pre><xmp>
+     * <pre>{@code <xmp>
      * <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
      *   <f:section title="Locale">
      *     <f:entry title="${%Default Language}" help="/plugin/locale/help/default-language.html">
@@ -204,7 +204,7 @@ public abstract class Plugin implements Saveable {
      *     </f:entry>
      *   </f:section>
      * </j:jelly>
-     * </xmp></pre>
+     * </xmp>}</pre>
      *
      * <p>
      * This allows you to access data as {@code formData.getString("systemLocale")}
@@ -280,7 +280,7 @@ public abstract class Plugin implements Saveable {
      * Controls the file where {@link #load()} and {@link #save()}
      * persists data.
      *
-     * This method can be also overriden if the plugin wants to
+     * This method can be also overridden if the plugin wants to
      * use a custom {@link XStream} instance to persist data.
      *
      * @since 1.245

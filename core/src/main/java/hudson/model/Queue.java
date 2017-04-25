@@ -63,6 +63,8 @@ import hudson.model.queue.CauseOfBlockage.BecauseNodeIsBusy;
 import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -140,7 +142,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * <p>
  * Items in queue goes through several stages, as depicted below:
- * <pre>
+ * <pre>{@code
  * (enter) --> waitingList --+--> blockedProjects
  *                           |        ^
  *                           |        |
@@ -149,7 +151,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *                                    ^              |
  *                                    |              |
  *                                    +---(rarely)---+
- * </pre>
+ * }</pre>
  *
  * <p>
  * Note: In the normal case of events pending items only move to left. However they can move back
@@ -376,13 +378,15 @@ public class Queue extends ResourceController implements Saveable {
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(queueFile)))) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(queueFile.toPath())))) {
                     String line;
                     while ((line = in.readLine()) != null) {
                         AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
                         if (j != null)
                             j.scheduleBuild();
                     }
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
                 // discard the queue file now that we are done
                 queueFile.delete();
@@ -553,7 +557,7 @@ public class Queue extends ResourceController implements Saveable {
      * @param actions
      *      These actions can be used for associating information scoped to a particular build, to
      *      the task being queued. Upon the start of the build, these {@link Action}s will be automatically
-     *      added to the {@link Run} object, and hence avaialable to everyone.
+     *      added to the {@link Run} object, and hence available to everyone.
      *      For the convenience of the caller, this list can contain null, and those will be silently ignored.
      * @since 1.311
      * @return
@@ -728,7 +732,11 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     private void updateSnapshot() {
-        snapshot = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+        Snapshot revised = new Snapshot(waitingList, blockedProjects, buildables, pendings);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "{0} → {1}; leftItems={2}", new Object[] {snapshot, revised, leftItems.asMap()});
+        }
+        snapshot = revised;
     }
 
     public boolean cancel(Item item) {
@@ -1009,7 +1017,7 @@ public class Queue extends ResourceController implements Saveable {
     
     /**
      * How many {@link BuildableItem}s are assigned for the given label?
-     * <p/>
+     * <p>
      * The implementation is quite similar to {@link #countBuildableItemsFor(hudson.model.Label)},
      * but it has another behavior for null parameters.
      * @param l Label to be checked. If null, only jobs without assigned labels
@@ -1443,9 +1451,11 @@ public class Queue extends ResourceController implements Saveable {
                 }
                 // pending -> buildable
                 for (BuildableItem p: lostPendings) {
-                    LOGGER.log(Level.FINE,
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE,
                             "BuildableItem {0}: pending -> buildable as the assigned executor disappeared",
                             p.task.getFullDisplayName());
+                    }
                     p.isPending = false;
                     pendings.remove(p);
                     makeBuildable(p); // TODO whatever this is for, the return value is being ignored, so this does nothing at all
@@ -1464,7 +1474,7 @@ public class Queue extends ResourceController implements Saveable {
                     Collections.sort(blockedItems, QueueSorter.DEFAULT_BLOCKED_ITEM_COMPARATOR);
                 }
                 for (BlockedItem p : blockedItems) {
-                    String taskDisplayName = p.task.getFullDisplayName();
+                    String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
                     LOGGER.log(Level.FINEST, "Current blocked item: {0}", taskDisplayName);
                     if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
                         LOGGER.log(Level.FINEST,
@@ -1499,7 +1509,7 @@ public class Queue extends ResourceController implements Saveable {
                 if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
-                    String topTaskDisplayName = top.task.getFullDisplayName();
+                    String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
                     if (r != null) {
                         LOGGER.log(Level.FINEST, "Executing runnable {0}", topTaskDisplayName);
                         r.run();
@@ -1593,8 +1603,8 @@ public class Queue extends ResourceController implements Saveable {
                     // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
-                    // See https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
-                    // or https://issues.jenkins-ci.org/browse/JENKINS-27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
+                    // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
+                    // or https://jenkins-ci.org/issue/27708?focusedCommentId=225906&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225906
                     // for alternative fixes of this issue.
                     updateSnapshot();
                 }
@@ -2822,7 +2832,7 @@ public class Queue extends ResourceController implements Saveable {
 
         @SuppressFBWarnings(value = "IA_AMBIGUOUS_INVOCATION_OF_INHERITED_OR_OUTER_METHOD",
                 justification = "It will invoke the inherited clear() method according to Java semantics. "
-                              + "FindBugs recommends suppresing warnings in such case")
+                              + "FindBugs recommends suppressing warnings in such case")
         public void cancelAll() {
             for (T t : new ArrayList<T>(this))
                 t.cancel(Queue.this);

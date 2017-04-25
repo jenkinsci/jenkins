@@ -32,6 +32,7 @@ import hudson.model.Cause;
 import hudson.model.Item;
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
+import hudson.scheduler.RareOrImpossibleDateException;
 import hudson.util.FormValidation;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -104,13 +105,17 @@ public class TimerTrigger extends Trigger<BuildableItem> {
         }
 
         private void updateValidationsForNextRun(Collection<FormValidation> validations, CronTabList ctl) {
-            Calendar prev = ctl.previous();
-            Calendar next = ctl.next();
-            if (prev != null && next != null) {
-                DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
-                validations.add(FormValidation.ok(Messages.TimerTrigger_would_last_have_run_at_would_next_run_at(fmt.format(prev.getTime()), fmt.format(next.getTime()))));
-            } else {
-                validations.add(FormValidation.warning(Messages.TimerTrigger_no_schedules_so_will_never_run()));
+            try {
+                Calendar prev = ctl.previous();
+                Calendar next = ctl.next();
+                if (prev != null && next != null) {
+                    DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+                    validations.add(FormValidation.ok(Messages.TimerTrigger_would_last_have_run_at_would_next_run_at(fmt.format(prev.getTime()), fmt.format(next.getTime()))));
+                } else {
+                    validations.add(FormValidation.warning(Messages.TimerTrigger_no_schedules_so_will_never_run()));
+                }
+            } catch (RareOrImpossibleDateException ex) {
+                validations.add(FormValidation.warning(Messages.TimerTrigger_the_specified_cron_tab_is_rare_or_impossible()));
             }
         }
     }

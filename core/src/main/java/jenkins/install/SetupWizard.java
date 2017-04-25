@@ -53,6 +53,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.List;
+import jenkins.CLI;
 
 import jenkins.model.Jenkins;
 import jenkins.security.s2m.AdminWhitelistRule;
@@ -121,6 +122,9 @@ public class SetupWizard extends PageDecorator {
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
+                    // Disable CLI over Remoting
+                    CLI.get().setEnabled(false);
+
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     
@@ -128,7 +132,7 @@ public class SetupWizard extends PageDecorator {
                     jenkins.getInjector().getInstance(AdminWhitelistRule.class)
                         .setMasterKillSwitch(false);
                 
-                    jenkins.save(); // !!
+                    jenkins.save(); // TODO could probably be removed since some of the above setters already call save
                     bc.commit();
                 }
             }
@@ -339,7 +343,7 @@ public class SetupWizard extends PageDecorator {
     
     /**
      * Gets the suggested plugin list from the update sites, falling back to a local version
-     * @return JSON array with the categorized plugon list
+     * @return JSON array with the categorized plugin list
      */
     @CheckForNull
     /*package*/ JSONArray getPlatformPluginList() {

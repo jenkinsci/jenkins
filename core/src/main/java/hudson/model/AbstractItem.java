@@ -31,8 +31,11 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.Tasks;
+import hudson.model.queue.WorkUnit;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -41,10 +44,14 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
-import org.acegisecurity.Authentication;
 import jenkins.util.xml.XMLUtils;
 
 import org.apache.tools.ant.taskdefs.Copy;
@@ -75,12 +82,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import static hudson.model.queue.Executables.getParentOf;
+import hudson.model.queue.SubTask;
+import java.lang.reflect.InvocationTargetException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
@@ -133,6 +142,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public String getPronoun() {
         return AlternativeUiTextProvider.get(PRONOUN, this, Messages.AbstractItem_Pronoun());
+    }
+
+    /**
+     * Gets the term used in the UI to represent the kind of {@link Queue.Task} associated with this kind of
+     * {@link Item}. Must start with a capital letter. Defaults to "Build".
+     * @since 2.50
+     */
+    public String getTaskNoun() {
+        return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
     }
 
     @Exported
@@ -235,27 +253,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 if (this.name.equals(newName))
                     return;
 
-                // the test to see if the project already exists or not needs to be done in escalated privilege
-                // to avoid overwriting
-                ACL.impersonate(ACL.SYSTEM,new NotReallyRoleSensitiveCallable<Void,IOException>() {
-                    final Authentication user = Jenkins.getAuthentication();
-                    @Override
-                    public Void call() throws IOException {
-                        Item existing = parent.getItem(newName);
-                        if (existing != null && existing!=AbstractItem.this) {
-                            if (existing.getACL().hasPermission(user,Item.DISCOVER))
-                                // the look up is case insensitive, so we need "existing!=this"
-                                // to allow people to rename "Foo" to "foo", for example.
-                                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
-                                throw new IllegalArgumentException("Job " + newName + " already exists");
-                            else {
-                                // can't think of any real way to hide this, but at least the error message could be vague.
-                                throw new IOException("Unable to rename to " + newName);
-                            }
-                        }
-                        return null;
-                    }
-                });
+                // the lookup is case insensitive, so we should not fail if this item was the “existing” one
+                // to allow people to rename "Foo" to "foo", for example.
+                // see http://www.nabble.com/error-on-renaming-project-tt18061629.html
+                Items.verifyItemDoesNotAlreadyExist(parent, newName, this);
 
                 File oldRoot = this.getRootDir();
 
@@ -587,9 +588,105 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
-        synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
-            performDelete();
-        } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        boolean responsibleForAbortingBuilds = !ItemDeletion.contains(this);
+        boolean ownsRegistration = ItemDeletion.register(this);
+        if (!ownsRegistration && ItemDeletion.isRegistered(this)) {
+            // we are not the owning thread and somebody else is concurrently deleting this exact item
+            throw new Failure(Messages.AbstractItem_BeingDeleted(getPronoun()));
+        }
+        try {
+            // if a build is in progress. Cancel it.
+            if (responsibleForAbortingBuilds || ownsRegistration) {
+                Queue queue = Queue.getInstance();
+                if (this instanceof Queue.Task) {
+                    // clear any items in the queue so they do not get picked up
+                    queue.cancel((Queue.Task) this);
+                }
+                // now cancel any child items - this happens after ItemDeletion registration, so we can use a snapshot
+                for (Queue.Item i : queue.getItems()) {
+                    Item item = Tasks.getItemOf(i.task);
+                    while (item != null) {
+                        if (item == this) {
+                            queue.cancel(i);
+                            break;
+                        }
+                        if (item.getParent() instanceof Item) {
+                            item = (Item) item.getParent();
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                // interrupt any builds in progress (and this should be a recursive test so that folders do not pay
+                // the 15 second delay for every child item). This happens after queue cancellation, so will be
+                // a complete set of builds in flight
+                Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
+                for (Computer c : Jenkins.getInstance().getComputers()) {
+                    for (Executor e : c.getAllExecutors()) {
+                        final WorkUnit workUnit = e.getCurrentWorkUnit();
+                        final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                        final SubTask subtask = executable != null ? getParentOf(executable) : null;
+                                
+                        if (subtask != null) {        
+                            Item item = Tasks.getItemOf(subtask);
+                            if (item != null) {
+                                while (item != null) {
+                                    if (item == this) {
+                                        buildsInProgress.put(e, e.getCurrentExecutable());
+                                        e.interrupt(Result.ABORTED);
+                                        break;
+                                    }
+                                    if (item.getParent() instanceof Item) {
+                                        item = (Item) item.getParent();
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!buildsInProgress.isEmpty()) {
+                    // give them 15 seconds or so to respond to the interrupt
+                    long expiration = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+                    // comparison with executor.getCurrentExecutable() == computation currently should always be true
+                    // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
+                    while (!buildsInProgress.isEmpty() && expiration - System.nanoTime() > 0L) {
+                        // we know that ItemDeletion will prevent any new builds in the queue
+                        // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
+                        // Queue.cancel happens-before collecting the buildsInProgress list
+                        // thus buildsInProgress contains the complete set we need to interrupt and wait for
+                        for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
+                             buildsInProgress.entrySet().iterator();
+                             iterator.hasNext(); ) {
+                            Map.Entry<Executor, Queue.Executable> entry = iterator.next();
+                            // comparison with executor.getCurrentExecutable() == executable currently should always be
+                            // true as we no longer recycle Executors, but safer to future-proof in case we ever
+                            // revisit recycling.
+                            if (!entry.getKey().isAlive()
+                                    || entry.getValue() != entry.getKey().getCurrentExecutable()) {
+                                iterator.remove();
+                            }
+                            // I don't know why, but we have to keep interrupting
+                            entry.getKey().interrupt(Result.ABORTED);
+                        }
+                        Thread.sleep(50L);
+                    }
+                    if (!buildsInProgress.isEmpty()) {
+                        throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
+                                buildsInProgress.size(), getFullDisplayName()
+                        ));
+                    }
+                }
+            }
+            synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
+                performDelete();
+            } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        } finally {
+            if (ownsRegistration) {
+                ItemDeletion.deregister(this);
+            }
+        }
         getParent().onDeleted(AbstractItem.this);
         Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
@@ -767,5 +864,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * Replaceable pronoun of that points to a job. Defaults to "Job"/"Project" depending on the context.
      */
     public static final Message<AbstractItem> PRONOUN = new Message<AbstractItem>();
+
+    /**
+     * Replaceable noun for describing the kind of task that this item represents. Defaults to "Build".
+     */
+    public static final Message<AbstractItem> TASK_NOUN = new Message<>();
 
 }

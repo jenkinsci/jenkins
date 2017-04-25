@@ -44,7 +44,9 @@ import java.util.logging.Logger;
  * {@link CliEntryPoint} implementation exposed to the remote CLI.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Specific to Remoting-based protocol.
  */
+@Deprecated
 public class CliManagerImpl implements CliEntryPoint, Serializable {
     private transient final Channel channel;
     
