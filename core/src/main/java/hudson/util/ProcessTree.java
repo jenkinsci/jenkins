@@ -458,7 +458,9 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                return getEnvironmentVariables2();
             } catch (WindowsProcessException e) {
-               LOGGER.log(FINE, "Failed to get the environment variables ", e);
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
+                }
             }
             return null;
         }
@@ -472,7 +474,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                env.putAll(p.getEnvironmentVariables());
             } catch (WinpException e) {
-               throw new WindowsProcessException("Failed to get the environment variables ", e);
+               throw new WindowsProcessException("Failed to get the environment variables", e);
             }
             return env;
         }
@@ -535,14 +537,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 } catch (WindowsProcessException e) {
                     // likely a missing privilege
                     // TODO: not a minor issue - causes process termination error in JENKINS-30782
-                    LOGGER.log(FINEST,"  Failed to check environment variable match",e);
+                    if (LOGGER.isLoggable(FINEST)) {
+                        LOGGER.log(FINEST, "Failed to check environment variable match for process with pid=" + p.getPid() ,e);
+                    }
                     continue;
                 }
 
                 if(matched) {
                     p.killRecursively();
                 } else {
-                    LOGGER.finest("Environment variable didn't matcha");
+                    LOGGER.log(Level.FINEST, "Environment variable didn't match for process with pid={0}", p.getPid());
                 }
             }
         }
