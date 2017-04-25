@@ -1344,6 +1344,7 @@ function applyNameRef(s,e,id) {
     }
 
     $(id).groupingNode = true;
+    $(id).tomsmagicprop = true;
     // s contains the node itself
     for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
@@ -2536,6 +2537,7 @@ function buildFormTree(form) {
 
                 if (e.name === 'enforce') {
                     console.log('enforce e.groupingNode:', e.groupingNode);
+                    console.log('enforce e.tomsmagicprop:', e.tomsmagicprop); // if this is gone too, then that suggests the e is being recreated from scratch?
                     debugger; // to stop the page reloading and => losing the browser console log
                 }
 
