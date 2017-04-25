@@ -23,9 +23,9 @@
  */
 package hudson;
 
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import com.sun.jna.Native;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Proc.LocalProc;
@@ -198,11 +198,13 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile), charset))) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(logfile.toPath()), charset))) {
             char[] buf = new char[1024];
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
                 str.append(buf, 0, len);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
 
         return str.toString();
@@ -284,7 +286,11 @@ public class Util {
 
             if(!f.delete() && f.exists()) {
                 // trouble-shooting.
-                Files.deleteIfExists(f.toPath());
+                try {
+                    Files.deleteIfExists(f.toPath());
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
+                }
 
                 // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
@@ -645,6 +651,10 @@ public class Util {
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
         byte[] buf = new byte[8192];
         int len;
@@ -652,6 +662,10 @@ public class Util {
             out.write(buf,0,len);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         char[] buf = new char[8192];
         int len;
@@ -659,21 +673,23 @@ public class Util {
             out.write(buf,0,len);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
-        try {
+        try (InputStream _in = in; OutputStream _out = out) { // make sure both are closed, and use Throwable.addSuppressed
             copyStream(in,out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
-        try {
+        try (Reader _in = in; Writer _out = out) {
             copyStream(in,out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
         }
     }
 
@@ -800,8 +816,10 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        try (InputStream is = new FileInputStream(file)) {
+        try (InputStream is = Files.newInputStream(file.toPath())) {
             return getDigestOf(new BufferedInputStream(is));
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -1134,7 +1152,11 @@ public class Util {
      * Creates an empty file.
      */
     public static void touch(@Nonnull File file) throws IOException {
-        new FileOutputStream(file).close();
+        try {
+            Files.newOutputStream(file.toPath()).close();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**

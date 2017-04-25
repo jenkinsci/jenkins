@@ -31,6 +31,9 @@ import hudson.model.TaskListener;
 import hudson.util.jna.Kernel32Utils;
 import hudson.util.jna.SHELLEXECUTEINFO;
 import hudson.util.jna.Shell32;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import hudson.AbortException;
 import hudson.Extension;
@@ -306,8 +309,10 @@ public class WindowsInstallerLink extends ManagementLink {
         try {
             return Kernel32Utils.waitForExitProcess(sei.hProcess);
         } finally {
-            try (FileInputStream fin = new FileInputStream(new File(pwd,"redirect.log"))) {
+            try (InputStream fin = Files.newInputStream(new File(pwd,"redirect.log").toPath())) {
                 IOUtils.copy(fin, out.getLogger());
+            } catch (InvalidPathException e) {
+                // ignore;
             }
         }
     }

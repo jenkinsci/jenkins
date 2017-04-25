@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Argument;
 
+@SuppressWarnings("deprecation") // Remoting-based CLI usages intentional
 public class Security218CliTest {
 
     @Rule
@@ -197,8 +198,8 @@ public class Security218CliTest {
         
         @Argument(metaVar = "command", usage = "Command to be launched by the payload", required = true, index = 1)
         public String command;
-        
 
+        @Override
         protected int run() throws Exception {
             Payload payloadItem = Payload.valueOf(this.payload);
             PayloadCaller callable = new PayloadCaller(payloadItem, command);

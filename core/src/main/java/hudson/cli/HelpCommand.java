@@ -53,7 +53,7 @@ public class HelpCommand extends CLICommand {
     protected int run() throws Exception {
         if (!Jenkins.getActiveInstance().hasPermission(Jenkins.READ)) {
             throw new AccessDeniedException("You must authenticate to access this Jenkins.\n"
-                    + "Use --username/--password/--password-file parameters or login command.");
+                    + hudson.cli.client.Messages.CLI_Usage());
         }
 
         if (command != null)

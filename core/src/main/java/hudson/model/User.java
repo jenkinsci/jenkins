@@ -655,7 +655,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @Nonnull RunList getBuilds() {
-        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
@@ -708,7 +708,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Is the ID allowed? Some are prohibited for security reasons. See SECURITY-166.
-     * <p/>
+     * <p>
      * Note that this is only enforced when saving. These users are often created
      * via the constructor (and even listed on /asynchPeople), but our goal is to
      * prevent anyone from logging in as these users. Therefore, we prevent

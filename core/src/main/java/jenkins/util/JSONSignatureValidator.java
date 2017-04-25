@@ -2,6 +2,8 @@ package jenkins.util;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.NullOutputStream;
@@ -173,10 +175,11 @@ public class JSONSignatureValidator {
                 if (cert.isDirectory() || cert.getName().endsWith(".txt"))  {
                     continue;       // skip directories also any text files that are meant to be documentation
                 }
-                FileInputStream in = new FileInputStream(cert);
                 Certificate certificate;
-                try {
+                try (InputStream in = Files.newInputStream(cert.toPath())) {
                     certificate = cf.generateCertificate(in);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 } catch (CertificateException e) {
                     LOGGER.log(Level.WARNING, String.format("Files in %s are expected to be either "
                                     + "certificates or .txt files documenting the certificates, "
@@ -184,8 +187,6 @@ public class JSONSignatureValidator {
                             cert.getParentFile().getAbsolutePath(),
                             cert.getAbsolutePath()), e);
                     continue;
-                } finally {
-                    in.close();
                 }
                 try {
                     TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);

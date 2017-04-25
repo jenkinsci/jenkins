@@ -262,20 +262,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    @Override
-    protected void performDelete() throws IOException, InterruptedException {
-        // if a build is in progress. Cancel it.
-        RunT lb = getLastBuild();
-        if (lb != null) {
-            Executor e = lb.getExecutor();
-            if (e != null) {
-                e.interrupt();
-                // should we block until the build is cancelled?
-            }
-        }
-        super.performDelete();
-    }
-
     /*package*/ TextFile getNextBuildNumberFile() {
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
@@ -964,7 +950,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
     
     /**
-     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
      * 
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.

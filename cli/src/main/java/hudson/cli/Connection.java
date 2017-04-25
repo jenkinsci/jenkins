@@ -56,6 +56,9 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
+/**
+ * Used by Jenkins core only in deprecated Remoting-based CLI.
+ */
 public class Connection {
     public final InputStream in;
     public final OutputStream out;
