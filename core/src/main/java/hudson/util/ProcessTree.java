@@ -407,7 +407,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     };
 
-    private static class WindowsOSProcess extends OSProcess {
+    private class WindowsOSProcess extends OSProcess {
         
         private final WinProcess p;
         private EnvVars env;
