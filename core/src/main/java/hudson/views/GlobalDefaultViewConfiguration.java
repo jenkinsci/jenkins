@@ -24,6 +24,7 @@
 package hudson.views;
 
 import hudson.Extension;
+import hudson.model.View;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -41,7 +42,18 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
-        j.setPrimaryView(json.has("primaryView") ? j.getView(json.getString("primaryView")) : j.getViews().iterator().next());
+        if (json.has("primaryView")) {
+            final String viewName = json.getString("primaryView");
+            final View newPrimaryView = j.getView(viewName);
+            if (newPrimaryView == null) {
+                throw new FormException(Messages.GlobalDefaultViewConfiguration_ViewDoesNotExist(viewName), "primaryView");
+            }
+            j.setPrimaryView(newPrimaryView);
+        } else {
+            // Fallback if the view is not specified
+            j.setPrimaryView(j.getViews().iterator().next());
+        }
+        
         return true;
     }
 }

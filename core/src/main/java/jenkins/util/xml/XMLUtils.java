@@ -2,6 +2,7 @@ package jenkins.util.xml;
 
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
@@ -142,6 +143,8 @@ public final class XMLUtils {
         try (InputStream fileInputStream = Files.newInputStream(file.toPath());
             InputStreamReader fileReader = new InputStreamReader(fileInputStream, encoding)) {
             return parse(fileReader);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 

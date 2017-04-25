@@ -42,6 +42,7 @@ import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import hudson.Util;
@@ -1367,12 +1368,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	
     	if (logFile.exists() ) {
     	    // Checking if a ".gz" file was return
-    	    InputStream fis = Files.newInputStream(logFile.toPath());
-    	    if (logFile.getName().endsWith(".gz")) {
-    	        return new GZIPInputStream(fis);
-    	    } else {
-    	        return fis;
-    	    }
+            try {
+                InputStream fis = Files.newInputStream(logFile.toPath());
+                if (logFile.getName().endsWith(".gz")) {
+                    return new GZIPInputStream(fis);
+                } else {
+                    return fis;
+                }
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
     	}
     	
         String message = "No such file: " + logFile;
@@ -1804,7 +1809,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        OutputStream logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        OutputStream logger;
+        try {
+            logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
         RunT build = job.getBuild();
 
         // Global log filters

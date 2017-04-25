@@ -511,6 +511,7 @@ public class Executor extends Thread implements ModelObject {
      *      null if the executor is idle.
      */
     @Exported
+    @CheckForNull
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
         try {

@@ -79,6 +79,7 @@ public final class WorkUnit {
     /**
      * If the execution has already started, return the executable that was created.
      */
+    @CheckForNull
     public Executable getExecutable() {
         return executable;
     }

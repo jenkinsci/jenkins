@@ -42,7 +42,9 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,7 +98,15 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        this(Files.newOutputStream(out.toPath()),charset);
+        this(Files.newOutputStream(asPath(out)), charset);
+    }
+
+    private static Path asPath(File out) throws IOException {
+        try {
+            return out.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -113,7 +123,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
         this(Files.newOutputStream(
-                out.toPath(),
+                asPath(out),
                 StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND: StandardOpenOption.TRUNCATE_EXISTING
                 ),
                 charset
@@ -149,7 +159,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         out.print(prefix);
         out.println(msg);
 
-        // the idiom in Hudson is to use the returned writer for writing stack trace,
+        // the idiom in Jenkins is to use the returned writer for writing stack trace,
         // so put the marker here to indicate an exception. if the stack trace isn't actually written,
         // HudsonExceptionNote.annotate recovers gracefully.
         try {
