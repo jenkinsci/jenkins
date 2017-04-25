@@ -1339,12 +1339,7 @@ function replaceDescription() {
  * and attached under the element identified by the specified id.
  */
 function applyNameRef(s,e,id) {
-    if ($(id).name === 'enforce') {
-        console.log('enforce - setting e.groupingNode = true');
-    }
-
-    $(id).groupingNode = true;
-    $(id).tomsmagicprop = true;
+    $(id).setAttribute('data-groupingNode', 'true');
     // s contains the node itself
     for(var x=$(s).next(); x!=e; x=x.next()) {
         // to handle nested <f:rowSet> correctly, don't overwrite the existing value
@@ -2535,13 +2530,7 @@ function buildFormTree(form) {
                 p = findParent(e);
                 var checked = xor(e.checked,Element.hasClassName(e,"negative"));
 
-                if (e.name === 'enforce') {
-                    console.log('enforce e.groupingNode:', e.groupingNode);
-                    console.log('enforce e.tomsmagicprop:', e.tomsmagicprop); // if this is gone too, then that suggests the e is being recreated from scratch?
-                    debugger; // to stop the page reloading and => losing the browser console log
-                }
-
-                if(!e.groupingNode) {
+                if(!e.getAttribute('data-groupingNode')) {
                     v = e.getAttribute("json");
                     if (v) {
                         // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
@@ -2584,7 +2573,7 @@ function buildFormTree(form) {
                 while (e.name.substring(r,r+8)=='removeme')
                     r = e.name.indexOf('_',r+8)+1;
                 p = findParent(e);
-                if(e.groupingNode) {
+                if(e.getAttribute('data-groupingNode')) {
                     addProperty(p, e.name.substring(r), e.formDom = { value: e.value });
                 } else {
                     addProperty(p, e.name.substring(r), e.value);
