@@ -522,13 +522,22 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * (for example, SVN revision number.)
      *
      * <p>
-     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, which
+     * This method is invoked whenever someone does {@link Run#getEnvironment(TaskListener)}, which
      * can be before/after your checkout method is invoked. So if you are going to provide information about
      * check out (like SVN revision number that was checked out), be prepared for the possibility that the
      * check out hasn't happened yet.
      */
-    // TODO is an equivalent for Run needed?
+    public void buildEnvVars(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild)build, env);
+        }
+    }
+
+    @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+        if (Util.isOverridden(SCM.class, getClass(), "buildEnvVars", Run.class, Map.class)) {
+            buildEnvVars((Run) build, env);
+        }
         // default implementation is noop.
     }
 
