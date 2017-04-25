@@ -1339,6 +1339,10 @@ function replaceDescription() {
  * and attached under the element identified by the specified id.
  */
 function applyNameRef(s,e,id) {
+    if ($(id).name === 'enforce') {
+        console.log('enforce - setting e.groupingNode = true');
+    }
+
     $(id).groupingNode = true;
     // s contains the node itself
     for(var x=$(s).next(); x!=e; x=x.next()) {
@@ -2529,6 +2533,12 @@ function buildFormTree(form) {
             case "checkbox":
                 p = findParent(e);
                 var checked = xor(e.checked,Element.hasClassName(e,"negative"));
+
+                if (e.name === 'enforce') {
+                    console.log('enforce e.groupingNode:', e.groupingNode);
+                    debugger; // to stop the page reloading and => losing the browser console log
+                }
+
                 if(!e.groupingNode) {
                     v = e.getAttribute("json");
                     if (v) {
