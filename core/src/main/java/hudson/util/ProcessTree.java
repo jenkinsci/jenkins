@@ -407,13 +407,13 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     };
 
-    private static class WindowsProcess extends OSProcess {
+    private static class WindowsOSProcess extends OSProcess {
         
         private final WinProcess p;
         private EnvVars env;
         private List<String> args;
         
-        WindowsProcess(WinProcess p) {
+        WindowsOSProcess(WinProcess p) {
             super(p.getPid());
             this.p = p;
         }
@@ -457,7 +457,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         public synchronized EnvVars getEnvironmentVariables() {
             try {
                return getEnvironmentVariables2();
-            } catch (WindowsProcessException e) {
+            } catch (WindowsOSProcessException e) {
                 if (LOGGER.isLoggable(FINEST)) {
                     LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
                 }
@@ -465,7 +465,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return null;
         }
         
-        private synchronized EnvVars getEnvironmentVariables2() throws WindowsProcessException {
+        private synchronized EnvVars getEnvironmentVariables2() throws WindowsOSProcessException {
             if(env !=null) {
               return env;
             }
@@ -474,12 +474,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             try {
                env.putAll(p.getEnvironmentVariables());
             } catch (WinpException e) {
-               throw new WindowsProcessException("Failed to get the environment variables", e);
+               throw new WindowsOSProcessException("Failed to get the environment variables", e);
             }
             return env;
         }
         
-        private boolean hasMatchingEnvVars2(Map<String,String> modelEnvVar) throws WindowsProcessException {
+        private boolean hasMatchingEnvVars2(Map<String,String> modelEnvVar) throws WindowsOSProcessException {
             if(modelEnvVar.isEmpty())
                 // sanity check so that we don't start rampage.
                 return false;
@@ -499,12 +499,12 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * Wrapper for runtime {@link WinpException}.
      */
-    private static class WindowsProcessException extends Exception {
-        WindowsProcessException(WinpException ex) {
+    private static class WindowsOSProcessException extends Exception {
+        WindowsOSProcessException(WinpException ex) {
             super(ex);
         }
         
-        WindowsProcessException(String message, WinpException ex) {
+        WindowsOSProcessException(String message, WinpException ex) {
             super(message, ex);
         }
     }
@@ -514,7 +514,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
                 if(pid == 0 || pid == 4) continue; // skip the System Idle and System processes
-                super.processes.put(pid, new WindowsProcess(p));
+                super.processes.put(pid, new WindowsOSProcess(p));
             }
         }
 
@@ -534,7 +534,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 boolean matched;
                 try {
                     matched = hasMatchingEnvVars(p, modelEnvVars);
-                } catch (WindowsProcessException e) {
+                } catch (WindowsOSProcessException e) {
                     // likely a missing privilege
                     // TODO: not a minor issue - causes process termination error in JENKINS-30782
                     if (LOGGER.isLoggable(FINEST)) {
@@ -556,16 +556,16 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
         
         private static boolean hasMatchingEnvVars(@Nonnull OSProcess p, @Nonnull Map<String, String> modelEnvVars)
-                throws WindowsProcessException {
-            if (p instanceof WindowsProcess) {
-                return ((WindowsProcess)p).hasMatchingEnvVars2(modelEnvVars);
+                throws WindowsOSProcessException {
+            if (p instanceof WindowsOSProcess) {
+                return ((WindowsOSProcess)p).hasMatchingEnvVars2(modelEnvVars);
             } else {
                 // Should never happen, but there is a risk of getting such class during deserialization
                 try {
                     return p.hasMatchingEnvVars(modelEnvVars);
                 } catch (WinpException e) {
                     // likely a missing privilege
-                    throw new WindowsProcessException(e);
+                    throw new WindowsOSProcessException(e);
                 }
             }
         }
