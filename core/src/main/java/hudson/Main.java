@@ -26,6 +26,7 @@ package hudson;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import hudson.util.DualOutputStream;
 import hudson.util.EncodingStream;
@@ -155,6 +156,8 @@ public class Main {
                 ret = proc.join();
 
                 w.write("</log><result>"+ret+"</result><duration>"+(System.currentTimeMillis()-start)+"</duration></run>");
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
 
             URL location = new URL(jobURL, "postBuildResult");
@@ -173,6 +176,8 @@ public class Main {
                     // send the data
                     try (InputStream in = Files.newInputStream(tmpFile.toPath())) {
                         org.apache.commons.io.IOUtils.copy(in, con.getOutputStream());
+                    } catch (InvalidPathException e) {
+                        throw new IOException(e);
                     }
 
                     if(con.getResponseCode()!=200) {

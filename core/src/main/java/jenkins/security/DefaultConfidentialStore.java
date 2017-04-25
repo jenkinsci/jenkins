@@ -7,6 +7,7 @@ import hudson.util.TextFile;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 
 import javax.crypto.Cipher;
@@ -82,6 +83,8 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             }
         } catch (GeneralSecurityException e) {
             throw new IOException("Failed to persist the key: "+key.getId(),e);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -106,6 +109,8 @@ public class DefaultConfidentialStore extends ConfidentialStore {
             }
         } catch (GeneralSecurityException e) {
             throw new IOException("Failed to load the key: "+key.getId(),e);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         } catch (IOException x) {
             if (x.getCause() instanceof BadPaddingException) {
                 return null; // broken somehow
