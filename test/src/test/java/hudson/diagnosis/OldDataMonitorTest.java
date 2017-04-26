@@ -28,7 +28,7 @@ import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.InvisibleAction;
-
+import hudson.model.Saveable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -39,23 +39,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import hudson.model.Saveable;
-import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.Stapler;
-
 
 public class OldDataMonitorTest {
 
@@ -153,11 +146,10 @@ public class OldDataMonitorTest {
     @Issue("JENKINS-26718")
     @Test public void unlocatableRun() throws Exception {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
-        FreeStyleProject p = mock(FreeStyleProject.class);
-        when(p.getParent()).thenReturn(Jenkins.getInstance());
-        when(p.getFullName()).thenReturn("notfound");
-        FreeStyleBuild build = new FreeStyleBuild(p);
-        odm.report(build, (String) null);
+        FreeStyleProject p = r.createFreeStyleProject();
+        FreeStyleBuild build = r.buildAndAssertSuccess(p);
+        p.delete();
+        OldDataMonitor.report(build, (String) null);
 
         assertEquals(Collections.singleton(build), odm.getData().keySet());
         odm.doDiscard(null, null);
