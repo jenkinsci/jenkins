@@ -47,6 +47,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                             def mvnCmd = "mvn -Pdebug -U clean install javadoc:javadoc ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository" 
                             if(isUnix()) {
                                 sh mvnCmd
+                                sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
                             } else {
                                 bat "$mvnCmd -Duser.name=yay" // INFRA-1032 workaround
                             }
@@ -97,8 +98,6 @@ void withMavenEnv(List envVars = [], def body) {
     }
 }
 
-// This hacky method is used because File is not whitelisted,
-// so we can't use renameTo or friends
 void renameFiles(def files, String prefix) {
     for(i = 0; i < files.length; i++) {
         def newPath = files[i].path.replace(files[i].name, "${prefix}-${files[i].name}")
