@@ -50,6 +50,3 @@ jenkins_*.changes
 push-build.sh
 war/node_modules/
 .java-version
-
-# cf. Jenkinsfile
-/.repository/

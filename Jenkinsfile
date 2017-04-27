@@ -41,10 +41,8 @@ for(i = 0; i < buildTypes.size(); i++) {
                         withMavenEnv(["JAVA_OPTS=-Xmx1536m -Xms512m",
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
-                            // The -Dmaven.repo.local=${pwd()}/.repository means that Maven will create a
-                            // .repository directory at the root of the build (which it gets from the
-                            // pwd() Workflow call) and use that for the local Maven repository.
-                            def mvnCmd = "mvn -Pdebug -U clean install javadoc:javadoc ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd()}/.repository" 
+                            // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
+                            def mvnCmd = "mvn -Pdebug -U clean install javadoc:javadoc ${runTests ? '-Dmaven.test.failure.ignore=true' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo" 
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
