@@ -1347,6 +1347,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      Use {@link #doStop()}
      */
     @Deprecated
+    @RequirePOST // #doStop() should be preferred, but better to be safe
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

@@ -145,6 +145,9 @@ public class XStream2 extends XStream {
         // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
 
+        // http://www.openwall.com/lists/oss-security/2017/04/03/4
+        denyTypes(new Class[] { void.class, Void.class });
+
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
         registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
