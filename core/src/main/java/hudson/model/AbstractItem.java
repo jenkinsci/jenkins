@@ -535,6 +535,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
