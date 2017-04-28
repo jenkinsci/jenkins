@@ -95,12 +95,17 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
             if (p instanceof AbstractBuild && upstreamCulprits) {
                 // If we have dependencies since the last successful build, add their authors to our list
                 if (p.getPreviousNotFailedBuild() != null) {
-                    Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
-                            ((AbstractBuild<?,?>) p).getDependencyChanges((AbstractBuild<?,?>)p.getPreviousSuccessfulBuild());
-                    for (AbstractBuild.DependencyChange dep : depmap.values()) {
-                        for (AbstractBuild<?, ?> b : dep.getBuilds()) {
-                            for (ChangeLogSet.Entry entry : b.getChangeSet()) {
-                                r.add(entry.getAuthor());
+                    Map<Job, Run.DependencyChange> depmap =
+                            p.getDependencyChanges(p.getPreviousSuccessfulBuild());
+                    for (Run.DependencyChange dep : depmap.values()) {
+                        for (Run<?, ?> rawRun : dep.getBuilds()) {
+                            if (rawRun instanceof RunWithSCM) {
+                                RunWithSCM<?, ?> b = (RunWithSCM<?,?>) rawRun;
+                                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : b.getChangeSets()) {
+                                    for (ChangeLogSet.Entry e : c) {
+                                        r.add(e.getAuthor());
+                                    }
+                                }
                             }
                         }
                     }

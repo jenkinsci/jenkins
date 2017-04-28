@@ -102,8 +102,8 @@ public class FingerprinterTest {
 
         j.jenkins.rebuildDependencyGraph();
 
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
-        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+        List<Job> downstreamProjects = upstream.getDownstreamProjects();
+        List<Job> upstreamProjects = downstream.getUpstreamProjects();
 
         assertEquals(1, downstreamProjects.size());
         assertEquals(1, upstreamProjects.size());
@@ -142,9 +142,9 @@ public class FingerprinterTest {
 
         j.jenkins.rebuildDependencyGraph();
 
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
-        List<AbstractProject> downstreamProjects2 = upstream2.getDownstreamProjects();
-        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
+        List<Job> downstreamProjects = upstream.getDownstreamProjects();
+        List<Job> downstreamProjects2 = upstream2.getDownstreamProjects();
+        List<Job> upstreamProjects = downstream.getUpstreamProjects();
 
         assertEquals(1, downstreamProjects.size());
         assertEquals(1, downstreamProjects2.size());
@@ -165,9 +165,9 @@ public class FingerprinterTest {
 
         j.jenkins.rebuildDependencyGraph();
 
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
-        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
-        List<AbstractProject> upstreamProjects2 = downstream2.getUpstreamProjects();
+        List<Job> downstreamProjects = upstream.getDownstreamProjects();
+        List<Job> upstreamProjects = downstream.getUpstreamProjects();
+        List<Job> upstreamProjects2 = downstream2.getUpstreamProjects();
 
         assertEquals(2, downstreamProjects.size());
         assertEquals(1, upstreamProjects.size());
@@ -189,8 +189,8 @@ public class FingerprinterTest {
 
         Jenkins.getInstance().rebuildDependencyGraph();
 
-        List<AbstractProject> upstreamProjects = downstream.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = upstream.getDownstreamProjects();
+        List<Job> upstreamProjects = downstream.getUpstreamProjects();
+        List<Job> downstreamProjects = upstream.getDownstreamProjects();
 
         assertEquals(0, upstreamProjects.size());
         assertEquals(0, downstreamProjects.size());
@@ -204,8 +204,8 @@ public class FingerprinterTest {
         
         Jenkins.getInstance().rebuildDependencyGraph();
 
-        List<AbstractProject> upstreamProjects = p.getUpstreamProjects();
-        List<AbstractProject> downstreamProjects = p.getDownstreamProjects();
+        List<Job> upstreamProjects = p.getUpstreamProjects();
+        List<Job> downstreamProjects = p.getDownstreamProjects();
         
         assertEquals(0, upstreamProjects.size());
         assertEquals(0, downstreamProjects.size());
@@ -229,9 +229,9 @@ public class FingerprinterTest {
         assertEquals("There should only be one FreestyleBuild", 1, builds.size());
         FreeStyleBuild build = builds.iterator().next();
         assertEquals(Result.SUCCESS, build.getResult());
-        List<AbstractProject> downstream = j.jenkins.getDependencyGraph().getDownstream(matrixProject);
+        List<Job> downstream = j.jenkins.getDependencyGraph().getDownstream(matrixProject);
         assertTrue(downstream.contains(freestyleProject));        
-        List<AbstractProject> upstream = j.jenkins.getDependencyGraph().getUpstream(freestyleProject);
+        List<Job> upstream = j.jenkins.getDependencyGraph().getUpstream(freestyleProject);
         assertTrue(upstream.contains(matrixProject));
     }
 

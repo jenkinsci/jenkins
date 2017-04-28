@@ -245,21 +245,24 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             SecurityContext orig = ACL.impersonate(auth);
             try {
                 if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                    AbstractProject p = dep.getDownstreamProject();
-                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                    if (p.isDisabled()) {
-                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                        continue;
-                    }
-                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
-                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
-                        String name = ModelHyperlinkNote.encodeTo(p);
-                        if (scheduled) {
-                            logger.println(Messages.BuildTrigger_Triggering(name));
-                        } else {
-                            logger.println(Messages.BuildTrigger_InQueue(name));
+                    Job j = dep.getDownstreamProject();
+                    if (j instanceof AbstractProject) {
+                        AbstractProject p = (AbstractProject) j;
+                        // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                        if (p.isDisabled()) {
+                            logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                            continue;
                         }
-                    } // otherwise upstream users should not know that it happened
+                        boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run) build), buildActions.toArray(new Action[buildActions.size()]));
+                        if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                            String name = ModelHyperlinkNote.encodeTo(p);
+                            if (scheduled) {
+                                logger.println(Messages.BuildTrigger_Triggering(name));
+                            } else {
+                                logger.println(Messages.BuildTrigger_InQueue(name));
+                            }
+                        } // otherwise upstream users should not know that it happened
+                    }
                 }
             } finally {
                 SecurityContextHolder.setContext(orig);
@@ -269,24 +272,28 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return true;
     }
 
-    public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-        for (AbstractProject p : getChildProjects(owner))
-            graph.addDependency(new Dependency(owner, p) {
-                @Override
-                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
-                                                  List<Action> actions) {
-                    AbstractProject downstream = getDownstreamProject();
-                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
-                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
-                        return false; // do not even issue a warning to build log
+    public void buildDependencyGraph(Job j, DependencyGraph graph) {
+        if (j instanceof AbstractProject) {
+            AbstractProject owner = (AbstractProject) j;
+
+            for (AbstractProject p : getChildProjects(owner))
+                graph.addDependency(new Dependency(owner, p) {
+                    @Override
+                    public boolean shouldTriggerBuild(Run build, TaskListener listener,
+                                                      List<Action> actions) {
+                        Job downstream = getDownstreamProject();
+                        if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) { // this checks Item.READ also on parent folders
+                            LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[]{Jenkins.getAuthentication().getName(), downstream, getUpstreamProject()});
+                            return false; // do not even issue a warning to build log
+                        }
+                        if (!downstream.hasPermission(Item.BUILD)) {
+                            listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                            return false;
+                        }
+                        return build.getResult().isBetterOrEqualTo(threshold);
                     }
-                    if (!downstream.hasPermission(Item.BUILD)) {
-                        listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
-                        return false;
-                    }
-                    return build.getResult().isBetterOrEqualTo(threshold);
-                }
-            });
+                });
+        }
     }
 
     @Override

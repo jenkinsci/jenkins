@@ -25,6 +25,7 @@
 package hudson;
 
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import jenkins.model.Jenkins;
 import hudson.security.ACL;
 
@@ -76,20 +77,23 @@ public class DependencyRunner implements Runnable {
         }
     }
 
-    private void populate(Collection<? extends AbstractProject> projectList) {
-        for (AbstractProject<?,?> p : projectList) {
-            if (polledProjects.contains(p)) {
-                // Project will be readded at the queue, so that we always use
-                // the longest path
-            	LOGGER.fine("removing project " + p.getName() + " for re-add");
-                polledProjects.remove(p);
+    private void populate(Collection<? extends Job> projectList) {
+        for (Job<?,?> j : projectList) {
+            if (j instanceof AbstractProject) {
+                AbstractProject<?,?> p = (AbstractProject<?,?>)j;
+                if (polledProjects.contains(p)) {
+                    // Project will be readded at the queue, so that we always use
+                    // the longest path
+                    LOGGER.fine("removing project " + p.getName() + " for re-add");
+                    polledProjects.remove(p);
+                }
+
+                LOGGER.fine("adding project " + p.getName());
+                polledProjects.add(p);
+
+                // Add all downstream dependencies
+                populate(p.getDownstreamProjects());
             }
-
-            LOGGER.fine("adding project " + p.getName());
-            polledProjects.add(p);
-
-            // Add all downstream dependencies
-            populate(p.getDownstreamProjects());
         }
     }
 

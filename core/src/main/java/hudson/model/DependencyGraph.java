@@ -68,17 +68,17 @@ import java.util.Stack;
  * @see Jenkins#getDependencyGraph()
  * @author Kohsuke Kawaguchi
  */
-public class DependencyGraph implements Comparator<AbstractProject> {
+public class DependencyGraph implements Comparator<Job> {
 
-    private Map<AbstractProject, List<DependencyGroup>> forward = new HashMap<AbstractProject, List<DependencyGroup>>();
-    private Map<AbstractProject, List<DependencyGroup>> backward = new HashMap<AbstractProject, List<DependencyGroup>>();
+    private Map<Job, List<DependencyGroup>> forward = new HashMap<Job, List<DependencyGroup>>();
+    private Map<Job, List<DependencyGroup>> backward = new HashMap<Job, List<DependencyGroup>>();
 
     private transient Map<Class<?>, Object> computationalData;
 
     private boolean built;
 
-    private Comparator<AbstractProject<?,?>> topologicalOrder;
-    private List<AbstractProject<?,?>> topologicallySorted;
+    private Comparator<Job<?,?>> topologicalOrder;
+    private List<Job<?,?>> topologicallySorted;
 
     /**
      * Builds the dependency graph.
@@ -91,7 +91,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         SecurityContext saveCtx = ACL.impersonate(ACL.SYSTEM);
         try {
             this.computationalData = new HashMap<Class<?>, Object>();
-            for( AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class) )
+            for( Job p : Jenkins.getInstance().allItems(Job.class) )
                 p.buildDependencyGraph(this);
 
             forward = finalize(forward);
@@ -110,36 +110,36 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * See http://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
      */
     private void topologicalDagSort() {
-        DirectedGraph<AbstractProject> g = new DirectedGraph<AbstractProject>() {
+        DirectedGraph<Job> g = new DirectedGraph<Job>() {
             @Override
-            protected Collection<AbstractProject> nodes() {
-                final Set<AbstractProject> nodes = new HashSet<AbstractProject>();
+            protected Collection<Job> nodes() {
+                final Set<Job> nodes = new HashSet<Job>();
                 nodes.addAll(forward.keySet());
                 nodes.addAll(backward.keySet());
                 return nodes;
             }
 
             @Override
-            protected Collection<AbstractProject> forward(AbstractProject node) {
+            protected Collection<Job> forward(Job node) {
                 return getDownstream(node);
             }
         };
 
-        List<SCC<AbstractProject>> sccs = g.getStronglyConnectedComponents();
+        List<SCC<Job>> sccs = g.getStronglyConnectedComponents();
 
-        final Map<AbstractProject,Integer> topoOrder = new HashMap<AbstractProject,Integer>();
-        topologicallySorted = new ArrayList<AbstractProject<?,?>>();
+        final Map<Job,Integer> topoOrder = new HashMap<Job,Integer>();
+        topologicallySorted = new ArrayList<Job<?,?>>();
         int idx=0;
-        for (SCC<AbstractProject> scc : sccs) {
-            for (AbstractProject n : scc) {
+        for (SCC<Job> scc : sccs) {
+            for (Job n : scc) {
                 topoOrder.put(n,idx++);
                 topologicallySorted.add(n);
             }
         }
 
-        topologicalOrder = new Comparator<AbstractProject<?, ?>>() {
+        topologicalOrder = new Comparator<Job<?, ?>>() {
             @Override
-            public int compare(AbstractProject<?,?> o1, AbstractProject<?,?> o2) {
+            public int compare(Job<?,?> o1, Job<?,?> o2) {
                 return topoOrder.get(o1)-topoOrder.get(o2);
             }
         };
@@ -179,7 +179,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @return
      *      can be empty but never null.
      */
-    public List<AbstractProject> getDownstream(AbstractProject p) {
+    public List<Job> getDownstream(Job p) {
         return get(forward,p,false);
     }
 
@@ -189,33 +189,34 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @return
      *      can be empty but never null.
      */
-    public List<AbstractProject> getUpstream(AbstractProject p) {
+    public List<Job> getUpstream(Job p) {
         return get(backward,p,true);
     }
 
-    private List<AbstractProject> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src, boolean up) {
+    private List<Job> get(Map<Job, List<DependencyGroup>> map, Job src, boolean up) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) return Collections.emptyList();
-        List<AbstractProject> result = new ArrayList<AbstractProject>(v.size());
+        List<Job> result = new ArrayList<Job>(v.size());
         for (DependencyGroup d : v) result.add(up ? d.getUpstreamProject() : d.getDownstreamProject());
+
         return result;
     }
 
     /**
      * @since 1.341
      */
-    public List<Dependency> getDownstreamDependencies(AbstractProject p) {
+    public List<Dependency> getDownstreamDependencies(Job p) {
         return get(forward,p);
     }
 
     /**
      * @since 1.341
      */
-    public List<Dependency> getUpstreamDependencies(AbstractProject p) {
+    public List<Dependency> getUpstreamDependencies(Job p) {
         return get(backward,p);
     }
 
-    private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
+    private List<Dependency> get(Map<Job, List<DependencyGroup>> map, Job src) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) {
             return ImmutableList.of();
@@ -233,7 +234,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @deprecated since 1.341; use {@link #addDependency(Dependency)}
      */
     @Deprecated
-    public void addDependency(AbstractProject upstream, AbstractProject downstream) {
+    public void addDependency(Job upstream, Job downstream) {
         addDependency(new Dependency(upstream,downstream));
     }
 
@@ -251,8 +252,8 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @deprecated since 1.341
      */
     @Deprecated
-    public void addDependency(AbstractProject upstream, Collection<? extends AbstractProject> downstream) {
-        for (AbstractProject p : downstream)
+    public void addDependency(Job upstream, Collection<? extends Job> downstream) {
+        for (Job p : downstream)
             addDependency(upstream,p);
     }
 
@@ -260,15 +261,15 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @deprecated since 1.341
      */
     @Deprecated
-    public void addDependency(Collection<? extends AbstractProject> upstream, AbstractProject downstream) {
-        for (AbstractProject p : upstream)
+    public void addDependency(Collection<? extends Job> upstream, Job downstream) {
+        for (Job p : upstream)
             addDependency(p,downstream);
     }
 
     /**
      * Lists up {@link DependencyDeclarer} from the collection and let them builds dependencies.
      */
-    public void addDependencyDeclarers(AbstractProject upstream, Collection<?> possibleDependecyDeclarers) {
+    public void addDependencyDeclarers(Job upstream, Collection<?> possibleDependecyDeclarers) {
         for (Object o : possibleDependecyDeclarers) {
             if (o instanceof DependencyDeclarer) {
                 DependencyDeclarer dd = (DependencyDeclarer) o;
@@ -283,15 +284,15 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * A non-direct dependency is a path of dependency "edge"s from the source to the destination,
      * where the length is greater than 1.
      */
-    public boolean hasIndirectDependencies(AbstractProject src, AbstractProject dst) {
-        Set<AbstractProject> visited = new HashSet<AbstractProject>();
-        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+    public boolean hasIndirectDependencies(Job src, Job dst) {
+        Set<Job> visited = new HashSet<Job>();
+        Stack<Job> queue = new Stack<Job>();
 
         queue.addAll(getDownstream(src));
         queue.remove(dst);
 
         while(!queue.isEmpty()) {
-            AbstractProject p = queue.pop();
+            Job p = queue.pop();
             if(p==dst)
                 return true;
             if(visited.add(p))
@@ -304,27 +305,27 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Gets all the direct and indirect upstream dependencies of the given project.
      */
-    public Set<AbstractProject> getTransitiveUpstream(AbstractProject src) {
+    public Set<Job> getTransitiveUpstream(Job src) {
         return getTransitive(backward,src,true);
     }
 
     /**
      * Gets all the direct and indirect downstream dependencies of the given project.
      */
-    public Set<AbstractProject> getTransitiveDownstream(AbstractProject src) {
+    public Set<Job> getTransitiveDownstream(Job src) {
         return getTransitive(forward,src,false);
     }
 
-    private Set<AbstractProject> getTransitive(Map<AbstractProject, List<DependencyGroup>> direction, AbstractProject src, boolean up) {
-        Set<AbstractProject> visited = new HashSet<AbstractProject>();
-        Stack<AbstractProject> queue = new Stack<AbstractProject>();
+    private Set<Job> getTransitive(Map<Job, List<DependencyGroup>> direction, Job src, boolean up) {
+        Set<Job> visited = new HashSet<Job>();
+        Stack<Job> queue = new Stack<Job>();
 
         queue.add(src);
 
         while(!queue.isEmpty()) {
-            AbstractProject p = queue.pop();
+            Job p = queue.pop();
 
-            for (AbstractProject child : get(direction,p,up)) {
+            for (Job child : get(direction,p,up)) {
                 if(visited.add(child))
                     queue.add(child);
             }
@@ -333,7 +334,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         return visited;
     }
 
-    private void add(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject key, Dependency dep) {
+    private void add(Map<Job, List<DependencyGroup>> map, Job key, Dependency dep) {
         List<DependencyGroup> set = map.get(key);
         if(set==null) {
             set = new ArrayList<DependencyGroup>();
@@ -351,8 +352,8 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         set.add(new DependencyGroup(dep));
     }
 
-    private Map<AbstractProject, List<DependencyGroup>> finalize(Map<AbstractProject, List<DependencyGroup>> m) {
-        for (Entry<AbstractProject, List<DependencyGroup>> e : m.entrySet()) {
+    private Map<Job, List<DependencyGroup>> finalize(Map<Job, List<DependencyGroup>> m) {
+        for (Entry<Job, List<DependencyGroup>> e : m.entrySet()) {
             Collections.sort( e.getValue(), NAME_COMPARATOR );
             e.setValue( Collections.unmodifiableList(e.getValue()) );
         }
@@ -371,7 +372,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      * Compare two Projects based on the topological order defined by this Dependency Graph
      */
-    public int compare(AbstractProject o1, AbstractProject o2) {
+    public int compare(Job o1, Job o2) {
         return topologicalOrder.compare(o1,o2);
     }
 
@@ -383,7 +384,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      *
      * @since 1.521
      */
-    public List<AbstractProject<?,?>> getTopologicallySorted() {
+    public List<Job<?,?>> getTopologicallySorted() {
         return topologicallySorted;
     }
 
@@ -392,18 +393,18 @@ public class DependencyGraph implements Comparator<AbstractProject> {
      * @since 1.341
      */
     public static class Dependency {
-        private AbstractProject upstream, downstream;
+        private Job upstream, downstream;
 
-        public Dependency(AbstractProject upstream, AbstractProject downstream) {
+        public Dependency(Job upstream, Job downstream) {
             this.upstream = upstream;
             this.downstream = downstream;
         }
 
-        public AbstractProject getUpstreamProject() {
+        public Job getUpstreamProject() {
             return upstream;
         }
 
-        public AbstractProject getDownstreamProject() {
+        public Job getDownstreamProject() {
             return downstream;
         }
 
@@ -420,7 +421,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
          * @param actions Add Actions for the triggered build to this list; never null
          * @return True to trigger a build of the downstream project
          */
-        public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
+        public boolean shouldTriggerBuild(Run build, TaskListener listener,
                                           List<Action> actions) {
             return true;
         }
@@ -462,7 +463,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
 
         DependencyGroup(Dependency first) {
             this.upstream = first.getUpstreamProject();
-            this.downstream= first.getDownstreamProject();
+            this.downstream = first.getDownstreamProject();
             group.add(first);
         }
 
@@ -474,13 +475,13 @@ public class DependencyGraph implements Comparator<AbstractProject> {
             return group;
         }
 
-        private AbstractProject upstream, downstream;
+        private Job upstream, downstream;
 
-        public AbstractProject getUpstreamProject() {
+        public Job getUpstreamProject() {
             return upstream;
         }
 
-        public AbstractProject getDownstreamProject() {
+        public Job getDownstreamProject() {
             return downstream;
         }
     }
