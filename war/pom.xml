@@ -93,7 +93,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>3.5-SNAPSHOT</version>
+      <version>4.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
