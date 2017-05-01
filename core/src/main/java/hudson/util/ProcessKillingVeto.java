@@ -30,6 +30,8 @@ import hudson.util.ProcessTreeRemoting.IOSProcess;
 import java.util.Collections;
 import java.util.List;
 
+import java.io.Serializable;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -47,7 +49,7 @@ import jenkins.util.JenkinsJVM;
  * 
  * @author <a href="mailto:daniel.weber.dev@gmail.com">Daniel Weber</a>
  */
-public abstract class ProcessKillingVeto implements ExtensionPoint {
+public abstract class ProcessKillingVeto implements ExtensionPoint, Serializable {
 
     /**
      * Describes the cause for a process killing veto.
@@ -100,4 +102,6 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
      */
     @CheckForNull
     public abstract VetoCause vetoProcessKilling(@Nonnull IOSProcess p);
+    
+    private static final long serialVersionUID = 1L;
 }
