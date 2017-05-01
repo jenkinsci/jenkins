@@ -53,6 +53,7 @@ import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -95,7 +96,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Provides a standard implementation of an optional method of the same name in a {@link Job} type to schedule a build with the ability to wait for its result.
+     * Provides a standard implementation of {@link SCMTriggerItem#scheduleBuild2} to schedule a build with the ability to wait for its result.
      * That job method is often used during functional tests ({@code JenkinsRule.assertBuildStatusSuccess}).
      * @param quietPeriod seconds to wait before starting (normally 0)
      * @param actions various actions to associate with the scheduling, such as {@link ParametersAction} or {@link CauseAction}
@@ -161,15 +162,14 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * A job should define a method of the same signature for use from {@link BuildButtonColumn}.
+     * Standard implementations of {@link ParameterizedJob#isParametrized}.
      */
     public final boolean isParameterized() {
         return asJob().getProperty(ParametersDefinitionProperty.class) != null;
     }
 
     /**
-     * Schedules a new build command.
-     * Create a method on your job with the same signature and delegate to this.
+     * Standard implementation of {@link ParameterizedJob#doBuild}.
      */
     @SuppressWarnings("deprecation")
     public final void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
@@ -206,9 +206,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Supports build trigger with parameters via an HTTP GET or POST.
-     * Currently only String parameters are supported.
-     * Create a method on your job with the same signature and delegate to this.
+     * Standard implementation of {@link ParameterizedJob#doBuildWithParameters}.
      */
     @SuppressWarnings("deprecation")
     public final void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
@@ -226,8 +224,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Cancels a scheduled build.
-     * Create a method on your job marked {@link RequirePOST} but with the same signature and delegate to this.
+     * Standard implementation of {@link ParameterizedJob#doCancelQueue}.
      */
     @RequirePOST
     public final void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
@@ -275,7 +272,6 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
 
     /**
      * Suggested implementation of {@link ParameterizedJob#getBuildNowText}.
-     * Uses {@link #BUILD_NOW_TEXT}.
      */
     public final String getBuildNowText() {
         return isParameterized() ? AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters())
@@ -294,7 +290,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         if (!(job instanceof ParameterizedJob)) {
             return null;
         }
-        for (Trigger<?> t : ((ParameterizedJob) job).getTriggers().values()) {
+        for (Trigger<?> t : ((ParameterizedJob<?, ?>) job).getTriggers().values()) {
             if (clazz.isInstance(t)) {
                 return clazz.cast(t);
             }
@@ -303,16 +299,42 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Marker for job using this mixin.
+     * Marker for job using this mixin, and default implementations of many methods.
      */
-    public interface ParameterizedJob extends hudson.model.Queue.Task, hudson.model.Item {
+    public interface ParameterizedJob<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> extends BuildableItem {
+
+        /**
+         * Creates a helper object.
+         * (Would have been done entirely as an interface with default methods had this been designed for Java 8.)
+         */
+        default ParameterizedJobMixIn<JobT, RunT> getParameterizedJobMixIn() {
+            return new ParameterizedJobMixIn<JobT, RunT>() {
+                @SuppressWarnings("unchecked") // untypable
+                @Override protected JobT asJob() {
+                    return (JobT) ParameterizedJob.this;
+                }
+            };
+        }
 
         @SuppressWarnings("deprecation")
         @CheckForNull hudson.model.BuildAuthorizationToken getAuthToken();
 
-        int getQuietPeriod();
+        /**
+         * Quiet period for the job.
+         * @return by default, {@link Jenkins#getQuietPeriod}
+         */
+        default int getQuietPeriod() {
+            return Jenkins.getInstance().getQuietPeriod();
+        }
 
-        String getBuildNowText();
+        /**
+         * Text to display for a build button.
+         * Uses {@link #BUILD_NOW_TEXT}.
+         * @see ParameterizedJobMixIn#getBuildNowText
+         */
+        default String getBuildNowText() {
+            return getParameterizedJobMixIn().getBuildNowText();
+        }
 
         /**
          * Gets currently configured triggers.
@@ -321,6 +343,72 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * @see #getTrigger
          */
         Map<TriggerDescriptor,Trigger<?>> getTriggers();
+
+        /**
+         * @deprecated use {@link #scheduleBuild(Cause)}
+         */
+        @Deprecated
+        @Override
+        default boolean scheduleBuild() {
+            return getParameterizedJobMixIn().scheduleBuild();
+        }
+
+        @Override
+        default boolean scheduleBuild(Cause c) {
+            return getParameterizedJobMixIn().scheduleBuild(c);
+        }
+
+        /**
+         * @deprecated use {@link #scheduleBuild(int, Cause)}
+         */
+        @Deprecated
+        @Override
+        default boolean scheduleBuild(int quietPeriod) {
+            return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
+        }
+
+        @Override
+        default boolean scheduleBuild(int quietPeriod, Cause c) {
+            return getParameterizedJobMixIn().scheduleBuild(quietPeriod, c);
+        }
+
+        // omitting scheduleBuild2(int, Action...) since it is defined in SCMTriggerItem (could include less commonly used overloads if desired)
+
+        // cannot offer makeSearchIndex() since it is defined in Job
+
+        /**
+         * Schedules a new build command.
+         * @see ParameterizedJobMixIn#doBuild
+         */
+        default void doBuild(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
+            getParameterizedJobMixIn().doBuild(req, rsp, delay);
+        }
+
+        /**
+         * Supports build trigger with parameters via an HTTP GET or POST.
+         * Currently only String parameters are supported.
+         * @see ParameterizedJobMixIn#doBuildWithParameters
+         */
+        default void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
+            getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
+        }
+
+        /**
+         * Cancels a scheduled build.
+         * @see ParameterizedJobMixIn#doCancelQueue
+         */
+        @RequirePOST
+        default void doCancelQueue(StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+            getParameterizedJobMixIn().doCancelQueue(req, rsp);
+        }
+
+        /**
+         * For use from {@link BuildButtonColumn}.
+         * @see ParameterizedJobMixIn#isParameterized
+         */
+        default boolean isParameterized() {
+            return getParameterizedJobMixIn().isParameterized();
+        }
 
     }
 
