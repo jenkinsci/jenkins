@@ -673,7 +673,11 @@ public class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
-        IOUtils.closeQuietly(log);
+        try {
+            log.close();
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
+        }
 
         try {
             Util.deleteRecursive(getLogDir());

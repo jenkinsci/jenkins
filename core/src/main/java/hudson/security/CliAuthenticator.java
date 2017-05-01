@@ -75,7 +75,9 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.350
+ * @deprecated Vulnerable to JENKINS-12543.
  */
+@Deprecated
 public abstract class CliAuthenticator {
     /**
      * Authenticates the CLI invocation. See class javadoc for the semantics.

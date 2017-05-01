@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -98,7 +99,7 @@ public class ViewTest {
         final TopLevelItem rightJob = createJob("rightJob");
 
         Mockito.when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        Mockito.when(rightView.getItems()).thenReturn(Arrays.asList(rightJob));
+        Mockito.when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
 
         final TopLevelItem[] expected = new TopLevelItem[] {rootJob, sharedJob, leftJob, rightJob};
 

@@ -47,6 +47,7 @@ public enum Payload {
     Spring1(Spring1.class),
     Spring2(Spring2.class),
     Ldap(Ldap.class),
+    JsonLibSignedObject(JsonLibSignedObject.class),
     ;
 
     private final Class<? extends ObjectPayload> payloadClass;

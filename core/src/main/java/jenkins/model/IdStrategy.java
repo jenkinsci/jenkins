@@ -321,7 +321,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * A case sensitive email address {@link IdStrategy}. Providing this implementation among the set of default
      * implementations as given the history of misunderstanding in the Jenkins code base around ID case sensitivity,
      * if not provided people will get this wrong.
-     * <p/>
+     * <p>
      * Note: Not all email addresses are case sensitive. It is knowledge that belongs to the server that holds the
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.

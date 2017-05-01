@@ -49,8 +49,7 @@ import javax.annotation.Nonnull;
  * an instance of new facet and add it.
  *
  * <h2>Views</h2>
- * <h4>main.groovy</h4>
- * <p>
+ * <h3>main.groovy</h3>
  * This view is rendered into the
  *
  * @author Kohsuke Kawaguchi

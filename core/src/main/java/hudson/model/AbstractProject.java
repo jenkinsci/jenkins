@@ -792,6 +792,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     @Override
+    @RequirePOST
     public void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
         super.doConfigSubmit(req,rsp);
 
@@ -1045,6 +1046,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         // return the read only list to cause a failure on plugins who try to add an action here
         return Collections.unmodifiableList(actions);
     }
+
+    // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
 
     /**
      * Gets the {@link Node} where this project was last built on.

@@ -952,6 +952,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        LOGGER.log(FINE, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);
@@ -1296,6 +1297,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return hudson.util.HttpResponses.okJSON(response);
     }
 
+    @RequirePOST
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -1330,6 +1332,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Performs the installation of the plugins.
      */
+    @RequirePOST
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Set<String> plugins = new LinkedHashSet<>();

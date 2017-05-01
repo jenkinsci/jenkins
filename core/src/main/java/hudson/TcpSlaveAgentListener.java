@@ -339,14 +339,11 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void handle(Socket socket) throws IOException, InterruptedException {
             try {
-                OutputStream stream = socket.getOutputStream();
-                try {
+                try (OutputStream stream = socket.getOutputStream()) {
                     LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
                     stream.write(ping);
                     stream.flush();
                     LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
-                } finally {
-                    stream.close();
                 }
             } finally {
                 socket.close();
@@ -355,29 +352,24 @@ public final class TcpSlaveAgentListener extends Thread {
 
         public boolean connect(Socket socket) throws IOException {
             try {
-                DataOutputStream out = null;
-                InputStream in = null;
-                try {
-                    LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
-                    out = new DataOutputStream(socket.getOutputStream());
+                LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
+                try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                     out.writeUTF("Protocol:Ping");
-                    in = socket.getInputStream();
-                    byte[] response = new byte[ping.length];
-                    int responseLength = in.read(response);
-                    if (responseLength == ping.length && Arrays.equals(response, ping)) {
-                        LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
-                        return true;
-                    } else {
-                        LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
-                                socket.getRemoteSocketAddress(),
-                                new String(ping, "UTF-8"),
-                                new String(response, 0, responseLength, "UTF-8")
-                        });
-                        return false;
+                    try (InputStream in = socket.getInputStream()) {
+                        byte[] response = new byte[ping.length];
+                        int responseLength = in.read(response);
+                        if (responseLength == ping.length && Arrays.equals(response, ping)) {
+                            LOGGER.log(Level.FINE, "Received ping response from {0}", socket.getRemoteSocketAddress());
+                            return true;
+                        } else {
+                            LOGGER.log(Level.FINE, "Expected ping response from {0} of {1} got {2}", new Object[]{
+                                    socket.getRemoteSocketAddress(),
+                                    new String(ping, "UTF-8"),
+                                    new String(response, 0, responseLength, "UTF-8")
+                            });
+                            return false;
+                        }
                     }
-                } finally {
-                    IOUtils.closeQuietly(out);
-                    IOUtils.closeQuietly(in);
                 }
             } finally {
                 socket.close();

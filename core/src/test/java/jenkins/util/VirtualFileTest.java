@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class VirtualFileTest {
         try {
             hack.open();
             fail();
-        } catch (FileNotFoundException x) {
+        } catch (FileNotFoundException | NoSuchFileException x) {
             // OK
         }
     }

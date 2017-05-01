@@ -23,6 +23,9 @@
  */
 package hudson;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
@@ -123,11 +126,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             try {
                 // Locate the manifest
                 String firstLine;
-                FileInputStream manifestHeaderInput = new FileInputStream(archive);
-                try {
+                try (InputStream manifestHeaderInput = Files.newInputStream(archive.toPath())) {
                     firstLine = IOUtils.readFirstLine(manifestHeaderInput, "UTF-8");
-                } finally {
-                    manifestHeaderInput.close();
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
                 if (firstLine.startsWith("Manifest-Version:")) {
                     // this is the manifest already
@@ -137,11 +139,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
                 
                 // Read the manifest
-                FileInputStream manifestInput = new FileInputStream(archive);
-                try {
+                try (InputStream manifestInput = Files.newInputStream(archive.toPath())) {
                     return new Manifest(manifestInput);
-                } finally {
-                    manifestInput.close();
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             } catch (IOException e) {
                 throw new IOException("Failed to load " + archive, e);
@@ -173,8 +174,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         "Plugin installation failed. No manifest at "
                                 + manifestFile);
             }
-            try (FileInputStream fin = new FileInputStream(manifestFile)) {
+            try (InputStream fin = Files.newInputStream(manifestFile.toPath())) {
                 manifest = new Manifest(fin);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
         }
 
@@ -191,8 +194,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             baseResourceURL = resolve(archive,atts.getValue("Resource-Path")).toURI().toURL();
         } else {
             File classes = new File(expandDir, "WEB-INF/classes");
-            if (classes.exists())
+            if (classes.exists()) { // should not normally happen, due to createClassJarFromWebInfClasses
+                LOGGER.log(Level.WARNING, "Deprecated unpacked classes directory found in {0}", classes);
                 paths.add(classes);
+            }
             File lib = new File(expandDir, "WEB-INF/lib");
             File[] libs = lib.listFiles(JAR_FILTER);
             if (libs != null)
@@ -396,7 +401,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Gets the minimum required version for the current version of Jenkins.
          *
          * @return the minimum required version for the current version of Jenkins.
-         * @sice 2.16
+         * @since 2.16
          */
         public VersionNumber getRequiredVersion() {
             return new VersionNumber(requiredVersion);
@@ -665,6 +670,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             z.setDestFile(classesJar);
             z.add(mapper);
             z.execute();
+        }
+        if (classesJar.isFile()) {
+            LOGGER.log(Level.WARNING, "Created {0}; update plugin to a version created with a newer harness", classesJar);
         }
     }
 

@@ -309,7 +309,7 @@ public final class CronTab {
      * More precisely, given the time 't', computes another smallest time x such that:
      *
      * <ul>
-     * <li>x >= t (inclusive)
+     * <li>x ≥ t (inclusive)
      * <li>x matches this crontab
      * </ul>
      *
@@ -531,5 +531,18 @@ public final class CronTab {
             }
             return null;
         }
+    }
+
+    /**
+     * Returns the configured time zone, or null if none is configured
+     *
+     * @return the configured time zone, or null if none is configured
+     * @since TODO
+     */
+    @CheckForNull public TimeZone getTimeZone() {
+        if (this.specTimezone == null) {
+            return null;
+        }
+        return TimeZone.getTimeZone(this.specTimezone);
     }
 }
