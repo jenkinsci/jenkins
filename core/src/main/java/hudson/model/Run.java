@@ -44,10 +44,6 @@ import hudson.console.PlainTextConsoleOutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
-
-import hudson.tasks.Fingerprinter;
-import hudson.util.AdaptedIterator;
-import hudson.util.Iterators;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -84,14 +80,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -148,11 +142,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @ExportedBean
 public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,RunT>>
         extends Actionable implements ExtensionPoint, Comparable<RunT>, AccessControlled, PersistenceRoot, DescriptorByNameOwner, OnMaster {
-
-    /**
-     * Set if we want the blame information to flow from upstream to downstream build.
-     */
-    private static final boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
 
     /**
      * The original {@link Queue.Item#getId()} has not yet been mapped onto the {@link Run} instance.
@@ -970,246 +959,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */   
     public @CheckForNull RunT getNextBuild() {
         return nextBuild;
-    }
-
-    /**
-     * Gets the dependency relationship from this build (as the source)
-     * and that project (as the sink.)
-     *
-     * @return
-     *      range of build numbers that represent which downstream builds are using this build.
-     *      The range will be empty if no build of that project matches this (or there is no {@link Fingerprinter.FingerprintAction}), but it'll never be null.
-     */
-    public Fingerprint.RangeSet getDownstreamRelationship(Job that) {
-        Fingerprint.RangeSet rs = new Fingerprint.RangeSet();
-
-        Fingerprinter.FingerprintAction f = getAction(Fingerprinter.FingerprintAction.class);
-        if (f==null)     return rs;
-
-        // look for fingerprints that point to this build as the source, and merge them all
-        for (Fingerprint e : f.getFingerprints().values()) {
-
-            if (upstreamCulprits) {
-                // With upstreamCulprits, we allow downstream relationships
-                // from intermediate jobs
-                rs.add(e.getRangeSet(that));
-            } else {
-                Fingerprint.BuildPtr o = e.getOriginal();
-                if (o!=null && o.is(this))
-                    rs.add(e.getRangeSet(that));
-            }
-        }
-
-        return rs;
-    }
-
-    /**
-     * Works like {@link #getDownstreamRelationship(Job)} but returns
-     * the actual build objects, in ascending order.
-     * @since 1.150
-     */
-    public Iterable<Run<?,?>> getDownstreamBuilds(final Job<?,?> that) {
-        final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
-
-        return new Iterable<Run<?, ?>>() {
-            public Iterator<Run<?, ?>> iterator() {
-                return Iterators.removeNull(
-                        new AdaptedIterator<Integer,Run<?,?>>(nums) {
-                            protected Run<?, ?> adapt(Integer item) {
-                                return that.getBuildByNumber(item);
-                            }
-                        });
-            }
-        };
-    }
-
-    /**
-     * Gets the dependency relationship from this build (as the sink)
-     * and that project (as the source.)
-     *
-     * @return
-     *      Build number of the upstream build that feed into this build,
-     *      or -1 if no record is available (for example if there is no {@link Fingerprinter.FingerprintAction}, even if there is an {@link Cause.UpstreamCause}).
-     */
-    public int getUpstreamRelationship(Job that) {
-        Fingerprinter.FingerprintAction f = getAction(Fingerprinter.FingerprintAction.class);
-        if (f==null)     return -1;
-
-        int n = -1;
-
-        // look for fingerprints that point to the given project as the source, and merge them all
-        for (Fingerprint e : f.getFingerprints().values()) {
-            if (upstreamCulprits) {
-                // With upstreamCulprits, we allow upstream relationships
-                // from intermediate jobs
-                Fingerprint.RangeSet rangeset = e.getRangeSet(that);
-                if (!rangeset.isEmpty()) {
-                    n = Math.max(n, rangeset.listNumbersReverse().iterator().next());
-                }
-            } else {
-                Fingerprint.BuildPtr o = e.getOriginal();
-                if (o!=null && o.belongsTo(that))
-                    n = Math.max(n,o.getNumber());
-            }
-        }
-
-        return n;
-    }
-
-    /**
-     * Works like {@link #getUpstreamRelationship(Job)} but returns the
-     * actual build object.
-     *
-     * @return
-     *      null if no such upstream build was found, or it was found but the
-     *      build record is already lost.
-     */
-    public Run<?,?> getUpstreamRelationshipBuild(Job<?,?> that) {
-        int n = getUpstreamRelationship(that);
-        if (n==-1)   return null;
-        return that.getBuildByNumber(n);
-    }
-
-    /**
-     * Gets the downstream builds of this build, which are the builds of the
-     * downstream projects that use artifacts of this build.
-     *
-     * @return
-     *      For each project with fingerprinting enabled, returns the range
-     *      of builds (which can be empty if no build uses the artifact from this build.
-     */
-    public Map<Job,Fingerprint.RangeSet> getDownstreamBuilds() {
-        Map<Job,Fingerprint.RangeSet> r = new HashMap<Job,Fingerprint.RangeSet>();
-        for (Job p : getParent().getDownstreamProjects()) {
-            r.put(p,getDownstreamRelationship(p));
-        }
-        return r;
-    }
-
-    /**
-     * Gets the upstream builds of this build, which are the builds of the
-     * upstream projects whose artifacts feed into this build.
-     * @return empty if there is no {@link Fingerprinter.FingerprintAction} (even if there is an {@link Cause.UpstreamCause})
-     * @see #getTransitiveUpstreamBuilds()
-     */
-    public Map<Job,Integer> getUpstreamBuilds() {
-        return _getUpstreamBuilds(getParent().getUpstreamProjects());
-    }
-
-    /**
-     * Works like {@link #getUpstreamBuilds()}  but also includes all the transitive
-     * dependencies as well.
-     */
-    public Map<Job,Integer> getTransitiveUpstreamBuilds() {
-        return _getUpstreamBuilds(getParent().getTransitiveUpstreamProjects());
-    }
-
-    private Map<Job, Integer> _getUpstreamBuilds(Collection<Job> projects) {
-        Map<Job,Integer> r = new HashMap<Job,Integer>();
-        for (Job p : projects) {
-            int n = getUpstreamRelationship(p);
-            if (n>=0)
-                r.put(p,n);
-        }
-        return r;
-    }
-
-    /**
-     * Gets the changes in the dependency between the given build and this build.
-     * @return empty if there is no {@link Fingerprinter.FingerprintAction}
-     */
-    public Map<Job,Run.DependencyChange> getDependencyChanges(Run from) {
-        if (from==null)             return Collections.emptyMap(); // make it easy to call this from views
-        Fingerprinter.FingerprintAction n = this.getAction(Fingerprinter.FingerprintAction.class);
-        Fingerprinter.FingerprintAction o = from.getAction(Fingerprinter.FingerprintAction.class);
-        if (n==null || o==null)     return Collections.emptyMap();
-
-        Map<Job,Integer> ndep = n.getDependencies(true);
-        Map<Job,Integer> odep = o.getDependencies(true);
-
-        Map<Job,Run.DependencyChange> r = new HashMap<Job,Run.DependencyChange>();
-
-        for (Map.Entry<Job,Integer> entry : odep.entrySet()) {
-            Job p = entry.getKey();
-            Integer oldNumber = entry.getValue();
-            Integer newNumber = ndep.get(p);
-            if (newNumber!=null && oldNumber.compareTo(newNumber)<0) {
-                r.put(p,new Run.DependencyChange(p,oldNumber,newNumber));
-            }
-        }
-
-        return r;
-    }
-
-    /**
-     * Gets the nearest ancestor {@link Run} that belongs to
-     * {@linkplain Job#getRootProject() the root project of getParent()} that
-     * dominates/governs/encompasses this build.
-     *
-     * <p>
-     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs,
-     * and still in some of them, builds of child projects are related/tied to that of the parent project.
-     * In such a case, this method returns the governing build.
-     *
-     * @return never null. In the worst case the build dominates itself.
-     * @since 1.421
-     * @see Job#getRootProject()
-     */
-    public Run<?,?> getRootBuild() {
-        return this;
-    }
-
-    /**
-     * Represents a change in the dependency.
-     */
-    public static class DependencyChange {
-        /**
-         * The dependency project.
-         */
-        public final Job project;
-        /**
-         * Version of the dependency project used in the previous build.
-         */
-        public final int fromId;
-        /**
-         * {@link Run} object for {@link #fromId}. Can be null if the log is gone.
-         */
-        public final Run from;
-        /**
-         * Version of the dependency project used in this build.
-         */
-        public final int toId;
-
-        public final Run to;
-
-        public DependencyChange(Job<?,?> project, int fromId, int toId) {
-            this.project = project;
-            this.fromId = fromId;
-            this.toId = toId;
-            this.from = project.getBuildByNumber(fromId);
-            this.to = project.getBuildByNumber(toId);
-        }
-
-        /**
-         * Gets the {@link Run} objects (fromId,toId].
-         * <p>
-         * This method returns all such available builds in the ascending order
-         * of IDs, but due to log rotations, some builds may be already unavailable.
-         */
-        public List<Run> getBuilds() {
-            List<Run> r = new ArrayList<Run>();
-
-            Run<?,?> b = project.getNearestBuild(fromId);
-            if (b!=null && b.getNumber()==fromId)
-                b = b.getNextBuild(); // fromId exclusive
-
-            while (b!=null && b.getNumber()<=toId) {
-                r.add(b);
-                b = b.getNextBuild();
-            }
-
-            return r;
-        }
     }
 
     /**

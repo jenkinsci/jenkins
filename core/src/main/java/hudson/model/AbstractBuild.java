@@ -103,6 +103,11 @@ import jenkins.model.lazy.LazyBuildMixIn;
 public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCMMixIn.RunWithSCM<P,R> {
 
     /**
+     * Set if we want the blame information to flow from upstream to downstream build.
+     */
+    private static final boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
+
+    /**
      * Name of the agent this project was built on.
      * Null or "" if built by the master. (null happens when we read old record that didn't have this information.)
      */
@@ -242,6 +247,24 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      */
     protected void setBuiltOnStr( String builtOn ) {
         this.builtOn = builtOn;
+    }
+
+    /**
+     * Gets the nearest ancestor {@link AbstractBuild} that belongs to
+     * {@linkplain AbstractProject#getRootProject() the root project of getProject()} that
+     * dominates/governs/encompasses this build.
+     *
+     * <p>
+     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs,
+     * and still in some of them, builds of child projects are related/tied to that of the parent project.
+     * In such a case, this method returns the governing build.
+     *
+     * @return never null. In the worst case the build dominates itself.
+     * @since 1.421
+     * @see AbstractProject#getRootProject()
+     */
+    public AbstractBuild<?,?> getRootBuild() {
+        return this;
     }
 
     /**
@@ -1038,10 +1061,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         // if any of the downstream project is configured with 'keep dependency component',
         // we need to keep this log
         OUTER:
-        for (Job<?,?> p : getParent().getDownstreamProjects()) {
+        for (AbstractProject<?,?> p : getParent().getDownstreamProjects()) {
             if (!p.isKeepDependencies()) continue;
 
-            Run<?,?> fb = p.getFirstBuild();
+            AbstractBuild<?,?> fb = p.getFirstBuild();
             if (fb==null)        continue; // no active record
 
             // is there any active build that depends on us?
@@ -1052,7 +1075,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (i<fb.getNumber())
                     continue OUTER; // all the other records are younger than the first record, so pointless to search.
 
-                Run<?,?> b = p.getBuildByNumber(i);
+                AbstractBuild<?,?> b = p.getBuildByNumber(i);
                 if (b!=null)
                     return Messages.AbstractBuild_KeptBecause(b);
             }
@@ -1062,11 +1085,225 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * Retained for compatibility.
+     * Gets the dependency relationship from this build (as the source)
+     * and that project (as the sink.)
+     *
+     * @return
+     *      range of build numbers that represent which downstream builds are using this build.
+     *      The range will be empty if no build of that project matches this (or there is no {@link FingerprintAction}), but it'll never be null.
      */
-    public static final class DependencyChange extends Run.DependencyChange {
-        public DependencyChange(Job<?, ?> project, int fromId, int toId) {
-            super(project, fromId, toId);
+    public RangeSet getDownstreamRelationship(AbstractProject that) {
+        RangeSet rs = new RangeSet();
+
+        FingerprintAction f = getAction(FingerprintAction.class);
+        if (f==null)     return rs;
+
+        // look for fingerprints that point to this build as the source, and merge them all
+        for (Fingerprint e : f.getFingerprints().values()) {
+
+            if (upstreamCulprits) {
+                // With upstreamCulprits, we allow downstream relationships
+                // from intermediate jobs
+                rs.add(e.getRangeSet(that));
+            } else {
+                BuildPtr o = e.getOriginal();
+                if (o!=null && o.is(this))
+                    rs.add(e.getRangeSet(that));
+            }
+        }
+
+        return rs;
+    }
+
+    /**
+     * Works like {@link #getDownstreamRelationship(AbstractProject)} but returns
+     * the actual build objects, in ascending order.
+     * @since 1.150
+     */
+    public Iterable<AbstractBuild<?,?>> getDownstreamBuilds(final AbstractProject<?,?> that) {
+        final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
+
+        return new Iterable<AbstractBuild<?, ?>>() {
+            public Iterator<AbstractBuild<?, ?>> iterator() {
+                return Iterators.removeNull(
+                    new AdaptedIterator<Integer,AbstractBuild<?,?>>(nums) {
+                        protected AbstractBuild<?, ?> adapt(Integer item) {
+                            return that.getBuildByNumber(item);
+                        }
+                    });
+            }
+        };
+    }
+
+    /**
+     * Gets the dependency relationship from this build (as the sink)
+     * and that project (as the source.)
+     *
+     * @return
+     *      Build number of the upstream build that feed into this build,
+     *      or -1 if no record is available (for example if there is no {@link FingerprintAction}, even if there is an {@link Cause.UpstreamCause}).
+     */
+    public int getUpstreamRelationship(AbstractProject that) {
+        FingerprintAction f = getAction(FingerprintAction.class);
+        if (f==null)     return -1;
+
+        int n = -1;
+
+        // look for fingerprints that point to the given project as the source, and merge them all
+        for (Fingerprint e : f.getFingerprints().values()) {
+            if (upstreamCulprits) {
+                // With upstreamCulprits, we allow upstream relationships
+                // from intermediate jobs
+                Fingerprint.RangeSet rangeset = e.getRangeSet(that);
+                if (!rangeset.isEmpty()) {
+                    n = Math.max(n, rangeset.listNumbersReverse().iterator().next());
+                }
+            } else {
+                BuildPtr o = e.getOriginal();
+                if (o!=null && o.belongsTo(that))
+                    n = Math.max(n,o.getNumber());
+            }
+        }
+
+        return n;
+    }
+
+    /**
+     * Works like {@link #getUpstreamRelationship(AbstractProject)} but returns the
+     * actual build object.
+     *
+     * @return
+     *      null if no such upstream build was found, or it was found but the
+     *      build record is already lost.
+     */
+    public AbstractBuild<?,?> getUpstreamRelationshipBuild(AbstractProject<?,?> that) {
+        int n = getUpstreamRelationship(that);
+        if (n==-1)   return null;
+        return that.getBuildByNumber(n);
+    }
+
+    /**
+     * Gets the downstream builds of this build, which are the builds of the
+     * downstream projects that use artifacts of this build.
+     *
+     * @return
+     *      For each project with fingerprinting enabled, returns the range
+     *      of builds (which can be empty if no build uses the artifact from this build or downstream is not {@link AbstractProject#isFingerprintConfigured}.)
+     */
+    public Map<AbstractProject,RangeSet> getDownstreamBuilds() {
+        Map<AbstractProject,RangeSet> r = new HashMap<AbstractProject,RangeSet>();
+        for (AbstractProject p : getParent().getDownstreamProjects()) {
+            if (p.isFingerprintConfigured())
+                r.put(p,getDownstreamRelationship(p));
+        }
+        return r;
+    }
+
+    /**
+     * Gets the upstream builds of this build, which are the builds of the
+     * upstream projects whose artifacts feed into this build.
+     * @return empty if there is no {@link FingerprintAction} (even if there is an {@link Cause.UpstreamCause})
+     * @see #getTransitiveUpstreamBuilds()
+     */
+    public Map<AbstractProject,Integer> getUpstreamBuilds() {
+        return _getUpstreamBuilds(getParent().getUpstreamProjects());
+    }
+
+    /**
+     * Works like {@link #getUpstreamBuilds()}  but also includes all the transitive
+     * dependencies as well.
+     */
+    public Map<AbstractProject,Integer> getTransitiveUpstreamBuilds() {
+        return _getUpstreamBuilds(getParent().getTransitiveUpstreamProjects());
+    }
+
+    private Map<AbstractProject, Integer> _getUpstreamBuilds(Collection<AbstractProject> projects) {
+        Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
+        for (AbstractProject p : projects) {
+            int n = getUpstreamRelationship(p);
+            if (n>=0)
+                r.put(p,n);
+        }
+        return r;
+    }
+
+    /**
+     * Gets the changes in the dependency between the given build and this build.
+     * @return empty if there is no {@link FingerprintAction}
+     */
+    public Map<AbstractProject,DependencyChange> getDependencyChanges(AbstractBuild from) {
+        if (from==null)             return Collections.emptyMap(); // make it easy to call this from views
+        FingerprintAction n = this.getAction(FingerprintAction.class);
+        FingerprintAction o = from.getAction(FingerprintAction.class);
+        if (n==null || o==null)     return Collections.emptyMap();
+
+        Map<AbstractProject,Integer> ndep = n.getDependencies(true);
+        Map<AbstractProject,Integer> odep = o.getDependencies(true);
+
+        Map<AbstractProject,DependencyChange> r = new HashMap<AbstractProject,DependencyChange>();
+
+        for (Map.Entry<AbstractProject,Integer> entry : odep.entrySet()) {
+            AbstractProject p = entry.getKey();
+            Integer oldNumber = entry.getValue();
+            Integer newNumber = ndep.get(p);
+            if (newNumber!=null && oldNumber.compareTo(newNumber)<0) {
+                r.put(p,new DependencyChange(p,oldNumber,newNumber));
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * Represents a change in the dependency.
+     */
+    public static final class DependencyChange {
+        /**
+         * The dependency project.
+         */
+        public final AbstractProject project;
+        /**
+         * Version of the dependency project used in the previous build.
+         */
+        public final int fromId;
+        /**
+         * {@link Build} object for {@link #fromId}. Can be null if the log is gone.
+         */
+        public final AbstractBuild from;
+        /**
+         * Version of the dependency project used in this build.
+         */
+        public final int toId;
+
+        public final AbstractBuild to;
+
+        public DependencyChange(AbstractProject<?,?> project, int fromId, int toId) {
+            this.project = project;
+            this.fromId = fromId;
+            this.toId = toId;
+            this.from = project.getBuildByNumber(fromId);
+            this.to = project.getBuildByNumber(toId);
+        }
+
+        /**
+         * Gets the {@link AbstractBuild} objects (fromId,toId].
+         * <p>
+         * This method returns all such available builds in the ascending order
+         * of IDs, but due to log rotations, some builds may be already unavailable.
+         */
+        public List<AbstractBuild> getBuilds() {
+            List<AbstractBuild> r = new ArrayList<AbstractBuild>();
+
+            AbstractBuild<?,?> b = project.getNearestBuild(fromId);
+            if (b!=null && b.getNumber()==fromId)
+                b = b.getNextBuild(); // fromId exclusive
+
+            while (b!=null && b.getNumber()<=toId) {
+                r.add(b);
+                b = b.getNextBuild();
+            }
+
+            return r;
         }
     }
 

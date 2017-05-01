@@ -72,14 +72,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -181,13 +178,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     // this should have been DescribableList but now it's too late
     protected CopyOnWriteList<JobProperty<? super JobT>> properties = new CopyOnWriteList<JobProperty<? super JobT>>();
-
-    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
-        public int compare(Integer o1, Integer o2) {
-            return o2-o1;
-        }
-    };
-
 
     @Restricted(NoExternalUse.class)
     public transient RunIdMigrator runIdMigrator;
@@ -340,63 +330,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     public boolean isKeepDependencies() {
         return keepDependencies;
-    }
-
-
-    /**
-     * Returns the project if any of the downstream project is either
-     * building, waiting, pending or buildable.
-     * <p>
-     * This means eventually there will be an automatic triggering of
-     * the given project (provided that all builds went smoothly.)
-     */
-    public Job getBuildingDownstream() {
-        Set<Queue.Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
-
-        for (Job tup : getTransitiveDownstreamProjects()) {
-            if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
-                return tup;
-        }
-        return null;
-    }
-
-    /**
-     * Returns the project if any of the upstream project is either
-     * building or is in the queue.
-     * <p>
-     * This means eventually there will be an automatic triggering of
-     * the given project (provided that all builds went smoothly.)
-     */
-    public Job getBuildingUpstream() {
-        Set<Queue.Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
-
-        for (Job tup : getTransitiveUpstreamProjects()) {
-            if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
-                return tup;
-        }
-        return null;
-    }
-
-    /**
-     * Gets the nearest ancestor {@link TopLevelItem} that's also an {@link Job}.
-     *
-     * <p>
-     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs
-     * that acts as a single unit. This method can be used to find the top most dominating job that
-     * covers such a tree.
-     *
-     * @return never null.
-     * @see Run#getRootBuild()
-     */
-    public Job<?,?> getRootProject() {
-        if (this instanceof TopLevelItem) {
-            return this;
-        } else {
-            ItemGroup p = this.getParent();
-            if (p instanceof Job)
-                return ((Job) p).getRootProject();
-            return this;
-        }
     }
 
     /**
@@ -567,85 +500,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Builds the dependency graph. No-op by default.
-     * @param graph
-     */
-    protected void buildDependencyGraph(DependencyGraph graph) {
-    }
-
-    /**
-     * Gets the other {@link Job}s that should be built
-     * when a build of this project is completed.
-     */
-    @Exported
-    public final List<Job> getDownstreamProjects() {
-        return Jenkins.getInstance().getDependencyGraph().getDownstream(this);
-    }
-
-    @Exported
-    public final List<Job> getUpstreamProjects() {
-        return Jenkins.getInstance().getDependencyGraph().getUpstream(this);
-    }
-
-    /**
-     * Gets all the upstream projects including transitive upstream projects.
-     *
-     * @since 1.138
-     */
-    public final Set<Job> getTransitiveUpstreamProjects() {
-        return Jenkins.getInstance().getDependencyGraph().getTransitiveUpstream(this);
-    }
-
-    /**
-     * Gets all the downstream projects including transitive downstream projects.
-     *
-     * @since 1.138
-     */
-    public final Set<Job> getTransitiveDownstreamProjects() {
-        return Jenkins.getInstance().getDependencyGraph().getTransitiveDownstream(this);
-    }
-
-    /**
-     * Gets the dependency relationship map between this project (as the source)
-     * and that project (as the sink.)
-     *
-     * @return
-     *      can be empty but not null. build number of this project to the build
-     *      numbers of that project.
-     */
-    public SortedMap<Integer, RangeSet> getRelationship(AbstractProject that) {
-        TreeMap<Integer,RangeSet> r = new TreeMap<Integer,RangeSet>(REVERSE_INTEGER_COMPARATOR);
-
-        checkAndRecord(that, r, this.getBuilds());
-        // checkAndRecord(that, r, that.getBuilds());
-
-        return r;
-    }
-
-    /**
-     * Helper method for getDownstreamRelationship.
-     *
-     * For each given build, find the build number range of the given project and put that into the map.
-     */
-    private void checkAndRecord(AbstractProject that, TreeMap<Integer, RangeSet> r, Collection<RunT> builds) {
-        for (RunT build : builds) {
-            RangeSet rs = build.getDownstreamRelationship(that);
-            if(rs==null || rs.isEmpty())
-                continue;
-
-            int n = build.getNumber();
-
-            RangeSet value = r.get(n);
-            if(value==null)
-                r.put(n,rs);
-            else
-                value.add(rs);
-        }
-    }
-
-    /**
      * Adds {@link JobProperty}.
-     *
+     * 
      * @since 1.188
      */
     public void addProperty(JobProperty<? super JobT> jobProp) throws IOException {

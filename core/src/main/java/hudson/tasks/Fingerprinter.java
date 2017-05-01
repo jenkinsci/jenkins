@@ -149,7 +149,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         return BuildStepMonitor.NONE;
     }
 
-    public void buildDependencyGraph(Job owner, DependencyGraph graph) {
+    public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         if (enableFingerprintsInDependencyGraph) {
             RunList builds = owner.getBuilds();
             Set<String> seenUpstreamProjects = new HashSet<String>();
@@ -157,12 +157,12 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
             for ( ListIterator iter = builds.listIterator(); iter.hasNext(); ) {
                 Run build = (Run) iter.next();
                 for (FingerprintAction action : build.getActions(FingerprintAction.class)) {
-                    for (Job key : action.getDependencies().keySet()) {
+                    for (AbstractProject key : action.getDependencies().keySet()) {
                         if (key == owner) {
                             continue;   // Avoid self references
                         }
 
-                        Job p = key;
+                        AbstractProject p = key;
                         // TODO is this harmful to call unconditionally, so it would apply also to MavenModule for example?
                         if (key.getClass().getName().equals("hudson.matrix.MatrixConfiguration")) {
                             p = key.getRootProject();
@@ -175,7 +175,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                         seenUpstreamProjects.add(p.getName());
                         graph.addDependency(new Dependency(p, owner) {
                             @Override
-                            public boolean shouldTriggerBuild(Run build,
+                            public boolean shouldTriggerBuild(AbstractBuild build,
                                                               TaskListener listener,
                                                               List<Action> actions) {
                                 // Fingerprints should not trigger builds.
@@ -389,7 +389,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         /**
          * Gets the dependency to other existing builds in a map.
          */
-        public Map<Job,Integer> getDependencies() {
+        public Map<AbstractProject,Integer> getDependencies() {
             return getDependencies(false);
         }
         
@@ -400,8 +400,8 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
          *  the result, even if it doesn't exist
          * @since 1.430
          */
-        public Map<Job,Integer> getDependencies(boolean includeMissing) {
-            Map<Job,Integer> r = new HashMap<Job,Integer>();
+        public Map<AbstractProject,Integer> getDependencies(boolean includeMissing) {
+            Map<AbstractProject,Integer> r = new HashMap<AbstractProject,Integer>();
 
             for (Fingerprint fp : getFingerprints().values()) {
                 BuildPtr bp = fp.getOriginal();
@@ -411,6 +411,11 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 try {
                     Job job = bp.getJob();
                     if (job==null)  continue;   // project no longer exists
+                    if (!(job instanceof AbstractProject)) {
+                        // Ignoring this for now. In the future we may want a dependency map function not limited to AbstractProject.
+                        // (Could be used by getDependencyChanges if pulled up from AbstractBuild into Run, for example.)
+                        continue;
+                    }
                     if (job.getParent()==build.getParent())
                         continue;   // we are the parent of the build owner, that is almost like we are the owner
                     if(!includeMissing && job.getBuildByNumber(bp.getNumber())==null)
@@ -419,7 +424,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                     Integer existing = r.get(job);
                     if(existing!=null && existing>bp.getNumber())
                         continue;   // the record in the map is already up to date
-                    r.put(job, bp.getNumber());
+                    r.put((AbstractProject) job, bp.getNumber());
                 } catch (AccessDeniedException e) {
                     // Need to log in to access this job, so ignore
                     continue;

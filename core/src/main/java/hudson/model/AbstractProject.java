@@ -472,6 +472,28 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
+     * Gets the nearest ancestor {@link TopLevelItem} that's also an {@link AbstractProject}.
+     *
+     * <p>
+     * Some projects (such as matrix projects, Maven projects, or promotion processes) form a tree of jobs
+     * that acts as a single unit. This method can be used to find the top most dominating job that
+     * covers such a tree.
+     *
+     * @return never null.
+     * @see AbstractBuild#getRootBuild()
+     */
+    public AbstractProject<?,?> getRootProject() {
+        if (this instanceof TopLevelItem) {
+            return this;
+        } else {
+            ItemGroup p = this.getParent();
+            if (p instanceof AbstractProject)
+                return ((AbstractProject) p).getRootProject();
+            return this;
+        }
+    }
+
+    /**
      * Gets the directory where the module is checked out.
      *
      * @return
@@ -1090,9 +1112,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Because the downstream build is in progress, and we are configured to wait for that.
      */
     public static class BecauseOfDownstreamBuildInProgress extends CauseOfBlockage {
-        public final Job<?,?> up;
+        public final AbstractProject<?,?> up;
 
-        public BecauseOfDownstreamBuildInProgress(Job<?,?> up) {
+        public BecauseOfDownstreamBuildInProgress(AbstractProject<?,?> up) {
             this.up = up;
         }
 
@@ -1106,9 +1128,9 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Because the upstream build is in progress, and we are configured to wait for that.
      */
     public static class BecauseOfUpstreamBuildInProgress extends CauseOfBlockage {
-        public final Job<?,?> up;
+        public final AbstractProject<?,?> up;
 
-        public BecauseOfUpstreamBuildInProgress(Job<?,?> up) {
+        public BecauseOfUpstreamBuildInProgress(AbstractProject<?,?> up) {
             this.up = up;
         }
 
@@ -1133,14 +1155,48 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             }
         }
         if (blockBuildWhenDownstreamBuilding()) {
-            Job<?,?> bup = getBuildingDownstream();
+            AbstractProject<?,?> bup = getBuildingDownstream();
             if (bup!=null)
                 return new BecauseOfDownstreamBuildInProgress(bup);
         }
         if (blockBuildWhenUpstreamBuilding()) {
-            Job<?,?> bup = getBuildingUpstream();
+            AbstractProject<?,?> bup = getBuildingUpstream();
             if (bup!=null)
                 return new BecauseOfUpstreamBuildInProgress(bup);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the project if any of the downstream project is either
+     * building, waiting, pending or buildable.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    public AbstractProject getBuildingDownstream() {
+        Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
+
+        for (AbstractProject tup : getTransitiveDownstreamProjects()) {
+			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+                return tup;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the project if any of the upstream project is either
+     * building or is in the queue.
+     * <p>
+     * This means eventually there will be an automatic triggering of
+     * the given project (provided that all builds went smoothly.)
+     */
+    public AbstractProject getBuildingUpstream() {
+        Set<Task> unblockedTasks = Jenkins.getInstance().getQueue().getUnblockedTasks();
+
+        for (AbstractProject tup : getTransitiveUpstreamProjects()) {
+			if (tup!=this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+                return tup;
         }
         return null;
     }
@@ -1581,30 +1637,96 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public abstract boolean isFingerprintConfigured();
 
     /**
+     * Gets the other {@link AbstractProject}s that should be built
+     * when a build of this project is completed.
+     */
+    @Exported
+    public final List<AbstractProject> getDownstreamProjects() {
+        return Jenkins.getInstance().getDependencyGraph().getDownstream(this);
+    }
+
+    @Exported
+    public final List<AbstractProject> getUpstreamProjects() {
+        return Jenkins.getInstance().getDependencyGraph().getUpstream(this);
+    }
+
+    /**
      * Returns only those upstream projects that defines {@link BuildTrigger} to this project.
-     * This is a subset of {@link #getUpstreamProjects()}, only including {@link AbstractProject}s.
+     * This is a subset of {@link #getUpstreamProjects()}
      * <p>No longer used in the UI.
      * @return A List of upstream projects that has a {@link BuildTrigger} to this project.
      */
     public final List<AbstractProject> getBuildTriggerUpstreamProjects() {
         ArrayList<AbstractProject> result = new ArrayList<AbstractProject>();
-        for (Job<?,?> j : getUpstreamProjects()) {
-            if (j instanceof AbstractProject) {
-                AbstractProject<?,?> ap = (AbstractProject) j;
-                BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
-                if (buildTrigger != null)
-                    if (buildTrigger.getChildProjects(ap).contains(this))
-                        result.add(ap);
-            }
+        for (AbstractProject<?,?> ap : getUpstreamProjects()) {
+            BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
+            if (buildTrigger != null)
+                if (buildTrigger.getChildProjects(ap).contains(this))
+                    result.add(ap);
         }
         return result;
+    }
+
+    /**
+     * Gets all the upstream projects including transitive upstream projects.
+     *
+     * @since 1.138
+     */
+    public final Set<AbstractProject> getTransitiveUpstreamProjects() {
+        return Jenkins.getInstance().getDependencyGraph().getTransitiveUpstream(this);
+    }
+
+    /**
+     * Gets all the downstream projects including transitive downstream projects.
+     *
+     * @since 1.138
+     */
+    public final Set<AbstractProject> getTransitiveDownstreamProjects() {
+        return Jenkins.getInstance().getDependencyGraph().getTransitiveDownstream(this);
+    }
+
+    /**
+     * Gets the dependency relationship map between this project (as the source)
+     * and that project (as the sink.)
+     *
+     * @return
+     *      can be empty but not null. build number of this project to the build
+     *      numbers of that project.
+     */
+    public SortedMap<Integer, RangeSet> getRelationship(AbstractProject that) {
+        TreeMap<Integer,RangeSet> r = new TreeMap<Integer,RangeSet>(REVERSE_INTEGER_COMPARATOR);
+
+        checkAndRecord(that, r, this.getBuilds());
+        // checkAndRecord(that, r, that.getBuilds());
+
+        return r;
+    }
+
+    /**
+     * Helper method for getDownstreamRelationship.
+     *
+     * For each given build, find the build number range of the given project and put that into the map.
+     */
+    private void checkAndRecord(AbstractProject that, TreeMap<Integer, RangeSet> r, Collection<R> builds) {
+        for (R build : builds) {
+            RangeSet rs = build.getDownstreamRelationship(that);
+            if(rs==null || rs.isEmpty())
+                continue;
+
+            int n = build.getNumber();
+
+            RangeSet value = r.get(n);
+            if(value==null)
+                r.put(n,rs);
+            else
+                value.add(rs);
+        }
     }
 
     /**
      * Builds the dependency graph.
      * Since 1.558, not abstract and by default includes dependencies contributed by {@link #triggers()}.
      */
-    @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
         triggers().buildDependencyGraph(this, graph);
     }
@@ -2038,6 +2160,12 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     public static @CheckForNull AbstractProject findNearest(String name, ItemGroup context) {
         return Items.findNearest(AbstractProject.class, name, context);
     }
+
+    private static final Comparator<Integer> REVERSE_INTEGER_COMPARATOR = new Comparator<Integer>() {
+        public int compare(Integer o1, Integer o2) {
+            return o2-o1;
+        }
+    };
 
     private static final Logger LOGGER = Logger.getLogger(AbstractProject.class.getName());
 

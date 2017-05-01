@@ -38,7 +38,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Item;
-import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -368,7 +367,7 @@ public class BuildTriggerTest {
             }
 
             @Override
-            public boolean shouldTriggerBuild(Run build, TaskListener listener, List<Action> actions) {
+            public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
                 if (block) {
                     try {
                         Thread.sleep(5000);
@@ -387,12 +386,9 @@ public class BuildTriggerTest {
         }
 
         @Override @SuppressWarnings("rawtypes")
-        public void buildDependencyGraph(Job j, DependencyGraph graph) {
-            if (j instanceof AbstractProject) {
-                AbstractProject owner = (AbstractProject) j;
-                for (AbstractProject ch : getChildProjects(owner)) {
-                    graph.addDependency(new Dep(owner, ch));
-                }
+        public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
+            for (AbstractProject ch: getChildProjects(owner)) {
+                graph.addDependency(new Dep(owner, ch));
             }
         }
     }

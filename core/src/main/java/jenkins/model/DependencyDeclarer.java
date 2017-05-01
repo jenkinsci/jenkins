@@ -25,7 +25,6 @@ package jenkins.model;
 
 import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
-import hudson.model.Job;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
@@ -51,7 +50,7 @@ public interface DependencyDeclarer {
     // so that this concept can be extended elsewhere, like maven projects and so on.
 
     /**
-     * Invoked from {@link Job#buildDependencyGraph(DependencyGraph)}.
+     * Invoked from {@link AbstractProject#buildDependencyGraph(DependencyGraph)}.
      *
      * @param owner
      *      The project that owns the publishers, builders, etc.
@@ -62,5 +61,5 @@ public interface DependencyDeclarer {
      * @param graph
      *      The dependency graph being built. Never null.
      */
-    void buildDependencyGraph(Job owner, DependencyGraph graph);
+    void buildDependencyGraph(AbstractProject owner, DependencyGraph graph);
 }

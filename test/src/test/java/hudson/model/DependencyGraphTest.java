@@ -93,10 +93,10 @@ public class DependencyGraphTest extends HudsonTestCase {
             super(buildResult);
             this.down = down;
         }
-        public void buildDependencyGraph(Job owner, DependencyGraph graph) {
+        public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
             graph.addDependency(new DependencyGraph.Dependency(owner, down) {
                 @Override
-                public boolean shouldTriggerBuild(Run build, TaskListener listener,
+                public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
                                                   List<Action> actions) {
                     // Trigger for ODD build number
                     if (build.getNumber() % 2 == 1) {
@@ -122,7 +122,7 @@ public class DependencyGraphTest extends HudsonTestCase {
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject) jenkins.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);
-            List<Job> down = jenkins.getDependencyGraph().getDownstream(up);
+            List<AbstractProject> down = jenkins.getDependencyGraph().getDownstream(up);
             assertEquals("Should have one downstream project", 1, down.size());
         } finally {
             SecurityContextHolder.clearContext();
@@ -150,9 +150,9 @@ public class DependencyGraphTest extends HudsonTestCase {
         jenkins.rebuildDependencyGraph();
 
         DependencyGraph g = jenkins.getDependencyGraph();
-        List<Job<?, ?>> sorted = g.getTopologicallySorted();
+        List<AbstractProject<?, ?>> sorted = g.getTopologicallySorted();
         StringBuilder buf = new StringBuilder();
-        for (Job<?, ?> p : sorted) {
+        for (AbstractProject<?, ?> p : sorted) {
             buf.append(p.getName());
         }
         String r = buf.toString();
