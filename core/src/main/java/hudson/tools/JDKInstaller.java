@@ -32,7 +32,6 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
-import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
@@ -41,6 +40,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -64,7 +64,6 @@ import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -185,11 +184,9 @@ public class JDKInstaller extends ToolInstaller {
             // so check if the file is gzipped, and if so, treat it accordingly
             byte[] header = new byte[2];
             {
-                DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                try {
+                try (InputStream is = fs.read(jdkBundle);
+                     DataInputStream in = new DataInputStream(is)) {
                     in.readFully(header);
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
             }
 
@@ -523,6 +520,8 @@ public class JDKInstaller extends ToolInstaller {
                         tmp.getParentFile().mkdirs();
                         try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
+                        } catch (InvalidPathException e) {
+                            throw new IOException(e);
                         }
 
                         tmp.renameTo(cache);
@@ -698,7 +697,7 @@ public class JDKInstaller extends ToolInstaller {
 
     public static final class JDKRelease {
         /**
-         * the list of {@Link JDKFile}s
+         * the list of {@link JDKFile}s
          */
         public JDKFile[] files;
         /**
@@ -817,7 +816,7 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         /**
-         * @{inheritDoc}
+         * {@inheritDoc}
          */
         @Override
         public JSONObject reduce (List<JSONObject> jsonObjectList) {

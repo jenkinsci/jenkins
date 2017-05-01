@@ -466,42 +466,42 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     }
 
     /**
-     * Returns the label that represents "this&amp;rhs"
+     * Returns the label that represents {@code this&rhs}
      */
     public Label and(Label rhs) {
         return new LabelExpression.And(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this|rhs"
+     * Returns the label that represents {@code this|rhs}
      */
     public Label or(Label rhs) {
         return new LabelExpression.Or(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this&lt;->rhs"
+     * Returns the label that represents {@code this<->rhs}
      */
     public Label iff(Label rhs) {
         return new LabelExpression.Iff(this,rhs);
     }
 
     /**
-     * Returns the label that represents "this->rhs"
+     * Returns the label that represents {@code this->rhs}
      */
     public Label implies(Label rhs) {
         return new LabelExpression.Implies(this,rhs);
     }
 
     /**
-     * Returns the label that represents "!this"
+     * Returns the label that represents {@code !this}
      */
     public Label not() {
         return new LabelExpression.Not(this);
     }
 
     /**
-     * Returns the label that represents "(this)"
+     * Returns the label that represents {@code (this)}
      * This is a pointless operation for machines, but useful
      * for humans who find the additional parenthesis often useful
      */

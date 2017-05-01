@@ -26,10 +26,10 @@ package hudson.util;
 import com.google.common.collect.*;
 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -72,6 +72,8 @@ public class TextFile {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
         return out.toString();
     }
@@ -102,7 +104,7 @@ public class TextFile {
                             }
                         }
                     };
-                } catch (IOException e) {
+                } catch (IOException | InvalidPathException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -129,9 +131,7 @@ public class TextFile {
     public @Nonnull String head(int numChars) throws IOException {
         char[] buf = new char[numChars];
         int read = 0;
-        Reader r = new FileReader(file);
-
-        try {
+        try (Reader r = new FileReader(file)) {
             while (read<numChars) {
                 int d = r.read(buf,read,buf.length-read);
                 if (d<0)
@@ -140,8 +140,6 @@ public class TextFile {
             }
 
             return new String(buf,0,read);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(r);
         }
     }
 

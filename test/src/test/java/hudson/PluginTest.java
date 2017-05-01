@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestPluginManager;
 
 public class PluginTest {
 
@@ -36,6 +37,7 @@ public class PluginTest {
 
     @Issue({"SECURITY-131", "SECURITY-155"})
     @Test public void doDynamic() throws Exception {
+        ((TestPluginManager) r.jenkins.pluginManager).installDetachedPlugin("credentials");
         r.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
         /* Collapsed somewhere before it winds up in restOfPath:
         r.createWebClient().assertFails("plugin/credentials/images/../images/24x24/credentials.png", HttpServletResponse.SC_BAD_REQUEST);

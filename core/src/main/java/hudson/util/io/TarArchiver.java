@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
@@ -108,7 +109,7 @@ final class TarArchiver extends Archiver {
                     while ((len = in.read(buf)) >= 0) {
                         tar.write(buf, 0, len);
                     }
-                } catch (IOException e) {// log the exception in any case
+                } catch (IOException | InvalidPathException e) {// log the exception in any case
                     IOException ioE = new IOException("Error writing to tar file from: " + file, e);
                     throw ioE;
                 }

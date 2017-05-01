@@ -1053,7 +1053,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AbstractTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AbstractTestResultAction}.
      */
     @Deprecated
     public Action getTestResultAction() {
@@ -1065,7 +1065,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     /**
-     * @deprecated Use {@link #getAction(Class)} on {@link AggregatedTestResultAction}.
+     * @deprecated Use {@link #getAction(Class)} on {@code AggregatedTestResultAction}.
      */
     @Deprecated
     public Action getAggregatedTestResultAction() {
@@ -1347,6 +1347,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
      *      Use {@link #doStop()}
      */
     @Deprecated
+    @RequirePOST // #doStop() should be preferred, but better to be safe
     public void doStop(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doStop().generateResponse(req,rsp,this);
     }

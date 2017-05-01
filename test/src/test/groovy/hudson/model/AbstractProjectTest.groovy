@@ -553,6 +553,11 @@ public class AbstractProjectTest {
      */
     @Test
     public void testConfigDotXmlSubmissionToDifferentType() {
+        j.jenkins.pluginManager.installDetachedPlugin("javadoc")
+        j.jenkins.pluginManager.installDetachedPlugin("junit")
+        j.jenkins.pluginManager.installDetachedPlugin("mailer")
+        j.jenkins.pluginManager.installDetachedPlugin("maven-plugin")
+
         j.jenkins.crumbIssuer = null
         def p = j.createFreeStyleProject()
 

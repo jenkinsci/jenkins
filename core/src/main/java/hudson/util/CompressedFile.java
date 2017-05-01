@@ -25,7 +25,6 @@ package hudson.util;
 
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
-import hudson.Util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -79,7 +79,11 @@ public class CompressedFile {
     public OutputStream write() throws IOException {
         if(gz.exists())
             gz.delete();
-        return Files.newOutputStream(file.toPath());
+        try {
+            return Files.newOutputStream(file.toPath());
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -87,11 +91,19 @@ public class CompressedFile {
      */
     public InputStream read() throws IOException {
         if(file.exists())
-            return Files.newInputStream(file.toPath());
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
 
         // check if the compressed file exists
         if(gz.exists())
-            return new GZIPInputStream(Files.newInputStream(gz.toPath()));
+            try {
+                return new GZIPInputStream(Files.newInputStream(gz.toPath()));
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
 
         // no such file
         throw new FileNotFoundException(file.getName());
@@ -112,14 +124,12 @@ public class CompressedFile {
 
         StringBuilder str = new StringBuilder((int)sizeGuess);
 
-        Reader r = new InputStreamReader(read());
-        try {
+        try (InputStream is = read();
+             Reader r = new InputStreamReader(is)) {
             char[] buf = new char[8192];
             int len;
             while((len=r.read(buf,0,buf.length))>0)
                 str.append(buf,0,len);
-        } finally {
-            IOUtils.closeQuietly(r);
         }
 
         return str.toString();
@@ -137,8 +147,9 @@ public class CompressedFile {
             public void run() {
                 try {
                     try (InputStream in = read();
-                         OutputStream out = new GZIPOutputStream(Files.newOutputStream(gz.toPath()))) {
-                        Util.copyStream(in, out);
+                         OutputStream os = Files.newOutputStream(gz.toPath());
+                         OutputStream out = new GZIPOutputStream(os)) {
+                        org.apache.commons.io.IOUtils.copy(in, out);
                     }
                     // if the compressed file is created successfully, remove the original
                     file.delete();
