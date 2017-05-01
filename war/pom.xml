@@ -288,7 +288,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>1.9</version>
+                  <version>1.15</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -384,7 +384,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.13</version>
+                  <version>1.18.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
