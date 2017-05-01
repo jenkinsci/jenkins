@@ -1,42 +1,42 @@
 <div>
-  &#x63A7;&#x5236; Jenkins &#x4EC0;&#x9EBC;&#x6642;&#x9593;&#x555F;&#x52D5;&#x53CA;&#x505C;&#x6B62; Slave&#x3002;
+    控制 Jenkins 什麼時間啟動及停止 Slave。
 
     <dl>
         <dt><b>
-          &#x76E1;&#x53EF;&#x80FD;&#x8B93; Slave &#x4FDD;&#x6301;&#x5728;&#x4E0A;&#x7DDA;&#x72C0;&#x614B;
+            盡可能讓 Slave 保持在上線狀態
         </b></dt>
         <dd>
-          &#x9019;&#x662F;&#x9810;&#x8A2D;&#x503C;&#x4E5F;&#x662F;&#x6A19;&#x6E96;&#x8A2D;&#x5B9A;&#x3002;
-          &#x6B64;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;Jenkins &#x6703;&#x76E1;&#x53EF;&#x4EE5;&#x8B93; Slave &#x4E0A;&#x7DDA;&#x3002;
-          &#x5982;&#x679C; Jenkins &#x53EF;&#x4EE5;&#x81EA;&#x5DF2;&#x555F;&#x52D5; Slave&#xFF0C;&#x5728; Slave &#x7121;&#x6CD5;&#x4F7F;&#x7528;&#x6642;&#x6703;&#x6BCF;&#x9694;&#x4E00;&#x6BB5;&#x6642;&#x9593;&#x8A66;&#x770B;&#x770B;&#x80FD;&#x4E0D;&#x80FD;&#x5C07;&#x5176;&#x91CD;&#x555F;&#x3002;
-          Jenkins &#x4E0D;&#x6703;&#x4E3B;&#x52D5;&#x8B93; Slave &#x96E2;&#x7DDA;&#x3002;
+            這是預設值也是標準設定。
+            此模式下，Jenkins 會盡可以讓 Slave 上線。
+            如果 Jenkins 可以自已啟動 Slave，在 Slave 無法使用時會每隔一段時間試看看能不能將其重啟。
+            Jenkins 不會主動讓 Slave 離線。
         </dd>
 
         <!--dt><b>
-        &#x5206;&#x5225;&#x5728;&#x6307;&#x5B9A;&#x6642;&#x9593;&#x8B93; Slave &#x4E0A;&#x7DDA;&#x53CA;&#x96E2;&#x7DDA;
-    </b></dt>
-    <dd>
-        &#x6B64;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;Jenkins &#x6703;&#x4F9D;&#x7167;&#x6392;&#x7A0B;&#x8B93; Slave &#x4E0A;&#x7DDA;&#x3002;
-        &#x5982;&#x679C; Jenkins &#x53EF;&#x4EE5;&#x81EA;&#x5DF2;&#x555F;&#x52D5; Slave&#xFF0C;&#x5728; Slave &#x8A72;&#x4E0A;&#x7DDA;&#x4F46;&#x537B;&#x6C92;&#x6709;&#x4E0A;&#x7DDA;&#x6642;&#xFF0C;&#x6703;&#x6BCF;&#x9694;&#x4E00;&#x6BB5;&#x6642;&#x9593;&#x8A66;&#x770B;&#x770B;&#x80FD;&#x4E0D;&#x80FD;&#x5C07;&#x5176;&#x91CD;&#x555F;&#x3002;
+            分別在指定時間讓 Slave 上線及離線
+        </b></dt>
+        <dd>
+            此模式下，Jenkins 會依照排程讓 Slave 上線。
+            如果 Jenkins 可以自已啟動 Slave，在 Slave 該上線但卻沒有上線時，會每隔一段時間試看看能不能將其重啟。
 
-        &#x5728;&#x96E2;&#x7DDA;&#x6642;&#x6BB5;&#xFF0C;Slave &#x53EA;&#x6709;&#x5728;&#x6C92;&#x8DD1;&#x4EFB;&#x4F55;&#x4F5C;&#x696D;&#x5F8C;&#x624D;&#x6703;&#x88AB;&#x5207;&#x63DB;&#x6210;&#x96E2;&#x7DDA;&#x3002;
+            在離線時段，Slave 只有在沒跑任何作業後才會被切換成離線。
         </dd-->
 
         <dt><b>
-            &#x9700;&#x8981;&#x6642;&#x8B93; Jenkins &#x4E0A;&#x7DDA;&#xFF0C;&#x9592;&#x7F6E;&#x6642;&#x96E2;&#x7DDA;
+            需要時讓 Jenkins 上線，閒置時離線
         </b></dt>
         <dd>
-            &#x6B64;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x5982;&#x679C; Jenkins &#x53EF;&#x4EE5;&#x81EA;&#x5DF2;&#x555F;&#x52D5; Slave&#xFF0C;&#x7576;&#x6709;&#x672A;&#x57F7;&#x884C;&#x4F5C;&#x696D;&#x7B26;&#x5408;&#x4E0B;&#x5217;&#x60C5;&#x6CC1;&#x6642;&#xFF0C;Jenkins
-            &#x6703;&#x6BCF;&#x9694;&#x4E00;&#x6BB5;&#x6642;&#x9593;&#x8A66;&#x770B;&#x770B;&#x80FD;&#x4E0D;&#x80FD;&#x5C07; Slave &#x555F;&#x52D5;:
+            此模式下，如果 Jenkins 可以自已啟動 Slave，當有未執行作業符合下列情況時，Jenkins
+            會每隔一段時間試看看能不能將 Slave 啟動:
             <ul>
-                <li>&#x4F5C;&#x696D;&#x5DF2;&#x7D93;&#x5728;&#x4F47;&#x5217;&#x88E1;&#x7B49;&#x8D85;&#x904E;&#x6307;&#x5B9A;&#x7684;&#x4E0A;&#x7DDA;&#x5EF6;&#x9072;&#x6642;&#x9593;</li>
-                <li>&#x4F5C;&#x696D;&#x53EF;&#x4EE5;&#x5728;&#x9019;&#x500B; Slave &#x4E0A;&#x57F7;&#x884C;</li>
+                <li>作業已經在佇列裡等超過指定的上線延遲時間</li>
+                <li>作業可以在這個 Slave 上執行</li>
             </ul>
 
-            Slave &#x96E2;&#x7DDA;&#x6642;&#x6A5F;:
+            Slave 離線時機:
             <ul>
-                <li>&#x9019;&#x500B; Slave &#x6C92;&#x5728;&#x5EFA;&#x7F6E;&#x4EFB;&#x4F55;&#x4F5C;&#x696D;</li>
-                <li>Slave &#x5DF2;&#x7D93;&#x9592;&#x7F6E;&#x8D85;&#x904E;&#x6307;&#x5B9A;&#x7684;&#x96E2;&#x7DDA;&#x5EF6;&#x9072;&#x6642;&#x9593;</li>
+                <li>這個 Slave 沒在建置任何作業</li>
+                <li>Slave 已經閒置超過指定的離線延遲時間</li>
             </ul>
         </dd>
     </dl>
