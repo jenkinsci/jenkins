@@ -952,6 +952,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        LOGGER.log(FINE, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);

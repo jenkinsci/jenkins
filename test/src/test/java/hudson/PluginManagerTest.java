@@ -31,7 +31,6 @@ import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
 import hudson.model.User;
-import hudson.scm.SubversionSCM;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
@@ -167,7 +166,6 @@ public class PluginManagerTest {
                     // plugins should be already visible in the UberClassLoader
                     assertTrue(!activePlugins.isEmpty());
 
-                    uberClassLoader.loadClass(SubversionSCM.class.getName());
                     uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
 
                     super.startPlugin(plugin);
