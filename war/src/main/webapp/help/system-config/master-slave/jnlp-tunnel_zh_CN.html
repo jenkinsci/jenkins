@@ -1,16 +1,16 @@
 <div>
-    Slave &#x901A;&#x8FC7;JNLP&#x542F;&#x52A8;&#x65F6;&#xFF0C;&#x5176;&#x4EE3;&#x7406;&#x7A0B;&#x5E8F;&#x4F1A;&#x5C1D;&#x8BD5;&#x94FE;&#x63A5;Jenkins&#x7279;&#x5B9A;&#x7684;TCP&#x8FDE;&#x63A5;&#x70B9;&#xFF0C;&#x6765;&#x5EFA;&#x7ACB;&#x901A;&#x4FE1;&#x901A;&#x9053;&#x3002;
-    &#x4F46;&#x662F;&#x67D0;&#x4E9B;&#x5B89;&#x5168;&#x654F;&#x611F;&#x7684;&#x7F51;&#x7EDC;&#x53EF;&#x80FD;&#x963B;&#x6B62;&#x60A8;&#x5EFA;&#x7ACB;&#x8FD9;&#x4E2A;&#x8FDE;&#x63A5;&#x3002;
-    Jenkins&#x5728;&#x8D1F;&#x8F7D;&#x5E73;&#x8861;&#x5668;&#x3001;
-    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">&#x53CD;&#x5411;&#x4EE3;&#x7406;</a>
-    &#x5230; <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>&#x7B49;&#x73AF;&#x5883;&#x4E2D;&#x4E5F;&#x53EF;&#x80FD;&#x65E0;&#x6CD5;&#x5EFA;&#x7ACB;&#x8FDE;&#x63A5;.
+    Slave 通过JNLP启动时，其代理程序会尝试链接Jenkins特定的TCP连接点，来建立通信通道。
+    但是某些安全敏感的网络可能阻止您建立这个连接。
+    Jenkins在负载平衡器、
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">反向代理</a>
+    到 <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>等环境中也可能无法建立连接.
 
     <p>
-    Tunneling &#x9009;&#x9879;&#x53EF;&#x4EE5;&#x8BA9;&#x60A8;&#x628A;&#x8FDE;&#x63A5;&#x7ED5;&#x9053;&#x5176;&#x4ED6;&#x4E3B;&#x673A;&#x6216;&#x8FDE;&#x63A5;&#x53E3;&#xFF0C;&#x9002;&#x7528;&#x4E0A;&#x8FF0;&#x51E0;&#x79CD;&#x60C5;&#x666F;&#x3002;
-    &#x5185;&#x5BB9;&#x53EF;&#x4EE5;&#x662F; "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>", &#x6216; "<tt>HOST:</tt>". &#x7B2C;&#x4E00;&#x79CD;&#x683C;&#x5F0F;&#x8BA9;JNLP Slave &#x4EE3;&#x7406;&#x7A0B;&#x5E8F;&#x8FDE;&#x63A5;&#x5230;&#x6307;&#x5B9A;&#x4E3B;&#x673A;&#x4E0A;&#x7684;&#x6307;&#x5B9A;&#x53E3;&#xFF0C;
-    &#x5047;&#x5B9A;&#x60A8;&#x5DF2;&#x7ECF;&#x5C06;&#x8BE5;&#x53E3;&#x7684;&#x7F51;&#x7EDC;&#x8BBE;&#x5B9A;&#x8F6C;&#x5230;Jenkins JNLP Slave TCP &#x8FDE;&#x63A5;&#x53E3;&#x3002;
+    Tunneling 选项可以让您把连接绕道其他主机或连接口，适用上述几种情景。
+    内容可以是 "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>", 或 "<tt>HOST:</tt>". 第一种格式让JNLP Slave 代理程序连接到指定主机上的指定口，
+    假定您已经将该口的网络设定转到Jenkins JNLP Slave TCP 连接口。
 
     <p>
-    &#x5728;&#x540E;&#x4E24;&#x79CD;&#x683C;&#x5F0F;&#x4E2D;&#xFF0C;&#x4E0D;&#x6307;&#x5B9A;&#x7684;&#x90E8;&#x5206;&#x5C31;&#x4EE3;&#x8868;&#x4F7F;&#x7528;&#x9ED8;&#x8BA4;&#x503C;&#xFF08;&#x4E3B;&#x673A;&#x90E8;&#x5206;&#x5C31;&#x662F;Jenkins&#x6267;&#x884C;&#x7684;&#x673A;&#x5668;&#xFF0C;TCP&#x8FDE;&#x63A5;&#x53E3;&#x5C31;&#x662F;Jenkins&#x5F00;&#x542F;&#x7684;&#x90A3;&#x4E2A;&#xFF09;&#x3002;
-     &#x7279;&#x6B8A;&#x7684;&#x662F; <tt>HOST:</tt> &#x8FD9;&#x4E2A;&#x683C;&#x5F0F;&#x662F;&#x4E13;&#x95E8;&#x7528;&#x4E8E;&#x4F7F;&#x7528;HTTP&#x53CD;&#x5411;&#x4EE3;&#x7406;&#x548C;Jenkins&#x5B9E;&#x9645;&#x5728;&#x53E6;&#x4E00;&#x4E2A;&#x7CFB;&#x7EDF;&#x4E0B;&#x8FD0;&#x884C;&#x7684;&#x60C5;&#x51B5;&#x3002;
+    在后两种格式中，不指定的部分就代表使用默认值（主机部分就是Jenkins执行的机器，TCP连接口就是Jenkins开启的那个）。
+     特殊的是 <tt>HOST:</tt> 这个格式是专门用于使用HTTP反向代理和Jenkins实际在另一个系统下运行的情况。
 </div>
