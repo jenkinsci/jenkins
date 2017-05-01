@@ -162,7 +162,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Standard implementations of {@link ParameterizedJob#isParametrized}.
+     * Standard implementations of {@link ParameterizedJob#isParameterized}.
      */
     public final boolean isParameterized() {
         return asJob().getProperty(ParametersDefinitionProperty.class) != null;
