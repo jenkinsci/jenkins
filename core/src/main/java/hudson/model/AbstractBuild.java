@@ -181,12 +181,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return runMixIn;
     }
 
-    @SuppressWarnings("unchecked") // untypable
-    @Override
-    public R asRun() {
-        return (R) AbstractBuild.this;
-    }
-
     @Override
     @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
         ChangeLogSet<? extends Entry> cs = getChangeSet();

@@ -50,8 +50,6 @@ import java.util.logging.Logger;
 public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
 
-    RunT asRun();
-
     List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
 
     @CheckForNull
@@ -90,10 +88,11 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         };
     }
 
+    @SuppressWarnings("unchecked")
     default Set<User> calculateCulprits() {
         Set<User> r = new HashSet<User>();
-        RunT p = asRun().getPreviousCompletedBuild();
-        if (p != null && asRun().isBuilding()) {
+        RunT p = ((RunT)this).getPreviousCompletedBuild();
+        if (p != null && ((RunT)this).isBuilding()) {
             Result pr = p.getResult();
             if (pr != null && pr.isWorseThan(Result.SUCCESS)) {
                 // we are still building, so this is just the current latest information,
@@ -114,6 +113,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
     /**
      * Returns true if this user has made a commit to this build.
      */
+    @SuppressWarnings("unchecked")
     default boolean hasParticipant(User user) {
         for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
             for (ChangeLogSet.Entry e : c)
@@ -122,7 +122,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
                         return true;
                 } catch (RuntimeException re) {
                     Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
-                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + asRun().getParent().getDisplayName() + ", " + asRun().getDisplayName(), re);
+                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + ((RunT)this).getParent().getDisplayName() + ", " + ((RunT)this).getDisplayName(), re);
                 }
         }
         return false;
