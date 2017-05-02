@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 
 /**
  * Allows a {@link Run} to provide {@link SCM}-related methods, such as providing changesets and culprits.
- * 
+ *
  * @since FIXME
  */
 public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
@@ -64,7 +64,8 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
     /**
      * Gets the ids for all {@link User}s included in {@link #getChangeSets()} for this item.
      *
-     * @return A possibly null set of user IDs.
+     * @return A set of user IDs, or null if this was the first time the method was called or the build is still running
+     * for a {@link RunWithSCM} instance with no culprits.
      */
     @CheckForNull
     Set<String> getCulpritIds();
@@ -110,7 +111,7 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
     }
 
     /**
-     * Internal method used for actually calculating the culprits from scratch. Called by {@link #getCulprits()} and
+     * Method used for actually calculating the culprits from scratch. Called by {@link #getCulprits()} and
      * overrides of {@link #getCulprits()}. Does not persist culprits information.
      *
      * @return a non-null {@link Set} of {@link User}s associated with this item.
