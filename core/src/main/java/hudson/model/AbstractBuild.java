@@ -336,6 +336,35 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return culprits;
     }
 
+    @Override
+    public boolean shouldCalculateCulprits() {
+        return getCulpritIds() == null;
+    }
+
+    @Override
+    @Nonnull
+    public Set<User> calculateCulprits() {
+        Set<User> c = RunWithSCM.super.calculateCulprits();
+
+        AbstractBuild<P,R> p = getPreviousCompletedBuild();
+        if (upstreamCulprits) {
+            // If we have dependencies since the last successful build, add their authors to our list
+            if (p.getPreviousNotFailedBuild() != null) {
+                Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
+                        p.getDependencyChanges(p.getPreviousSuccessfulBuild());
+                for (AbstractBuild.DependencyChange dep : depmap.values()) {
+                    for (AbstractBuild<?, ?> b : dep.getBuilds()) {
+                        for (ChangeLogSet.Entry entry : b.getChangeSet()) {
+                            c.add(entry.getAuthor());
+                        }
+                    }
+                }
+            }
+        }
+
+        return c;
+    }
+
     /**
      * Gets the version of Hudson that was used to build this job.
      *

@@ -24,8 +24,6 @@
 
 package jenkins.scm;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Result;
@@ -42,7 +40,6 @@ import java.util.AbstractSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,14 +49,15 @@ import java.util.logging.Logger;
  */
 public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
-    /**
-     * Set if we want the blame information to flow from upstream to downstream build.
-     */
-    boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
 
     RunT asRun();
 
     List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
+
+    @CheckForNull
+    Set<String> getCulpritIds();
+
+    boolean shouldCalculateCulprits();
 
     /**
      * List of users who committed a change since the last non-broken build till now.
@@ -73,40 +71,8 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
      */
     @Exported
     @Nonnull default Set<User> getCulprits() {
-        if (getCulpritIds() == null) {
-            Set<User> r = new HashSet<User>();
-            RunT p = asRun().getPreviousCompletedBuild();
-            if (p != null && asRun().isBuilding()) {
-                Result pr = p.getResult();
-                if (pr != null && pr.isWorseThan(Result.SUCCESS)) {
-                    // we are still building, so this is just the current latest information,
-                    // but we seems to be failing so far, so inherit culprits from the previous build.
-                    // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
-                    // this information
-                    r.addAll(p.getCulprits());
-                }
-            }
-            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
-                for (ChangeLogSet.Entry e : c)
-                    r.add(e.getAuthor());
-            }
-
-            if (p instanceof AbstractBuild && upstreamCulprits) {
-                // If we have dependencies since the last successful build, add their authors to our list
-                if (p.getPreviousNotFailedBuild() != null) {
-                    Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
-                            ((AbstractBuild<?,?>) p).getDependencyChanges((AbstractBuild<?,?>)p.getPreviousSuccessfulBuild());
-                    for (AbstractBuild.DependencyChange dep : depmap.values()) {
-                        for (AbstractBuild<?, ?> b : dep.getBuilds()) {
-                            for (ChangeLogSet.Entry entry : b.getChangeSet()) {
-                                r.add(entry.getAuthor());
-                            }
-                        }
-                    }
-                }
-            }
-
-            return r;
+        if (shouldCalculateCulprits()) {
+            return calculateCulprits();
         }
 
         return new AbstractSet<User>() {
@@ -124,6 +90,27 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         };
     }
 
+    default Set<User> calculateCulprits() {
+        Set<User> r = new HashSet<User>();
+        RunT p = asRun().getPreviousCompletedBuild();
+        if (p != null && asRun().isBuilding()) {
+            Result pr = p.getResult();
+            if (pr != null && pr.isWorseThan(Result.SUCCESS)) {
+                // we are still building, so this is just the current latest information,
+                // but we seems to be failing so far, so inherit culprits from the previous build.
+                // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
+                // this information
+                r.addAll(p.getCulprits());
+            }
+        }
+        for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
+            for (ChangeLogSet.Entry e : c)
+                r.add(e.getAuthor());
+        }
+
+        return r;
+    }
+
     /**
      * Returns true if this user has made a commit to this build.
      */
@@ -134,14 +121,10 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
                     if (e.getAuthor() == user)
                         return true;
                 } catch (RuntimeException re) {
+                    Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
                     LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + asRun().getParent().getDisplayName() + ", " + asRun().getDisplayName(), re);
                 }
         }
         return false;
     }
-
-    @CheckForNull
-    Set<String> getCulpritIds();
-
-    Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
 }
