@@ -464,7 +464,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public String getBuildNowText() {
         // For compatibility, still use the deprecated replacer if specified.
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, ParameterizedJobMixIn.ParameterizedJob.super.getBuildNowText());
     }
 
     /**
@@ -832,14 +832,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this collection can contain null, and those will be silently ignored.
      * @since 1.383
      */
-    @SuppressWarnings("unchecked")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         List<Action> queueActions = new ArrayList<Action>(actions);
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-        return getParameterizedJobMixIn().scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
     }
 
     /**
@@ -863,6 +862,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c) {
         return scheduleBuild2(quietPeriod, c, new Action[0]);
+    }
+
+    @Override
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Action... actions) {
+        return ParameterizedJobMixIn.ParameterizedJob.super.scheduleBuild2(quietPeriod, actions);
     }
 
     /**

@@ -66,6 +66,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * Allows a {@link Job} to make use of {@link ParametersDefinitionProperty} and be scheduled in various ways.
  * Stateless so there is no need to keep an instance of it in a field.
+ * Besides implementing {@link ParameterizedJob}, you should override {@link Job#makeSearchIndex} to call {@link #extendSearchIndex}.
  * @since 1.556
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
@@ -96,11 +97,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Provides a standard implementation of {@link SCMTriggerItem#scheduleBuild2} to schedule a build with the ability to wait for its result.
-     * That job method is often used during functional tests ({@code JenkinsRule.assertBuildStatusSuccess}).
-     * @param quietPeriod seconds to wait before starting (normally 0)
-     * @param actions various actions to associate with the scheduling, such as {@link ParametersAction} or {@link CauseAction}
-     * @return a handle by which you may wait for the build to complete (or just start); or null if the build was not actually scheduled for some reason
+     * Standard implementation of {@link ParameterizedJob#scheduleBuild2}.
      */
     public final @CheckForNull QueueTaskFuture<RunT> scheduleBuild2(int quietPeriod, Action... actions) {
         Queue.Item i = scheduleBuild2(quietPeriod, Arrays.asList(actions));
@@ -162,7 +159,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     }
 
     /**
-     * Standard implementations of {@link ParameterizedJob#isParameterized}.
+     * Standard implementation of {@link ParameterizedJob#isParameterized}.
      */
     public final boolean isParameterized() {
         return asJob().getProperty(ParametersDefinitionProperty.class) != null;
@@ -372,9 +369,17 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return getParameterizedJobMixIn().scheduleBuild(quietPeriod, c);
         }
 
-        // omitting scheduleBuild2(int, Action...) since it is defined in SCMTriggerItem (could include less commonly used overloads if desired)
-
-        // cannot offer makeSearchIndex() since it is defined in Job
+        /**
+         * Provides a standard implementation of {@link SCMTriggerItem#scheduleBuild2} to schedule a build with the ability to wait for its result.
+         * That job method is often used during functional tests ({@code JenkinsRule.assertBuildStatusSuccess}).
+         * @param quietPeriod seconds to wait before starting (normally 0)
+         * @param actions various actions to associate with the scheduling, such as {@link ParametersAction} or {@link CauseAction}
+         * @return a handle by which you may wait for the build to complete (or just start); or null if the build was not actually scheduled for some reason
+         */
+        @CheckForNull
+        default QueueTaskFuture<RunT> scheduleBuild2(int quietPeriod, Action... actions) {
+            return getParameterizedJobMixIn().scheduleBuild2(quietPeriod, actions);
+        }
 
         /**
          * Schedules a new build command.
