@@ -31,6 +31,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.User;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import org.kohsuke.stapler.export.Exported;
 
@@ -45,6 +46,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Allows a {@link Run} to provide {@link SCM}-related methods, such as providing changesets and culprits.
+ * 
  * @since FIXME
  */
 public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
