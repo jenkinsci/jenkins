@@ -64,7 +64,6 @@ import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
 import jenkins.scm.RunWithSCM;
-import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 
@@ -829,44 +828,42 @@ public abstract class View extends AbstractModelObject implements AccessControll
             int itemCount = 0;
             for (Item item : items) {
                 for (Job<?,?> job : item.getAllJobs()) {
-                    if (job instanceof SCMTriggerItem) {
-                        RunList<? extends Run<?,?>> builds = job.getBuilds();
-                        int buildCount = 0;
-                        for (Run<?,?> r : builds) {
-                            if (canceled()) {
-                                return;
-                            }
-                            if (!(r instanceof RunWithSCM)) {
-                                continue;
-                            }
+                    RunList<? extends Run<?, ?>> builds = job.getBuilds();
+                    int buildCount = 0;
+                    for (Run<?, ?> r : builds) {
+                        if (canceled()) {
+                            return;
+                        }
+                        if (!(r instanceof RunWithSCM)) {
+                            continue;
+                        }
 
-                            RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
-                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
-                                for (ChangeLogSet.Entry entry : c) {
-                                    User user = entry.getAuthor();
-                                    UserInfo info = users.get(user);
-                                    if (info == null) {
-                                        UserInfo userInfo = new UserInfo(user, job, r.getTimestamp());
-                                        userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
-                                        synchronized (this) {
-                                            users.put(user, userInfo);
-                                            modified.add(user);
-                                        }
-                                    } else if (info.getLastChange().before(r.getTimestamp())) {
-                                        synchronized (this) {
-                                            info.project = job;
-                                            info.lastChange = r.getTimestamp();
-                                            modified.add(user);
-                                        }
+                        RunWithSCM<?, ?> runWithSCM = (RunWithSCM<?, ?>) r;
+                        for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
+                            for (ChangeLogSet.Entry entry : c) {
+                                User user = entry.getAuthor();
+                                UserInfo info = users.get(user);
+                                if (info == null) {
+                                    UserInfo userInfo = new UserInfo(user, job, r.getTimestamp());
+                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
+                                    synchronized (this) {
+                                        users.put(user, userInfo);
+                                        modified.add(user);
+                                    }
+                                } else if (info.getLastChange().before(r.getTimestamp())) {
+                                    synchronized (this) {
+                                        info.project = job;
+                                        info.lastChange = r.getTimestamp();
+                                        modified.add(user);
                                     }
                                 }
                             }
-                            // TODO consider also adding the user of the UserCause when applicable
-                            buildCount++;
-                            // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
-                            // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
-                            progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                         }
+                        // TODO consider also adding the user of the UserCause when applicable
+                        buildCount++;
+                        // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
+                        // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
+                        progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
                     }
                 }
                 itemCount++;
