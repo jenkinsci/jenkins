@@ -63,6 +63,7 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
+import jenkins.scm.RunWithSCM;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
@@ -116,7 +117,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.scm.RunWithSCMMixIn.*;
+import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

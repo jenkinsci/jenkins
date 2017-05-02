@@ -30,7 +30,7 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import jenkins.scm.RunWithSCMMixIn;
+import jenkins.scm.RunWithSCM;
 import jenkins.util.SystemProperties;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.Fingerprint.BuildPtr;
@@ -100,7 +100,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
  * @author Kohsuke Kawaguchi
  * @see AbstractProject
  */
-public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCMMixIn.RunWithSCM<P,R> {
+public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Run<P,R> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<P,R>, RunWithSCM<P,R> {
 
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
@@ -181,21 +181,16 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return runMixIn;
     }
 
+    @SuppressWarnings("unchecked") // untypable
     @Override
-    public RunWithSCMMixIn<P,R> getRunWithSCMMixIn() {
-        return new RunWithSCMMixIn<P, R>() {
-            @SuppressWarnings("unchecked") // untypable
-            @Override protected R asRun() {
-                return (R) AbstractBuild.this;
-            }
+    public R asRun() {
+        return (R) AbstractBuild.this;
+    }
 
-            @Override
-            @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
-                ChangeLogSet<? extends Entry> cs = getChangeSet();
-                return cs.isEmptySet() ? Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>emptyList() : Collections.<ChangeLogSet<? extends ChangeLogSet.Entry>>singletonList(cs);
-            }
-
-        };
+    @Override
+    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+        ChangeLogSet<? extends Entry> cs = getChangeSet();
+        return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
     }
 
     @Override protected final BuildReference<R> createReference() {
@@ -336,35 +331,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return getParent().getScm().getModuleRoots(ws, this);
     }
 
-    /**
-     * List of users who committed a change since the last non-broken build till now.
-     *
-     * <p>
-     * This list at least always include people who made changes in this build, but
-     * if the previous build was a failure it also includes the culprit list from there.
-     *
-     * @return
-     *      can be empty but never null.
-     */
-    @Override
-    @Exported
-    @Nonnull public Set<User> getCulprits() {
-        return getRunWithSCMMixIn().getCulprits();
-    }
-
     @Override
     @CheckForNull public Set<String> getCulpritIds() {
         return culprits;
-    }
-
-    /**
-     * Returns true if this user has made a commit to this build.
-     *
-     * @since 1.191
-     */
-    @Override
-    public boolean hasParticipant(User user) {
-        return getRunWithSCMMixIn().hasParticipant(user);
     }
 
     /**
@@ -855,11 +824,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
         return cs;
-    }
-
-    @Override
-    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
-        return getRunWithSCMMixIn().getChangeSets();
     }
 
     /**

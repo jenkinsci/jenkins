@@ -33,7 +33,6 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.util.AdaptedIterator;
-import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 
@@ -51,16 +50,16 @@ import java.util.logging.Logger;
 /**
  * @since FIXME
  */
-public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
-        RunT extends Run<JobT, RunT> & RunWithSCMMixIn.RunWithSCM<JobT, RunT> & Queue.Executable> {
+public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
+        RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
     /**
      * Set if we want the blame information to flow from upstream to downstream build.
      */
-    private static final boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
+    boolean upstreamCulprits = SystemProperties.getBoolean("hudson.upstreamCulprits");
 
-    protected abstract RunT asRun();
+    RunT asRun();
 
-    public abstract List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
+    List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
 
     /**
      * List of users who committed a change since the last non-broken build till now.
@@ -73,8 +72,8 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
      *      can be empty but never null.
      */
     @Exported
-    @Nonnull public Set<User> getCulprits() {
-        if (asRun().getCulpritIds() == null) {
+    @Nonnull default Set<User> getCulprits() {
+        if (getCulpritIds() == null) {
             Set<User> r = new HashSet<User>();
             RunT p = asRun().getPreviousCompletedBuild();
             if (p != null && asRun().isBuilding()) {
@@ -112,7 +111,7 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
 
         return new AbstractSet<User>() {
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(asRun().getCulpritIds().iterator()) {
+                return new AdaptedIterator<String,User>(getCulpritIds().iterator()) {
                     protected User adapt(String id) {
                         return User.get(id);
                     }
@@ -120,7 +119,7 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
             }
 
             public int size() {
-                return asRun().getCulpritIds().size();
+                return getCulpritIds().size();
             }
         };
     }
@@ -128,7 +127,7 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
     /**
      * Returns true if this user has made a commit to this build.
      */
-    public boolean hasParticipant(User user) {
+    default boolean hasParticipant(User user) {
         for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
             for (ChangeLogSet.Entry e : c)
                 try {
@@ -141,21 +140,8 @@ public abstract class RunWithSCMMixIn<JobT extends Job<JobT, RunT> & Queue.Task,
         return false;
     }
 
-    public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
-            RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
-        @Nonnull
-        List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
+    @CheckForNull
+    Set<String> getCulpritIds();
 
-        @Nonnull
-        Set<User> getCulprits();
-
-        @CheckForNull
-        Set<String> getCulpritIds();
-
-        RunWithSCMMixIn<JobT,RunT> getRunWithSCMMixIn();
-
-        boolean hasParticipant(User user);
-    }
-
-    private static final Logger LOGGER = Logger.getLogger(RunWithSCMMixIn.class.getName());
+    Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
 }
