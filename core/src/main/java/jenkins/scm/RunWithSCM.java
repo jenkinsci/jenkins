@@ -117,13 +117,11 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
     default Set<User> calculateCulprits() {
         Set<User> r = new HashSet<>();
         RunT p = ((RunT)this).getPreviousCompletedBuild();
-        if (p != null && ((RunT)this).isBuilding()) {
+        if (p != null) {
             Result pr = p.getResult();
             if (pr != null && pr.isWorseThan(Result.SUCCESS)) {
                 // we are still building, so this is just the current latest information,
                 // but we seems to be failing so far, so inherit culprits from the previous build.
-                // isBuilding() check is to avoid recursion when loading data from old Hudson, which doesn't record
-                // this information
                 r.addAll(p.getCulprits());
             }
         }
