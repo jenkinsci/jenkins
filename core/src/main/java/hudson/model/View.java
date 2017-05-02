@@ -116,7 +116,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static jenkins.model.Jenkins.checkGoodName;
 import static jenkins.scm.RunWithSCMMixIn.*;
 
 import org.kohsuke.accmod.Restricted;
@@ -253,7 +252,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public void rename(String newName) throws Failure, FormException {
         if(name.equals(newName))    return; // noop
-        checkGoodName(newName);
+        Jenkins.checkGoodName(newName);
         if(owner.getView(newName)!=null)
             throw new FormException(Messages.Hudson_ViewAlreadyExists(newName),"name");
         String oldName = name;
@@ -730,23 +729,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
             Map<User,UserInfo> users = new HashMap<User,UserInfo>();
             for (Item item : items) {
                 for (Job<?, ?> job : item.getAllJobs()) {
-                    if (job instanceof SCMTriggerItem) {
-                        RunList<? extends Run<?, ?>> runs = job.getBuilds();
-                        for (Run<?, ?> r : runs) {
-                            if (r instanceof RunWithSCM) {
-                                RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
+                    RunList<? extends Run<?, ?>> runs = job.getBuilds();
+                    for (Run<?, ?> r : runs) {
+                        if (r instanceof RunWithSCM) {
+                            RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
 
-                                for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                    for (Entry entry : c) {
-                                        User user = entry.getAuthor();
+                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
+                                for (Entry entry : c) {
+                                    User user = entry.getAuthor();
 
-                                        UserInfo info = users.get(user);
-                                        if (info == null)
-                                            users.put(user, new UserInfo(user, job, r.getTimestamp()));
-                                        else if (info.getLastChange().before(r.getTimestamp())) {
-                                            info.project = job;
-                                            info.lastChange = r.getTimestamp();
-                                        }
+                                    UserInfo info = users.get(user);
+                                    if (info == null)
+                                        users.put(user, new UserInfo(user, job, r.getTimestamp()));
+                                    else if (info.getLastChange().before(r.getTimestamp())) {
+                                        info.project = job;
+                                        info.lastChange = r.getTimestamp();
                                     }
                                 }
                             }
@@ -1055,7 +1052,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         try {
-            checkGoodName(value);
+            Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
             Jenkins.getInstance().getProjectNamingStrategy().checkName(value);
         } catch (Failure e) {
@@ -1308,7 +1305,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                         || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
-        checkGoodName(name);
+        Jenkins.checkGoodName(name);
         if(owner.getView(name)!=null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
@@ -1370,7 +1367,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try (InputStream in = new BufferedInputStream(xml)) {
             View v = (View) Jenkins.XSTREAM.fromXML(in);
             if (name != null) v.name = name;
-            checkGoodName(v.name);
+            Jenkins.checkGoodName(v.name);
             return v;
         } catch(StreamException|ConversionException|Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);

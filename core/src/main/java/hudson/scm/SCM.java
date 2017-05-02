@@ -526,8 +526,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * can be before/after your checkout method is invoked. So if you are going to provide information about
      * check out (like SVN revision number that was checked out), be prepared for the possibility that the
      * check out hasn't happened yet.
+     *
+     * @since FIXME
      */
-    public void buildEnvVars(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
+    public void buildEnvironment(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
         if (build instanceof AbstractBuild) {
             buildEnvVars((AbstractBuild)build, env);
         }
@@ -535,8 +537,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
-        if (Util.isOverridden(SCM.class, getClass(), "buildEnvVars", Run.class, Map.class)) {
-            buildEnvVars((Run) build, env);
+        if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
+            buildEnvironment(build, env);
         }
         // default implementation is noop.
     }

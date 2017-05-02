@@ -1075,14 +1075,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 scmNames.add(s.getDescriptor().getDisplayName());
             }
             scmDisplayName = " " + Util.join(scmNames, ", ");
+        }
 
-            for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
-                int idx = 0;
-                if (r instanceof RunWithSCMMixIn.RunWithSCM) {
-                    for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCMMixIn.RunWithSCM<?,?>) r).getChangeSets()) {
-                        for (ChangeLogSet.Entry e : c) {
-                            entries.add(new FeedItem(e, idx++));
-                        }
+        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
+            int idx = 0;
+            if (r instanceof RunWithSCMMixIn.RunWithSCM) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCMMixIn.RunWithSCM<?,?>) r).getChangeSets()) {
+                    for (ChangeLogSet.Entry e : c) {
+                        entries.add(new FeedItem(e, idx++));
                     }
                 }
             }
