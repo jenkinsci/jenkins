@@ -181,12 +181,6 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return runMixIn;
     }
 
-    @Override
-    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
-        ChangeLogSet<? extends Entry> cs = getChangeSet();
-        return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
-    }
-
     @Override protected final BuildReference<R> createReference() {
         return getRunMixIn().createReference();
     }
@@ -847,6 +841,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
         changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(cs);
         return cs;
+    }
+
+    @Override
+    @Nonnull public List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets() {
+        ChangeLogSet<? extends Entry> cs = getChangeSet();
+        return cs.isEmptySet() ? Collections.emptyList() : Collections.singletonList(cs);
     }
 
     /**

@@ -773,18 +773,16 @@ public abstract class View extends AbstractModelObject implements AccessControll
         public static boolean isApplicable(Collection<? extends Item> items) {
             for (Item item : items) {
                 for (Job job : item.getAllJobs()) {
-                    if (job instanceof SCMTriggerItem) {
-                        RunList<? extends Run<?, ?>> runs = job.getBuilds();
+                    RunList<? extends Run<?, ?>> runs = job.getBuilds();
 
-                        for (Run<?,?> r : runs) {
-                            if (r instanceof RunWithSCM) {
-                                RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
-                                for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
-                                    for (Entry entry : c) {
-                                        User user = entry.getAuthor();
-                                        if (user != null)
-                                            return true;
-                                    }
+                    for (Run<?,?> r : runs) {
+                        if (r instanceof RunWithSCM) {
+                            RunWithSCM<?,?> runWithSCM = (RunWithSCM<?,?>) r;
+                            for (ChangeLogSet<? extends Entry> c : runWithSCM.getChangeSets()) {
+                                for (Entry entry : c) {
+                                    User user = entry.getAuthor();
+                                    if (user != null)
+                                        return true;
                                 }
                             }
                         }

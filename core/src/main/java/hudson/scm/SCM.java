@@ -522,10 +522,10 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * (for example, SVN revision number.)
      *
      * <p>
-     * This method is invoked whenever someone does {@link Run#getEnvironment(TaskListener)}, which
-     * can be before/after your checkout method is invoked. So if you are going to provide information about
-     * check out (like SVN revision number that was checked out), be prepared for the possibility that the
-     * check out hasn't happened yet.
+     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, via
+     * {@link #buildEnvVars(AbstractBuild, Map)}, whichvcan be before/after your checkout method is invoked. So if you
+     * are going to provide information aboutvcheck out (like SVN revision number that was checked out), be prepared
+     * for the possibility that thevcheck out hasn't happened yet.
      *
      * @since FIXME
      */

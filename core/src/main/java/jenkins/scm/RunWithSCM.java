@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Jesse Glick.
+ * Copyright 2017 CloudBees, inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 package jenkins.scm;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Result;
@@ -31,7 +32,6 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.util.AdaptedIterator;
-import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.export.Exported;
 
 import javax.annotation.CheckForNull;
@@ -50,11 +50,27 @@ import java.util.logging.Logger;
 public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
 
+    /**
+     * Gets all {@link ChangeLogSet}s currently associated with this item.
+     *
+     * @return A possibly empty list of {@link ChangeLogSet}s.
+     */
+    @Nonnull
     List<ChangeLogSet<? extends ChangeLogSet.Entry>> getChangeSets();
 
+    /**
+     * Gets the ids for all {@link User}s included in {@link #getChangeSets()} for this item.
+     *
+     * @return A possibly null set of user IDs.
+     */
     @CheckForNull
     Set<String> getCulpritIds();
 
+    /**
+     * Determines whether culprits should be recalcuated or the existing {@link #getCulpritIds()} should be used instead.
+     *
+     * @return True if culprits should be recalcuated, false otherwise.
+     */
     boolean shouldCalculateCulprits();
 
     /**
@@ -74,8 +90,10 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
         }
 
         return new AbstractSet<User>() {
+            private Set<String> culpritIds = ImmutableSet.copyOf(getCulpritIds());
+
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String,User>(getCulpritIds().iterator()) {
+                return new AdaptedIterator<String,User>(culpritIds.iterator()) {
                     protected User adapt(String id) {
                         return User.get(id);
                     }
@@ -83,14 +101,21 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
             }
 
             public int size() {
-                return getCulpritIds().size();
+                return culpritIds.size();
             }
         };
     }
 
+    /**
+     * Internal method used for actually calculating the culprits from scratch. Called by {@link #getCulprits()} and
+     * overrides of {@link #getCulprits()}. Does not persist culprits information.
+     *
+     * @return a non-null {@link Set} of {@link User}s associated with this item.
+     */
     @SuppressWarnings("unchecked")
+    @Nonnull
     default Set<User> calculateCulprits() {
-        Set<User> r = new HashSet<User>();
+        Set<User> r = new HashSet<>();
         RunT p = ((RunT)this).getPreviousCompletedBuild();
         if (p != null && ((RunT)this).isBuilding()) {
             Result pr = p.getResult();
@@ -103,8 +128,9 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
             }
         }
         for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
-            for (ChangeLogSet.Entry e : c)
+            for (ChangeLogSet.Entry e : c) {
                 r.add(e.getAuthor());
+            }
         }
 
         return r;
@@ -116,14 +142,16 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
     @SuppressWarnings("unchecked")
     default boolean hasParticipant(User user) {
         for (ChangeLogSet<? extends ChangeLogSet.Entry> c : getChangeSets()) {
-            for (ChangeLogSet.Entry e : c)
+            for (ChangeLogSet.Entry e : c) {
                 try {
-                    if (e.getAuthor() == user)
+                    if (e.getAuthor() == user) {
                         return true;
+                    }
                 } catch (RuntimeException re) {
                     Logger LOGGER = Logger.getLogger(RunWithSCM.class.getName());
-                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + ((RunT)this).getParent().getDisplayName() + ", " + ((RunT)this).getDisplayName(), re);
+                    LOGGER.log(Level.INFO, "Failed to determine author of changelog " + e.getCommitId() + "for " + ((RunT) this).getParent().getDisplayName() + ", " + ((RunT) this).getDisplayName(), re);
                 }
+            }
         }
         return false;
     }
