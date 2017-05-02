@@ -201,6 +201,8 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void run() {
             try {
+                LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
+
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
                         new BufferedWriter(new OutputStreamWriter(s.getOutputStream(),"UTF-8")),
