@@ -1056,6 +1056,45 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * https://issues.jenkins-ci.org/browse/JENKINS-23330
+     * @return the job's name where characters not HTML4 compliant are replaced
+     * with _ (see http://www.w3.org/TR/html401/types.html#type-name)
+     */
+    public String getHtml4CompliantName() {
+        String result = getName();
+        if (result != null) {
+            StringBuilder s = new StringBuilder(result);
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                // do not use isLetter() and isDigit()
+                // because the HTML4 norm seems to accept only plain ASCII chars,
+                // not any Unicode characters that are letters or digits
+                if (!(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+                   || ('0' <= c && c <= '9')
+                   || c == '-' || c == '_' || c == ':' || c == '.')) {
+                    // by default, replace with a _. Maybe that could be parameterized
+                    s.setCharAt(i, '_');
+                }
+            }
+            result = s.toString();
+        }
+        return result;
+    }
+
+    /**
+     * https://issues.jenkins-ci.org/browse/JENKINS-23330
+     * @return the job's name where characters not HTML5 compliant (space) are
+     * replaced with _ (see http://www.w3schools.com/tags/att_global_id.asp)
+     */
+    public String getHtml5CompliantName() {
+        String result = getName();
+        if (result != null) {
+            result = result.replace(' ', '_');
+        }
+        return result;
+    }
+
+    /**
      * Used as the color of the status ball for the project.
      */
     @Exported(visibility = 2, name = "color")
