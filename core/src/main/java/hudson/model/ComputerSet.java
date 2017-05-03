@@ -188,7 +188,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public int getIdleExecutors() {
         int r=0;
         for (Computer c : get_all())
-            if((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
+            if(c.isOnline() && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
     }

@@ -302,7 +302,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         int r=0;
         for (Node n : getNodes()) {
             Computer c = n.toComputer();
-            if(c!=null && (c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
+            if(c!=null && c.isOnline() && c.isAcceptingTasks())
                 r += c.countIdle();
         }
         return r;
