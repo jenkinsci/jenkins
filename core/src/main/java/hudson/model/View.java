@@ -201,17 +201,26 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * @since 1.520
      */
     public Collection<TopLevelItem> getAllItems() {
+        final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
 
         if (this instanceof ViewGroup) {
-            final Collection<TopLevelItem> items = new LinkedHashSet<TopLevelItem>(getItems());
-
             for(View view: ((ViewGroup) this).getViews()) {
                 items.addAll(view.getAllItems());
             }
-            return Collections.unmodifiableCollection(items);
         } else {
-            return getItems();
+            for (TopLevelItem item : getItems()) {
+                // View item might be a ViewGroup instance (e.g. Folder)
+                if (item instanceof ViewGroup) {
+                    for(View view: ((ViewGroup) item).getViews()) {
+                        items.addAll(view.getAllItems());
+                    }
+                } else {
+                    items.add(item);
+                }
+            }
         }
+
+        return Collections.unmodifiableCollection(items);
     }
 
     /**
@@ -445,7 +454,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         List<Computer> result = new ArrayList<Computer>();
 
         HashSet<Label> labels = new HashSet<Label>();
-        for (Item item : getItems()) {
+        for (Item item : getAllItems()) {
             if (item instanceof AbstractProject<?, ?>) {
                 labels.addAll(((AbstractProject<?, ?>) item).getRelevantLabels());
             }
@@ -474,7 +483,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return base;
         }
 
-        Collection<TopLevelItem> items = getItems();
+        Collection<TopLevelItem> items = getAllItems();
         List<Queue.Item> result = new ArrayList<Queue.Item>();
         for (Queue.Item qi : base) {
             if (items.contains(qi.task)) {
