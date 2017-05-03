@@ -84,6 +84,13 @@ public class CronTabEventualityTest {
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
         checkEventuality(start, "@midnight", limit);
     }
+    
+    @Test(timeout = 1000)
+    public void testMorningWillBeEventuallyTriggeredWithinOneDay() throws ANTLRException {
+        Calendar start = new GregorianCalendar(2012, 0, 11, 22, 33); // Jan 11th 2012 22:33
+        Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
+        checkEventuality(start, "@morning", limit);
+    }
 
     @Test
     public void testHourlyWillBeEventuallyTriggeredWithinOneHour() throws ANTLRException {
