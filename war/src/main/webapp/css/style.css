@@ -270,6 +270,7 @@ pre.console {
 
 .setting-name {
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .setting-main {
