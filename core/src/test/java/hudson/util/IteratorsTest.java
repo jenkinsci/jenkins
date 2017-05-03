@@ -77,6 +77,13 @@ public class IteratorsTest {
         assertEquals("[]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,4,6).iterator(), EVEN)));
     }
 
+    public void testLimitStartsAtFirst() {
+        assertEquals("[]",com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,3,5).iterator(), EVEN, true)));
+        assertEquals("[2]",com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,3,4).iterator(), EVEN, true)));
+        assertEquals("[2, 4, 6]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,4,6).iterator(), EVEN, true)));
+        assertEquals("[2, 4, 6]", com.google.common.collect.Iterators.toString(Iterators.limit(asList(1,2,4,6,7).iterator(), EVEN, true)));
+    }
+
     public static final CountingPredicate<Integer> EVEN = new CountingPredicate<Integer>() {
         public boolean apply(int index, Integer input) {
             return input % 2 == 0;
