@@ -1,0 +1,40 @@
+Jenkins Jira, Wiki and Fisheye use a common authentication system:
+
+	https://jenkins-ci.org/account/
+
+This purports to allow users to sign up.
+
+Currently, the sign-up process is broken.  When completing the form
+successfully, I receive an email with the following content:
+
+  +----
+  |  	Unassigned created for you a JIRA account
+  |  
+  | Jenkins JIRA
+  | 
+  | JIRA is the project tracker for teams building great software. Log
+  | in now to track your issues and tasks, collaborate with your team,
+  | and stay on top of project activity.
+  | 
+  | Username: 	<User ID>
+  | Email: 	<E-mail>
+  | Full Name: 	<First Name> <Last Name>
+  | 
+  | This account uses your password from an external user directory:
+  | "{0}".
+  +----
+
+(where <User ID>, <E-mail>, <First Name> and <Last Name> are the
+values entered when registering)
+
+However, at this point I have no password, so cannot sign-in.
+
+When I complete the "Reset the password" page:
+
+	  https://jenkins-ci.org/account/passwordReset
+
+The page claims to send me an email with the new email.  However, I
+received no such email.
+
+I cannot report this problem because one needs a working Jira account
+to report any problems.
