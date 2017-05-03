@@ -35,20 +35,6 @@ THE SOFTWARE.
       <table id="pluginsAdv" class="pane" style="margin-top:0; border-top:none">
         <tr style="border-top:none; white-space: normal">
           <td>
-            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
-              <h1>${%HTTP Proxy Configuration}</h1>
-              <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                <j:scope>
-                  <j:set var="instance" value="${app.proxy}"/>
-                  <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                  <st:include from="${descriptor}" page="${descriptor.configPage}" />
-                </j:scope>
-                <f:block>
-                  <f:submit value="${%Submit}" />
-                </f:block>
-              </f:form>
-            </l:hasPermission>
-
             <l:hasPermission permission="${app.pluginManager.UPLOAD_PLUGINS}">
               <h1>${%Upload Plugin}</h1>
               <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
@@ -66,6 +52,21 @@ THE SOFTWARE.
                 </f:block>
               </f:form>
             </l:hasPermission>
+
+            <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
+              <h1>${%HTTP Proxy Configuration}</h1>
+              <f:form method="post" action="proxyConfigure" name="proxyConfigure">
+                <j:scope>
+                  <j:set var="instance" value="${app.proxy}"/>
+                  <j:set var="descriptor" value="${it.proxyDescriptor}"/>
+                  <st:include from="${descriptor}" page="${descriptor.configPage}" />
+                </j:scope>
+                <f:block>
+                  <f:submit value="${%Submit}" />
+                </f:block>
+              </f:form>
+            </l:hasPermission>
+
             <l:hasPermission permission="${app.pluginManager.CONFIGURE_UPDATECENTER}">
               <h1>${%Update Site}</h1>
               <f:form method="post" action="siteConfigure" name="siteConfigure">
