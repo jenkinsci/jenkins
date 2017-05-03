@@ -212,6 +212,10 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return "parameters";
     }
 
+    public @Nonnull Api getApi() {
+        return new Api(this);
+    }
+
     /**
      * Allow an other build of the same project to be scheduled, if it has other parameters.
      */
