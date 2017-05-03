@@ -30,7 +30,7 @@ THE SOFTWARE.
      page: page name to be passed to local:tabBar
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Update Center}" permission="${app.ADMINISTER}" norefresh="true">
     <l:header>
       <script type="text/javascript">
@@ -66,6 +66,7 @@ THE SOFTWARE.
               <th initialSortDir="${isUpdates?'down':null}"
                   onclick="showhideCategories(this,0)">${%Name}</th>
               <th onclick="showhideCategories(this,0)">${%Version}</th>
+              <th onclick="showhideCategories(this,0)">${%Release Date}</th>
               <j:if test="${isUpdates}"><th>${%Installed}</th></j:if>
             </tr>
             <j:choose>
@@ -121,6 +122,7 @@ THE SOFTWARE.
                       </j:if>
                     </td>
                     <td class="pane"><st:out value="${p.version}" /></td>
+                    <td class="pane" data="${p.releaseDate.getTime()}"><i:formatDate value="${p.releaseDate}" type="date" /></td>
                     <j:if test="${isUpdates}">
                       <td class="pane">
                         <j:choose><j:when test="${p.installed.active}">
