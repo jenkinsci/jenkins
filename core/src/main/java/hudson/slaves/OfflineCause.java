@@ -78,6 +78,8 @@ public abstract class OfflineCause {
      * {@link OfflineCause} that renders a static text,
      * but without any further UI.
      */
+    static Date timestamp;
+
     public static class SimpleOfflineCause extends OfflineCause {
         public final Localizable description;
 
@@ -108,6 +110,7 @@ public abstract class OfflineCause {
 
         public ChannelTermination(Exception cause) {
             this.cause = cause;
+            this.timestamp = new Date();
         }
 
         public String getShortDescription() {
@@ -115,7 +118,7 @@ public abstract class OfflineCause {
         }
 
         @Override public String toString() {
-            return Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
+            return "[" + timestamp.toString() + "]" + Messages.OfflineCause_connection_was_broken_(Functions.printThrowable(cause));
         }
     }
 
@@ -123,9 +126,10 @@ public abstract class OfflineCause {
      * Caused by failure to launch.
      */
     public static class LaunchFailed extends OfflineCause {
+
         @Override
         public String toString() {
-            return Messages.OfflineCause_LaunchFailed();
+            return "[" + timestamp.toString() + "]" + Messages.OfflineCause_LaunchFailed();
         }
     }
 
