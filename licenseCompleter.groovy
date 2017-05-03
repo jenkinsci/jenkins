@@ -51,6 +51,10 @@ complete {
     match("*:dom4j") {
         rewriteLicense([],license("BSD License","http://dom4j.sourceforge.net/dom4j-1.6.1/license.html"))
     }
+    
+    match("jdom:jdom") {
+        rewriteLicense([],license("BSD/Apache style, see LICENSE.txt","http://www.jdom.org/docs/faq.html#a0030"))
+    }
 
     match(["org.jenkins-ci.groovy:*"]) {
         // see http://groovy.codehaus.org/License+Information

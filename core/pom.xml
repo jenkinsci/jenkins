@@ -76,12 +76,6 @@ THE SOFTWARE.
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>jtidy</artifactId>
       <version>4aug2000r7-dev-hudson-1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency><!-- working around MCOMPILER-97 -->
@@ -319,10 +313,6 @@ THE SOFTWARE.
         <exclusion>
           <groupId>xerces</groupId>
           <artifactId>xercesImpl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
