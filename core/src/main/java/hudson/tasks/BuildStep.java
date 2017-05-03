@@ -88,8 +88,9 @@ public interface BuildStep {
      *      Using the return value to indicate success/failure should
      *      be considered deprecated, and implementations are encouraged
      *      to throw {@link AbortException} to indicate a failure.
+     * @throws AbortException Indicates failure of the pre-build actions
      */
-    boolean prebuild( AbstractBuild<?,?> build, BuildListener listener );
+    boolean prebuild( AbstractBuild<?,?> build, BuildListener listener ) throws AbortException;
 
     /**
      * Runs the step over the given build and reports the progress to the listener.
