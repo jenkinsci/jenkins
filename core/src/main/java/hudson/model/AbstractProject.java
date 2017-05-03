@@ -39,7 +39,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
@@ -49,7 +48,6 @@ import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
-import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
@@ -359,7 +357,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
-        makeDisabled(true);
+        makeDisabled(true); // TODO pull up somehow
         FilePath ws = getWorkspace();
         if(ws!=null) {
             Node on = getLastBuiltOn();
@@ -674,8 +672,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public boolean isDisabled() {
         return disabled;
+    }
+
+    @Restricted(DoNotUse.class)
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     /**
@@ -692,44 +697,29 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Marks the build as disabled.
-     * The method will ignore the disable command if {@link #supportsMakeDisabled()}
-     * returns false. The enable command will be executed in any case.
-     * @param b true - disable, false - enable
-     * @since 1.585 Do not disable projects if {@link #supportsMakeDisabled()} returns false
-     */
-    public void makeDisabled(boolean b) throws IOException {
-        if(disabled==b)     return; // noop
-        if (b && !supportsMakeDisabled()) return; // do nothing if the disabling is unsupported
-        this.disabled = b;
-        if(b)
-            Jenkins.getInstance().getQueue().cancel(this);
-
-        save();
-        ItemListener.fireOnUpdated(this);
-    }
-
-    /**
-     * Specifies whether this project may be disabled by the user.
+     * {@inheritDoc}
      * By default, it can be only if this is a {@link TopLevelItem};
      * would be false for matrix configurations, etc.
-     * @return true if the GUI should allow {@link #doDisable} and the like
      * @since 1.475
      */
+    @Override
     public boolean supportsMakeDisabled() {
         return this instanceof TopLevelItem;
     }
 
+    // Seems to be used only by tests; do not bother pulling up.
     public void disable() throws IOException {
         makeDisabled(true);
     }
 
+    // Ditto.
     public void enable() throws IOException {
         makeDisabled(false);
     }
 
     @Override
     public BallColor getIconColor() {
+        // TODO try to pull up
         if(isDisabled())
             return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
         else
@@ -873,6 +863,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a polling of this project.
      */
     public boolean schedulePolling() {
+        // TODO add doPolling as in JENKINS-34716
         if(isDisabled())    return false;
         SCMTrigger scmt = getTrigger(SCMTrigger.class);
         if(scmt==null)      return false;
@@ -1179,6 +1170,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     public @CheckForNull R createExecutable() throws IOException {
+        // TODO should be generalized somehow
         if(isDisabled())    return null;
         return newBuild();
     }
@@ -1892,23 +1884,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return new ForwardToView(this,"wipeOutWorkspaceBlocked.jelly");
         }
     }
-
-    @CLIMethod(name="disable-job")
-    @RequirePOST
-    public HttpResponse doDisable() throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-        makeDisabled(true);
-        return new HttpRedirect(".");
-    }
-
-    @CLIMethod(name="enable-job")
-    @RequirePOST
-    public HttpResponse doEnable() throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-        makeDisabled(false);
-        return new HttpRedirect(".");
-    }
-
 
     /**
      * RSS feed for changes in this project.
