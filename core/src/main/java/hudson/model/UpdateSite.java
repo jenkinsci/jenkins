@@ -495,7 +495,7 @@ public class UpdateSite {
 
             We'll monitor the traffic to see if we can sustain this added traffic.
          */
-        if (url.equals("http://updates.jenkins-ci.org/update-center.json") && Jenkins.getInstance().isRootUrlSecure())
+        if (url.startsWith("http://updates.jenkins-ci.org/") && Jenkins.getInstance().isRootUrlSecure())
             return "https"+url.substring(4);
         return url;
     }
