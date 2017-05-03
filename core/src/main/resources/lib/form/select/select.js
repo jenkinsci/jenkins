@@ -89,7 +89,14 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
                         }
                     }
 
-                    fireEvent(e,"filled"); // let other interested parties know that the items have changed
+                    // let other interested parties know that the items have changed
+                    $(e).fire("select:filled");
+                    try {
+                      // for backward-compatibility.
+                      fireEvent(e,"filled")
+                    } catch(ex) {
+                      // Firing non-builtin event fails in IE <= 8.
+                    }
 
                     // if the update changed the current selection, others listening to this control needs to be notified.
                     if (hasChanged(e, value)) {
