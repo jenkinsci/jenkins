@@ -272,11 +272,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     @Exported
     public int getTotalExecutors() {
         int r=0;
-        for (Node n : getNodes()) {
-            Computer c = n.toComputer();
-            if(c!=null && c.isOnline())
-                r += c.countExecutors();
-        }
+        try {
+            for (Node n : getNodes()) {
+                Computer c = n.toComputer();
+                if(c!=null && c.isOnline())
+                    r += c.countExecutors();
+            }
+        } catch(Exception e) {}
         return r;
     }
 
