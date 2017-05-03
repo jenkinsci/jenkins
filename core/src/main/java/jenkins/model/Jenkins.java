@@ -184,6 +184,7 @@ import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.model.NonDiskItem;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
@@ -3108,7 +3109,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // retainAll doesn't work well because of CopyOnWriteMap implementation, so remove one by one
                 // hopefully there shouldn't be too many of them.
                 for (String name : items.keySet()) {
-                    if (!loadedNames.contains(name))
+                    if (!loadedNames.contains(name) && !(items.get(name) instanceof NonDiskItem))
                         items.remove(name);
                 }
             }
