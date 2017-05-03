@@ -102,7 +102,7 @@ THE SOFTWARE.
   <!-- schedule updates only for the full page reload -->
   <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
     <script defer="defer">
-      refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue");
+      refreshPart('buildQueue',"${rootURL}/${h.hasView(view,'ajaxBuildQueue')?view.url:''}ajaxBuildQueue");
     </script>
   </j:if>
 </j:jelly>

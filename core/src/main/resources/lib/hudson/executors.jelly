@@ -144,7 +144,7 @@ THE SOFTWARE.
     <!-- schedule updates only for the full page reload -->
     <j:if test="${ajax==null and !h.isAutoRefresh(request) and h.hasPermission(app.READ)}">
       <script defer="defer">
-        refreshPart('executors',"${rootURL}/${h.hasView(it,'ajaxExecutors')?it.url:''}ajaxExecutors");
+        refreshPart('executors',"${rootURL}/${h.hasView(view,'ajaxExecutors')?view.url:''}ajaxExecutors");
       </script>
     </j:if>
 </j:jelly>
