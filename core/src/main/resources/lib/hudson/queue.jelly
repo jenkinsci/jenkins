@@ -96,6 +96,15 @@ THE SOFTWARE.
              </td>
           </tr>
         </j:forEach>
+        <tr>
+          <td class="pane" style="text-align: right" colspan="2">
+            <j:if test="${h.hasPermission(app.ADMINISTER)}">
+              <a href="${rootURL}/queue/clearQueue">
+                (${%Cancel all})
+              </a>
+            </j:if>
+          </td>
+        </tr>
       </j:otherwise>
     </j:choose>
   </l:pane>

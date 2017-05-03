@@ -502,6 +502,14 @@ public class Queue extends ResourceController implements Saveable {
         scheduleMaintenance();
     }
 
+   /**
+     * Called from queue.jelly.
+     */
+    public HttpResponse doClearQueue() throws IOException, ServletException {
+        Jenkins.getInstance().getQueue().clear();
+        return HttpResponses.forwardToPreviousPage();
+    } 
+
     private File getQueueFile() {
         return new File(Jenkins.getInstance().getRootDir(), "queue.txt");
     }
