@@ -213,7 +213,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT,RunT> & Queue.Task & 
      */
     public final void removeRun(RunT run) {
         if (!builds.remove(run)) {
-            LOGGER.log(Level.WARNING, "{0} did not contain {1} to begin with", new Object[] {asJob(), run});
+          LOGGER.log(Level.FINER, "{0} does not contain {1} anymore.", new Object[] {asJob(), run});
         }
     }
 
