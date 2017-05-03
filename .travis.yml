@@ -1,0 +1,8 @@
+language: java
+
+jdk:
+  - openjdk7
+  - openjdk6
+  - oraclejdk7
+
+install: mvn -Plight-test install
