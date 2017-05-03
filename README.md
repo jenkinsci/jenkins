@@ -1,4 +1,4 @@
-[![][ButlerImage]][website] 
+# EazyCI
 
 # About
 In a nutshell, Jenkins is the leading open-source automation server. 
