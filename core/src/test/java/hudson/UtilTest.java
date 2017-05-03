@@ -89,6 +89,10 @@ public class UtilTest {
         assertEquals("asd$${AA}dd", Util.replaceMacro("asd$$$${AA}dd",m));
         assertEquals("$", Util.replaceMacro("$$",m));
         assertEquals("$$", Util.replaceMacro("$$$$",m));
+        
+        // dots
+        assertEquals("a.B", Util.replaceMacro("$A.B", m));
+        assertEquals("a-b", Util.replaceMacro("${A.B}", m));
 
         // dots
         assertEquals("a.B", Util.replaceMacro("$A.B", m));
