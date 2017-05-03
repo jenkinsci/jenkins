@@ -36,6 +36,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -80,7 +81,13 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom,"UTF-8"));
             req.setAttribute("loginForm", loginForm);
 
-            rsp.setStatus(SC_FORBIDDEN);
+            if (req.getParameter("basic") != null) {
+                rsp.setStatus(SC_UNAUTHORIZED);
+                rsp.setHeader("WWW-Authenticate", "Basic realm=\"Jenkins\"");
+            } else {
+                rsp.setStatus(SC_FORBIDDEN);
+            }
+
             rsp.setContentType("text/html;charset=UTF-8");
 
             Functions.advertiseHeaders(rsp);
