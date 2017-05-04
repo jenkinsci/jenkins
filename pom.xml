@@ -95,9 +95,9 @@ THE SOFTWARE.
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
-    <access-modifier.version>1.8-SNAPSHOT</access-modifier.version> <!-- TODO https://github.com/kohsuke/access-modifier/pull/4 -->
-    <access-modifier-annotation.version>1.8-20170504.161424-3</access-modifier-annotation.version> <!-- TODO normally should be ${access-modifier.version} -->
-    <access-modifier-checker.version>1.8-20170504.161440-3</access-modifier-checker.version> <!-- TODO normally should be ${access-modifier.version} -->
+    <access-modifier.version>1.11</access-modifier.version>
+    <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
+    <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
     <java.level>8</java.level>
 
