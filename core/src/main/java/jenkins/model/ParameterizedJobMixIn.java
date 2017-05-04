@@ -70,7 +70,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.556
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
-public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> {
+public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> {
     
     protected abstract JobT asJob();
 
