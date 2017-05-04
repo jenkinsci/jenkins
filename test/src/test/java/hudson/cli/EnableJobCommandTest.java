@@ -21,36 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli
 
-import static org.junit.Assert.assertFalse
-import static org.junit.Assert.assertTrue
+package hudson.cli;
 
-import org.junit.Rule
-import org.junit.Test
-import org.jvnet.hudson.test.JenkinsRule
+import hudson.model.FreeStyleProject;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
-/**
- * @author Kohsuke Kawaguchi
- */
 public class EnableJobCommandTest {
 
     @Rule
-    public JenkinsRule j = new JenkinsRule()
+    public JenkinsRule r = new JenkinsRule();
 
     @Test
-    void test() {
-        def p = j.createFreeStyleProject()
-
-        def cli = new CLI(j.getURL())
-
-        try {
-            cli.execute(["disable-job",p.name])
-            assertTrue(p.disabled)
-            cli.execute(["enable-job",p.name])
-            assertFalse(p.disabled)
-        } finally {
-            cli.close()
-        }
+    public void smokes() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        assertThat(new CLICommandInvoker(r, "disable-job").invokeWithArgs("p"), CLICommandInvoker.Matcher.succeededSilently());
+        assertTrue(p.isDisabled());
+        assertThat(new CLICommandInvoker(r, "enable-job").invokeWithArgs("p"), CLICommandInvoker.Matcher.succeededSilently());
+        assertFalse(p.isDisabled());
     }
+
 }
