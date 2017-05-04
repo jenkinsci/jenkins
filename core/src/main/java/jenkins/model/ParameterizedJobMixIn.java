@@ -26,12 +26,14 @@ package jenkins.model;
 
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.model.Action;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import static hudson.model.Item.CONFIGURE;
+import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
@@ -59,8 +61,11 @@ import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -305,6 +310,23 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * Marker for job using this mixin, and default implementations of many methods.
      */
     public interface ParameterizedJob<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> extends BuildableItem {
+
+        /**
+         * Used for CLI binding.
+         */
+        @Restricted(DoNotUse.class)
+        @SuppressWarnings("rawtypes")
+        @CLIResolver
+        static ParameterizedJob resolveForCLI(@Argument(required=true, metaVar="NAME", usage="Job name") String name) throws CmdLineException {
+            ParameterizedJob item = Jenkins.getInstance().getItemByFullName(name, ParameterizedJob.class);
+            if (item == null) {
+                ParameterizedJob project = Items.findNearest(ParameterizedJob.class, name, Jenkins.getInstance());
+                throw new CmdLineException(null, project == null ?
+                        hudson.model.Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name) :
+                        hudson.model.Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
+            }
+            return item;
+        }
 
         /**
          * Creates a helper object.
