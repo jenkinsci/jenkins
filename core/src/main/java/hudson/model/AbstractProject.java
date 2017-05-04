@@ -113,6 +113,7 @@ import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
@@ -862,12 +863,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Schedules a polling of this project.
      */
     public boolean schedulePolling() {
-        // TODO add doPolling as in JENKINS-34716
-        if(isDisabled())    return false;
-        SCMTrigger scmt = getTrigger(SCMTrigger.class);
-        if(scmt==null)      return false;
-        scmt.run();
-        return true;
+        if (this instanceof SCMTriggerItem) {
+            return ((SCMTriggerItem) this).schedulePolling();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -1738,9 +1738,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         doBuildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
-    /**
-     * Schedules a new SCM polling command.
-     */
+    @Override // in case schedulePolling was overridden
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission((Job) this, authToken, req, rsp);
         schedulePolling();

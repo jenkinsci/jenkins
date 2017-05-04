@@ -444,6 +444,20 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         /**
+         * Schedules a new SCM polling command.
+         */
+        @SuppressWarnings("deprecation")
+        default void doPolling(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if (!(this instanceof SCMTriggerItem)) {
+                rsp.sendError(404);
+                return;
+            }
+            hudson.model.BuildAuthorizationToken.checkPermission((Job) this, getAuthToken(), req, rsp);
+            ((SCMTriggerItem) this).schedulePolling();
+            rsp.sendRedirect(".");
+        }
+
+        /**
          * For use from {@link BuildButtonColumn}.
          * @see ParameterizedJobMixIn#isParameterized
          */
