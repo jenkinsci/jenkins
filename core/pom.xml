@@ -575,7 +575,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
-      <version>1.8-20170503.000430-1</version> <!-- TODO https://github.com/kohsuke/access-modifier/pull/4 -->
     </dependency>
 
     <dependency>
@@ -704,7 +703,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-checker</artifactId>
-        <!-- version specified in parent pom -->
         <executions>
           <execution>
             <goals>
