@@ -357,7 +357,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     @Override
     protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
-        makeDisabled(true); // TODO pull up somehow
+        makeDisabled(true);
         FilePath ws = getWorkspace();
         if(ws!=null) {
             Node on = getLastBuiltOn();
@@ -719,7 +719,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public BallColor getIconColor() {
-        // TODO try to pull up
         if(isDisabled())
             return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
         else
@@ -1169,8 +1168,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
+    @Override // same as ParameterizedJob version except calls possibly overridden newBuild
     public @CheckForNull R createExecutable() throws IOException {
-        // TODO should be generalized somehow
         if(isDisabled())    return null;
         return newBuild();
     }

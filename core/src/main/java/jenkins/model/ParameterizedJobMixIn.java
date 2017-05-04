@@ -58,6 +58,7 @@ import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
@@ -77,7 +78,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * Allows a {@link Job} to make use of {@link ParametersDefinitionProperty} and be scheduled in various ways.
  * Stateless so there is no need to keep an instance of it in a field.
- * Besides implementing {@link ParameterizedJob}, you should override {@link Job#makeSearchIndex} to call {@link #extendSearchIndex}.
+ * Besides implementing {@link ParameterizedJob}, you should
+ * <ul>
+ * <li>override {@link Job#makeSearchIndex} to call {@link #extendSearchIndex}
+ * <li>override {@link Job#performDelete} to call {@link ParameterizedJob#makeDisabled}
+ * <li>override {@link Job#getIconColor} to call {@link ParameterizedJob#isDisabled}
+ * <li>use {@code <p:config-disableBuild/>}
+ * <li>use {@code <p:makeDisabled/>}
+ * </ul>
  * @since 1.556
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
@@ -497,6 +505,17 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return new HttpRedirect(".");
         }
 
+        @Override
+        default RunT createExecutable() throws IOException {
+            if (isDisabled()) {
+                return null;
+            }
+            JobT job = getParameterizedJobMixIn().asJob();
+            if (job instanceof LazyBuildMixIn.LazyLoadingJob) {
+                return (RunT) ((LazyBuildMixIn.LazyLoadingJob) job).getLazyBuildMixIn().newBuild();
+            }
+            return null;
+        }
 
     }
 
