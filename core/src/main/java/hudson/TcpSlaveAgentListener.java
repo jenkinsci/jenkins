@@ -201,7 +201,7 @@ public final class TcpSlaveAgentListener extends Thread {
         @Override
         public void run() {
             try {
-                LOGGER.log(Level.INFO, "Accepted connection #{0} from {1}", new Object[]{id,s.getRemoteSocketAddress()});
+                LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
                 PrintWriter out = new PrintWriter(
@@ -227,6 +227,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
                         if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
+                            LOGGER.log(Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
                             error(out, "Disabled protocol:" + s);
