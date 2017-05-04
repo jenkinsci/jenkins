@@ -1186,12 +1186,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
         }
 
         // try to reflect the changes by reloading
-
         try (InputStream in = new BufferedInputStream(new ByteArrayInputStream(out.toString().getBytes("UTF-8")))){
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
-            Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
+            Object o = Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
+            if (!o.getClass().equals(getClass())) {
+                // ensure that we've got the same view type. extending this code to support updating
+                // to different view type requires destroying & creating a new view type
+                throw new IOException("Expecting view type: "+this.getClass()+" but got: "+o.getClass()+" instead." +
+                    "\nShould you needed to change to a new view type, you must first delete and then re-create " +
+                    "the view with the new view type.");
+            }
             name = oldname;
         } catch (StreamException | ConversionException | Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
