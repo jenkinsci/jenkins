@@ -22,9 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  main.jelly snippet for disabling a project; applies to ParameterizedJob
+-->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <j:choose>
+    <j:when test="${!it.supportsMakeDisabled()}">
+      <!-- for now, quietly omit the option -->
+    </j:when>
     <j:when test="${it.disabled}">
       <div class="warning">
         <form method="post" id='enable-project' action="enable">
