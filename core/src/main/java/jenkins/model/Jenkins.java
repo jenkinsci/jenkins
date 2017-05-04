@@ -3673,6 +3673,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @return null if none is in use.
      */
+    @CheckForNull
     public CrumbIssuer getCrumbIssuer() {
         return crumbIssuer;
     }
