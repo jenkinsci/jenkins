@@ -187,20 +187,6 @@ THE SOFTWARE.
     </dependency-->
   </dependencies>
 
-  <repositories>
-    <!-- can be removed when jetty 9.4.5 released -->
-    <repository>
-      <id>jetty.snapshots</id>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <url>https://oss.sonatype.org/content/repositories/jetty-snapshots</url>
-    </repository>
-  </repositories>
-
   <build>
     <finalName>jenkins</finalName>
     <plugins>
