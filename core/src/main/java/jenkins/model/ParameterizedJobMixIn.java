@@ -530,6 +530,10 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             return null;
         }
 
+        default boolean isBuildable() {
+            return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
+        }
+
     }
 
 }

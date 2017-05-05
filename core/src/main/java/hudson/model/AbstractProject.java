@@ -644,7 +644,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public boolean isBuildable() {
-        return !isDisabled() && !isHoldOffBuildUntilSave();
+        return ParameterizedJobMixIn.ParameterizedJob.super.isBuildable();
     }
 
     /**
