@@ -1620,7 +1620,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (AbstractProject<?,?> ap : getUpstreamProjects()) {
             BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger != null)
-                if (buildTrigger.getChildProjects(ap).contains(this))
+                if (buildTrigger.getChildJobs(ap).contains(this))
                     result.add(ap);
         }
         return result;
