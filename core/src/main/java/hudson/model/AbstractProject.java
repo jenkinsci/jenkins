@@ -861,13 +861,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     /**
      * Schedules a polling of this project.
+     * @see SCMTriggerItem#schedulePolling
      */
     public boolean schedulePolling() {
-        if (this instanceof SCMTriggerItem) {
-            return ((SCMTriggerItem) this).schedulePolling();
-        } else {
-            return false;
-        }
+        if(isDisabled())    return false;
+        SCMTrigger scmt = getTrigger(SCMTrigger.class);
+        if(scmt==null)      return false;
+        scmt.run();
+        return true;
     }
 
     /**
