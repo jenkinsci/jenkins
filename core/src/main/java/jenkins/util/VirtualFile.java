@@ -295,7 +295,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 if (isIllegalSymlink()) {
                     throw new FileNotFoundException(f.getPath());
                 }
-                return Files.newInputStream(f.toPath());
+                try {
+                    return Files.newInputStream(f.toPath());
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
+                }
             }
         private boolean isIllegalSymlink() { // TODO JENKINS-26838
             try {

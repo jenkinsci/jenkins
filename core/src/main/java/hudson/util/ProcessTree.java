@@ -67,6 +67,7 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a snapshot of the process tree of the current system.
@@ -406,62 +407,114 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
     };
 
+    private class WindowsOSProcess extends OSProcess {
+        
+        private final WinProcess p;
+        private EnvVars env;
+        private List<String> args;
+        
+        WindowsOSProcess(WinProcess p) {
+            super(p.getPid());
+            this.p = p;
+        }
+
+        @Override
+        public OSProcess getParent() {
+            // Windows process doesn't have parent/child relationship
+            return null;
+        }
+
+        @Override
+        public void killRecursively() throws InterruptedException {
+            if (getVeto() != null) 
+                return;
+
+            LOGGER.log(FINER, "Killing recursively {0}", getPid());
+            p.killRecursively();
+            killByKiller();
+        }
+
+        @Override
+        public void kill() throws InterruptedException {
+            if (getVeto() != null) {
+                return;
+            }
+            
+            LOGGER.log(FINER, "Killing {0}", getPid());
+            p.kill();
+            killByKiller();
+        }
+
+        @Override
+        public synchronized List<String> getArguments() {
+            if(args==null) {
+                args = Arrays.asList(QuotedStringTokenizer.tokenize(p.getCommandLine()));
+            }
+            return args;
+        }
+
+        @Override
+        public synchronized EnvVars getEnvironmentVariables() {
+            try {
+               return getEnvironmentVariables2();
+            } catch (WindowsOSProcessException e) {
+                if (LOGGER.isLoggable(FINEST)) {
+                    LOGGER.log(FINEST, "Failed to get the environment variables of process with pid=" + p.getPid(), e);
+                }
+            }
+            return null;
+        }
+        
+        private synchronized EnvVars getEnvironmentVariables2() throws WindowsOSProcessException {
+            if(env !=null) {
+              return env;
+            }
+            env = new EnvVars();
+
+            try {
+               env.putAll(p.getEnvironmentVariables());
+            } catch (WinpException e) {
+               throw new WindowsOSProcessException("Failed to get the environment variables", e);
+            }
+            return env;
+        }
+        
+        private boolean hasMatchingEnvVars2(Map<String,String> modelEnvVar) throws WindowsOSProcessException {
+            if(modelEnvVar.isEmpty())
+                // sanity check so that we don't start rampage.
+                return false;
+
+            SortedMap<String,String> envs = getEnvironmentVariables2();
+            for (Entry<String,String> e : modelEnvVar.entrySet()) {
+                String v = envs.get(e.getKey());
+                if(v==null || !v.equals(e.getValue()))
+                    return false;   // no match
+            }
+
+            return true;
+        }
+    }
+    
+    //TODO: Cleanup once Winp provides proper API 
+    /**
+     * Wrapper for runtime {@link WinpException}.
+     */
+    private static class WindowsOSProcessException extends Exception {
+        WindowsOSProcessException(WinpException ex) {
+            super(ex);
+        }
+        
+        WindowsOSProcessException(String message, WinpException ex) {
+            super(message, ex);
+        }
+    }
 
     private static final class Windows extends Local {
         Windows() {
             for (final WinProcess p : WinProcess.all()) {
                 int pid = p.getPid();
                 if(pid == 0 || pid == 4) continue; // skip the System Idle and System processes
-                super.processes.put(pid,new OSProcess(pid) {
-                    private EnvVars env;
-                    private List<String> args;
-
-                    public OSProcess getParent() {
-                        // windows process doesn't have parent/child relationship
-                        return null;
-                    }
-
-                    public void killRecursively() throws InterruptedException {
-                        if (getVeto() != null) 
-                            return;
-                        
-                        LOGGER.finer("Killing recursively "+getPid());
-                        p.killRecursively();
-                        killByKiller();
-                    }
-
-                    public void kill() throws InterruptedException {
-                        if (getVeto() != null) 
-                            return;
-
-                        LOGGER.finer("Killing "+getPid());
-                        p.kill();
-                        killByKiller();
-                    }
-
-                    @Override
-                    public synchronized List<String> getArguments() {
-                        if(args==null)  args = Arrays.asList(QuotedStringTokenizer.tokenize(p.getCommandLine()));
-                        return args;
-                    }
-
-                    @Override
-                    public synchronized EnvVars getEnvironmentVariables() {
-                        if(env !=null)
-                          return env;
-                        env = new EnvVars();
-
-                        try
-                        {
-                           env.putAll(p.getEnvironmentVariables());
-                        } catch (WinpException e)
-                        {
-                           LOGGER.log(FINE, "Failed to get environment variable ", e);
-                        }
-                        return env;
-                    }
-                });
-
+                super.processes.put(pid, new WindowsOSProcess(p));
             }
         }
 
@@ -470,32 +523,51 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             return get(new WinProcess(proc).getPid());
         }
 
+        @Override
         public void killAll(Map<String, String> modelEnvVars) throws InterruptedException {
             for( OSProcess p : this) {
                 if(p.getPid()<10)
                     continue;   // ignore system processes like "idle process"
 
-                LOGGER.finest("Considering to kill "+p.getPid());
+                LOGGER.log(FINEST, "Considering to kill {0}", p.getPid());
 
                 boolean matched;
                 try {
-                    matched = p.hasMatchingEnvVars(modelEnvVars);
-                } catch (WinpException e) {
+                    matched = hasMatchingEnvVars(p, modelEnvVars);
+                } catch (WindowsOSProcessException e) {
                     // likely a missing privilege
-                    LOGGER.log(FINEST,"  Failed to check environment variable match",e);
+                    // TODO: not a minor issue - causes process termination error in JENKINS-30782
+                    if (LOGGER.isLoggable(FINEST)) {
+                        LOGGER.log(FINEST, "Failed to check environment variable match for process with pid=" + p.getPid() ,e);
+                    }
                     continue;
                 }
 
-                if(matched)
+                if(matched) {
                     p.killRecursively();
-                else
-                    LOGGER.finest("Environment variable didn't match");
-
+                } else {
+                    LOGGER.log(Level.FINEST, "Environment variable didn't match for process with pid={0}", p.getPid());
+                }
             }
         }
 
         static {
             WinProcess.enableDebugPrivilege();
+        }
+        
+        private static boolean hasMatchingEnvVars(@Nonnull OSProcess p, @Nonnull Map<String, String> modelEnvVars)
+                throws WindowsOSProcessException {
+            if (p instanceof WindowsOSProcess) {
+                return ((WindowsOSProcess)p).hasMatchingEnvVars2(modelEnvVars);
+            } else {
+                // Should never happen, but there is a risk of getting such class during deserialization
+                try {
+                    return p.hasMatchingEnvVars(modelEnvVars);
+                } catch (WinpException e) {
+                    // likely a missing privilege
+                    throw new WindowsOSProcessException(e);
+                }
+            }
         }
     }
 

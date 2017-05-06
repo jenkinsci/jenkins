@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.*;
 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,6 +72,8 @@ public class TextFile {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
         return out.toString();
     }
@@ -101,7 +104,7 @@ public class TextFile {
                             }
                         }
                     };
-                } catch (IOException e) {
+                } catch (IOException | InvalidPathException e) {
                     throw new RuntimeException(e);
                 }
             }

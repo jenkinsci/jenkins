@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -78,7 +79,11 @@ public class CompressedFile {
     public OutputStream write() throws IOException {
         if(gz.exists())
             gz.delete();
-        return Files.newOutputStream(file.toPath());
+        try {
+            return Files.newOutputStream(file.toPath());
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -86,11 +91,19 @@ public class CompressedFile {
      */
     public InputStream read() throws IOException {
         if(file.exists())
-            return Files.newInputStream(file.toPath());
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
 
         // check if the compressed file exists
         if(gz.exists())
-            return new GZIPInputStream(Files.newInputStream(gz.toPath()));
+            try {
+                return new GZIPInputStream(Files.newInputStream(gz.toPath()));
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
 
         // no such file
         throw new FileNotFoundException(file.getName());

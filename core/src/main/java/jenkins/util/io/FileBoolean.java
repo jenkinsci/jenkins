@@ -1,6 +1,7 @@
 package jenkins.util.io;
 
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class FileBoolean {
             file.getParentFile().mkdirs();
             Files.newOutputStream(file.toPath()).close();
             get();  // update state
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(Level.WARNING, "Failed to touch "+file);
         }
     }

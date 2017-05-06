@@ -338,6 +338,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
 
@@ -431,7 +432,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
+        if (u == null && !configFile.isFile() && !configFile.getParentFile().isDirectory()) {
             // check for legacy users and migrate if safe to do so.
             File[] legacy = getLegacyConfigFilesFor(id);
             if (legacy != null && legacy.length > 0) {

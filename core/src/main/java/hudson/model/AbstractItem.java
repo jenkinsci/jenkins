@@ -31,6 +31,7 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Tasks;
@@ -87,6 +88,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import static hudson.model.queue.Executables.getParentOf;
+import hudson.model.queue.SubTask;
+import java.lang.reflect.InvocationTargetException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
@@ -532,6 +535,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
@@ -620,9 +624,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
                 for (Computer c : Jenkins.getInstance().getComputers()) {
                     for (Executor e : c.getAllExecutors()) {
-                        WorkUnit workUnit = e.getCurrentWorkUnit();
-                        if (workUnit != null) {
-                            Item item = Tasks.getItemOf(getParentOf(workUnit.getExecutable()));
+                        final WorkUnit workUnit = e.getCurrentWorkUnit();
+                        final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                        final SubTask subtask = executable != null ? getParentOf(executable) : null;
+                                
+                        if (subtask != null) {        
+                            Item item = Tasks.getItemOf(subtask);
                             if (item != null) {
                                 while (item != null) {
                                     if (item == this) {
