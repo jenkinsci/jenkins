@@ -37,7 +37,7 @@ def listWarnings(warnings) {
 def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
-div(class: "error") {
+div(class: "alert alert-danger", role: "alert") {
     text(_("blurb"))
     ul {
         if (!coreWarnings.isEmpty()) {

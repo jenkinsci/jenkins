@@ -27,7 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}">
+<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}" css="/bootstrap/css/bootstrap.min.css">
+
   <d:taglib uri="local">
     <!-- table to show a map -->
     <d:tag name="feature">
@@ -56,6 +57,7 @@ THE SOFTWARE.
   <j:if test="${taskTags==null}">
     <st:include page="sidepanel.jelly" />
   </j:if>
+
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
 
@@ -117,11 +119,12 @@ THE SOFTWARE.
         <j:if test="${icon!=null}">
           <div class="manage-option">
             <a href="${m.urlName}" title="">
-            <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL+'/48x48/'+icon}" />
+            <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
             <img class="icon" src="${iconUrl}" />
             <dl>
               <dt>${m.displayName}</dt>
               <dd><j:out value="${m.description}"/></dd>
+              <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
             </dl>
             </a>
           </div>
