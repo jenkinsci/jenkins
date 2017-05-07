@@ -5,7 +5,6 @@ import hudson.model.Slave;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import org.apache.tools.ant.util.JavaEnvUtils;
 import org.codehaus.groovy.runtime.Security218;
@@ -17,6 +16,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.Serializable;
 import java.util.Collections;
+import jenkins.slaves.DefaultComputerLauncherProvider;
 
 import static org.junit.Assert.*;
 
@@ -80,7 +80,8 @@ public class Security218Test implements Serializable {
      * @see #launchJnlpSlave(Slave)
      */
     public DumbSlave createJnlpSlave(String name) throws Exception {
-        DumbSlave s = new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
+        DumbSlave s = new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", 
+                DefaultComputerLauncherProvider.findDefaultLauncher(DumbSlave.class), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
         j.jenkins.addNode(s);
         return s;
     }

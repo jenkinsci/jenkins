@@ -44,8 +44,18 @@ public abstract class DefaultComputerLauncherProvider implements ExtensionPoint 
      * @return {@link ComputerLauncher} if it can be identified, {@code null} otherwise. 
      */
     @CheckForNull
-    public abstract ComputerLauncher getDefaultLauncher(@Nonnull Node node);
+    public ComputerLauncher getDefaultLauncher(@Nonnull Node node) {
+        return getDefaultLauncher(node.getClass());
+    }
     
+    /**
+     * Gets the default computer launcher.
+     * @param nodeClass class of the node
+     * @return {@link ComputerLauncher} if it can be identified, {@code null} otherwise. 
+     */
+    @CheckForNull
+    public abstract ComputerLauncher getDefaultLauncher(@Nonnull Class<? extends Node> nodeClass);
+     
     public static ExtensionList<DefaultComputerLauncherProvider> all() {
         return ExtensionList.lookup(DefaultComputerLauncherProvider.class);
     }
@@ -61,6 +71,26 @@ public abstract class DefaultComputerLauncherProvider implements ExtensionPoint 
     public static ComputerLauncher findDefaultLauncher(@Nonnull Node node) {
         for (DefaultComputerLauncherProvider provider : all()) {
             ComputerLauncher defaultLauncher = provider.getDefaultLauncher(node);
+            if (defaultLauncher != null) {
+                return defaultLauncher;
+            }
+        }
+        
+        // Fallback to a default Launcher
+        return new NoOpComputerLauncher();
+    }
+    
+    /**
+     * Locates a default launcher for the node class.
+     * @param nodeClass Node class
+     * @return Default launcher. 
+     *         If there is no {@link DefaultComputerLauncherProvider} providing such launcher,
+     *         an instance of {@link NoOpComputerLauncher} will be returned.
+     */
+    @Nonnull
+    public static ComputerLauncher findDefaultLauncher(@Nonnull Class<? extends Node> nodeClass) {
+        for (DefaultComputerLauncherProvider provider : all()) {
+            ComputerLauncher defaultLauncher = provider.getDefaultLauncher(nodeClass);
             if (defaultLauncher != null) {
                 return defaultLauncher;
             }
