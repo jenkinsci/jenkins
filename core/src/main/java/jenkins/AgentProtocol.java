@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.security.HMACConfidentialKey;
 
 /**
  * Pluggable Jenkins TCP agent protocol handler called from {@link TcpSlaveAgentListener}.
@@ -23,6 +24,14 @@ import jenkins.model.Jenkins;
  * @see TcpSlaveAgentListener
  */
 public abstract class AgentProtocol implements ExtensionPoint {
+    
+    /**
+     * This secret value is used as a seed for agents.
+     * @since TODO
+     */
+    public static final HMACConfidentialKey AGENT_SECRET =
+            new HMACConfidentialKey("jenkins.slaves.JnlpSlaveAgentProtocol.secret", Integer.MAX_VALUE);
+    
     /**
      * Allow experimental {@link AgentProtocol} implementations to declare being opt-in.
      * Note that {@link Jenkins#setAgentProtocols(Set)} only records the protocols where the admin has made a
