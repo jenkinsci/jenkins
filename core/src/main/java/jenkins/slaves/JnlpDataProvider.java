@@ -25,6 +25,7 @@ package jenkins.slaves;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.Computer;
 import hudson.model.Slave;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -33,7 +34,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Allows providing custom data for JNLP agents.
- * This extension point is mainly created for the JNLP Agents plugin.
+ * This extension point is mainly created for the Agent Remoting Support plugin.
  * It can be also used in other plugins in order to get custom behavior.
  * @author Oleg Nenashev
  * @since TODO
@@ -50,11 +51,12 @@ public abstract class JnlpDataProvider implements ExtensionPoint {
     
     /**
      * Provides JNLP file as {@link HttpResponse}.
+     * @param computer Computer, for which the file should be provided
      * @param req Request. Can be used to retrieve additional metadata like parameters.
      * @return JNLP File
      */
     @CheckForNull
-    public abstract HttpResponse provideJnlpFile(@CheckForNull StaplerRequest req);
+    public abstract HttpResponse provideJnlpFile(@Nonnull Computer computer, @CheckForNull StaplerRequest req);
     
     public static ExtensionList<JnlpDataProvider> all() {
         return ExtensionList.lookup(JnlpDataProvider.class);
@@ -80,14 +82,15 @@ public abstract class JnlpDataProvider implements ExtensionPoint {
     
     /**
      * Finds JNLP file by name.
+     * @param computer Computer, for which the file should be provided
      * @param req Request with additional data like parameters.
      *            May be {@code null} if it is an API call.
      * @return Response with the retrieved file.
      */
     @CheckForNull
-    public static HttpResponse getJnlpFile(@CheckForNull StaplerRequest req) {
+    public static HttpResponse getJnlpFile(@Nonnull Computer computer, @CheckForNull StaplerRequest req) {
         for (JnlpDataProvider provider : all()) {
-            HttpResponse response = provider.provideJnlpFile(req);
+            HttpResponse response = provider.provideJnlpFile(computer, req);
             if (response != null) {
                 return response;
             }

@@ -677,8 +677,7 @@ public class SlaveComputer extends Computer {
      */
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        //return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
-        final HttpResponse jnlpFile = JnlpDataProvider.getJnlpFile(req);
+        final HttpResponse jnlpFile = JnlpDataProvider.getJnlpFile(this, req);
         if (jnlpFile == null) {
             return HttpResponses.error(500, "Cannpt retrieve the agent JNLP file. No Providers. "
                     + "Make sure that the JNLP Agent Support Plugin is installed.");
