@@ -52,7 +52,6 @@ import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
@@ -86,6 +85,8 @@ import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 import jenkins.AgentProtocol;
+import jenkins.slaves.JnlpDataProvider;
+import org.kohsuke.stapler.HttpResponses;
 
 
 /**
@@ -668,12 +669,21 @@ public class SlaveComputer extends Computer {
      */
     @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
-        return new Slave.JnlpJar(fileName);
+        return JnlpDataProvider.getJarFile(fileName);
     }
 
+    /**
+     * @deprecated 
+     */
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        //return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        final HttpResponse jnlpFile = JnlpDataProvider.getJnlpFile(req);
+        if (jnlpFile == null) {
+            return HttpResponses.error(500, "Cannpt retrieve the agent JNLP file. No Providers. "
+                    + "Make sure that the JNLP Agent Support Plugin is installed.");
+        }
+        return jnlpFile;
     }
 
     @Override

@@ -50,6 +50,14 @@ public abstract class DefaultComputerLauncherProvider implements ExtensionPoint 
         return ExtensionList.lookup(DefaultComputerLauncherProvider.class);
     }
     
+    /**
+     * Locates a default launcher for the node.
+     * @param node Node
+     * @return Default launcher. 
+     *         If there is no {@link DefaultComputerLauncherProvider} providing such launcher,
+     *         an instance of {@link NoOpComputerLauncher} will be returned.
+     */
+    @Nonnull
     public static ComputerLauncher findDefaultLauncher(@Nonnull Node node) {
         for (DefaultComputerLauncherProvider provider : all()) {
             ComputerLauncher defaultLauncher = provider.getDefaultLauncher(node);
