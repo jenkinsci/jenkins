@@ -30,12 +30,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Deletes builds records in a bulk.
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(DoNotUse.class) // command implementation only
 @Extension
 public class DeleteBuildsCommand extends JobRangeCommand {
     @Override

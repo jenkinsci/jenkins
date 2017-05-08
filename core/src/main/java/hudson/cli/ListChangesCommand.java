@@ -14,12 +14,15 @@ import org.kohsuke.stapler.export.ModelBuilder;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Retrieves a change list for the specified builds.
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(DoNotUse.class) // command implementation only
 @Extension
 public class ListChangesCommand extends JobRangeCommand {
     @Override
