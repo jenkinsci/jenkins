@@ -50,8 +50,8 @@ import java.util.logging.Logger;
  *
  * @since FIXME
  */
-public interface RunWithSCM<JobT extends Job<JobT, RunT> & Queue.Task,
-        RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT> & Queue.Executable> {
+public interface RunWithSCM<JobT extends Job<JobT, RunT>,
+        RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT>> {
 
     /**
      * Gets all {@link ChangeLogSet}s currently associated with this item.
