@@ -2422,7 +2422,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {
-            return entry.getFullDisplayName();
+            return entry.getFullDisplayName()+" ("+entry.getBuildStatusSummary().message+")";
         }
 
         public String getEntryUrl(Run entry) {
