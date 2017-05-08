@@ -28,8 +28,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.*;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Launcher.RemoteLauncher;
@@ -45,6 +44,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import com.google.common.base.Joiner;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.StringWriter;
 import java.net.URL;
 
@@ -92,12 +92,10 @@ public class ArgumentListBuilder2Test {
     }
 
     public String echoArgs(String... arguments) throws Exception {
-        String testHarnessJar = Class.forName("hudson.util.EchoCommand")
+        String testHarnessJar = new File(Class.forName("hudson.util.EchoCommand")
                 .getProtectionDomain()
                 .getCodeSource()
-                .getLocation()
-                .getFile()
-                .replaceAll("^/", "");
+                .getLocation().toURI()).getAbsolutePath();
 
         ArgumentListBuilder args = new ArgumentListBuilder(
                     JavaEnvUtils.getJreExecutable("java").replaceAll("^\"|\"$", ""),
@@ -117,7 +115,7 @@ public class ArgumentListBuilder2Test {
         int code = p.join();
         listener.close();
 
-        assertThat(code, equalTo(0));
+        assumeThat("Failed to run " + args, code, equalTo(0));
         return out.toString();
     }
 }
