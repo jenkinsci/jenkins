@@ -1,3 +1,4 @@
+// Encoding: UTF-8
 /*
 The MIT Licence, for code from kryogenix.org
 
@@ -67,6 +68,7 @@ var Sortable = (function() {
 
         // figure out the initial sort preference
         this.pref = this.getStoredPreference();
+        /* jshint eqnull:true */
         if (this.pref == null) {
             firstRow.each(function (cell,i){
                 var initialSortDir = cell.getAttribute("initialSortDir");
@@ -172,6 +174,7 @@ var Sortable = (function() {
          * @since 1.484
          */
         refresh : function() {
+            /* jshint eqnull:true */
             if (this.pref==null)     return; // not sorting
 
             var column = this.pref.column;
@@ -193,7 +196,7 @@ var Sortable = (function() {
             var rows = this.getDataRows();
             rows.sort(function(a,b) {
                 var x = rowPos(a)-rowPos(b);
-                if (x!=0)   return x;
+                if (x!==0)   return x;
 
                 return s(
                     this.extractData(a.cells[column]),
@@ -237,6 +240,7 @@ var Sortable = (function() {
 
         // extract data for sorting from a cell
         extractData : function(x) {
+          /* jshint eqnull:true */
           if(x==null) return '';
           var data = x.getAttribute("data");
           if(data!=null)
@@ -266,6 +270,35 @@ var Sortable = (function() {
     arrowTable.down.next = arrowTable.up;
 
 
+    function alphanum_sort(a,b,caseInsensitive) {
+        function chunkify(t) {
+          var tz = [];
+          var x = 0, y = -1, n = 0, i, j;
+
+          while (i = (j = t.charAt(x++)).charCodeAt(0)) {
+            var m = (i == 46 || (i >=48 && i <= 57));
+            if (m !== n) {
+              tz[++y] = "";
+              n = m;
+            }
+            tz[y] += j;
+          }
+          return tz;
+        }
+
+        var aa = chunkify(caseInsensitive ? a.toLowerCase() : a);
+        var bb = chunkify(caseInsensitive ? b.toLowerCase() : b);
+
+        for (x = 0; aa[x] && bb[x]; x++) {
+          if (aa[x] !== bb[x]) {
+            var c = Number(aa[x]), d = Number(bb[x]);
+            if (c == aa[x] && d == bb[x]) {
+              return c - d;
+            } else return (aa[x] > bb[x]) ? 1 : -1;
+          }
+        }
+        return aa.length - bb.length;
+    }
 
     // available sort functions
     var sorter = {
@@ -316,13 +349,12 @@ var Sortable = (function() {
         },
 
         caseInsensitive : function(a,b) {
-            return sorter.fallback(a.toLowerCase(), b.toLowerCase());
+            return alphanum_sort(a.toLowerCase(), b.toLowerCase(), true);
         },
 
+        // alphanum sorting
         fallback : function(a,b) {
-            if (a==b) return 0;
-            if (a<b) return -1;
-            return 1;
+            return alphanum_sort(a.toLowerCase(), b.toLowerCase(), false);
         },
 
         /**
@@ -334,7 +366,7 @@ var Sortable = (function() {
             var sortfn = this.caseInsensitive;
             if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d\d\d$/)) sortfn = this.date;
             if (itm.match(/^\d\d[\/-]\d\d[\/-]\d\d$/)) sortfn = this.date;
-            if (itm.match(/^[�$]/)) sortfn = this.currency;
+            if (itm.match(/^[£$¢¤¥₨﹩＄￠￡￥￦]/)) sortfn = this.currency;
             if (itm.match(/\%$/)) sortfn = this.percent;
             if (itm.match(/^-?[\d\.]+$/)) sortfn = this.numeric;
             return sortfn;
@@ -380,6 +412,7 @@ function ts_makeSortable(table) { // backward compatibility
 /** Calls table.sortable.refresh() in case the sortable has been initialized; otherwise does nothing. */
 function ts_refresh(table) {
     var s = table.sortable;
+    /* jshint eqnull:true */
     if (s != null) {
         s.refresh();
     }
