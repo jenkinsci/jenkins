@@ -100,7 +100,7 @@ public class Tasks {
      * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
      * in case some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
-     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link #getDefaultAuthenticationOf}
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication()}
      * @since 1.560
      */
     public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {

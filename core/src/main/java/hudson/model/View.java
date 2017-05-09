@@ -264,7 +264,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return owner;
     }
 
-    /** @deprecated call {@link ViewGroup#getOwnerItemGroup} directly */
+    /** @deprecated call {@link ViewGroup#getItemGroup} directly */
     @Deprecated
     public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
         return owner.getItemGroup();
