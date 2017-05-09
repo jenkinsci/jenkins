@@ -203,48 +203,35 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         }
         if (!jobs.isEmpty() && build.getResult().isBetterOrEqualTo(threshold)) {
             PrintStream logger = listener.getLogger();
-            Authentication auth = Jenkins.getAuthentication();
-            if (auth.equals(ACL.SYSTEM)) {
-                if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
-                    logger.println(Messages.BuildTrigger_warning_you_have_no_plugins_providing_ac());
-                } else if (QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                    logger.println(Messages.BuildTrigger_warning_access_control_for_builds_in_glo());
-                } else {
-                    logger.println(Messages.BuildTrigger_warning_this_build_has_no_associated_aut());
-                    auth = Jenkins.ANONYMOUS;
+            for (Job<?, ?> downstream : jobs) {
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) {
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    continue;
                 }
-            }
-            try (ACLContext as = ACL.as(auth)) {
-                for (Job<?, ?> downstream : jobs) {
-                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) {
-                        LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
-                        continue;
-                    }
-                    if (!downstream.hasPermission(Item.BUILD)) {
-                        listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
-                        continue;
-                    }
-                    if (!(downstream instanceof ParameterizedJobMixIn.ParameterizedJob)) {
-                        logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
-                        continue;
-                    }
-                    ParameterizedJobMixIn.ParameterizedJob<?, ?> pj = (ParameterizedJobMixIn.ParameterizedJob) downstream;
-                    if (pj.isDisabled()) {
-                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(downstream)));
-                        continue;
-                    }
-                    if (!downstream.isBuildable()) { // some other reason; no API to retrieve cause
-                        logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
-                        continue;
-                    }
-                    boolean scheduled = pj.scheduleBuild(pj.getQuietPeriod(), new UpstreamCause((Run) build));
-                    if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) == downstream) {
-                        String name = ModelHyperlinkNote.encodeTo(downstream);
-                        if (scheduled) {
-                            logger.println(Messages.BuildTrigger_Triggering(name));
-                        } else {
-                            logger.println(Messages.BuildTrigger_InQueue(name));
-                        }
+                if (!downstream.hasPermission(Item.BUILD)) {
+                    listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!(downstream instanceof ParameterizedJobMixIn.ParameterizedJob)) {
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                ParameterizedJobMixIn.ParameterizedJob<?, ?> pj = (ParameterizedJobMixIn.ParameterizedJob) downstream;
+                if (pj.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!downstream.isBuildable()) { // some other reason; no API to retrieve cause
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                boolean scheduled = pj.scheduleBuild(pj.getQuietPeriod(), new UpstreamCause((Run) build));
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) == downstream) {
+                    String name = ModelHyperlinkNote.encodeTo(downstream);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
                     }
                 }
             }
