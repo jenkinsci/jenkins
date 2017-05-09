@@ -64,8 +64,6 @@ import jenkins.model.Jenkins;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -214,31 +212,24 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             }
         });
 
-        Authentication auth = Jenkins.getAuthentication(); // from build
-
         for (Dependency dep : downstreamProjects) {
             List<Action> buildActions = new ArrayList<Action>();
-            SecurityContext orig = ACL.impersonate(auth);
-            try {
-                if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                    AbstractProject p = dep.getDownstreamProject();
-                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                    if (p.isDisabled()) {
-                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                        continue;
-                    }
-                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
-                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
-                        String name = ModelHyperlinkNote.encodeTo(p);
-                        if (scheduled) {
-                            logger.println(Messages.BuildTrigger_Triggering(name));
-                        } else {
-                            logger.println(Messages.BuildTrigger_InQueue(name));
-                        }
-                    } // otherwise upstream users should not know that it happened
+            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+                AbstractProject p = dep.getDownstreamProject();
+                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                if (p.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                    continue;
                 }
-            } finally {
-                SecurityContextHolder.setContext(orig);
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                    String name = ModelHyperlinkNote.encodeTo(p);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                } // otherwise upstream users should not know that it happened
             }
         }
 
