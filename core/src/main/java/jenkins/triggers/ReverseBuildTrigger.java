@@ -65,7 +65,6 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
@@ -128,9 +127,6 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
-        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-            auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
-        }
 
         SecurityContext orig = ACL.impersonate(auth);
         Item authUpstream = null;
