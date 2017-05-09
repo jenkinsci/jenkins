@@ -762,12 +762,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
          * Calls a build step.
          */
         protected final boolean perform(BuildStep bs, BuildListener listener) throws InterruptedException, IOException {
-            BuildStepMonitor mon;
-            try {
-                mon = bs.getRequiredMonitorService();
-            } catch (AbstractMethodError e) {
-                mon = BuildStepMonitor.BUILD;
-            }
+            BuildStepMonitor mon = bs.getRequiredMonitorService();
             Result oldResult = AbstractBuild.this.getResult();
             for (BuildStepListener bsl : BuildStepListener.all()) {
                 bsl.started(AbstractBuild.this, bs, listener);

@@ -131,7 +131,7 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
         TopLevelItem i = createMockItem(parent, "job/i/");
         when(view.getItems()).thenReturn(Arrays.asList(i));
@@ -166,7 +166,7 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/");
         when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
@@ -187,7 +187,7 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
         when(view.getItems()).thenReturn(Arrays.asList(i));

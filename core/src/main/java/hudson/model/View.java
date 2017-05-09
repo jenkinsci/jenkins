@@ -218,7 +218,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Gets the {@link TopLevelItem} of the given name.
      */
     public TopLevelItem getItem(String name) {
-        return getOwnerItemGroup().getItem(name);
+        return getOwner().getItemGroup().getItem(name);
     }
 
     /**
@@ -264,38 +264,21 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return owner;
     }
 
-    /**
-     * Backward-compatible way of getting {@code getOwner().getItemGroup()}
-     */
+    /** @deprecated call {@link ViewGroup#getOwnerItemGroup} directly */
+    @Deprecated
     public ItemGroup<? extends TopLevelItem> getOwnerItemGroup() {
-        try {
-            return owner.getItemGroup();
-        } catch (AbstractMethodError e) {
-            return Jenkins.getInstance();
-        }
+        return owner.getItemGroup();
     }
 
+    /** @deprecated call {@link ViewGroup#getPrimaryView} directly */
+    @Deprecated
     public View getOwnerPrimaryView() {
-        try {
-            return _getOwnerPrimaryView();
-        } catch (AbstractMethodError e) {
-            return null;
-        }
-    }
-
-    private View _getOwnerPrimaryView() {
         return owner.getPrimaryView();
     }
 
+    /** @deprecated call {@link ViewGroup#getViewActions} directly */
+    @Deprecated
     public List<Action> getOwnerViewActions() {
-        try {
-            return _getOwnerViewActions();
-        } catch (AbstractMethodError e) {
-            return Jenkins.getInstance().getActions();
-        }
-    }
-
-    private List<Action> _getOwnerViewActions() {
         return owner.getViewActions();
     }
 
@@ -432,7 +415,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, this is a view that renders the top page of Hudson.
      */
     public boolean isDefault() {
-        return getOwnerPrimaryView()==this;
+        return getOwner().getPrimaryView()==this;
     }
     
     public List<Computer> getComputers() {
@@ -540,7 +523,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public List<Action> getActions() {
     	List<Action> result = new ArrayList<Action>();
-    	result.addAll(getOwnerViewActions());
+    	result.addAll(getOwner().getViewActions());
     	synchronized (this) {
     		if (transientActions == null) {
                 updateTransientActions();
@@ -1036,7 +1019,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             return FormValidation.error(e.getMessage());
         }
 
-        if (getOwnerItemGroup().getItem(value) != null) {
+        if (getOwner().getItemGroup().getItem(value) != null) {
             return FormValidation.error(Messages.Hudson_JobAlreadyExists(value));
         }
 
@@ -1062,7 +1045,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         } else {
             ctx = null;
         }
-        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwnerItemGroup(), Items.all(Jenkins.getAuthentication(), getOwnerItemGroup()))) {
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
             ItemCategory ic = ItemCategory.getCategory(descriptor);
             Map<String, Serializable> metadata = new HashMap<String, Serializable>();
 

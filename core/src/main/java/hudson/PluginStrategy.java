@@ -92,5 +92,5 @@ public interface PluginStrategy extends ExtensionPoint {
      * @param dependee newly loaded plugin.
      * @since 1.557
      */
-    void updateDependency(PluginWrapper depender, PluginWrapper dependee);
+    default void updateDependency(PluginWrapper depender, PluginWrapper dependee) {}
 }

@@ -82,7 +82,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Internal method. Called by {@link Item}s when they are renamed by users.
      * This is <em>not</em> expected to call {@link ItemListener#onRenamed}, inconsistent with {@link #onDeleted}.
      */
-    void onRenamed(T item, String oldName, String newName) throws IOException;
+    default void onRenamed(T item, String oldName, String newName) throws IOException {}
 
     /**
      * Internal method. Called by {@link Item}s when they are deleted by users.

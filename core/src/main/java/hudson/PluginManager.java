@@ -899,11 +899,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (d.shortName.equals(p.getShortName())) {
                         // this plugin depends on the newly loaded one!
                         // recalculate dependencies!
-                        try {
-                            getPluginStrategy().updateDependency(depender, p);
-                        } catch (AbstractMethodError x) {
-                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                        }
+                        getPluginStrategy().updateDependency(depender, p);
                         break;
                     }
                 }
