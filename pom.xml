@@ -510,7 +510,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>9.2.15.v20160210-jenkins-1</version>
+          <version>9.4.5.v20170502-jenkins-1</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
