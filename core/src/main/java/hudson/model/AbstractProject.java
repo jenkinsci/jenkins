@@ -34,7 +34,6 @@ import hudson.CopyOnWrite;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.FeedAdapter;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -55,8 +54,6 @@ import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.model.queue.SubTask;
 import hudson.model.queue.SubTaskContributor;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.NullSCM;
 import hudson.scm.PollingResult;
 
@@ -87,7 +84,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -107,7 +103,6 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
-import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.Uptime;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -1973,66 +1968,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return new HttpRedirect(".");
     }
 
-
-    /**
-     * RSS feed for changes in this project.
-     */
-    public void doRssChangelog(  StaplerRequest req, StaplerResponse rsp  ) throws IOException, ServletException {
-        class FeedItem {
-            ChangeLogSet.Entry e;
-            int idx;
-
-            public FeedItem(Entry e, int idx) {
-                this.e = e;
-                this.idx = idx;
-            }
-
-            AbstractBuild<?,?> getBuild() {
-                return e.getParent().build;
-            }
-        }
-
-        List<FeedItem> entries = new ArrayList<FeedItem>();
-
-        for(R r=getLastBuild(); r!=null; r=r.getPreviousBuild()) {
-            int idx=0;
-            for( ChangeLogSet.Entry e : r.getChangeSet())
-                entries.add(new FeedItem(e,idx++));
-        }
-
-        RSS.forwardToRss(
-            getDisplayName()+' '+getScm().getDescriptor().getDisplayName()+" changes",
-            getUrl()+"changes",
-            entries, new FeedAdapter<FeedItem>() {
-                public String getEntryTitle(FeedItem item) {
-                    return "#"+item.getBuild().number+' '+item.e.getMsg()+" ("+item.e.getAuthor()+")";
-                }
-
-                public String getEntryUrl(FeedItem item) {
-                    return item.getBuild().getUrl()+"changes#detail"+item.idx;
-                }
-
-                public String getEntryID(FeedItem item) {
-                    return getEntryUrl(item);
-                }
-
-                public String getEntryDescription(FeedItem item) {
-                    StringBuilder buf = new StringBuilder();
-                    for(String path : item.e.getAffectedPaths())
-                        buf.append(path).append('\n');
-                    return buf.toString();
-                }
-
-                public Calendar getEntryTimestamp(FeedItem item) {
-                    return item.getBuild().getTimestamp();
-                }
-
-                public String getEntryAuthor(FeedItem entry) {
-                    return JenkinsLocationConfiguration.get().getAdminAddress();
-                }
-            },
-            req, rsp );
-    }
 
     /**
      * {@link AbstractProject} subtypes should implement this base class as a descriptor.
