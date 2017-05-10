@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.PermissionScope;
@@ -42,6 +43,7 @@ import hudson.security.Permission;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
@@ -81,7 +83,7 @@ import java.util.concurrent.Future;
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
@@ -99,8 +101,16 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return name;
     }
 
-    public String getSearchUrl() {
-        return "cloud/"+name;
+    /**
+     * Get URL of the cloud.
+     *
+     * @since TODO
+     * @return Jenkins relative URL.
+     */
+    public @Nonnull String getUrl() { return "cloud/" + name; }
+
+    public @Nonnull String getSearchUrl() {
+        return getUrl();
     }
 
     public ACL getACL() {
