@@ -254,7 +254,10 @@ public class SetupWizard extends PageDecorator {
                 a = securityRealm.getSecurityComponents().manager.authenticate(a);
                 SecurityContextHolder.getContext().setAuthentication(a);
                 CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
-                JSONObject data = new JSONObject().accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+                JSONObject data = new JSONObject();
+                if (crumbIssuer != null) {
+                    data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+                }
                 return HttpResponses.okJSON(data);
             } else {
                 return HttpResponses.okJSON();
