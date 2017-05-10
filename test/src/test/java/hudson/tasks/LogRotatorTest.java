@@ -224,7 +224,7 @@ public class LogRotatorTest {
         }
     }
     
-    static class StallBuilder extends TestBuilder {
+    public static class StallBuilder extends TestBuilder {
         
         private int syncBuildNumber;
         
