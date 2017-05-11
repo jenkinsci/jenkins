@@ -75,12 +75,19 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /** @see BuildableItem#scheduleBuild() */
     @SuppressWarnings("deprecation")
     public final boolean scheduleBuild() {
-        return scheduleBuild(asJob().getQuietPeriod(), new Cause.LegacyCodeCause());
+        return scheduleBuild(getQuietPeriod(), new Cause.LegacyCodeCause());
     }
 
     /** @see BuildableItem#scheduleBuild(Cause) */
     public final boolean scheduleBuild(Cause c) {
-        return scheduleBuild(asJob().getQuietPeriod(), c);
+        return scheduleBuild(getQuietPeriod(), c);
+    }
+
+    /**
+     * @see ParameterizedJobMixIn#scheduleBuild2(int, java.util.List)
+     */
+    public final boolean scheduleBuild(List<Action> actions) {
+        return scheduleBuild2(getQuietPeriod(), actions) != null;
     }
 
     /** @see BuildableItem#scheduleBuild(int) */
@@ -138,7 +145,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         return Jenkins.getInstance().getQueue().schedule2(asJob(), quietPeriod, queueActions).getItem();
     }
 
-    private List<ParameterValue> getDefaultParametersValues() {
+    public List<ParameterValue> getDefaultParametersValues() {
         ParametersDefinitionProperty paramDefProp = asJob().getProperty(ParametersDefinitionProperty.class);
         ArrayList<ParameterValue> defValues = new ArrayList<ParameterValue>();
 
@@ -300,6 +307,13 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
             }
         }
         return null;
+    }
+
+    /**
+     * @return quiet period
+     */
+    public int getQuietPeriod() {
+        return asJob().getQuietPeriod();
     }
 
     /**
