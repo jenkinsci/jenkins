@@ -103,7 +103,12 @@ public class AuthenticationProcessingFilter2 extends AuthenticationProcessingFil
         LOGGER.log(Level.FINE, "Login attempt failed", failed);
         Authentication auth = failed.getAuthentication();
         if (auth != null) {
-            SecurityListener.fireFailedToLogIn(auth.getName());
+        	//is client behind something?
+			String ipAddress = request.getHeader("X-FORWARDED-FOR");  
+			if (ipAddress == null) {  
+			   ipAddress = request.getRemoteAddr();  
+			}
+            SecurityListener.fireFailedToLogIn(auth.getName(), ipAddress);
         }
     }
 
