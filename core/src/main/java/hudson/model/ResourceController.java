@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import hudson.model.queue.QueueListener;
 import hudson.util.AdaptedIterator;
 
 import java.util.Set;
@@ -94,6 +95,9 @@ public class ResourceController {
         });
 
         try {
+            for (QueueListener listener : QueueListener.all()) {
+                listener.onTaskExecuted(task);
+            }
             task.run();
         } finally {
            // TODO if AsynchronousExecution, do that later
