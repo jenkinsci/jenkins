@@ -1799,6 +1799,7 @@ public class Queue extends ResourceController implements Saveable {
          * {@link #getResourceList()}.
          * @return by default, null
          */
+        @CheckForNull
         default CauseOfBlockage getCauseOfBlockage() {
             return null;
         }
