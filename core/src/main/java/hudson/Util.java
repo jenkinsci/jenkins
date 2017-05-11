@@ -1286,6 +1286,9 @@ public class Util {
         fs.setDir(baseDir);
         fs.setProject(new Project());
 
+        if (System.getProperty("os.name").startsWith("Windows"))
+            fs.setCaseSensitive(false);
+
         StringTokenizer tokens;
 
         tokens = new StringTokenizer(includes,",");
