@@ -93,7 +93,7 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>3.3</version>
+      <version>4.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -177,7 +177,6 @@ THE SOFTWARE.
     </dependency>
 
     <!-- offline profiler API when we need it -->
-
     <!--dependency
       <groupId>com.yourkit.api</groupId>
       <artifactId>yjp</artifactId>
