@@ -67,7 +67,7 @@ THE SOFTWARE.
     <tr>
       <th><st:nbsp/></th>
       <th>${%Build}</th>
-      <th initialSortDir="up">${%Time Since}</th>
+      <th initialSortDir="down">${%Time Since}</th>
       <th>${%Status}</th>
       <th><st:nbsp/></th>
     </tr>

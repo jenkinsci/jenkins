@@ -52,7 +52,7 @@ THE SOFTWARE.
     <table id="logRecorders" class="sortable pane bigtable">
       <tr>
         <th width="32">S</th>
-        <th initialSortDir="down">${%Name}</th>
+        <th initialSortDir="up">${%Name}</th>
         <th width="32"/>
       </tr>
       <local:row href="all" name="${%All Jenkins Logs}" />

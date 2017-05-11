@@ -38,7 +38,7 @@ THE SOFTWARE.
       </h1>
       <table class="fingerprint-in-build sortable bigtable">
         <tr>
-          <th initialSortDir="down">${%File}</th>
+          <th initialSortDir="up">${%File}</th>
           <th>${%Original owner}</th>
           <th>${%Age}</th>
           <th/>

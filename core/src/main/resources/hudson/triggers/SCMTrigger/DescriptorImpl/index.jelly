@@ -48,7 +48,7 @@ THE SOFTWARE.
           </p>
           <table id="threads" class="sortable pane bigtable">
             <tr>
-              <th initialSortDir="down">${%Project}</th>
+              <th initialSortDir="up">${%Project}</th>
               <th>${%Running for}</th>
             </tr>
             <j:forEach var="r" items="${it.runners}">
