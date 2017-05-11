@@ -34,8 +34,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+
+import hudson.tasks.LogRotatorTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -132,6 +136,8 @@ public class AbstractBuildTest {
         FakeChangeLogSCM scm = new FakeChangeLogSCM();
         p.setScm(scm);
 
+        LogRotatorTest.StallBuilder sync = new LogRotatorTest.StallBuilder();
+
         // 1st build, successful, no culprits
         scm.addChange().withAuthor("alice");
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
@@ -144,8 +150,15 @@ public class AbstractBuildTest {
         assertCulprits(b, "bob");
 
         // 3rd build. bob continues to be in culprit
+        p.getBuildersList().add(sync);
         scm.addChange().withAuthor("charlie");
-        b = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        b = p.scheduleBuild2(0).waitForStart();
+        sync.waitFor(b.getNumber(), 1, TimeUnit.SECONDS);
+
+        // Verify that we can get culprits while running.
+        assertCulprits(b, "bob", "charlie");
+        sync.release(b.getNumber());
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         assertCulprits(b, "bob", "charlie");
 
         // 4th build, unstable. culprit list should continue
