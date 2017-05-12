@@ -24,7 +24,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  */
 @Restricted(DoNotUse.class) // command implementation only
 @Extension
-public class ListChangesCommand extends JobRangeCommand {
+public class ListChangesCommand extends RunRangeCommand {
     @Override
     public String getShortDescription() {
         return Messages.ListChangesCommand_ShortDescription();

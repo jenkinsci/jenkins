@@ -9,9 +9,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link CLICommand} that acts on a series of {@link Job}s.
+ * {@link CLICommand} that acts on a series of {@link Run}s.
+ * @since FIXME
  */
-public abstract class JobRangeCommand extends CLICommand {
+public abstract class RunRangeCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
     public Job<?,?> job;
 

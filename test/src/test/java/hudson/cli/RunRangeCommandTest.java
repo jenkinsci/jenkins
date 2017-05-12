@@ -48,7 +48,7 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author pjanouse
  */
-public class JobRangeCommandTest {
+public class RunRangeCommandTest {
 
     private static CLICommandInvoker command = null;
     private static FreeStyleProject project = null;
@@ -977,7 +977,7 @@ public class JobRangeCommandTest {
     }
 
     @Extension
-    public static class DummyRangeCommand extends JobRangeCommand {
+    public static class DummyRangeCommand extends RunRangeCommand {
         @Override
         public String getShortDescription() {
             return "DummyRangeCommand";

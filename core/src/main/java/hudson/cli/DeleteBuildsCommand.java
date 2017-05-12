@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  */
 @Restricted(DoNotUse.class) // command implementation only
 @Extension
-public class DeleteBuildsCommand extends JobRangeCommand {
+public class DeleteBuildsCommand extends RunRangeCommand {
     @Override
     public String getShortDescription() {
         return Messages.DeleteBuildsCommand_ShortDescription();

@@ -12,7 +12,7 @@ import java.util.List;
  * {@link CLICommand} that acts on a series of {@link AbstractBuild}s.
  *
  * @author Kohsuke Kawaguchi
- * @deprecated rather use {@link JobRangeCommand}
+ * @deprecated rather use {@link RunRangeCommand}
  */
 @Deprecated
 public abstract class AbstractBuildRangeCommand extends CLICommand {
