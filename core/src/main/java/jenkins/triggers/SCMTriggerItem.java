@@ -57,7 +57,7 @@ public interface SCMTriggerItem {
     /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#getQuietPeriod */
     int getQuietPeriod();
 
-    /** @see ParameterizedJobMixIn#scheduleBuild2 */
+    /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#scheduleBuild2 */
     @CheckForNull QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions);
 
     /**
