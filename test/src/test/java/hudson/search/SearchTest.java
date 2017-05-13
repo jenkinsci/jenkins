@@ -138,7 +138,6 @@ public class SearchTest {
 
         MockFolder myMockFolder = j.createFolder("my-folder-1");
         FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
-
         Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
 
         assertNotNull(result);
@@ -453,5 +452,45 @@ public class SearchTest {
         List<SearchItem> result = new ArrayList<SearchItem>();
         index.suggest(term, result);
         return result;
+    }
+
+    @Issue("JENKINS-35459")
+    @Test
+    public void testProjectNameInAListView() throws Exception {
+        MockFolder myMockFolder = j.createFolder("folder");
+        FreeStyleProject freeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "myJob");
+
+        ListView listView = new ListView("ListView", j.jenkins);
+        listView.setRecurse(true);
+        listView.add(myMockFolder);
+        listView.add(freeStyleProject);
+
+        j.jenkins.addView(listView);
+        j.jenkins.setPrimaryView(listView);
+
+        assertEquals(2, j.jenkins.getPrimaryView().getAllItems().size());
+
+        WebClient wc = j.createWebClient();
+        Page result = wc.goTo("search/suggest?query=" + freeStyleProject.getName(), "application/json");
+
+        assertNotNull(result);
+        j.assertGoodStatus(result);
+
+        String content = result.getWebResponse().getContentAsString();
+        System.out.println(content);
+        JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+
+        assertEquals(1, jsonArray.size());
+
+        Page searchResult = wc.goTo("search?q=" + myMockFolder.getName() + "%20" + freeStyleProject.getName());
+
+        assertNotNull(searchResult);
+        j.assertGoodStatus(searchResult);
+
+        URL resultUrl = searchResult.getUrl();
+        assertTrue(resultUrl.toString().equals(j.getInstance().getRootUrl() + freeStyleProject.getUrl()));
     }
 }
