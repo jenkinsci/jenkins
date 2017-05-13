@@ -1138,6 +1138,60 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * The following methods should be overriden by Jobs that support being disabled:
+     * <p><ul>
+     * <li>supportsDisable() - override to return true</li>
+     * <li>isDisabled()</li>
+     * <li>disable()</li>
+     * <li>enable()</li>
+     * </ul>
+     *
+     * <p>
+     * The default behavior for jobs that do not override these methods is isDisabled() always returns false,
+     * and enable()/disable() should not be called (they throw exceptions). enable()/disable() should only be
+     * called if supportsDisable() returns true.
+     *
+     * @since TODO
+     */
+    public boolean supportsDisable() {
+        return false;
+    }
+
+    /**
+     * Returns true if the job is currently disabled. Returns false if the job is not disabled, or does not
+     * support being disabled.
+     *
+     * @since TODO
+     */
+    public boolean isDisabled() {
+        return false;
+    }
+
+    /**
+     * Subclasses should implement this class if they support enable/disable semantics. Callers should check
+     * supportsDisable() before calling this method.
+     *
+     * Transitions this job to the disabled state. If the job is already disabled this method silently does nothing.
+     *
+     * @since TODO
+     */
+    public void disable() throws IOException {
+        throw new IOException("does not support disable/enable");
+    }
+
+    /**
+     * Subclasses should implement this class if they support enable/disable semantics. Callers should check
+     * supportsDisable() before calling this method.
+     *
+     * Transitions this job to the enabled state. If the job is already enabled this method silently does nothing.
+     *
+     * @since TODO
+     */
+    public void enable() throws IOException {
+        throw new IOException("does not support disable/enable");
+    }
+
+    /**
      * Used as the color of the status ball for the project.
      */
     @Exported(visibility = 2, name = "color")
@@ -1146,10 +1200,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         while (lastBuild != null && lastBuild.hasntStartedYet())
             lastBuild = lastBuild.getPreviousBuild();
 
-        if (lastBuild != null)
+        if(isDisabled()) {
+            return isBuilding() ? BallColor.DISABLED_ANIME : BallColor.DISABLED;
+        } else if (lastBuild != null) {
             return lastBuild.getIconColor();
-        else
+        } else {
             return BallColor.NOTBUILT;
+        }
     }
 
     /**
