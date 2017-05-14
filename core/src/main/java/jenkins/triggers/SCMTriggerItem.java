@@ -82,6 +82,21 @@ public interface SCMTriggerItem {
     @Nonnull Collection<? extends SCM> getSCMs();
 
     /**
+     * Schedules a polling of this project.
+     */
+    default boolean schedulePolling() {
+        if (this instanceof ParameterizedJobMixIn.ParameterizedJob && ((ParameterizedJobMixIn.ParameterizedJob) this).isDisabled()) {
+            return false;
+        }
+        SCMTrigger scmt = getSCMTrigger();
+        if (scmt == null) {
+            return false;
+        }
+        scmt.run();
+        return true;
+    }
+
+    /**
      * Utilities.
      */
     class SCMTriggerItems {

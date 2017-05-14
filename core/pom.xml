@@ -575,7 +575,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
-      <version>1.4</version>
     </dependency>
 
     <dependency>
@@ -704,7 +703,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-checker</artifactId>
-        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>

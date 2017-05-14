@@ -25,11 +25,15 @@
 package jenkins.model;
 
 import hudson.Util;
+import hudson.cli.declarative.CLIMethod;
+import hudson.cli.declarative.CLIResolver;
 import hudson.model.Action;
 import hudson.model.BuildableItem;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
+import static hudson.model.Item.CONFIGURE;
+import hudson.model.Items;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
@@ -37,6 +41,7 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.Run;
+import hudson.model.listeners.ItemListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.search.SearchIndexBuilder;
 import hudson.triggers.Trigger;
@@ -53,10 +58,17 @@ import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import static javax.servlet.http.HttpServletResponse.SC_CREATED;
 import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
+import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -66,7 +78,14 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /**
  * Allows a {@link Job} to make use of {@link ParametersDefinitionProperty} and be scheduled in various ways.
  * Stateless so there is no need to keep an instance of it in a field.
- * Besides implementing {@link ParameterizedJob}, you should override {@link Job#makeSearchIndex} to call {@link #extendSearchIndex}.
+ * Besides implementing {@link ParameterizedJob}, you should
+ * <ul>
+ * <li>override {@link Job#makeSearchIndex} to call {@link #extendSearchIndex}
+ * <li>override {@link Job#performDelete} to call {@link ParameterizedJob#makeDisabled}
+ * <li>override {@link Job#getIconColor} to call {@link ParameterizedJob#isDisabled}
+ * <li>use {@code <p:config-disableBuild/>}
+ * <li>use {@code <p:makeDisabled/>}
+ * </ul>
  * @since 1.556
  */
 @SuppressWarnings("unchecked") // AbstractItem.getParent does not correctly override; scheduleBuild2 inherently untypable
@@ -301,6 +320,23 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     public interface ParameterizedJob<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> extends BuildableItem {
 
         /**
+         * Used for CLI binding.
+         */
+        @Restricted(DoNotUse.class)
+        @SuppressWarnings("rawtypes")
+        @CLIResolver
+        static ParameterizedJob resolveForCLI(@Argument(required=true, metaVar="NAME", usage="Job name") String name) throws CmdLineException {
+            ParameterizedJob item = Jenkins.getInstance().getItemByFullName(name, ParameterizedJob.class);
+            if (item == null) {
+                ParameterizedJob project = Items.findNearest(ParameterizedJob.class, name, Jenkins.getInstance());
+                throw new CmdLineException(null, project == null ?
+                        hudson.model.Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name) :
+                        hudson.model.Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
+            }
+            return item;
+        }
+
+        /**
          * Creates a helper object.
          * (Would have been done entirely as an interface with default methods had this been designed for Java 8.)
          */
@@ -408,11 +444,94 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         }
 
         /**
+         * Schedules a new SCM polling command.
+         */
+        @SuppressWarnings("deprecation")
+        default void doPolling(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            if (!(this instanceof SCMTriggerItem)) {
+                rsp.sendError(404);
+                return;
+            }
+            hudson.model.BuildAuthorizationToken.checkPermission((Job) this, getAuthToken(), req, rsp);
+            ((SCMTriggerItem) this).schedulePolling();
+            rsp.sendRedirect(".");
+        }
+
+        /**
          * For use from {@link BuildButtonColumn}.
          * @see ParameterizedJobMixIn#isParameterized
          */
         default boolean isParameterized() {
             return getParameterizedJobMixIn().isParameterized();
+        }
+
+        default boolean isDisabled() {
+            return false;
+        }
+
+        @Restricted(ProtectedExternally.class)
+        default void setDisabled(boolean disabled) {
+            throw new UnsupportedOperationException("must be implemented if supportsMakeDisabled is overridden");
+        }
+
+        /**
+         * Specifies whether this project may be disabled by the user.
+         * @return true if the GUI should allow {@link #doDisable} and the like
+         */
+        default boolean supportsMakeDisabled() {
+            return false;
+        }
+
+        /**
+         * Marks the build as disabled.
+         * The method will ignore the disable command if {@link #supportsMakeDisabled()}
+         * returns false. The enable command will be executed in any case.
+         * @param b true - disable, false - enable
+         */
+        default void makeDisabled(boolean b) throws IOException {
+            if (isDisabled() == b) {
+                return; // noop
+            }
+            if (b && !supportsMakeDisabled()) {
+                return; // do nothing if the disabling is unsupported
+            }
+            setDisabled(b);
+            if (b) {
+                Jenkins.getInstance().getQueue().cancel(this);
+            }
+            save();
+            ItemListener.fireOnUpdated(this);
+        }
+
+        @CLIMethod(name="disable-job")
+        @RequirePOST
+        default HttpResponse doDisable() throws IOException, ServletException {
+            checkPermission(CONFIGURE);
+            makeDisabled(true);
+            return new HttpRedirect(".");
+        }
+
+        @CLIMethod(name="enable-job")
+        @RequirePOST
+        default HttpResponse doEnable() throws IOException, ServletException {
+            checkPermission(CONFIGURE);
+            makeDisabled(false);
+            return new HttpRedirect(".");
+        }
+
+        @Override
+        default RunT createExecutable() throws IOException {
+            if (isDisabled()) {
+                return null;
+            }
+            if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
+                return (RunT) ((LazyBuildMixIn.LazyLoadingJob) this).getLazyBuildMixIn().newBuild();
+            }
+            return null;
+        }
+
+        default boolean isBuildable() {
+            return !isDisabled() && !((Job) this).isHoldOffBuildUntilSave();
         }
 
     }
