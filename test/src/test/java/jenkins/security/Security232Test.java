@@ -224,9 +224,9 @@ public class Security232Test {
                     }
                     else {
                         URL[] us = ( (URLClassLoader) cl.getClassLoader() ).getURLs();
-                        String cb = "";
+                        StringBuilder cb = new StringBuilder();
                         for ( URL u : us ) {
-                            cb += u.toString();
+                            cb.append(u.toString());
                         }
                         writeObject(cb);
                     }

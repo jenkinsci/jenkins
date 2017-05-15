@@ -157,19 +157,19 @@ public class AdminWhitelistRule implements StaplerProxy {
     public HttpResponse doSubmit(StaplerRequest req) throws IOException {
         jenkins.checkPermission(Jenkins.RUN_SCRIPTS);
 
-        String whitelist = Util.fixNull(req.getParameter("whitelist"));
-        if (!whitelist.endsWith("\n"))
-            whitelist+="\n";
+        StringBuilder whitelist = new StringBuilder(Util.fixNull(req.getParameter("whitelist")));
+        if (!whitelist.toString().endsWith("\n"))
+            whitelist.append("\n");
 
         Enumeration e = req.getParameterNames();
         while (e.hasMoreElements()) {
             String name = (String) e.nextElement();
             if (name.startsWith("class:")) {
-                whitelist += name.substring(6)+"\n";
+                whitelist.append(name.substring(6)).append("\n");
             }
         }
 
-        whitelisted.set(whitelist);
+        whitelisted.set(String.valueOf(whitelist));
 
         String newRules = Util.fixNull(req.getParameter("filePathRules"));
         filePathRules.parseTest(newRules);  // test first before writing a potentially broken rules

@@ -528,21 +528,21 @@ public class AbstractBuildRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-"+deleted[0]);
         assertThat(result, succeeded());
-        String builds = "";
+        StringBuilder builds = new StringBuilder();
         boolean next = false;
         for (int i = 1; i < deleted[0]; i++) {
             if (next)
-                builds += ",";
-            builds += i;
+                builds.append(",");
+            builds.append(i);
             next = true;
         }
-        assertThat(result.stdout(), containsString("Builds: "+builds+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: "+builds.toString()+System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
                 .invokeWithArgs(PROJECT_NAME, "+1-+"+deleted[0]);
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+builds+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: "+builds.toString()+System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Job.READ)
