@@ -28,7 +28,7 @@ THE SOFTWARE.
     <l:layout title="${it.name}">
         <st:include page="sidepanel.jelly" it="${it}"/>
         <l:main-panel>
-            <h1>Cloud ${it.name}</h1>
+            <h1>${%Cloud} ${it.name}</h1>
 
             <st:include page="top.jelly" optional="true"/>
 

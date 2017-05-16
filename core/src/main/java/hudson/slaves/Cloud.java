@@ -78,6 +78,12 @@ import java.util.concurrent.Future;
  * the resource (such as shutting down a virtual machine.) {@link Computer} needs to own this handle information
  * because by the time this happens, a {@link Slave} object is already long gone.
  *
+ * <h3>Views</h3>
+ *
+ * Since version TODO, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their <tt>summary</tt>
+ * views displayed. Actions further contribute to <tt>sidepanel</tt> with <tt>box</tt> views. All mentioned views are
+ * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
@@ -107,8 +113,13 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @since TODO
      * @return Jenkins relative URL.
      */
-    public @Nonnull String getUrl() { return "cloud/" + name; }
+    public @Nonnull String getUrl() {
+        return "cloud/" + name;
+    }
 
+    /**
+     * {@inheritDoc}
+     */
     public @Nonnull String getSearchUrl() {
         return getUrl();
     }
