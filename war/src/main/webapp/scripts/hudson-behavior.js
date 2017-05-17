@@ -2045,7 +2045,7 @@ function updateBuildHistory(ajaxUrl,nBuild) {
         }
 
         function loadPage(params, focusOnSearch) {
-            var searchString = pageSearchInput.value;
+            var searchString = pageSearchInput.value.toLowerCase();
 
             if (searchString !== '') {
                 if (params === undefined) {
