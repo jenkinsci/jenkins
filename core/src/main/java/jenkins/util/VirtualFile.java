@@ -140,7 +140,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if checking the length failed
      */
     public abstract long length() throws IOException;
-
+    
+    
     /**
      * Gets the file timestamp.
      * @return a length, or 0 if inapplicable

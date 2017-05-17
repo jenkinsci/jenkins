@@ -1198,6 +1198,11 @@ TABLE.fileList TD {
   padding: 0;
 }
 
+TABLE.fileList TD.fileTimestamp {
+    padding-left: 2em;
+    color: #888;
+}
+
 TABLE.fileList TD.fileSize {
   padding-left: 2em;
   text-align: right;
