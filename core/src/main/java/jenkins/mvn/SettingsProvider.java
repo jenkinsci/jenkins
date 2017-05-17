@@ -2,16 +2,22 @@ package jenkins.mvn;
 
 import hudson.ExtensionPoint;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -21,12 +27,56 @@ import org.kohsuke.stapler.StaplerRequest;
 public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsProvider> implements ExtensionPoint {
 
     /**
-     * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.
-     * 
-     * @param build
-     * @return the filepath to the provided file. <code>null</code> if no settings will be provided.
+     * Configure maven launcher argument list with adequate settings path.
+     *
+     * <p>Implementations should
+     * <ul>Be aware that this method might get called multiple times during a build.</ul>
+     * <ul>Implement this method. This class provides a default implementation when the given {@code build} is an {@link AbstractBuild}
+     * delegating to {@link #supplySettings(AbstractBuild, TaskListener)} so that implementations have time to adapt.</ul>
+     * </p>
+     *
+     * @param build       the build to provide the settings for
+     * @param workspace the workspace in which the build takes place
+     * @param listener the listener of this given build
+     * @return the filepath to the provided file. {@code null} if no settings will be provided.
+     * @throws IOException typically occur when the {@link #supplySettings(Run, FilePath, TaskListener)} implementation
+     *         accesses to the build environment on the build agent (copying a file to disk...)
+     * @throws InterruptedException typically occur when the {@link #supplySettings(Run, FilePath, TaskListener)} implementation
+     *         accesses to the build environment on the build agent (copying a file to disk...)
+     * @since TODO
      */
-    public abstract FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener);
+    @CheckForNull
+    public FilePath supplySettings(@Nonnull Run<?, ?> build,  @Nonnull FilePath workspace, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        if (build instanceof AbstractBuild && Util.isOverridden(SettingsProvider.class, this.getClass() , "supplySettings",AbstractBuild.class, TaskListener.class)) {
+            AbstractBuild abstractBuild = (AbstractBuild) build;
+            return supplySettings(abstractBuild, listener);
+        } else {
+            throw new AbstractMethodError("Class " + getClass() + " must override the new method supplySettings(Run<?, ?> run, FilePath workspace, TaskListener listener)");
+        }
+    }
+
+    /**
+     * Configure maven launcher argument list with adequate settings path. Implementations should be aware that this method might get called multiple times during a build.
+     *
+     * @param build
+     * @return the filepath to the provided file. {@code null} if no settings will be provided.
+     * @throws RuntimeException if an {@link IOException} or an {@link InterruptedException} occurs. These {@link IOException}
+     *         or {@link InterruptedException} can typically occur when the {@link #supplySettings(AbstractBuild, TaskListener)}
+     *         implementation accesses to the build environment on the build agent (copying a file to disk...)
+     * @deprecated use {@link #supplySettings(Run, FilePath, TaskListener)}
+     */
+    @Deprecated
+    public FilePath supplySettings(AbstractBuild<?, ?> build, TaskListener listener) {
+        try {
+            return supplySettings(build, build.getWorkspace(), listener);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                    " in workspace " + build.getWorkspace(), e);
+        }
+    }
 
     public static SettingsProvider parseSettingsProvider(StaplerRequest req) throws Descriptor.FormException, ServletException {
         JSONObject settings = req.getSubmittedForm().getJSONObject("settings");
@@ -37,7 +87,7 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
     }
 
     /**
-     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * Convenience method handling all {@code null} checks. Provides the path on the (possible) remote settings file.
      * 
      * @param settings
      *            the provider to be used
@@ -46,17 +96,29 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
+     * @deprecated directly invoke {@link #supplySettings(Run, FilePath, TaskListener)}
      */
+    @Deprecated
     public static final FilePath getSettingsFilePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
-        FilePath settingsPath = null;
-        if (settings != null) {
-            settingsPath = settings.supplySettings(build, listener);
+        FilePath settingsPath;
+        if (settings == null) {
+            settingsPath = null;
+        } else {
+            try {
+                settingsPath = settings.supplySettings(build, build.getWorkspace(), listener);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                        " in workspace " + build.getWorkspace(), e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Failed to prepare Maven settings.xml for " + build +
+                        " in workspace " + build.getWorkspace(), e);
+            }
         }
         return settingsPath;
     }
 
     /**
-     * Convenience method handling all <code>null</code> checks. Provides the path on the (possible) remote settings file.
+     * Convenience method handling all {@code null} checks. Provides the path on the (possible) remote settings file.
      * 
      * @param settings
      *            the provider to be used
@@ -65,7 +127,9 @@ public abstract class SettingsProvider extends AbstractDescribableImpl<SettingsP
      * @param listener
      *            the listener of the current build
      * @return the path to the settings.xml
+     * @deprecated directly invoke {@link #supplySettings(Run, FilePath, TaskListener)}
      */
+    @Deprecated
     public static final String getSettingsRemotePath(SettingsProvider settings, AbstractBuild<?, ?> build, TaskListener listener) {
         FilePath fp = getSettingsFilePath(settings, build, listener);
         return fp == null ? null : fp.getRemote();
