@@ -270,7 +270,7 @@ public abstract class ACL {
      * <p>
      * This makes impersonation much easier within code as it can now be used using the try with resources construct:
      * <pre>
-     *     try (ACLContext _ = ACL.as(auth)) {
+     *     try (ACLContext ctx = ACL.as(auth)) {
      *        ...
      *     }
      * </pre>
@@ -292,7 +292,7 @@ public abstract class ACL {
      * <p>
      * This makes impersonation much easier within code as it can now be used using the try with resources construct:
      * <pre>
-     *     try (ACLContext _ = ACL.as(auth)) {
+     *     try (ACLContext ctx = ACL.as(auth)) {
      *        ...
      *     }
      * </pre>

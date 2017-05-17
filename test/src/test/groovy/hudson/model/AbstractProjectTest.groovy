@@ -555,6 +555,7 @@ public class AbstractProjectTest {
     public void testConfigDotXmlSubmissionToDifferentType() {
         j.jenkins.pluginManager.installDetachedPlugin("javadoc")
         j.jenkins.pluginManager.installDetachedPlugin("junit")
+        j.jenkins.pluginManager.installDetachedPlugin("display-url-api")
         j.jenkins.pluginManager.installDetachedPlugin("mailer")
         j.jenkins.pluginManager.installDetachedPlugin("maven-plugin")
 

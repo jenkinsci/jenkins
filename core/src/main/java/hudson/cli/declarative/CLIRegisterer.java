@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Stack;
 import static java.util.logging.Level.SEVERE;
 
@@ -279,7 +280,7 @@ public class CLIRegisterer extends ExtensionFinder {
                             throw new UnsupportedOperationException();
                         }
                     }));
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | MissingResourceException e) {
                     LOGGER.log(SEVERE,"Failed to process @CLIMethod: "+m,e);
                 }
             }

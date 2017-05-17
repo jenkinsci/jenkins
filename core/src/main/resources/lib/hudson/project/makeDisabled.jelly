@@ -1,8 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt,
-id:cactusman, Romain Seguy
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Erik Ramfelt, Tom Huybrechts, id:cactusman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  main.jelly snippet for disabling a project; applies to ParameterizedJob
+-->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-
-  <p:makeDisabled/>
-
-  <p:projectActionFloatingBox />
-
-  <table style="margin-top: 1em; margin-left:1em;">
-
-    <j:forEach var="act" items="${it.prominentActions}">
-      <j:set var="icon" value="${act.iconClassName != null ? act.iconClassName : act.iconFileName}"/>
-      <t:summary icon="${icon}" href="${act.urlName}">
-        ${act.displayName}
-      </t:summary>
-    </j:forEach>
-    <t:summary icon="folder.png" href="ws/" permission="${it.WORKSPACE}">
-      ${%Workspace}
-    </t:summary>
-
-    <t:artifactList caption="${%Last Successful Artifacts}"
-        build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
-        permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
-
-    <t:summary icon="notepad.png" href="changes">
-      ${%Recent Changes}
-    </t:summary>
-
-  </table>
-
-  <!-- merge fragments from the actions -->
-  <j:forEach var="a" items="${it.allActions}">
-    <st:include page="jobMain.jelly" it="${a}" optional="true" />
-  </j:forEach>
-
-  <p:upstream-downstream />
+  <j:choose>
+    <j:when test="${!it.supportsMakeDisabled()}">
+      <!-- for now, quietly omit the option -->
+    </j:when>
+    <j:when test="${it.disabled}">
+      <div class="warning">
+        <form method="post" id='enable-project' action="enable">
+          ${%This project is currently disabled}
+          <l:hasPermission permission="${it.CONFIGURE}">
+            <f:submit value="${%Enable}" />
+          </l:hasPermission>
+        </form>
+      </div>
+    </j:when>
+    <j:otherwise>
+      <div align="right">
+        <form method="post" id="disable-project" action="disable">
+          <l:hasPermission permission="${it.CONFIGURE}">
+            <f:submit value="${%Disable Project}" />
+          </l:hasPermission>
+        </form>
+      </div>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>
