@@ -239,7 +239,10 @@ public class UserTest {
         assertEquals("Bob Smith", bob.getFullName());
         assertEquals("Bob Smith", User.get("Bob").getFullName());
         assertEquals("nonexistent", User.get("nonexistent").getFullName());
-        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()));
+
+        // users/Bob is what exists in migration.zip, so lowercasing dir list to make sure the test
+        // is not case sensitive.
+        assertEquals("[bob]", Arrays.toString(new File(j.jenkins.getRootDir(), "users").list()).toLowerCase());
     }
 
     @Test
