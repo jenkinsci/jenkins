@@ -582,103 +582,6 @@ THE SOFTWARE.
         See https://github.com/tfennelly/jenkins-js-builder#maven-integration
     -->
 
-    <!--
-        Manually download node and NPM for the frontend plugin so it gets cached in the local maven repo.
-        Otherwise frontend will be downloading it all the time on the CI servers. The download-maven-plugin
-        caches it's downloads in the local maven repo.
-    -->
-    <profile>
-      <id>node-classifier-linux</id>
-      <activation><os><family>Linux</family><arch>amd64</arch></os></activation>
-      <properties>
-        <node.download.file>node-v${node.version}-linux-x64.tar.gz</node.download.file>
-        <node.download.classifier />
-      </properties>
-    </profile>
-    <profile>
-      <id>node-classifier-linux-32</id>
-      <activation><os><family>Linux</family><arch>i386</arch></os></activation>
-      <properties>
-        <node.download.file>node-v${node.version}-linux-x86.tar.gz</node.download.file>
-        <node.download.classifier />
-      </properties>
-    </profile>
-    <profile>
-      <id>node-classifier-mac</id>
-      <activation><os><family>mac</family></os></activation>
-      <properties>
-        <node.download.file>node-v${node.version}-darwin-x64.tar.gz</node.download.file>
-        <node.download.classifier />
-      </properties>
-    </profile>
-    <profile>
-      <id>node-classifier-windows</id>
-      <activation><os><family>windows</family><arch>x64</arch></os></activation>
-      <properties>
-        <node.download.file>win-x64/node.exe</node.download.file>
-        <node.download.classifier>/x64</node.download.classifier>
-      </properties>
-    </profile>
-    <profile>
-      <id>node-classifier-windows-amd64</id>
-      <activation><os><family>windows</family><arch>amd64</arch></os></activation>
-      <properties>
-        <node.download.file>win-x64/node.exe</node.download.file>
-        <node.download.classifier>/win-x64</node.download.classifier>
-      </properties>
-    </profile>
-    <profile>
-      <id>node-classifier-windows-x86</id>
-      <activation><os><family>windows</family><arch>x86</arch></os></activation>
-      <properties>
-        <node.download.file>win-x86/node.exe</node.download.file>
-        <node.download.classifier />
-      </properties>
-    </profile>
-    <profile>
-      <id>node-download</id>
-      <activation>
-        <file>
-          <exists>package.json</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.googlecode.maven-download-plugin</groupId>
-            <artifactId>download-maven-plugin</artifactId>
-            <version>1.3.0</version>
-            <executions>
-              <execution>
-                <id>get-node</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>wget</goal>
-                </goals>
-                <configuration>
-                  <url>https://nodejs.org/dist/v${node.version}/${node.download.file}</url>
-                  <unpack>false</unpack>
-                  <outputDirectory>${project.build.directory}/frontend/v${node.version}${node.download.classifier}</outputDirectory>
-                </configuration>
-              </execution>
-              <execution>
-                <id>get-npm</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>wget</goal>
-                </goals>
-                <configuration>
-                  <url>http://registry.npmjs.org/npm/-/npm-${npm.version}.tgz</url>
-                  <unpack>false</unpack>
-                  <outputDirectory>${project.build.directory}/frontend/</outputDirectory>
-                  <outputFileName>npm-${npm.version}.tgz</outputFileName>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>gulp-execution</id>
       <activation>
@@ -723,8 +626,8 @@ THE SOFTWARE.
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
                   <npmVersion>${npm.version}</npmVersion>
-                  <!-- Use the pre-download node and npm packages. See download-maven-plugin config above. -->
-                  <downloadRoot>${project.baseUri}target/frontend/</downloadRoot>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-tools/</nodeDownloadRoot>
+                  <npmDownloadRoot>https://repo.jenkins-ci.org/npm-tools/</npmDownloadRoot>
                 </configuration>
               </execution>
 
