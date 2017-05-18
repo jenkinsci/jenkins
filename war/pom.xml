@@ -42,7 +42,7 @@ THE SOFTWARE.
     <contextPath>/jenkins</contextPath><!-- context path during test -->
     <port>8080</port><!-- HTTP listener port -->
     <node.version>6.10.2</node.version>
-    <npm.version>3.10.10</npm.version>
+    <yarn.version>0.24.5</yarn.version>
   </properties>
 
   <dependencies>
@@ -619,27 +619,28 @@ THE SOFTWARE.
 
               <execution>
                 <phase>initialize</phase>
-                <id>install node and npm</id>
+                <id>install node and yarn</id>
                 <goals>
-                  <goal>install-node-and-npm</goal>
+                  <goal>install-node-and-yarn</goal>
                 </goals>
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
-                  <npmVersion>${npm.version}</npmVersion>
+                  <yarnVersion>v${yarn.version}</yarnVersion>
                   <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-tools/</nodeDownloadRoot>
-                  <npmDownloadRoot>https://repo.jenkins-ci.org/npm-tools/</npmDownloadRoot>
+                  <!-- tried to create a mirror for yarnDownloadRoot but it did not work -->
                 </configuration>
               </execution>
 
               <execution>
                 <phase>initialize</phase>
-                <id>npm install</id>
+                <id>yarn install</id>
                 <goals>
-                  <goal>npm</goal>
+                  <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <!-- Note that this may not be omitted lest maven-release-plugin be confused (frontend-maven-plugin #109): -->
-                  <arguments>install</arguments>
+                  <!-- ensure only one concurrent 'yarn install' -->
+                  <!-- when yarn cache is empty, multiple yarns performing network fetches frequently results in opaque errors -->
+                  <arguments>--mutex network</arguments>
                 </configuration>
               </execution>
 
