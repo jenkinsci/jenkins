@@ -626,7 +626,7 @@ THE SOFTWARE.
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
                   <yarnVersion>v${yarn.version}</yarnVersion>
-                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-tools/</nodeDownloadRoot>
+                  <nodeDownloadRoot>https://repo.jenkins-ci.org/nodejs-dist/</nodeDownloadRoot>
                   <!-- tried to create a mirror for yarnDownloadRoot but it did not work -->
                 </configuration>
               </execution>
