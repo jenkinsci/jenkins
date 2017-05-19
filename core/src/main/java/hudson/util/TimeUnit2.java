@@ -29,6 +29,7 @@
 
 package hudson.util;
 
+import hudson.RestrictedSince;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -70,6 +71,7 @@ import java.util.concurrent.TimeUnit;
  * had better conversion until Java 6 went out.)
  */
 @Deprecated
+@RestrictedSince("TODO")
 @Restricted(DoNotUse.class)
 public enum TimeUnit2 {
     NANOSECONDS {
