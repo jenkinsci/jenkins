@@ -13,7 +13,6 @@
 def runTests = true
 def failFast = false
 
-// Only keep the 10 most recent builds.
 properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20'))])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
