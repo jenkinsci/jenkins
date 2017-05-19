@@ -2,10 +2,10 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.console.AnnotatedLargeText;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.PermalinkProjectAction.Permalink;
+import hudson.model.Run;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -29,7 +29,7 @@ public class ConsoleCommand extends CLICommand {
     }
 
     @Argument(metaVar="JOB",usage="Name of the job",required=true)
-    public AbstractProject<?,?> job;
+    public Job<?,?> job;
 
     @Argument(metaVar="BUILD",usage="Build number or permalink to point to the build. Defaults to the last build",required=false,index=1)
     public String build="lastBuild";
@@ -43,7 +43,7 @@ public class ConsoleCommand extends CLICommand {
     protected int run() throws Exception {
         job.checkPermission(Item.BUILD);
 
-        AbstractBuild<?,?> run;
+        Run<?,?> run;
 
         try {
             int n = Integer.parseInt(build);
@@ -54,7 +54,7 @@ public class ConsoleCommand extends CLICommand {
             // maybe a permalink?
             Permalink p = job.getPermalinks().get(build);
             if (p!=null) {
-                run = (AbstractBuild)p.resolve(job);
+                run = p.resolve(job);
                 if (run==null)
                     throw new IllegalStateException("Permalink "+build+" produced no build");
             } else {
@@ -94,7 +94,7 @@ public class ConsoleCommand extends CLICommand {
     /**
      * Find the byte offset in the log input stream that marks "last N lines".
      */
-    private long seek(AbstractBuild<?, ?> run) throws IOException {
+    private long seek(Run<?, ?> run) throws IOException {
         class RingBuffer {
             long[] lastNlines = new long[n];
             int ptr=0;

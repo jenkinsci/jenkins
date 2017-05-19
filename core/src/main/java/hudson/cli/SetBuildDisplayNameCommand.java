@@ -1,7 +1,7 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.Run;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
@@ -18,7 +18,7 @@ public class SetBuildDisplayNameCommand extends CLICommand implements Serializab
     }
 
     @Argument(metaVar="JOB", usage="Name of the job to build", required=true, index=0)
-    public transient AbstractProject<?, ?> job;
+    public transient Job<?, ?> job;
 
     @Argument(metaVar="BUILD#", usage="Number of the build", required=true, index=1)
     public int number;

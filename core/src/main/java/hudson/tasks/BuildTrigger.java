@@ -63,13 +63,9 @@ import javax.annotation.Nonnull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.QueueItemAuthenticatorDescriptor;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -270,53 +266,24 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             }
         });
 
-        Authentication auth = Jenkins.getAuthentication(); // from build
-        if (auth.equals(ACL.SYSTEM)) { // i.e., unspecified
-            if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
-                if (downstreamProjects.isEmpty()) {
-                    return true;
-                }
-                logger.println(Messages.BuildTrigger_warning_you_have_no_plugins_providing_ac());
-            } else if (QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                if (downstreamProjects.isEmpty()) {
-                    return true;
-                }
-                logger.println(Messages.BuildTrigger_warning_access_control_for_builds_in_glo());
-            } else {
-                // This warning must be printed even if downstreamProjects is empty.
-                // Otherwise you could effectively escalate DISCOVER to READ just by trying different project names and checking whether a warning was printed or not.
-                // If there were an API to determine whether any DependencyDeclarer’s in this project requested downstream project names,
-                // then we could suppress the warnings in case none did; but if any do, yet Items.fromNameList etc. ignore unknown projects,
-                // that has to be treated the same as if there really are downstream projects but the anonymous user cannot see them.
-                // For the above two cases, it is OK to suppress the warning when there are no downstream projects, since running as SYSTEM we would be able to see them anyway.
-                logger.println(Messages.BuildTrigger_warning_this_build_has_no_associated_aut());
-                auth = Jenkins.ANONYMOUS;
-            }
-        }
-
         for (Dependency dep : downstreamProjects) {
             List<Action> buildActions = new ArrayList<Action>();
-            SecurityContext orig = ACL.impersonate(auth);
-            try {
-                if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                    AbstractProject p = dep.getDownstreamProject();
-                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                    if (p.isDisabled()) {
-                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                        continue;
-                    }
-                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
-                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
-                        String name = ModelHyperlinkNote.encodeTo(p);
-                        if (scheduled) {
-                            logger.println(Messages.BuildTrigger_Triggering(name));
-                        } else {
-                            logger.println(Messages.BuildTrigger_InQueue(name));
-                        }
-                    } // otherwise upstream users should not know that it happened
+            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+                AbstractProject p = dep.getDownstreamProject();
+                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                if (p.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                    continue;
                 }
-            } finally {
-                SecurityContextHolder.setContext(orig);
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                    String name = ModelHyperlinkNote.encodeTo(p);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                } // otherwise upstream users should not know that it happened
             }
         }
 
@@ -443,9 +410,6 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
                     Authentication auth = Tasks.getAuthenticationOf(project);
-                    if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                        auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
-                    }
                     if (!item.getACL().hasPermission(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }

@@ -34,9 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nonnull;
 import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-
-import static hudson.model.queue.Executables.getParentOf;
+import jenkins.security.QueueItemAuthenticatorProvider;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -136,7 +134,7 @@ public class Tasks {
      * @since 1.560
      */
     public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {
-        for (QueueItemAuthenticator qia : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+        for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {
             Authentication a = qia.authenticate(t);
             if (a != null) {
                 return a;
