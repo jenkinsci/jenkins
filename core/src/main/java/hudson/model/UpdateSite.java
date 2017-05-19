@@ -32,12 +32,11 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
-import hudson.util.FormValidation;
+import hudson.util.*;
 import hudson.util.FormValidation.Kind;
-import hudson.util.HttpResponses;
-import hudson.util.TextFile;
+
 import static hudson.util.TimeUnit2.*;
-import hudson.util.VersionNumber;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -1081,7 +1080,38 @@ public class UpdateSite {
 
             return deps;
         }
-        
+
+
+        /**
+         * Returns a list of plugins which need to be installed or upgraded for this plugin to work (include transient dependencies too).
+         * Prevent issue JENKINS-36239, since it contains all dependencies and it is not necessary to call it recursively
+         */
+        public Set<Plugin> getAllDependencies(){
+            //map of dependencies for plugin and its dependencies
+            Map<Plugin,List<Plugin>> allDependencies = new HashMap<Plugin,List<Plugin>>();
+            return addMissingDependencies(allDependencies);
+        }
+
+        private Set<Plugin> addMissingDependencies(Map<Plugin, List<Plugin>> plugins) {
+            if (!plugins.containsKey(this)) {
+                plugins.put(this, getNeededDependencies());
+            }
+            //add dependencies for each dependency which has not been already added
+            for (Plugin p : plugins.get(this)) {
+                if (plugins.get(p) == null) {
+                    p.addMissingDependencies(plugins);
+                }
+            }
+
+            Set<Plugin> allDependencies = new HashSet<Plugin>();
+            for (List<Plugin> pluginDependencies : plugins.values()) {
+                allDependencies.addAll(pluginDependencies);
+            }
+            //since it is only for dependencies, remove this plugin from dependencies, if there is.
+            allDependencies.remove(this);
+            return allDependencies;
+        }
+
         public boolean isForNewerHudson() {
             try {
                 return requiredCore!=null && new VersionNumber(requiredCore).isNewerThan(
@@ -1098,16 +1128,16 @@ public class UpdateSite {
             } catch (NumberFormatException nfe) {
                 // unable to parse version
             }
-            for (Plugin p: getNeededDependencies()) {
-                VersionNumber v = p.getNeededDependenciesRequiredCore();
+            for (Plugin p: getAllDependencies()) {
+                VersionNumber v = new VersionNumber(p.version);
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
-            for (Plugin p: getNeededDependencies()) {
-                if (p.isForNewerHudson() || p.isNeededDependenciesForNewerJenkins()) return true;
+            for (Plugin p: getAllDependencies()) {
+                if (p.isForNewerHudson()) return true;
             }
             return false;
         }
@@ -1121,8 +1151,8 @@ public class UpdateSite {
          * specified, it'll return true.
          */
         public boolean isNeededDependenciesCompatibleWithInstalledVersion() {
-            for (Plugin p: getNeededDependencies()) {
-                if (!p.isCompatibleWithInstalledVersion() || !p.isNeededDependenciesCompatibleWithInstalledVersion())
+            for (Plugin p: getAllDependencies()) {
+                if (!p.isCompatibleWithInstalledVersion())
                     return false;
             }
             return true;
@@ -1217,6 +1247,8 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId) {
             Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+            //check transient dependency, @issue JENKINS-36239
+            checkForTransientDependency();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
@@ -1241,6 +1273,41 @@ public class UpdateSite {
             UpdateCenter.InstallationJob job = createInstallationJob(this, uc, dynamicLoad);
             job.setCorrelationId(correlationId);
             return uc.addJob(job);
+        }
+
+        public void checkForTransientDependency() {
+            CyclicGraphDetector<UpdateSite.Plugin> cycleDetector = new CyclicGraphDetector<UpdateSite.Plugin>() {
+
+                @Override
+                protected List<UpdateSite.Plugin> getEdges(UpdateSite.Plugin p) {
+                    List<UpdateSite.Plugin> next = new ArrayList<>();
+                    addTo(p.getNeededDependencies(), next);
+                    return next;
+                }
+
+                private void addTo(List<UpdateSite.Plugin> dependencies, List<UpdateSite.Plugin> r) {
+                    for (UpdateSite.Plugin d : dependencies) {
+                        r.add(d);
+                    }
+                }
+
+                @Override
+                protected void reactOnCycle(UpdateSite.Plugin q, List<UpdateSite.Plugin> cycle) throws CycleDetectedException {
+                    List<String> cycleWithNames = new ArrayList<String>();
+                    //to have names of plugins in error message.
+                    for (UpdateSite.Plugin plugin : cycle){
+                        cycleWithNames.add(plugin.name);
+                    }
+                    throw new CycleDetectedException(cycleWithNames);
+                }
+            };
+            List<UpdateSite.Plugin> pluginsTest = new ArrayList<UpdateSite.Plugin>();
+            pluginsTest.add(this);
+            try {
+                cycleDetector.run(pluginsTest);
+            } catch (CyclicGraphDetector.CycleDetectedException ex) {
+                throw new Failure(ex.getMessage());
+            }
         }
 
         /**

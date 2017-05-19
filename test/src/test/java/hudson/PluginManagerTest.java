@@ -26,11 +26,8 @@ package hudson;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
-import hudson.model.Hudson;
-import hudson.model.UpdateCenter;
+import hudson.model.*;
 import hudson.model.UpdateCenter.UpdateCenterJob;
-import hudson.model.UpdateSite;
-import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
@@ -40,6 +37,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -58,6 +56,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.Url;
+import org.jvnet.hudson.test.recipes.LocalData;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
 
@@ -515,4 +514,23 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
     }
+
+    @Issue("JENKINS-36239")
+    @LocalData
+    @Test public void installPluginWithCycleDependency() {
+        List<String> pluginNames = new ArrayList<String>();
+        pluginNames.add("subversion");
+        try {
+            r.jenkins.pluginManager.install(pluginNames, true);
+        }
+        catch (StackOverflowError exception) {
+            fail("Detection of cyclic dependency failed");
+        }
+        catch (Failure exception) {
+            //should be thrown
+            return;
+        }
+        fail("Cyclic dependency should be detected.");
+    }
+
 }

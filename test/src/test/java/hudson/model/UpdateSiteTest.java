@@ -32,9 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -151,4 +149,83 @@ public class UpdateSiteTest {
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
+
+    @LocalData
+    @Test public void testCyclicDependencyDetection() throws Exception {
+        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
+        UpdateSite.Plugin plugin = null;
+        for (UpdateSite site : sites) {
+            plugin = site.getPlugin("subversion");
+            if (plugin != null) {
+                break;
+            }
+        }
+        try {
+            plugin.getNeededDependenciesRequiredCore();
+            plugin.isNeededDependenciesForNewerJenkins();
+            plugin.isNeededDependenciesCompatibleWithInstalledVersion();
+        } catch (Error e) {
+            if (e instanceof StackOverflowError) {
+                fail("Did not detect cyclic dependency");
+            }
+            fail("No exception should be thrown");
+        }
+    }
+
+    @LocalData
+    @Test public void testCheckTransientDependency() {
+        UpdateSite.Plugin plugin = null;
+        for (UpdateSite site : j.jenkins.getUpdateCenter().getSiteList()) {
+            plugin = site.getPlugin("ssh-credentials");
+            if (plugin != null) {
+                break;
+            }
+        }
+        try {
+            plugin.checkForTransientDependency();
+        } catch (Failure exception) {
+            fail("Failure exception was thrown despite there is no cyclic dependency.");
+        }
+        plugin = null;
+        for (UpdateSite site : j.jenkins.getUpdateCenter().getSiteList()) {
+            plugin = site.getPlugin("workflow-scm-step");
+            if (plugin != null) {
+                break;
+            }
+        }
+        try {
+            plugin.checkForTransientDependency();
+        } catch (Failure exception) {
+            return;
+        }
+        fail("Cyclic dependency was not detected.");
+    }
+
+    @LocalData
+    @Test public void testGetAllDependencies() {
+        UpdateSite.Plugin plugin = null;
+        for (UpdateSite site : j.jenkins.getUpdateCenter().getSiteList()) {
+            plugin = site.getPlugin("subversion");
+            if (plugin != null) {
+                break;
+            }
+        }
+        Set<UpdateSite.Plugin> plugins = plugin.getAllDependencies();
+        TreeSet<String> pluginNames = new TreeSet<String>();
+        for (UpdateSite.Plugin p : plugins) {
+            pluginNames.add(p.name);
+        }
+        TreeSet<String> expectedPlugins = new TreeSet<String>();
+        expectedPlugins.add("workflow-scm-step");
+        expectedPlugins.add("mapdb-api");
+        expectedPlugins.add("ssh-credentials");
+        expectedPlugins.add("credentials");
+        expectedPlugins.add("scm-api");
+        expectedPlugins.add("workflow-step-api");
+        expectedPlugins.add("git-client");
+        expectedPlugins.add("icon-shim");
+        assertEquals("Collection of all dependencies does not contains expected plugins", pluginNames,expectedPlugins);
+
+    }
+
 }
