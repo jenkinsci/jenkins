@@ -38,7 +38,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.Descriptor.FormException;
@@ -48,7 +47,6 @@ import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
-import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskFuture;
@@ -109,6 +107,7 @@ import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import jenkins.scm.SCMCheckoutStrategyDescriptor;
 import jenkins.scm.SCMDecisionHandler;
+import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
 import org.jenkinsci.bytecode.AdaptField;
@@ -136,7 +135,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @see AbstractBuild
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob {
+public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends Job<P,R> implements BuildableItem, LazyBuildMixIn.LazyLoadingJob<P,R>, ParameterizedJobMixIn.ParameterizedJob<P, R> {
 
     /**
      * {@link SCM} associated with the project.
@@ -283,15 +282,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override public LazyBuildMixIn<P,R> getLazyBuildMixIn() {
         return buildMixIn;
-    }
-
-    private ParameterizedJobMixIn<P,R> getParameterizedJobMixIn() {
-        return new ParameterizedJobMixIn<P,R>() {
-            @SuppressWarnings("unchecked") // untypable
-            @Override protected P asJob() {
-                return (P) AbstractProject.this;
-            }
-        };
     }
 
     @Override
@@ -466,7 +456,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public String getBuildNowText() {
         // For compatibility, still use the deprecated replacer if specified.
-        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, getParameterizedJobMixIn().getBuildNowText());
+        return AlternativeUiTextProvider.get(BUILD_NOW_TEXT, this, ParameterizedJobMixIn.ParameterizedJob.super.getBuildNowText());
     }
 
     /**
@@ -647,7 +637,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     @Override
     public boolean isBuildable() {
-        return !isDisabled() && !isHoldOffBuildUntilSave();
+        return ParameterizedJobMixIn.ParameterizedJob.super.isBuildable();
     }
 
     /**
@@ -676,8 +666,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         save();
     }
 
+    @Override
     public boolean isDisabled() {
         return disabled;
+    }
+
+    @Restricted(DoNotUse.class)
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     /**
@@ -694,38 +691,22 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * Marks the build as disabled.
-     * The method will ignore the disable command if {@link #supportsMakeDisabled()}
-     * returns false. The enable command will be executed in any case.
-     * @param b true - disable, false - enable
-     * @since 1.585 Do not disable projects if {@link #supportsMakeDisabled()} returns false
-     */
-    public void makeDisabled(boolean b) throws IOException {
-        if(disabled==b)     return; // noop
-        if (b && !supportsMakeDisabled()) return; // do nothing if the disabling is unsupported
-        this.disabled = b;
-        if(b)
-            Jenkins.getInstance().getQueue().cancel(this);
-
-        save();
-        ItemListener.fireOnUpdated(this);
-    }
-
-    /**
-     * Specifies whether this project may be disabled by the user.
+     * {@inheritDoc}
      * By default, it can be only if this is a {@link TopLevelItem};
      * would be false for matrix configurations, etc.
-     * @return true if the GUI should allow {@link #doDisable} and the like
      * @since 1.475
      */
+    @Override
     public boolean supportsMakeDisabled() {
         return this instanceof TopLevelItem;
     }
 
+    // Seems to be used only by tests; do not bother pulling up.
     public void disable() throws IOException {
         makeDisabled(true);
     }
 
+    // Ditto.
     public void enable() throws IOException {
         makeDisabled(false);
     }
@@ -799,39 +780,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-	 * @deprecated
-	 *    Use {@link #scheduleBuild(Cause)}.  Since 1.283
-	 */
-    @Deprecated
-    public boolean scheduleBuild() {
-    	return getParameterizedJobMixIn().scheduleBuild();
-    }
-
-	/**
-	 * @deprecated
-	 *    Use {@link #scheduleBuild(int, Cause)}.  Since 1.283
-	 */
-    @Deprecated
-    public boolean scheduleBuild(int quietPeriod) {
-    	return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
-    }
-
-    /**
-     * Schedules a build of this project.
-     *
-     * @return
-     *      true if the project is added to the queue.
-     *      false if the task was rejected from the queue (such as when the system is being shut down.)
-     */
-    public boolean scheduleBuild(Cause c) {
-        return getParameterizedJobMixIn().scheduleBuild(c);
-    }
-
-    public boolean scheduleBuild(int quietPeriod, Cause c) {
-        return getParameterizedJobMixIn().scheduleBuild(quietPeriod, c);
-    }
-
-    /**
      * Schedules a build.
      *
      * Important: the actions should be persistable without outside references (e.g. don't store
@@ -867,14 +815,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      *      For the convenience of the caller, this collection can contain null, and those will be silently ignored.
      * @since 1.383
      */
-    @SuppressWarnings("unchecked")
     @WithBridgeMethods(Future.class)
     public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Cause c, Collection<? extends Action> actions) {
         List<Action> queueActions = new ArrayList<Action>(actions);
         if (c != null) {
             queueActions.add(new CauseAction(c));
         }
-        return getParameterizedJobMixIn().scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+        return scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
     }
 
     /**
@@ -900,8 +847,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return scheduleBuild2(quietPeriod, c, new Action[0]);
     }
 
+    @Override
+    public QueueTaskFuture<R> scheduleBuild2(int quietPeriod, Action... actions) {
+        return ParameterizedJobMixIn.ParameterizedJob.super.scheduleBuild2(quietPeriod, actions);
+    }
+
     /**
      * Schedules a polling of this project.
+     * @see SCMTriggerItem#schedulePolling
      */
     public boolean schedulePolling() {
         if(isDisabled())    return false;
@@ -1193,6 +1146,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return r;
     }
 
+    @Override // same as ParameterizedJob version except calls possibly overridden newBuild
     public @CheckForNull R createExecutable() throws IOException {
         if(isDisabled())    return null;
         return newBuild();
@@ -1643,7 +1597,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         for (AbstractProject<?,?> ap : getUpstreamProjects()) {
             BuildTrigger buildTrigger = ap.getPublishersList().get(BuildTrigger.class);
             if (buildTrigger != null)
-                if (buildTrigger.getChildProjects(ap).contains(this))
+                if (buildTrigger.getChildJobs(ap).contains(this))
                     result.add(ap);
         }
         return result;
@@ -1723,21 +1677,11 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         return buildMixIn.createHistoryWidget();
     }
 
-    public boolean isParameterized() {
-        return getParameterizedJobMixIn().isParameterized();
-    }
-
 //
 //
 // actions
 //
 //
-    /**
-     * Schedules a new build command.
-     */
-    public void doBuild( StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay ) throws IOException, ServletException {
-        getParameterizedJobMixIn().doBuild(req, rsp, delay);
-    }
 
     /** @deprecated use {@link #doBuild(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
@@ -1766,35 +1710,17 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
-    /**
-     * Supports build trigger with parameters via an HTTP GET or POST.
-     * Currently only String parameters are supported.
-     */
-    public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp, @QueryParameter TimeDuration delay) throws IOException, ServletException {
-        getParameterizedJobMixIn().doBuildWithParameters(req, rsp, delay);
-    }
-
     /** @deprecated use {@link #doBuildWithParameters(StaplerRequest, StaplerResponse, TimeDuration)} */
     @Deprecated
     public void doBuildWithParameters(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         doBuildWithParameters(req, rsp, TimeDuration.fromString(req.getParameter("delay")));
     }
 
-    /**
-     * Schedules a new SCM polling command.
-     */
+    @Override // in case schedulePolling was overridden
     public void doPolling( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         BuildAuthorizationToken.checkPermission((Job) this, authToken, req, rsp);
         schedulePolling();
         rsp.sendRedirect(".");
-    }
-
-    /**
-     * Cancels a scheduled build.
-     */
-    @RequirePOST
-    public void doCancelQueue( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-        getParameterizedJobMixIn().doCancelQueue(req, rsp);
     }
 
     @Override
@@ -1933,23 +1859,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return new ForwardToView(this,"wipeOutWorkspaceBlocked.jelly");
         }
     }
-
-    @CLIMethod(name="disable-job")
-    @RequirePOST
-    public HttpResponse doDisable() throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-        makeDisabled(true);
-        return new HttpRedirect(".");
-    }
-
-    @CLIMethod(name="enable-job")
-    @RequirePOST
-    public HttpResponse doEnable() throws IOException, ServletException {
-        checkPermission(CONFIGURE);
-        makeDisabled(false);
-        return new HttpRedirect(".");
-    }
-
 
     /**
      * {@link AbstractProject} subtypes should implement this base class as a descriptor.

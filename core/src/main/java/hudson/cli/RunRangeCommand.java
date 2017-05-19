@@ -1,23 +1,20 @@
 package hudson.cli;
 
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Fingerprint.RangeSet;
+import hudson.model.Job;
+import hudson.model.Run;
 import org.kohsuke.args4j.Argument;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link CLICommand} that acts on a series of {@link AbstractBuild}s.
- *
- * @author Kohsuke Kawaguchi
- * @deprecated rather use {@link RunRangeCommand}
+ * {@link CLICommand} that acts on a series of {@link Run}s.
+ * @since FIXME
  */
-@Deprecated
-public abstract class AbstractBuildRangeCommand extends CLICommand {
+public abstract class RunRangeCommand extends CLICommand {
     @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
-    public AbstractProject<?,?> job;
+    public Job<?,?> job;
 
     @Argument(metaVar="RANGE",usage="Range of the build records to delete. 'N-M', 'N,M', or 'N'",required=true,index=1)
     public String range;
@@ -28,5 +25,5 @@ public abstract class AbstractBuildRangeCommand extends CLICommand {
         return act((List)job.getBuilds(rs));
     }
 
-    protected abstract int act(List<AbstractBuild<?,?>> builds) throws IOException;
+    protected abstract int act(List<Run<?,?>> builds) throws IOException;
 }

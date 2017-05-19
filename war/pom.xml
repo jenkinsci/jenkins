@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.61-SNAPSHOT</version>
+    <version>2.62-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -287,13 +287,13 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>ssh-slaves</artifactId>
-                  <version>1.9</version>
+                  <version>1.15</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>credentials</artifactId>
-                  <version>1.18</version>
+                  <version>2.1.2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -352,8 +352,14 @@ THE SOFTWARE.
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>display-url-api</artifactId>
+                  <version>2.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.11</version>
+                  <version>1.20</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -383,7 +389,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.13</version>
+                  <version>1.18.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

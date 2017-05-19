@@ -62,11 +62,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
+import hudson.security.ACLContext;
 import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.queue.AsynchronousExecution;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -396,11 +399,21 @@ public class Executor extends Thread implements ModelObject {
                     }
                 }
 
-                ACL.impersonate(workUnit.context.item.authenticate());
                 setName(getName() + " : executing " + executable.toString());
-                if (LOGGER.isLoggable(FINE))
-                    LOGGER.log(FINE, getName()+" is now executing "+executable);
-                queue.execute(executable, task);
+                Authentication auth = workUnit.context.item.authenticate();
+                LOGGER.log(FINE, "{0} is now executing {1} as {2}", new Object[] {getName(), executable, auth});
+                if (LOGGER.isLoggable(FINE) && auth.equals(ACL.SYSTEM)) { // i.e., unspecified
+                    if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
+                        LOGGER.fine("no QueueItemAuthenticator implementations installed");
+                    } else if (QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
+                        LOGGER.fine("no QueueItemAuthenticator implementations configured");
+                    } else {
+                        LOGGER.log(FINE, "some QueueItemAuthenticator implementations configured but neglected to authenticate {0}", executable);
+                    }
+                }
+                try (ACLContext context = ACL.as(auth)) {
+                    queue.execute(executable, task);
+                }
             } catch (AsynchronousExecution x) {
                 lock.writeLock().lock();
                 try {
