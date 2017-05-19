@@ -33,7 +33,7 @@ import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -722,7 +722,7 @@ public class Executor extends Thread implements ModelObject {
             return d * 10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit2.MILLISECONDS.toHours(elapsed) > 24;
+            return TimeUnit.MILLISECONDS.toHours(elapsed) > 24;
         }
     }
 

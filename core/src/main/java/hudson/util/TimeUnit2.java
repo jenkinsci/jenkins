@@ -29,6 +29,9 @@
 
 package hudson.util;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -67,6 +70,7 @@ import java.util.concurrent.TimeUnit;
  * had better conversion until Java 6 went out.)
  */
 @Deprecated
+@Restricted(DoNotUse.class)
 public enum TimeUnit2 {
     NANOSECONDS {
         @Override public long toNanos(long d)   { return d; }

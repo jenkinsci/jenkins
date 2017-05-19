@@ -23,7 +23,7 @@
  */
 package hudson.diagnosis;
 
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.ColorPalette;
 import hudson.Extension;
 import hudson.model.PeriodicWork;
@@ -116,7 +116,7 @@ public final class MemoryUsageMonitor extends PeriodicWork {
     }
 
     public long getRecurrencePeriod() {
-        return TimeUnit2.SECONDS.toMillis(10);
+        return TimeUnit.SECONDS.toMillis(10);
     }
 
     protected void doRun() {

@@ -35,7 +35,7 @@ import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
-import static hudson.util.TimeUnit2.DAYS;
+import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

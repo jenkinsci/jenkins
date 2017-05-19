@@ -29,7 +29,7 @@ import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
 import hudson.util.Secret;
-import static hudson.util.TimeUnit2.DAYS;
+import static java.util.concurrent.TimeUnit.DAYS;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;

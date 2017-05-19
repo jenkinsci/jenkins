@@ -165,7 +165,7 @@ import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.views.DefaultMyViewsTabBar;
@@ -900,7 +900,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
             // TODO pending move to standard blacklist, or API to append filter
             if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
@@ -966,7 +966,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 protected void doRun() throws Exception {
                     trimLabels();
                 }
-            }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5), TimeUnit.MILLISECONDS);
+            }, TimeUnit.MINUTES.toMillis(5), TimeUnit.MINUTES.toMillis(5), TimeUnit.MILLISECONDS);
 
             updateComputerList();
 

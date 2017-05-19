@@ -68,7 +68,7 @@ import java.nio.file.InvalidPathException;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.XStream2;
 import hudson.util.ConsistentHash;
 import hudson.util.ConsistentHash.Hash;
@@ -2565,7 +2565,7 @@ public class Queue extends ResourceController implements Saveable {
                 return elapsed > Math.max(d,60000L)*10;
             } else {
                 // more than a day in the queue
-                return TimeUnit2.MILLISECONDS.toHours(elapsed)>24;
+                return TimeUnit.MILLISECONDS.toHours(elapsed)>24;
             }
         }
 

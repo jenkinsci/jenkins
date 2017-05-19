@@ -23,7 +23,7 @@
  */
 package hudson;
 
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -237,7 +237,7 @@ public abstract class Plugin implements Saveable {
         String requestPath = req.getRequestURI().substring(req.getContextPath().length());
         boolean staticLink = requestPath.startsWith("/static/");
 
-        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
+        long expires = staticLink ? TimeUnit.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
         try {
