@@ -32,7 +32,6 @@ import org.acegisecurity.Authentication;
 import java.util.Collection;
 import javax.annotation.Nonnull;
 import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorProvider;
 
 /**
