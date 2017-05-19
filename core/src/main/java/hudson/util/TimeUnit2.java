@@ -63,7 +63,10 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 1.5
  * @author Doug Lea
+ * @deprecated use {@link TimeUnit}. (Java 5 did not have all the units required, so TimeUnit2 was introduced because it
+ * had better conversion until Java 6 went out.)
  */
+@Deprecated
 public enum TimeUnit2 {
     NANOSECONDS {
         @Override public long toNanos(long d)   { return d; }
