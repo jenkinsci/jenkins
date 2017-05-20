@@ -199,7 +199,7 @@ public interface BuildStep {
      *
      * <ul>
      * <li>
-     * Just return {@link BuildStepMonitor#BUILD} to demand the backward compatible behavior from Hudson,
+     * To demand the backward compatible behavior from Jenkins, leave this method unoverridden,
      * and make no other changes to the code. This will prevent users from reaping the benefits of concurrent
      * builds, but at least your plugin will work correctly, and therefore this is a good easy first step.
      * <li>
@@ -216,14 +216,11 @@ public interface BuildStep {
      * you try to access the state from the previous build.
      * </ul>
      *
-     * <h2>Note to caller</h2>
-     * <p>
-     * For plugins written against earlier versions of Hudson, calling this method results in
-     * {@link AbstractMethodError}. 
-     *
      * @since 1.319
      */
-    BuildStepMonitor getRequiredMonitorService();
+    default BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.BUILD;
+    }
 
     /**
      * List of all installed builders.

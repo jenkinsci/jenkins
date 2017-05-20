@@ -27,9 +27,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.Queue.Executable;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
-import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
@@ -680,7 +678,7 @@ public class Executor extends Thread implements ModelObject {
             if (executable == null) {
                 return -1;
             }
-            d = Executables.getEstimatedDurationFor(executable);
+            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
@@ -713,7 +711,7 @@ public class Executor extends Thread implements ModelObject {
             }
 
             elapsed = getElapsedTime();
-            d = Executables.getEstimatedDurationFor(executable);
+            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
@@ -771,7 +769,7 @@ public class Executor extends Thread implements ModelObject {
                 return Messages.Executor_NotAvailable();
             }
 
-            d = Executables.getEstimatedDurationFor(executable);
+            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
@@ -799,7 +797,7 @@ public class Executor extends Thread implements ModelObject {
                 return -1;
             }
 
-            d = Executables.getEstimatedDurationFor(executable);
+            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
@@ -857,7 +855,7 @@ public class Executor extends Thread implements ModelObject {
         lock.writeLock().lock(); // need write lock as interrupt will change the field
         try {
             if (executable != null) {
-                Tasks.getOwnerTaskOf(getParentOf(executable)).checkAbortPermission();
+                getParentOf(executable).getOwnerTask().checkAbortPermission();
                 interrupt();
             }
         } finally {
@@ -880,7 +878,7 @@ public class Executor extends Thread implements ModelObject {
     public boolean hasStopPermission() {
         lock.readLock().lock();
         try {
-            return executable != null && Tasks.getOwnerTaskOf(getParentOf(executable)).hasAbortPermission();
+            return executable != null && getParentOf(executable).getOwnerTask().hasAbortPermission();
         } finally {
             lock.readLock().unlock();
         }
@@ -899,7 +897,7 @@ public class Executor extends Thread implements ModelObject {
             if (isIdle())
                 return Math.max(creationTime, owner.getConnectTime());
             else {
-                return Math.max(startTime + Math.max(0, Executables.getEstimatedDurationFor(executable)),
+                return Math.max(startTime + Math.max(0, executable == null ? -1 : executable.getEstimatedDuration()),
                         System.currentTimeMillis() + 15000);
             }
         } finally {
@@ -965,16 +963,11 @@ public class Executor extends Thread implements ModelObject {
     }
 
     /**
-     * Returns the estimated duration for the executable.
-     * Protects against {@link AbstractMethodError}s if the {@link Executable} implementation
-     * was compiled against Hudson prior to 1.383
-     *
-     * @deprecated as of 1.388
-     *      Use {@link Executables#getEstimatedDurationFor(Queue.Executable)}
+     * @deprecated call {@link Executable#getEstimatedDuration} directly
      */
     @Deprecated
     public static long getEstimatedDurationFor(Executable e) {
-        return Executables.getEstimatedDurationFor(e);
+        return e == null ? -1 : e.getEstimatedDuration();
     }
 
     /**

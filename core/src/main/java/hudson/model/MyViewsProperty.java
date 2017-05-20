@@ -230,10 +230,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return Jenkins.getInstance().getViewsTabBar();
     }
 
-    public ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Jenkins.getInstance();
-    }
-
     public List<Action> getViewActions() {
         // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
         return Collections.emptyList();
