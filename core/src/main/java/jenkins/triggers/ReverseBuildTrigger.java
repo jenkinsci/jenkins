@@ -73,6 +73,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
@@ -91,12 +92,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
 
     private String upstreamProjects;
-    private final Result threshold;
+    private Result threshold = Result.SUCCESS;
 
     @DataBoundConstructor
-    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+    public ReverseBuildTrigger(String upstreamProjects) {
         this.upstreamProjects = upstreamProjects;
-        this.threshold = threshold;
     }
 
     public String getUpstreamProjects() {
@@ -105,6 +105,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     public Result getThreshold() {
         return threshold;
+    }
+
+    @DataBoundSetter
+    public void setThreshold(Result r) {
+        this.threshold = r;
     }
 
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
