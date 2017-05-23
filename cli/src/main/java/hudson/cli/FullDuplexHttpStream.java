@@ -74,17 +74,20 @@ public class FullDuplexHttpStream {
             throw new IllegalArgumentException(relativeTarget);
         }
 
-        this.base = base;
+        // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
+        HttpURLConnection con = (HttpURLConnection) base.openConnection();
+        con.getInputStream().close();
+        this.base = con.getURL();
         this.authorization = authorization;
 
-        URL target = new URL(base, relativeTarget);
+        URL target = new URL(this.base, relativeTarget);
 
         CrumbData crumbData = new CrumbData();
 
         UUID uuid = UUID.randomUUID(); // so that the server can correlate those two connections
 
         // server->client
-        HttpURLConnection con = (HttpURLConnection) target.openConnection();
+        con = (HttpURLConnection) target.openConnection();
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
         con.addRequestProperty("Session", uuid.toString());
@@ -99,7 +102,7 @@ public class FullDuplexHttpStream {
         input = con.getInputStream();
         // make sure we hit the right URL
         if (con.getHeaderField("Hudson-Duplex") == null) {
-            throw new IOException(target + " does not look like Jenkins, or is not serving the HTTP Duplex transport");
+            throw new CLI.NotTalkingToJenkinsException("There's no Jenkins running at " + target + ", or is not serving the HTTP Duplex transport");
         }
 
         // client->server uses chunked encoded POST for unlimited capacity. 
@@ -158,6 +161,8 @@ public class FullDuplexHttpStream {
             if (authorization != null) {
                 con.addRequestProperty("Authorization", authorization);
             }
+            CLI.verifyJenkinsConnection(con);
+
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
                 String line = reader.readLine();
                 String nextLine = reader.readLine();

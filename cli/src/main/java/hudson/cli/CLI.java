@@ -306,15 +306,34 @@ public class CLI implements AutoCloseable {
 
         flushURLConnection(head);
         if (p1==null && p2==null) {
-            // we aren't finding headers we are expecting. Is this even running Jenkins?
-            if (head.getHeaderField("X-Hudson")==null && head.getHeaderField("X-Jenkins")==null)
-                throw new IOException("There's no Jenkins running at "+url);
+            verifyJenkinsConnection(head);
 
             throw new IOException("No X-Jenkins-CLI2-Port among " + head.getHeaderFields().keySet());
         }
 
         if (p2!=null)   return new CliPort(new InetSocketAddress(h,Integer.parseInt(p2)),identity,2);
         else            return new CliPort(new InetSocketAddress(h,Integer.parseInt(p1)),identity,1);
+    }
+
+    /**
+     * Make sure the connection is open against Jenkins server.
+     *
+     * @param c The open connection.
+     * @throws IOException in case of communication problem.
+     * @throws NotTalkingToJenkinsException when connection is not made to Jenkins service.
+     */
+    /*package*/ static void verifyJenkinsConnection(URLConnection c) throws IOException {
+        if (c.getHeaderField("X-Hudson")==null && c.getHeaderField("X-Jenkins")==null)
+            throw new NotTalkingToJenkinsException(c);
+    }
+    /*package*/ static final class NotTalkingToJenkinsException extends IOException {
+        public NotTalkingToJenkinsException(String s) {
+            super(s);
+        }
+
+        public NotTalkingToJenkinsException(URLConnection c) {
+            super("There's no Jenkins running at " + c.getURL().toString());
+        }
     }
 
     /**
@@ -405,6 +424,9 @@ public class CLI implements AutoCloseable {
     public static void main(final String[] _args) throws Exception {
         try {
             System.exit(_main(_args));
+        } catch (NotTalkingToJenkinsException ex) {
+            System.err.println(ex.getMessage());
+            System.exit(-1);
         } catch (Throwable t) {
             // if the CLI main thread die, make sure to kill the JVM.
             t.printStackTrace();
