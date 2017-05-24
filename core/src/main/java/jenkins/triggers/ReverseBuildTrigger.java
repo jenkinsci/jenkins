@@ -94,6 +94,12 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     private String upstreamProjects;
     private Result threshold = Result.SUCCESS;
 
+    @Deprecated
+    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+        this(upstreamProjects);
+        this.threshold = threshold;
+    }
+
     @DataBoundConstructor
     public ReverseBuildTrigger(String upstreamProjects) {
         this.upstreamProjects = upstreamProjects;
