@@ -531,7 +531,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.122</version>
+          <version>2.0-20170524.211828-1</version> <!-- TODO https://github.com/jenkinsci/maven-hpi-plugin/pull/65 -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
