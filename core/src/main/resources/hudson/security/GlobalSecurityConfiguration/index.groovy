@@ -26,6 +26,23 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
+                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
+                    f.checkbox()
+                }
+
+                f.entry(title:_("Access Control")) {
+                    table(style:"width:100%") {
+                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
+                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
+                    }
+                }
+            }
+
+            f.section(title: _("Markup Formatter")) {
+                f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
+            }
+
+            f.section(title: _("Agents")) {
                 f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
                     if (my.slaveAgentPortEnforced) {
                         if (my.slaveAgentPort == -1) {
@@ -63,20 +80,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                         }
                     }
                 }
-
-                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
-                    f.checkbox()
-                }
-
-                f.entry(title:_("Access Control")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
-                    }
-                }
             }
-
-            f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
             Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
