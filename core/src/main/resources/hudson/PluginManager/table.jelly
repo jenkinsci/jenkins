@@ -50,12 +50,12 @@ THE SOFTWARE.
     <l:main-panel>
       <st:adjunct includes="hudson.PluginManager._table"/>
       
-        <div id="filter-container">
-          ${%Filter}:
-          <input type="text" id="filter-box"/>
-        </div>
+      <div id="filter-container">
+        ${%Filter}:
+        <input type="text" id="filter-box"/>
+      </div>
 
-        <form method="post" action="install">
+      <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}" />
         <local:tabBar page="${attrs.page}" xmlns:local="/hudson/PluginManager" />
         <div class="pane-frame">
