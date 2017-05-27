@@ -60,7 +60,6 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
 import hudson.search.SearchIndexBuilder;
-import hudson.security.ACL;
 import hudson.security.Permission;
 import hudson.slaves.Cloud;
 import hudson.slaves.WorkspaceList;
@@ -111,7 +110,6 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
-import org.acegisecurity.Authentication;
 import org.jenkinsci.bytecode.AdaptField;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -1015,22 +1013,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     public Object getSameNodeConstraint() {
         return this; // in this way, any member that wants to run with the main guy can nominate the project itself
-    }
-
-    public final Task getOwnerTask() {
-        return this;
-    }
-
-    @Nonnull
-    public Authentication getDefaultAuthentication() {
-        // backward compatible behaviour.
-        return ACL.SYSTEM;
-    }
-
-    @Nonnull
-    @Override
-    public Authentication getDefaultAuthentication(Queue.Item item) {
-        return getDefaultAuthentication();
     }
 
     /**

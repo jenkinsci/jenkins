@@ -95,7 +95,7 @@ public class AllView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup)
             return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
         return null;
@@ -103,7 +103,7 @@ public class AllView extends View {
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return (Collection)getOwnerItemGroup().getItems();
+        return (Collection)getOwner().getItemGroup().getItems();
     }
 
     @Override
