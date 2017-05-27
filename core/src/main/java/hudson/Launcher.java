@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 import hudson.Proc.ProcWithJenkins23271Patch;
+import javax.annotation.Nonnull;
 
 /**
  * Starts a process.
@@ -718,8 +719,12 @@ public abstract class Launcher {
 
     /**
      * Returns a decorated {@link Launcher} for the given node.
+     * 
+     * @param node Node for which this launcher is created.
+     * @return Decorated instance of the Launcher.
      */
-    public final Launcher decorateFor(Node node) {
+    @Nonnull
+    public final Launcher decorateFor(@Nonnull Node node) {
         Launcher l = this;
         for (LauncherDecorator d : LauncherDecorator.all())
             l = d.decorate(l,node);
@@ -730,8 +735,10 @@ public abstract class Launcher {
      * Returns a decorated {@link Launcher} that puts the given set of arguments as a prefix to any commands
      * that it invokes.
      *
+     * @param prefix Prefixes to be appended
      * @since 1.299
      */
+    @Nonnull
     public final Launcher decorateByPrefix(final String... prefix) {
         final Launcher outer = this;
         return new Launcher(outer) {
@@ -783,7 +790,8 @@ public abstract class Launcher {
      *
      * @since 1.489
      */
-    public final Launcher decorateByEnv(EnvVars _env) {
+    @Nonnull
+    public final Launcher decorateByEnv(@Nonnull EnvVars _env) {
         final EnvVars env = new EnvVars(_env);
         final Launcher outer = this;
         return new Launcher(outer) {
