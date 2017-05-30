@@ -25,9 +25,9 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
+import hudson.model.Run;
 import jenkins.model.Jenkins;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -48,7 +48,7 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author pjanouse
  */
-public class AbstractBuildRangeCommandTest {
+public class RunRangeCommandTest {
 
     private static CLICommandInvoker command = null;
     private static FreeStyleProject project = null;
@@ -977,18 +977,18 @@ public class AbstractBuildRangeCommandTest {
     }
 
     @Extension
-    public static class DummyRangeCommand extends AbstractBuildRangeCommand {
+    public static class DummyRangeCommand extends RunRangeCommand {
         @Override
         public String getShortDescription() {
             return "DummyRangeCommand";
         }
 
         @Override
-        protected int act(List<AbstractBuild<?, ?>> builds) throws IOException {
+        protected int act(List<Run<?, ?>> builds) throws IOException {
             boolean comma = false;
 
             stdout.print("Builds: ");
-            for (AbstractBuild build : builds) {
+            for (Run<?, ?> build : builds) {
                 if (comma)
                     stdout.print(",");
                 else

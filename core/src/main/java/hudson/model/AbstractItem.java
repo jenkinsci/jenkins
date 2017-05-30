@@ -89,7 +89,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import static hudson.model.queue.Executables.getParentOf;
 import hudson.model.queue.SubTask;
-import java.lang.reflect.InvocationTargetException;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
@@ -125,10 +124,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     protected AbstractItem(ItemGroup parent, String name) {
         this.parent = parent;
         doSetName(name);
-    }
-
-    public void onCreatedFromScratch() {
-        // noop
     }
 
     @Exported(visibility=999)
@@ -326,11 +321,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                try {
-                    parent.onRenamed(this, oldName, newName);
-                } catch (AbstractMethodError _) {
-                    // ignore
-                }
+                parent.onRenamed(this, oldName, newName);
             }
         }
         ItemListener.fireLocationChange(this, oldFullName);
@@ -446,7 +437,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 Ancestor last = ancestors.get(ancestors.size() - 1);
                 if (last.getObject() instanceof View) {
                     View view = (View) last.getObject();
-                    if (view.getOwnerItemGroup() == getParent() && !view.isDefault()) {
+                    if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
                         String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
                         LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
@@ -850,11 +841,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @CLIResolver
     public static AbstractItem resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Item name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null) {
-            AbstractProject project = AbstractProject.findNearest(name); // TODO should be Items.findNearest
+            AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.getInstance());
             throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
                     : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
         }

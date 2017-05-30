@@ -25,7 +25,6 @@ package hudson.cli;
 
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
-import hudson.model.AbstractProject;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.model.Job;
