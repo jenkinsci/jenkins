@@ -92,6 +92,8 @@ public class CronTabTest {
 
     /**
      * Verifies that HUDSON-8656 never crops up again.
+     *
+     * @throws ANTLRException test failure
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
     @Test
@@ -114,6 +116,8 @@ public class CronTabTest {
 
     /**
      * Verifies that HUDSON-8656 never crops up again.
+     *
+     * @throws ANTLRException test failure
      */
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
     @Test

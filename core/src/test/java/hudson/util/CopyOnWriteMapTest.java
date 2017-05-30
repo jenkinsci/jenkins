@@ -41,6 +41,8 @@ public class CopyOnWriteMapTest {
 
     /**
      * Verify that serialization form of CopyOnWriteMap.Hash and HashMap are the same.
+     *
+     * @throws Exception test failure
      */
     @Test public void hashSerialization() throws Exception {
         HashData td = new HashData();
@@ -83,6 +85,8 @@ public class CopyOnWriteMapTest {
     /**
      * Verify that an empty CopyOnWriteMap.Tree can be serialized,
      * and that serialization form is the same as a standard TreeMap.
+     *
+     * @throws Exception test failure
      */
     @Test public void treeSerialization() throws Exception {
         TreeData td = new TreeData();

@@ -76,6 +76,8 @@ public class HistoryPageFilterTest {
 
     /**
      * Latest/top page where total number of items less than the max page size.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_latest_partial_page() throws IOException {
@@ -100,6 +102,8 @@ public class HistoryPageFilterTest {
 
     /**
      * Latest/top page where total number of items greater than the max page size.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_latest_longer_list() throws IOException {
@@ -122,6 +126,8 @@ public class HistoryPageFilterTest {
     /**
      * Test olderThan (page down) when set to id greater than newest (should never happen). Should be same as not
      * specifying newerThan/olderThan.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_olderThan_gt_newest() throws IOException {
@@ -141,6 +147,8 @@ public class HistoryPageFilterTest {
     /**
      * Test olderThan (page down) when set to id less than the oldest (should never happen). Should just give an
      * empty list of builds.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_olderThan_lt_oldest() throws IOException {
@@ -157,6 +165,8 @@ public class HistoryPageFilterTest {
     /**
      * Test olderThan (page down) when set to an id close to the oldest in the list (where
      * there's less than a full page older than the supplied olderThan arg).
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_olderThan_leaving_part_page() throws IOException {
@@ -177,6 +187,8 @@ public class HistoryPageFilterTest {
 
     /**
      * Test olderThan (page down) when set to an id in the middle. Should be a page up and a page down.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_olderThan_mid_page() throws IOException {
@@ -195,6 +207,8 @@ public class HistoryPageFilterTest {
 
     /**
      * Test newerThan (page up) when set to id greater than newest (should never happen). Should be an empty list.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_newerThan_gt_newest() throws IOException {
@@ -211,6 +225,8 @@ public class HistoryPageFilterTest {
     /**
      * Test newerThan (page up) when set to id less than the oldest (should never happen). Should give the oldest
      * set of builds.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_newerThan_lt_oldest() throws IOException {
@@ -229,6 +245,8 @@ public class HistoryPageFilterTest {
 
     /**
      * Test newerThan (page up) mid range nearer the oldest build in the list.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_newerThan_near_oldest() throws IOException {
@@ -249,6 +267,8 @@ public class HistoryPageFilterTest {
      * Test newerThan (page up) mid range nearer the newest build in the list. This works a little different
      * in that it will put the 2 builds newer than newerThan on the page and then fill the remaining slots on the
      * page with builds equal to and older i.e. it return the newest/latest builds.
+     *
+     * @throws IOException test failure
      */
     @Test
     public void test_newerThan_near_newest() throws IOException {
