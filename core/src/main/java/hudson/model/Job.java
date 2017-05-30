@@ -120,6 +120,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -1604,4 +1607,39 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    
+    /**
+     * Check new name for job
+     * @param itemName - New name for job
+     * @return true - job name is used / false - isn't used
+     * 
+     */
+    public boolean isNewJobNameNotUsing(String itemName) {
+        
+        Item item = null;
+        try {
+            item = getParent().getItem(itemName);
+        } catch(AccessDeniedException ex) {    
+        }
+        
+        if (item != null) {
+            return false;
+        } else {
+            SecurityContext initialContext = null;
+            try {
+                initialContext = hudson.security.ACL.impersonate(ACL.SYSTEM);
+                item = getParent().getItem(itemName);
+
+                if (item != null) {
+                    return false;
+                }
+
+            } finally {
+                if (initialContext != null) {
+                    SecurityContextHolder.setContext(initialContext);
+                }
+            }
+        }
+        return true;
+    }
 }

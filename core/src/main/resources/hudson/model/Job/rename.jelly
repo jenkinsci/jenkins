@@ -36,6 +36,12 @@ THE SOFTWARE.
             <br/> ${%configWasSaved}
           </j:if>
         </j:when>
+        <j:when test="${!it.isNewJobNameNotUsing(newName)}">
+          ${%newNameNotValid(newName)}
+          <j:if test="${request.referer.endsWith('/configure')}">
+            <br/> ${%configWasSaved}
+          </j:if>
+        </j:when>
         <j:when test="${it.parent.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
           ${%newNameInUse(newName)}
           <j:if test="${request.referer.endsWith('/configure')}">
