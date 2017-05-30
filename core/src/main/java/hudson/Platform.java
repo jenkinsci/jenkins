@@ -61,6 +61,11 @@ public enum Platform {
         return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac");
     }
 
+    public static boolean isLinux() {
+        // according to http://developer.apple.com/technotes/tn2002/tn2110.html
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("linux");
+    }
+
     /**
      * Returns true if we run on Mac OS X ≥ 10.6
      */
