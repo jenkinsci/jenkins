@@ -69,6 +69,8 @@ public class BulkChangeTest {
 
     /**
      * If there is no BulkChange, we should see two saves.
+     *
+     * @throws Exception test failure
      */
     @Test
     public void noBulkChange() throws Exception {
@@ -79,6 +81,8 @@ public class BulkChangeTest {
 
     /**
      * With a {@link BulkChange}, this will become just one save.
+     *
+     * @throws Exception test failure
      */
     @Test
     public void bulkChange() throws Exception {
@@ -94,6 +98,8 @@ public class BulkChangeTest {
 
     /**
      * {@link BulkChange}s can be nested.
+     *
+     * @throws Exception test failure
      */
     @Test
     public void nestedBulkChange() throws Exception {

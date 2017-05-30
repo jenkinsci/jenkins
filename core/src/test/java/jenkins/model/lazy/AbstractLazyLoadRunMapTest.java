@@ -228,6 +228,8 @@ public class AbstractLazyLoadRunMapTest {
 
     /**
      * If load fails, search needs to gracefully handle it
+     *
+     * @throws IOException test failure
      */
     @Test
     public void unloadableData() throws IOException {

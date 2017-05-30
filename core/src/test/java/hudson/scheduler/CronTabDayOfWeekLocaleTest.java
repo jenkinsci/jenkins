@@ -48,6 +48,8 @@ public class CronTabDayOfWeekLocaleTest {
     /**
      * This unit test is an slight adaptation of the unit test found in
      * HUDSON-8656.
+     *
+     * @throws Exception test failure
      */
     @Test
     @Url("http://issues.hudson-ci.org/browse/HUDSON-8656")
