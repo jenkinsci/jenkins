@@ -498,7 +498,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     }
 
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getOverriddenAuthorizationStrategy().getACL(this);
     }
 
     public final void checkPermission(Permission permission) {

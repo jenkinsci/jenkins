@@ -576,7 +576,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Returns the {@link ACL} for this object.
      */
     public ACL getACL() {
-        return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        return Jenkins.getInstance().getOverriddenAuthorizationStrategy().getACL(this);
     }
 
     public void checkPermission(Permission p) {
