@@ -28,8 +28,8 @@ def f = namespace(lib.FormTagLib)
 
 def listWarnings(warnings) {
     warnings.each { warning ->
-        li {
-            a(warning.message, href: warning.url)
+        dd {
+            a(warning.message, href: warning.url, target: "_blank")
         }
     }
 }
@@ -38,26 +38,24 @@ def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
 div(class: "alert alert-danger", role: "alert") {
-    text(_("blurb"))
-    ul {
-        if (!coreWarnings.isEmpty()) {
-            li {
+    strong {
+        text(_("blurb"))
+    }
+    if (!coreWarnings.isEmpty()) {
+        dl {
+            dt {
                 text(_("coreTitle", jenkins.model.Jenkins.version))
-                ul {
-                    listWarnings(coreWarnings)
-                }
             }
+            listWarnings(coreWarnings)
         }
-
-        if (!pluginWarnings.isEmpty()) {
-            li {
-                pluginWarnings.each { plugin, warnings ->
-                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url)
-
-                    ul {
-                        listWarnings(warnings)
-                    }
+    }
+    if (!pluginWarnings.isEmpty()) {
+        dl {
+            pluginWarnings.each { plugin, warnings ->
+                dt {
+                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, target: "_blank")
                 }
+                listWarnings(warnings)
             }
         }
     }

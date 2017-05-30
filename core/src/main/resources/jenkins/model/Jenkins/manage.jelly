@@ -61,11 +61,13 @@ THE SOFTWARE.
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
 
+    <div class="manage-messages">
     <j:forEach var="am" items="${app.administrativeMonitors}">
       <j:if test="${am.isActivated() and am.isEnabled()}">
         <st:include page="message.jelly" it="${am}" />
       </j:if>
     </j:forEach>
+    </div>
 
     <st:include page="downgrade.jelly" />
 

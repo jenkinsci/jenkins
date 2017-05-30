@@ -1912,3 +1912,23 @@ body.no-sticker #bottom-sticker {
     width: 48px;
     height: 48px;
 }
+
+/* ----------- Manage Jenkins ----------- */
+
+.manage-messages {
+    margin-bottom: 40px;
+}
+
+.manage-messages dl dd {
+    margin-left: 15px;
+}
+
+.manage-messages dl:last-child {
+    margin-bottom: 0;
+}
+
+.manage-messages dl dt::after {
+  content: ": ";
+}
+
+/* -------------------------------------- */
