@@ -53,7 +53,7 @@ public class RunParameterDefinitionTest {
     @Test public void configRoundtrip() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new RunParameterDefinition("build", "p", "", RunParameterFilter.COMPLETED)));
-        j.configRoundtrip(p);
+        j.configRoundtrip((Item)p);
         RunParameterDefinition rpd = (RunParameterDefinition) p.getProperty(ParametersDefinitionProperty.class).getParameterDefinition("build");
         assertEquals("p", rpd.getProjectName());
         assertEquals(RunParameterFilter.COMPLETED, rpd.getFilter());

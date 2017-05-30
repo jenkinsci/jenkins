@@ -52,7 +52,7 @@ public class ParametersDefinitionPropertyTest {
         FreeStyleProject p = r.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(kpd);
         p.addProperty(pdp);
-        r.configRoundtrip(p);
+        r.configRoundtrip((Item)p);
         pdp = p.getProperty(ParametersDefinitionProperty.class);
         kpd = (KrazyParameterDefinition) pdp.getParameterDefinition("kpd");
         assertEquals("desc", kpd.getDescription());
