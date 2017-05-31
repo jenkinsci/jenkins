@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,6 +69,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-17667")
     @Test public void multipleSlavesAndTools() throws Exception {
+        assumeFalse("TODO INFRA-1141: The input line is too long.", Functions.isWindows());
         String jdk1Path = Functions.isWindows() ? "C:\\jdk1" : "/opt/jdk1";
         String jdk2Path = Functions.isWindows() ? "C:\\jdk2" : "/opt/jdk2";
         Node slave1 = r.createSlave();
@@ -126,6 +128,7 @@ public class InstallerTranslatorTest {
     @Issue("JENKINS-26940")
     @Test
     public void testNoMessageLoggedWhenAnyInstallerFound() throws Exception {
+        assumeFalse("TODO INFRA-1141: The input line is too long.", Functions.isWindows());
         final AbstractCommandInstaller ci = Functions.isWindows()
                 ? new BatchCommandInstaller("wrong1", "echo hello", "C:\\jdk")
                 : new CommandInstaller("wrong1", "echo hello", "/opt/jdk");
