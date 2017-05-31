@@ -53,6 +53,8 @@ import java.nio.charset.Charset;
  * @author Kohsuke Kawaguchi
  */
 public class Main {
+
+    /** @see #remotePost */
     public static void main(String[] args) {
         try {
             System.exit(run(args));
@@ -62,6 +64,7 @@ public class Main {
         }
     }
 
+    /** @see #remotePost */
     public static int run(String[] args) throws Exception {
         String home = getHudsonHome();
         if (home==null) {
@@ -83,7 +86,8 @@ public class Main {
     }
 
     /**
-     * Run command and place the result to a remote Hudson installation
+     * Run command and send result to {@code ExternalJob} in the {@code external-monitor-job} plugin.
+     * Obsoleted by {@code SetExternalBuildResultCommand} but kept here for compatibility.
      */
     public static int remotePost(String[] args) throws Exception {
         String projectName = args[0];
