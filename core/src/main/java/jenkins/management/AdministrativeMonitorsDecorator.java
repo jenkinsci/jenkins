@@ -78,8 +78,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     public Collection<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         Collection<AdministrativeMonitor> active = new ArrayList<>();
-        Collection<AdministrativeMonitor> ams = new ArrayList<>(Jenkins.getInstance().administrativeMonitors);
-        for (AdministrativeMonitor am : ams) {
+        for (AdministrativeMonitor am : Jenkins.getInstance().getActiveAdministrativeMonitors()) {
             if (am instanceof ReverseProxySetupMonitor) {
                 // TODO make reverse proxy monitor work when shown on any URL
                 continue;
@@ -88,9 +87,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
                 // TODO make URI encoding monitor work when shown on any URL
                 continue;
             }
-            if (am.isEnabled() && am.isActivated()) {
-                active.add(am);
-            }
+            active.add(am);
         }
         return active;
     }

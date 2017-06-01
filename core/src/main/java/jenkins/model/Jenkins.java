@@ -288,6 +288,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
@@ -2170,6 +2171,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if(m.id.equals(id))
                 return m;
         return null;
+    }
+
+    /**
+     * Returns the enabled and activated administrative monitors.
+     */
+    public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
+        return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
     }
 
     public NodeDescriptor getDescriptor() {
