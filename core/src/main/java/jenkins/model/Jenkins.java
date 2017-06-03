@@ -945,6 +945,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
             if(KILL_AFTER_LOAD)
+                // TODO cleanUp?
                 System.exit(0);
 
             setupWizard = new SetupWizard();
@@ -4262,6 +4263,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 
+        cleanUp();
         System.exit(0);
     }
 
