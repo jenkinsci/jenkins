@@ -429,7 +429,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     }
                     void error(Key<T> key, Throwable x) {
                         if (verbose) {
-                            LOGGER.log(Level.WARNING, "Failed to instantiate " + key + "; skipping this component", x);
+                            LOGGER.log(Level.WARNING, "Failed to instantiate " + key + "; skipping this component: ", x);
                         } else {
                             LOGGER.log(Level.INFO, "Failed to instantiate optional component {0}; skipping", key.getTypeLiteral());
                             LOGGER.log(Level.FINE, key.toString(), x);
