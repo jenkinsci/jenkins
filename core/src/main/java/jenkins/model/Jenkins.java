@@ -4936,7 +4936,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(ver.equals(UNCOMPUTED_VERSION) || SystemProperties.getBoolean("hudson.script.noCache"))
             RESOURCE_PATH = "";
         else
-            RESOURCE_PATH = "static/"+SESSION_HASH;
+            RESOURCE_PATH = "/static/"+SESSION_HASH;
 
         VIEW_RESOURCE_PATH = "/resources/"+ SESSION_HASH;
     }
