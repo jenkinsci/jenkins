@@ -1610,27 +1610,32 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     
     /**
      * Check new name for job
-     * @param itemName - New name for job
-     * @return true - job name is used / false - isn't used
-     * 
+     * @param newName - New name for job
+     * @return {@code true} - if newName occupied and user has permissions for this job
+     *         {@code false} - if newName occupied and user hasn't permissions for this job
+     *         {@code null} - if newName didn't occupied
      */
-    public boolean isNewJobNameNotUsing(String itemName) {
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public Boolean checkIfNameOccupied(@Nonnull String newName) {
         
         Item item = null;
         try {
-            item = getParent().getItem(itemName);
+            item = getParent().getItem(newName);
         } catch(AccessDeniedException ex) {    
         }
         
         if (item != null) {
-            return false;
+            // User can see the job with the same name
+            return true;
         } else {
             SecurityContext initialContext = null;
             try {
                 initialContext = hudson.security.ACL.impersonate(ACL.SYSTEM);
-                item = getParent().getItem(itemName);
+                item = getParent().getItem(newName);
 
                 if (item != null) {
+                    // User cannot see the existing job with the same name
                     return false;
                 }
 
@@ -1640,6 +1645,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             }
         }
-        return true;
+        return null;
     }
 }

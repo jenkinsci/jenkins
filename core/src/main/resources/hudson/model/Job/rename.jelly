@@ -29,25 +29,28 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:set var="newName" value="${request.getParameter('newName')}" />
-      <j:choose>
+      <j:set var="checkIfNameOccupied" value="${it.checkIfNameOccupied(newName)}" />
+      
+      <j:choose> 
         <j:when test="${it.isBuilding()}">
           ${%noRenameWhileBuilding}
           <j:if test="${request.referer.endsWith('/configure')}">
             <br/> ${%configWasSaved}
           </j:if>
         </j:when>
-        <j:when test="${!it.isNewJobNameNotUsing(newName)}">
-          ${%newNameNotValid(newName)}
+        
+        <j:when test="${checkIfNameOccupied != null and !it.name.equalsIgnoreCase(newName)}" >    
+          <j:if test="${checkIfNameOccupied}" >
+            ${%newNameInUse(newName)}
+          </j:if>  
+          <j:if test="${!checkIfNameOccupied}" >
+            ${%newNameNotValid(newName)}
+          </j:if>
           <j:if test="${request.referer.endsWith('/configure')}">
             <br/> ${%configWasSaved}
           </j:if>
         </j:when>
-        <j:when test="${it.parent.getItem(newName)!=null and !it.name.equalsIgnoreCase(newName)}">
-          ${%newNameInUse(newName)}
-          <j:if test="${request.referer.endsWith('/configure')}">
-            <br/> ${%configWasSaved}
-          </j:if>
-        </j:when>
+        
         <j:otherwise>
           <form method="post" action="doRename">
             ${%description(it.name, newName)}
