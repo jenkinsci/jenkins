@@ -36,7 +36,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
-
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -54,7 +54,7 @@ import java.text.MessageFormat;
  *
  * <p>
  * The page that programs see is entirely white, and it auto-redirects,
- * so humans wouldn't notice it. 
+ * so humans wouldn't notice it.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -72,6 +72,9 @@ public class HudsonAuthenticationEntryPoint extends AuthenticationProcessingFilt
             // this is not desirable, so don't redirect AJAX requests to the user.
             // this header value is sent from Prototype.
             rsp.sendError(SC_FORBIDDEN);
+        } else if (req.getPathInfo().equals("/rssAll")) {
+            rsp.setStatus(SC_UNAUTHORIZED);
+            rsp.setHeader("WWW-Authenticate", "Basic realm=\"Jenkins\"");
         } else {
             // give the opportunity to include the target URL
             String uriFrom = req.getRequestURI();
