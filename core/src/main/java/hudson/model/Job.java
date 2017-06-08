@@ -1614,19 +1614,25 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return {@code true} - if newName occupied and user has permissions for this job
      *         {@code false} - if newName occupied and user hasn't permissions for this job
      *         {@code null} - if newName didn't occupied
+     * 
+     * @throws Failure if the given name is not good
      */
     @CheckForNull
     @Restricted(NoExternalUse.class)
-    public Boolean checkIfNameOccupied(@Nonnull String newName) {
+    public Boolean checkIfNameOccupied(@Nonnull String newName) throws Failure{
         
         Item item = null;
+        Jenkins.checkGoodName(newName);
+        
         try {
             item = getParent().getItem(newName);
         } catch(AccessDeniedException ex) {    
+            // User has Discover permissions for existing job with the same name
+            return true;
         }
         
         if (item != null) {
-            // User can see the job with the same name
+            // User has Read permissions for existing job with the same name
             return true;
         } else {
             SecurityContext initialContext = null;
@@ -1635,7 +1641,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 item = getParent().getItem(newName);
 
                 if (item != null) {
-                    // User cannot see the existing job with the same name
+                    // User hasn't permissions for existing job with the same name
                     return false;
                 }
 
