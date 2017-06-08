@@ -27,6 +27,8 @@ import hudson.model.Hudson;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 
 /**
@@ -92,5 +94,8 @@ public interface PluginStrategy extends ExtensionPoint {
      * @param dependee newly loaded plugin.
      * @since 1.557
      */
-    void updateDependency(PluginWrapper depender, PluginWrapper dependee);
+    // TODO an @Abstract annotation with a matching processor could make it a compile-time error to neglect to override this, without breaking binary compatibility
+    default void updateDependency(PluginWrapper depender, PluginWrapper dependee) {
+        Logger.getLogger(PluginStrategy.class.getName()).log(Level.WARNING, "{0} does not yet implement updateDependency", getClass());
+    }
 }

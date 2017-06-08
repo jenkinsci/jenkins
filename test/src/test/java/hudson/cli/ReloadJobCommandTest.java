@@ -91,7 +91,7 @@ public class ReloadJobCommandTest {
 
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: No such job \u2018aProject\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such item ‘aProject’ exists."));
 
         assertThat(project.scheduleBuild2(0).get().getLog(), containsString("echo 1"));
     }
@@ -121,7 +121,7 @@ public class ReloadJobCommandTest {
                 .invokeWithArgs("never_created");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("ERROR: No such item ‘never_created’ exists."));
     }
 
     @Test public void reloadJobShouldFailIfJobDoesNotExistButNearExists() throws Exception {
@@ -133,7 +133,7 @@ public class ReloadJobCommandTest {
                 .invokeWithArgs("never_created1");
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("ERROR: No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?"));
+        assertThat(result.stderr(), containsString("ERROR: No such item ‘never_created1’ exists. Perhaps you meant ‘never_created’?"));
     }
 
     @Test public void reloadJobManyShouldSucceed() throws Exception {
@@ -182,7 +182,7 @@ public class ReloadJobCommandTest {
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -208,7 +208,7 @@ public class ReloadJobCommandTest {
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -234,7 +234,7 @@ public class ReloadJobCommandTest {
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("never_created: No such job \u2018never_created\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created: No such item ‘never_created’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));
@@ -260,8 +260,8 @@ public class ReloadJobCommandTest {
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("never_created1: No such job \u2018never_created1\u2019 exists."));
-        assertThat(result.stderr(), containsString("never_created2: No such job \u2018never_created2\u2019 exists."));
+        assertThat(result.stderr(), containsString("never_created1: No such item ‘never_created1’ exists."));
+        assertThat(result.stderr(), containsString("never_created2: No such item ‘never_created2’ exists."));
         assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(project1.scheduleBuild2(0).get().getLog(), containsString("echo 2"));

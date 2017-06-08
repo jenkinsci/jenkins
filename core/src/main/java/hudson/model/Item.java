@@ -207,7 +207,7 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @since 1.374
       */
-    void onCreatedFromScratch();
+    default void onCreatedFromScratch() {}
 
     /**
      * Save the settings to a file.

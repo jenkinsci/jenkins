@@ -115,26 +115,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
             JSONObject security = json.getJSONObject("useSecurity");
             j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
             j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
-            j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));
-            if (!isSlaveAgentPortEnforced()) {
-                try {
-                    j.setSlaveAgentPort(new ServerTcpPort(security.getJSONObject("slaveAgentPort")).getPort());
-                } catch (IOException e) {
-                    throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
-                }
-            }
-            Set<String> agentProtocols = new TreeSet<>();
-            if (security.has("agentProtocol")) {
-                Object protocols = security.get("agentProtocol");
-                if (protocols instanceof JSONArray) {
-                    for (int i = 0; i < ((JSONArray) protocols).size(); i++) {
-                        agentProtocols.add(((JSONArray) protocols).getString(i));
-                    }
-                } else {
-                    agentProtocols.add(protocols.toString());
-                }
-            }
-            j.setAgentProtocols(agentProtocols);
+            j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));    
         } else {
             j.disableSecurity();
         }
@@ -144,6 +125,27 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         } else {
             j.setMarkupFormatter(null);
         }
+        
+        // Agent settings
+        if (!isSlaveAgentPortEnforced()) {
+            try {
+                j.setSlaveAgentPort(new ServerTcpPort(json.getJSONObject("slaveAgentPort")).getPort());
+            } catch (IOException e) {
+                throw new hudson.model.Descriptor.FormException(e, "slaveAgentPortType");
+            }
+        }
+        Set<String> agentProtocols = new TreeSet<>();
+        if (json.has("agentProtocol")) {
+            Object protocols = json.get("agentProtocol");
+            if (protocols instanceof JSONArray) {
+                for (int i = 0; i < ((JSONArray) protocols).size(); i++) {
+                    agentProtocols.add(((JSONArray) protocols).getString(i));
+                }
+            } else {
+                agentProtocols.add(protocols.toString());
+            }
+        }
+        j.setAgentProtocols(agentProtocols);
 
         // persist all the additional security configs
         boolean result = true;
