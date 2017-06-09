@@ -4129,7 +4129,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             restart();
         }
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) {
+            rsp.sendRedirect2(".");
+        }
     }
 
     /**
