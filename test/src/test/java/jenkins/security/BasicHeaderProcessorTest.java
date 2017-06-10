@@ -58,6 +58,11 @@ public class BasicHeaderProcessorTest {
         // call with incorrect password
         makeRequestAndFail("foo:bar");
 
+        // Case insensitivity
+        makeRequestAndVerify("Authorization", "basic "+Scrambler.scramble("foo:bar"), "foo");
+        makeRequestAndVerify("Authorization", "BASIC "+Scrambler.scramble("foo:bar"), "foo");
+        makeRequestAndVerify("Authorization", "bAsIc "+Scrambler.scramble("foo:bar"), "foo");
+        makeRequestAndVerify("authorization", "Basic "+Scrambler.scramble("foo:bar"), "foo");
 
         wc.login("bar");
 
@@ -80,14 +85,18 @@ public class BasicHeaderProcessorTest {
         }
     }
 
-    private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
+    private void makeRequestAndVerify(String headerName, String headerValue, String username) throws IOException, SAXException {
         WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
         req.setEncodingType(null);
-        if (userAndPass!=null)
-            req.setAdditionalHeader("Authorization","Basic "+Scrambler.scramble(userAndPass));
+        if (headerValue!=null)
+            req.setAdditionalHeader(headerName, headerValue);
         Page p = wc.getPage(req);
 
         assertEquals(username, p.getWebResponse().getContentAsString().trim());
+    }
+
+    private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
+        makeRequestAndVerify("Authorization", userAndPass != null ?"Basic "+Scrambler.scramble(userAndPass):null, username);
     }
 
     @TestExtension

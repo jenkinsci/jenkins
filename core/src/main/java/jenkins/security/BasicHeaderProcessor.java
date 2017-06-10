@@ -60,7 +60,7 @@ public class BasicHeaderProcessor implements Filter {
         HttpServletResponse rsp = (HttpServletResponse) response;
         String authorization = req.getHeader("Authorization");
 
-        if (authorization!=null && authorization.startsWith("Basic ")) {
+        if (authorization!=null && authorization.regionMatches(true, 0, "Basic ", 0, 6)) {
             // authenticate the user
             String uidpassword = Scrambler.descramble(authorization.substring(6));
             int idx = uidpassword.indexOf(':');
