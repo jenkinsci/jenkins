@@ -127,6 +127,7 @@ import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
+import java.util.Collections;
         
 /**
  * {@link File} like object with remoting support.
@@ -1636,6 +1637,7 @@ public final class FilePath implements Serializable {
      * <p>
      * This method returns direct children of the directory denoted by the 'this' object.
      */
+    @Nonnull
     public List<FilePath> list() throws IOException, InterruptedException {
         return list((FileFilter)null);
     }
@@ -1645,6 +1647,7 @@ public final class FilePath implements Serializable {
      *
      * @return can be empty but never null. Doesn't contain "." and ".."
      */
+    @Nonnull
     public List<FilePath> listDirectories() throws IOException, InterruptedException {
         return list(new DirectoryFilter());
     }
@@ -1665,6 +1668,7 @@ public final class FilePath implements Serializable {
      *      If this {@link FilePath} represents a remote path,
      *      the filter object will be executed on the remote machine.
      */
+    @Nonnull
     public List<FilePath> list(final FileFilter filter) throws IOException, InterruptedException {
         if (filter != null && !(filter instanceof Serializable)) {
             throw new IllegalArgumentException("Non-serializable filter of " + filter.getClass());
@@ -1673,7 +1677,9 @@ public final class FilePath implements Serializable {
             private static final long serialVersionUID = 1L;
             public List<FilePath> invoke(File f, VirtualChannel channel) throws IOException {
                 File[] children = reading(f).listFiles(filter);
-                if(children ==null)     return null;
+                if (children == null) {
+                    return Collections.emptyList();
+                }
 
                 ArrayList<FilePath> r = new ArrayList<FilePath>(children.length);
                 for (File child : children)
@@ -1692,6 +1698,7 @@ public final class FilePath implements Serializable {
      * @return
      *      can be empty but always non-null.
      */
+    @Nonnull
     public FilePath[] list(final String includes) throws IOException, InterruptedException {
         return list(includes, null);
     }
@@ -1706,6 +1713,7 @@ public final class FilePath implements Serializable {
      *      can be empty but always non-null.
      * @since 1.407
      */
+    @Nonnull
     public FilePath[] list(final String includes, final String excludes) throws IOException, InterruptedException {
         return list(includes, excludes, true);
     }
@@ -1721,6 +1729,7 @@ public final class FilePath implements Serializable {
      *      can be empty but always non-null.
      * @since 1.465
      */
+    @Nonnull
     public FilePath[] list(final String includes, final String excludes, final boolean defaultExcludes) throws IOException, InterruptedException {
         return act(new SecureFileCallable<FilePath[]>() {
             private static final long serialVersionUID = 1L;
@@ -1742,6 +1751,7 @@ public final class FilePath implements Serializable {
      * @return
      *      A set of relative file names from the base directory.
      */
+    @Nonnull
     private static String[] glob(File dir, String includes, String excludes, boolean defaultExcludes) throws IOException {
         if(isAbsolute(includes))
             throw new IOException("Expecting Ant GLOB pattern, but saw '"+includes+"'. See http://ant.apache.org/manual/Types/fileset.html for syntax");
