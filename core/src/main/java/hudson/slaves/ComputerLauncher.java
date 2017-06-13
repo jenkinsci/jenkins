@@ -187,7 +187,7 @@ public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerL
                 final String versionStr = m.group(1);
                 logger.println(Messages.ComputerLauncher_JavaVersionResult(javaCommand, versionStr));
                 try {
-                    if (new DeweyDecimal(versionStr).isLessThan(new DeweyDecimal("1.6"))) {
+                    if (new DeweyDecimal(versionStr).isLessThan(new DeweyDecimal("1.8"))) {
                         throw new IOException(Messages
                                 .ComputerLauncher_NoJavaFound(line));
                     }
