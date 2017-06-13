@@ -31,19 +31,26 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
+import hudson.FilePath;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.TextFile;
 import hudson.util.TimeUnit2;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import java.util.concurrent.TimeUnit;
 import jenkins.model.ProjectNamingStrategy;
 
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -297,6 +304,48 @@ public class JobTest {
         final FreeStyleProject p = j.createFreeStyleProject();
         p.scheduleBuild2(0).get();
         p.renameTo("different-name");
+    }
+
+    @Issue("JENKINS-44657")
+    @Test public void testRenameWithCustomBuildsDirWithBuildsIntact() throws Exception {
+        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        final FreeStyleProject p = j.createFreeStyleProject();
+        final File oldBuildsDir = p.getBuildDir();
+        j.buildAndAssertSuccess(p);
+        String oldDirContent = dirContent(oldBuildsDir);
+        p.renameTo("different-name");
+        final File newBuildDir = p.getBuildDir();
+        assertNotNull(newBuildDir);
+        assertNotEquals(oldBuildsDir.getAbsolutePath(), newBuildDir.getAbsolutePath());
+        String newDirContent = dirContent(newBuildDir);
+        assertEquals(oldDirContent, newDirContent);
+    }
+
+    private String dirContent(File dir) throws IOException, InterruptedException {
+        if (dir == null || !dir.isDirectory()) {
+            return null;
+        }
+        StringBuilder str = new StringBuilder("");
+        final FilePath[] list = new FilePath(dir).list("**/*");
+        Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
+        for (FilePath path : list) {
+            str.append(relativePath(dir, path));
+            str.append(' ').append(path.length()).append('\n');
+        }
+        return str.toString();
+    }
+
+    private String relativePath(File base, FilePath path) throws IOException, InterruptedException {
+        if (path.absolutize().getRemote().equals(base.getAbsolutePath())) {
+            return "";
+        } else {
+            final String s = relativePath(base, path.getParent());
+            if (s.isEmpty()) {
+                return path.getName();
+            } else {
+                return s + "/" + path.getName();
+            }
+        }
     }
 
     @Issue("JENKINS-30502")
