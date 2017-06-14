@@ -26,6 +26,8 @@ package hudson;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+
+import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
@@ -830,53 +832,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * {@link AntClassLoader} with a few methods exposed, {@link Closeable} support, and {@link Transformer} support.
      */
-    private final class AntClassLoader2 extends AntClassLoader implements Closeable {
-        private final Vector pathComponents;
-
+    private final class AntClassLoader2 extends AntWithFindResourceClassLoader implements Closeable {
         private AntClassLoader2(ClassLoader parent) {
-            super(parent,true);
-
-            try {
-                Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
-                $pathComponents.setAccessible(true);
-                pathComponents = (Vector)$pathComponents.get(this);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new Error(e);
-            }
+            super(parent, true);
         }
-
-
-        public void addPathFiles(Collection<File> paths) throws IOException {
-            for (File f : paths)
-                addPathFile(f);
-        }
-
-        public void close() throws IOException {
-            cleanup();
-        }
-
-        /**
-         * As of 1.8.0, {@link AntClassLoader} doesn't implement {@link #findResource(String)}
-         * in any meaningful way, which breaks fast lookup. Implement it properly.
-         */
-        @Override
-        protected URL findResource(String name) {
-            URL url = null;
-
-            // try and load from this loader if the parent either didn't find
-            // it or wasn't consulted.
-            Enumeration e = pathComponents.elements();
-            while (e.hasMoreElements() && url == null) {
-                File pathComponent = (File) e.nextElement();
-                url = getResourceURL(pathComponent, name);
-                if (url != null) {
-                    log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
-                }
-            }
-
-            return url;
-        }
-
+        
         @Override
         protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
             if (!DISABLE_TRANSFORMER)
