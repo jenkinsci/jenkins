@@ -1036,7 +1036,7 @@ public abstract class Launcher {
         public VirtualChannel getChannel() {
             VirtualChannel vc = super.getChannel();
             if (vc == null) {
-                new IllegalStateException("RemoteLauncher has been initialized with Null channel. It should not happen");
+                throw new IllegalStateException("RemoteLauncher has been initialized with Null channel. It should not happen");
             }
             return super.getChannel();
         }
@@ -1045,7 +1045,9 @@ public abstract class Launcher {
             final OutputStream out = ps.stdout == null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stdout));
             final OutputStream err = ps.stderr==null ? null : new RemoteOutputStream(new CloseProofOutputStream(ps.stderr));
             final InputStream  in  = (ps.stdin==null || ps.stdin==NULL_INPUT_STREAM) ? null : new RemoteInputStream(ps.stdin,false);
-            final String workDir = ps.pwd==null ? null : ps.pwd.getRemote();
+            
+            final FilePath psPwd = ps.pwd;
+            final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
                 return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener)));
@@ -1258,7 +1260,7 @@ public abstract class Launcher {
     private static class RemoteLaunchCallable extends MasterToSlaveCallable<RemoteProcess,IOException> {
         private final @Nonnull List<String> cmd;
         private final @CheckForNull boolean[] masks;
-        private final @Nonnull String[] env;
+        private final @CheckForNull String[] env;
         private final @CheckForNull InputStream in;
         private final @CheckForNull OutputStream out;
         private final @CheckForNull OutputStream err;
@@ -1267,7 +1269,7 @@ public abstract class Launcher {
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
 
-        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @Nonnull String[] env, 
+        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env, 
                 @CheckForNull InputStream in, boolean reverseStdin, 
                 @CheckForNull OutputStream out, boolean reverseStdout, 
                 @CheckForNull OutputStream err, boolean reverseStderr, 
