@@ -234,9 +234,9 @@ public final class FilePath implements Serializable {
      *
      * @param channel
      *      To create a path that represents a remote path, pass in a {@link Channel}
-     *      that's connected to that machine. If null, that means the local file path.
+     *      that's connected to that machine. If {@code null}, that means the local file path.
      */
-    public FilePath(VirtualChannel channel, String remote) {
+    public FilePath(@CheckForNull VirtualChannel channel, @Nonnull String remote) {
         this.channel = channel instanceof LocalChannel ? null : channel;
         this.remote = normalize(remote);
     }
@@ -248,7 +248,7 @@ public final class FilePath implements Serializable {
      * A "local" path means a file path on the computer where the
      * constructor invocation happened.
      */
-    public FilePath(File localPath) {
+    public FilePath(@Nonnull File localPath) {
         this.channel = null;
         this.remote = normalize(localPath.getPath());
     }
@@ -258,12 +258,12 @@ public final class FilePath implements Serializable {
      * @param base starting point for resolution, and defines channel
      * @param rel a path which if relative will be resolved against base
      */
-    public FilePath(FilePath base, String rel) {
+    public FilePath(@Nonnull FilePath base, @Nonnull String rel) {
         this.channel = base.channel;
         this.remote = normalize(resolvePathIfRelative(base, rel));
     }
 
-    private String resolvePathIfRelative(FilePath base, String rel) {
+    private String resolvePathIfRelative(@Nonnull FilePath base, @Nonnull String rel) {
         if(isAbsolute(rel)) return rel;
         if(base.isUnix()) {
             // shouldn't need this replace, but better safe than sorry
@@ -278,7 +278,7 @@ public final class FilePath implements Serializable {
     /**
      * Is the given path name an absolute path?
      */
-    private static boolean isAbsolute(String rel) {
+    private static boolean isAbsolute(@Nonnull String rel) {
         return rel.startsWith("/") || DRIVE_PATTERN.matcher(rel).matches() || UNC_PATTERN.matcher(rel).matches();
     }
 
@@ -290,7 +290,7 @@ public final class FilePath implements Serializable {
      * {@link File#getParent()} etc cannot handle ".." and "." in the path component very well,
      * so remove them.
      */
-    private static String normalize(String path) {
+    private static String normalize(@Nonnull String path) {
         StringBuilder buf = new StringBuilder();
         // Check for prefix designating absolute path
         Matcher m = ABSOLUTE_PREFIX_PATTERN.matcher(path);
@@ -2307,13 +2307,15 @@ public final class FilePath implements Serializable {
      * @since 1.89
      */
     public Launcher createLauncher(TaskListener listener) throws IOException, InterruptedException {
-        if(channel==null)
+        if(channel==null) {
             return new LocalLauncher(listener);
-        else
+        } else {
             return new RemoteLauncher(listener,channel,channel.call(new IsUnix()));
+        }
     }
 
     private static final class IsUnix extends MasterToSlaveCallable<Boolean,IOException> {
+        @Nonnull
         public Boolean call() throws IOException {
             return File.pathSeparatorChar==':';
         }
@@ -2820,6 +2822,11 @@ public final class FilePath implements Serializable {
                             new NamingThreadFactory(new DaemonThreadFactory(), "FilePath.localPool"))
             ));
 
+    
+    /**
+     * Channel to the current instance.
+     */
+    @Nonnull
     public static final LocalChannel localChannel = new LocalChannel(threadPoolForRemoting);
 
     private @Nonnull SoloFilePathFilter filterNonNull() {
