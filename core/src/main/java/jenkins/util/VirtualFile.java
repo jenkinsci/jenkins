@@ -365,9 +365,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public VirtualFile[] list() throws IOException {
                 try {
                     List<FilePath> kids = f.list();
-                    if (kids == null) {
-                        return new VirtualFile[0];
-                    }
                     VirtualFile[] vfs = new VirtualFile[kids.size()];
                     for (int i = 0; i < vfs.length; i++) {
                         vfs[i] = forFilePath(kids.get(i));

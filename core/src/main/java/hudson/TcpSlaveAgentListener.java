@@ -227,7 +227,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
                         if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
-                            LOGGER.log(Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
+                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
                             error(out, "Disabled protocol:" + s);

@@ -230,6 +230,7 @@ public class WindowsInstallerLink extends ManagementLink {
                         }
                     });
 
+                    Jenkins.getInstance().cleanUp();
                     System.exit(0);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
