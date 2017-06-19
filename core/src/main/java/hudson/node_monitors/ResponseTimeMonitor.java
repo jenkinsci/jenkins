@@ -48,7 +48,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
         @Override
         protected Callable<Data,IOException> createCallable(Computer c) {
-            if (c.isOffline()) {
+            if (c.getChannel() == null) {
                 return null;
             }
             return new Step1(get(c));

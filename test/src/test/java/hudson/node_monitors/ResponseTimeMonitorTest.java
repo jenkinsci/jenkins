@@ -32,7 +32,7 @@ public class ResponseTimeMonitorTest {
 
         // Try as temporarily offline first.
         c.setTemporarilyOffline(true, new OfflineCause.UserCause(User.getUnknown(), "Temporarily offline"));
-        assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
+        assertNotNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
         // Now try as actually disconnected.
         c.setTemporarilyOffline(false, null);
