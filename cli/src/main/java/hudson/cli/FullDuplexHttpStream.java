@@ -76,6 +76,10 @@ public class FullDuplexHttpStream {
 
         // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
         HttpURLConnection con = (HttpURLConnection) base.openConnection();
+        if (authorization != null) {
+            System.out.println("Auth added: " + authorization);
+            con.addRequestProperty("Authorization", authorization);
+        }
         con.getInputStream().close();
         this.base = con.getURL();
         this.authorization = authorization;
