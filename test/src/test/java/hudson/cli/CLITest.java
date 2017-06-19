@@ -174,14 +174,14 @@ public class CLITest {
         r.waitForCompletion(p.getLastBuild());
     }
 
-    @Test
+    @Test @Issue("JENKINS-44361")
     public void reportNotJenkins() throws Exception {
         home = tempHome();
         grabCliJar();
 
-        for (String transport: Arrays.asList("-remoting", "-http", "-ssh")) {
+        String url = r.getURL().toExternalForm() + "not-jenkins/";
+        for (String transport : Arrays.asList("-remoting", "-http", "-ssh")) {
 
-            String url = "http://jenkins.io";
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
                     "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", url, transport, "-user", "asdf", "who-am-i"
@@ -191,8 +191,38 @@ public class CLITest {
             assertNotEquals(0, ret);
         }
     }
+    @TestExtension("reportNotJenkins")
+    public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
 
-    @Test
+        @Override public String getIconFileName() {
+            return "not-jenkins";
+        }
+
+        @Override public String getDisplayName() {
+            return "not-jenkins";
+        }
+
+        @Override public String getUrlName() {
+            return "not-jenkins";
+        }
+
+        @Override public Object getTarget() {
+            doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            return this;
+        }
+
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) {
+            rsp.setStatus(200);
+        }
+
+        @Override // Permit access to cli-proxy/XXX without CSRF checks
+        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+            chain.doFilter(request, response);
+            return true;
+        }
+    }
+
+    @Test @Issue("JENKINS-44361")
     public void redirectToEndpointShouldBeFollowed() throws Exception {
         home = tempHome();
         grabCliJar();

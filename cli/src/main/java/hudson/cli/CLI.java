@@ -426,7 +426,7 @@ public class CLI implements AutoCloseable {
             System.exit(_main(_args));
         } catch (NotTalkingToJenkinsException ex) {
             System.err.println(ex.getMessage());
-            System.exit(-1);
+            System.exit(3);
         } catch (Throwable t) {
             // if the CLI main thread die, make sure to kill the JVM.
             t.printStackTrace();
