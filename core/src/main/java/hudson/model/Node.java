@@ -67,7 +67,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -223,7 +223,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      *         Can be {@code null} if the {@link Node} implementation does not support it (e.g. {@link Cloud} agent).
      */
     @CheckForNull
-    @Restricted(NoExternalUse.class)
+    @Restricted(ProtectedExternally.class)
     protected abstract Computer createComputer();
 
     /**
