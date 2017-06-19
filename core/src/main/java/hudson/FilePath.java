@@ -2307,11 +2307,10 @@ public final class FilePath implements Serializable {
      * @since 1.89
      */
     public Launcher createLauncher(TaskListener listener) throws IOException, InterruptedException {
-        if(channel==null) {
+        if(channel==null)
             return new LocalLauncher(listener);
-        } else {
+        else
             return new RemoteLauncher(listener,channel,channel.call(new IsUnix()));
-        }
     }
 
     private static final class IsUnix extends MasterToSlaveCallable<Boolean,IOException> {
