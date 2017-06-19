@@ -167,6 +167,9 @@ public class CLITest {
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
         while (!baos.toString().contains("Sleeping ")) {
+            if (!proc.isAlive()) {
+                throw new AssertionError("Process failed to start with " + proc.join());
+            }
             Thread.sleep(100);
         }
         System.err.println("Killing client");
