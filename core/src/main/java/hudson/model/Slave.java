@@ -306,8 +306,6 @@ public abstract class Slave extends Node implements Serializable {
         return new GetClockDifference1();
     }
 
-    @Override
-    @Nonnull
     public Computer createComputer() {
         return new SlaveComputer(this);
     }
