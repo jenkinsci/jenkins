@@ -36,7 +36,7 @@ public class ResponseTimeMonitorTest {
 
         // Now try as actually disconnected.
         c.setTemporarilyOffline(false, null);
-        c.disconnect(new OfflineCause.UserCause(User.getUnknown(), "Disconnecting"));
+        j.disconnectSlave(s);
         assertNull(ResponseTimeMonitor.DESCRIPTOR.monitor(c));
 
         // Now reconnect and make sure we get a non-null response.
