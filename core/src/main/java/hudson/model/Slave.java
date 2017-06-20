@@ -57,6 +57,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -92,6 +94,9 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
+    
+    private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
+    
     /**
      * Name of this agent node.
      */
@@ -412,13 +417,44 @@ public abstract class Slave extends Node implements Serializable {
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
      *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
      */
+    @Nonnull
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
-            listener.error("Issue with creating launcher for agent " + name + ".");
+            listener.error("Issue with creating launcher for agent " + name + ". Computer has been disconnected");
             return new Launcher.DummyLauncher(listener);
         } else {
-            return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+            // TODO: ideally all the logic below should be inside the SlaveComputer class with proper locking to prevent race conditions, 
+            // but so far there is no locks for setNode() hence it requires serious refactoring
+            
+            // Ensure that the Computer instance still points to this node
+            // Otherwise we may end up running the command on a wrong (reconnected) Node instance.
+            Slave node = c.getNode();
+            if (node != this) {
+                String message = "Issue with creating launcher for agent " + name + ". Computer has been reconnected";
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, message, new IllegalStateException("Computer has been reconnected, this Node instance cannot be used anymore"));
+                }
+                return new Launcher.DummyLauncher(listener);
+            }
+            
+            // RemoteLauncher requires an Channel instance to operate correctly
+            final Channel channel = c.getChannel();
+            final Boolean isUnix = channel != null ? c.isUnix() : null; // No sense to check it if the channel is down
+            if (channel == null || isUnix == null ) { // isUnix is always set when the channel is not null
+                String message = "Issue with creating launcher for agent " + name + 
+                        ". No remoting channel to the agent OR it has not been fully initialized yet.";
+                listener.error(message);
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    // Send stacktrace to the log as well in order to diagnose the root cause of issues like JENKINS-38527
+                    LOGGER.log(Level.WARNING, message
+                            + "Probably there is a race condition with Agent reconnection, check other log entries"
+                            , new IllegalStateException("Channel is null for the agent " + name));
+                }
+                return new Launcher.DummyLauncher(listener);
+            }
+            
+            return new RemoteLauncher(listener, channel, isUnix).decorateFor(this);
         }
     }
 
