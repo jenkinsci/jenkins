@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Environment variables.
@@ -88,7 +89,7 @@ public class EnvVars extends TreeMap<String,String> {
         super(CaseInsensitiveComparator.INSTANCE);
     }
 
-    public EnvVars(Map<String,String> m) {
+    public EnvVars(@Nonnull Map<String,String> m) {
         this();
         putAll(m);
 
@@ -100,7 +101,7 @@ public class EnvVars extends TreeMap<String,String> {
         }
     }
 
-    public EnvVars(EnvVars m) {
+    public EnvVars(@Nonnull EnvVars m) {
         // this constructor is so that in future we can get rid of the downcasting.
         this((Map)m);
     }

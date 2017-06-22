@@ -288,6 +288,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static hudson.Util.*;
 import static hudson.init.InitMilestone.*;
@@ -944,6 +945,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
 
             if(KILL_AFTER_LOAD)
+                // TODO cleanUp?
                 System.exit(0);
 
             setupWizard = new SetupWizard();
@@ -2172,6 +2174,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return null;
     }
 
+    /**
+     * Returns the enabled and activated administrative monitors.
+     * @since TODO
+     */
+    public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
+        return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
+    }
+
     public NodeDescriptor getDescriptor() {
         return DescriptorImpl.INSTANCE;
     }
@@ -3313,7 +3323,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 public void onAttained(Milestone milestone) {
                     Level lv = level;
                     String s = "Attained " + milestone.toString();
-                    if (milestone instanceof TermMilestone) {
+                    if (milestone instanceof TermMilestone && !Main.isUnitTest) {
                         lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
                         s = milestone.toString();
                     }
@@ -3337,7 +3347,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private Set<Future<?>> _cleanUpDisconnectComputers(final List<Throwable> errors) {
-        LOGGER.log(Level.INFO, "Starting node disconnection");
+        LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Starting node disconnection");
         final Set<Future<?>> pending = new HashSet<Future<?>>();
         // JENKINS-28840 we know we will be interrupting all the Computers so get the Queue lock once for all
         Queue.withLock(new Runnable() {
@@ -3498,7 +3508,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpShutdownPluginManager(List<Throwable> errors) {
         if(pluginManager!=null) {// be defensive. there could be some ugly timing related issues
-            LOGGER.log(Level.INFO, "Stopping plugin manager");
+            LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Stopping plugin manager");
             try {
                 pluginManager.stop();
             } catch (OutOfMemoryError e) {
@@ -3519,7 +3529,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(getRootDir().exists()) {
             // if we are aborting because we failed to create JENKINS_HOME,
             // don't try to save. Issue #536
-            LOGGER.log(Level.INFO, "Persisting build queue");
+            LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Persisting build queue");
             try {
                 getQueue().save();
             } catch (OutOfMemoryError e) {
@@ -3558,7 +3568,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _cleanUpAwaitDisconnects(List<Throwable> errors, Set<Future<?>> pending) {
         if (!pending.isEmpty()) {
-            LOGGER.log(Level.INFO, "Waiting for node disconnection completion");
+            LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Waiting for node disconnection completion");
         }
         for (Future<?> f : pending) {
             try {
@@ -4119,7 +4129,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             restart();
         }
 
-        rsp.sendRedirect2(".");
+        if (rsp != null) {
+            rsp.sendRedirect2(".");
+        }
     }
 
     /**
@@ -4253,6 +4265,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         }
 
+        cleanUp();
         System.exit(0);
     }
 

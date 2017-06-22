@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
 import java.io.Writer;
@@ -57,9 +58,11 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Listens to incoming TCP connections from JNLP agents and CLI.
+ * Listens to incoming TCP connections from JNLP agents and Remoting CLI.
  *
  * <p>
  * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
@@ -95,7 +98,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
 
-        LOGGER.log(Level.FINE, "JNLP agent listener started on TCP port {0}", getPort());
+        LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
 
         start();
     }
@@ -155,7 +158,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         } catch (IOException e) {
             if(!shuttingDown) {
-                LOGGER.log(Level.SEVERE,"Failed to accept JNLP agent connections",e);
+                LOGGER.log(Level.SEVERE,"Failed to accept TCP connections", e);
             }
         }
     }
@@ -227,7 +230,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p!=null) {
                         if (Jenkins.getInstance().getAgentProtocols().contains(protocol)) {
-                            LOGGER.log(Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
+                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
                             p.handle(this.s);
                         } else {
                             error(out, "Disabled protocol:" + s);
@@ -241,14 +244,14 @@ public final class TcpSlaveAgentListener extends Thread {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" aborted",e);
                 try {
                     s.close();
-                } catch (IOException _) {
+                } catch (IOException ex) {
                     // try to clean up the socket
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING,"Connection #"+id+" failed",e);
                 try {
                     s.close();
-                } catch (IOException _) {
+                } catch (IOException ex) {
                     // try to clean up the socket
                 }
             }
@@ -292,7 +295,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
         private void error(PrintWriter out, String msg) throws IOException {
             out.println(msg);
-            LOGGER.log(Level.WARNING,"Connection #"+id+" is aborted: "+msg);
+            LOGGER.log(Level.WARNING, "Connection #{0} is aborted: {1}", new Object[]{id, msg});
             s.close();
         }
     }
@@ -398,6 +401,8 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * TODO: think about how to expose this (including whether this needs to be exposed at all.)
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
     public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName()+".hostName");
 
     /**
@@ -410,6 +415,8 @@ public final class TcpSlaveAgentListener extends Thread {
      *
      * @since 1.611
      */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    @Restricted(NoExternalUse.class)
     public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName()+".port");
 }
 

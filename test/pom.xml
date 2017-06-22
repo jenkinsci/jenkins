@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.63-SNAPSHOT</version>
+    <version>2.67-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -44,14 +44,11 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <!--
-        put hudson.war in the classpath. we can't pull in the war artifact directly
-        because Maven excludes all wars from classpath automatically. so we need a jar artifact.
-      -->
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-war</artifactId>
       <version>${project.version}</version>
-      <classifier>war-for-test</classifier>
+      <type>executable-war</type>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -189,6 +186,11 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
       <plugin>
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>maven-stapler-plugin</artifactId>
