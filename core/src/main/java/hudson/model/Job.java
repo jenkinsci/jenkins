@@ -1619,7 +1619,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @CheckForNull
     @Restricted(NoExternalUse.class)
-    public Boolean checkIfNameOccupied(@Nonnull String newName) throws Failure{
+    public Boolean checkIfNameIsUsed(@Nonnull String newName) throws Failure{
         
         Item item = null;
         Jenkins.checkGoodName(newName);

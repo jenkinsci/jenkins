@@ -29,7 +29,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <j:set var="newName" value="${request.getParameter('newName')}" />
-      <j:set var="checkIfNameOccupied" value="${it.checkIfNameOccupied(newName)}" />
+      <j:set var="checkIfNameIsUsed" value="${it.checkIfNameIsUsed(newName)}" />
       
       <j:choose> 
         <j:when test="${it.isBuilding()}">
@@ -39,11 +39,11 @@ THE SOFTWARE.
           </j:if>
         </j:when>
         
-        <j:when test="${checkIfNameOccupied != null and !it.name.equalsIgnoreCase(newName)}" >    
-          <j:if test="${checkIfNameOccupied}" >
+        <j:when test="${checkIfNameIsUsed != null and !it.name.equalsIgnoreCase(newName)}" >    
+          <j:if test="${checkIfNameIsUsed}" >
             ${%newNameInUse(newName)}
           </j:if>  
-          <j:if test="${!checkIfNameOccupied}" >
+          <j:if test="${!checkIfNameIsUsed}" >
             ${%newNameNotValid(newName)}
           </j:if>
           <j:if test="${request.referer.endsWith('/configure')}">
