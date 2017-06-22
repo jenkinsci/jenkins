@@ -19,8 +19,8 @@ The changelogs will be integrated by the core maintainers after the merge.  See 
 ### Submitter checklist
 
 - [ ] JIRA issue is well described
-- [ ] Changelog entries provide a human-readable description of the change. [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
-   * Use `Internal: ` prefix if it addresses the API changes which do not impact the user-visible behavior
+- [ ] Changelog entry appropriate for the audience affected by the change (users or developer, depending on the change). [Examples](https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/weekly.yml)
+      * Use the `Internal: ` prefix if the change has no user-visible impact (API, test frameworks, etc.)
 - [ ] Appropriate autotests or explanation to why this change has no tests
 - [ ] For dependency updates: links to external changelogs and, if possible, full diffs
 
