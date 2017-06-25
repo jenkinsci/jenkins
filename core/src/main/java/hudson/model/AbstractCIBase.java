@@ -151,7 +151,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 used.add(c);
             } else {
                 // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
-                LOGGER.log(Level.WARNING, "Node {0} has not executors. Cannot udate the Computer instance for it", n.getNodeName());
+                LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
             }
         }
     }
