@@ -131,6 +131,9 @@ THE SOFTWARE.
         <d:invokeBody />
       </j:scope>
     </div>
+    <j:if test="${!empty(items) and !attrs.noAddButton}">
+      <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add repeatable-add-top" />
+    </j:if>
     <!-- then populate them for each item -->
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
