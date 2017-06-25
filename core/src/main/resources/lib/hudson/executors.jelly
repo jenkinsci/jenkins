@@ -37,6 +37,7 @@ THE SOFTWARE.
       <a href="${rootURL}/${c.url}" class="model-link inside"><l:icon class="${c.iconClassName} icon-sm" alt="${altText}"/><st:nbsp/>${title}</a>
       <j:if test="${c.offline}"> <st:nbsp/> (${%offline})</j:if>
       <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
+      <j:if test="${c.displayExecutors.isEmpty()}"> <st:nbsp/> (${%no executors})</j:if>
     </d:tag>
     <d:tag name="executor">
       <j:if test="${!c.offline or (c.offline and !e.idle)}">
@@ -129,7 +130,7 @@ THE SOFTWARE.
       <j:forEach var="c" items="${computers}">
         <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
-          <j:if test="${computersSize gt 1 and !cDisplayExecutors.isEmpty()}">
+          <j:if test="${computersSize gt 1}">
             <th class="pane" colspan="3">
               <local:computerCaption title="${c.displayName}" />
             </th>
