@@ -1658,7 +1658,7 @@ public class Queue extends ResourceController implements Saveable {
             hashSource.put(h, Math.max(h.getNumExecutors() * 100, 1));
 
             for (Node n : h.getNodes()) {
-                hashSource.put(n, n.getNumExecutors() * 100);
+                hashSource.put(n, Math.max(n.getNumExecutors() * 100, 1));
             }
 
             ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
