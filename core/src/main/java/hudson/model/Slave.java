@@ -202,7 +202,7 @@ public abstract class Slave extends Node implements Serializable {
 //        if (remoteFS.equals(""))
 //            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
-        if (this.numExecutors<=0)
+        if (this.numExecutors<0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
