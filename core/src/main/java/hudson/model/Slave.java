@@ -468,7 +468,7 @@ public abstract class Slave extends Node implements Serializable {
 
     public static abstract class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
-            return FormValidation.validatePositiveInteger(value);
+            return FormValidation.validateNonNegativeInteger(value);
         }
 
         /**
