@@ -1626,10 +1626,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         
         try {
             item = getParent().getItem(newName);
-        } catch(AccessDeniedException ex) {    
-            // User has Discover permissions for existing job with the same name
-            LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use", 
-                    new Object[] {this.getFullName(), newName} );
+        } catch(AccessDeniedException ex) {  
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                        "User {2} has {3} permission, but no {4} for existing job with the same name", 
+                        new Object[] {this.getFullName(), newName, User.current().getFullName(), Item.DISCOVER.name, Item.READ.name} );
+            }
             return true;
         }
         
@@ -1643,9 +1645,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 item = getParent().getItem(newName);
 
                 if (item != null) {
-                    // User hasn't permissions for existing job with the same name
-                    LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use", 
-                            new Object[] {this.getFullName(), newName} );
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                                "User {2} has no {3} permission for existing job with the same name", 
+                                new Object[] {this.getFullName(), newName, initialContext.getAuthentication().getName(), Item.DISCOVER.name} );
+                    }
                     return false;
                 }
 
