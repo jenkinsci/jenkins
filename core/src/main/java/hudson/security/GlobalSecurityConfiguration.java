@@ -111,14 +111,10 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
-        if (json.has("useSecurity")) {
-            JSONObject security = json.getJSONObject("useSecurity");
-            j.setDisableRememberMe(security.optBoolean("disableRememberMe", false));
-            j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(security, "realm"));
-            j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(security, "authorization"));    
-        } else {
-            j.disableSecurity();
-        }
+
+        j.setDisableRememberMe(json.optBoolean("disableRememberMe", false));
+        j.setSecurityRealm(SecurityRealm.all().newInstanceFromRadioList(json, "realm"));
+        j.setAuthorizationStrategy(AuthorizationStrategy.all().newInstanceFromRadioList(json, "authorization"));    
 
         if (json.has("markupFormatter")) {
             j.setMarkupFormatter(req.bindJSON(MarkupFormatter.class, json.getJSONObject("markupFormatter")));
