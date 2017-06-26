@@ -3986,7 +3986,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        servletContext.setAttribute("app", new HudsonIsLoading());
+        WebApp.get(servletContext).setApp(new HudsonIsLoading());
 
         new Thread("Jenkins config reload thread") {
             @Override
@@ -4025,7 +4025,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         User.reload();
         queue.load();
-        servletContext.setAttribute("app", this);
+        WebApp.get(servletContext).setApp(this);
     }
 
     /**

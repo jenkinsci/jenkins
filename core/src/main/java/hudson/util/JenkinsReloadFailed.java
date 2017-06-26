@@ -9,7 +9,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 public class JenkinsReloadFailed extends BootFailure {
-    @Restricted(NoExternalUse.class) @Deprecated
+    @Restricted(NoExternalUse.class)
     public final Throwable cause;
 
     public JenkinsReloadFailed(Throwable cause) {
