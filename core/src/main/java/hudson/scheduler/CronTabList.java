@@ -110,7 +110,7 @@ public final class CronTabList {
                 if(timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new ANTLRException("Invalid or unsupported timezone '" + line + "'");
+                    throw new ANTLRException("Invalid or unsupported timezone '" + timezone + "'");
                 }
                 continue;
             }
