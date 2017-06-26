@@ -1628,6 +1628,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             item = getParent().getItem(newName);
         } catch(AccessDeniedException ex) {    
             // User has Discover permissions for existing job with the same name
+            LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use", 
+                    new Object[] {this.getFullName(), newName} );
             return true;
         }
         
@@ -1642,6 +1644,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                 if (item != null) {
                     // User hasn't permissions for existing job with the same name
+                    LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use", 
+                            new Object[] {this.getFullName(), newName} );
                     return false;
                 }
 
