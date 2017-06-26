@@ -558,7 +558,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         public GroupDetails loadGroupByGroupname(String groupname) throws UsernameNotFoundException, DataAccessException {
             throw new UsernameNotFoundException(groupname);
         }
-        
+
         /**
          * We don't need any filter for this {@link SecurityRealm}.
          */
