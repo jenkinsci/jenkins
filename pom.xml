@@ -282,6 +282,19 @@ THE SOFTWARE.
               </configuration>
             </execution>
             <execution>
+            <id>user.name</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>user.name.escaped</name>
+              <value>${user.name}</value>
+              <regex>([$\\])</regex>
+              <replacement>\\$1</replacement>
+              <failIfNoMatch>false</failIfNoMatch>
+            </configuration>
+          </execution>
+          <execution>
               <id>version-property</id>
               <goals>
                 <goal>regex-property</goal>
@@ -290,7 +303,7 @@ THE SOFTWARE.
                 <name>build.version</name>
                 <value>${project.version}</value>
                 <regex>-SNAPSHOT</regex>
-                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name})</replacement>
+                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name.escaped})</replacement>
                 <failIfNoMatch>false</failIfNoMatch>
               </configuration>
             </execution>
