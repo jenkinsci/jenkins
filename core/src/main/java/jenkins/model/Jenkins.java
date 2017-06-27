@@ -410,7 +410,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getBuildDirFor(Job)
      */
-    private String buildsDir = "${ITEM_ROOTDIR}/builds";
+    private String buildsDir = DEFAULT_BUILDS_DIR;
 
     /**
      * Message displayed in the top page.
@@ -2447,12 +2447,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return expandVariablesForDirectory(buildsDir, job);
     }
 
+    public boolean isDefaultBuildDir() {
+        return DEFAULT_BUILDS_DIR.equals(buildsDir);
+    }
+
     private File expandVariablesForDirectory(String base, Item item) {
         return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
     }
 
     @Restricted(NoExternalUse.class)
-    static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
+    public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
         return Util.replaceMacro(base, ImmutableMap.of(
                 "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
                 "ITEM_ROOTDIR", itemRootDir,
@@ -5073,6 +5077,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Switch to enable people to use a shorter workspace name.
      */
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
+
+    /**
+     * Default value of job's builds dir.
+     * @see #getRawBuildsDir()
+     */
+    private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.

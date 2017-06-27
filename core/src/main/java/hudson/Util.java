@@ -568,6 +568,20 @@ public class Util {
     }
 
     /**
+     * A check if a file path is a descendant of a parent path
+     * @param forParent the parent the child should be a descendant of
+     * @param potentialChild the path to check
+     * @return true if so
+     * @throws IOException potentially from {@link Files#isSameFile(Path, Path)}
+     * @since FIXME
+     */
+    public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
+        Path child = potentialChild.getAbsoluteFile().toPath();
+        Path parent = forParent.getAbsoluteFile().toPath();
+        return child.startsWith(parent);
+    }
+
+    /**
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {

@@ -182,6 +182,12 @@ THE SOFTWARE.
       <version>4.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.0.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
