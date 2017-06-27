@@ -43,6 +43,8 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -514,5 +516,21 @@ public class PluginManagerTest {
         // now the other plugins should have been found as dependencies and downloaded
         assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+    }
+
+    @Issue("JENKINS-44898")
+    @WithPlugin("plugin-first.hpi")
+    @Test
+    public void findResourceForPluginFirstClassLoader() throws Exception {
+        PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
+        assertNotNull(w);
+
+        URL fromPlugin = w.classLoader.getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+        assertNotNull(fromPlugin);
+
+        // This is how UberClassLoader.findResource functions.
+        URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+
+        assertEquals(fromPlugin, fromToolkit);
     }
 }
