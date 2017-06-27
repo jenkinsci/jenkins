@@ -441,16 +441,16 @@ public class UtilTest {
             Util.WAIT_BETWEEN_DELETION_RETRIES = -1000;
             Util.GC_AFTER_FAILED_DELETE = true;
             final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
-            Thread deleteToBeInterupted = new Thread("deleteToBeInterupted") {
+            Thread deleteToBeInterrupted = new Thread("deleteToBeInterrupted") {
                 public void run() {
                     try { Util.deleteRecursive(dir); }
                     catch( Throwable x ) { thrown.set(x); }
                 }
             };
-            deleteToBeInterupted.start();
-            deleteToBeInterupted.interrupt();
-            deleteToBeInterupted.join(500);
-            assertFalse("deletion stopped", deleteToBeInterupted.isAlive());
+            deleteToBeInterrupted.start();
+            deleteToBeInterrupted.interrupt();
+            deleteToBeInterrupted.join(500);
+            assertFalse("deletion stopped", deleteToBeInterrupted.isAlive());
             assertTrue("d1f1 still exists", d1f1.exists());
             unlockFileForDeletion(d1f1);
             Throwable deletionInterruptedEx = thrown.get();
@@ -488,9 +488,13 @@ public class UtilTest {
         // On unix, can't use "chmod a-w" on the dir as the code-under-test undoes that.
         // On unix, can't use "chattr +i" because that needs root.
         // On unix, can't use "chattr +u" because ext fs ignores it.
+        // On Windows, can't use FileChannel.lock() because that doesn't block deletion
         // On Windows, we can't delete files that are open for reading, so we use that.
+        // NOTE: This is a hack in any case as there is no guarantee that all Windows filesystems
+        // will enforce blocking deletion on open files... just that the ones we normally
+        // test with seem to block.
         assert Functions.isWindows();
-        final InputStream s = new FileInputStream(f);
+        final InputStream s = new FileInputStream(f); // intentional use of FileInputStream
         unlockFileCallables.put(f, new Callable<Void>() {
             public Void call() throws IOException { s.close(); return null; };
         });

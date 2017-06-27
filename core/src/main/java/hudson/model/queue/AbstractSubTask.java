@@ -23,34 +23,9 @@
  */
 package hudson.model.queue;
 
-import hudson.model.Label;
-import hudson.model.Node;
-import hudson.model.ResourceList;
-
 /**
- * Partial default implementation of {@link SubTask} to avoid
- * {@link AbstractMethodError} with future additions to {@link SubTask}.
- *
- * @author Kohsuke Kawaguchi
+ * @deprecated implement {@link SubTask} directly
  */
+@Deprecated
 public abstract class AbstractSubTask implements SubTask {
-    public Label getAssignedLabel() {
-        return null;
-    }
-
-    public Node getLastBuiltOn() {
-        return null;
-    }
-
-    public long getEstimatedDuration() {
-        return -1;
-    }
-
-    public Object getSameNodeConstraint() {
-        return null;
-    }
-
-    public ResourceList getResourceList() {
-        return ResourceList.EMPTY;
-    }
 }

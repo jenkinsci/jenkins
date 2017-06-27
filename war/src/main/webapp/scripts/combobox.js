@@ -51,7 +51,7 @@ Sample CSS for the combobox
  * I create a new combobox, using the specified text input field and
  * population callback.  The item list is styled with three CSS
  * classes: comboBoxList, comboBoxItem, and comboBoxSelectedItem, which
- * are for the containing DIV, the individial item DIVs, and for the
+ * are for the containing DIV, the individual item DIVs, and for the
  * currently selected item DIV.  Note that the selected item has both
  * the item and selectedItem classes applied.  Sample CSS is available
  * in a comment at the top of the implementation file.

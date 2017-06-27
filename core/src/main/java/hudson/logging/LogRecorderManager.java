@@ -130,6 +130,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      * Configure the logging level.
      */
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings("LG_LOST_LOGGER_DUE_TO_WEAK_REFERENCE")
+    @RequirePOST
     public HttpResponse doConfigLogger(@QueryParameter String name, @QueryParameter String level) {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Level lv;

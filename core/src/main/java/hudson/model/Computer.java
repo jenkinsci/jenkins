@@ -25,9 +25,11 @@
  */
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher.ProcStarter;
+import hudson.slaves.Cloud;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.cli.declarative.CLIMethod;
@@ -190,7 +192,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     protected final Object statusChangeLock = new Object();
 
     /**
-     * Keeps track of stack traces to track the tremination requests for this computer.
+     * Keeps track of stack traces to track the termination requests for this computer.
      *
      * @since 1.607
      * @see Executor#resetWorkUnit(String)
@@ -268,10 +270,23 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     	return Collections.unmodifiableList(result);
     }
 
+    @SuppressWarnings({"ConstantConditions","deprecation"})
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    @Override
+    public void addAction(@Nonnull Action a) {
+        if (a == null) {
+            throw new IllegalArgumentException("Action must be non-null");
+        }
+        super.getActions().add(a);
+    }
+
+    // TODO implement addOrReplaceAction, removeAction, removeActions, replaceActions
+
     /**
      * This is where the log from the remote agent goes.
      * The method also creates a log directory if required.
-     * @see #getLogDir(), #relocateOldLogs()
+     * @see #getLogDir()
+     * @see #relocateOldLogs()
      */
     public @Nonnull File getLogFile() {
         return new File(getLogDir(),"slave.log");
@@ -560,7 +575,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.624
      * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     *      {@code null} if the computer is disconnected and therefore we don't know whether it is Unix or not.
      */
     public abstract @CheckForNull Boolean isUnix();
 
@@ -778,7 +793,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public RunList getBuilds() {
-        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).node(getNode());
+        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).node(getNode());
     }
 
     /**
@@ -955,6 +970,19 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public List<OneOffExecutor> getOneOffExecutors() {
         return new ArrayList<OneOffExecutor>(oneOffExecutors);
+    }
+
+    /**
+     * Gets the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
+     *
+     * @return the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
+     * @since TODO
+     */
+    public List<Executor> getAllExecutors() {
+        List<Executor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
+        result.addAll(executors);
+        result.addAll(oneOffExecutors);
+        return result;
     }
 
     /**
@@ -1274,7 +1302,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
          * and then it would need to be loaded, which pulls in {@link Jenkins} and loads that
          * and then that fails to load as you are not supposed to do that. Another option
          * would be to export the logger over remoting, with increased complexity as a result.
-         * Instead we just use a loger based on this class name and prevent any references to
+         * Instead we just use a logger based on this class name and prevent any references to
          * other classes from being transferred over remoting.
          */
         private static final Logger LOGGER = Logger.getLogger(ListPossibleNames.class.getName());
@@ -1719,6 +1747,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public static final Permission DISCONNECT = new Permission(PERMISSIONS,"Disconnect", Messages._Computer_DisconnectPermission_Description(), Jenkins.ADMINISTER, PermissionScope.COMPUTER);
     public static final Permission CONNECT = new Permission(PERMISSIONS,"Connect", Messages._Computer_ConnectPermission_Description(), DISCONNECT, PermissionScope.COMPUTER);
     public static final Permission BUILD = new Permission(PERMISSIONS, "Build", Messages._Computer_BuildPermission_Description(),  Permission.WRITE, PermissionScope.COMPUTER);
+
+    // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
+    // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,
+    // it might appear the permission does not exist. Referencing the permission from here to make sure it gets loaded.
+    private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }

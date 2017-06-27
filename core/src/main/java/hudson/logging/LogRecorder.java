@@ -73,17 +73,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
     public final CopyOnWriteList<Target> targets = new CopyOnWriteList<Target>();
-
+    private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
+    
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {
         // will contain targets ordered by reverse name length (place specific targets at the beginning)
         Target[] ts = targets.toArray(new Target[]{});
 
-        Arrays.sort(ts, new Comparator<Target>() {
-            public int compare(Target left, Target right) {
-                return right.getName().length() - left.getName().length();
-            }
-        });
+        Arrays.sort(ts, TARGET_COMPARATOR);
 
         return ts;
     }
@@ -205,6 +202,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             new SetLevel(name, null).broadcast();
         }
 
+    }
+    
+    private static class TargetComparator implements Comparator<Target> {
+
+        @Override
+        public int compare(Target left, Target right) {
+            return right.getName().length() - left.getName().length();
+        }
     }
 
     private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {

@@ -152,7 +152,7 @@ public abstract class SU {
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
             if(slaveJar.isFile())
                 args.add("-jar").add(slaveJar);
-            else // in production code this never happens, but during debugging this is convenientud    
+            else // in production code this never happens, but during debugging this is convenient    
                 args.add("-cp").add(slaveJar).add(hudson.remoting.Launcher.class.getName());
 
             if(rootPassword==null) {

@@ -24,8 +24,11 @@
 
 package jenkins.model.queue;
 
+import hudson.model.Computer;
 import hudson.model.Executor;
+import hudson.model.ExecutorListener;
 import hudson.model.OneOffExecutor;
+import hudson.model.Queue.Executable;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.Resource;
 import hudson.model.ResourceActivity;
@@ -34,6 +37,7 @@ import hudson.model.ResourceList;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 

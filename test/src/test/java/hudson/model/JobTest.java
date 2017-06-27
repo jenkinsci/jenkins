@@ -32,15 +32,19 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
 import hudson.Functions;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.util.TextFile;
+import hudson.util.TimeUnit2;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+import java.util.concurrent.TimeUnit;
 import jenkins.model.ProjectNamingStrategy;
 
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -48,6 +52,7 @@ import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.RunLoadCounter;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.endsWith;
@@ -349,6 +354,28 @@ public class JobTest {
     public void testDoNotAutoTrimExistingUntrimmedNames() throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
         tryRename("myJob8 ", "myJob8 ", null, true);
+    }
+
+    @Issue("JENKINS-35160")
+    @Test
+    public void interruptOnDelete() throws Exception {
+        j.jenkins.setNumExecutors(2);
+        Queue.getInstance().maintain();
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("dummy", "0")));
+        p.setConcurrentBuild(true);
+        p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
+        FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
+        FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
+        QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
+        long start = System.nanoTime();
+        p.delete();
+        long end = System.nanoTime();
+        assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
+        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
+        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
+        assertThat(build3.isCancelled(), Matchers.is(true));
     }
 
     private void tryRename(String initialName, String submittedName,

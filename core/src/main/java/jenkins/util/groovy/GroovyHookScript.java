@@ -27,7 +27,7 @@ import jenkins.model.Jenkins;
  * <li>/WEB-INF/<i>HOOK</i>.groovy in the war file
  * <li>/WEB-INF/<i>HOOK</i>.groovy.d/*.groovy in the war file
  * <li>$JENKINS_HOME/<i>HOOK</i>.groovy
- * <il>$JENKINS_HOME/<i>HOOK</i>.groovy.d/*.groovy
+ * <li>$JENKINS_HOME/<i>HOOK</i>.groovy.d/*.groovy
  * </ol>
  *
  * <p>

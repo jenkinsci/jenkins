@@ -23,6 +23,7 @@
  */
 package hudson;
 
+import hudson.tasks.UserNameResolver;
 import jenkins.model.Jenkins;
 import hudson.util.CopyOnWriteList;
 

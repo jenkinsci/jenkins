@@ -49,7 +49,7 @@ public class AdminCallableMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Depending on whether the user said "examin" or "dismiss", send him to the right place.
+     * Depending on whether the user said "examine" or "dismiss", send him to the right place.
      */
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String dismiss) throws IOException {

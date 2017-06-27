@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.45-SNAPSHOT</version>
+    <version>2.68-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,9 +39,9 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.248</stapler.version>
+    <stapler.version>1.250</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>2.4.7</groovy.version>
+    <groovy.version>2.4.11</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
     <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
@@ -65,7 +65,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.1</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -105,7 +105,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.1</version>
+      <version>3.0.41</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -115,7 +115,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-8</version>
+      <version>build-217-jenkins-11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -197,7 +197,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.11</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -491,12 +491,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.24</version>
+      <version>1.25</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -529,9 +529,9 @@ THE SOFTWARE.
       <version>1.8</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.libzfs</groupId>
+      <groupId>org.kohsuke</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.5</version>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
@@ -575,7 +575,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
-      <version>1.4</version>
     </dependency>
 
     <dependency>
@@ -704,7 +703,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-checker</artifactId>
-        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -755,7 +753,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.16</version>
+                  <version>2.1.0</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -771,7 +769,7 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
+          <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -846,21 +844,9 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>process</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <!--
-              generate jelly taglib docs from src/main/resoruces.
+              generate jelly taglib docs from src/main/resources.
               this is necessary in addition to the <reporting> configuration
               to get the results deployed.
             -->

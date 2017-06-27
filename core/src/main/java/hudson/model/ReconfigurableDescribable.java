@@ -43,8 +43,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <h2>Invisible Property</h2>
  * <p>
  * This mechanism can be used to create an entirely invisible {@link Describable}, which is handy
- * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define a descriptor with null
- * {@linkplain Descriptor#getDisplayName() display name} and empty config.jelly to prevent it from
+ * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define an empty config.jelly to prevent it from
  * showing up in the config UI, then implement {@link #reconfigure(StaplerRequest, JSONObject)}
  * and simply return {@code this}.
  *

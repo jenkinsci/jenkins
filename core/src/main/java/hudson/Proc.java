@@ -49,6 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -102,10 +103,11 @@ public abstract class Proc {
      * the child process to your {@link OutputStream} of choosing.
      *
      * @return
-     *      null unless {@link ProcStarter#readStdout()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#readStdout()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract InputStream getStdout();
 
     /**
@@ -115,10 +117,11 @@ public abstract class Proc {
      * the child process to your {@link OutputStream} of choosing.
      *
      * @return
-     *      null unless {@link ProcStarter#readStderr()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#readStderr()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract InputStream getStderr();
 
     /**
@@ -128,10 +131,11 @@ public abstract class Proc {
      * of your choosing to the child process.
      *
      * @return
-     *      null unless {@link ProcStarter#writeStdin()} is used to indicate
+     *      {@code null} unless {@link ProcStarter#writeStdin()} is used to indicate
      *      that the caller intends to pump the stream by itself.
      * @since 1.399
      */
+    @CheckForNull
     public abstract OutputStream getStdin();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
@@ -318,7 +322,7 @@ public abstract class Proc {
 
             try {
                 int r = proc.waitFor();
-                // see http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build
+                // see https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors
                 // problems like that shows up as infinite wait in join(), which confuses great many users.
                 // So let's do a timed wait here and try to diagnose the problem
                 if (copier!=null)   copier.join(10*1000);
@@ -326,7 +330,7 @@ public abstract class Proc {
                 if((copier!=null && copier.isAlive()) || (copier2!=null && copier2.isAlive())) {
                     // looks like handles are leaking.
                     // closing these handles should terminate the threads.
-                    String msg = "Process leaked file descriptors. See http://wiki.jenkins-ci.org/display/JENKINS/Spawning+processes+from+build for more information";
+                    String msg = "Process leaked file descriptors. See https://jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information";
                     Throwable e = new Exception().fillInStackTrace();
                     LOGGER.log(Level.WARNING,msg,e);
 
@@ -503,7 +507,7 @@ public abstract class Proc {
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
-    * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-23271">JENKINS-23271></a>
+    * See <a href="https://jenkins-ci.org/issue/23271">JENKINS-23271</a>
     * @author Oleg Nenashev
     */
     @Restricted(NoExternalUse.class)

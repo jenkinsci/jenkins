@@ -298,7 +298,7 @@ public class Maven extends Builder {
         int startIndex = 0;
         int endIndex;
         do {
-            // split targets into multiple invokations of maven separated by |
+            // split targets into multiple invocations of maven separated by |
             endIndex = targets.indexOf('|', startIndex);
             if (-1 == endIndex) {
                 endIndex = targets.length();
@@ -505,7 +505,7 @@ public class Maven extends Builder {
 
         /**
          * @deprecated as of 1.308.
-         *      Use {@link #Maven.MavenInstallation(String, String, List)}
+         *      Use {@link #MavenInstallation(String, String, List)}
          */
         @Deprecated
         public MavenInstallation(String name, String home) {

@@ -95,7 +95,7 @@ public class AllView extends View {
     @Override
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException {
-        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup)
             return ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
         return null;
@@ -103,7 +103,7 @@ public class AllView extends View {
 
     @Override
     public Collection<TopLevelItem> getItems() {
-        return (Collection)getOwnerItemGroup().getItems();
+        return (Collection)getOwner().getItemGroup().getItems();
     }
 
     @Override
@@ -164,7 +164,7 @@ public class AllView extends View {
                         // bingo JENKINS-38606 detected
                         LOGGER.log(Level.INFO,
                                 "JENKINS-38606 detected for AllView in {0}; renaming view from {1} to {2}",
-                                new Object[]{allView.owner.getUrl(), DEFAULT_VIEW_NAME});
+                                new Object[]{allView.owner.getUrl(), primaryView, DEFAULT_VIEW_NAME});
                         allView.name = DEFAULT_VIEW_NAME;
                         return DEFAULT_VIEW_NAME;
                     }

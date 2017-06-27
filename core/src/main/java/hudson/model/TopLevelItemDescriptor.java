@@ -187,7 +187,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
      * For example: plugin/plugin-shortname/images/:size/item.png, where {@code :size} represents the different
      * icon sizes used commonly in Jenkins project: 16x16, 24x24, 32x32 or 48x48
      *
-     * @see {@link FreeStyleProject.DescriptorImpl#getIconFilePathPattern()}
+     * @see FreeStyleProject.DescriptorImpl#getIconFilePathPattern()
      *
      * @return A string or null if it is not defined.
      *

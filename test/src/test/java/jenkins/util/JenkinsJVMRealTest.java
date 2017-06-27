@@ -17,7 +17,7 @@ public class JenkinsJVMRealTest {
     public static JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void isJenkinsJVM() throws Exception {
+    public void isJenkinsJVM() throws Throwable {
         assertThat(new IsJenkinsJVM().call(), is(true));
         DumbSlave slave = j.createOnlineSlave();
         assertThat(slave.getChannel().call(new IsJenkinsJVM()), is(false));

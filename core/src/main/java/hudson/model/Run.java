@@ -41,6 +41,9 @@ import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -64,8 +67,6 @@ import hudson.util.XStream2;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -413,9 +414,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Ordering based on build numbers.
+     * If numbers are equal order based on names of parent projects.
      */
     public int compareTo(@Nonnull RunT that) {
-        return this.number - that.number;
+        final int res = this.number - that.number;
+        if (res == 0)
+            return this.getParent().getFullName().compareTo(that.getParent().getFullName());
+
+        return res;
     }
 
     /**
@@ -431,7 +437,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * Set the queue item ID.
-     * <p/>
+     * <p>
      * Mapped from the {@link Queue.Item#getId()}.
      * @param queueId The queue item ID.
      */
@@ -518,7 +524,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * and because of that this might not be necessarily in sync with the return value of {@link #isBuilding()} &mdash;
      * an executor holds on to {@link Run} some more time even after the build is finished (for example to
      * perform {@linkplain Run.State#POST_PRODUCTION post-production processing}.)
-     * @see Executables#getExecutor
+     * @see Executor#of
      */
     @Exported 
     public @CheckForNull Executor getExecutor() {
@@ -688,7 +694,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
         String truncDesc = description;
 
-        // Could not find a preferred truncable index, force a trunc at maxTruncLength
+        // Could not find a preferred truncatable index, force a trunc at maxTruncLength
         if (lastTruncatablePoint == -1)
             lastTruncatablePoint = maxTruncLength;
 
@@ -924,7 +930,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     /**
-     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'.
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}.
      * 
      * @param numberOfBuilds the desired number of builds
      * @param threshold the build result threshold
@@ -1213,7 +1219,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 //                        continue OUTER; // collision. Increase n and try again
 //                }
 //
-//                // this n successfully diambiguates
+//                // this n successfully disambiguates
 //                for (int i = 0; i < tokens.length; i++) {
 //                    String[] token = tokens[i];
 //                    get(i).displayPath = combineLast(token,n);
@@ -1362,12 +1368,16 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	
     	if (logFile.exists() ) {
     	    // Checking if a ".gz" file was return
-    	    FileInputStream fis = new FileInputStream(logFile);
-    	    if (logFile.getName().endsWith(".gz")) {
-    	        return new GZIPInputStream(fis);
-    	    } else {
-    	        return fis;
-    	    }
+            try {
+                InputStream fis = Files.newInputStream(logFile.toPath());
+                if (logFile.getName().endsWith(".gz")) {
+                    return new GZIPInputStream(fis);
+                } else {
+                    return fis;
+                }
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
     	}
     	
         String message = "No such file: " + logFile;
@@ -1391,11 +1401,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 			// try to fall back to the old getLogInputStream()
 			// mainly to support .gz compressed files
 			// In this case, console annotation handling will be turned off.
-			InputStream input = getLogInputStream();
-			try {
+			try (InputStream input = getLogInputStream()) {
 				IOUtils.copy(input, out.asWriter());
-			} finally {
-				IOUtils.closeQuietly(input);
 			}
 		}
     }
@@ -1405,7 +1412,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      *
      * If someone is still writing to the log, this method will not return until the whole log
      * file gets written out.
-     * <p/>
+     * <p>
      * The method does not close the {@link OutputStream}.
      */
     public void writeWholeLogTo(@Nonnull OutputStream out) throws IOException, InterruptedException {
@@ -1680,7 +1687,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     /**
      * @deprecated as of 1.467
-     *      Use {@link #execute(RunExecution)}
+     *      Use {@link #execute(hudson.model.Run.RunExecution)}
      */
     @Deprecated
     protected final void run(@Nonnull Runner job) {
@@ -1802,7 +1809,12 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        OutputStream logger = new FileOutputStream(getLogFile(), true);
+        OutputStream logger;
+        try {
+            logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
         RunT build = job.getBuild();
 
         // Global log filters
@@ -2116,14 +2128,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(rsp.getCompressedOutputStream(req));
-        InputStream input = getLogInputStream();
-        try {
+        ;
+        try (InputStream input = getLogInputStream();
+             OutputStream os = rsp.getCompressedOutputStream(req);
+             PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
             IOUtils.copy(input, out);
-            out.flush();
-        } finally {
-            IOUtils.closeQuietly(input);
-            IOUtils.closeQuietly(out);
         }
     }
 
@@ -2154,6 +2163,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return true;
     }
 
+    @RequirePOST
     public void doToggleLogKeep( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         keepLog(!keepLog);
         rsp.forwardToPreviousPage(req);
@@ -2209,6 +2219,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         setDescription(req.getParameter("description"));
         rsp.sendRedirect(".");  // go to the top page
@@ -2411,7 +2422,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private static class DefaultFeedAdapter implements FeedAdapter<Run> {
         public String getEntryTitle(Run entry) {
-            return entry+" ("+entry.getBuildStatusSummary().message+")";
+            return entry.getFullDisplayName()+" ("+entry.getBuildStatusSummary().message+")";
         }
 
         public String getEntryUrl(Run entry) {

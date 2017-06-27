@@ -62,6 +62,7 @@ import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * HTTP proxy configuration.
@@ -205,7 +206,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public Object readResolve() {
         if (secretPassword == null)
-            // backward compatibility : get crambled password and store it encrypted
+            // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
         return this;
@@ -334,6 +335,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             return FormValidation.ok();
         }
 
+        @RequirePOST
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
                 @QueryParameter("userName") String userName, @QueryParameter("password") String password,

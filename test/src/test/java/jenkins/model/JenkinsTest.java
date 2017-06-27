@@ -58,8 +58,6 @@ import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.LegacySecurityRealm;
-import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
@@ -79,12 +77,12 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.junit.Assume;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author kingfai
@@ -306,17 +304,11 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.goTo("script");
@@ -337,17 +329,11 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
@@ -610,9 +596,9 @@ public class JenkinsTest {
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
-        assertThat(protocolToDisable1 + " must be disaabled after the roundtrip", 
+        assertThat(protocolToDisable1 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
-        assertThat(protocolToDisable2 + " must be disaabled after the roundtrip", 
+        assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
     }
 }

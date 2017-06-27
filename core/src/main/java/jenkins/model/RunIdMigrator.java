@@ -28,14 +28,12 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.RootAction;
+import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -71,7 +69,7 @@ import static java.util.logging.Level.*;
 /**
  * Converts legacy {@code builds} directories to the current format.
  *
- * There would be one instance associated with each {@link Job}, to retain ID -> build# mapping.
+ * There would be one instance associated with each {@link Job}, to retain ID → build# mapping.
  *
  * The {@link Job#getBuildDir} is passed to every method call (rather than being cached) in case it is moved.
  */
@@ -166,7 +164,7 @@ public final class RunIdMigrator {
         doMigrate(dir);
         save(dir);
         if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome))
-            LOGGER.log(WARNING, "Build record migration (https://wiki.jenkins-ci.org/display/JENKINS/JENKINS-24380+Migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
+            LOGGER.log(WARNING, "Build record migration (https://jenkins.io/redirect/build-record-migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
         return true;
     }
 

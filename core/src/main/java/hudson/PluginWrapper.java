@@ -29,6 +29,8 @@ import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
@@ -495,8 +497,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public void disable() throws IOException {
         // creates an empty file
-        OutputStream os = new FileOutputStream(disableFile);
-        os.close();
+        try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
+            os.close();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**

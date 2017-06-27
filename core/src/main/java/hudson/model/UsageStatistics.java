@@ -28,7 +28,6 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.Extension;
 import hudson.node_monitors.ArchitectureMonitor.DescriptorImpl;
-import hudson.util.IOUtils;
 import hudson.util.Secret;
 import static hudson.util.TimeUnit2.DAYS;
 
@@ -181,11 +180,10 @@ public class UsageStatistics extends PageDecorator {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             // json -> UTF-8 encode -> gzip -> encrypt -> base64 -> string
-            OutputStreamWriter w = new OutputStreamWriter(new GZIPOutputStream(new CombinedCipherOutputStream(baos,getKey(),"AES")), "UTF-8");
-            try {
+            try (OutputStream cipheros = new CombinedCipherOutputStream(baos,getKey(),"AES");
+                 OutputStream zipos = new GZIPOutputStream(cipheros);
+                 OutputStreamWriter w = new OutputStreamWriter(zipos, "UTF-8")) {
                 o.write(w);
-            } finally {
-                IOUtils.closeQuietly(w);
             }
 
             return new String(Base64.encode(baos.toByteArray()));
@@ -206,7 +204,7 @@ public class UsageStatistics extends PageDecorator {
     }
 
     /**
-     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encyrypt the first block.
+     * Asymmetric cipher is slow and in case of Sun RSA implementation it can only encrypt the first block.
      *
      * So first create a symmetric key, then place this key in the beginning of the stream by encrypting it
      * with the asymmetric cipher. The rest of the stream will be encrypted by a symmetric cipher.

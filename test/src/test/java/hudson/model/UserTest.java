@@ -179,12 +179,7 @@ public class UserTest {
 
     @Test
     public void caseInsensitivity() {
-        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
-            @Override
-            public IdStrategy getUserIdStrategy() {
-                return new IdStrategy.CaseInsensitive();
-            }
-        });
+        j.jenkins.setSecurityRealm(new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseInsensitive()));
         User user = User.get("john smith");
         User user2 = User.get("John Smith");
         assertSame("Users should have the same id.", user.getId(), user2.getId());
@@ -194,12 +189,7 @@ public class UserTest {
     
     @Test
     public void caseSensitivity() {
-        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
-            @Override
-            public IdStrategy getUserIdStrategy() {
-                return new IdStrategy.CaseSensitive();
-            }
-        });
+        j.jenkins.setSecurityRealm(new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseSensitive()));
         User user = User.get("john smith");
         User user2 = User.get("John Smith");
         assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
@@ -213,12 +203,7 @@ public class UserTest {
 
     @Test
     public void caseSensitivityEmail() {
-        j.jenkins.setSecurityRealm(new HudsonPrivateSecurityRealm(true, false, null){
-            @Override
-            public IdStrategy getUserIdStrategy() {
-                return new IdStrategy.CaseSensitiveEmailAddress();
-            }
-        });
+        j.jenkins.setSecurityRealm(new IdStrategySpecifyingSecurityRealm(new IdStrategy.CaseSensitiveEmailAddress()));
         User user = User.get("john.smith@acme.org");
         User user2 = User.get("John.Smith@acme.org");
         assertNotSame("Users should not have the same id.", user.getId(), user2.getId());
@@ -232,6 +217,18 @@ public class UserTest {
         assertEquals("john.smith@acme.org", User.idStrategy().filenameOf(user2.getId()));
         assertEquals(user.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user.getId())));
         assertEquals(user2.getId(), User.idStrategy().idFromFilename(User.idStrategy().filenameOf(user2.getId())));
+    }
+
+    private static class IdStrategySpecifyingSecurityRealm extends HudsonPrivateSecurityRealm {
+        private final IdStrategy idStrategy;
+        IdStrategySpecifyingSecurityRealm(IdStrategy idStrategy) {
+            super(true, false, null);
+            this.idStrategy = idStrategy;
+        }
+        @Override
+        public IdStrategy getUserIdStrategy() {
+            return idStrategy;
+        }
     }
 
     @Issue("JENKINS-24317")
@@ -252,7 +249,7 @@ public class UserTest {
         user.addProperty(prop);
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
         assertEquals("UserProperty1 should be assigned to its descriptor", prop, user.getProperties().get(prop.getDescriptor()));
-        assertTrue("User should should contains SomeUserProperty.", user.getAllProperties().contains(prop));
+        assertTrue("User should should contain SomeUserProperty.", user.getAllProperties().contains(prop));
         User.reload();
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
     }
@@ -402,7 +399,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doConfigSubmit(null, null);
-            fail("User should not have permission to configure antoher user.");
+            fail("User should not have permission to configure another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){
@@ -440,7 +437,7 @@ public class UserTest {
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate());
         try{
             user.doDoDelete(null, null);
-            fail("User should not have permission to delete antoher user.");
+            fail("User should not have permission to delete another user.");
         }
         catch(Exception e){
             if(!(e.getClass().isAssignableFrom(AccessDeniedException2.class))){

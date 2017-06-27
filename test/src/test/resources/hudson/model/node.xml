@@ -2,7 +2,7 @@
 <slave>
   <name>SlaveFromXML</name>
   <description>XML slave description</description>
-  <remoteFS>/user/hudson/wokspace</remoteFS>
+  <remoteFS>/user/hudson/workspace</remoteFS>
   <numExecutors>42</numExecutors>
   <mode>NORMAL</mode>
   <retentionStrategy class="hudson.slaves.RetentionStrategy$1">

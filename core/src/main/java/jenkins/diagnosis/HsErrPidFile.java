@@ -4,6 +4,7 @@ import hudson.Util;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class HsErrPidFile {
         return HttpResponses.staticResource(file);
     }
 
+    @RequirePOST
     public HttpResponse doDelete() throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         file.delete();
