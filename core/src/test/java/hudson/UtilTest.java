@@ -691,6 +691,23 @@ public class UtilTest {
 
         assertFalse(Util.isDescendant(new File(root,"child"), root));
         assertFalse(Util.isDescendant(new File(new File(root,"child"), "grandchild"), root));
+
+        //.. whithin root
+        File convoluted = new File(root, "child");
+        convoluted = new File(convoluted, "..");
+        convoluted = new File(convoluted, "child");
+        assertTrue(Util.isDescendant(root, convoluted));
+
+        //.. going outside of root
+        convoluted = new File(root, "..");
+        convoluted = new File(convoluted, other.getName());
+        convoluted = new File(convoluted, "child");
+        assertFalse(Util.isDescendant(root, convoluted));
+
+        //. on root
+        assertTrue(Util.isDescendant(new File(root, "."), new File(root, "child")));
+        //. on both
+        assertTrue(Util.isDescendant(new File(root, "."), new File(new File(root, "child"), ".")));
     }
 
 }

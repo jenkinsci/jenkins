@@ -576,8 +576,8 @@ public class Util {
      * @since FIXME
      */
     public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
-        Path child = potentialChild.getAbsoluteFile().toPath();
-        Path parent = forParent.getAbsoluteFile().toPath();
+        Path child = potentialChild.getAbsoluteFile().toPath().normalize();
+        Path parent = forParent.getAbsoluteFile().toPath().normalize();
         return child.startsWith(parent);
     }
 
