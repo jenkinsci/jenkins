@@ -102,6 +102,13 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     @SuppressWarnings("null")
     public ParametersAction(@Nonnull List<ParameterValue> parameters) {
         wasInitializedWithNullParameters = parameters == null;
+        if (wasInitializedWithNullParameters && LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Parameters action has been initialized with null parameters. "
+                    + "It is a bug in a plugin or script, which created this action (see JENKINS-39495). " 
+                    + "See next system log entries to see for which Run it has been created",
+                    new IllegalStateException("Parameters list is null for the action"));
+        }
+        
         this.parameters = parameters != null ? parameters : Collections.<ParameterValue>emptyList();
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
@@ -121,14 +128,14 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * @param additionalSafeParameters additional safe parameters
      * @since 1.651.2, 2.3
      */
-    public ParametersAction(@CheckForNull List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
+    public ParametersAction(@Nonnull List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
         if (additionalSafeParameters != null) {
             safeParameters.addAll(additionalSafeParameters);
         }
     }
     
-    public ParametersAction(ParameterValue... parameters) {
+    public ParametersAction(@Nonnull ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
 
@@ -307,7 +314,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             this.parameterDefinitionNames = Collections.emptyList();
         }
         if (wasInitializedWithNullParameters) {
-            LOGGER.log(Level.WARNING, "ParametersAction has been initialized with null parameter list for Run {0}. It is a bug in the plugin, which created this action (see JENKINS-39495).", r);
+            LOGGER.log(Level.FINE, "ParametersAction has been initialized with null parameter list for Run {0}. It is a bug in a plugin or script, which created this action (see JENKINS-39495).", r);
         }
         this.run = r;
     }
@@ -316,7 +323,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public void onLoad(Run<?, ?> r) {
         this.run = r;
         if (wasInitializedWithNullParameters) {
-            LOGGER.log(Level.WARNING, "ParametersAction has been loaded from disk with null parameter list for Run {0}. It is a bug in the plugin, which created this action (see JENKINS-39495).", r);
+            LOGGER.log(Level.FINE, "ParametersAction has been loaded from disk with null parameter list for Run {0}. It is a bug in a plugin or script, which created this action (see JENKINS-39495).", r);
         }
     }
 
