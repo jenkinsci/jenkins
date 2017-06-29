@@ -52,8 +52,6 @@ import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
-import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
-import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
@@ -86,6 +84,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import jenkins.AgentProtocol;
+import jenkins.slaves.JnlpDataProvider;
+import org.kohsuke.stapler.HttpResponses;
 
 
 /**
@@ -172,7 +173,7 @@ public class SlaveComputer extends Computer {
      * @since 1.498
      */
     public String getJnlpMac() {
-        return JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(getName());
+        return AgentProtocol.AGENT_SECRET.mac(getName());
     }
 
     /**
@@ -226,7 +227,14 @@ public class SlaveComputer extends Computer {
      */
     @Deprecated @Override
     public boolean isJnlpAgent() {
-        return launcher instanceof JNLPLauncher;
+        final Class<?> jnlpLauncherClass;
+        try {
+            jnlpLauncherClass = Class.forName("hudson.slaves.JNLPLauncher");
+        } catch (Throwable ex) {
+            // Ignore
+            return false;
+        }
+        return jnlpLauncherClass.isAssignableFrom(launcher.getClass());
     }
 
     @Override
@@ -661,12 +669,20 @@ public class SlaveComputer extends Computer {
      */
     @Deprecated
     public Slave.JnlpJar getJnlpJars(String fileName) {
-        return new Slave.JnlpJar(fileName);
+        return JnlpDataProvider.getJarFile(fileName);
     }
 
+    /**
+     * @deprecated 
+     */
     @WebMethod(name="slave-agent.jnlp")
     public HttpResponse doSlaveAgentJnlp(StaplerRequest req, StaplerResponse res) throws IOException, ServletException {
-        return new EncryptedSlaveAgentJnlpFile(this, "slave-agent.jnlp.jelly", getName(), CONNECT);
+        final HttpResponse jnlpFile = JnlpDataProvider.getJnlpFile(this, req);
+        if (jnlpFile == null) {
+            return HttpResponses.error(500, "Cannpt retrieve the agent JNLP file. No Providers. "
+                    + "Make sure that the JNLP Agent Support Plugin is installed.");
+        }
+        return jnlpFile;
     }
 
     @Override

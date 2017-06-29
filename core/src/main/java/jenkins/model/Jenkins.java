@@ -296,6 +296,7 @@ import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
 import static javax.servlet.http.HttpServletResponse.*;
+import jenkins.slaves.JnlpDataProvider;
 import org.kohsuke.stapler.WebMethod;
 
 /**
@@ -3970,11 +3971,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Serves jar files for JNLP agents.
      */
     public Slave.JnlpJar getJnlpJars(String fileName) {
-        return new Slave.JnlpJar(fileName);
+        return JnlpDataProvider.getJarFile(fileName);
     }
 
     public Slave.JnlpJar doJnlpJars(StaplerRequest req) {
-        return new Slave.JnlpJar(req.getRestOfPath().substring(1));
+        return getJnlpJars(req.getRestOfPath().substring(1));
     }
 
     /**

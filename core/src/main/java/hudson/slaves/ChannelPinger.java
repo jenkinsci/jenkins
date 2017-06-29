@@ -31,6 +31,8 @@ import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
 import hudson.remoting.PingThread;
+import hudson.slaves.ComputerListener;
+import hudson.slaves.ComputerListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.PingFailureAnalyzer;
 

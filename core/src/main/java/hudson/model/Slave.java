@@ -37,7 +37,6 @@ import hudson.remoting.Which;
 import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -64,6 +63,8 @@ import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
+import jenkins.slaves.DefaultComputerLauncherProvider;
+import jenkins.slaves.JnlpDataProvider;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -225,7 +226,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        return launcher == null ? new JNLPLauncher() : launcher;
+        return launcher == null ? DefaultComputerLauncherProvider.findDefaultLauncher(this) : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {
@@ -353,9 +354,14 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Web-bound object used to serve jar files for JNLP.
      */
-    public static final class JnlpJar implements HttpResponse {
+    public static class JnlpJar implements HttpResponse {
         private final String fileName;
 
+        /**
+         * @deprecated Use {@link JnlpJarProvider#findJnlpJar(java.lang.String)} instead.
+         */
+        @Deprecated
+        @Restricted(NoExternalUse.class)
         public JnlpJar(String fileName) {
             this.fileName = fileName;
         }
@@ -504,7 +510,7 @@ public abstract class Slave extends Node implements Serializable {
         // convert the old format to the new one
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPLauncher()
+                    ? DefaultComputerLauncherProvider.findDefaultLauncher(this)
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)

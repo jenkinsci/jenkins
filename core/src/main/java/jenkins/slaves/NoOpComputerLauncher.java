@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016, CloudBees, Inc.
+ * Copyright (c) 2017 Oleg Nenashev.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,49 +23,28 @@
  */
 package jenkins.slaves;
 
-import hudson.Extension;
-import hudson.init.Terminator;
-import hudson.model.Computer;
+import hudson.model.TaskListener;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.SlaveComputer;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jenkinsci.remoting.protocol.IOHub;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Singleton holder of {@link IOHub}
- *
- * @since 2.27
+ * Computer Launcher, which does nothing.
+ * @author Oleg Nenashev
+ * @since TODO
  */
-@Extension
-public class IOHubProvider {
-    /**
-     * Our logger.
-     */
-    private static final Logger LOGGER = Logger.getLogger(IOHubProvider.class.getName());
-    /**
-     * Our hub.
-     */
-    private IOHub hub;
+@Restricted(NoExternalUse.class)
+public class NoOpComputerLauncher extends ComputerLauncher {
 
-    public IOHubProvider() {
-        try {
-            hub = IOHub.create(Computer.threadPoolForRemoting);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to launch IOHub", e);
-            this.hub = null;
-        }
+    @Override
+    public boolean isLaunchSupported() {
+        return false;
     }
 
-    public IOHub getHub() {
-        return hub;
+    @Override
+    public void launch(SlaveComputer computer, TaskListener listener) throws IOException, InterruptedException {
+        throw new IOException("Cannot launch computer " + computer + ", because a default NoOpComputerLauncher is specified");
     }
-
-    @Terminator
-    public void cleanUp() throws IOException {
-        if (hub != null) {
-            hub.close();
-            hub = null;
-        }
-    }
-
 }

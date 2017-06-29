@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals
 
 import hudson.security.csrf.CrumbIssuer
 import hudson.slaves.DumbSlave
-import hudson.slaves.JNLPLauncher
 import hudson.util.FormValidation
 import org.junit.Rule
 import org.junit.Test
@@ -60,6 +59,7 @@ class SlaveTest {
      */
     @Test
     void slaveConfigDotXml() {
+        j.jenkins.pluginManager.installDetachedPlugin("remoting-support")
         DumbSlave s = j.createSlave()
         def wc = j.createWebClient()
         def p = wc.goTo("computer/${s.name}/config.xml", "application/xml")
@@ -78,7 +78,8 @@ class SlaveTest {
         s = j.jenkins.getNode(s.name)
         assertNotNull(s)
         assertEquals("some text",s.nodeDescription)
-        assertEquals(JNLPLauncher.class,s.launcher.class)
+        // Detached 
+        assertEquals("hudson.slaves.JNLPLauncher",s.launcher.class.name)
     }
 
     def post(url,String xml) {
