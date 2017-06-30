@@ -53,7 +53,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * Typed more strongly than it should to improve the serialization signature.
      */
-    private volatile CopyOnWriteArrayList<Action> actions;
+    private volatile CopyOnWriteArrayList<Action> actions = new CopyOnWriteArrayList<Action>();
 
     /**
      * Gets actions contributed to this object.
@@ -74,12 +74,14 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Deprecated
     @Nonnull
     public List<Action> getActions() {
-        synchronized (this) {
-            if(actions == null) {
-                actions = new CopyOnWriteArrayList<Action>();
+        if (actions == null) {
+            synchronized (this) {
+                if (actions == null) {
+                    actions = new CopyOnWriteArrayList<Action>();
+                }
             }
-            return actions;
         }
+        return actions;
     }
 
     /**
