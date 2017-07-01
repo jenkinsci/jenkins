@@ -173,13 +173,6 @@ public class ReloadConfigurationCommandTest {
         final CLICommandInvoker.Result result = command.invoke();
 
         assertThat(result, succeededSilently());
-
-        // reload-configuration is performed in a separate thread
-        // we have to wait until it finishes
-        while (!(j.jenkins.servletContext.getAttribute("app") instanceof Jenkins)) {
-            System.out.println("Jenkins reload operation is performing, sleeping 1s...");
-            Thread.sleep(1000);
-        }
     }
 
     private void replace(String path, String search, String replace) {
