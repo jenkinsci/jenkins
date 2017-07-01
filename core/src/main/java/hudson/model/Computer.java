@@ -1077,7 +1077,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 synchronized (Computer.this) {
                     executors.remove(e);
                     addNewExecutorIfNecessary();
-                    if (!isAlive()) {
+                    // isAlive returns false for nodes without executors.
+                    if (!isAlive() && getNumExecutors() != 0) {
                         AbstractCIBase ciBase = Jenkins.getInstanceOrNull();
                         if (ciBase != null) { // TODO confirm safe to assume non-null and use getInstance()
                             ciBase.removeComputer(Computer.this);

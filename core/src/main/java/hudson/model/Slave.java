@@ -207,7 +207,7 @@ public abstract class Slave extends Node implements Serializable {
 //        if (remoteFS.equals(""))
 //            throw new FormException(Messages.Slave_InvalidConfig_NoRemoteDir(name), null);
 
-        if (this.numExecutors<=0)
+        if (this.numExecutors<0)
             throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
     }
 
@@ -521,7 +521,7 @@ public abstract class Slave extends Node implements Serializable {
 
     public static abstract class SlaveDescriptor extends NodeDescriptor {
         public FormValidation doCheckNumExecutors(@QueryParameter String value) {
-            return FormValidation.validatePositiveInteger(value);
+            return FormValidation.validateNonNegativeInteger(value);
         }
 
         /**
