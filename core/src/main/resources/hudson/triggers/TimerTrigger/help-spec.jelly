@@ -1,3 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
 <div>
   This field follows the syntax of cron (with minor differences).
   Specifically, each line consists of 5 fields separated by TAB or whitespace:
@@ -80,4 +82,33 @@ H H(9-16)/2 * * 1-5
 # once a day on the 1st and 15th of every month except December
 H H 1,15 1-11 *
 </pre>
+<h3>Time zone specification</h3>
+<j:invokeStatic className="java.util.TimeZone" method="getDefault" var="currentTimeZone"/>
+<p>
+  Periodic tasks are normally executed at the scheduled time in the time zone of
+  the Jenkins master JVM (currently <strong>${currentTimeZone.getID()}</strong>).
+  This behavior can optionally be changed by specifying an alternative time zone in the
+  first line of the field.
+  Time zone specification starts with <code>TZ=</code>, followed by the ID of a time zone.
+</p>
+  <p>
+    Complete example of a schedule with a time zone specification:
+  </p>
+  <pre>
+    TZ=Europe/London
+    # This job needs to be run in the morning, London time
+    H 8 * * *
+    # Butlers do not have a five o'clock, so we run the job again
+    H(0-30) 17 * * *
+  </pre>
+<p>
+  The supported time zones depend on the Java runtime Jenkins is running on. The list of supported time zone IDs on this instance is:
+</p>
+<j:invokeStatic className="java.util.TimeZone" method="getAvailableIDs" var="timeZones"/>
+<ul>
+  <j:forEach items="${timeZones}" var="timeZone">
+    <li>${timeZone}</li>
+  </j:forEach>
+</ul>
 </div>
+</j:jelly>
