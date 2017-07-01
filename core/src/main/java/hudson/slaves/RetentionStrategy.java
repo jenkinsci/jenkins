@@ -39,6 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -57,7 +58,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *         rechecked earlier or later that this!
      */
     @GuardedBy("hudson.model.Queue.lock")
-    public abstract long check(T c);
+    public abstract long check(@Nonnull T c);
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
@@ -92,9 +93,10 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * The default implementation of this method delegates to {@link #check(Computer)},
      * but this allows {@link RetentionStrategy} to distinguish the first time invocation from the rest.
      *
+     * @param c Computer instance
      * @since 1.275
      */
-    public void start(final T c) {
+    public void start(final @Nonnull T c) {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {

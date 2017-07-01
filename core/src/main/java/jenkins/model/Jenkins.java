@@ -3051,6 +3051,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return getLabelAtom("master");
     }
 
+    @Override
+    @Nonnull
     public Computer createComputer() {
         return new Hudson.MasterComputer();
     }
