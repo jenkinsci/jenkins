@@ -53,7 +53,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      *
      * Typed more strongly than it should to improve the serialization signature.
      */
-    private volatile CopyOnWriteArrayList<Action> actions = new CopyOnWriteArrayList<Action>();
+    private volatile CopyOnWriteArrayList<Action> actions;
 
     /**
      * Gets actions contributed to this object.
