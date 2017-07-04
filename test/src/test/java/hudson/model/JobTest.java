@@ -24,7 +24,6 @@
  */
 package hudson.model;
 
-import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -34,13 +33,11 @@ import com.gargoylesoftware.htmlunit.TextPage;
 
 import hudson.FilePath;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -55,7 +52,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.ProjectNamingStrategy;
 
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,6 +59,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -329,7 +326,7 @@ public class JobTest {
     @Issue("JENKINS-44657")
     @Test public void testRenameWithCustomBuildsDirWithBuildsIntactInFolder() throws Exception {
         j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
-        final Folder f = j.jenkins.createProject(Folder.class, "F");
+        final MockFolder f = j.createFolder("F");
 
         final FreeStyleProject p1 = f.createProject(FreeStyleProject.class, "P1");
         j.buildAndAssertSuccess(p1);
