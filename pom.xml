@@ -432,7 +432,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>1.4</version>
+          <version>1.7</version>
         </plugin>
         <plugin>
           <groupId>com.cloudbees</groupId>

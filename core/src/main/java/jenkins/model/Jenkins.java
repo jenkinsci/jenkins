@@ -2176,6 +2176,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Returns the enabled and activated administrative monitors.
      */
+    @Restricted(NoExternalUse.class)
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
     }
