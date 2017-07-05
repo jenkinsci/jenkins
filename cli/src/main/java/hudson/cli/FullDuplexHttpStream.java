@@ -74,10 +74,10 @@ public class FullDuplexHttpStream {
             throw new IllegalArgumentException(relativeTarget);
         }
 
-        this.base = base;
+        this.base = tryToResolveRedirects(base, authorization);
         this.authorization = authorization;
 
-        URL target = new URL(base, relativeTarget);
+        URL target = new URL(this.base, relativeTarget);
 
         CrumbData crumbData = new CrumbData();
 
@@ -99,7 +99,7 @@ public class FullDuplexHttpStream {
         input = con.getInputStream();
         // make sure we hit the right URL
         if (con.getHeaderField("Hudson-Duplex") == null) {
-            throw new IOException(target + " does not look like Jenkins, or is not serving the HTTP Duplex transport");
+            throw new CLI.NotTalkingToJenkinsException("There's no Jenkins running at " + target + ", or is not serving the HTTP Duplex transport");
         }
 
         // client->server uses chunked encoded POST for unlimited capacity. 
@@ -118,6 +118,24 @@ public class FullDuplexHttpStream {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
         }
         output = con.getOutputStream();
+    }
+
+    // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
+    private URL tryToResolveRedirects(URL base, String authorization) {
+        try {
+            HttpURLConnection con = (HttpURLConnection) base.openConnection();
+            if (authorization != null) {
+                con.addRequestProperty("Authorization", authorization);
+            }
+            con.getInputStream().close();
+            base = con.getURL();
+        } catch (Exception ex) {
+            // Do not obscure the problem propagating the exception. If the problem is real it will manifest during the
+            // actual exchange so will be reported properly there. If it is not real (no permission in UI but sufficient
+            // for CLI connection using one of its mechanisms), there is no reason to bother user about it.
+            LOGGER.log(Level.FINE, "Failed to resolve potential redirects", ex);
+        }
+        return base;
     }
 
     static final int BLOCK_SIZE = 1024;
@@ -158,6 +176,8 @@ public class FullDuplexHttpStream {
             if (authorization != null) {
                 con.addRequestProperty("Authorization", authorization);
             }
+            CLI.verifyJenkinsConnection(con);
+
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
                 String line = reader.readLine();
                 String nextLine = reader.readLine();

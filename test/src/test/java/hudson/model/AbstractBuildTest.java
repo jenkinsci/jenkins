@@ -28,14 +28,21 @@ import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+
+import hudson.tasks.LogRotatorTest;
+import hudson.tasks.Recorder;
+import hudson.util.OneShotEvent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -132,6 +139,8 @@ public class AbstractBuildTest {
         FakeChangeLogSCM scm = new FakeChangeLogSCM();
         p.setScm(scm);
 
+        LogRotatorTest.StallBuilder sync = new LogRotatorTest.StallBuilder();
+
         // 1st build, successful, no culprits
         scm.addChange().withAuthor("alice");
         FreeStyleBuild b = j.buildAndAssertSuccess(p);
@@ -144,8 +153,15 @@ public class AbstractBuildTest {
         assertCulprits(b, "bob");
 
         // 3rd build. bob continues to be in culprit
+        p.getBuildersList().add(sync);
         scm.addChange().withAuthor("charlie");
-        b = j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        b = p.scheduleBuild2(0).waitForStart();
+        sync.waitFor(b.getNumber(), 1, TimeUnit.SECONDS);
+
+        // Verify that we can get culprits while running.
+        assertCulprits(b, "bob", "charlie");
+        sync.release(b.getNumber());
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
         assertCulprits(b, "bob", "charlie");
 
         // 4th build, unstable. culprit list should continue
@@ -229,6 +245,52 @@ public class AbstractBuildTest {
         }
         @TestExtension("doNotInterruptBuildAbruptlyWhenExceptionThrownFromBuildStep")
         public static class DescriptorImpl extends Descriptor<Builder> {}
+    }
+
+    @Test
+    @Issue("JENKINS-10615")
+    public void workspaceLock() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setConcurrentBuild(true);
+        OneShotEvent e1 = new OneShotEvent();
+        OneShotEvent e2 = new OneShotEvent();
+        OneShotEvent done = new OneShotEvent();
+
+        p.getPublishersList().add(new Recorder() {
+            @Override
+            public BuildStepMonitor getRequiredMonitorService() {
+                return BuildStepMonitor.NONE;
+            }
+
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                if (build.number == 1) {
+                    e1.signal();  // signal that build #1 is in publisher
+                } else {
+                    assert build.number == 2;
+                    e2.signal();
+                }
+
+                done.block();
+
+                return true;
+            }
+            private Object writeReplace() {
+                return new Object();
+            }
+        });
+
+        QueueTaskFuture<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        e1.block();
+
+        QueueTaskFuture<FreeStyleBuild> b2 = p.scheduleBuild2(0);
+        e2.block();
+
+        // at this point both builds are in the publisher, so we verify that
+        // the workspace are differently allocated
+        assertNotEquals(b1.getStartCondition().get().getWorkspace(), b2.getStartCondition().get().getWorkspace());
+
+        done.signal();
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc.
+ * Copyright 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,36 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.cli
 
-import static org.junit.Assert.assertFalse
-import static org.junit.Assert.assertTrue
+package hudson.cli.handlers;
 
-import org.junit.Rule
-import org.junit.Test
-import org.jvnet.hudson.test.JenkinsRule
+import jenkins.model.ParameterizedJobMixIn;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
- * @author Kohsuke Kawaguchi
+ * Refer to {@link jenkins.model.ParameterizedJobMixIn.ParameterizedJob} by its name.
  */
-public class EnableJobCommandTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule()
-
-    @Test
-    void test() {
-        def p = j.createFreeStyleProject()
-
-        def cli = new CLI(j.getURL())
-
-        try {
-            cli.execute(["disable-job",p.name])
-            assertTrue(p.disabled)
-            cli.execute(["enable-job",p.name])
-            assertFalse(p.disabled)
-        } finally {
-            cli.close()
-        }
+@Restricted(DoNotUse.class)
+@MetaInfServices(OptionHandler.class)
+@SuppressWarnings("rawtypes")
+public class ParameterizedJobOptionHandler extends GenericItemOptionHandler<ParameterizedJobMixIn.ParameterizedJob> {
+    
+    public ParameterizedJobOptionHandler(CmdLineParser parser, OptionDef option, Setter<ParameterizedJobMixIn.ParameterizedJob> setter) {
+        super(parser, option, setter);
     }
+
+    @Override
+    protected Class<ParameterizedJobMixIn.ParameterizedJob> type() {
+        return ParameterizedJobMixIn.ParameterizedJob.class;
+    }
+
+    @Override
+    public String getDefaultMetaVariable() {
+        return "JOB";
+    }
+
 }

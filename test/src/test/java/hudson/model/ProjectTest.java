@@ -44,7 +44,6 @@ import hudson.Launcher.RemoteLauncher;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.model.queue.SubTaskContributor;
-import hudson.model.queue.AbstractSubTask;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
@@ -924,7 +923,7 @@ public class ProjectTest {
         
     }
     
-    public static class SubTaskImpl extends AbstractSubTask{
+    public static class SubTaskImpl implements SubTask{
         
         public String projectName;
 

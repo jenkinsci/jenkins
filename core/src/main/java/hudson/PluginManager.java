@@ -727,6 +727,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             InstallUtil.saveLastExecVersion();
         } else {
             final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
             for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
                 VersionNumber requiredVersion = p.getRequiredVersion();
@@ -899,11 +900,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (d.shortName.equals(p.getShortName())) {
                         // this plugin depends on the newly loaded one!
                         // recalculate dependencies!
-                        try {
-                            getPluginStrategy().updateDependency(depender, p);
-                        } catch (AbstractMethodError x) {
-                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                        }
+                        getPluginStrategy().updateDependency(depender, p);
                         break;
                     }
                 }
@@ -952,6 +949,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        LOGGER.log(FINE, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);
@@ -1296,6 +1294,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return hudson.util.HttpResponses.okJSON(response);
     }
 
+    @RequirePOST
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -1330,6 +1329,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Performs the installation of the plugins.
      */
+    @RequirePOST
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Set<String> plugins = new LinkedHashSet<>();

@@ -54,15 +54,20 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.awt.*;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 
 /**
+ * Tests of {@link JNLPLauncher}.
  * @author Kohsuke Kawaguchi
  */
 public class JNLPLauncherTest {
     @Rule public JenkinsRule j = new JenkinsRule();
+    
+    @Rule public TemporaryFolder tmpDir = new TemporaryFolder(); 
 
     /**
-     * Starts a JNLP slave agent and makes sure it successfully connects to Hudson. 
+     * Starts a JNLP agent and makes sure it successfully connects to Jenkins. 
      */
     @Test
     public void testLaunch() throws Exception {
@@ -70,6 +75,20 @@ public class JNLPLauncherTest {
 
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c));
+    }
+    
+    /**
+     * Starts a JNLP agent and makes sure it successfully connects to Jenkins. 
+     */
+    @Test
+    @Issue("JENKINS-39370")
+    public void testLaunchWithWorkDir() throws Exception {
+        Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
+        File workDir = tmpDir.newFolder("workDir");
+        
+        Computer c = addTestSlave();
+        launchJnlpAndVerify(c, buildJnlpArgs(c).add("-workDir", workDir.getAbsolutePath()));
+        assertTrue("Remoting work dir should have been created", new File(workDir, "remoting").exists());
     }
 
     /**
@@ -81,6 +100,17 @@ public class JNLPLauncherTest {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
+        assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
+    }
+    
+    @Test
+    @Issue("JENKINS-39370")
+    public void testHeadlessLaunchWithWorkDir() throws Exception {
+        Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
+        File workDir = tmpDir.newFolder("workDir");
+        
+        Computer c = addTestSlave();
+        launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless", "-workDir", workDir.getAbsolutePath()));
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
 

@@ -506,53 +506,17 @@ public class AbstractProjectTest {
         assert t == newTrigger
     }
 
-    @Test
-    @Issue("JENKINS-10615")
-    public void testWorkspaceLock() {
-        def p = j.createFreeStyleProject()
-        p.concurrentBuild = true;
-        def e1 = new OneShotEvent(), e2=new OneShotEvent()
-        def done = new OneShotEvent()
-
-        p.publishersList.add(new Recorder() {
-            BuildStepMonitor getRequiredMonitorService() {
-                return BuildStepMonitor.NONE;
-            }
-
-            @Override
-            boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                if (build.number==1) {
-                    e1.signal();  // signal that build #1 is in publisher
-                } else {
-                    assert build.number==2;
-                    e2.signal()
-                }
-
-                done.block()
-
-                return true;
-            }
-            private Object writeReplace() { return new Object(); }
-        })
-
-        def b1 = p.scheduleBuild2(0)
-        e1.block()
-
-        def b2 = p.scheduleBuild2(0)
-        e2.block()
-
-        // at this point both builds are in the publisher, so we verify that
-        // the workspace are differently allocated
-        assert b1.startCondition.get().workspace!=b2.startCondition.get().workspace
-
-        done.signal()
-    }
-
     /**
      * Trying to POST to config.xml by a different job type should fail.
      */
     @Test
     public void testConfigDotXmlSubmissionToDifferentType() {
+        j.jenkins.pluginManager.installDetachedPlugin("javadoc")
+        j.jenkins.pluginManager.installDetachedPlugin("junit")
+        j.jenkins.pluginManager.installDetachedPlugin("display-url-api")
+        j.jenkins.pluginManager.installDetachedPlugin("mailer")
+        j.jenkins.pluginManager.installDetachedPlugin("maven-plugin")
+
         j.jenkins.crumbIssuer = null
         def p = j.createFreeStyleProject()
 

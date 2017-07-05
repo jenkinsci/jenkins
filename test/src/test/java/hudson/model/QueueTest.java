@@ -46,7 +46,6 @@ import hudson.model.Queue.BlockedItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.labels.LabelExpression;
-import hudson.model.queue.AbstractQueueTask;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.model.queue.QueueTaskDispatcher;
 import hudson.model.queue.QueueTaskFuture;
@@ -526,7 +525,7 @@ public class QueueTest {
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
-    static class TestTask extends AbstractQueueTask {
+    static class TestTask implements Queue.Task {
         private final AtomicInteger cnt;
         TestTask(AtomicInteger cnt) {
             this.cnt = cnt;
@@ -545,9 +544,6 @@ public class QueueTest {
         @Override public boolean hasAbortPermission() {return true;}
         @Override public String getUrl() {return "test/";}
         @Override public String getDisplayName() {return "Test";}
-        @Override public Label getAssignedLabel() {return null;}
-        @Override public Node getLastBuiltOn() {return null;}
-        @Override public long getEstimatedDuration() {return -1;}
         @Override public ResourceList getResourceList() {return new ResourceList();}
         protected void doRun() {}
         @Override public Executable createExecutable() throws IOException {

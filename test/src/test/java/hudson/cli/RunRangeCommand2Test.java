@@ -54,14 +54,14 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author pjanouse
  */
-public class AbstractBuildRangeCommand2Test {
+public class RunRangeCommand2Test {
 
     private CLICommandInvoker command;
 
     @Rule public final JenkinsRule j = new JenkinsRule();
 
     @Before public void setUp() {
-        command = new CLICommandInvoker(j, new AbstractBuildRangeCommandTest.DummyRangeCommand());
+        command = new CLICommandInvoker(j, new RunRangeCommandTest.DummyRangeCommand());
     }
 
     @Test public void dummyRangeShouldFailIfJobNameIsEmptyOnEmptyJenkins() throws Exception {

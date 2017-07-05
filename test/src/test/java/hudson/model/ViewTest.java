@@ -386,14 +386,14 @@ public class ViewTest {
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwnerItemGroup());
+        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
     
     @Test
     public void testGetOwnerPrimaryView() throws Exception{
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwnerPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
     }
     
     @Test

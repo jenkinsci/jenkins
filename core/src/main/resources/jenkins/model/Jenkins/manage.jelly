@@ -60,10 +60,8 @@ THE SOFTWARE.
   <l:main-panel>
     <h1>${%Manage Jenkins}</h1>
 
-    <j:forEach var="am" items="${app.administrativeMonitors}">
-      <j:if test="${am.isActivated() and am.isEnabled()}">
-        <st:include page="message.jelly" it="${am}" />
-      </j:if>
+    <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+      <st:include page="message.jelly" it="${am}" />
     </j:forEach>
 
     <st:include page="downgrade.jelly" />

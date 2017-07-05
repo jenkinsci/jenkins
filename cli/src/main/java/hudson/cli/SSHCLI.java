@@ -63,6 +63,7 @@ class SSHCLI {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
         URL url = new URL(jenkinsUrl + "login");
         URLConnection conn = url.openConnection();
+        CLI.verifyJenkinsConnection(conn);
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
 
         if (endpointDescription == null) {
