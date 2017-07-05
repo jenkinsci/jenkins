@@ -134,7 +134,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>sshd</artifactId>
-      <version>2.0-20170425.195035-2</version> <!-- TODO -->
+      <version>2.0</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.ui</groupId>

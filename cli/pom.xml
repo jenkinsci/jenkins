@@ -55,7 +55,7 @@
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
-      <version>1.4.0</version>
+      <version>1.6.0</version>
       <optional>true</optional> <!-- do not expose to core -->
     </dependency>
     <dependency>
