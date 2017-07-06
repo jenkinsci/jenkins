@@ -44,7 +44,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
                             } else {
-                                bat "$mvnCmd -Duser.name=yay" // INFRA-1032 workaround
+                                bat mvnCmd
                             }
                         }
                     }
