@@ -47,6 +47,10 @@ THE SOFTWARE.
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
       When you use this attribute,
     </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if the top default 'add' button (that adds a new copy) should be displayed.
+      Display of top button depends also on number of items.
+    </st:attribute>
     <st:attribute name="add">
       If specified, this text will replace the standard "Add" text.
     </st:attribute>
@@ -61,7 +65,7 @@ THE SOFTWARE.
   </st:documentation>
 
 
-  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}">
+  <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}" enableTopButton="${attrs.enableTopButton}">
     <table style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
       <d:invokeBody/>

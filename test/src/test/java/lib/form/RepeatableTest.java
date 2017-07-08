@@ -99,6 +99,24 @@ public class RepeatableTest extends HudsonTestCase {
         assertEquals(1, getButtonsList(f, buttonCaption).size());
         getHtmlButton(f, buttonCaption, true).click(); // click Add button
         waitForJavaScript(p);
+        assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that second Add button is not present
+        getHtmlButton(f, "Delete", true).click(); // click Delete button
+        waitForJavaScript(p);
+        assertEquals(1, getButtonsList(f, buttonCaption).size()); // check that only one Add button is in form
+    }
+    
+    /**
+     * Test count of buttons in form
+     *
+     * @throws Exception
+     */
+    public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testSimpleWithDeleteButtonTopButton");
+        HtmlForm f = p.getFormByName("config");
+        String buttonCaption = "Add";
+        assertEquals(1, getButtonsList(f, buttonCaption).size());
+        getHtmlButton(f, buttonCaption, true).click(); // click Add button
+        waitForJavaScript(p);
         assertEquals(2, getButtonsList(f, buttonCaption).size()); // check that second Add button was added into form
         getHtmlButton(f, "Delete", true).click(); // click Delete button
         waitForJavaScript(p);
@@ -374,7 +392,85 @@ public class RepeatableTest extends HudsonTestCase {
             f.getInputsByName("bool").get(1).click();
             clickButton(p, f, "Add", false);
             f.getInputByValue("").setValueAttribute("title two");
+            f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
+            f.getInputByValue("").setValueAttribute("txt 2.1");
+        } catch (Exception e) {
+            System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
+            throw e;
+        }
+        bindClass = FooList.class;
+        submit(f);
+        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+    }
+
+    /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
+    public void testNestedEnabledTopButton() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButton");
+        HtmlForm f = p.getFormByName("config");
+        try {
+            clickButton(p, f, "Add", true);
+            f.getInputByValue("").setValueAttribute("title one");
+            clickButton(p,f,"Add Foo", true);
+            f.getInputByValue("").setValueAttribute("txt one");
+            clickButton(p,f,"Add Foo", false);
+            f.getInputByValue("").setValueAttribute("txt two");
+            f.getInputsByName("bool").get(1).click();
+            clickButton(p, f, "Add", false);
+            f.getInputByValue("").setValueAttribute("title two");
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Foo" button
+            f.getInputByValue("").setValueAttribute("txt 2.1");
+        } catch (Exception e) {
+            System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
+            throw e;
+        }
+        bindClass = FooList.class;
+        submit(f);
+        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+    }
+
+    /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
+    public void testNestedEnabledTopButtonInner() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButtonInner");
+        HtmlForm f = p.getFormByName("config");
+        try {
+            clickButton(p, f, "Add", true);
+            f.getInputByValue("").setValueAttribute("title one");
+            clickButton(p,f,"Add Foo", true);
+            f.getInputByValue("").setValueAttribute("txt one");
+            clickButton(p,f,"Add Foo", false);
+            f.getInputByValue("").setValueAttribute("txt two");
+            f.getInputsByName("bool").get(1).click();
+            clickButton(p, f, "Add", false);
+            f.getInputByValue("").setValueAttribute("title two");
+            f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
+            f.getInputByValue("").setValueAttribute("txt 2.1");
+        } catch (Exception e) {
+            System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
+            throw e;
+        }
+        bindClass = FooList.class;
+        submit(f);
+        assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
+    }
+
+    /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
+    public void testNestedEnabledTopButtonOuter() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButtonOuter");
+        HtmlForm f = p.getFormByName("config");
+        try {
+            clickButton(p, f, "Add", true);
+            f.getInputByValue("").setValueAttribute("title one");
+            clickButton(p,f,"Add Foo", true);
+            f.getInputByValue("").setValueAttribute("txt one");
+            clickButton(p,f,"Add Foo", false);
+            f.getInputByValue("").setValueAttribute("txt two");
+            f.getInputsByName("bool").get(1).click();
+            clickButton(p, f, "Add", false);
+            f.getInputByValue("").setValueAttribute("title two");
+            f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
             f.getInputByValue("").setValueAttribute("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
@@ -393,6 +489,33 @@ public class RepeatableTest extends HudsonTestCase {
 
     public void testNestedRadio() throws Exception {
         HtmlPage p = createWebClient().goTo("self/testNestedRadio");
+        HtmlForm f = p.getFormByName("config");
+        try {
+            clickButton(p, f, "Add", true);
+            f.getElementsByAttribute("input", "type", "radio").get(1).click(); // outer=two
+            clickButton(p, f, "Add Moo", true);
+            f.getElementsByAttribute("input", "type", "radio").get(2).click(); // inner=inone
+            clickButton(p, f, "Add", false);
+            f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
+            Thread.sleep(500);
+            f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
+            waitForJavaScript(p);
+            f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
+            f.getElementsByTagName("button").get(1).click();
+            waitForJavaScript(p);
+            f.getElementsByAttribute("input", "type", "radio").get(8).click(); // inner=inone
+        } catch (Exception e) {
+            System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
+            throw e;
+        }
+        submit(f);
+        assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
+                + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
+                formData.get("items"));
+    }
+
+    public void testNestedRadioEnabledTopButton() throws Exception {
+        HtmlPage p = createWebClient().goTo("self/testNestedRadioTopButton");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -440,13 +563,17 @@ public class RepeatableTest extends HudsonTestCase {
      *
      * @param form form element
      * @param buttonCaption button caption you are looking for
-     * @param isTopButton true to get top (first) Add button - adds form block
+     * @param isTopButton true to get top (first) Add button (buttonCaption) - adds form block
      * on top of a form, false to get second Add button - adds form block on
      * bottom of a form
+     * if there is only one button, it will be returned
      * @return HTMLButton - one of Add buttons
      */
     private HtmlButton getHtmlButton(HtmlForm form, String buttonCaption, boolean isTopButton) {
         List<?> buttons = getButtonsList(form, buttonCaption);
+        if (buttons.size() == 1) {
+            return (HtmlButton) buttons.get(0);
+        }
         return (HtmlButton) buttons.get(isTopButton ? 0 : 1);
     }
 

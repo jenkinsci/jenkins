@@ -27,17 +27,22 @@ THE SOFTWARE.
 <l:layout title="Testing radio block in repeatable">
   <l:main-panel>
     <f:form method="post" name="config" action="submitTest">
-      <f:repeatable var="foo" items="${it.list}" name="foos" minimum="${it.minimum}" enableTopButton="false">
+      <f:repeatable var="item" items="${it.list}" name="items" enableTopButton="true">
         <table>
           <f:entry>
-            <f:textbox name="txt" value="${foo.txt}"/>
+            <f:radio name="outer" value="one"/> One
+            <f:radio name="outer" value="two"/> Two
           </f:entry>
-          <f:entry>
-            <f:checkbox name="bool" checked="${foo.bool}"/>
-          </f:entry>
-          <f:entry>
-            <f:repeatableDeleteButton />
-          </f:entry>
+          <f:nested>
+            <f:repeatable var="moo" items="${item.list}" add="Add Moo" enableTopButton="true">
+              <table>
+                <f:entry>
+                  <f:radio name="inner" value="inone"/>
+                  <f:radio name="inner" value="intwo"/>
+                </f:entry>
+              </table>
+            </f:repeatable>
+          </f:nested>
         </table>
       </f:repeatable>
       <f:entry>
@@ -47,4 +52,3 @@ THE SOFTWARE.
   </l:main-panel>
 </l:layout>
 </j:jelly>
-

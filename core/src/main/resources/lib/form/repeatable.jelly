@@ -88,6 +88,10 @@ THE SOFTWARE.
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
       When you use this attribute,
     </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if the top default 'add' button (that adds a new copy) should be displayed.
+      Display of top button depends also on number of items.
+    </st:attribute>
     <st:attribute name="add">
       If specified, this text will replace the standard "Add" text.
     </st:attribute>
@@ -99,7 +103,7 @@ THE SOFTWARE.
       For each item, add this header.
       This also activates drag&amp;drop (where the header is a grip).
     </st:attribute>
-    <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,add?,minimum?,header?"/>
+    <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,enableTopButton?,add?,minimum?,header?"/>
   </st:documentation>
 
 
@@ -122,7 +126,7 @@ THE SOFTWARE.
     </j:otherwise>
   </j:choose>
 
-  <div class="repeated-container${!empty(header)?' with-drag-drop':''}">
+  <div class="repeated-container${!empty(header)?' with-drag-drop':''}" enableTopButton="${attrs.enableTopButton}">
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <j:if test="${!empty(header)}"><div class="dd-handle">${header}</div></j:if>
@@ -131,7 +135,7 @@ THE SOFTWARE.
         <d:invokeBody />
       </j:scope>
     </div>
-    <j:if test="${!empty(items) and !attrs.noAddButton}">
+    <j:if test="${!empty(items) and !attrs.noAddButton and attrs.enableTopButton}">
       <input type="button" value="${attrs.add?:'%Add'}" class="repeatable-add repeatable-add-top" />
     </j:if>
     <!-- then populate them for each item -->

@@ -13,6 +13,9 @@ var repeatableSupport = {
     // block name for structured HTML
     name : null,
 
+    // enable to display add button on top
+    enableTopButton : false,
+
     withDragDrop: false,
 
     // do the initialization
@@ -24,6 +27,11 @@ var repeatableSupport = {
         master.parentNode.removeChild(master);
         this.insertionPoint = $(insertionPoint);
         this.name = master.getAttribute("name");
+        if (this.container.getAttribute("enableTopButton") == "true") {
+            this.enableTopButton = true;
+        } else {
+            this.enableTopButton = false;
+        }
         this.update();
         this.withDragDrop = initContainerDD(container);
     },
@@ -43,7 +51,7 @@ var repeatableSupport = {
         nc.innerHTML = this.blockHTML;
         if (!addOnTop) {
             this.insertionPoint.parentNode.insertBefore(nc, this.insertionPoint);
-        } else {
+        } else if (this.enableTopButton) {
             var children = $(this.container).childElements().findAll(function (n) {
                 return n.hasClassName("repeated-chunk");
             });
@@ -81,7 +89,7 @@ var repeatableSupport = {
                     return b.hasClassName("repeatable-add");
                 });
 
-                if (addButtonElements.length == 1) {
+                if (addButtonElements.length == 1 && this.enableTopButton) {
                     var buttonElement = addButtonElements[0];
                     var parentOfButton = buttonElement.parentNode;
                     var addTopButton = document.createElement('input');
