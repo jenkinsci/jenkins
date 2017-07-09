@@ -29,6 +29,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import hudson.model.ViewGroup;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -131,7 +132,8 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner()).thenReturn(j);
+        when(j.getItemGroup()).thenReturn(j);
         createMockAncestors(req, createAncestor(view, "."), createAncestor(j, "../.."));
         TopLevelItem i = createMockItem(parent, "job/i/");
         when(view.getItems()).thenReturn(Arrays.asList(i));
@@ -166,7 +168,7 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner().getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/");
         when(view.getItems()).thenReturn(Collections.<TopLevelItem>emptyList());
@@ -174,7 +176,7 @@ public class FunctionsTest {
         assertEquals("/jenkins/job/i/", result);
     }
     
-    private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T> {}
+    private interface TopLevelItemAndItemGroup <T extends TopLevelItem> extends TopLevelItem, ItemGroup<T>, ViewGroup {}
     
     @Test
     @PrepareForTest({Stapler.class,Jenkins.class})
@@ -187,7 +189,8 @@ public class FunctionsTest {
         mockStatic(Stapler.class);
         when(Stapler.getCurrentRequest()).thenReturn(req);
         View view = mock(View.class);
-        when(view.getOwnerItemGroup()).thenReturn(parent);
+        when(view.getOwner()).thenReturn(parent);
+        when(parent.getItemGroup()).thenReturn(parent);
         createMockAncestors(req, createAncestor(j, "../../.."), createAncestor(parent, "../.."), createAncestor(view, "."));
         TopLevelItem i = createMockItem(parent, "job/i/", "parent/job/i/");
         when(view.getItems()).thenReturn(Arrays.asList(i));

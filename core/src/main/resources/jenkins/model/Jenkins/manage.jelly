@@ -62,34 +62,37 @@ THE SOFTWARE.
     <h1>${%Manage Jenkins}</h1>
 
     <div class="manage-messages">
-    <j:forEach var="am" items="${app.administrativeMonitors}">
-      <j:if test="${am.isActivated() and am.isEnabled()}">
-        <st:include page="message.jelly" it="${am}" />
-      </j:if>
+    <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
+      <st:include page="message.jelly" it="${am}" />
     </j:forEach>
     </div>
 
     <st:include page="downgrade.jelly" />
 
     <style type="text/css">
+
       .manage-option {
         border: 1px solid transparent;
         margin-bottom: 4px;
       }
+
       .manage-option:hover {
         border: 1px solid #ccc;
         border-radius: 3px;
         background-color: #fafafa;
       }
+
       .manage-option dl {
         padding: 0;
         margin: 0 0 0 62px;
         min-height: 48px;
       }
+
       .manage-option dl dt {
         font-size: 16px;
         line-height: 24px;
       }
+
       .manage-option dl dd {
         margin-left: 0;
         line-height: 20px;
@@ -105,6 +108,7 @@ THE SOFTWARE.
         color: #000;
         outline: 0;
       }
+
       .manage-option .icon {
         display: block;
         float: left;

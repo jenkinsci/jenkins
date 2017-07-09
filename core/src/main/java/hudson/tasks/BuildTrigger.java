@@ -59,15 +59,13 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.QueueItemAuthenticatorDescriptor;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
@@ -151,12 +149,21 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
         return getChildProjects(Jenkins.getInstance());
     }
 
+    /** @deprecated use {@link #getChildJobs} */
+    @Deprecated
     public List<AbstractProject> getChildProjects(AbstractProject owner) {
         return getChildProjects(owner==null?null:owner.getParent());
     }
 
+    @Deprecated
     public List<AbstractProject> getChildProjects(ItemGroup base) {
         return Items.fromNameList(base,childProjects,AbstractProject.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public List<Job<?, ?>> getChildJobs(@Nonnull AbstractProject<?, ?> owner) {
+        return Items.fromNameList(owner.getParent(), childProjects, (Class<Job<?, ?>>) (Class) Job.class);
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -164,8 +171,9 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     /**
-     * Checks if this trigger has the exact same set of children as the given list.
+     * @deprecated apparently unused
      */
+    @Deprecated
     public boolean hasSame(AbstractProject owner, Collection<? extends AbstractProject> projects) {
         List<AbstractProject> children = getChildProjects(owner);
         return children.size()==projects.size() && children.containsAll(projects);
@@ -182,6 +190,48 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+        List<Job<?, ?>> jobs = new ArrayList<>();
+        for (Job<?, ?> job : getChildJobs(build.getProject())) {
+            if (job instanceof AbstractProject) {
+                continue; // taken care of by DependencyGraph
+            }
+            jobs.add(job);
+        }
+        if (!jobs.isEmpty() && build.getResult().isBetterOrEqualTo(threshold)) {
+            PrintStream logger = listener.getLogger();
+            for (Job<?, ?> downstream : jobs) {
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) != downstream) {
+                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2}", new Object[] {Jenkins.getAuthentication().getName(), downstream, build.getParent()});
+                    continue;
+                }
+                if (!downstream.hasPermission(Item.BUILD)) {
+                    listener.getLogger().println(Messages.BuildTrigger_you_have_no_permission_to_build_(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!(downstream instanceof ParameterizedJobMixIn.ParameterizedJob)) {
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                ParameterizedJobMixIn.ParameterizedJob<?, ?> pj = (ParameterizedJobMixIn.ParameterizedJob) downstream;
+                if (pj.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                if (!downstream.isBuildable()) { // some other reason; no API to retrieve cause
+                    logger.println(Messages.BuildTrigger_NotBuildable(ModelHyperlinkNote.encodeTo(downstream)));
+                    continue;
+                }
+                boolean scheduled = pj.scheduleBuild(pj.getQuietPeriod(), new UpstreamCause((Run) build));
+                if (Jenkins.getInstance().getItemByFullName(downstream.getFullName()) == downstream) {
+                    String name = ModelHyperlinkNote.encodeTo(downstream);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                }
+            }
+        }
         return true;
     }
 
@@ -216,53 +266,24 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             }
         });
 
-        Authentication auth = Jenkins.getAuthentication(); // from build
-        if (auth.equals(ACL.SYSTEM)) { // i.e., unspecified
-            if (QueueItemAuthenticatorDescriptor.all().isEmpty()) {
-                if (downstreamProjects.isEmpty()) {
-                    return true;
-                }
-                logger.println(Messages.BuildTrigger_warning_you_have_no_plugins_providing_ac());
-            } else if (QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                if (downstreamProjects.isEmpty()) {
-                    return true;
-                }
-                logger.println(Messages.BuildTrigger_warning_access_control_for_builds_in_glo());
-            } else {
-                // This warning must be printed even if downstreamProjects is empty.
-                // Otherwise you could effectively escalate DISCOVER to READ just by trying different project names and checking whether a warning was printed or not.
-                // If there were an API to determine whether any DependencyDeclarer’s in this project requested downstream project names,
-                // then we could suppress the warnings in case none did; but if any do, yet Items.fromNameList etc. ignore unknown projects,
-                // that has to be treated the same as if there really are downstream projects but the anonymous user cannot see them.
-                // For the above two cases, it is OK to suppress the warning when there are no downstream projects, since running as SYSTEM we would be able to see them anyway.
-                logger.println(Messages.BuildTrigger_warning_this_build_has_no_associated_aut());
-                auth = Jenkins.ANONYMOUS;
-            }
-        }
-
         for (Dependency dep : downstreamProjects) {
             List<Action> buildActions = new ArrayList<Action>();
-            SecurityContext orig = ACL.impersonate(auth);
-            try {
-                if (dep.shouldTriggerBuild(build, listener, buildActions)) {
-                    AbstractProject p = dep.getDownstreamProject();
-                    // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
-                    if (p.isDisabled()) {
-                        logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
-                        continue;
-                    }
-                    boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
-                    if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
-                        String name = ModelHyperlinkNote.encodeTo(p);
-                        if (scheduled) {
-                            logger.println(Messages.BuildTrigger_Triggering(name));
-                        } else {
-                            logger.println(Messages.BuildTrigger_InQueue(name));
-                        }
-                    } // otherwise upstream users should not know that it happened
+            if (dep.shouldTriggerBuild(build, listener, buildActions)) {
+                AbstractProject p = dep.getDownstreamProject();
+                // Allow shouldTriggerBuild to return false first, in case it is skipping because of a lack of Item.READ/DISCOVER permission:
+                if (p.isDisabled()) {
+                    logger.println(Messages.BuildTrigger_Disabled(ModelHyperlinkNote.encodeTo(p)));
+                    continue;
                 }
-            } finally {
-                SecurityContextHolder.setContext(orig);
+                boolean scheduled = p.scheduleBuild(p.getQuietPeriod(), new UpstreamCause((Run)build), buildActions.toArray(new Action[buildActions.size()]));
+                if (Jenkins.getInstance().getItemByFullName(p.getFullName()) == p) {
+                    String name = ModelHyperlinkNote.encodeTo(p);
+                    if (scheduled) {
+                        logger.println(Messages.BuildTrigger_Triggering(name));
+                    } else {
+                        logger.println(Messages.BuildTrigger_InQueue(name));
+                    }
+                } // otherwise upstream users should not know that it happened
             }
         }
 
@@ -270,7 +291,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
     }
 
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-        for (AbstractProject p : getChildProjects(owner))
+        for (AbstractProject p : getChildProjects(owner)) // only care about AbstractProject here
             graph.addDependency(new Dependency(owner, p) {
                 @Override
                 public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener,
@@ -381,17 +402,14 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                 if (StringUtils.isNotBlank(projectName)) {
                     Item item = Jenkins.getInstance().getItem(projectName,project,Item.class);
                     if (item == null) {
-                        AbstractProject nearest = AbstractProject.findNearest(projectName,project.getParent());
+                        Job<?, ?> nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
                         return FormValidation.error(Messages.BuildTrigger_NoSuchProject(projectName, alternative));
                     }
-                    if(!(item instanceof AbstractProject))
+                    if(!(item instanceof ParameterizedJobMixIn.ParameterizedJob))
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
                     Authentication auth = Tasks.getAuthenticationOf(project);
-                    if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-                        auth = Jenkins.ANONYMOUS; // compare behavior in execute, above
-                    }
                     if (!item.getACL().hasPermission(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }

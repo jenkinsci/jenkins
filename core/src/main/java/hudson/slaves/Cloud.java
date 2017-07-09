@@ -26,6 +26,7 @@ package hudson.slaves;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 import hudson.DescriptorExtensionList;
+import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.security.PermissionScope;
@@ -42,6 +43,7 @@ import hudson.security.Permission;
 import hudson.util.DescriptorList;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
@@ -76,12 +78,18 @@ import java.util.concurrent.Future;
  * the resource (such as shutting down a virtual machine.) {@link Computer} needs to own this handle information
  * because by the time this happens, a {@link Slave} object is already long gone.
  *
+ * <h3>Views</h3>
+ *
+ * Since version TODO, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
+ * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their <tt>summary</tt>
+ * views displayed. Actions further contribute to <tt>sidepanel</tt> with <tt>box</tt> views. All mentioned views are
+ * optional to preserve backward compatibility.
  *
  * @author Kohsuke Kawaguchi
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends AbstractModelObject implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
@@ -99,8 +107,21 @@ public abstract class Cloud extends AbstractModelObject implements ExtensionPoin
         return name;
     }
 
-    public String getSearchUrl() {
-        return "cloud/"+name;
+    /**
+     * Get URL of the cloud.
+     *
+     * @since TODO
+     * @return Jenkins relative URL.
+     */
+    public @Nonnull String getUrl() {
+        return "cloud/" + name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public @Nonnull String getSearchUrl() {
+        return getUrl();
     }
 
     public ACL getACL() {

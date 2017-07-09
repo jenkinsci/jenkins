@@ -727,6 +727,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             InstallUtil.saveLastExecVersion();
         } else {
             final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
             for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
                 VersionNumber requiredVersion = p.getRequiredVersion();
@@ -899,11 +900,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (d.shortName.equals(p.getShortName())) {
                         // this plugin depends on the newly loaded one!
                         // recalculate dependencies!
-                        try {
-                            getPluginStrategy().updateDependency(depender, p);
-                        } catch (AbstractMethodError x) {
-                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                        }
+                        getPluginStrategy().updateDependency(depender, p);
                         break;
                     }
                 }

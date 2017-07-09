@@ -152,11 +152,6 @@ public class ViewTest {
         }
 
         @Override
-        public View getPrimaryView() {
-            return null;
-        }
-
-        @Override
         public void onViewRenamed(View view, String oldName, String newName) {
         }
 
