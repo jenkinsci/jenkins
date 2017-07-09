@@ -155,9 +155,9 @@ public class UpdateSiteWarningsMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Returns true if there are applicable but ignored (i.e. hidden) warnings.
+     * Returns true iff there are applicable but ignored (i.e. hidden) warnings.
      *
-     * @return true if there are applicable but ignored (i.e. hidden) warnings.
+     * @return true iff there are applicable but ignored (i.e. hidden) warnings.
      */
     public boolean hasApplicableHiddenWarnings() {
         ExtensionList<UpdateSiteWarningsConfiguration> configurations = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
