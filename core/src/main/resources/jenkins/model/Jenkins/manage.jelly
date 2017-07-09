@@ -69,69 +69,19 @@ THE SOFTWARE.
 
     <st:include page="downgrade.jelly" />
 
-    <style type="text/css">
-
-      .manage-option {
-        border: 1px solid transparent;
-        margin-bottom: 4px;
-      }
-
-      .manage-option:hover {
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        background-color: #fafafa;
-      }
-
-      .manage-option dl {
-        padding: 0;
-        margin: 0 0 0 62px;
-        min-height: 48px;
-      }
-
-      .manage-option dl dt {
-        font-size: 16px;
-        line-height: 24px;
-      }
-
-      .manage-option dl dd {
-        margin-left: 0;
-        line-height: 20px;
-        color: #333;
-        font-size: 14px;
-      }
-
-      .manage-option a, .manage-option a:visited {
-        display: block;
-        padding: 8px;
-        margin: 0;
-        text-decoration: none;
-        color: #000;
-        outline: 0;
-      }
-
-      .manage-option .icon {
-        display: block;
-        float: left;
-        position: relative;
-        width: 48px;
-        height: 48px;
-      }
-
-    </style>
-
     <j:forEach var="m" items="${it.managementLinks}">
       <l:hasPermission permission="${m.requiredPermission}">
         <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
         <j:if test="${icon!=null}">
           <div class="manage-option">
             <a href="${m.urlName}" title="">
-            <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
-            <img class="icon" src="${iconUrl}" />
-            <dl>
-              <dt>${m.displayName}</dt>
-              <dd><j:out value="${m.description}"/></dd>
-              <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-            </dl>
+              <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
+              <img class="icon" src="${iconUrl}" />
+              <dl>
+                <dt>${m.displayName}</dt>
+                <dd><j:out value="${m.description}"/></dd>
+                <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+              </dl>
             </a>
           </div>
         </j:if>
