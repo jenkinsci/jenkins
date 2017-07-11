@@ -65,7 +65,7 @@
           <b>%{Snooze}</b>
         </a>
         <div id="upgrade-notice">
-          <j:whitespace>${%msg.before}</j:whitespace> 
+          <j:whitespace>${%msg.before(app.VERSION)}</j:whitespace>
           <f:link href="${rootURL}/setupWizard/installState/UPGRADE/showUpgradeWizard" post="true">${%msg.link}</f:link>
           <j:whitespace>${%msg.after}</j:whitespace>
         </div>
