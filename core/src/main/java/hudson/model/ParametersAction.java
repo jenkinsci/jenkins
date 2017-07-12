@@ -326,7 +326,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         for (ParameterValue v : this.parameters) {
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
-            } else if ("false".equalsIgnoreCase(shouldKeepFlag)) {
+            } else if (!"false".equalsIgnoreCase(shouldKeepFlag)) {
                 LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
                         + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
                         + "even though it represents a security breach or `-D{2}=false` to no longer show this message.",
