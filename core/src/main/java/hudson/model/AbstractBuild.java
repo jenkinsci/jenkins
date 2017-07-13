@@ -337,7 +337,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         AbstractBuild<P,R> p = getPreviousCompletedBuild();
         if (upstreamCulprits) {
             // If we have dependencies since the last successful build, add their authors to our list
-            if (p.getPreviousNotFailedBuild() != null) {
+            if (p != null && p.getPreviousNotFailedBuild() != null) {
                 Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
                         p.getDependencyChanges(p.getPreviousSuccessfulBuild());
                 for (AbstractBuild.DependencyChange dep : depmap.values()) {
