@@ -64,7 +64,7 @@ public class ItemListener implements ExtensionPoint {
      * @param src the item being copied
      * @param parent the proposed parent
      * @throws Failure to veto the operation.
-     * @since TODO
+     * @since 2.51
      */
     public void onCheckCopy(Item src, ItemGroup parent) throws Failure {
     }
