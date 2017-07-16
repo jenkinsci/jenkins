@@ -80,7 +80,7 @@ import java.util.concurrent.Future;
  *
  * <h3>Views</h3>
  *
- * Since version TODO, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
+ * Since version 2.64, Jenkins clouds are visualized in UI. Implementations can provide <tt>top</tt> or <tt>main</tt> view
  * to be presented at the top of the page or at the bottom respectively. In the middle, actions have their <tt>summary</tt>
  * views displayed. Actions further contribute to <tt>sidepanel</tt> with <tt>box</tt> views. All mentioned views are
  * optional to preserve backward compatibility.
@@ -110,7 +110,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     /**
      * Get URL of the cloud.
      *
-     * @since TODO
+     * @since 2.64
      * @return Jenkins relative URL.
      */
     public @Nonnull String getUrl() {

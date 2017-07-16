@@ -25,7 +25,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol3Handler} for more details.
  *
- * @since 1.XXX
+ * @since 1.653
  */
 @Deprecated
 @Extension

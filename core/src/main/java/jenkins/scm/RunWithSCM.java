@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 /**
  * Allows a {@link Run} to provide {@link SCM}-related methods, such as providing changesets and culprits.
  *
- * @since FIXME
+ * @since 2.60
  */
 public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT,RunT>> {
