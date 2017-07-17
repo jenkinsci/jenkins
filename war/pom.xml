@@ -49,7 +49,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>executable-war</artifactId>
-      <version>1.36-SNAPSHOT</version>
+      <version>1.36</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
