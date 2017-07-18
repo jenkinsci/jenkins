@@ -65,7 +65,7 @@ public class Tasks {
      * @param t the {@link SubTask}.
      * @return the {@link hudson.model.Item} associated with the {@link SubTask} or {@code null} if this
      * {@link SubTask} is not associated with an {@link hudson.model.Item}
-     * @since TODO
+     * @since 2.55
      */
     @CheckForNull
     public static hudson.model.Item getItemOf(@Nonnull SubTask t) {

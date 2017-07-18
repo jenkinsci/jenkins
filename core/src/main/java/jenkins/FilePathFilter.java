@@ -23,7 +23,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  * @see FilePath
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class FilePathFilter {
     /**

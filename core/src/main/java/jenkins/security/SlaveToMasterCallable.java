@@ -8,7 +8,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * Convenient {@link Callable} that are meant to run on the master (sent by agent/CLI/etc).
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V,T> {
     @Override
