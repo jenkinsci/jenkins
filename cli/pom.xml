@@ -27,7 +27,6 @@
     <dependency>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-annotation</artifactId>
-        <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
