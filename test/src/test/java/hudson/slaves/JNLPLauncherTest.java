@@ -54,8 +54,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.awt.*;
+import static org.hamcrest.Matchers.instanceOf;
+import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Tests of {@link JNLPLauncher}.
@@ -112,6 +115,23 @@ public class JNLPLauncherTest {
         Computer c = addTestSlave();
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless", "-workDir", workDir.getAbsolutePath()));
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
+    }
+    
+    @Test
+    @LocalData
+    @Issue("JENKINS-44112")
+    public void testNoWorkDirMigration() throws Exception {
+        Computer computer = j.jenkins.getComputer("Foo");
+        Assert.assertThat(computer, instanceOf(SlaveComputer.class));
+        
+        SlaveComputer c = (SlaveComputer)computer;
+        ComputerLauncher launcher = c.getLauncher();
+        Assert.assertThat(launcher, instanceOf(JNLPLauncher.class));
+        JNLPLauncher jnlpLauncher = (JNLPLauncher)launcher;
+        assertNotNull("Work Dir Settings should be defined", 
+                jnlpLauncher.getWorkDirSettings());
+        assertTrue("Work directory should be disabled for the migrated agebt", 
+                jnlpLauncher.getWorkDirSettings().isDisabled());
     }
 
     @TestExtension("testHeadlessLaunch")
