@@ -25,13 +25,17 @@ package hudson.slaves;
 
 import hudson.Extension;
 import hudson.Util;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.TaskListener;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import jenkins.slaves.RemotingWorkDirSettings;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -52,24 +56,56 @@ public class JNLPLauncher extends ComputerLauncher {
      *
      * @since 1.250
      */
+    @CheckForNull
     public final String tunnel;
 
     /**
      * Additional JVM arguments. Can be null.
      * @since 1.297
      */
+    @CheckForNull
     public final String vmargs;
 
+    @Nonnull
+    private RemotingWorkDirSettings workDirSettings;
+    
     @DataBoundConstructor
-    public JNLPLauncher(String tunnel, String vmargs) {
+    public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @Nonnull RemotingWorkDirSettings workDirSettings) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
         this.vmargs = Util.fixEmptyAndTrim(vmargs);
+        this.workDirSettings = workDirSettings;
+    }
+    
+    @Deprecated
+    public JNLPLauncher(String tunnel, String vmargs) {
+        // TODO: Enable workDir by default in API? Otherwise classes inheriting from JNLPLauncher
+        // will need to enable the feature by default as well.
+        // https://github.com/search?q=org%3Ajenkinsci+%22extends+JNLPLauncher%22&type=Code
+        this(tunnel, vmargs, RemotingWorkDirSettings.getDefaultLegacyValue());
     }
 
+    @Deprecated
     public JNLPLauncher() {
         this(null,null);
     }
+    
+    protected Object readResolve() {
+        if (workDirSettings == null) {
+            workDirSettings = RemotingWorkDirSettings.getDefaultLegacyValue();
+        }
+        return this;
+    }
 
+    /**
+     * Returns work directory settings.
+     * 
+     * @since TODO
+     */
+    @Nonnull
+    public RemotingWorkDirSettings getWorkDirSettings() {
+        return workDirSettings;
+    }
+    
     @Override
     public boolean isLaunchSupported() {
         return false;
@@ -86,6 +122,20 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
+    /**
+     * gets 
+     * @param computer
+     * @return 
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public String getWorkDirOptions(@Nonnull Computer computer) {
+        if(!(computer instanceof SlaveComputer)) {
+            return "";
+        }
+        return workDirSettings.toCommandLineString((SlaveComputer)computer);
+    }
+    
     @Extension @Symbol("jnlp")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public DescriptorImpl() {

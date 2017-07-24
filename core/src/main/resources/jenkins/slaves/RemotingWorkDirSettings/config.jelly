@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2017-, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,16 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:property title="${%Enable work directory}" field="workDirSettings" />
-  <f:advanced>
-    <f:entry title="${%Tunnel connection through}" help="/help/system-config/master-slave/jnlp-tunnel.html">
-      <f:textbox field="tunnel"/>
-    </f:entry>
-    <f:entry title="${%JVM options}" field="vmargs">
-      <f:textbox />
-    </f:entry>
-  </f:advanced>
+  <f:entry title="${%Disable WorkDir}" field="disabled">
+    <f:checkbox/>
+  </f:entry>
+  <f:entry title="${%Custom WorkDir path}" field="workDirPath">
+    <f:textbox/>
+  </f:entry>
+  <f:entry title="${%Internal data directory}" field="internalDir">
+    <f:textbox default="remoting"/>
+  </f:entry>
+  <f:entry title="${%Fail if workspace is missing}" field="failIfWorkDirIsMissing">
+    <f:checkbox/>
+  </f:entry>
 </j:jelly>
