@@ -1540,7 +1540,7 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                String taskDisplayName = p.task.getFullDisplayName();
+                String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
 
                 if (p.task instanceof FlyweightTask) {
                     Runnable r = makeFlyWeightTaskBuildable(new BuildableItem(p));
@@ -1617,7 +1617,7 @@ public class Queue extends ResourceController implements Saveable {
      */
     private @CheckForNull Runnable makeBuildable(final BuildableItem p) {
         if (p.task instanceof FlyweightTask) {
-            String taskDisplayName = p.task.getFullDisplayName();
+            String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
             if (!isBlockedByShutdown(p.task)) {
 
                 Runnable runnable = makeFlyWeightTaskBuildable(p);
@@ -1665,7 +1665,8 @@ public class Queue extends ResourceController implements Saveable {
             hash.addAll(hashSource);
 
             Label lbl = p.getAssignedLabel();
-            for (Node n : hash.list(p.task.getFullDisplayName())) {
+            String fullDisplayName = p.task.getFullDisplayName();
+            for (Node n : hash.list(fullDisplayName)) {
                 final Computer c = n.toComputer();
                 if (c == null || c.isOffline()) {
                     continue;
@@ -1677,7 +1678,7 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}", new Object[]{p.task.getFullDisplayName(), c.getName()});
+                LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}", new Object[]{fullDisplayName, c.getName()});
                 return new Runnable() {
                     @Override public void run() {
                         c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
