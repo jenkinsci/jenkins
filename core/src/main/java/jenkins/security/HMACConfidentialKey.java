@@ -27,6 +27,7 @@ import java.util.Arrays;
  */
 public class HMACConfidentialKey extends ConfidentialKey {
     private volatile SecretKey key;
+    private Mac mac;
     private final int length;
 
     /**
@@ -61,12 +62,18 @@ public class HMACConfidentialKey extends ConfidentialKey {
         this(owner,shortName,Integer.MAX_VALUE);
     }
 
+    private synchronized Mac getMac() {
+        if (mac == null) {
+            mac = createMac();
+        }
+        return mac;
+    }
 
     /**
      * Computes the message authentication code for the specified byte sequence.
      */
     public byte[] mac(byte[] message) {
-        return chop(createMac().doFinal(message));
+        return chop(getMac().doFinal(message));
     }
 
     /**
