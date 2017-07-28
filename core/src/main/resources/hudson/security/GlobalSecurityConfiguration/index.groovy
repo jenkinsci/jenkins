@@ -72,6 +72,10 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                         td(colspan:"2");
                                         td(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true);
+                                            if (p.deprecated) {
+                                              text(_("Deprecated. "))
+                                              st.include(from:p, page: "deprecationCause", optional:true);
+                                            }
                                         }
                                         td();
                                     }

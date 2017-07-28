@@ -66,6 +66,16 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     }
 
     @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
+    @Override
+    public DeprecationCause getDeprecationCause() {
+        return super.getDeprecationCause();
+    }
+    
+    @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         handler.handle(socket,
                 Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
@@ -92,6 +102,14 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         } else {
             byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
             ENABLED = (hash % 10) == 0;
+        }
+    }
+    
+    private static final class DecprecationCauseImpl extends DeprecationCause {
+
+        @Override
+        public String getMessage() {
+            return "The protocol is unstable, see the Errata for more details";
         }
     }
 }

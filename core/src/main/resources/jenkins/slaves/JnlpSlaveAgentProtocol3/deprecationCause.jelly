@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${This protocol is unstable. See the protocol documentation for more info.}
+  <!-- TODO: Move/mirror it to jenkins.io -->
+  <a href="https://github.com/jenkinsci/remoting/blob/master/docs/protocols.md#jnlp3-connect-errata">${JNLP3 Protocol Errata}</a>
+</j:jelly>

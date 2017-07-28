@@ -8,6 +8,8 @@ import hudson.TcpSlaveAgentListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -53,6 +55,28 @@ public abstract class AgentProtocol implements ExtensionPoint {
     public boolean isRequired() {
         return false;
     }
+    
+    /**
+     * Checks if the protocol is deprecated.
+     * 
+     * @since TODO
+     */
+    public boolean isDeprecated() {
+        return false;
+    }
+    
+    /**
+     * Gets the deprecation cause for internal use like logging.
+     * 
+     * UI is implemented by the optional {@code deprecationCause.jelly} file.
+     * @return Deprecation cause or {@code null} if there is no info.
+     *         {@code null} does not mean the method is not deprecated, use {@link #isDeprecated()} for such purpose.
+     */
+    @CheckForNull
+    public DeprecationCause getDeprecationCause() {
+        return null;
+    }
+    
     /**
      * Protocol name.
      *
@@ -93,5 +117,16 @@ public abstract class AgentProtocol implements ExtensionPoint {
                 return p;
         }
         return null;
+    }
+    
+    /**
+     * Describes the deprecation cause of the class.
+     * 
+     * @since TODO
+     */
+    public abstract static class DeprecationCause {
+        
+        @Nonnull
+        public abstract String getMessage();
     }
 }
