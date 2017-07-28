@@ -62,18 +62,14 @@ public class HMACConfidentialKey extends ConfidentialKey {
         this(owner,shortName,Integer.MAX_VALUE);
     }
 
-    private synchronized Mac getMac() {
-        if (mac == null) {
-            mac = createMac();
-        }
-        return mac;
-    }
-
     /**
      * Computes the message authentication code for the specified byte sequence.
      */
-    public byte[] mac(byte[] message) {
-        return chop(getMac().doFinal(message));
+    public synchronized byte[] mac(byte[] message) {
+        if (mac == null) {
+            mac = createMac();
+        }
+        return chop(mac.doFinal(message));
     }
 
     /**
