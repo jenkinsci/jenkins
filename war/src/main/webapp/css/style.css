@@ -1920,6 +1920,23 @@ body.no-sticker #bottom-sticker {
     margin-bottom: 40px;
 }
 
+.manage-messages a, .manage-messages a:visited {
+    color: inherit !important;
+    text-decoration: none;
+}
+
+.manage-messages a:hover, .manage-messages a:focus {
+    text-decoration: underline;
+}
+
+.manage-messages dl dt:first-child {
+    margin-top: 0;
+}
+
+.manage-messages dl dt {
+    margin-top: 10px;
+}
+
 .manage-messages dl dd {
     margin-left: 15px;
 }
@@ -1961,11 +1978,11 @@ body.no-sticker #bottom-sticker {
   font-size: 14px;
 }
 
-.manage-option a, .manage-option a:visited {
+.manage-option a {
   display: block;
   padding: 8px;
   margin: 0;
-  text-decoration: none;
+  text-decoration: none !important;
   color: #000;
   outline: 0;
 }

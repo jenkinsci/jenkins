@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}" css="/bootstrap/css/bootstrap.min.css">
+<l:layout title="${%Manage Jenkins}" xmlns:local="local" permission="${app.ADMINISTER}">
 
   <d:taglib uri="local">
     <!-- table to show a map -->
@@ -53,6 +53,10 @@ THE SOFTWARE.
       </t:summary>
     </d:tag>
   </d:taglib>
+
+  <l:header>
+     <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css" />
+  </l:header>
 
   <j:if test="${taskTags==null}">
     <st:include page="sidepanel.jelly" />
