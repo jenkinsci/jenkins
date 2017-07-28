@@ -139,9 +139,11 @@ public class JNLPLauncher extends ComputerLauncher {
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
     /**
-     * Gets work directory options as a String. 
-     * @param computer
-     * @return 
+     * Gets work directory options as a String.
+     * 
+     * In public API {@code getWorkDirSettings().toCommandLineArgs(computer)} should be used instead
+     * @param computer Computer
+     * @return Command line options for launching with the WorkDir
      */
     @Nonnull
     @Restricted(NoExternalUse.class)
