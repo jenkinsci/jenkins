@@ -51,11 +51,11 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.awt.*;
 import static org.hamcrest.Matchers.instanceOf;
-import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -132,11 +132,11 @@ public class JNLPLauncherTest {
     @Issue("JENKINS-44112")
     public void testNoWorkDirMigration() throws Exception {
         Computer computer = j.jenkins.getComputer("Foo");
-        Assert.assertThat(computer, instanceOf(SlaveComputer.class));
+        assertThat(computer, instanceOf(SlaveComputer.class));
         
         SlaveComputer c = (SlaveComputer)computer;
         ComputerLauncher launcher = c.getLauncher();
-        Assert.assertThat(launcher, instanceOf(JNLPLauncher.class));
+        assertThat(launcher, instanceOf(JNLPLauncher.class));
         JNLPLauncher jnlpLauncher = (JNLPLauncher)launcher;
         assertNotNull("Work Dir Settings should be defined", 
                 jnlpLauncher.getWorkDirSettings());
