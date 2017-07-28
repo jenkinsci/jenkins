@@ -205,11 +205,11 @@ public class JNLPLauncherTest {
     /**
      * Adds a JNLP {@link Slave} to the system and returns it.
      */
-    private Computer addTestSlave() throws Exception {
+    private Computer addTestSlave(boolean enableWorkDir) throws Exception {
         List<Node> slaves = new ArrayList<Node>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
         slaves.add(new DumbSlave("test","dummy",dir.getAbsolutePath(),"1", Mode.NORMAL, "",
-                new JNLPLauncher(), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
+                new JNLPLauncher(enableWorkDir), RetentionStrategy.INSTANCE, new ArrayList<NodeProperty<?>>()));
         j.jenkins.setNodes(slaves);
         Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);
