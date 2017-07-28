@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import org.junit.Before;
@@ -109,6 +110,16 @@ public class SetupWizardTest {
         wc.assertFails("setupWizard/platformPluginList", 403);
         wc.assertFails("setupWizard/createAdminUaser", 403);
         wc.assertFails("setupWizard/completeInstall", 403);
+    }
+    
+    @Test
+    @Issue("JENKINS-45841")
+    public void shouldDisableUnencryptedProtocolsByDefault() throws Exception {
+        Set<String> agentProtocols = j.jenkins.getAgentProtocols();
+        assertThat("Encrypted JNLP4-protocols protocol should be enabled", agentProtocols, 
+                contains("JNLP4-connect"));
+        assertThat("Non-encrypted JNLP protocols should be disabled by default", agentProtocols, 
+                not(contains("JNLP-connect", "JNLP2-connect", "JNLP3-connect", "CLI-connect")));
     }
     
     private String jsonRequest(JenkinsRule.WebClient wc, String path) throws Exception {
