@@ -27,6 +27,7 @@
 package jenkins.model;
 
 import antlr.ANTLRException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -848,7 +849,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             this.root = root;
             this.servletContext = context;
-            computeVersion(context);
+            computeVersions(context);
             if(theInstance!=null)
                 throw new IllegalStateException("second instance");
             theInstance = this;
@@ -4919,8 +4920,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         TWICE_CPU_NUM, TWICE_CPU_NUM,
         5L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins load"));
 
-
-    private static void computeVersion(ServletContext context) {
+    /**
+     * Computes Jenkins and Java versions.
+     */
+    @VisibleForTesting
+    /*package*/ static void computeVersions(ServletContext context) {
         // set the version
         Properties props = new Properties();
         try (InputStream is = Jenkins.class.getResourceAsStream("jenkins-version.properties")) {
@@ -4931,6 +4935,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         String ver = props.getProperty("version");
         if(ver==null)   ver = UNCOMPUTED_VERSION;
+        String javaMinLevel = props.getProperty("java.min.level");
+        
         if(Main.isDevelopmentMode && "${build.version}".equals(ver)) {
             // in dev mode, unable to get version (ahem Eclipse)
             try {
@@ -4941,11 +4947,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         pom =  pom.getCanonicalFile();
                         LOGGER.info("Reading version from: " + pom.getAbsolutePath());
                         ver = XMLUtils.getValue("/project/version", pom);
+                        javaMinLevel = XMLUtils.getValue("/project/properties/java.level", pom);
                         break;
                     }
                     dir = dir.getParentFile();
                 }
-                LOGGER.info("Jenkins is in dev mode, using version: " + ver);
+                LOGGER.log(INFO, "Jenkins is in dev mode, using version {0} and java.min.level {1}", 
+                        new Object[] {ver, javaMinLevel});
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Unable to read Jenkins version: " + e.getMessage(), e);
             }
@@ -4953,6 +4961,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         
         VERSION = ver;
         context.setAttribute("version",ver);
+        
+        String enforcedVersion = SystemProperties.getString(ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME);
+        if (enforcedVersion != null) {
+            LOGGER.log(Level.INFO, "Minimal java level is enforced via system property: {0} instead of {1}", 
+                    new Object[] {enforcedVersion, javaMinLevel});
+            javaMinLevel = enforcedVersion;
+        }
+        JAVA_MIN_LEVEL = javaMinLevel;
+        context.setAttribute("java.min.level", javaMinLevel);
 
         VERSION_HASH = Util.getDigestOf(ver).substring(0, 8);
         SESSION_HASH = Util.getDigestOf(ver+System.currentTimeMillis()).substring(0, 8);
@@ -4976,13 +4993,48 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Version number of this Jenkins.
      */
     public static String VERSION = UNCOMPUTED_VERSION;
-
+    
+    /**
+     * Minimal Java level required to run this Jenkins.
+     * If {@code null}, the version is unknown.
+     */
+    private static @CheckForNull String JAVA_MIN_LEVEL = null;
+    private static VersionNumber DEFAULT_JAVA_MIN_LEVEL = new VersionNumber("8");
+    
+    /**
+     * Allows setting custom minimal Java level.
+     * If {@code null}, Jenkins will try to determine the version automatically.
+     * @since TODO
+     */
+    @VisibleForTesting
+    /*package*/ static final @Nonnull String ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME = 
+            Jenkins.class.getName() + ".javaMinLevel";
+    
     /**
      * Parses {@link #VERSION} into {@link VersionNumber}, or null if it's not parseable as a version number
      * (such as when Jenkins is run with "mvn hudson-dev:run")
      */
     public @CheckForNull static VersionNumber getVersion() {
         return toVersion(VERSION);
+    }
+    
+    /**
+     * Gets Java minimal level required to run this Jenkins instance.
+     * @return Minimal Java level or {@code null} if it cannot be determined
+     * @since TODO
+     */
+    public @CheckForNull static VersionNumber getJavaMinLevel() {
+        return toVersion(JAVA_MIN_LEVEL);
+    }
+    
+    /**
+     * Gets Java minimal level required to run this Jenkins instance.
+     * @return Minimal Java level or {@link #DEFAULT_JAVA_MIN_LEVEL} if it cannot be determined
+     * @since TODO
+     */
+    public @Nonnull static VersionNumber getJavaMinLevelOrDefault() {
+        VersionNumber level = toVersion(JAVA_MIN_LEVEL);
+        return level != null ? level : DEFAULT_JAVA_MIN_LEVEL;
     }
 
     /**

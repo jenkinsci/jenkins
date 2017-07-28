@@ -62,6 +62,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -600,5 +601,48 @@ public class JenkinsTest {
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
         assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+    }
+    
+    @Test
+    @Issue("JENKINS-45842")
+    public void testGetJavaMinLevel() throws Exception {
+        VersionNumber javaMinLevel = Jenkins.getJavaMinLevel();
+        assertNotNull("Java Min Level is undefined in the development mode", javaMinLevel);
+        // Hardcode is fine, it will be a minor problem when we start migrating to Java 9
+        assertThat(javaMinLevel, equalTo(new VersionNumber("8")));
+    }
+    
+    @Test
+    @Issue("JENKINS-45842")
+    public void testGetJavaMinLevelFromSystemProperty() throws Exception {
+        String oldValue = System.getProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME);
+        try {
+            System.setProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME, "9");
+            Jenkins.computeVersions(j.jenkins.servletContext);
+            
+            VersionNumber javaMinLevel = Jenkins.getJavaMinLevel();
+            assertNotNull("Java Min Level is undefined in the development mode", javaMinLevel);
+            // Hardcode is fine, it will be a minor problem when we start migrating to Java 9
+            assertThat(javaMinLevel, equalTo(new VersionNumber("9")));
+        } finally {
+            System.setProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME, oldValue != null ? oldValue : Jenkins.getJavaMinLevelOrDefault().toString());
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-45842")
+    public void testGetJavaMinLevelFromNonNumericSystemProperty() throws Exception {
+        String oldValue = System.getProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME);
+        try {
+            // It's a valid version number, live with that
+            System.setProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME, "myjavabuild");
+            Jenkins.computeVersions(j.jenkins.servletContext);
+            
+            VersionNumber javaMinLevel = Jenkins.getJavaMinLevel();
+            assertNotNull("Java Min Level is undefined in the development mode", javaMinLevel);
+            assertThat(javaMinLevel.toString(), equalTo("myjavabuild" ));
+        } finally {
+            System.setProperty(Jenkins.ENFORCED_MIN_JAVA_LEVEL_PROPERTY_NAME, oldValue != null ? oldValue : Jenkins.getJavaMinLevelOrDefault().toString());
+        }
     }
 }
