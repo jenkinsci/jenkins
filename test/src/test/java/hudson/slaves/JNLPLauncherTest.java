@@ -76,10 +76,10 @@ public class JNLPLauncherTest {
     public void testLaunch() throws Exception {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
 
-        Computer c = addTestSlave();
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c));
     }
-    
+        
     /**
      * Starts a JNLP agent and makes sure it successfully connects to Jenkins. 
      */
@@ -89,7 +89,7 @@ public class JNLPLauncherTest {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
         File workDir = tmpDir.newFolder("workDir");
         
-        Computer c = addTestSlave();
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-workDir", workDir.getAbsolutePath()));
         assertTrue("Remoting work dir should have been created", new File(workDir, "remoting").exists());
     }
@@ -100,19 +100,29 @@ public class JNLPLauncherTest {
      */
     @Test
     public void testHeadlessLaunch() throws Exception {
-        Computer c = addTestSlave();
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
         // make sure that onOffline gets called just the right number of times
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
     
     @Test
-    @Issue("JENKINS-39370")
+    @Issue("JENKINS-44112")
     public void testHeadlessLaunchWithWorkDir() throws Exception {
+        Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
+        
+        Computer c = addTestSlave(true);
+        launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless"));
+        assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
+    }
+    
+    @Test
+    @Issue("JENKINS-39370")
+    public void testHeadlessLaunchWithCustomWorkDir() throws Exception {
         Assume.assumeFalse("Skipping JNLPLauncherTest.testLaunch because we are running headless", GraphicsEnvironment.isHeadless());
         File workDir = tmpDir.newFolder("workDir");
         
-        Computer c = addTestSlave();
+        Computer c = addTestSlave(false);
         launchJnlpAndVerify(c, buildJnlpArgs(c).add("-arg","-headless", "-workDir", workDir.getAbsolutePath()));
         assertEquals(1, ComputerListener.all().get(ListenerImpl.class).offlined);
     }
@@ -159,6 +169,15 @@ public class JNLPLauncherTest {
         args.add("-headless","-basedir");
         args.add(j.createTmpDir());
         args.add("-nosecurity","-jnlp", getJnlpLink(c));
+        
+        if (c instanceof SlaveComputer) {
+            SlaveComputer sc = (SlaveComputer)c;
+            ComputerLauncher launcher = sc.getLauncher();
+            if (launcher instanceof JNLPLauncher) {
+                args.add(((JNLPLauncher)launcher).getWorkDirSettings().toCommandLineArgs(sc));
+            }
+        }
+        
         return args;
     }
 

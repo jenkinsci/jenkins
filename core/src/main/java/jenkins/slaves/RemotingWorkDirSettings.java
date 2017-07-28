@@ -29,9 +29,14 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import hudson.slaves.SlaveComputer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -121,6 +126,41 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     public Descriptor<RemotingWorkDirSettings> getDescriptor() {
         return Jenkins.getInstance().getDescriptor(RemotingWorkDirSettings.class);
     }
+
+    /**
+     * Gets list of command-line arguments for the work directory.
+     * @param computer Computer, for which the arguments are being created
+     * @return Non-modifiable list of command-line arguments
+     */
+    public List<String> toCommandLineArgs(@Nonnull SlaveComputer computer) {
+        if(disabled) {
+            return Collections.emptyList();
+        }
+        
+        ArrayList<String> args = new ArrayList<>();
+        args.add("-workDir");
+        if (workDirPath == null) {
+            Slave node = computer.getNode();
+            if (node == null) {
+                // It is not possible to launch this node anyway.
+                return Collections.emptyList();
+            }
+            args.add(node.getRemoteFS());
+        } else {
+            args.add(workDirPath);
+        }
+        
+        if (!DEFAULT_INTERNAL_DIR.equals(internalDir)) {
+            args.add("-internalDir");
+            args.add(internalDir);;
+        }
+        
+        if (failIfWorkDirIsMissing) {
+            args.add(" -failIfWorkDirIsMissing"); 
+        }
+        
+        return Collections.unmodifiableList(args);
+    }
     
     /**
      * Gets a command line string, which can be passed to agent start command.
@@ -131,6 +171,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
      *         if the Computer type is not {@link SlaveComputer}.
      */
     @Nonnull
+    @Restricted(NoExternalUse.class)
     public String toCommandLineString(@Nonnull SlaveComputer computer) {
         if(disabled) {
             return "";
