@@ -130,8 +130,15 @@ public class JNLPLauncherTest {
         JNLPLauncher jnlpLauncher = (JNLPLauncher)launcher;
         assertNotNull("Work Dir Settings should be defined", 
                 jnlpLauncher.getWorkDirSettings());
-        assertTrue("Work directory should be disabled for the migrated agebt", 
+        assertTrue("Work directory should be disabled for the migrated agent", 
                 jnlpLauncher.getWorkDirSettings().isDisabled());
+    }
+    
+    @Issue("JENKINS-44112")
+    public void testDefaults() throws Exception {
+        String errorMsg = "Work directory should be disabled for agents created via old API";
+        assertTrue(errorMsg, new JNLPLauncher().getWorkDirSettings().isDisabled());
+        assertTrue(errorMsg, new JNLPLauncher(null, null).getWorkDirSettings().isDisabled());
     }
 
     @TestExtension("testHeadlessLaunch")

@@ -81,17 +81,33 @@ public class JNLPLauncher extends ComputerLauncher {
         // TODO: Enable workDir by default in API? Otherwise classes inheriting from JNLPLauncher
         // will need to enable the feature by default as well.
         // https://github.com/search?q=org%3Ajenkinsci+%22extends+JNLPLauncher%22&type=Code
-        this(tunnel, vmargs, RemotingWorkDirSettings.getDefaultLegacyValue());
+        this(tunnel, vmargs, RemotingWorkDirSettings.getDisabledDefaults());
     }
 
+    /**
+     * @deprecated This Launcher does not enable the work directory.
+     *             It is recommended to use {@link #JNLPLauncher(boolean)}
+     */
     @Deprecated
     public JNLPLauncher() {
-        this(null,null);
+        this(false);
+    }
+    
+    /**
+     * Constructor with default options.
+     * 
+     * @param enableWorkDir If {@code true}, the work directory will be enabled with default settings.
+     */
+    public JNLPLauncher(boolean enableWorkDir) {
+        this(null, null, enableWorkDir 
+                ? RemotingWorkDirSettings.getEnabledDefaults() 
+                : RemotingWorkDirSettings.getDisabledDefaults());
     }
     
     protected Object readResolve() {
         if (workDirSettings == null) {
-            workDirSettings = RemotingWorkDirSettings.getDefaultLegacyValue();
+            // For the migrated code agents are always disabled
+            workDirSettings = RemotingWorkDirSettings.getDisabledDefaults();
         }
         return this;
     }
@@ -123,7 +139,7 @@ public class JNLPLauncher extends ComputerLauncher {
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
     /**
-     * gets 
+     * Gets work directory options as a String. 
      * @param computer
      * @return 
      */

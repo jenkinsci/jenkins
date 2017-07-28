@@ -47,6 +47,8 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     
     private static final String DEFAULT_INTERNAL_DIR = "remoting";
     private static final RemotingWorkDirSettings LEGACY_DEFAULT = new RemotingWorkDirSettings(true, null, DEFAULT_INTERNAL_DIR, false);
+    private static final RemotingWorkDirSettings ENABLED_DEFAULT = new RemotingWorkDirSettings(false, null, DEFAULT_INTERNAL_DIR, false);
+    
     
     private final boolean disabled;
     @CheckForNull
@@ -167,11 +169,20 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     }
     
     /**
-     * Gets legacy value for the migrated agents.
+     * Gets default settings for the disabled work directory.
      * 
      * @return Legacy value: disabled work directory.
      */
-    public static RemotingWorkDirSettings getDefaultLegacyValue() {
+    @Nonnull
+    public static RemotingWorkDirSettings getDisabledDefaults() {
         return LEGACY_DEFAULT;
+    }
+    
+    /**
+     * Gets default settings of the enabled work directory.
+     */
+    @Nonnull
+    public static RemotingWorkDirSettings getEnabledDefaults() {
+        return ENABLED_DEFAULT;
     }
 }
