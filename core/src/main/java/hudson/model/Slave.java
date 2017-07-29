@@ -225,7 +225,8 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        return launcher == null ? new JNLPLauncher() : launcher;
+        // Default launcher does not use Work Directory
+        return launcher == null ? new JNLPLauncher(false) : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {
@@ -504,7 +505,7 @@ public abstract class Slave extends Node implements Serializable {
         // convert the old format to the new one
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPLauncher()
+                    ? new JNLPLauncher(false)
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)

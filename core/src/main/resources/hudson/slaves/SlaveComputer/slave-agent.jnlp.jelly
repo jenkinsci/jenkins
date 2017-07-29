@@ -66,6 +66,22 @@ THE SOFTWARE.
           <argument>-tunnel</argument>
           <argument>${it.launcher.tunnel}</argument>
         </j:if>
+        <j:if test="${not it.launcher.workDirSettings.disabled}">
+          <argument>-workDir</argument>
+          <j:choose>
+            <j:when test="${it.launcher.workDirSettings.useAgentRootDir}">
+              <argument>${it.node.remoteFS}</argument>
+            </j:when>
+            <j:otherwise>
+              <argument>${it.launcher.workDirSettings.workDirPath}</argument>
+            </j:otherwise>
+          </j:choose>
+          <argument>-internalDir</argument>
+          <argument>${it.launcher.workDirSettings.internalDir}</argument>
+          <j:if test="${it.launcher.workDirSettings.failIfWorkDirIsMissing}">
+            <argument>-failIfWorkDirIsMissing</argument>
+          </j:if>
+        </j:if>
 
         <argument>-url</argument>
         <argument>${rootURL}</argument>
