@@ -53,6 +53,11 @@ public class JnlpSlaveAgentProtocol2 extends AgentProtocol {
         return false;
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
     /**
      * {@inheritDoc}
      */

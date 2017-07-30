@@ -69,11 +69,6 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     public boolean isDeprecated() {
         return true;
     }
-
-    @Override
-    public DeprecationCause getDeprecationCause() {
-        return super.getDeprecationCause();
-    }
     
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
@@ -102,14 +97,6 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         } else {
             byte hash = Util.fromHexString(Jenkins.getActiveInstance().getLegacyInstanceId())[0];
             ENABLED = (hash % 10) == 0;
-        }
-    }
-    
-    private static final class DecprecationCauseImpl extends DeprecationCause {
-
-        @Override
-        public String getMessage() {
-            return "The protocol is unstable, see the Errata for more details";
         }
     }
 }

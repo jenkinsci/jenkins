@@ -38,12 +38,17 @@ public class CliProtocol2 extends CliProtocol {
         return false;
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+    
     /**
      * {@inheritDoc}
      */
     @Override
     public String getDisplayName() {
-        return "Jenkins CLI Protocol/2";
+        return "Jenkins CLI Protocol/2 (Deprecated)";
     }
 
     @Override

@@ -66,18 +66,6 @@ public abstract class AgentProtocol implements ExtensionPoint {
     }
     
     /**
-     * Gets the deprecation cause for internal use like logging.
-     * 
-     * UI is implemented by the optional {@code deprecationCause.jelly} file.
-     * @return Deprecation cause or {@code null} if there is no info.
-     *         {@code null} does not mean the method is not deprecated, use {@link #isDeprecated()} for such purpose.
-     */
-    @CheckForNull
-    public DeprecationCause getDeprecationCause() {
-        return null;
-    }
-    
-    /**
      * Protocol name.
      *
      * This is a short string that consists of printable ASCII chars. Sent by the client to select the protocol.
@@ -117,16 +105,5 @@ public abstract class AgentProtocol implements ExtensionPoint {
                 return p;
         }
         return null;
-    }
-    
-    /**
-     * Describes the deprecation cause of the class.
-     * 
-     * @since TODO
-     */
-    public abstract static class DeprecationCause {
-        
-        @Nonnull
-        public abstract String getMessage();
     }
 }

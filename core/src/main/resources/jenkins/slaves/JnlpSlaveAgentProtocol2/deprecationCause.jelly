@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  ${%message}
+  <a href="https://github.com/jenkinsci/remoting/blob/master/docs/protocols.md#jnlp2-connect-errata">${%Errata}</a>
+</j:jelly>
