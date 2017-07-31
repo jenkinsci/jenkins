@@ -41,6 +41,7 @@ import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+import java.io.Closeable;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.StandardOpenOption;
@@ -51,7 +52,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -1801,6 +1801,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
 	    }
         } finally {
+            IOUtils.closeQuietly(listener);
             onEndBuilding();
         }
     }
@@ -1815,23 +1816,33 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
-        RunT build = job.getBuild();
+        Closeable closeable = logger;
+        try {
+            RunT build = job.getBuild();
 
-        // Global log filters
-        for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
-            logger = filter.decorateLogger(build, logger);
-        }
-
-        // Project specific log filters
-        if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
-            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
-            for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
-                logger = bw.decorateLogger((AbstractBuild) build, logger);
+            // Global log filters
+            for (ConsoleLogFilter filter : ConsoleLogFilter.all()) {
+                logger = filter.decorateLogger(build, logger);
             }
-        }
 
-        listener = new StreamBuildListener(logger,charset);
-        return listener;
+            // Project specific log filters
+            if (project instanceof BuildableItemWithBuildWrappers && build instanceof AbstractBuild) {
+                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+                for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                    logger = bw.decorateLogger((AbstractBuild) build, logger);
+                }
+            }
+
+            listener = new StreamBuildListener(logger, charset, closeable);
+            return listener;
+        } catch (IOException | InterruptedException e) {
+            try {
+                closeable.close();
+            } catch (IOException e1) {
+                e.addSuppressed(e1);
+            }
+            throw e;
+        }
     }
 
     /**
