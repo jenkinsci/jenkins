@@ -57,7 +57,7 @@ public class CliProtocol extends AgentProtocol {
      */
     @Override
     public String getDisplayName() {
-        return "Jenkins CLI Protocol/1 (Deprecated)";
+        return "Jenkins CLI Protocol/1 (deprecated, unencrypted)";
     }
 
     @Override
