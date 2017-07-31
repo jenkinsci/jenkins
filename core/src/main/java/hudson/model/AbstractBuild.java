@@ -826,7 +826,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             cs = changeSet.get();
 
         if (cs==null)
-            cs = calcChangeSet(null);
+            cs = calcChangeSet(this.getParent().getScm());
 
         // defensive check. if the calculation fails (such as through an exception),
         // set a dummy value so that it'll work the next time. the exception will
@@ -858,7 +858,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return ChangeLogSet.createEmpty(this);
 
         try {
-            return this.scm.parse(this, changelogFile, scm);
+            return this.scm.parse(this, scm, changelogFile);
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         } catch (SAXException e) {
