@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Set;
+import jenkins.AgentProtocolTest;
+import jenkins.slaves.DeprecatedAgentProtocolMonitor;
 import org.apache.commons.io.FileUtils;
 import static org.hamcrest.Matchers.*;
 import org.junit.Before;
@@ -40,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
@@ -115,13 +118,14 @@ public class SetupWizardTest {
     @Test
     @Issue("JENKINS-45841")
     public void shouldDisableUnencryptedProtocolsByDefault() throws Exception {
-        Set<String> agentProtocols = j.jenkins.getAgentProtocols();
-        assertThat("Encrypted JNLP4-protocols protocol should be enabled", agentProtocols, 
-                contains("JNLP4-connect"));
-        assertThat("Non-encrypted JNLP protocols should be disabled by default", agentProtocols, 
-                not(contains("JNLP-connect", "JNLP2-connect", "JNLP3-connect", "CLI-connect")));
+        AgentProtocolTest.assertProtocols(j.jenkins, true, 
+                "Encrypted JNLP4-protocols protocol should be enabled", "JNLP4-connect");
+        AgentProtocolTest.assertProtocols(j.jenkins, false, 
+                "Non-encrypted JNLP protocols should be disabled by default", 
+                "JNLP-connect", "JNLP2-connect", "CLI-connect");
+        AgentProtocolTest.assertMonitorNotActive();
     }
-    
+        
     private String jsonRequest(JenkinsRule.WebClient wc, String path) throws Exception {
         // Try to call the actions method to retrieve the data
         final Page res;

@@ -40,6 +40,7 @@ public class CliProtocol2 extends CliProtocol {
 
     @Override
     public boolean isDeprecated() {
+        // We do not recommend it though it may be required for Remoting CLI
         return true;
     }
     
