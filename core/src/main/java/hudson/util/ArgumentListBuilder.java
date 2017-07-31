@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * Used to build up arguments for a process invocation.
@@ -127,6 +128,16 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
     }
 
     public ArgumentListBuilder add(String... args) {
+        for (String arg : args) {
+            add(arg);
+        }
+        return this;
+    }
+    
+    /**
+     * @since TODO 
+     */
+    public ArgumentListBuilder add(@Nonnull Iterable<String> args) {
         for (String arg : args) {
             add(arg);
         }
