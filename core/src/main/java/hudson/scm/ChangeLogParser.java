@@ -42,6 +42,17 @@ import org.xml.sax.SAXException;
 public abstract class ChangeLogParser {
 
     /**
+     * @since
+     */
+    public ChangeLogSet<? extends Entry> parse(Run build, File changelogFile, SCM scm) throws IOException, SAXException {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, File.class)) {
+            return parse((AbstractBuild) build, changelogFile, scm);
+        } else {
+            throw new AbstractMethodError("You must override the newer overload of parse");
+        }
+    }
+
+    /**
      * @since 1.568
      */
     public ChangeLogSet<? extends Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
@@ -50,6 +61,11 @@ public abstract class ChangeLogParser {
         } else {
             throw new AbstractMethodError("You must override the newer overload of parse");
         }
+    }
+
+    @Deprecated
+    public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile, SCM scm) throws IOException, SAXException {
+        return parse((Run) build, changelogFile, scm);
     }
 
     @Deprecated

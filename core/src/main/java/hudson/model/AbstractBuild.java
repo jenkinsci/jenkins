@@ -569,7 +569,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                         }
 
                         build.scm = scm.createChangeLogParser();
-                        build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet());
+                        build.changeSet = new WeakReference<ChangeLogSet<? extends Entry>>(build.calcChangeSet(scm));
 
                         for (SCMListener l : SCMListener.all())
                             try {
@@ -826,7 +826,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             cs = changeSet.get();
 
         if (cs==null)
-            cs = calcChangeSet();
+            cs = calcChangeSet(null);
 
         // defensive check. if the calculation fails (such as through an exception),
         // set a dummy value so that it'll work the next time. the exception will
@@ -852,13 +852,13 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         return changelogFile.exists();
     }
 
-    private ChangeLogSet<? extends Entry> calcChangeSet() {
+    private ChangeLogSet<? extends Entry> calcChangeSet(SCM scm) {
         File changelogFile = new File(getRootDir(), "changelog.xml");
         if (!changelogFile.exists())
             return ChangeLogSet.createEmpty(this);
 
         try {
-            return scm.parse(this,changelogFile);
+            return this.scm.parse(this, changelogFile, scm);
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         } catch (SAXException e) {

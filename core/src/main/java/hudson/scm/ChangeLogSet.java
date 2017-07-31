@@ -61,6 +61,17 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     @Deprecated
     public final AbstractBuild<?,?> build;
     private final RepositoryBrowser</* ideally T */?> browser;
+    private final SCM scm;
+
+    /**
+     * @since
+     */
+    protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser, SCM scm) {
+        this.run = run;
+        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
+        this.browser = browser;
+        this.scm = scm;
+    }
 
     /**
      * @since 1.568
@@ -69,6 +80,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
         this.run = run;
         build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
         this.browser = browser;
+        this.scm = null;
     }
 
     @Deprecated
@@ -95,6 +107,12 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     public RepositoryBrowser<?> getBrowser() {
         return browser;
     }
+
+    /**
+     * Repository SCM of this change set.
+     * @return a SCM instance or null.
+     */
+    public SCM getSCM() { return scm; }
 
     /**
      * Returns true if there's no change.
