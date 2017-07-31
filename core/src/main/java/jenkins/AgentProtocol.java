@@ -98,6 +98,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
         return ExtensionList.lookup(AgentProtocol.class);
     }
 
+    @CheckForNull
     public static AgentProtocol of(String protocolName) {
         for (AgentProtocol p : all()) {
             String n = p.getName();
