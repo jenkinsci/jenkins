@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.util.StreamTaskListener;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,16 +41,26 @@ import java.util.List;
  * @author Kohsuke Kawaguchi
  */
 public class StreamBuildListener extends StreamTaskListener implements BuildListener {
+    private final Closeable[] additionalClosables;
+
+    public StreamBuildListener(OutputStream out, Charset charset, Closeable... additionalClosables) {
+        super(out, charset);
+        this.additionalClosables = additionalClosables == null ? null : additionalClosables.clone();
+    }
+
     public StreamBuildListener(OutputStream out, Charset charset) {
         super(out, charset);
+        additionalClosables = null;
     }
 
     public StreamBuildListener(File out, Charset charset) throws IOException {
         super(out, charset);
+        additionalClosables = null;
     }
 
     public StreamBuildListener(OutputStream w) {
         super(w);
+        additionalClosables = null;
     }
 
     /**
@@ -60,10 +71,12 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
     @Deprecated
     public StreamBuildListener(PrintStream w) {
         super(w);
+        additionalClosables = null;
     }
 
     public StreamBuildListener(PrintStream w, Charset charset) {
         super(w,charset);
+        additionalClosables = null;
     }
 
     public void started(List<Cause> causes) {
@@ -78,6 +91,42 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
 
     public void finished(Result result) {
         getLogger().println("Finished: "+result);
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            super.close();
+        } catch (IOException e) {
+            if (additionalClosables != null) {
+                for (Closeable c: additionalClosables) {
+                    try {
+                        c.close();
+                    } catch (IOException e1) {
+                        e.addSuppressed(e1);
+                    }
+                }
+            }
+            throw e;
+        }
+        if (additionalClosables != null) {
+            IOException e = null;
+            for (Closeable c : additionalClosables) {
+                try {
+                    c.close();
+                } catch (IOException e1) {
+                    if (e == null) {
+                        e = e1;
+                    } else {
+                        e.addSuppressed(e1);
+                    }
+                }
+            }
+            if (e != null) {
+                throw e;
+            }
+        }
+
     }
 
     private static final long serialVersionUID = 1L;
