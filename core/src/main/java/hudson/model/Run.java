@@ -774,6 +774,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public String toString() {
+        if (project == null) {
+            return "<broken data JENKINS-45892>";
+        }
         return project.getFullName() + " #" + number;
     }
 
@@ -1920,12 +1923,45 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        getDataFile().write(this);
+        synchronized (saving) {
+            saving.add(this);
+        }
+        try {
+            getDataFile().write(this);
+        } finally {
+            synchronized (saving) {
+                saving.remove(this);
+            }
+        }
         SaveableListener.fireOnChange(this, getDataFile());
     }
 
     private @Nonnull XmlFile getDataFile() {
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
+    }
+
+    private static final Set<Run<?, ?>> saving = new HashSet<>();
+
+    private Object writeReplace() {
+        synchronized (saving) {
+            if (saving.contains(this)) {
+                return this;
+            } else {
+                LOGGER.warning("JENKINS-45892: improper backreference detected in " + getDataFile());
+                return new Replacer(this);
+            }
+        }
+    }
+
+    /** Not {@link Serializable} for now, since we are only expecting to use this from XStream. */
+    private static class Replacer {
+        private final String id;
+        Replacer(Run<?, ?> r) {
+            id = r.getExternalizableId();
+        }
+        private Object readResolve() {
+            return fromExternalizableId(id);
+        }
     }
 
     /**
