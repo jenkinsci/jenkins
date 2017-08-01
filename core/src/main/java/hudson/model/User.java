@@ -50,6 +50,7 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -731,8 +732,41 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             throw FormValidation.error(Messages.User_IllegalFullname(fullName));
         }
         if(BulkChange.contains(this))   return;
-        getConfigFile().write(this);
+        synchronized (saving) {
+            saving.add(this);
+        }
+        try {
+            getConfigFile().write(this);
+        } finally {
+            synchronized (saving) {
+                saving.remove(this);
+            }
+        }
         SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    private static final Set<User> saving = new HashSet<>();
+
+    private Object writeReplace() {
+        synchronized (saving) {
+            if (saving.contains(this)) {
+                return this;
+            } else {
+                LOGGER.log(Level.WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", this);
+                return new Replacer(this);
+            }
+        }
+    }
+
+    /** Not {@link Serializable} for now, since we are only expecting to use this from XStream. */
+    private static class Replacer {
+        private final String id;
+        Replacer(User u) {
+            id = u.getId();
+        }
+        private Object readResolve() {
+            return getById(id, false);
+        }
     }
 
     /**

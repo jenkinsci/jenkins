@@ -25,10 +25,13 @@
 package hudson.model;
 
 import hudson.tasks.Mailer;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.runners.model.Statement;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class UserRestartTest {
@@ -56,6 +59,39 @@ public class UserRestartTest {
                 assertEquals("bob@nowhere.net", email.getAddress());
             }
         });
+    }
+
+    @Issue("JENKINS-45892")
+    @Test
+    public void badSerialization() {
+        rr.addStep(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                rr.j.jenkins.setSecurityRealm(rr.j.createDummySecurityRealm());
+                FreeStyleProject p = rr.j.createFreeStyleProject("p");
+                User u = User.get("pqhacker");
+                u.setFullName("Pat Q. Hacker");
+                u.save();
+                p.addProperty(new BadProperty(u));
+                String text = p.getConfigFile().asString();
+                System.out.println(text);
+                assertThat(text, not(containsString("<fullName>Pat Q. Hacker</fullName>")));
+            }
+        });
+        rr.addStep(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                FreeStyleProject p = rr.j.jenkins.getItemByFullName("p", FreeStyleProject.class);
+                User u = p.getProperty(BadProperty.class).user; // do not inline: call User.get second
+                assertEquals(User.get("pqhacker"), u);
+            }
+        });
+    }
+    static class BadProperty extends JobProperty<FreeStyleProject> {
+        final User user;
+        BadProperty(User user) {
+            this.user = user;
+        }
     }
 
 }
