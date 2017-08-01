@@ -28,7 +28,6 @@ import hudson.tasks.Mailer;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class UserRestartTest {
@@ -37,24 +36,18 @@ public class UserRestartTest {
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
     @Test public void persistedUsers() throws Exception {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", true);
-                bob.setFullName("Bob");
-                bob.addProperty(new Mailer.UserProperty("bob@nowhere.net"));
-            }
+        rr.then(r -> {
+            User bob = User.getById("bob", true);
+            bob.setFullName("Bob");
+            bob.addProperty(new Mailer.UserProperty("bob@nowhere.net"));
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", false);
-                assertNotNull(bob);
-                assertEquals("Bob", bob.getFullName());
-                Mailer.UserProperty email = bob.getProperty(Mailer.UserProperty.class);
-                assertNotNull(email);
-                assertEquals("bob@nowhere.net", email.getAddress());
-            }
+        rr.then(r -> {
+            User bob = User.getById("bob", false);
+            assertNotNull(bob);
+            assertEquals("Bob", bob.getFullName());
+            Mailer.UserProperty email = bob.getProperty(Mailer.UserProperty.class);
+            assertNotNull(email);
+            assertEquals("bob@nowhere.net", email.getAddress());
         });
     }
 
