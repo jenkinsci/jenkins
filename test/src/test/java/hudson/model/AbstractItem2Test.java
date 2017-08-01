@@ -21,20 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.model;
 
-import hudson.XmlFile;
-import java.io.File;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
-public class RunActionTest {
+public class AbstractItem2Test {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
@@ -45,28 +43,28 @@ public class RunActionTest {
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                FreeStyleProject p = rr.j.createFreeStyleProject("p");
-                FreeStyleBuild b1 = rr.j.buildAndAssertSuccess(p);
-                FreeStyleBuild b2 = rr.j.buildAndAssertSuccess(p);
-                b2.addAction(new BadAction(b1));
-                b2.save();
-                String text = new XmlFile(new File(b2.getRootDir(), "build.xml")).asString();
+                FreeStyleProject p1 = rr.j.createFreeStyleProject("p1");
+                p1.setDescription("this is p1");
+                FreeStyleProject p2 = rr.j.createFreeStyleProject("p2");
+                p2.addProperty(new BadProperty(p1));
+                String text = p2.getConfigFile().asString();
                 System.out.println(text);
-                assertThat(text, not(containsString("<owner class=\"build\">")));
+                assertThat(text, not(containsString("<description>this is p1</description>")));
             }
         });
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                FreeStyleProject p = rr.j.jenkins.getItemByFullName("p", FreeStyleProject.class);
-                assertEquals(p.getBuildByNumber(1), p.getBuildByNumber(2).getAction(BadAction.class).owner);
+                FreeStyleProject p1 = rr.j.jenkins.getItemByFullName("p1", FreeStyleProject.class);
+                FreeStyleProject p2 = rr.j.jenkins.getItemByFullName("p2", FreeStyleProject.class);
+                assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
             }
         });
     }
-    static class BadAction extends InvisibleAction {
-        final Run<?, ?> owner; // oops, should have been transient and used RunAction2
-        BadAction(Run<?, ?> owner) {
-            this.owner = owner;
+    static class BadProperty extends JobProperty<FreeStyleProject> {
+        final FreeStyleProject other;
+        BadProperty(FreeStyleProject other) {
+            this.other = other;
         }
     }
 

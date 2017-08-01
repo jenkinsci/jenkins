@@ -1947,7 +1947,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             if (saving.contains(this)) {
                 return this;
             } else {
-                LOGGER.warning("JENKINS-45892: improper backreference detected in " + getDataFile());
+                // Unfortunately we cannot easily tell which XML file is actually being saved here, at least without implementing a custom Converter.
+                LOGGER.log(WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", this);
                 return new Replacer(this);
             }
         }
