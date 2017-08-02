@@ -44,12 +44,9 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
@@ -514,16 +511,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        synchronized (saving) {
-            saving.add(this);
-        }
-        try {
-            getConfigFile().write(this);
-        } finally {
-            synchronized (saving) {
-                saving.remove(this);
-            }
-        }
+        getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
@@ -531,20 +519,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return Items.getConfigFile(this);
     }
 
-    private static final Set<AbstractItem> saving = new HashSet<>();
-
     private Object writeReplace() {
-        synchronized (saving) {
-            if (saving.contains(this)) {
-                return this;
-            } else {
-                LOGGER.log(Level.WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", this);
-                return new Replacer(this);
-            }
-        }
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
-
-    /** Not {@link Serializable} for now, since we are only expecting to use this from XStream. */
     private static class Replacer {
         private final String fullName;
         Replacer(AbstractItem i) {

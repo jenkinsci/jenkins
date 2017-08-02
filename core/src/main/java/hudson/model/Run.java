@@ -1922,16 +1922,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        synchronized (saving) {
-            saving.add(this);
-        }
-        try {
-            getDataFile().write(this);
-        } finally {
-            synchronized (saving) {
-                saving.remove(this);
-            }
-        }
+        getDataFile().write(this);
         SaveableListener.fireOnChange(this, getDataFile());
     }
 
@@ -1939,21 +1930,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
     }
 
-    private static final Set<Run<?, ?>> saving = new HashSet<>();
-
     private Object writeReplace() {
-        synchronized (saving) {
-            if (saving.contains(this)) {
-                return this;
-            } else {
-                // Unfortunately we cannot easily tell which XML file is actually being saved here, at least without implementing a custom Converter.
-                LOGGER.log(WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", this);
-                return new Replacer(this);
-            }
-        }
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
     }
-
-    /** Not {@link Serializable} for now, since we are only expecting to use this from XStream. */
     private static class Replacer {
         private final String id;
         Replacer(Run<?, ?> r) {
