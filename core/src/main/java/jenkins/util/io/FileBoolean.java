@@ -30,7 +30,7 @@ public class FileBoolean {
     }
 
     public FileBoolean(Class owner, String name) {
-        this(new File(Jenkins.getInstance().getRootDir(),owner.getName().replace('$','.')+'/'+name));
+        this(new File(Jenkins.getInstance().getRootDir(),owner.getName().replace('$','.')+File.separatorChar+name));
     }
 
     /**
