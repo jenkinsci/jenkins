@@ -551,8 +551,12 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             fullName = i.getFullName();
         }
         private Object readResolve() {
-            // May or may not work:
-            return Jenkins.getInstance().getItemByFullName(fullName);
+            Jenkins j = Jenkins.getInstanceOrNull();
+            if (j == null) {
+                return null;
+            }
+            // Will generally only work if called after job loading:
+            return j.getItemByFullName(fullName);
         }
     }
 
