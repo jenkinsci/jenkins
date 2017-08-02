@@ -51,8 +51,8 @@ public class RunActionTest {
                 b2.addAction(new BadAction(b1));
                 b2.save();
                 String text = new XmlFile(new File(b2.getRootDir(), "build.xml")).asString();
-                System.out.println(text);
                 assertThat(text, not(containsString("<owner class=\"build\">")));
+                assertThat(text, containsString("<id>p#1</id>"));
             }
         });
         rr.addStep(new Statement() {

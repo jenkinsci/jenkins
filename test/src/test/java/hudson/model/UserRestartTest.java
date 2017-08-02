@@ -74,8 +74,8 @@ public class UserRestartTest {
                 u.save();
                 p.addProperty(new BadProperty(u));
                 String text = p.getConfigFile().asString();
-                System.out.println(text);
                 assertThat(text, not(containsString("<fullName>Pat Q. Hacker</fullName>")));
+                assertThat(text, containsString("<id>pqhacker</id>"));
             }
         });
         rr.addStep(new Statement() {

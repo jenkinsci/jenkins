@@ -48,8 +48,8 @@ public class AbstractItem2Test {
                 FreeStyleProject p2 = rr.j.createFreeStyleProject("p2");
                 p2.addProperty(new BadProperty(p1));
                 String text = p2.getConfigFile().asString();
-                System.out.println(text);
                 assertThat(text, not(containsString("<description>this is p1</description>")));
+                assertThat(text, containsString("<fullName>p1</fullName>"));
             }
         });
         rr.addStep(new Statement() {
