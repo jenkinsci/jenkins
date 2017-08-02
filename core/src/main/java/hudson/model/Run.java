@@ -1789,13 +1789,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     listener.finished(result);
                     listener.closeQuietly();
                 }
-                if (logger != null) {
-                    try {
-                        logger.close();
-                    } catch (IOException x) {
-                        LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
-                    }
-                }
 
                 try {
                     save();
@@ -1807,10 +1800,17 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 getParent().logRotate();
             } catch (Exception e) {
-		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-	    }
+                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+            }
         } finally {
             onEndBuilding();
+            if (logger != null) {
+                try {
+                    logger.close();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
+                }
+            }
         }
     }
 
