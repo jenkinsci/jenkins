@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
 public abstract class ChangeLogParser {
 
     /**
-     * @since
+     * @since TODO
      */
     public ChangeLogSet<? extends Entry> parse(Run build, SCM scm, File changelogFile) throws IOException, SAXException {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, SCM.class, File.class)) {
@@ -63,6 +63,11 @@ public abstract class ChangeLogParser {
         }
     }
 
+    /**
+     * Method for compatibility with AbstractBuild.
+     * SCM plugins should override this method to populate
+     * ChangeLogSet SCM attribute in AbstractBuild projects.
+     */
     @Deprecated
     public ChangeLogSet<? extends Entry> parse(AbstractBuild build, SCM scm, File changelogFile) throws IOException, SAXException {
         return parse((Run) build, scm.getEffectiveBrowser(), changelogFile);

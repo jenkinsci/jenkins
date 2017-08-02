@@ -31,6 +31,7 @@ import hudson.model.User;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.annotation.CheckForNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -61,10 +62,11 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
     @Deprecated
     public final AbstractBuild<?,?> build;
     private final RepositoryBrowser</* ideally T */?> browser;
+    @CheckForNull
     private final SCM scm;
 
     /**
-     * @since
+     * @since TODO
      */
     protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser, SCM scm) {
         this.run = run;
@@ -77,10 +79,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * @since 1.568
      */
     protected ChangeLogSet(Run<?,?> run, RepositoryBrowser<?> browser) {
-        this.run = run;
-        build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
-        this.browser = browser;
-        this.scm = null;
+        this(run, browser, null);
     }
 
     @Deprecated
@@ -112,6 +111,7 @@ public abstract class ChangeLogSet<T extends ChangeLogSet.Entry> implements Iter
      * Repository SCM of this change set.
      * @return a SCM instance or null.
      */
+    @CheckForNull
     public SCM getSCM() { return scm; }
 
     /**
