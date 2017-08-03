@@ -74,6 +74,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @Deprecated
     @Nonnull
     public List<Action> getActions() {
+        //this double checked synchronization is only safe if the field 'actions' is volatile
         if (actions == null) {
             synchronized (this) {
                 if (actions == null) {
