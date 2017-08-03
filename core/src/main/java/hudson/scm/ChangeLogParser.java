@@ -44,9 +44,9 @@ public abstract class ChangeLogParser {
     /**
      * @since TODO
      */
-    public ChangeLogSet<? extends Entry> parse(Run build, SCM scm, File changelogFile) throws IOException, SAXException {
+    public ChangeLogSet<? extends Entry> parseRun(Run build, SCM scm, File changelogFile) throws IOException, SAXException {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, SCM.class, File.class)) {
-            return parse((AbstractBuild) build, scm, changelogFile);
+            return parseRun((AbstractBuild) build, scm, changelogFile);
         } else {
             throw new AbstractMethodError("You must override the newer overload of parse");
         }
@@ -69,7 +69,7 @@ public abstract class ChangeLogParser {
      * ChangeLogSet SCM attribute in AbstractBuild projects.
      */
     @Deprecated
-    public ChangeLogSet<? extends Entry> parse(AbstractBuild build, SCM scm, File changelogFile) throws IOException, SAXException {
+    public ChangeLogSet<? extends Entry> parseRun(AbstractBuild build, SCM scm, File changelogFile) throws IOException, SAXException {
         return parse((Run) build, scm.getEffectiveBrowser(), changelogFile);
     }
 
