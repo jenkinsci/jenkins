@@ -48,7 +48,7 @@ public abstract class ChangeLogParser {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parseRun", AbstractBuild.class, SCM.class, File.class)) {
             return parseRun((AbstractBuild) build, scm, changelogFile);
         } else {
-            throw new AbstractMethodError("You must override the newer overload of parse");
+            throw new AbstractMethodError("You must override the newer overload of parseRun");
         }
     }
 
