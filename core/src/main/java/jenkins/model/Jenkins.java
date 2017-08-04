@@ -2447,6 +2447,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return expandVariablesForDirectory(buildsDir, job);
     }
 
+    /**
+     * If the configured buildsDir has it's default value or has been changed.
+     *
+     * @return true if default value.
+     */
+    @Restricted(NoExternalUse.class)
     public boolean isDefaultBuildDir() {
         return DEFAULT_BUILDS_DIR.equals(buildsDir);
     }
