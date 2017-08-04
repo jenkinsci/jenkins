@@ -109,7 +109,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>slave-installer</artifactId>
-      <version>1.5</version>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
