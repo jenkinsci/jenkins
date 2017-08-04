@@ -858,7 +858,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
             return ChangeLogSet.createEmpty(this);
 
         try {
-            return this.scm.parseRun(this, scm, changelogFile);
+            return this.scm.parse(this, scm, changelogFile);
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse "+changelogFile,e);
         } catch (SAXException e) {
