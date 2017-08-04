@@ -20,6 +20,15 @@ import jenkins.model.Jenkins;
  * Implementations of this extension point is singleton, and its {@link #handle(Socket)} method
  * gets invoked concurrently whenever a new connection comes in.
  *
+ * <h2>Extending UI</h2>
+ * <dl>
+ *  <dt>description.jelly</dt>
+ *  <dd>Optional protocol description</dd>
+ *  <dt>deprecationCause.jelly</dt>
+ *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()}, 
+ *      clarifies the deprecation reason and provides extra documentation links</dd>
+ * </dl>
+ * 
  * @author Kohsuke Kawaguchi
  * @since 1.467
  * @see TcpSlaveAgentListener

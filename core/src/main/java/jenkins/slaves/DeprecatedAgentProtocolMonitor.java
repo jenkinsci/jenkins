@@ -42,25 +42,26 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
 /**
- * Monitors enabled protocols and warns if a protocol is deprecated. 
+ * Monitors enabled protocols and warns if an {@link AgentProtocol} is deprecated. 
  * 
  * @author Oleg Nenashev
  * @since TODO
+ * @see AgentProtocol
  */
 @Extension
-@Symbol("remotingProtocolVersions")
+@Symbol("deprecatedAgentProtocol")
 @Restricted(NoExternalUse.class)
 public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
     
     private static final Logger LOGGER = Logger.getLogger(DeprecatedAgentProtocolMonitor.class.getName());
 
     public DeprecatedAgentProtocolMonitor() {
-        super(AgentProtocol.class.getName() + "-deprecated");
+        super();
     }
 
     @Override
     public String getDisplayName() {
-        return "Deprecated Remoting protocols";
+        return Messages.DeprecatedAgentProtocolMonitor_displayName();
     }
 
     @Override

@@ -44,15 +44,6 @@ import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
  * is generated once and used forever, which makes this whole scheme
  * less secure.
  *
- * <h2>UI Extensions</h2>
- * <dl>
- *  <dt>description.jelly</dt>
- *  <dd>Optional protocol description</dd>
- *  <dt>deprecationCause.jelly</dt>
- *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()}, 
- *      clarifies the deprecation reason and provides extra documentation links</dd>
- * </dl>
- * 
  * @author Kohsuke Kawaguchi
  * @since 1.467
  */
