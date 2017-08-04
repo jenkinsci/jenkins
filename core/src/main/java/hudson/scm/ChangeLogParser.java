@@ -45,7 +45,7 @@ public abstract class ChangeLogParser {
      * @since TODO
      */
     public ChangeLogSet<? extends Entry> parseRun(Run build, SCM scm, File changelogFile) throws IOException, SAXException {
-        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parse", AbstractBuild.class, SCM.class, File.class)) {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogParser.class, getClass(), "parseRun", AbstractBuild.class, SCM.class, File.class)) {
             return parseRun((AbstractBuild) build, scm, changelogFile);
         } else {
             throw new AbstractMethodError("You must override the newer overload of parse");
