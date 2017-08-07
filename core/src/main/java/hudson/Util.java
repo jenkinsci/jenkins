@@ -572,10 +572,9 @@ public class Util {
      * @param forParent the parent the child should be a descendant of
      * @param potentialChild the path to check
      * @return true if so
-     * @throws IOException potentially from {@link Files#isSameFile(Path, Path)}
      * @since FIXME
      */
-    public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
+    public static boolean isDescendant(File forParent, File potentialChild) {
         Path child = potentialChild.getAbsoluteFile().toPath().normalize();
         Path parent = forParent.getAbsoluteFile().toPath().normalize();
         return child.startsWith(parent);
