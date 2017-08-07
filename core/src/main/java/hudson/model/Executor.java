@@ -444,7 +444,7 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
         } catch(Exception | Error e) {
-            LOGGER.log(SEVERE, getName()+" Unexpected executor death", e);
+            LOGGER.log(SEVERE, getName()+": Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
                 finish2();
