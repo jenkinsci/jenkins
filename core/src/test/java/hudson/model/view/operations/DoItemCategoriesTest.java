@@ -10,24 +10,25 @@ import java.util.Collections;
 import static hudson.model.view.operations.HeadersTest.mockResponse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by haswell on 8/7/17.
  */
 public class DoItemCategoriesTest {
 
-
     @Test
     public void ensureViewDoItemCategoriesWorks() {
         DoItemCategories doItemCategories =
-                new DoItemCategories(mock(View.class));
+                spy(new DoItemCategories(mock(View.class)));
 
 
-        given(
-                doItemCategories.listDescriptors()
-        ).willReturn(Collections.emptyList());
+        doReturn(Collections.emptyList())
+                .when(doItemCategories)
+                .listDescriptors();
+
+
+
 
         final StaplerRequest request = mock(StaplerRequest.class);
         final StaplerResponse response = mockResponse();
