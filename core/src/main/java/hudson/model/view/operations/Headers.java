@@ -54,13 +54,13 @@ public class Headers {
     );
 
 
-    static final class Values {
+    public static final class Values {
 
-        static final String NO_CACHE = "no cache";
+        public static final String NO_CACHE = "no cache";
 
-        static final String NO_STORE = "no store";
+        public static final String NO_STORE = "no store";
 
-        static final String MUST_REVALIDATE  = "must revalidate";
+        public static final String MUST_REVALIDATE  = "must revalidate";
 
 
     }
