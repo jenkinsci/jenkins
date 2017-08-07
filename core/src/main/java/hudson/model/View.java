@@ -36,7 +36,6 @@ import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
 import hudson.model.listeners.ItemListener;
-import hudson.model.view.operations.DoItemCategories;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -62,6 +61,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
+import jenkins.model.item_category.Category;
+import jenkins.model.item_category.ItemCategory;
 import jenkins.scm.RunWithSCM;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
@@ -69,7 +70,11 @@ import jenkins.util.xml.XMLUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.jelly.JellyContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.filters.StringInputStream;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -92,6 +97,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +116,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jenkins.scm.RunWithSCM.*;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -129,7 +136,7 @@ import org.xml.sax.SAXException;
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
  * which is included in the "new view" page. This page should have some
- * description of what the view is about. 
+ * description of what the view is about.
  * </ul>
  *
  * @author Kohsuke Kawaguchi
@@ -154,7 +161,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
-    
+
     /**
      * If true, only show relevant executors
      */
@@ -164,10 +171,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant queue items
      */
     protected boolean filterQueue;
-    
+
     protected transient List<Action> transientActions;
-
-
 
     /**
      * List of {@link ViewProperty}s configured for this view.
@@ -287,7 +292,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -360,7 +365,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-    
+
     /**
      * Enables or disables automatic refreshes of the view.
      * By default, automatic refreshes are enabled.
@@ -369,14 +374,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isAutomaticRefreshEnabled() {
         return true;
     }
-    
+
     /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
         return filterExecutors;
     }
-    
+
     /**
      * If true, only show relevant queue items
      */
@@ -415,7 +420,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return getOwner().getPrimaryView()==this;
     }
-    
+
     public List<Computer> getComputers() {
         Computer[] computers = Jenkins.getInstance().getComputers();
 
@@ -530,11 +535,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	}
     	return result;
     }
-    
+
     public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this); 
+        transientActions = TransientViewActionFactory.createAllFor(this);
     }
-    
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -914,15 +919,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
-            
+
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine((String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName())));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
-        }        
+        }
     }
-    
+
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
@@ -935,7 +940,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return o.getName();
                 }
             });
-        
+
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
 
@@ -972,7 +977,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
+        updateTransientActions();
 
         save();
 
@@ -1005,7 +1010,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <p>
      * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
-     * 
+     *
      * @return
      *      null if fails.
      */
@@ -1048,7 +1053,55 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
-        return new DoItemCategories(this).invoke(req, rsp, iconStyle);
+
+        rsp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        rsp.addHeader("Pragma", "no-cache");
+        rsp.addHeader("Expires", "0");
+
+        getOwner().checkPermission(Item.CREATE);
+        Categories categories = new Categories();
+        int order = 0;
+        JellyContext ctx;
+
+        if (StringUtils.isNotBlank(iconStyle)) {
+            ctx = new JellyContext();
+            ctx.setVariable("resURL", req.getContextPath() + Jenkins.RESOURCE_PATH);
+        } else {
+            ctx = null;
+        }
+        for (TopLevelItemDescriptor descriptor : DescriptorVisibilityFilter.apply(getOwner().getItemGroup(), Items.all(Jenkins.getAuthentication(), getOwner().getItemGroup()))) {
+            ItemCategory ic = ItemCategory.getCategory(descriptor);
+            Map<String, Serializable> metadata = new HashMap<String, Serializable>();
+
+            // Information about Item.
+            metadata.put("class", descriptor.getId());
+            metadata.put("order", ++order);
+            metadata.put("displayName", descriptor.getDisplayName());
+            metadata.put("description", descriptor.getDescription());
+            metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
+            String iconClassName = descriptor.getIconClassName();
+            if (StringUtils.isNotBlank(iconClassName)) {
+                metadata.put("iconClassName", iconClassName);
+                if (ctx != null) {
+                    Icon icon = IconSet.icons
+                            .getIconByClassSpec(StringUtils.join(new String[]{iconClassName, iconStyle}, " "));
+                    if (icon != null) {
+                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(ctx));
+                    }
+                }
+            }
+
+            Category category = categories.getItem(ic.getId());
+            if (category != null) {
+                category.getItems().add(metadata);
+            } else {
+                List<Map<String, Serializable>> temp = new ArrayList<Map<String, Serializable>>();
+                temp.add(metadata);
+                category = new Category(ic.getId(), ic.getDisplayName(), ic.getDescription(), ic.getOrder(), ic.getMinToShow(), temp);
+                categories.getItems().add(category);
+            }
+        }
+        return categories;
     }
 
     public void doRssAll( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {

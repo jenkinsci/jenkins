@@ -26,7 +26,6 @@ package hudson.model;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import hudson.model.view.operations.Headers;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -91,7 +90,7 @@ public class ViewTest {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
     }
 
-    @Issue("JENKINS")
+    @Issue("JENKINS-43848")
     @Test public void testNoCacheHeadersAreSet() throws Exception {
         List<NameValuePair> responseHeaders = j.createWebClient()
                 .goTo("view/all/itemCategories", "application/json")
@@ -105,10 +104,10 @@ public class ViewTest {
             values.put(p.getName(), p.getValue());
         }
 
-        String resp = values.get(Headers.CACHE_CONTROL);
+        String resp = values.get("Cache-Control");
         assertThat(resp, is("no cache, no store, must revalidate"));
-        assertThat(values.get(Headers.EXPIRES), is("0"));
-        assertThat(values.get(Headers.PRAGMA), is(Headers.Values.NO_CACHE));
+        assertThat(values.get("Expires"), is("0"));
+        assertThat(values.get("Pragma"), is("no-cache"));
     }
 
     /**
