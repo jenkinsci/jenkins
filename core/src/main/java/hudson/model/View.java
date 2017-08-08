@@ -136,7 +136,7 @@ import org.xml.sax.SAXException;
  * <li>
  * {@link View} subtypes need the <tt>newViewDetail.jelly</tt> page,
  * which is included in the "new view" page. This page should have some
- * description of what the view is about.
+ * description of what the view is about. 
  * </ul>
  *
  * @author Kohsuke Kawaguchi
@@ -161,7 +161,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Message displayed in the view page.
      */
     protected String description;
-
+    
     /**
      * If true, only show relevant executors
      */
@@ -171,7 +171,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * If true, only show relevant queue items
      */
     protected boolean filterQueue;
-
+    
     protected transient List<Action> transientActions;
 
     /**
@@ -292,7 +292,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public String getDescription() {
         return description;
     }
-
+    
     /**
      * Gets the view properties configured for this view.
      * @since 1.406
@@ -365,7 +365,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isEditable() {
         return true;
     }
-
+    
     /**
      * Enables or disables automatic refreshes of the view.
      * By default, automatic refreshes are enabled.
@@ -374,14 +374,14 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isAutomaticRefreshEnabled() {
         return true;
     }
-
+    
     /**
      * If true, only show relevant executors
      */
     public boolean isFilterExecutors() {
         return filterExecutors;
     }
-
+    
     /**
      * If true, only show relevant queue items
      */
@@ -420,7 +420,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public boolean isDefault() {
         return getOwner().getPrimaryView()==this;
     }
-
+    
     public List<Computer> getComputers() {
         Computer[] computers = Jenkins.getInstance().getComputers();
 
@@ -535,11 +535,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
     	}
     	return result;
     }
-
+    
     public synchronized void updateTransientActions() {
-        transientActions = TransientViewActionFactory.createAllFor(this);
+        transientActions = TransientViewActionFactory.createAllFor(this); 
     }
-
+    
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -919,15 +919,15 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for(TopLevelItem item : items) {
-
+            
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine((String.format("Adding url=%s,displayName=%s",
                             item.getSearchUrl(), item.getDisplayName())));
             }
             sib.add(item.getSearchUrl(), item.getDisplayName());
-        }
+        }        
     }
-
+    
     @Override
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder sib = super.makeSearchIndex();
@@ -940,7 +940,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     return o.getName();
                 }
             });
-
+        
         // add the display name for each item in the search index
         addDisplayNamesToSearchIndex(sib, getItems());
 
@@ -977,7 +977,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rename(req.getParameter("name"));
 
         getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();
+        updateTransientActions();  
 
         save();
 
@@ -1010,7 +1010,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * <p>
      * This method should call {@link ModifiableItemGroup#doCreateItem(StaplerRequest, StaplerResponse)}
      * and then add the newly created item to this view.
-     *
+     * 
      * @return
      *      null if fails.
      */
@@ -1057,7 +1057,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         rsp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         rsp.addHeader("Pragma", "no-cache");
         rsp.addHeader("Expires", "0");
-
         getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
