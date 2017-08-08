@@ -163,6 +163,22 @@ public class JNLPLauncher extends ComputerLauncher {
         public String getDisplayName() {
             return Messages.JNLPLauncher_displayName();
         }
+        
+        /**
+         * Checks if Work Dir settings should be displayed.
+         * 
+         * This flag is checked in {@code config.jelly} before displaying the 
+         * {@link JNLPLauncher#workDirSettings} property.
+         * By default the configuration is displayed only for {@link JNLPLauncher},
+         * but the implementation can be overridden.
+         * @return {@code true} if work directories are supported by the launcher type.
+         * @since TODO
+         */
+        public boolean isWorkDirSupported() {
+            // This property is included only for JNLPLauncher by default. 
+            // Causes JENKINS-45895 in the case of includes otherwise
+            return DescriptorImpl.class.equals(getClass());
+        }
     };
 
     /**

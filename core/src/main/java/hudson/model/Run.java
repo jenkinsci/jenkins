@@ -51,7 +51,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -774,6 +773,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public String toString() {
+        if (project == null) {
+            return "<broken data JENKINS-45892>";
+        }
         return project.getFullName() + " #" + number;
     }
 
@@ -1938,6 +1940,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
     }
 
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(Run<?, ?> r) {
+            id = r.getExternalizableId();
+        }
+        private Object readResolve() {
+            return fromExternalizableId(id);
+        }
+    }
+
     /**
      * Gets the log of the build as a string.
      * @return Returns the log or an empty string if it has not been found
@@ -2329,7 +2344,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } catch (NumberFormatException x) {
             throw new IllegalArgumentException(x);
         }
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            return null;
+        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;

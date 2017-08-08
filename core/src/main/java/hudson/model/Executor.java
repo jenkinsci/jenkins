@@ -355,6 +355,10 @@ public class Executor extends Thread implements ModelObject {
                         LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                     SubTask task = workUnit.work;
                     Executable executable = task.createExecutable();
+                    if (executable == null) {
+                        String displayName = task instanceof Queue.Task ? ((Queue.Task) task).getFullDisplayName() : task.getDisplayName();
+                        LOGGER.log(WARNING, "{0} cannot be run (for example because it is disabled)", displayName);
+                    }
                     lock.writeLock().lock();
                     try {
                         Executor.this.executable = executable;
@@ -387,7 +391,7 @@ public class Executor extends Thread implements ModelObject {
                 // by tasks. In such case Jenkins starts the workUnit in order
                 // to report results to console outputs.
                 if (executable == null) {
-                    throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
+                    return;
                 }
 
                 if (executable instanceof Actionable) {
