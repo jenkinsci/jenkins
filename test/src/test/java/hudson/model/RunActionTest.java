@@ -24,42 +24,20 @@
 
 package hudson.model;
 
-import hudson.tasks.Mailer;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import org.junit.Test;
+import hudson.XmlFile;
+import java.io.File;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
-public class UserRestartTest {
+public class RunActionTest {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
-
-    @Test public void persistedUsers() throws Exception {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", true);
-                bob.setFullName("Bob");
-                bob.addProperty(new Mailer.UserProperty("bob@nowhere.net"));
-            }
-        });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", false);
-                assertNotNull(bob);
-                assertEquals("Bob", bob.getFullName());
-                Mailer.UserProperty email = bob.getProperty(Mailer.UserProperty.class);
-                assertNotNull(email);
-                assertEquals("bob@nowhere.net", email.getAddress());
-            }
-        });
-    }
 
     @Issue("JENKINS-45892")
     @Test
@@ -67,30 +45,28 @@ public class UserRestartTest {
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                rr.j.jenkins.setSecurityRealm(rr.j.createDummySecurityRealm());
                 FreeStyleProject p = rr.j.createFreeStyleProject("p");
-                User u = User.get("pqhacker");
-                u.setFullName("Pat Q. Hacker");
-                u.save();
-                p.addProperty(new BadProperty(u));
-                String text = p.getConfigFile().asString();
-                assertThat(text, not(containsString("<fullName>Pat Q. Hacker</fullName>")));
-                assertThat(text, containsString("<id>pqhacker</id>"));
+                FreeStyleBuild b1 = rr.j.buildAndAssertSuccess(p);
+                FreeStyleBuild b2 = rr.j.buildAndAssertSuccess(p);
+                b2.addAction(new BadAction(b1));
+                b2.save();
+                String text = new XmlFile(new File(b2.getRootDir(), "build.xml")).asString();
+                assertThat(text, not(containsString("<owner class=\"build\">")));
+                assertThat(text, containsString("<id>p#1</id>"));
             }
         });
         rr.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 FreeStyleProject p = rr.j.jenkins.getItemByFullName("p", FreeStyleProject.class);
-                User u = p.getProperty(BadProperty.class).user; // do not inline: call User.get second
-                assertEquals(User.get("pqhacker"), u);
+                assertEquals(p.getBuildByNumber(1), p.getBuildByNumber(2).getAction(BadAction.class).owner);
             }
         });
     }
-    static class BadProperty extends JobProperty<FreeStyleProject> {
-        final User user;
-        BadProperty(User user) {
-            this.user = user;
+    static class BadAction extends InvisibleAction {
+        final Run<?, ?> owner; // oops, should have been transient and used RunAction2
+        BadAction(Run<?, ?> owner) {
+            this.owner = owner;
         }
     }
 
