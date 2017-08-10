@@ -2226,7 +2226,8 @@ public final class FilePath implements Serializable {
                     throw e;    // the remote side completed successfully, so the error must be local
                 } catch (ExecutionException x) {
                     // report both errors
-                    throw new IOException(Functions.printThrowable(e),x);
+                    e.addSuppressed(x);
+                    throw e;
                 } catch (TimeoutException _) {
                     // remote is hanging
                     throw e;
