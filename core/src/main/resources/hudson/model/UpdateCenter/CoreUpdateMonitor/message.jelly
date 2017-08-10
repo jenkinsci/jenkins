@@ -40,8 +40,8 @@ THE SOFTWARE.
         </j:choose>
       </j:when>
       <j:when test="${upJob!=null and upJob.error != null}">
+        ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
         <form method="post" action="${rootURL}/updateCenter/upgrade">
-          ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
           <j:if test="${ucData.canUpgrade()}">
             <f:submit value="${%Retry}"/>
           </j:if>
@@ -51,8 +51,8 @@ THE SOFTWARE.
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
       <j:otherwise>
-        <form method="post" action="${rootURL}/updateCenter/upgrade">
         ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+        <form method="post" action="${rootURL}/updateCenter/upgrade">
           <j:if test="${ucData.canUpgrade()}">
             <f:submit value="${%Or Upgrade Automatically}"/>
           </j:if>

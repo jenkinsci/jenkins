@@ -1949,6 +1949,24 @@ body.no-sticker #bottom-sticker {
   content: ": ";
 }
 
+.manage-messages .alert.alert-info a {
+  text-decoration: underline;
+}
+
+.manage-messages .alert.alert-info a:hover {
+  text-decoration: none;
+}
+
+.manage-messages .alert form {
+  position: relative;
+  float: right;
+  margin: -6px 0 0 0 !important;
+}
+
+.manage-messages .alert form span {
+    margin: 0 !important;
+}
+
 .manage-option {
   border: 1px solid transparent;
   margin-bottom: 4px;
