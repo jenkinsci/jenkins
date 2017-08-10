@@ -24,6 +24,7 @@
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
@@ -222,7 +223,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException, AbortException {
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
@@ -263,13 +264,13 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 if (!allowEmptyArchive) {
                 	build.setResult(Result.FAILURE);
                 }
-                return;
             }
+        } catch (java.nio.file.AccessDeniedException e) {
+            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
-            return;
         }
     }
 
