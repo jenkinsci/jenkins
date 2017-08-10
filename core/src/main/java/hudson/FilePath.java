@@ -2201,7 +2201,10 @@ public final class FilePath implements Serializable {
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
                 if (cause == null) cause = e;
-                throw new IOException(cause);
+                throw cause instanceof IOException
+                        ? (IOException) cause
+                        : new IOException(cause)
+                ;
             }
         } else {
             // remote -> local copy
@@ -2234,7 +2237,10 @@ public final class FilePath implements Serializable {
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
                 if (cause == null) cause = e;
-                throw new IOException(cause);
+                throw cause instanceof IOException
+                        ? (IOException) cause
+                        : new IOException(cause)
+                ;
             }
         }
     }
