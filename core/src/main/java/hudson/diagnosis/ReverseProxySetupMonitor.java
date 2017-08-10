@@ -27,12 +27,16 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.*;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -56,27 +60,19 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
         // return true to always inject an HTML fragment to perform a test
         return true;
     }
-    
 
     public HttpResponse doTest() {
         String referer = Stapler.getCurrentRequest().getReferer();
         Jenkins j = Jenkins.getInstance();
         // May need to send an absolute URL, since handling of HttpRedirect with a relative URL does not currently honor X-Forwarded-Proto/Port at all.
-        String redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup?rest=" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "&encoded=a%2Fb";
+        String redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup/" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
         LOGGER.log(Level.FINE, "coming from {0} and redirecting to {1}", new Object[] {referer, redirect});
         return new HttpRedirect(redirect);
     }
 
-    public void doTestForReverseProxySetup(
-            StaplerRequest request, 
-            StaplerResponse rsp, 
-            @QueryParameter("rest") String rest, 
-            @QueryParameter("encoded") String encoded
-    ) {
+    public void getTestForReverseProxySetup(String rest) {
         Jenkins j = Jenkins.getInstance();
         String inferred = j.getRootUrlFromRequest() + "manage";
-        
-        checkEncoded(encoded);
         // TODO this could also verify that j.getRootUrl() has been properly configured, and send a different message if not
         if (rest.startsWith(inferred)) { // not using equals due to JENKINS-24014
             throw HttpResponses.ok();
@@ -85,8 +81,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
             throw HttpResponses.errorWithoutStack(404, inferred + " vs. " + rest);
         }
     }
-    
-    
 
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
@@ -105,15 +99,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     @Override
     public String getDisplayName() {
         return Messages.ReverseProxySetupMonitor_DisplayName();
-    }
-
-
-    private void checkEncoded(String encoded) {
-        if(!"a/b".equals(encoded)) {
-            throw HttpResponses.errorWithoutStack(404, "expected 'a/b'.  Got '" + encoded +
-                    "' (Are you in Apache Tomcat and have you run Tomcat with " +
-                    "-Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true?)");
-        }
     }
 }
 
