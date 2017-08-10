@@ -67,3 +67,17 @@
     line-height: 1.4em;
     margin-bottom: 1.4em;
 }
+
+#visible-am-container .am-message .alert form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 15px !important;
+}
+
+#visible-am-container .am-message .alert form span {
+    margin: 0 !important;
+}
+
+#visible-am-container .am-message .alert {
+    margin-bottom: 0 !important;
+}
