@@ -32,7 +32,7 @@ public class ReverseProxySetupMonitorTest {
         proxySetupMonitor = new ReverseProxySetupMonitor();
     }
     
-    
+
     @Test
     public void ensureSplittingIsCorrect() throws UnsupportedEncodingException {
         given(jenkins.getRootUrl()).willReturn("http://localhost:8080");
@@ -42,13 +42,13 @@ public class ReverseProxySetupMonitorTest {
         String expected = "http://localhost:8080administrativeMonitor/hudson.diagnosis.ReverseProxySetupMonitor/testForReverseProxySetup/referrer/";
         assertThat(expected, is(s));
     }
-    
+
     @Test(expected = HttpResponses.HttpResponseException.class)
     public void ensureIncorrectlyEncodedURLFails() {
         given(jenkins.getRootUrl()).willReturn("http://localhost:8080");
         String referrer = proxySetupMonitor.buildRedirect("referrer", jenkins);
         ReverseProxySetupMonitor.checkInput(referrer);
-        
+
     }
 
 }
