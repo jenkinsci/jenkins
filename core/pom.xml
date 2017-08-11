@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.250</stapler.version>
+    <stapler.version>1.252</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
@@ -95,6 +95,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
+      <exclusions>
+        <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
@@ -608,6 +614,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <exclusions>
+        <exclusion> <!-- pick up from Stapler -->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
