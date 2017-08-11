@@ -266,6 +266,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 }
             }
         } catch (java.nio.file.AccessDeniedException e) {
+            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
             throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         } catch (IOException e) {
             Util.displayIOException(e,listener);
