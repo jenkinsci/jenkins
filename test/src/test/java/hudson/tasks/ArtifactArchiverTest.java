@@ -42,7 +42,9 @@ import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
 
+import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.util.VirtualFile;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.structs.describable.DescribableModel;
@@ -290,11 +292,20 @@ public class ArtifactArchiverTest {
 
     @Test @Issue("JENKINS-21905")
     public void archiveNotReadable() throws Exception {
-        String FILENAME = "myfile";
+        assumeFalse(Functions.isWindows()); // No permission support
+
+        final String FILENAME = "myfile";
         DumbSlave slave = j.createOnlineSlave(Label.get("target"));
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new Shell("touch "+FILENAME+"; chmod 040 "+FILENAME+"; ls -l"));
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath file = build.getWorkspace().child(FILENAME);
+                file.act(new RemoveReadPermission());
+                return true;
+            }
+        });
         p.getPublishersList().add(new ArtifactArchiver(FILENAME));
         p.setAssignedNode(slave);
 
@@ -303,5 +314,14 @@ public class ArtifactArchiverTest {
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
+    }
+
+    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+        @Override
+        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            assertTrue(f.createNewFile());
+            assertTrue(f.setReadable(false));
+            return null;
+        }
     }
 }
