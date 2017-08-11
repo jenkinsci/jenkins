@@ -105,7 +105,7 @@ public class ViewTest {
         }
 
         String resp = values.get("Cache-Control");
-        assertThat(resp, is("no cache, no store, must revalidate"));
+        assertThat(resp, is("no-cache, no-store, must-revalidate"));
         assertThat(values.get("Expires"), is("0"));
         assertThat(values.get("Pragma"), is("no-cache"));
     }
