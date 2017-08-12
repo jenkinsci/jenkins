@@ -1917,7 +1917,7 @@ body.no-sticker #bottom-sticker {
 /* ----------- Manage Jenkins ----------- */
 
 .manage-messages {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .manage-messages a, .manage-messages a:visited {
@@ -1964,7 +1964,7 @@ body.no-sticker #bottom-sticker {
 }
 
 .manage-messages .alert form span {
-    margin: 0 !important;
+    margin: 0 0 0 4px !important;
 }
 
 .manage-option {

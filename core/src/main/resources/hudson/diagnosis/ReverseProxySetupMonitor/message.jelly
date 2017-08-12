@@ -36,9 +36,9 @@ THE SOFTWARE.
       }
     );
   </script>
-  <div class="error" id="redirect-error" style="display:none">
+  <div id="redirect-error" class="alert alert-danger" style="display:none">
+    ${%blurb}
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      ${%blurb}
       <f:submit name="yes" value="${%More Info}"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>

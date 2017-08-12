@@ -41,22 +41,22 @@ THE SOFTWARE.
       </j:when>
       <j:when test="${upJob!=null and upJob.error != null}">
         ${%UpgradeFailed(ucData.core.version,upJob.errorMessage,rootURL+'/updateCenter/')}
+        <j:if test="${ucData.canUpgrade()}">
         <form method="post" action="${rootURL}/updateCenter/upgrade">
-          <j:if test="${ucData.canUpgrade()}">
-            <f:submit value="${%Retry}"/>
-          </j:if>
+          <f:submit value="${%Retry}"/>
         </form>
+        </j:if>
       </j:when>
       <j:when test="${upJob!=null}">
         ${%UpgradeProgress(ucData.core.version,rootURL+'/updateCenter/')}
       </j:when>
       <j:otherwise>
         ${%NewVersionAvailable(ucData.core.version,ucData.core.url)}
+        <j:if test="${ucData.canUpgrade()}">
         <form method="post" action="${rootURL}/updateCenter/upgrade">
-          <j:if test="${ucData.canUpgrade()}">
-            <f:submit value="${%Or Upgrade Automatically}"/>
-          </j:if>
+          <f:submit value="${%Or Upgrade Automatically}"/>
         </form>
+        </j:if>
       </j:otherwise>
     </j:choose>
   </div>
