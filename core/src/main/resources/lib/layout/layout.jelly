@@ -79,7 +79,6 @@ ${h.initPageVariables(context)}
 
 <j:set var="isMSIE" value="${userAgent.contains('MSIE')}"/>
 <j:set var="_" value="${request.getSession()}"/>
-<j:set var="_" value="${h.configureAutoRefresh(request, response, attrs.norefresh!=null and !attrs.norefresh.equals(false))}"/>
 <j:set var="extensionsAvailable" value="${h.extensionsAvailable}"/>
 <j:if test="${request.servletPath=='/' || request.servletPath==''}">
   ${h.advertiseHeaders(response)}
