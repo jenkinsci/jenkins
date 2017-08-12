@@ -1053,6 +1053,10 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     @Restricted(DoNotUse.class)
     public Categories doItemCategories(StaplerRequest req, StaplerResponse rsp, @QueryParameter String iconStyle) throws IOException, ServletException {
+
+        rsp.addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        rsp.addHeader("Pragma", "no-cache");
+        rsp.addHeader("Expires", "0");
         getOwner().checkPermission(Item.CREATE);
         Categories categories = new Categories();
         int order = 0;
