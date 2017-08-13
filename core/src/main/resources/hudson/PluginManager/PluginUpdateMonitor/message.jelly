@@ -25,11 +25,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="alert alert-danger">
-    <dl>
-      <dt>${%RequiredPluginUpdates}</dt>
+    <h4>${%RequiredPluginUpdates}</h4>
+    <ul>
       <j:forEach var="p" items="${it.pluginsToBeUpdated}">
-      <dd><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></dd>
+      <li><j:out value="${p.pluginName}"/> — <j:out value="${p.message}"/></li>
       </j:forEach>
-    </dl>
+    </ul>
   </div>
 </j:jelly>
