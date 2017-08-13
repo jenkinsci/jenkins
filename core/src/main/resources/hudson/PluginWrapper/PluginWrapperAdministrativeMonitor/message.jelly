@@ -10,7 +10,7 @@
         <dt>${plugin.longName} v${plugin.version}</dt>
         <j:forEach items="${plugin.dependencyErrors}" var="d">
         <dd>${d}</dd>
-      </j:forEach>
+        </j:forEach>
     </dl>
     </j:forEach>
   </div>
