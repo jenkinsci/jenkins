@@ -38,9 +38,9 @@ def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
 div(class: "alert alert-danger", role: "alert") {
-    strong {
-        text(_("blurb"))
-    }
+
+    text(_("blurb"))
+
     if (!coreWarnings.isEmpty()) {
         dl {
             dt {
@@ -66,10 +66,8 @@ div(class: "alert alert-danger", role: "alert") {
 }
 
 form(method: "post", action: "${rootURL}/${it.url}/forward") {
-    div {
-        if (!pluginWarnings.isEmpty()) {
-            f.submit(name: 'fix', value: _("pluginManager.link"))
-        }
-        f.submit(name: 'configure', value: _("configureSecurity.link"))
+    if (!pluginWarnings.isEmpty()) {
+        f.submit(name: 'fix', value: _("pluginManager.link"))
     }
+    f.submit(name: 'configure', value: _("configureSecurity.link"))
 }
