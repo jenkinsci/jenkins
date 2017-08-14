@@ -1949,11 +1949,11 @@ body.no-sticker #bottom-sticker {
   content: ": ";
 }
 
-.manage-messages .alert.alert-info a {
+.manage-messages .alert a {
   text-decoration: underline;
 }
 
-.manage-messages .alert.alert-info a:hover {
+.manage-messages .alert a:hover {
   text-decoration: none;
 }
 
