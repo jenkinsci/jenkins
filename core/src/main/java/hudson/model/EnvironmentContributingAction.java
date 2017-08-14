@@ -32,6 +32,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * {@link Action} that contributes environment variables during a build.
@@ -55,11 +56,13 @@ public interface EnvironmentContributingAction extends Action {
      * @param run
      *      The calling build. Never null.
      * @param node
-     *      The node execute on. Can be null.
+     *      The node execute on. Can be {@code null} when the Run is not binded to the node,
+     *      e.g. in Pipeline outside the {@code node() step}
      * @param env
      *      Environment variables should be added to this map.
+     * @since TODO
      */
-    default void buildEnvVars(Run<?, ?> run, EnvVars env, @CheckForNull Node node) {
+    default void buildEnvVars(@Nonnull Run<?, ?> run, @Nonnull EnvVars env, @CheckForNull Node node) {
         if (run instanceof AbstractBuild
                 && Util.isOverridden(EnvironmentContributingAction.class,
                                      getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
