@@ -37,10 +37,10 @@ THE SOFTWARE.
     );
   </script>
   <div id="redirect-error" class="alert alert-danger" style="display:none">
-    ${%blurb}
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%More Info}"/>
       <f:submit name="no" value="${%Dismiss}"/>
     </form>
+    ${%blurb}
   </div>
 </j:jelly>
