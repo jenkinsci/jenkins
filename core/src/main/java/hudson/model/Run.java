@@ -2153,7 +2153,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        ;
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getCompressedOutputStream(req);
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
