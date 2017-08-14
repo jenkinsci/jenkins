@@ -88,10 +88,10 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
     }
 
     /**
-     * Called to decorate logger for master/slave communication.
+     * Called to decorate logger for master/agent communication.
      *
      * @param computer
-     *      Slave computer for which the logger is getting decorated. Useful to do
+     *      Agent computer for which the logger is getting decorated. Useful to do
      *      contextual decoration.
      * @since 1.632
      */

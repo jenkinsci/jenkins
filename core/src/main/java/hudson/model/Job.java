@@ -23,14 +23,12 @@
  */
 package hudson.model;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
-
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.FeedAdapter;
 import hudson.PermalinkList;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -39,6 +37,8 @@ import hudson.model.Fingerprint.Range;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.ItemListener;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.SCM;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -63,15 +63,39 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
+import java.awt.Color;
+import java.awt.Paint;
+import java.io.File;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
+import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
+import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ProjectNamingStrategy;
+import jenkins.model.RunIdMigrator;
+import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
-import jenkins.util.io.OnMaster;
+import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.io.FileUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -84,6 +108,8 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.stapler.StaplerOverridable;
@@ -92,25 +118,8 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import javax.servlet.ServletException;
-
-import java.awt.*;
-import java.io.*;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-
-import static javax.servlet.http.HttpServletResponse.*;
-import jenkins.model.BuildDiscarderProperty;
-import jenkins.model.ModelObjectWithChildren;
-import jenkins.model.RunIdMigrator;
-import jenkins.model.lazy.LazyBuildMixIn;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -124,7 +133,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, OnMaster {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
+
+    private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
 
     /**
      * Next build number. Kept in a separate file because this is the only
@@ -206,24 +217,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     this.nextBuildNumber = Integer.parseInt(f.readTrim());
                 }
             } catch (NumberFormatException e) {
-                // try to infer the value of the next build number from the existing build records. See JENKINS-11563
-                File[] folders = buildDir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        return file.isDirectory() && file.getName().matches("[0-9]+");
-                    }
-                });
-
-                if (folders == null || folders.length == 0) {
-                    this.nextBuildNumber = 1;
+                LOGGER.log(Level.WARNING, "Corruption in {0}: {1}", new Object[] {f, e});
+                if (this instanceof LazyBuildMixIn.LazyLoadingJob) {
+                    // allow LazyBuildMixIn.onLoad to fix it
                 } else {
-                    Collection<Integer> foldersInt = Collections2.transform(Arrays.asList(folders), new Function<File, Integer>() {
-                        public Integer apply(File file) {
-                            return Integer.parseInt(file.getName());
-                        }
-                    });
-                    this.nextBuildNumber = Collections.max(foldersInt) + 1;
+                    RunT lB = getLastBuild();
+                    synchronized (this) {
+                        this.nextBuildNumber = lB != null ? lB.getNumber() + 1 : 1;
+                    }
+                    saveNextBuildNumber();
                 }
-                saveNextBuildNumber();
             }
         } else {
             // From the old Hudson, or doCreateItem. Create this file now.
@@ -262,20 +265,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 }
             }
         }
-    }
-
-    @Override
-    protected void performDelete() throws IOException, InterruptedException {
-        // if a build is in progress. Cancel it.
-        RunT lb = getLastBuild();
-        if (lb != null) {
-            Executor e = lb.getExecutor();
-            if (e != null) {
-                e.interrupt();
-                // should we block until the build is cancelled?
-            }
-        }
-        super.performDelete();
     }
 
     /*package*/ TextFile getNextBuildNumberFile() {
@@ -369,6 +358,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         env.put("JENKINS_SERVER_COOKIE",SERVER_COOKIE.get());
         env.put("HUDSON_SERVER_COOKIE",SERVER_COOKIE.get()); // Legacy compatibility
         env.put("JOB_NAME",getFullName());
+        env.put("JOB_BASE_NAME", getName());
         return env;
     }
 
@@ -384,13 +374,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
     public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        EnvVars env;
+        EnvVars env = new EnvVars();
 
-        if (node!=null) {
+        if (node != null) {
             final Computer computer = node.toComputer();
-            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
-        } else {
-            env = new EnvVars();
+            if (computer != null) {
+                // we need to get computer environment to inherit platform details 
+                env = computer.getEnvironment();
+                env.putAll(computer.buildEnvironment(listener));
+            }
         }
 
         env.putAll(getCharacteristicEnvVars());
@@ -435,15 +427,12 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     public synchronized void setBuildDiscarder(BuildDiscarder bd) throws IOException {
-        BulkChange bc = new BulkChange(this);
-        try {
+        try (BulkChange bc = new BulkChange(this)) {
             removeProperty(BuildDiscarderProperty.class);
             if (bd != null) {
                 addProperty(new BuildDiscarderProperty(bd));
             }
             bc.commit();
-        } finally {
-            bc.abort();
         }
     }
 
@@ -572,7 +561,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Gets the specific property, or null if the propert is not configured for
+     * Gets the specific property, or null if the property is not configured for
      * this job.
      */
     public <T extends JobProperty> T getProperty(Class<T> clazz) {
@@ -702,7 +691,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported(name="allBuilds",visibility=-2)
     @WithBridgeMethods(List.class)
     public RunList<RunT> getBuilds() {
-        return RunList.fromRuns(_getRuns().values());
+        return RunList.<RunT>fromRuns(_getRuns().values());
     }
 
     /**
@@ -734,7 +723,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Gets all the builds in a map.
      */
     public SortedMap<Integer, RunT> getBuildsAsMap() {
-        return Collections.unmodifiableSortedMap(_getRuns());
+        return Collections.<Integer, RunT>unmodifiableSortedMap(_getRuns());
     }
 
     /**
@@ -820,7 +809,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerResponse rsp) {
         try {
             // try to interpret the token as build number
-            return getBuildByNumber(Integer.valueOf(token));
+            return getBuildByNumber(Integer.parseInt(token));
         } catch (NumberFormatException e) {
             // try to map that to widgets
             for (Widget w : getWidgets()) {
@@ -848,7 +837,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @see RunMap
      */
     public File getBuildDir() {
-        Jenkins j = Jenkins.getInstance();
+        // we use the null check variant so that people can write true unit tests with a mock ItemParent
+        // and without a JenkinsRule. Such tests are of limited utility as there is a high risk of hitting
+        // some code that needs the singleton, but for persistence migration test cases it makes sense to permit
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return new File(getRootDir(), "builds");
         }
@@ -965,7 +957,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
     
     /**
-     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
      * 
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.
@@ -1057,7 +1049,84 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         return permalinks;
     }
-    
+
+    /**
+     * RSS feed for changes in this project.
+     *
+     * @since 2.60
+     */
+    public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        class FeedItem {
+            ChangeLogSet.Entry e;
+            int idx;
+
+            public FeedItem(ChangeLogSet.Entry e, int idx) {
+                this.e = e;
+                this.idx = idx;
+            }
+
+            Run<?, ?> getBuild() {
+                return e.getParent().build;
+            }
+        }
+
+        List<FeedItem> entries = new ArrayList<FeedItem>();
+        String scmDisplayName = "";
+        if (this instanceof SCMTriggerItem) {
+            SCMTriggerItem scmItem = (SCMTriggerItem) this;
+            List<String> scmNames = new ArrayList<>();
+            for (SCM s : scmItem.getSCMs()) {
+                scmNames.add(s.getDescriptor().getDisplayName());
+            }
+            scmDisplayName = " " + Util.join(scmNames, ", ");
+        }
+
+        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
+            int idx = 0;
+            if (r instanceof RunWithSCM) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
+                    for (ChangeLogSet.Entry e : c) {
+                        entries.add(new FeedItem(e, idx++));
+                    }
+                }
+            }
+        }
+        RSS.forwardToRss(
+                getDisplayName() + scmDisplayName + " changes",
+                getUrl() + "changes",
+                entries, new FeedAdapter<FeedItem>() {
+                    public String getEntryTitle(FeedItem item) {
+                        return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
+                    }
+
+                    public String getEntryUrl(FeedItem item) {
+                        return item.getBuild().getUrl() + "changes#detail" + item.idx;
+                    }
+
+                    public String getEntryID(FeedItem item) {
+                            return getEntryUrl(item);
+                        }
+
+                    public String getEntryDescription(FeedItem item) {
+                        StringBuilder buf = new StringBuilder();
+                        for (String path : item.e.getAffectedPaths())
+                            buf.append(path).append('\n');
+                        return buf.toString();
+                    }
+
+                    public Calendar getEntryTimestamp(FeedItem item) {
+                            return item.getBuild().getTimestamp();
+                        }
+
+                    public String getEntryAuthor(FeedItem entry) {
+                        return JenkinsLocationConfiguration.get().getAdminAddress();
+                    }
+                },
+                req, rsp);
+    }
+
+
+
     @Override public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         // not sure what would be really useful here. This needs more thoughts.
         // for the time being, I'm starting with permalinks
@@ -1150,6 +1219,26 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         int failCount = 0;
         int totalCount = 0;
         RunT i = getLastBuild();
+        RunT u = getLastFailedBuild();
+        if (i != null && u == null) {
+                // no failures, like ever
+                return new HealthReport(100, Messages._Job_BuildStability(Messages._Job_NoRecentBuildFailed()));
+        }
+        if (i != null && u.getNumber() <= i.getNumber()) {
+            SortedMap<Integer, ? extends RunT> runs = _getRuns();
+            if (runs instanceof RunMap) {
+                RunMap<RunT> runMap = (RunMap<RunT>) runs;
+                for (int index = i.getNumber(); index > u.getNumber() && totalCount < 5; index--) {
+                    if (runMap.runExists(index)) {
+                        totalCount++;
+                    }
+                }
+                if (totalCount < 5) {
+                    // start loading from the first failure as we counted the rest
+                    i = u;
+                }
+            }
+        }
         while (totalCount < 5 && i != null) {
             switch (i.getIconColor()) {
             case BLUE:
@@ -1205,26 +1294,27 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         JSONObject json = req.getSubmittedForm();
 
         try {
-            setDisplayName(json.optString("displayNameOrNull"));
+            try (BulkChange bc = new BulkChange(this)) {
+                setDisplayName(json.optString("displayNameOrNull"));
 
-            logRotator = null;
+                logRotator = null;
 
-            DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
-            JSONObject jsonProperties = json.optJSONObject("properties");
-            if (jsonProperties != null) {
-              t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
-            } else {
-              t.clear();
+                DescribableList<JobProperty<?>, JobPropertyDescriptor> t = new DescribableList<JobProperty<?>, JobPropertyDescriptor>(NOOP,getAllProperties());
+                JSONObject jsonProperties = json.optJSONObject("properties");
+                if (jsonProperties != null) {
+                  t.rebuild(req,jsonProperties,JobPropertyDescriptor.getPropertyDescriptors(Job.this.getClass()));
+                } else {
+                  t.clear();
+                }
+                properties.clear();
+                for (JobProperty p : t) {
+                    p.setOwner(this);
+                    properties.add(p);
+                }
+
+                submit(req, rsp);
+                bc.commit();
             }
-            properties.clear();
-            for (JobProperty p : t) {
-                p.setOwner(this);
-                properties.add(p);
-            }
-
-            submit(req, rsp);
-
-            save();
             ItemListener.fireOnUpdated(this);
 
             String newName = req.getParameter("name");
@@ -1246,7 +1336,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 FormApply.success(".").generateResponse(req, rsp, null);
             }
         } catch (JSONException e) {
-            Logger.getLogger(Job.class.getName()).log(Level.WARNING, "failed to parse " + json, e);
+            LOGGER.log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
     }

@@ -23,6 +23,11 @@
  */
 package hudson.security;
 
+import hudson.model.User;
+import hudson.model.View;
+import hudson.model.ViewDescriptor;
+import hudson.model.ViewGroup;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import hudson.model.Item;
@@ -91,7 +96,7 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @throws AccessDeniedException
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
@@ -111,10 +116,46 @@ public abstract class ACL {
      * @param d the descriptor of the item to be created.
      * @return false
      *      if the user doesn't have the permission.
-     * @since TODO
+     * @since 1.607
      */
     public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ItemGroup c,
                                        @Nonnull TopLevelItemDescriptor d) {
+        return true;
+    }
+
+    /**
+     * Checks if the current security principal has the permission to create views within the specified view group.
+     * <p>
+     * This is just a convenience function.
+     *
+     * @param c the container of the item.
+     * @param d the descriptor of the view to be created.
+     * @throws AccessDeniedException if the user doesn't have the permission.
+     * @since 1.607
+     */
+    public final void checkCreatePermission(@Nonnull ViewGroup c,
+                                            @Nonnull ViewDescriptor d) {
+        Authentication a = Jenkins.getAuthentication();
+        if (!hasCreatePermission(a, c, d)) {
+            throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
+                    View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
+        }
+    }
+
+    /**
+     * Checks if the given principal has the permission to create views within the specified view group.
+     * <p>
+     * Note that {@link #SYSTEM} can be passed in as the authentication parameter,
+     * in which case you should probably just assume it can create anything anywhere.
+     * @param a the principal.
+     * @param c the container of the view.
+     * @param d the descriptor of the view to be created.
+     * @return false
+     *      if the user doesn't have the permission.
+     * @since 2.37
+     */
+    public boolean hasCreatePermission(@Nonnull Authentication a, @Nonnull ViewGroup c,
+                                       @Nonnull ViewDescriptor d) {
         return true;
     }
 
@@ -179,7 +220,9 @@ public abstract class ACL {
      * We need to create a new {@link SecurityContext} instead of {@link SecurityContext#setAuthentication(Authentication)}
      * because the same {@link SecurityContext} object is reused for all the concurrent requests from the same session.
      * @since 1.462
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static @Nonnull SecurityContext impersonate(@Nonnull Authentication auth) {
         SecurityContext old = SecurityContextHolder.getContext();
         SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
@@ -191,7 +234,9 @@ public abstract class ACL {
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect
      * @since 1.509
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static void impersonate(@Nonnull Authentication auth, @Nonnull Runnable body) {
         SecurityContext old = impersonate(auth);
         try {
@@ -206,7 +251,9 @@ public abstract class ACL {
      * @param auth authentication, such as {@link #SYSTEM}
      * @param body an action to run with this alternate authentication in effect (try {@link NotReallyRoleSensitiveCallable})
      * @since 1.587
+     * @deprecated use try with resources and {@link #as(Authentication)}
      */
+    @Deprecated
     public static <V,T extends Exception> V impersonate(Authentication auth, Callable<V,T> body) throws T {
         SecurityContext old = impersonate(auth);
         try {
@@ -214,6 +261,49 @@ public abstract class ACL {
         } finally {
             SecurityContextHolder.setContext(old);
         }
+    }
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
+     * {@link AutoCloseable} that restores the previous security context.
+     *
+     * <p>
+     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
+     * <pre>
+     *     try (ACLContext ctx = ACL.as(auth)) {
+     *        ...
+     *     }
+     * </pre>
+     * @param auth the new authentication.
+     * @return the previous authentication context
+     * @since 2.14
+     */
+    @Nonnull
+    public static ACLContext as(@Nonnull Authentication auth) {
+        final ACLContext context = new ACLContext(SecurityContextHolder.getContext());
+        SecurityContextHolder.setContext(new NonSerializableSecurityContext(auth));
+        return context;
+    }
+
+    /**
+     * Changes the {@link Authentication} associated with the current thread to the specified one and returns an
+     * {@link AutoCloseable} that restores the previous security context.
+     *
+     * <p>
+     * This makes impersonation much easier within code as it can now be used using the try with resources construct:
+     * <pre>
+     *     try (ACLContext ctx = ACL.as(auth)) {
+     *        ...
+     *     }
+     * </pre>
+     *
+     * @param user the user to impersonate.
+     * @return the previous authentication context
+     * @since 2.14
+     */
+    @Nonnull
+    public static ACLContext as(@CheckForNull User user) {
+        return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
     }
 
 }

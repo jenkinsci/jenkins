@@ -80,7 +80,7 @@ public class Security218Test implements Serializable {
      * @see #launchJnlpSlave(Slave)
      */
     public DumbSlave createJnlpSlave(String name) throws Exception {
-        DumbSlave s = new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
+        DumbSlave s = new DumbSlave(name, "", System.getProperty("java.io.tmpdir") + '/' + name, "2", Mode.NORMAL, "", new JNLPLauncher(true), RetentionStrategy.INSTANCE, Collections.EMPTY_LIST);
         j.jenkins.addNode(s);
         return s;
     }

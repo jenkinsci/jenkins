@@ -62,7 +62,7 @@ THE SOFTWARE.
 
       <f:bottomButtonBar>
         <f:submit value="${%Save}" />
-        <f:apply />
+        <f:apply value="${%Apply}"/>
       </f:bottomButtonBar>
     </f:form>
     <st:adjunct includes="lib.form.confirm" />

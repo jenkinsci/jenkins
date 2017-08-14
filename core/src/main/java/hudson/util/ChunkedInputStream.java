@@ -67,7 +67,7 @@ public class ChunkedInputStream extends InputStream {
     /** The current position within the current chunk */
     private int pos;
 
-    /** True if we'are at the beginning of stream */
+    /** True if we're at the beginning of stream */
     private boolean bof = true;
 
     /** True if we've reached the end of stream */
@@ -101,7 +101,7 @@ public class ChunkedInputStream extends InputStream {
      * is followed by a CRLF. The method returns -1 as soon as a chunksize of 0
      * is detected.</p>
      *
-     * <p> Trailer headers are read automcatically at the end of the stream and
+     * <p> Trailer headers are read automatically at the end of the stream and
      * can be obtained with the getResponseFooters() method.</p>
      *
      * @return -1 of the end of the stream has been reached or the next data

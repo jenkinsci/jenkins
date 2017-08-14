@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -46,7 +47,7 @@ import org.kohsuke.stapler.QueryParameter;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension
+@Extension @Symbol("memoryUsage")
 public final class MemoryUsageMonitor extends PeriodicWork {
     /**
      * A memory group is conceptually a set of memory pools. 

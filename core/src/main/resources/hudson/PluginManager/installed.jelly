@@ -64,11 +64,10 @@ THE SOFTWARE.
                 <th initialSortDir="down">${%Name}</th>
                 <th width="1">${%Version}</th>
                 <th width="1">${%Previously installed version}</th>
-                <th width="1">${%Pinned}</th>
                 <th width="1">${%Uninstall}</th>
               </tr>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
-                <tr class="plugin ${p.hasDependants()?'has-dependants':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
+                <tr class="plugin ${p.hasDependants()?'has-dependants':''} ${(p.hasDependants() &amp;&amp; !p.enabled)?'has-dependants-but-disabled':''} ${p.isDeleted()?'deleted':''}" data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
                   <j:set var="state" value="${p.enabled?'true':null}"/>
                   <td class="center pane enable" data="${state}">
                     <input type="checkbox" checked="${state}" onclick="flip(event)"
@@ -113,12 +112,6 @@ THE SOFTWARE.
                       </form>
                     </j:if>
                   </td>
-                  <td class="center pane" id='unpin-${p.shortName}'>
-                    <j:if test="${p.isPinned()}">
-                      <input type="button" onclick="unpin(this,'${p.shortName}')" value="${%Unpin}" class="yui-button" />
-                      <a href="${%wiki.url}" target="_blank"><l:icon class="icon-help icon-sm" style="vertical-align:top"/></a>
-                    </j:if>
-                  </td>
                   <td class="center pane uninstall">
                     <j:choose>
                       <j:when test="${p.isDeleted()}">
@@ -153,7 +146,7 @@ THE SOFTWARE.
                   <td class="pane" />
                   <td class="pane">
                     <h4 class="error">Failed : ${p.name}</h4>
-                    <div stlyle="padding-left: 1em">
+                    <div style="padding-left: 1em">
                       <pre>${p.exceptionString}</pre>
                     </div>
                   </td>
@@ -204,18 +197,6 @@ THE SOFTWARE.
         }
 
         updateMsg(); // set the initial state
-
-        function unpin(button,shortName) {
-          new Ajax.Request("./plugin/"+shortName+"/unpin", {
-            method: "POST",
-            onFailure : function(t) {
-              alert('Failed to unpin:'+t.responseText);
-            },
-            onSuccess : function(t) {
-              $('unpin-'+shortName).innerHTML = "";
-            }
-          });
-        }
       </script>
     </l:main-panel>
   </l:layout>

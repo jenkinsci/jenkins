@@ -20,10 +20,10 @@ import static java.util.logging.Level.WARNING;
 
 /**
  * Sophisticated version of {@link AbstractNodeMonitorDescriptor} that
- * performs monitoring on all slaves concurrently and asynchronously.
+ * performs monitoring on all agents concurrently and asynchronously.
  *
  * @param <T>
- *     represents the the result of the monitoring.
+ *     represents the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNodeMonitorDescriptor<T> {

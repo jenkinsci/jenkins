@@ -93,7 +93,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 			return;
 		}
 
-		Jenkins j = Jenkins.getInstance();
+		Jenkins j = Jenkins.getInstanceOrNull();
 		if (j != null && j.isDisableRememberMe()) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +

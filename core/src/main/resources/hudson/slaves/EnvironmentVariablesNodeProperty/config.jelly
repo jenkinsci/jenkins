@@ -24,13 +24,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%List of key-value pairs}" help="${descriptor.getHelpPage()}">
+  <f:entry title="${%List of variables}" help="${descriptor.getHelpPage()}">
     <f:repeatable var="env" items="${instance.envVars.entrySet()}">
       <table width="100%">
-        <f:entry title="${%name}">
+        <f:entry title="${%Name}">
           <f:textbox name="env.key" value="${env.key}" />
         </f:entry>
-        <f:entry title="${%value}">
+        <f:entry title="${%Value}">
           <f:textbox name="env.value" value="${env.value}" />
         </f:entry>
       	<f:entry title="">

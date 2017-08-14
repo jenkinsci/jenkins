@@ -23,7 +23,8 @@
  */
 package hudson;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import jenkins.util.SystemProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import hudson.util.OneShotEvent;
@@ -70,7 +71,7 @@ public class UDPBroadcastThread extends Thread {
         mcs = new MulticastSocket(PORT);
     }
 
-    @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+    @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     @Override
     public void run() {
         try {
@@ -128,7 +129,7 @@ public class UDPBroadcastThread extends Thread {
         interrupt();
     }
 
-    public static final int PORT = Integer.getInteger("hudson.udp",33848);
+    public static final int PORT = SystemProperties.getInteger("hudson.udp",33848);
 
     private static final Logger LOGGER = Logger.getLogger(UDPBroadcastThread.class.getName());
 

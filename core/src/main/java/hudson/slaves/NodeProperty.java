@@ -160,7 +160,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * @param env
      *      Manipulate this variable (normally by adding more entries.)
      *      Note that this is an override, so it doesn't contain environment variables that are
-     *      currently set for the slave process itself.
+     *      currently set for the agent process itself.
      * @param listener
      *      Can be used to send messages.
      *

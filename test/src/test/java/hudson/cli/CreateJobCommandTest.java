@@ -26,23 +26,17 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import hudson.model.AbstractItem;
 import hudson.model.Item;
 import hudson.model.User;
-import hudson.security.ACL;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.SparseACL;
 import java.io.ByteArrayInputStream;
-import java.util.Collection;
-import java.util.Collections;
 import jenkins.model.Jenkins;
-import org.acegisecurity.acls.sid.PrincipalSid;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 
 public class CreateJobCommandTest {
@@ -54,31 +48,13 @@ public class CreateJobCommandTest {
         CLICommand cmd = new CreateJobCommand();
         CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
         final MockFolder d = r.createFolder("d");
-        final SparseACL rootACL = new SparseACL(null);
-        rootACL.add(new PrincipalSid("alice"), Jenkins.READ, true);
-        rootACL.add(new PrincipalSid("bob"), Jenkins.READ, true);
-        final SparseACL dACL = new SparseACL(null);
-        dACL.add(new PrincipalSid("alice"), Item.READ, true);
-        dACL.add(new PrincipalSid("bob"), Item.READ, true);
-        dACL.add(new PrincipalSid("bob"), Item.CREATE, true);
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
-        r.jenkins.setAuthorizationStrategy(new AuthorizationStrategy() {
-            @Override public ACL getRootACL() {
-                return rootACL;
-            }
-            @Override public ACL getACL(AbstractItem item) {
-                if (item == d) {
-                    return dACL;
-                } else {
-                    throw new AssertionError(item);
-                }
-            }
-            @Override public Collection<String> getGroups() {
-                return Collections.emptySet();
-            }
-        });
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.READ).everywhere().toAuthenticated().
+            grant(Item.READ).onItems(d).toAuthenticated(). // including alice
+            grant(Item.CREATE).onItems(d).to("bob"));
         cmd.setTransportAuth(User.get("alice").impersonate());
-        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(-1));
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), failedWith(6));
         cmd.setTransportAuth(User.get("bob").impersonate());
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes("US-ASCII"))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));

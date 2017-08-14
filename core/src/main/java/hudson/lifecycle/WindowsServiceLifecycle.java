@@ -110,16 +110,22 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File rootDir = Jenkins.getInstance().getRootDir();
         File copyFiles = new File(rootDir,baseName+".copies");
 
-        FileWriter w = new FileWriter(copyFiles, true);
-        try {
-            w.write(by.getAbsolutePath()+'>'+getHudsonWar().getAbsolutePath()+'\n');
-        } finally {
-            w.close();
+        try (FileWriter w = new FileWriter(copyFiles, true)) {
+            w.write(by.getAbsolutePath() + '>' + getHudsonWar().getAbsolutePath() + '\n');
         }
     }
 
     @Override
     public void restart() throws IOException, InterruptedException {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        try {
+            if (jenkins != null) {
+                jenkins.cleanUp();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+        }
+
         File me = getHudsonWar();
         File home = me.getParentFile();
 

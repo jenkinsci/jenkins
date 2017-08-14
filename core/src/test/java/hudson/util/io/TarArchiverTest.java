@@ -33,6 +33,8 @@ import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 import static org.junit.Assert.*;
 import org.junit.Assume;
@@ -71,8 +73,8 @@ public class TarArchiverTest {
             f.chmod(0644);
             int dirMode = dir.child("subdir").mode();
 
-            dir.tar(new FileOutputStream(tar),"**/*");
-            dir.zip(new FileOutputStream(zip));
+            dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
+            dir.zip(Files.newOutputStream(zip.toPath()));
 
 
             FilePath e = dir.child("extract");
@@ -116,5 +118,56 @@ public class TarArchiverTest {
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
         new FilePath(dir).tar(new NullStream(), "**");
     }
+    
+    
+    /**
+     * Test backing up an open file
+     */
+    
+    @Issue("JENKINS-20187")
+    @Test public void growingFileTar() throws Exception {
+        File file=new File(tmp.getRoot(),"growing.file");
+        GrowingFileRunnable runnable1 = new GrowingFileRunnable(file);
+        Thread t1 = new Thread(runnable1);
+        t1.start();
+
+        new FilePath(tmp.getRoot()).tar(new NullStream(), "**");
+        
+        runnable1.doFinish();
+        t1.join();
+    }
+
+    private class GrowingFileRunnable implements Runnable {
+        private boolean finish = false;
+        private Exception ex = null;
+        private File file;
+
+        public GrowingFileRunnable(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public void run() {
+            File openFile = file;
+            try {
+                openFile.createNewFile();
+                try (OutputStream fos = Files.newOutputStream(openFile.toPath())) {
+                    for (int i = 0; !finish && i < 5000000; i++) { // limit the max size, just in case.
+                        fos.write(0);
+                        // Thread.sleep(5);
+                    }
+                }
+            } catch (Exception e) {
+                ex = e;
+            }
+        }
+
+        public void doFinish() throws Exception {
+            finish = true;
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    };
 
 }

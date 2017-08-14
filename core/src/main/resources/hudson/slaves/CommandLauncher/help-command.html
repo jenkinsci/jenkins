@@ -1,8 +1,8 @@
 <div>
-  Command to be used to launch a slave agent program, which controls the slave
+  Command to be used to launch an agent program, which controls the agent
   computer and communicates with the master. Jenkins assumes that
   the executed program launches the <tt>slave.jar</tt> program on the correct
-  slave machine.
+  machine.
 
   <p>
   A copy of <tt>slave.jar</tt> can be downloaded from <a href="${rootURL}/jnlpJars/slave.jar"><tt>here</tt></a>.
@@ -11,9 +11,9 @@
   In a simple case, this could be
   something like "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
 
-  However, it is often a good idea to write a small shell script, like the following, on a slave
+  However, it is often a good idea to write a small shell script, like the following, on an agent
   so that you can control the location of Java and/or slave.jar, as well as set up any
-  environment variables specific to this slave node, such as PATH.
+  environment variables specific to this node, such as PATH.
 
 <pre>
 #!/bin/sh
@@ -21,7 +21,7 @@ exec java -jar ~/bin/slave.jar
 </pre>
 
   <p>
-  You can use any command to run a process on the slave machine, such as RSH,
+  You can use any command to run a process on the agent machine, such as RSH,
   as long as stdin/stdout of this process will be connected to
   "java -jar ~/bin/slave.jar" eventually.
 

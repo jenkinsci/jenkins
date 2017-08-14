@@ -31,12 +31,12 @@ Usage
 =====
 
 Add the "sortable" CSS class to a table to make it sortable.
-The first column must be always table header, and the rest must be table data.
+The first row must be always table header, and the rest must be table data.
 (the script seems to support rows to be fixed at the bottom, but haven't figured out how to use it.)
 
 If the table data is sorted to begin with, you can add 'initialSortDir="up|down"' to the
-corresponding column in the header row to display the direction icon from the beginning.
-This is recommended to provide a visual cue that the table can be sorted.
+corresponding cell in the header row to display the direction icon from the beginning.
+This is recommended to provide a visual clue that the table can be sorted.
 
 The script guesses the table data, and try to use the right sorting algorithm.
 But you can override this behavior by having 'data="..."' attribute on each row,

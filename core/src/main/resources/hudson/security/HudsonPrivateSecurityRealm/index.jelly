@@ -43,7 +43,7 @@ THE SOFTWARE.
             <td><a href="${user.url}/">${user.id}</a></td>
             <td><a href="${user.url}/">${user}</a></td>
             <td>
-              <a href="${user.url}/configure"><l:icon class="icon-setting icon-lg"/></a>
+              <a href="${user.url}/configure"><l:icon class="icon-gear2 icon-lg"/></a>
               <j:if test="${user.canDelete()}">
                 <a href="${user.url}/delete"><l:icon class="icon-edit-delete icon-md"/></a>
               </j:if>

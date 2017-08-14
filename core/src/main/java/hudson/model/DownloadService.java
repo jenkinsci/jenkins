@@ -28,6 +28,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.ProxyConfiguration;
+import jenkins.util.SystemProperties;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.FormValidation;
@@ -39,7 +40,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +59,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Service for plugins to periodically retrieve update data files
@@ -69,6 +73,11 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 @Extension
 public class DownloadService extends PageDecorator {
+
+    /**
+     * the prefix for the signature validator name
+     */
+    private static final String signatureValidatorPrefix = "downloadable";
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      */
@@ -162,8 +171,12 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
-        InputStream is = ProxyConfiguration.open(src).getInputStream();
-        try {
+        URLConnection con = ProxyConfiguration.open(src);
+        if (con instanceof HttpURLConnection) {
+            // prevent problems from misbehaving plugins disabling redirects by default
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+        }
+        try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
@@ -172,8 +185,6 @@ public class DownloadService extends PageDecorator {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } finally {
-            is.close();
         }
     }
 
@@ -185,8 +196,12 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
-        InputStream is = ProxyConfiguration.open(src).getInputStream();
-        try {
+        URLConnection con = ProxyConfiguration.open(src);
+        if (con instanceof HttpURLConnection) {
+            // prevent problems from misbehaving plugins disabling redirects by default
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+        }
+        try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);
@@ -196,8 +211,6 @@ public class DownloadService extends PageDecorator {
             } else {
                 throw new IOException("Could not find JSON in " + src);
             }
-        } finally {
-            is.close();
         }
     }
 
@@ -370,6 +383,7 @@ public class DownloadService extends PageDecorator {
         /**
          * This is where the browser sends us the data. 
          */
+        @RequirePOST
         public void doPostBack(StaplerRequest req, StaplerResponse rsp) throws IOException {
             DownloadSettings.checkPostBackAccess();
             long dataTimestamp = System.currentTimeMillis();
@@ -395,25 +409,35 @@ public class DownloadService extends PageDecorator {
         @Restricted(NoExternalUse.class)
         public FormValidation updateNow() throws IOException {
             List<JSONObject> jsonList = new ArrayList<>();
-            for (String site : getUrls()) {
+            boolean toolInstallerMetadataExists = false;
+            for (UpdateSite updatesite : Jenkins.getActiveInstance().getUpdateCenter().getSiteList()) {
+                String site = updatesite.getMetadataUrlForDownloadable(url);
+                if (site == null) {
+                    return FormValidation.warning("The update site " + site + " does not look like an update center");
+                }
                 String jsonString;
                 try {
                     jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
+                    toolInstallerMetadataExists = true;
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Could not load json from " + site, e );
+                    LOGGER.log(Level.FINE, "Could not load json from " + site, e );
                     continue;
                 }
                 JSONObject o = JSONObject.fromObject(jsonString);
                 if (signatureCheck) {
-                    FormValidation e = new JSONSignatureValidator("downloadable '"+id+"'").verifySignature(o);
+                    FormValidation e = updatesite.getJsonSignatureValidator(signatureValidatorPrefix +" '"+id+"'").verifySignature(o);
                     if (e.kind!= Kind.OK) {
+                        LOGGER.log(Level.WARNING, "signature check failed for " + site, e );
                         continue;
                     }
                 }
                 jsonList.add(o);
             }
-            if (jsonList.size() == 0) {
-                return FormValidation.warning("None of the Update Sites passed the signature check");
+            if (jsonList.size() == 0 && toolInstallerMetadataExists) {
+                return FormValidation.warning("None of the tool installer metadata passed the signature check");
+            } else if (!toolInstallerMetadataExists) {
+                LOGGER.log(Level.WARNING, "No tool installer metadata found for " + id);
+                return FormValidation.ok();
             }
             JSONObject reducedJson = reduce(jsonList);
             return load(reducedJson.toString(), System.currentTimeMillis());
@@ -482,10 +506,10 @@ public class DownloadService extends PageDecorator {
 
         private static final Logger LOGGER = Logger.getLogger(Downloadable.class.getName());
         private static final long DEFAULT_INTERVAL =
-                Long.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
+                SystemProperties.getLong(Downloadable.class.getName()+".defaultInterval", DAYS.toMillis(1));
     }
 
-    public static boolean neverUpdate = Boolean.getBoolean(DownloadService.class.getName()+".never");
+    public static boolean neverUpdate = SystemProperties.getBoolean(DownloadService.class.getName()+".never");
 
     /**
      * May be used to temporarily disable signature checking on {@link DownloadService} and {@link UpdateCenter}.
@@ -493,6 +517,6 @@ public class DownloadService extends PageDecorator {
      * Should only be used when {@link DownloadSettings#isUseBrowser};
      * disabling signature checks for in-browser downloads is <em>very dangerous</em> as unprivileged users could submit spoofed metadata!
      */
-    public static boolean signatureCheck = !Boolean.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
+    public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
 

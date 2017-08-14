@@ -35,7 +35,7 @@ import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
-import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
@@ -90,15 +90,15 @@ import java.util.Stack;
  *
  * With the following XML:
  *
- * <pre>
- * &lt;foo>
- *   &lt;bar>
- *     &lt;payload>
+ * <pre>{@code
+ * <foo>
+ *   <bar>
+ *     <payload>
  *       ...
- *     &lt;/payload>
- *   &lt;/bar>
- * &lt;/foo>
- * </pre>
+ *     </payload>
+ *   </bar>
+ * </foo>
+ * }</pre>
  *
  * <p>
  * The {@link XStreamDOM} object in the bar field will have the "payload" element in its tag name
@@ -241,11 +241,11 @@ public class XStreamDOM {
      * Writes this {@link XStreamDOM} into {@link OutputStream}.
      */
     public void writeTo(OutputStream os) {
-        writeTo(new XppDriver().createWriter(os));
+        writeTo(new Xpp3Driver().createWriter(os));
     }
 
     public void writeTo(Writer w) {
-        writeTo(new XppDriver().createWriter(w));
+        writeTo(new Xpp3Driver().createWriter(w));
     }
 
     public void writeTo(HierarchicalStreamWriter w) {
@@ -262,11 +262,11 @@ public class XStreamDOM {
     }
 
     public static XStreamDOM from(InputStream in) {
-        return from(new XppDriver().createReader(in));
+        return from(new Xpp3Driver().createReader(in));
     }
 
     public static XStreamDOM from(Reader in) {
-        return from(new XppDriver().createReader(in));
+        return from(new Xpp3Driver().createReader(in));
     }
 
     public static XStreamDOM from(HierarchicalStreamReader in) {

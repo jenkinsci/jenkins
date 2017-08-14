@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Descriptor;
 import hudson.model.Slave;
 import jenkins.model.Jenkins;
@@ -42,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -140,13 +142,13 @@ public class CommandLauncher extends ComputerLauncher {
                 }
             });
 
-            LOGGER.info("slave agent launched for " + computer.getDisplayName());
+            LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_abortedLaunch()));
         } catch (RuntimeException e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (Error e) {
-            e.printStackTrace(listener.error(Messages.ComputerLauncher_unexpectedError()));
+            Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (IOException e) {
             Util.displayIOException(e, listener);
 
@@ -155,17 +157,18 @@ public class CommandLauncher extends ComputerLauncher {
                 msg = "";
             } else {
                 msg = " : " + msg;
+                // FIXME TODO i18n what is this!?
             }
             msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
-            e.printStackTrace(listener.error(msg));
+            Functions.printStackTrace(e, listener.error(msg));
 
             if(_proc!=null) {
                 reportProcessTerminated(_proc, listener);
                 try {
                     ProcessTree.get().killAll(_proc, _cookie);
                 } catch (InterruptedException x) {
-                    x.printStackTrace(listener.error(Messages.ComputerLauncher_abortedLaunch()));
+                    Functions.printStackTrace(x, listener.error(Messages.ComputerLauncher_abortedLaunch()));
                 }
             }
         }
@@ -182,7 +185,7 @@ public class CommandLauncher extends ComputerLauncher {
 
     private static final Logger LOGGER = Logger.getLogger(CommandLauncher.class.getName());
 
-    @Extension
+    @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();

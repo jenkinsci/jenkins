@@ -1,45 +1,55 @@
 <div>
-    Controls when Jenkins starts and stops the slave.
+    Controls when Jenkins starts and stops this agent.
 
     <dl>
         <dt><b>
-            Keep this slave on-line as much as possible
+            Keep this agent online as much as possible
         </b></dt>
         <dd>
-            This is the default and normal setting.
-            In this mode, Jenkins uses tries to keep the slave on-line.
-            If Jenkins can start the slave without user assistance, it will periodically
-            attempt to restart the slave if it is unavailable.
-            Jenkins will not take the slave off-line.
+            In this mode, Jenkins will keep this agent online as much as
+            possible.
+            <p>
+            If the agent goes offline, e.g. due to a temporary network failure,
+            Jenkins will periodically attempt to restart it.
         </dd>
 
-        <!--dt><b>
-            Take this slave on-line and off-line at specific times
+        <dt><b>
+            Take this agent online and offline at specific times
         </b></dt>
         <dd>
-            In this mode, Jenkins will keep the slave on-line according to the configured schedule.
-            If Jenkins can start the slave without user assistance, it will periodically
-            attempt to start the slave if it is unavailable during an on-line window.
-
-            During an off-line window, the slave will only be taken off-line if there are no active
-            jobs running on the slave.
-        </dd-->
+            In this mode, Jenkins will bring this agent online at the scheduled
+            time(s), remaining online for a specified amount of time.
+            <p>
+            If the agent goes offline while it is scheduled to be online,
+            Jenkins will periodically attempt to restart it.
+            <p>
+            After this agent has been online for the number of minutes specified
+            in the <i>Scheduled Uptime</i> field, it will be taken offline.
+            <br>
+            If <i>Keep online while builds are running</i> is checked, and the
+            agent is scheduled to be taken offline, Jenkins will wait for any
+            any builds that may be in progress to complete.
+        </dd>
 
         <dt><b>
-            Take this slave on-line when in demand and off-line when idle
+            Take this agent online when in demand, and offline when idle
         </b></dt>
         <dd>
-            In this mode, if Jenkins can launch the slave without user assistance, it will periodically
-            attempt to launch the slave while there are unexecuted jobs which meet the following criteria:
+            In this mode, Jenkins will bring this agent online if there
+            is demand, i.e. there are queued builds which meet the following
+            criteria:
             <ul>
-                <li>They have been in the queue for at least the specified startup demand period</li>
-                <li>They can execute on this slave</li>
+                <li>They have been in the queue for at least the specified <i>In
+                    demand delay</i> time period</li>
+                <li>They can be executed by this agent (e.g. have a matching
+                    label expression)</li>
             </ul>
 
-            The slave will be taken off-line if:
+            This agent will be taken offline if:
             <ul>
-                <li>There are no active jobs running on the slave</li>
-                <li>The slave has been idle for at least the specified idle period</li>
+                <li>There are no active builds running on this agent</li>
+                <li>This agent has been idle for at least the specified <i>Idle
+                    delay</i> time period</li>
             </ul>
         </dd>
     </dl>

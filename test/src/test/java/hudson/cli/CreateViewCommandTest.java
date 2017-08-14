@@ -62,9 +62,9 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Create permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Create permission"));
     }
 
     @Test public void createViewShouldSucceed() {
@@ -111,9 +111,9 @@ public class CreateViewCommandTest {
                 .invoke()
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(4));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("View 'ViewFromXML' already exists"));
+        assertThat(result.stderr(), containsString("ERROR: View 'ViewFromXML' already exists"));
     }
 
     @Test public void createViewShouldFailUsingInvalidName() {
@@ -124,8 +124,8 @@ public class CreateViewCommandTest {
                 .invokeWithArgs("..")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("Invalid view name"));
+        assertThat(result.stderr(), containsString("ERROR: Invalid view name"));
     }
 }

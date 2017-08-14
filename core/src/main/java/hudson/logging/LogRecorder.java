@@ -73,17 +73,14 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     private volatile String name;
 
     public final CopyOnWriteList<Target> targets = new CopyOnWriteList<Target>();
-
+    private final static TargetComparator TARGET_COMPARATOR = new TargetComparator();
+    
     @Restricted(NoExternalUse.class)
     Target[] orderedTargets() {
         // will contain targets ordered by reverse name length (place specific targets at the beginning)
         Target[] ts = targets.toArray(new Target[]{});
 
-        Arrays.sort(ts, new Comparator<Target>() {
-            public int compare(Target left, Target right) {
-                return right.getName().length() - left.getName().length();
-            }
-        });
+        Arrays.sort(ts, TARGET_COMPARATOR);
 
         return ts;
     }
@@ -206,9 +203,17 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
 
     }
+    
+    private static class TargetComparator implements Comparator<Target> {
+
+        @Override
+        public int compare(Target left, Target right) {
+            return right.getName().length() - left.getName().length();
+        }
+    }
 
     private static final class SetLevel extends MasterToSlaveCallable<Void,Error> {
-        /** known loggers (kept per slave), to avoid GC */
+        /** known loggers (kept per agent), to avoid GC */
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<Logger>();
         private final String name;
         private final Level level;
@@ -363,7 +368,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     /**
-     * Gets a view of log records per slave matching this recorder.
+     * Gets a view of log records per agent matching this recorder.
      * @return a map (sorted by display name) from computer to (nonempty) list of log records
      * @since 1.519
      */

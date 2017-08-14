@@ -57,9 +57,9 @@ public class SetBuildDisplayNameCommandTest {
                 .invokeWithArgs("project", "42", "DisplayName")
         ;
 
-        assertThat(result.stderr(), containsString("Build #42 does not exist"));
+        assertThat(result.stderr(), containsString("ERROR: Build #42 does not exist"));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
     }
 
     @Test public void setDescriptionSuccessfully() throws Exception {

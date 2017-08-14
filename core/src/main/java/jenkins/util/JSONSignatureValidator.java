@@ -2,6 +2,8 @@ package jenkins.util;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.NullOutputStream;
@@ -82,7 +84,11 @@ public class JSONSignatureValidator {
 
             // this is for computing a signature
             Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(certs.get(0));
+            if (certs.isEmpty()) {
+                return FormValidation.error("No certificate found in %s. Cannot verify the signature", name);
+            } else {    
+                sig.initVerify(certs.get(0));
+            }
             SignatureOutputStream sos = new SignatureOutputStream(sig);
 
             // until JENKINS-11110 fix, UC used to serve invalid digest (and therefore unverifiable signature)
@@ -135,17 +141,13 @@ public class JSONSignatureValidator {
         // which isn't useful at all
         Set<TrustAnchor> anchors = new HashSet<TrustAnchor>(); // CertificateUtil.getDefaultRootCAs();
         Jenkins j = Jenkins.getInstance();
-        if (j == null) {
-            return anchors;
-        }
         for (String cert : (Set<String>) j.servletContext.getResourcePaths("/WEB-INF/update-center-rootCAs")) {
             if (cert.endsWith("/") || cert.endsWith(".txt"))  {
                 continue;       // skip directories also any text files that are meant to be documentation
             }
-            InputStream in = j.servletContext.getResourceAsStream(cert);
-            if (in == null) continue; // our test for paths ending in / should prevent this from happening
             Certificate certificate;
-            try {
+            try (InputStream in = j.servletContext.getResourceAsStream(cert)) {
+                if (in == null) continue; // our test for paths ending in / should prevent this from happening
                 certificate = cf.generateCertificate(in);
             } catch (CertificateException e) {
                 LOGGER.log(Level.WARNING, String.format("Webapp resources in /WEB-INF/update-center-rootCAs are "
@@ -154,8 +156,6 @@ public class JSONSignatureValidator {
                                 + "resource for now.",
                         cert), e);
                 continue;
-            } finally {
-                in.close();
             }
             try {
                 TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);
@@ -175,10 +175,11 @@ public class JSONSignatureValidator {
                 if (cert.isDirectory() || cert.getName().endsWith(".txt"))  {
                     continue;       // skip directories also any text files that are meant to be documentation
                 }
-                FileInputStream in = new FileInputStream(cert);
                 Certificate certificate;
-                try {
+                try (InputStream in = Files.newInputStream(cert.toPath())) {
                     certificate = cf.generateCertificate(in);
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 } catch (CertificateException e) {
                     LOGGER.log(Level.WARNING, String.format("Files in %s are expected to be either "
                                     + "certificates or .txt files documenting the certificates, "
@@ -186,8 +187,6 @@ public class JSONSignatureValidator {
                             cert.getParentFile().getAbsolutePath(),
                             cert.getAbsolutePath()), e);
                     continue;
-                } finally {
-                    in.close();
                 }
                 try {
                     TrustAnchor certificateAuthority = new TrustAnchor((X509Certificate) certificate, null);

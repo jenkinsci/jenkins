@@ -5,9 +5,8 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.util.FormValidation;
 import hudson.util.XStream2;
-import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -29,7 +28,7 @@ import javax.annotation.Nonnull;
  * @author Kohsuke Kawaguchi
  * @since 1.494
  */
-@Extension
+@Extension @Symbol("location")
 public class JenkinsLocationConfiguration extends GlobalConfiguration {
     /**
      * @deprecated replaced by {@link #jenkinsUrl}
@@ -42,6 +41,12 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
+    /**
+     * Gets local configuration.
+     * 
+     * @return {@code null} if the {@link GlobalConfiguration#all()} list does not contain this extension.
+     *         Most likely it means that the Jenkins instance has not been fully loaded yet.
+     */
     public static @CheckForNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
     }
@@ -144,12 +149,6 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Failed to set secure cookie flag", e);
         }
-    }
-
-    @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        req.bindJSON(this,json);
-        return true;
     }
 
     /**

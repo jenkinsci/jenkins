@@ -30,6 +30,7 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.CaseInsensitiveComparator;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -47,12 +48,15 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -109,6 +113,14 @@ public class ListView extends View implements DirectlyModifiableView {
         this.owner = owner;
     }
 
+    /**
+     * Sets the columns of this view.
+     */
+    @DataBoundSetter
+    public void setColumns(List<ListViewColumn> columns) throws IOException {
+        this.columns.replaceBy(columns);
+    }
+
     private Object readResolve() {
         if(includeRegex!=null) {
             try {
@@ -118,8 +130,10 @@ public class ListView extends View implements DirectlyModifiableView {
                 OldDataMonitor.report(this, Collections.<Throwable>singleton(x));
             }
         }
-        if (jobNames == null) {
-            jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+        synchronized(this) {
+            if (jobNames == null) {
+                jobNames = new TreeSet<String>(CaseInsensitiveComparator.INSTANCE);
+            }
         }
         initColumns();
         initJobFilters();
@@ -128,7 +142,9 @@ public class ListView extends View implements DirectlyModifiableView {
 
     protected void initColumns() {
         if (columns == null)
-            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,ListViewColumn.createDefaultInitialColumnList());
+            columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
+                    ListViewColumn.createDefaultInitialColumnList(getClass())
+            );
     }
 
     protected void initJobFilters() {
@@ -168,7 +184,7 @@ public class ListView extends View implements DirectlyModifiableView {
             names = new TreeSet<String>(jobNames);
         }
 
-        ItemGroup<? extends TopLevelItem> parent = getOwnerItemGroup();
+        ItemGroup<? extends TopLevelItem> parent = getOwner().getItemGroup();
         List<TopLevelItem> parentItems = new ArrayList<TopLevelItem>(parent.getItems());
         includeItems(parent, parentItems, names);
 
@@ -180,10 +196,10 @@ public class ListView extends View implements DirectlyModifiableView {
             candidates = parent.getItems();
         }
         for (TopLevelItem item : candidates) {
-            if (!names.contains(item.getRelativeNameFrom(getOwnerItemGroup()))) continue;
+            if (!names.contains(item.getRelativeNameFrom(getOwner().getItemGroup()))) continue;
             // Add if no status filter or filter matches enabled/disabled status:
-            if(statusFilter == null || !(item instanceof AbstractProject)
-                              || ((AbstractProject)item).isDisabled() ^ statusFilter)
+            if(statusFilter == null || !(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
+                              || ((ParameterizedJobMixIn.ParameterizedJob)item).isDisabled() ^ statusFilter)
                 items.add(item);
         }
 
@@ -235,7 +251,7 @@ public class ListView extends View implements DirectlyModifiableView {
     
     public synchronized boolean jobNamesContains(TopLevelItem item) {
         if (item == null) return false;
-        return jobNames.contains(item.getRelativeNameFrom(getOwnerItemGroup()));
+        return jobNames.contains(item.getRelativeNameFrom(getOwner().getItemGroup()));
     }
 
     /**
@@ -246,7 +262,7 @@ public class ListView extends View implements DirectlyModifiableView {
     @Override
     public void add(TopLevelItem item) throws IOException {
         synchronized (this) {
-            jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+            jobNames.add(item.getRelativeNameFrom(getOwner().getItemGroup()));
         }
         save();
     }
@@ -259,7 +275,7 @@ public class ListView extends View implements DirectlyModifiableView {
     @Override
     public boolean remove(TopLevelItem item) throws IOException {
         synchronized (this) {
-            String name = item.getRelativeNameFrom(getOwnerItemGroup());
+            String name = item.getRelativeNameFrom(getOwner().getItemGroup());
             if (!jobNames.remove(name)) return false;
         }
         save();
@@ -289,17 +305,46 @@ public class ListView extends View implements DirectlyModifiableView {
         return statusFilter;
     }
 
+    /**
+     * Determines the initial state of the checkbox.
+     *
+     * @return true when the view is empty or already contains jobs specified by name.
+     */
+    @Restricted(NoExternalUse.class) // called from newJob_button-bar view
+    @SuppressWarnings("unused") // called from newJob_button-bar view
+    public boolean isAddToCurrentView() {
+        synchronized(this) {
+            return !jobNames.isEmpty() || // There are already items in this view specified by name
+                    (jobFilters.isEmpty() && includePattern == null) // No other way to include items is used
+                    ;
+        }
+    }
+
+    private boolean needToAddToCurrentView(StaplerRequest req) throws ServletException {
+        String json = req.getParameter("json");
+        if (json != null && json.length() > 0) {
+            // Submitted via UI
+            JSONObject form = req.getSubmittedForm();
+            return form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
+        } else {
+            // Submitted via API
+            return true;
+        }
+    }
+
     @Override
     @RequirePOST
     public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        ItemGroup<? extends TopLevelItem> ig = getOwnerItemGroup();
+        ItemGroup<? extends TopLevelItem> ig = getOwner().getItemGroup();
         if (ig instanceof ModifiableItemGroup) {
             TopLevelItem item = ((ModifiableItemGroup<? extends TopLevelItem>)ig).doCreateItem(req, rsp);
-            if(item!=null) {
-                synchronized (this) {
-                    jobNames.add(item.getRelativeNameFrom(getOwnerItemGroup()));
+            if (item!=null) {
+                if (needToAddToCurrentView(req)) {
+                    synchronized (this) {
+                        jobNames.add(item.getRelativeNameFrom(getOwner().getItemGroup()));
+                    }
+                    owner.save();
                 }
-                owner.save();
             }
             return item;
         }
@@ -340,9 +385,9 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
     private TopLevelItem resolveName(String name) {
-        TopLevelItem item = getOwnerItemGroup().getItem(name);
+        TopLevelItem item = getOwner().getItemGroup().getItem(name);
         if (item == null) {
-            name = Items.getCanonicalName(getOwnerItemGroup(), name);
+            name = Items.getCanonicalName(getOwner().getItemGroup(), name);
             item = Jenkins.getInstance().getItemByFullName(name, TopLevelItem.class);
         }
         return item;
@@ -361,12 +406,12 @@ public class ListView extends View implements DirectlyModifiableView {
             jobNames.clear();
             Iterable<? extends TopLevelItem> items;
             if (recurse) {
-                items = Items.getAllItems(getOwnerItemGroup(), TopLevelItem.class);
+                items = Items.getAllItems(getOwner().getItemGroup(), TopLevelItem.class);
             } else {
-                items = getOwnerItemGroup().getItems();
+                items = getOwner().getItemGroup().getItems();
             }
             for (TopLevelItem item : items) {
-                String relativeNameFrom = item.getRelativeNameFrom(getOwnerItemGroup());
+                String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
                 if(req.getParameter(relativeNameFrom)!=null) {
                     jobNames.add(relativeNameFrom);
                 }
@@ -398,7 +443,7 @@ public class ListView extends View implements DirectlyModifiableView {
             this.includePattern = Pattern.compile(includeRegex);
     }
 
-    @Extension
+    @Extension @Symbol("list")
     public static class DescriptorImpl extends ViewDescriptor {
         @Override
         public String getDisplayName() {
@@ -427,17 +472,17 @@ public class ListView extends View implements DirectlyModifiableView {
      */
     @Deprecated
     public static List<ListViewColumn> getDefaultColumns() {
-        return ListViewColumn.createDefaultInitialColumnList();
+        return ListViewColumn.createDefaultInitialColumnList(ListView.class);
     }
 
     @Restricted(NoExternalUse.class)
-    @Extension public static final class Listener extends ItemListener {
-        @Override public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override public void run() {
-                    locationChanged(item, oldFullName, newFullName);
-                }
-            });
+    @Extension
+    public static final class Listener extends ItemListener {
+        @Override
+        public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                locationChanged(item, oldFullName, newFullName);
+            }
         }
         private void locationChanged(Item item, String oldFullName, String newFullName) {
             final Jenkins jenkins = Jenkins.getInstance();
@@ -446,7 +491,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     renameViewItem(oldFullName, newFullName, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {
@@ -477,12 +522,11 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         }
 
-        @Override public void onDeleted(final Item item) {
-            ACL.impersonate(ACL.SYSTEM, new Runnable() {
-                @Override public void run() {
-                    deleted(item);
-                }
-            });
+        @Override
+        public void onDeleted(final Item item) {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                deleted(item);
+            }
         }
         private void deleted(Item item) {
             final Jenkins jenkins = Jenkins.getInstance();
@@ -491,7 +535,7 @@ public class ListView extends View implements DirectlyModifiableView {
                     deleteViewItem(item, jenkins, (ListView) view);
                 }
             }
-            for (Item g : jenkins.getAllItems()) {
+            for (Item g : jenkins.allItems()) {
                 if (g instanceof ViewGroup) {
                     ViewGroup vg = (ViewGroup) g;
                     for (View v : vg.getViews()) {

@@ -25,6 +25,7 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class WeatherColumn extends ListViewColumn {
@@ -32,7 +33,7 @@ public class WeatherColumn extends ListViewColumn {
     public WeatherColumn() {
     }
 
-    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ICON_START-2)
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_ICON_START-2) @Symbol("weather")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

@@ -97,7 +97,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
      * @return the (directory) path at which the tool can be found,
      *         typically coming from {@link #preferredLocation}
      * @throws IOException if installation fails
-     * @throws InterruptedException if communication with a slave is interrupted
+     * @throws InterruptedException if communication with a agent is interrupted
      */
     public abstract FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException;
 

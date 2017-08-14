@@ -41,7 +41,7 @@ import java.util.HashMap;
  *
  * @author Kohsuke Kawaguchi
  */
-public class MultipartFormDataParser {
+public class MultipartFormDataParser implements AutoCloseable {
     private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
     private final Map<String,FileItem> byName = new HashMap<String,FileItem>();
 
@@ -73,12 +73,18 @@ public class MultipartFormDataParser {
             item.delete();
     }
 
+    /** Alias for {@link #cleanUp}. */
+    @Override
+    public void close() {
+        cleanUp();
+    }
+
     /**
      * Checks a Content-Type string to assert if it is "multipart/form-data".
      *
      * @param contentType Content-Type string.
      * @return {@code true} if the content type is "multipart/form-data", otherwise {@code false}.
-     * @since TODO
+     * @since 1.620
      */
     public static boolean isMultiPartForm(@CheckForNull String contentType) {
         if (contentType == null) {

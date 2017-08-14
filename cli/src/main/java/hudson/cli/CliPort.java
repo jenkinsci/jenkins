@@ -8,9 +8,9 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
-/**
- * @author Kohsuke Kawaguchi
- */
+    /**
+     * @deprecated Specific to Remoting mode.
+     */
 public final class CliPort {
     /**
      * The TCP endpoint to talk to.

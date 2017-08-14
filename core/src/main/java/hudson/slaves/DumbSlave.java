@@ -31,7 +31,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import javax.annotation.Nonnull;
 
 /**
  * Default {@link Slave} implementation for computers that do not belong to a higher level structure,
@@ -49,12 +52,21 @@ public final class DumbSlave extends Slave {
         this(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, new ArrayList());
     }
     
-    @DataBoundConstructor
+    /**
+     * @deprecated as of 1.XXX.
+     *      Use {@link #DumbSlave(String, String, ComputerLauncher)} and configure the rest through setters.
+     */
     public DumbSlave(String name, String nodeDescription, String remoteFS, String numExecutors, Mode mode, String labelString, ComputerLauncher launcher, RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties) throws IOException, FormException {
     	super(name, nodeDescription, remoteFS, numExecutors, mode, labelString, launcher, retentionStrategy, nodeProperties);
     }
 
-    @Extension
+    @DataBoundConstructor
+    public DumbSlave(@Nonnull String name, String remoteFS, ComputerLauncher launcher) throws FormException, IOException {
+        super(name, remoteFS, launcher);
+    }
+
+    @Extension @Symbol({"dumb",
+            "slave"/*because this is in effect the canonical slave type*/})
     public static final class DescriptorImpl extends SlaveDescriptor {
         public String getDisplayName() {
             return Messages.DumbSlave_displayName();

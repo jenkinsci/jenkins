@@ -74,7 +74,7 @@ public class BootFailureTest {
 
     @After
     public void tearDown() {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j != null) {
             j.cleanUp();
         }

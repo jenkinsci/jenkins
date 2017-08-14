@@ -43,10 +43,11 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
 import hudson.util.xstream.ImmutableSortedSetConverter;
 import jenkins.model.Jenkins;
@@ -105,7 +106,7 @@ public class XStream2 extends XStream {
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
-        Jenkins h = Jenkins.getInstance();
+        Jenkins h = Jenkins.getInstanceOrNull();
         if(h!=null && h.pluginManager!=null && h.pluginManager.uberClassLoader!=null) {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
@@ -144,13 +145,15 @@ public class XStream2 extends XStream {
         // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
 
+        // http://www.openwall.com/lists/oss-security/2017/04/03/4
+        denyTypes(new Class[] { void.class, Void.class });
+
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
         registerConverter(new ImmutableMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSortedSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableSetConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new ImmutableListConverter(getMapper(),getReflectionProvider()),10);
-        registerConverter(new ConcurrentHashMapConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new CopyOnWriteMap.Tree.ConverterImpl(getMapper()),10); // needs to override MapConverter
         registerConverter(new DescribableList.ConverterImpl(getMapper()),10); // explicitly added to handle subtypes
         registerConverter(new Label.ConverterImpl(),10);
@@ -158,6 +161,8 @@ public class XStream2 extends XStream {
         // this should come after all the XStream's default simpler converters,
         // but before reflection-based one kicks in.
         registerConverter(new AssociatedConverterImpl(this), -10);
+
+        registerConverter(new BlacklistedTypesConverter(), PRIORITY_VERY_HIGH); // SECURITY-247 defense
 
         registerConverter(new DynamicProxyConverter(getMapper()) { // SECURITY-105 defense
             @Override public boolean canConvert(Class type) {
@@ -304,15 +309,22 @@ public class XStream2 extends XStream {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class<?> t) {
+        @CheckForNull
+        private Converter findConverter(@CheckForNull Class<?> t) {
+            if (t == null) {
+                return null;
+            }
+            
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
-                if(t==null || t.getClassLoader()==null)
+                final ClassLoader classLoader = t.getClassLoader();
+                if(classLoader == null) {
                     return null;
-                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
+                }
+                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -413,13 +425,13 @@ public class XStream2 extends XStream {
 
         private PluginManager pm;
 
-        @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
+        @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
         @Override public String ownerOf(Class<?> clazz) {
             if (classOwnership != null) {
                 return classOwnership.ownerOf(clazz);
             }
             if (pm == null) {
-                Jenkins j = Jenkins.getInstance();
+                Jenkins j = Jenkins.getInstanceOrNull();
                 if (j != null) {
                     pm = j.getPluginManager();
                 }
@@ -434,4 +446,30 @@ public class XStream2 extends XStream {
 
     }
 
+    private static class BlacklistedTypesConverter implements Converter {
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons");
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons");
+        }
+
+        @Override
+        public boolean canConvert(Class type) {
+            if (type == null) {
+                return false;
+            }
+            try {
+                ClassFilter.DEFAULT.check(type);
+                ClassFilter.DEFAULT.check(type.getName());
+            } catch (SecurityException se) {
+                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+                return true;
+            }
+            return false;
+        }
+    }
 }

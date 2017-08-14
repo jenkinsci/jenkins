@@ -161,7 +161,7 @@ public final class Result implements Serializable, CustomExportedBean {
         return l;
     }
 
-    // Maintain each Result as a singleton deserialized (like build result from a slave node)
+    // Maintain each Result as a singleton deserialized (like build result from an agent node)
     private Object readResolve() {
         for (Result r : all)
             if (ordinal==r.ordinal)

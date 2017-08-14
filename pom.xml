@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.35</version>
+    <version>1.36</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>1.648-SNAPSHOT</version>
+  <version>2.74-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -66,10 +66,6 @@ THE SOFTWARE.
       <id>github-pages</id>
       <url>gitsite:git@github.com/jenkinsci/maven-site.git:core</url>
     </site>
-    <snapshotRepository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <issueManagement>
@@ -77,13 +73,8 @@ THE SOFTWARE.
     <url>https://issues.jenkins-ci.org/browse/JENKINS/component/15593</url>
   </issueManagement>
 
-  <ciManagement>
-      <system>jenkins</system>
-      <url>https://ci.jenkins-ci.org/job/jenkins_main_trunk/</url>
-  </ciManagement>
-
   <properties>
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is acturally incorrect,
+    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
     but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build.type>private</build.type>
@@ -95,28 +86,32 @@ THE SOFTWARE.
     <project.patchManagement.url>https://api.github.com</project.patchManagement.url>
     <patch.tracker.serverId>jenkins-jira</patch.tracker.serverId>
 
-    <slf4jVersion>1.7.7</slf4jVersion> <!-- < 1.6.x version didn't specify the license (MIT) -->
-    <maven-plugin.version>2.7.1</maven-plugin.version>
+    <guavaVersion>11.0.1</guavaVersion>
+    <slf4jVersion>1.7.25</slf4jVersion>
+    <maven-plugin.version>2.14</maven-plugin.version>
     <matrix-project.version>1.4.1</matrix-project.version>
+    <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-    <findbugs-maven-plugin.version>3.0.1</findbugs-maven-plugin.version>
+    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
+    <access-modifier.version>1.11</access-modifier.version>
+    <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
+    <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
-    <java.level>7</java.level>
+    <java.level>8</java.level>
 
-    <changelog.url>https://jenkins-ci.org/changelog</changelog.url>
+    <changelog.url>https://jenkins.io/changelog</changelog.url>
   </properties>
 
+  <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
+       from the Jenkins org pom. This is on purpose to keep jenkins core buildable even if one has
+       *not* defined the specific details in the settings.xml file. -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
+      <!-- allow snapshots -->
     </repository>
   </repositories>
 
@@ -124,12 +119,6 @@ THE SOFTWARE.
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </pluginRepository>
   </pluginRepositories>
 
@@ -158,7 +147,7 @@ THE SOFTWARE.
         <artifactId>mockito-core</artifactId>
         <version>1.10.19</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
@@ -179,30 +168,30 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>2.53.2</version>
+        <version>3.10</version>
       </dependency>
 
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>11.0.1</version>
+        <version>${guavaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>${guavaVersion}</version>
       </dependency>
 
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <version>4.0-beta</version>
+        <version>4.0</version>
       </dependency>
 
       <!-- SLF4J used in maven-plugin and core -->
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>${slf4jVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-nop</artifactId>
         <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
@@ -218,7 +207,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.1.3</version>
+        <version>1.2</version>
         <scope>provided</scope><!-- by jcl-over-slf4j -->
       </dependency>
       <dependency>
@@ -236,6 +225,11 @@ THE SOFTWARE.
         <groupId>org.samba.jcifs</groupId>
         <artifactId>jcifs</artifactId>
         <version>1.3.17-kohsuke-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>access-modifier-annotation</artifactId>
+        <version>${access-modifier-annotation.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -288,6 +282,19 @@ THE SOFTWARE.
               </configuration>
             </execution>
             <execution>
+            <id>user.name</id>
+            <goals>
+              <goal>regex-property</goal>
+            </goals>
+            <configuration>
+              <name>user.name.escaped</name>
+              <value>${user.name}</value>
+              <regex>([$\\])</regex>
+              <replacement>\\$1</replacement>
+              <failIfNoMatch>false</failIfNoMatch>
+            </configuration>
+          </execution>
+          <execution>
               <id>version-property</id>
               <goals>
                 <goal>regex-property</goal>
@@ -296,7 +303,7 @@ THE SOFTWARE.
                 <name>build.version</name>
                 <value>${project.version}</value>
                 <regex>-SNAPSHOT</regex>
-                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name})</replacement>
+                <replacement>-SNAPSHOT (${build.type}-${now}-${user.name.escaped})</replacement>
                 <failIfNoMatch>false</failIfNoMatch>
               </configuration>
             </execution>
@@ -323,7 +330,17 @@ THE SOFTWARE.
               <artifactId>servlet-api</artifactId>
               <version>2.4</version>
             </dependency>
+            <dependency>
+              <groupId>org.codehaus.gmaven.runtime</groupId>
+              <artifactId>gmaven-runtime-2.0</artifactId>
+              <version>1.5-jenkins-3</version>
+            </dependency>
           </dependencies>
+          <configuration>
+            <!-- 2.4 not yet supported by plugin but 2.0 works
+                 here so long as we provide explicit version -->
+            <providerSelection>2.0</providerSelection>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -358,6 +375,9 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>2.10.3</version>
+          <configuration>
+            <quiet>true</quiet>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -372,7 +392,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.16</version> <!-- ignoring ${maven-surefire-plugin.version} -->
+          <version>2.20</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
             <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
@@ -380,6 +400,7 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
+            <trimStackTrace>false</trimStackTrace> <!-- SUREFIRE-1226 workaround -->
           </configuration>
         </plugin>
         <plugin>
@@ -435,7 +456,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.kohsuke</groupId>
           <artifactId>access-modifier-checker</artifactId>
-          <version>1.4</version>
+          <version>${access-modifier-checker.version}</version>
         </plugin>
         <plugin>
           <groupId>com.cloudbees</groupId>
@@ -457,7 +478,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.23</version>
+          <version>1.24</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -470,17 +491,12 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.infradna.tool</groupId>
           <artifactId>bridge-method-injector</artifactId>
-          <version>1.13</version>
+          <version>1.17</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>antlr-maven-plugin</artifactId>
           <version>2.1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>apt-maven-plugin</artifactId>
-          <version>1.0-alpha-5</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -490,6 +506,24 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
+          <version>${findbugs-maven-plugin.version}</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>High</threshold>
+            <!--Excludes file is located on the top level-->
+            <excludeFilterFile>../src/findbugs/findbugs-excludes.xml</excludeFilterFile>
+            <xmlOutput>true</xmlOutput>
+            <findbugsXmlOutput>false</findbugsXmlOutput>
+          </configuration>
+          <executions>
+            <execution>
+              <id>findbugs</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <phase>verify</phase>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -500,7 +534,7 @@ THE SOFTWARE.
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-jenkins-dev-plugin</artifactId>
-          <version>8.1.4.v20120524-jenkins-1</version>
+          <version>9.4.5.v20170502-jenkins-1</version>
         </plugin>
         <plugin>
           <groupId>org.jvnet.updatecenter2</groupId>
@@ -510,7 +544,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>1.114</version>
+          <version>2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -524,6 +558,11 @@ THE SOFTWARE.
             </dependency>
           </dependencies>
         </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M1</version> <!-- TODO 3.0.0 when released -->
+      </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
         	<groupId>org.eclipse.m2e</groupId>
@@ -567,7 +606,7 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.9</version>
+	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -630,7 +669,7 @@ THE SOFTWARE.
         <configuration>
           <source>1.${java.level}</source>
           <target>1.${java.level}</target>
-          <!-- default reuseCreated is more performant 
+          <!-- default reuseCreated is more performant
           feel free to uncomment if you have any issues on your platform
           <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
           -->
@@ -648,17 +687,15 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>1.7.0</version>
+                  <version>1.8.0</version>
                 </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.0</version>
                 </requireMavenVersion>
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.${java.level}</maxJdkVersion>
-                  <ignoreClasses>
-                    <ignoreClass>org.eclipse.jetty.spdy.*</ignoreClass>
-                  </ignoreClasses>
                 </enforceBytecodeVersion>
+                <requireUpperBoundDeps/>
               </rules>
             </configuration>
           </execution>
@@ -724,19 +761,9 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-        <configuration>
-           <!-- 1.8 not yet supported by plugin but 1.7 works
-                here so long as we provide explicit version -->
-           <providerSelection>1.7</providerSelection>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.gmaven.runtime</groupId>
-            <artifactId>gmaven-runtime-1.7</artifactId>
-            <version>1.3</version>
-          </dependency>
-        </dependencies>
       </plugin>
+
+
     </plugins>
 
     <extensions>
@@ -775,7 +802,7 @@ THE SOFTWARE.
     </profile>
     <profile>
       <id>metrics</id>
-      <reporting>
+      <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -785,7 +812,7 @@ THE SOFTWARE.
             </configuration>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
     </profile>
     <profile>
       <id>debug</id>
@@ -803,17 +830,24 @@ THE SOFTWARE.
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
-            <version>0.8</version>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </reporting>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.jvnet.sorcerer</groupId>
+            <groupId>org.kohsuke.sorcerer</groupId>
             <artifactId>maven-sorcerer-plugin</artifactId>
+            <version>${sorcerer.version}</version>
+            <configuration>
+              <source>1.${java.level}</source>
+            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -858,7 +892,7 @@ THE SOFTWARE.
     <profile>
       <id>lts-release</id>
       <properties>
-        <changelog.url>https://jenkins-ci.org/changelog-stable</changelog.url>
+        <changelog.url>https://jenkins.io/changelog-stable</changelog.url>
       </properties>
     </profile>
     <profile>

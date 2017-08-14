@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import jenkins.util.io.OnMaster;
 
 /**
  * Retains the known extension instances for the given type 'T'.
@@ -68,7 +69,7 @@ import javax.annotation.Nonnull;
  * @see jenkins.model.Jenkins#getExtensionList(Class)
  * @see jenkins.model.Jenkins#getDescriptorList(Class)
  */
-public class ExtensionList<T> extends AbstractList<T> {
+public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     /**
      * @deprecated as of 1.417
      *      Use {@link #jenkins}
@@ -198,6 +199,21 @@ public class ExtensionList<T> extends AbstractList<T> {
             return removeSync(o);
         } finally {
             if(extensions!=null) {
+                fireOnChangeListeners();
+            }
+        }
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean removed = false;
+        try {
+            for (Object o : c) {
+                removed |= removeSync(o);
+            }
+            return removed;
+        } finally {
+            if (extensions != null && removed) {
                 fireOnChangeListeners();
             }
         }
@@ -390,14 +406,14 @@ public class ExtensionList<T> extends AbstractList<T> {
     /**
      * Gets the extension list for a given type.
      * Normally calls {@link Jenkins#getExtensionList(Class)} but falls back to an empty list
-     * in case {@link Jenkins#getInstance} is null.
+     * in case {@link Jenkins#getInstanceOrNull()} is null.
      * Thus it is useful to call from {@code all()} methods which need to behave gracefully during startup or shutdown.
      * @param type the extension point type
      * @return some list
      * @since 1.572
      */
     public static @Nonnull <T> ExtensionList<T> lookup(Class<T> type) {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         return j == null ? create((Jenkins) null, type) : j.getExtensionList(type);
     }
 

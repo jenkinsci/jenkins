@@ -53,7 +53,7 @@ THE SOFTWARE.
             </j:forEach>
           </j:when>
           <j:otherwise>
-            ${%System Information is unavailable when slave is offline.}
+            ${%System Information is unavailable when agent is offline.}
           </j:otherwise>
         </j:choose>
       </l:hasPermission>

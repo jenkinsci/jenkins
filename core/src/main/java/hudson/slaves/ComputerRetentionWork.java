@@ -32,14 +32,15 @@ import jenkins.model.Jenkins;
 import hudson.model.Node;
 import hudson.model.PeriodicWork;
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 
 /**
- * Periodically checks the slaves and try to reconnect dead slaves.
+ * Periodically checks the agents and try to reconnect dead agents.
  *
  * @author Kohsuke Kawaguchi
  * @author Stephen Connolly
  */
-@Extension
+@Extension @Symbol("computerRetention")
 public class ComputerRetentionWork extends PeriodicWork {
 
     /**

@@ -9,12 +9,12 @@ import org.acegisecurity.ui.rememberme.TokenBasedRememberMeServices
 import org.acegisecurity.userdetails.User
 import org.acegisecurity.userdetails.UserDetails
 import org.acegisecurity.userdetails.UsernameNotFoundException
-import com.gargoylesoftware.htmlunit.util.Cookie
-import org.junit.After
 import org.junit.Before
+import com.gargoylesoftware.htmlunit.util.Cookie
 import org.junit.Rule
 import org.junit.Test
 import org.jvnet.hudson.test.JenkinsRule
+import org.jvnet.hudson.test.LoggerRule
 import org.springframework.dao.DataAccessException
 
 import java.util.logging.Handler
@@ -31,40 +31,13 @@ import static java.util.logging.Level.FINEST
 class TokenBasedRememberMeServices2Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule()
 
-    private boolean failureInduced;
-
-    private Logger logger = Logger.getLogger(TokenBasedRememberMeServices.class.name)
-
-    private List<LogRecord> logs = []
-    private Handler loghandler
+    private static boolean failureInduced;
 
     @Before
-    public void setUp() {
-        loghandler = new Handler() {
-            @Override
-            void publish(LogRecord record) {
-                logs.add(record);
-            }
-
-            @Override
-            void flush() {
-            }
-
-            @Override
-            void close() throws SecurityException {
-            }
-        }
-        loghandler.level = FINEST
-        logger.addHandler(loghandler)
-        logger.level = FINEST
-    }
-
-    @After
-    public void tearDown() {
-        logger.removeHandler(loghandler);
-        logger.level = null
-    }
+    public void resetFailureInduced() {failureInduced = false}
 
     @Test
     public void rememberMeAutoLoginFailure()  {
@@ -83,12 +56,12 @@ class TokenBasedRememberMeServices2Test {
         wc.cookieManager.addCookie(c);
 
         // even if SecurityRealm chokes, it shouldn't kill the page
-        logs.clear()
+        logging.capture(1000).record(TokenBasedRememberMeServices.class, FINEST)
         wc.goTo("")
 
         // make sure that the server recorded this failure
         assert failureInduced
-        assert logs.find { it.message.contains("contained username 'alice' but was not found")}!=null
+        assert logging.messages.find { it.contains("contained username 'alice' but was not found")}!=null
         // and the problematic cookie should have been removed
         assert getRememberMeCookie(wc)==null
     }
@@ -97,7 +70,7 @@ class TokenBasedRememberMeServices2Test {
         wc.cookieManager.getCookie(TokenBasedRememberMeServices2.ACEGI_SECURITY_HASHED_REMEMBER_ME_COOKIE_KEY)
     }
 
-    private class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
+    private static class InvalidUserWhenLoggingBackInRealm extends AbstractPasswordBasedSecurityRealm {
         @Override
         protected UserDetails authenticate(String username, String password) throws AuthenticationException {
             if (username==password)
@@ -146,7 +119,7 @@ class TokenBasedRememberMeServices2Test {
         }
     }
 
-    private class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
+    private static class StupidRealm extends InvalidUserWhenLoggingBackInRealm {
         @Override
         UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
             failureInduced = true
