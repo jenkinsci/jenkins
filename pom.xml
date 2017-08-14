@@ -723,7 +723,7 @@ THE SOFTWARE.
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-beta-2</version>
+            <version>1.0-beta-6</version>
           </dependency>
         </dependencies>
       </plugin>
