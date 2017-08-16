@@ -98,6 +98,10 @@ public final class TcpSlaveAgentListener extends Thread {
             throw (BindException)new BindException("Failed to listen on port "+port+" because it's already in use.").initCause(e);
         }
         this.configuredPort = port;
+        setUncaughtExceptionHandler((t, e) -> {
+            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t, e);
+            shutdown();
+        });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
 
@@ -200,6 +204,14 @@ public final class TcpSlaveAgentListener extends Thread {
                 id = iotaGen++;
             }
             setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
+            setUncaughtExceptionHandler((t, e) -> {
+                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t, e);
+                try {
+                    s.close();
+                } catch (IOException e1) {
+                    // try to clean up the socket
+                }
+            });
         }
 
         @Override
