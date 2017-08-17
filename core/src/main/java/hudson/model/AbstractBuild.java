@@ -325,6 +325,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
+    @Exported
+    @Nonnull public Set<User> getCulprits() {
+        return RunWithSCM.super.getCulprits();
+    }
+
+    @Override
     public boolean shouldCalculateCulprits() {
         return getCulpritIds() == null;
     }

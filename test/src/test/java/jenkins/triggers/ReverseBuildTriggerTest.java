@@ -209,4 +209,19 @@ public class ReverseBuildTriggerTest {
         assertThat("Build should be not triggered", downstreamJob1.getBuilds(), hasSize(0));
         assertThat("Build should be triggered", downstreamJob2.getBuilds(), not(hasSize(0)));
     }
+
+    @Issue("JENKINS-45909")
+    @Test
+    public void nullUpstreamProjectsNoNPE() throws Exception {
+        //job with trigger.upstreamProjects == null
+        final FreeStyleProject downstreamJob1 = r.createFreeStyleProject("downstream1");
+        ReverseBuildTrigger trigger = new ReverseBuildTrigger(null);
+        downstreamJob1.addTrigger(trigger);
+        downstreamJob1.save();
+        r.configRoundtrip(downstreamJob1);
+
+        // The reported issue was with Pipeline jobs, which calculate their dependency graphs via
+        // ReverseBuildTrigger.RunListenerImpl, so an additional test may be needed downstream.
+        trigger.buildDependencyGraph(downstreamJob1, Jenkins.getInstance().getDependencyGraph());
+    }
 }
