@@ -53,11 +53,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Extension @Symbol("reverseProxy")
 public class ReverseProxySetupMonitor extends AdministrativeMonitor {
 
-    static final String SEPARATOR = "~~";
-    
-    static final String ENCODED_PREFIX = "no%2Fscheme";
-    static final String UNENCODED_PREFIX = "no/scheme";
-    
     private static final Logger LOGGER = Logger.getLogger(ReverseProxySetupMonitor.class.getName());
 
     @Override
@@ -67,34 +62,25 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     }
 
     public HttpResponse doTest() {
-        Jenkins j = Jenkins.getInstance();
         String referer = Stapler.getCurrentRequest().getReferer();
+        Jenkins j = Jenkins.getInstance();
         // May need to send an absolute URL, since handling of HttpRedirect with a relative URL does not currently honor X-Forwarded-Proto/Port at all.
-        
-        String redirect = buildRedirect(referer, j);
+        String redirect = j.getRootUrl() + "administrativeMonitor/" + id + "/testForReverseProxySetup/" + (referer != null ? Util.rawEncode(referer) : "NO-REFERER") + "/";
         LOGGER.log(Level.FINE, "coming from {0} and redirecting to {1}", new Object[] {referer, redirect});
         return new HttpRedirect(redirect);
     }
 
     public void getTestForReverseProxySetup(String rest) {
-       
-        String input = checkInput(rest);
-        
-        
-        
-        
         Jenkins j = Jenkins.getInstance();
         String inferred = j.getRootUrlFromRequest() + "manage";
         // TODO this could also verify that j.getRootUrl() has been properly configured, and send a different message if not
-        if (input.startsWith(inferred)) { // not using equals due to JENKINS-24014
+        if (rest.startsWith(inferred)) { // not using equals due to JENKINS-24014
             throw HttpResponses.ok();
         } else {
-            LOGGER.log(Level.WARNING, "{0} vs. {1}", new Object[] {inferred, input});
-            throw HttpResponses.errorWithoutStack(404, inferred + " vs. " + input);
+            LOGGER.log(Level.WARNING, "{0} vs. {1}", new Object[] {inferred, rest});
+            throw HttpResponses.errorWithoutStack(404, inferred + " vs. " + rest);
         }
     }
-
-    
 
     /**
      * Depending on whether the user said "yes" or "no", send him to the right place.
@@ -113,29 +99,6 @@ public class ReverseProxySetupMonitor extends AdministrativeMonitor {
     @Override
     public String getDisplayName() {
         return Messages.ReverseProxySetupMonitor_DisplayName();
-    }
-    
-    String buildRedirect(String referer, Jenkins j) {
-        String redirect = j.getRootUrl() + 
-                "administrativeMonitor/" + id + 
-                "/testForReverseProxySetup/" + 
-                getReferrer(referer) +
-                "/";
-        return redirect;
-    }
-    
-    String getReferrer(String referer) {
-        String ref = (referer != null ? Util.rawEncode(referer) : "NO-REFERER");
-        return String.format("%s%s%s%s", ref, SEPARATOR, ENCODED_PREFIX, SEPARATOR);
-    }
-    
-    static String checkInput(String rest) {
-        int sepIndex = rest.indexOf("~~");
-        String prefixWithSlash = rest.substring(sepIndex + 2, rest.lastIndexOf(SEPARATOR));
-        if(UNENCODED_PREFIX.equals(prefixWithSlash)) {
-            return rest.substring(0, sepIndex) + "/";
-        }
-        throw HttpResponses.errorWithoutStack(404, Messages.ReverseProxySetupMonitor_EncodedForwardSlashesDisallowed());
     }
 }
 
