@@ -98,7 +98,7 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
         return StringUtils.join(deprecatedProtocols, ',');
     }
     
-    @Initializer(after = InitMilestone.PLUGINS_STARTED)
+    @Initializer(after = InitMilestone.JOB_LOADED)
     @Restricted(NoExternalUse.class)
     public static void initializerCheck() {
         String protocols = getDeprecatedProtocolsString();
