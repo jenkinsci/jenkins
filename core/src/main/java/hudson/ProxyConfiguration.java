@@ -396,7 +396,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             if (userName.indexOf('\\') >= 0){
                 final String domain = userName.substring(0, userName.indexOf('\\'));
                 final String user = userName.substring(userName.indexOf('\\') + 1);
-                return new NTCredentials(user, Secret.fromString(password).getPlainText(), domain, "");
+                return new NTCredentials(user, Secret.fromString(password).getPlainText(), "", domain);
             } else {
                 return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
             }
