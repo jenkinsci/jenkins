@@ -68,6 +68,11 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     }
 
     @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+    
+    @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         handler.handle(socket,
                 Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
