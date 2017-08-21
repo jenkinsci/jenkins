@@ -41,17 +41,15 @@ THE SOFTWARE.
         <div class="top-sticker-inner">
           <div id="right-top-nav">
             <j:if test="${norefresh==null or norefresh==false}">
-              <div id="right-top-nav">
-                <div class="smallfont">
-                  <j:choose>
-                    <j:when test="${h.isAutoRefresh(request)}">
-                      <a href="?auto_refresh=false">${%DISABLE AUTO REFRESH}</a>
-                    </j:when>
-                    <j:otherwise>
-                      <a href="?auto_refresh=true">${%ENABLE AUTO REFRESH}</a>
-                    </j:otherwise>
-                  </j:choose>
-                </div>
+              <div id="auto-refresh" class="smallfont">
+                <j:choose>
+                  <j:when test="${h.isAutoRefresh(request)}">
+                    <a href="?auto_refresh=false" class="auto-refresh-text-link">${%DISABLE AUTO REFRESH}</a>
+                  </j:when>
+                  <j:otherwise>
+                    <a href="?auto_refresh=true" class="auto-refresh-text-link">${%ENABLE AUTO REFRESH}</a>
+                  </j:otherwise>
+                </j:choose>
               </div>
             </j:if>
           </div>
