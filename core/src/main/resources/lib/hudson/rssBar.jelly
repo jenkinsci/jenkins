@@ -24,22 +24,33 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div align="right" style="margin:1em">
-    <a href="${rootURL}/legend">${%Legend}</a>
-    <span style="padding-left:1em">
-      <a href="rssAll"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+  <style type="text/css">
+    .icon-rss {
+      border: 0;
+    }
+    .rss-bar-item {
+      padding-left: 1em;
+    }
+    #rss-bar {
+      margin:1em;
+    }
+  </style>
+  <div id="rss-bar" align="right">
+    <a href="${rootURL}/legend" id="rss-bar-legend-link">${%Legend}</a>
+    <span id="rss-bar-rss-all" class="rss-bar-item">
+      <a href="rssAll" class="rss-bar-item-icon-link"><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Feed"/></a>
       <st:nbsp/>
-      <a href="rssAll">RSS ${%for all}</a>
+      <a href="rssAll" class="rss-bar-item-text-link">RSS ${%for all}</a>
     </span>
-    <span style="padding-left:1em">
-      <a href="rssFailed"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+    <span id="rss-bar-rss-failed" class="rss-bar-item">
+      <a href="rssFailed" class="rss-bar-item-icon-link"><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Feed"/></a>
       <st:nbsp/>
-      <a href="rssFailed">RSS ${%for failures}</a>
+      <a href="rssFailed" class="rss-bar-item-text-link">RSS ${%for failures}</a>
     </span>
-    <span style="padding-left:1em">
-      <a href="rssLatest"><img src="${imagesURL}/atom.gif" border="0" alt="Feed" height="16" width="16"/></a>
+    <span id="rss-bar-rss-latest" class="rss-bar-item">
+      <a href="rssLatest" class="rss-bar-item-icon-link" ><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Feed"/></a>
       <st:nbsp/>
-      <a href="rssLatest">RSS ${%for just latest builds}</a>
+      <a href="rssLatest" class="rss-bar-item-text-link">RSS ${%for just latest builds}</a>
     </span>
   </div>
 </j:jelly>
