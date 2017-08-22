@@ -33,9 +33,10 @@ THE SOFTWARE.
     }
     #rss-bar {
       margin:1em;
+      text-align:right;
     }
   </style>
-  <div id="rss-bar" align="right">
+  <div id="rss-bar">
     <a href="${rootURL}/legend" id="rss-bar-legend-link">${%Legend}</a>
     <span id="rss-bar-rss-all" class="rss-bar-item">
       <a href="rssAll" class="rss-bar-item-icon-link"><img src="${imagesURL}/atom.gif" class="icon-rss icon-sm" alt="Feed"/></a>
