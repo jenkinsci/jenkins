@@ -887,7 +887,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 e.buildEnvVars(env);
 
         for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
-            a.buildEnvVars(this,env);
+            a.buildEnvVars(this,env,getBuiltOn());
 
         EnvVars.resolve(env);
 
