@@ -146,13 +146,17 @@ public class WindowsServiceLifecycle extends Lifecycle {
             throw new IOException(baos.toString());
     }
     
-    private static final File getBaseDir() throws FileNotFoundException {
-        String baseEnv = System.getenv("BASE");
-        if (baseEnv == null) {
-            throw new FileNotFoundException("Unable to locate Jenkins base directory. Environment variable 'BASE' not found.");
-        }
+    private static final File getBaseDir() throws FileNotFoundException {        
+        File baseDir;
         
-        return new File(baseEnv);
+        String baseEnv = System.getenv("BASE");
+        if (baseEnv != null) {
+            baseDir = new File(baseEnv);
+        } else {
+            LOGGER.log(Level.WARNING, "Could not find environment variable 'BASE' for Jenkins base directory. Falling back to JENKINS_HOME");
+            baseDir = Jenkins.getInstance().getRootDir();
+        }
+        return baseDir;
     }
 
     private static final Logger LOGGER = Logger.getLogger(WindowsServiceLifecycle.class.getName());
