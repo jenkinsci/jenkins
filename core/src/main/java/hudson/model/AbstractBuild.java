@@ -325,6 +325,12 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
     }
 
     @Override
+    @Exported
+    @Nonnull public Set<User> getCulprits() {
+        return RunWithSCM.super.getCulprits();
+    }
+
+    @Override
     public boolean shouldCalculateCulprits() {
         return getCulpritIds() == null;
     }
@@ -337,7 +343,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         AbstractBuild<P,R> p = getPreviousCompletedBuild();
         if (upstreamCulprits) {
             // If we have dependencies since the last successful build, add their authors to our list
-            if (p.getPreviousNotFailedBuild() != null) {
+            if (p != null && p.getPreviousNotFailedBuild() != null) {
                 Map<AbstractProject, AbstractBuild.DependencyChange> depmap =
                         p.getDependencyChanges(p.getPreviousSuccessfulBuild());
                 for (AbstractBuild.DependencyChange dep : depmap.values()) {
@@ -881,7 +887,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 e.buildEnvVars(env);
 
         for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
-            a.buildEnvVars(this,env);
+            a.buildEnvVars(this,env,getBuiltOn());
 
         EnvVars.resolve(env);
 

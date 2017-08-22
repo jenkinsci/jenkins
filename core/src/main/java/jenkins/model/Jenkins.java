@@ -2176,7 +2176,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns the enabled and activated administrative monitors.
-     * @since TODO
+     * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
@@ -2326,12 +2326,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * It is done in this order so that it can work correctly even in the face
      * of a reverse proxy.
      *
-     * @return null if this parameter is not configured by the user and the calling thread is not in an HTTP request; otherwise the returned URL will always have the trailing {@code /}
+     * @return {@code null} if this parameter is not configured by the user and the calling thread is not in an HTTP request; 
+     *                      otherwise the returned URL will always have the trailing {@code /}
+     * @throws IllegalStateException {@link JenkinsLocationConfiguration} cannot be retrieved.
+     *                      Jenkins instance may be not ready, or there is an extension loading glitch.
      * @since 1.66
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public @Nullable String getRootUrl() {
-        String url = JenkinsLocationConfiguration.get().getUrl();
+    public @Nullable String getRootUrl() throws IllegalStateException {
+        final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        if (config == null) {
+            // Try to get standard message if possible
+            final Jenkins j = Jenkins.getInstance();
+            throw new IllegalStateException("Jenkins instance " + j + " has been successfully initialized, but JenkinsLocationConfiguration is undefined.");
+        }
+        String url = config.getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
         }
@@ -3061,6 +3070,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return getLabelAtom("master");
     }
 
+    @Override
+    @Nonnull
     public Computer createComputer() {
         return new Hudson.MasterComputer();
     }
@@ -3996,7 +4007,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         LOGGER.log(Level.WARNING, "Reloading Jenkins as requested by {0}", getAuthentication().getName());
 
         // engage "loading ..." UI and then run the actual task in a separate thread
-        servletContext.setAttribute("app", new HudsonIsLoading());
+        WebApp.get(servletContext).setApp(new HudsonIsLoading());
 
         new Thread("Jenkins config reload thread") {
             @Override
@@ -4035,7 +4046,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         User.reload();
         queue.load();
-        servletContext.setAttribute("app", this);
+        WebApp.get(servletContext).setApp(this);
     }
 
     /**

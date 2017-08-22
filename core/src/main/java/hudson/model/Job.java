@@ -376,13 +376,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
     public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        EnvVars env;
+        EnvVars env = new EnvVars();
 
-        if (node!=null) {
+        if (node != null) {
             final Computer computer = node.toComputer();
-            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
-        } else {
-            env = new EnvVars();
+            if (computer != null) {
+                // we need to get computer environment to inherit platform details 
+                env = computer.getEnvironment();
+                env.putAll(computer.buildEnvironment(listener));
+            }
         }
 
         env.putAll(getCharacteristicEnvVars());
@@ -1087,7 +1089,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * RSS feed for changes in this project.
      *
-     * @since TODO
+     * @since 2.60
      */
     public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         class FeedItem {

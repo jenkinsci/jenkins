@@ -24,24 +24,30 @@
 
 package hudson.cli;
 
+import com.gargoylesoftware.htmlunit.WebResponse;
 import com.google.common.collect.Lists;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
+import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
+import hudson.security.csrf.CrumbExclusion;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.apache.sshd.common.util.io.ModifiableFileWatcher;
 import static org.hamcrest.Matchers.*;
 import org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl;
 import org.jenkinsci.main.modules.sshd.SSHD;
@@ -56,6 +62,17 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerProxy;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class CLITest {
 
@@ -68,9 +85,12 @@ public class CLITest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
+    private File home;
+    private File jar;
+
     /** Sets up a fake {@code user.home} so that tests {@code -ssh} mode does not get confused by the developer’s real {@code ~/.ssh/known_hosts}. */
     private File tempHome() throws IOException {
-        File home = tmp.newFolder();
+        home = tmp.newFolder();
         // Seems it gets created automatically but with inappropriate permissions:
         File known_hosts = new File(new File(home, ".ssh"), "known_hosts");
         assumeTrue(known_hosts.getParentFile().mkdir());
@@ -82,23 +102,20 @@ public class CLITest {
         } catch (IOException x) {
             assumeNoException("Sometimes on Windows KnownHostsServerKeyVerifier.acceptIncompleteHostKeys says WARNING: Failed (FileSystemException) to reload server keys from …\\\\.ssh\\\\known_hosts: … Incorrect function.", x);
         }
-        /* TODO impossible to do this until the bundled sshd module uses a sufficiently new version of sshd-core:
         assumeThat("or on Windows DefaultKnownHostsServerKeyVerifier.reloadKnownHosts says invalid file permissions: Owner violation (Administrators)",
             ModifiableFileWatcher.validateStrictConfigFilePermissions(known_hosts.toPath()), nullValue());
-        */
-        assumeFalse(Functions.isWindows()); // TODO can remove when above check is restored
         return home;
     }
 
     @Issue("JENKINS-41745")
     @Test
     public void strictHostKey() throws Exception {
-        File home = tempHome();
+        home = tempHome();
+        grabCliJar();
+
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
-        File jar = tmp.newFile("jenkins-cli.jar");
-        FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         File privkey = tmp.newFile("id_rsa");
         FileUtils.copyURLToFile(CLITest.class.getResource("id_rsa"), privkey);
         User.get("admin").addProperty(new UserPropertyImpl(IOUtils.toString(CLITest.class.getResource("id_rsa.pub"))));
@@ -117,31 +134,39 @@ public class CLITest {
         assertThat(baos.toString(), containsString("Authenticated as: admin"));
     }
 
+    private void grabCliJar() throws IOException {
+        jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+    }
+
     @Issue("JENKINS-41745")
     @Test
     public void interrupt() throws Exception {
-        File home = tempHome();
+        home = tempHome();
+        grabCliJar();
+
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         SSHD.get().setPort(0);
-        File jar = tmp.newFile("jenkins-cli.jar");
-        FileUtils.copyURLToFile(r.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
         File privkey = tmp.newFile("id_rsa");
         FileUtils.copyURLToFile(CLITest.class.getResource("id_rsa"), privkey);
         User.get("admin").addProperty(new UserPropertyImpl(IOUtils.toString(CLITest.class.getResource("id_rsa.pub"))));
         FreeStyleProject p = r.createFreeStyleProject("p");
         p.getBuildersList().add(new SleepBuilder(TimeUnit.MINUTES.toMillis(5)));
-        doInterrupt(jar, home, p, "-remoting", "-i", privkey.getAbsolutePath());
-        doInterrupt(jar, home, p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
-        doInterrupt(jar, home, p, "-http", "-auth", "admin:admin");
+        doInterrupt(p, "-remoting", "-i", privkey.getAbsolutePath());
+        doInterrupt(p, "-ssh", "-user", "admin", "-i", privkey.getAbsolutePath());
+        doInterrupt(p, "-http", "-auth", "admin:admin");
     }
-    private void doInterrupt(File jar, File home, FreeStyleProject p, String... modeArgs) throws Exception {
+    private void doInterrupt(FreeStyleProject p, String... modeArgs) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         List<String> args = Lists.newArrayList("java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", r.getURL().toString());
         args.addAll(Arrays.asList(modeArgs));
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
         while (!baos.toString().contains("Sleeping ")) {
+            if (!proc.isAlive()) {
+                throw new AssertionError("Process failed to start with " + proc.join());
+            }
             Thread.sleep(100);
         }
         System.err.println("Killing client");
@@ -149,4 +174,125 @@ public class CLITest {
         r.waitForCompletion(p.getLastBuild());
     }
 
+    @Test @Issue("JENKINS-44361")
+    public void reportNotJenkins() throws Exception {
+        home = tempHome();
+        grabCliJar();
+
+        String url = r.getURL().toExternalForm() + "not-jenkins/";
+        for (String transport : Arrays.asList("-remoting", "-http", "-ssh")) {
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+                    "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", url, transport, "-user", "asdf", "who-am-i"
+            ).stdout(baos).stderr(baos).join();
+
+            assertThat(baos.toString(), containsString("There's no Jenkins running at"));
+            assertNotEquals(0, ret);
+        }
+    }
+    @TestExtension("reportNotJenkins")
+    public static final class NoJenkinsAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
+
+        @Override public String getIconFileName() {
+            return "not-jenkins";
+        }
+
+        @Override public String getDisplayName() {
+            return "not-jenkins";
+        }
+
+        @Override public String getUrlName() {
+            return "not-jenkins";
+        }
+
+        @Override public Object getTarget() {
+            doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            return this;
+        }
+
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) {
+            rsp.setStatus(200);
+        }
+
+        @Override // Permit access to cli-proxy/XXX without CSRF checks
+        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+            chain.doFilter(request, response);
+            return true;
+        }
+    }
+
+    @Test @Issue("JENKINS-44361")
+    public void redirectToEndpointShouldBeFollowed() throws Exception {
+        home = tempHome();
+        grabCliJar();
+
+        // Enable CLI over SSH
+        SSHD sshd = GlobalConfiguration.all().get(SSHD.class);
+        sshd.setPort(0); // random
+        sshd.start();
+
+        // Sanity check
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.getOptions().setRedirectEnabled(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebResponse rsp = wc.goTo("cli-proxy/").getWebResponse();
+        assertEquals(rsp.getContentAsString(), 302, rsp.getStatusCode());
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins"));
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-Jenkins-CLI-Port"));
+        assertEquals(rsp.getContentAsString(), null, rsp.getResponseHeaderValue("X-SSH-Endpoint"));
+
+        for (String transport: Arrays.asList("-remoting", "-http", "-ssh")) {
+
+            String url = r.getURL().toString() + "cli-proxy/";
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int ret = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+                    "java", "-Duser.home=" + home, "-jar", jar.getAbsolutePath(), "-s", url, transport, "-user", "asdf", "who-am-i"
+            ).stdout(baos).stderr(baos).join();
+
+            //assertThat(baos.toString(), containsString("There's no Jenkins running at"));
+            assertThat(baos.toString(), containsString("Authenticated as: anonymous"));
+            assertEquals(0, ret);
+        }
+    }
+    @TestExtension("redirectToEndpointShouldBeFollowed")
+    public static final class CliProxyAction extends CrumbExclusion implements UnprotectedRootAction, StaplerProxy {
+
+        @Override public String getIconFileName() {
+            return "cli-proxy";
+        }
+
+        @Override public String getDisplayName() {
+            return "cli-proxy";
+        }
+
+        @Override public String getUrlName() {
+            return "cli-proxy";
+        }
+
+        @Override public Object getTarget() {
+            throw doDynamic(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+        }
+
+        public HttpResponses.HttpResponseException doDynamic(StaplerRequest req, StaplerResponse rsp) {
+            final String url = req.getRequestURIWithQueryString().replaceFirst("/cli-proxy", "");
+            // Custom written redirect so no traces of Jenkins are present in headers
+            return new HttpResponses.HttpResponseException() {
+                @Override
+                public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                    rsp.setHeader("Location", url);
+                    rsp.setContentType("text/html");
+                    rsp.setStatus(302);
+                    PrintWriter w = rsp.getWriter();
+                    w.append("Redirect to ").append(url);
+                }
+            };
+        }
+
+        @Override // Permit access to cli-proxy/XXX without CSRF checks
+        public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+            chain.doFilter(request, response);
+            return true;
+        }
+    }
 }

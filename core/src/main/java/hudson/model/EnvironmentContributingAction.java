@@ -24,9 +24,15 @@
 package hudson.model;
 
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.model.Queue.Task;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildWrapper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * {@link Action} that contributes environment variables during a build.
@@ -45,12 +51,41 @@ import hudson.tasks.BuildWrapper;
  */
 public interface EnvironmentContributingAction extends Action {
     /**
+     * Called by {@link Run} or {@link AbstractBuild} to allow plugins to contribute environment variables.
+     *
+     * @param run
+     *      The calling build. Never null.
+     * @param node
+     *      The node execute on. Can be {@code null} when the Run is not binded to the node,
+     *      e.g. in Pipeline outside the {@code node() step}
+     * @param env
+     *      Environment variables should be added to this map.
+     * @since TODO
+     */
+    default void buildEnvVars(@Nonnull Run<?, ?> run, @Nonnull EnvVars env, @CheckForNull Node node) {
+        if (run instanceof AbstractBuild
+                && Util.isOverridden(EnvironmentContributingAction.class,
+                                     getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
+            buildEnvVars((AbstractBuild) run, env);
+        }
+    }
+
+    /**
      * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
+     *
+     * @deprecated Use {@link #buildEnvVars(Run, EnvVars, Node)} instead
      *
      * @param build
      *      The calling build. Never null.
      * @param env
      *      Environment variables should be added to this map.
      */
-    void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env);
+    @Deprecated
+    @Restricted(ProtectedExternally.class)
+    default void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+        if (Util.isOverridden(EnvironmentContributingAction.class,
+                              getClass(), "buildEnvVars", Run.class, EnvVars.class, Node.class)) {
+            buildEnvVars(build, env, build.getBuiltOn());
+        }
+    }
 }

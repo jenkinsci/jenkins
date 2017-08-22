@@ -8,7 +8,7 @@ import org.jenkinsci.remoting.RoleChecker;
  * just as a convenient function that has parameterized return value and exception type.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class NotReallyRoleSensitiveCallable<V,T extends Throwable> implements Callable<V,T> {
     @Override

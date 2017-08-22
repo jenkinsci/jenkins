@@ -51,7 +51,6 @@ import hudson.cli.declarative.CLIMethod;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.queue.Executables;
 import hudson.model.queue.SubTask;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -774,6 +773,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     @Override
     public String toString() {
+        if (project == null) {
+            return "<broken data JENKINS-45892>";
+        }
         return project.getFullName() + " #" + number;
     }
 
@@ -1698,6 +1700,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         if(result!=null)
             return;     // already built.
 
+        OutputStream logger = null;
         StreamBuildListener listener=null;
 
         runner = job;
@@ -1716,7 +1719,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                         charset = computer.getDefaultCharset();
                         this.charset = charset.name();
                     }
-                    listener = createBuildListener(job, listener, charset);
+                    logger = createLogger();
+                    listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1798,23 +1802,32 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             try {
                 getParent().logRotate();
             } catch (Exception e) {
-		LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
-	    }
+                LOGGER.log(Level.SEVERE, "Failed to rotate log",e);
+            }
         } finally {
             onEndBuilding();
+            if (logger != null) {
+                try {
+                    logger.close();
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, "failed to close log for " + Run.this, x);
+                }
+            }
         }
     }
 
-    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, StreamBuildListener listener, Charset charset) throws IOException, InterruptedException {
+    private OutputStream createLogger() throws IOException {
         // don't do buffering so that what's written to the listener
         // gets reflected to the file immediately, which can then be
         // served to the browser immediately
-        OutputStream logger;
         try {
-            logger = Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return Files.newOutputStream(getLogFile().toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
+    }
+
+    private StreamBuildListener createBuildListener(@Nonnull RunExecution job, OutputStream logger, Charset charset) throws IOException, InterruptedException {
         RunT build = job.getBuild();
 
         // Global log filters
@@ -1830,8 +1843,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             }
         }
 
-        listener = new StreamBuildListener(logger,charset);
-        return listener;
+        return new StreamBuildListener(logger,charset);
     }
 
     /**
@@ -1926,6 +1938,19 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private @Nonnull XmlFile getDataFile() {
         return new XmlFile(XSTREAM,new File(getRootDir(),"build.xml"));
+    }
+
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(Run<?, ?> r) {
+            id = r.getExternalizableId();
+        }
+        private Object readResolve() {
+            return fromExternalizableId(id);
+        }
     }
 
     /**
@@ -2128,7 +2153,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
-        ;
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getCompressedOutputStream(req);
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
@@ -2277,6 +2301,9 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
+        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
+            a.buildEnvVars(this,env,n);
+
         return env;
     }
 
@@ -2319,7 +2346,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         } catch (NumberFormatException x) {
             throw new IllegalArgumentException(x);
         }
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
+        if (j == null) {
+            return null;
+        }
         Job<?,?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
             return null;

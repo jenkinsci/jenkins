@@ -58,6 +58,7 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -307,6 +308,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @since 1.653
      */
     @Extension
+    @Symbol("ping")
     public static class PingAgentProtocol extends AgentProtocol {
 
         private final byte[] ping;
