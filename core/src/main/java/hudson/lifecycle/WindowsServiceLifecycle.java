@@ -145,7 +145,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
             throw new IOException(baos.toString());
     }
     
-    private static final File getBaseDir() {        
+    private static final File getBaseDir() {
         File baseDir;
         
         String baseEnv = System.getenv("BASE");
