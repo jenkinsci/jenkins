@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -54,12 +54,12 @@ body, table, form, input, td, th, p, textarea, select
 @media (min-width:1600px){
   body#jenkins.j-hide-left #main-panel{max-width:75%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:14px;}  
+    {font-size:14px;}
 }
 @media (min-width:2000px){
   body#jenkins.j-hide-left #main-panel{max-width:85%}
   body, table, form, input, td, th, p, textarea, select, #tasks .task
-    {font-size:15px;}  
+    {font-size:15px;}
 }
 body, table, form, td, th, p
 {
@@ -257,7 +257,7 @@ pre {/* see http://users.tkk.fi/tkarvine/pre-wrap-css3-mozilla-opera-ie.html */
 }
 
 pre a {
-    word-wrap: break-word;  
+    word-wrap: break-word;
 }
 
 pre.console {
@@ -1477,7 +1477,7 @@ DIV.yahooTree td {
   height: 24px;
   padding-left: 20px;
   width: 15em;
-  position: static; 
+  position: static;
   border: 1px solid #DDD;
   border-radius: 4px;
   box-shadow: 0 0 5px #DDD inset;
@@ -1733,7 +1733,7 @@ select.select-ajax-pending {
 
 /* ========================= Button styles ================= */
 .btn-box {
-  display:block; 
+  display:block;
   margin-top:2em
 }
 #disable-project {
@@ -1912,4 +1912,19 @@ body.no-sticker #bottom-sticker {
 .icon-xlg {
     width: 48px;
     height: 48px;
+}
+
+/* rss-bar */
+
+.icon-rss {
+    border: 0;
+}
+
+.rss-bar-item {
+    padding-left: 1em;
+}
+
+#rss-bar {
+    margin:1em;
+    text-align:right;
 }
