@@ -24,6 +24,18 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <style type="text/css">
+    .icon-rss {
+      border: 0;
+    }
+    .rss-bar-item {
+      padding-left: 1em;
+    }
+    #rss-bar {
+      margin:1em;
+      text-align:right;
+    }
+  </style>
   <div id="rss-bar">
     <a href="${rootURL}/legend" id="rss-bar-legend-link">${%Legend}</a>
     <span id="rss-bar-rss-all" class="rss-bar-item">
