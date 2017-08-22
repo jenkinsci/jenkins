@@ -1913,3 +1913,19 @@ body.no-sticker #bottom-sticker {
     width: 48px;
     height: 48px;
 }
+
+/* rss-bar */
+
+#rss-bar {
+    margin:1em;
+    text-align:right;
+}
+
+#rss-bar .icon-rss {
+    border: 0;
+}
+
+#rss-bar .rss-bar-item {
+    padding-left: 1em;
+}
+
