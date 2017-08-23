@@ -99,8 +99,14 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
-            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t, e);
+            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
             shutdown();
+            try {
+                new TcpSlaveAgentListener(port).start();
+                LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+            } catch (IOException e1) {
+                LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener", e);
+            }
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -205,11 +211,11 @@ public final class TcpSlaveAgentListener extends Thread {
             }
             setName("TCP agent connection handler #"+id+" with "+s.getRemoteSocketAddress());
             setUncaughtExceptionHandler((t, e) -> {
-                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t, e);
+                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener ConnectionHandler " + t, e);
                 try {
                     s.close();
                 } catch (IOException e1) {
-                    // try to clean up the socket
+                    LOGGER.log(Level.WARNING, "Could not close socket after unexpected thread death", e1);
                 }
             });
         }
