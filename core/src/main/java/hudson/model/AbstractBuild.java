@@ -880,14 +880,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         if (ws!=null)   // if this is done very early on in the build, workspace may not be decided yet. see HUDSON-3997
             env.put("WORKSPACE", ws.getRemote());
 
-        project.getScm().buildEnvVars(this,env);
+        project.getScm().buildEnvironment(this, env);
 
         if (buildEnvironments!=null)
             for (Environment e : buildEnvironments)
                 e.buildEnvVars(env);
-
-        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
-            a.buildEnvVars(this,env,getBuiltOn());
 
         EnvVars.resolve(env);
 

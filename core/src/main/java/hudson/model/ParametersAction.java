@@ -139,7 +139,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     }
 
     @Override
-    public void buildEnvVars(Run<?,?> run, EnvVars env, Node node) {
+    public void buildEnvironment(Run<?,?> run, EnvVars env) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             p.buildEnvironment(run, env);
