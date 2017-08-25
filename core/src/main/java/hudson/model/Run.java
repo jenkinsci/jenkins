@@ -2301,9 +2301,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
-        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
-            a.buildEnvironment(this, env);
-        }
+        if (!(this instanceof AbstractBuild)) {
+            for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
+                a.buildEnvironment(this, env);
+            }
+        } // else for compatibility reasons, handled in override after buildEnvironments
 
         return env;
     }
