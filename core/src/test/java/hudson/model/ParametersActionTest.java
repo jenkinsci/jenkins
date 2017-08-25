@@ -105,7 +105,7 @@ public class ParametersActionTest {
         
         // Interaction with build
         EnvVars vars = new EnvVars();
-        parametersAction.buildEnvVars(build, vars, build.getBuiltOn());
+        parametersAction.buildEnvironment(build, vars);
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         

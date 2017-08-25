@@ -31,7 +31,6 @@ import hudson.tasks.BuildWrapper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -46,23 +45,20 @@ import javax.annotation.Nonnull;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.318
- * @see AbstractBuild#getEnvironment(TaskListener)
+ * @see Run#getEnvironment(TaskListener)
  * @see BuildWrapper
  */
 public interface EnvironmentContributingAction extends Action {
     /**
-     * Called by {@link Run} or {@link AbstractBuild} to allow plugins to contribute environment variables.
+     * Called by {@link Run} to allow plugins to contribute environment variables.
      *
      * @param run
      *      The calling build. Never null.
-     * @param node
-     *      The node execute on. Can be {@code null} when the Run is not binded to the node,
-     *      e.g. in Pipeline outside the {@code node() step}
      * @param env
      *      Environment variables should be added to this map.
-     * @since TODO
+     * @since 2.76
      */
-    default void buildEnvVars(@Nonnull Run<?, ?> run, @Nonnull EnvVars env, @CheckForNull Node node) {
+    default void buildEnvironment(@Nonnull Run<?, ?> run, @Nonnull EnvVars env) {
         if (run instanceof AbstractBuild
                 && Util.isOverridden(EnvironmentContributingAction.class,
                                      getClass(), "buildEnvVars", AbstractBuild.class, EnvVars.class)) {
@@ -73,7 +69,7 @@ public interface EnvironmentContributingAction extends Action {
     /**
      * Called by {@link AbstractBuild} to allow plugins to contribute environment variables.
      *
-     * @deprecated Use {@link #buildEnvVars(Run, EnvVars, Node)} instead
+     * @deprecated Use {@link #buildEnvironment} instead
      *
      * @param build
      *      The calling build. Never null.
@@ -84,8 +80,8 @@ public interface EnvironmentContributingAction extends Action {
     @Restricted(ProtectedExternally.class)
     default void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
         if (Util.isOverridden(EnvironmentContributingAction.class,
-                              getClass(), "buildEnvVars", Run.class, EnvVars.class, Node.class)) {
-            buildEnvVars(build, env, build.getBuiltOn());
+                              getClass(), "buildEnvironment", Run.class, EnvVars.class)) {
+            buildEnvironment(build, env);
         }
     }
 }
