@@ -454,7 +454,7 @@ public class SlaveComputer extends Computer {
         }
         @Override public Integer call() {
             Channel c = Channel.current();
-            return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
+            return c == null ? 0 : resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
         }
     }
 
@@ -471,7 +471,7 @@ public class SlaveComputer extends Computer {
         }
         @Override public Long call() {
             Channel c = Channel.current();
-            return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
+            return c == null ? 0 : resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
         }
     }
 
