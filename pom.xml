@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.36</version>
+    <version>1.38</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
@@ -94,7 +94,6 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
-    <test-annotations.version>1.2</test-annotations.version>
     <access-modifier.version>1.11</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
@@ -239,14 +238,12 @@ THE SOFTWARE.
       <!-- for JRE requirement check annotation -->
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
-      <version>1.9</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>${test-annotations.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -681,25 +678,6 @@ THE SOFTWARE.
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>1.8.0</version>
-                </requireJavaVersion>
-                <requireMavenVersion>
-                  <version>3.0</version>
-                </requireMavenVersion>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
-                </enforceBytecodeVersion>
-                <requireUpperBoundDeps />
-              </rules>
-            </configuration>
-          </execution>
-          <execution>
             <id>enforce-banned-dependencies</id>
             <goals>
               <goal>enforce</goal>
@@ -719,13 +697,7 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-beta-6</version>
-          </dependency>
-        </dependencies>
+
       </plugin>
 
       <plugin>
