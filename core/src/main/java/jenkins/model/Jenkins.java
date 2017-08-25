@@ -251,7 +251,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -903,26 +902,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
-            // TODO pending move to standard blacklist, or API to append filter
-            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
-                try {
-                    Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
-                    blacklistPatternsF.setAccessible(true);
-                    Object[] blacklistPatternsA = (Object[]) blacklistPatternsF.get(ClassFilter.DEFAULT);
-                    boolean found = false;
-                    for (int i = 0; i < blacklistPatternsA.length; i++) {
-                        if (blacklistPatternsA[i] instanceof Pattern) {
-                            blacklistPatternsA[i] = Pattern.compile("(" + blacklistPatternsA[i] + ")|(java[.]security[.]SignedObject)");
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        throw new Error("no Pattern found among " + Arrays.toString(blacklistPatternsA));
-                    }
-                } catch (NoSuchFieldException | IllegalAccessException x) {
-                    throw new Error("Unexpected ClassFilter implementation in bundled remoting.jar: " + x, x);
-                }
+            try {
+                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
+            } catch (ClassFilter.ClassFilterException ex) {
+                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
             }
 
             // initialization consists of ...
