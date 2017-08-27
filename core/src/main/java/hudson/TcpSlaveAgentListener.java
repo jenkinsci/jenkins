@@ -30,6 +30,8 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
 import javax.annotation.Nullable;
+
+import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.util.SystemProperties;
@@ -51,8 +53,11 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import jenkins.util.Timer;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
@@ -101,12 +106,7 @@ public final class TcpSlaveAgentListener extends Thread {
         setUncaughtExceptionHandler((t, e) -> {
             LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
             shutdown();
-            try {
-                new TcpSlaveAgentListener(port).start();
-                LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
-            } catch (IOException e1) {
-                LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener", e);
-            }
+            TcpSlaveAgentListenerRescheduler.schedule();
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -398,6 +398,56 @@ public final class TcpSlaveAgentListener extends Thread {
             } finally {
                 socket.close();
             }
+        }
+    }
+
+    /**
+     * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
+     */
+    @Extension
+    public static class TcpSlaveAgentListenerRescheduler extends AperiodicWork {
+        private int port;
+        private Throwable cause;
+        private long recurrencePeriod = 5000;
+        private boolean isActive;
+
+        public TcpSlaveAgentListenerRescheduler(int port, Throwable cause) {
+            this.port = port;
+            this.cause = cause;
+            this.isActive = false;
+        }
+
+        @Override
+        public long getRecurrencePeriod() {
+            return recurrencePeriod;
+        }
+
+        @Override
+        public AperiodicWork getNewInstance() {
+            return new TcpSlaveAgentListenerRescheduler(port, cause);
+        }
+
+        @Override
+        protected void doAperiodicRun() {
+            if (isActive) {
+                try {
+                    new TcpSlaveAgentListener(port).start();
+                    LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+                } catch (IOException e1) {
+                    LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener", cause);
+                }
+                isActive = false;
+            }
+        }
+
+        public static void schedule() {
+            schedule(5000);
+        }
+
+        public static void schedule(long approxDelay) {
+            TcpSlaveAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
+            rescheduler.recurrencePeriod = approxDelay;
+            rescheduler.isActive = true;
         }
     }
 
