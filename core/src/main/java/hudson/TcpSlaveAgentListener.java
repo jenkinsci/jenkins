@@ -53,11 +53,9 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jenkins.util.Timer;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
@@ -106,7 +104,7 @@ public final class TcpSlaveAgentListener extends Thread {
         setUncaughtExceptionHandler((t, e) -> {
             LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
             shutdown();
-            TcpSlaveAgentListenerRescheduler.schedule();
+            TcpSlaveAgentListenerRescheduler.schedule(t, port, e);
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -165,7 +163,14 @@ public final class TcpSlaveAgentListener extends Thread {
                 // we take care of buffering on our own
                 s.setTcpNoDelay(true);
 
-                new ConnectionHandler(s).start();
+                new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this, configuredPort) {
+                    @Override
+                    public void run(Throwable cause) {
+                        LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
+                        shutdown();
+                        TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), getPort(), cause);
+                    }
+                }).start();
             }
         } catch (IOException e) {
             if(!shuttingDown) {
@@ -204,7 +209,7 @@ public final class TcpSlaveAgentListener extends Thread {
          */
         private final int id;
 
-        public ConnectionHandler(Socket s) {
+        public ConnectionHandler(Socket s, ConnectionHandlerFailureCallback parentTerminator) {
             this.s = s;
             synchronized(getClass()) {
                 id = iotaGen++;
@@ -213,6 +218,7 @@ public final class TcpSlaveAgentListener extends Thread {
             setUncaughtExceptionHandler((t, e) -> {
                 LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener ConnectionHandler " + t, e);
                 try {
+                    parentTerminator.run(e);
                     s.close();
                 } catch (IOException e1) {
                     LOGGER.log(Level.WARNING, "Could not close socket after unexpected thread death", e1);
@@ -319,6 +325,27 @@ public final class TcpSlaveAgentListener extends Thread {
         }
     }
 
+    // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
+    private abstract class ConnectionHandlerFailureCallback {
+        private Thread parentThread;
+        private int port;
+
+        public ConnectionHandlerFailureCallback(Thread parentThread, int port) {
+            this.parentThread = parentThread;
+            this.port = port;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public Thread getParentThread() {
+            return parentThread;
+        }
+
+        public abstract void run(Throwable cause);
+    }
+
     /**
      * This extension provides a Ping protocol that allows people to verify that the TcpSlaveAgentListener is alive.
      * We also use this to wake the acceptor thread on termination.
@@ -406,12 +433,14 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @Extension
     public static class TcpSlaveAgentListenerRescheduler extends AperiodicWork {
+        private Thread originThread;
         private int port;
         private Throwable cause;
         private long recurrencePeriod = 5000;
         private boolean isActive;
 
-        public TcpSlaveAgentListenerRescheduler(int port, Throwable cause) {
+        public TcpSlaveAgentListenerRescheduler(Thread originThread, int port, Throwable cause) {
+            this.originThread = originThread;
             this.port = port;
             this.cause = cause;
             this.isActive = false;
@@ -424,13 +453,16 @@ public final class TcpSlaveAgentListener extends Thread {
 
         @Override
         public AperiodicWork getNewInstance() {
-            return new TcpSlaveAgentListenerRescheduler(port, cause);
+            return new TcpSlaveAgentListenerRescheduler(originThread, port, cause);
         }
 
         @Override
         protected void doAperiodicRun() {
             if (isActive) {
                 try {
+                    if (originThread.isAlive()) {
+                        originThread.interrupt();
+                    }
                     new TcpSlaveAgentListener(port).start();
                     LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
                 } catch (IOException e1) {
@@ -440,16 +472,20 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
-        public static void schedule() {
-            schedule(5000);
+        public static void schedule(Thread originThread, int port, Throwable cause) {
+            schedule(originThread, port, cause,5000);
         }
 
-        public static void schedule(long approxDelay) {
+        public static void schedule(Thread originThread, int port, Throwable cause, long approxDelay) {
             TcpSlaveAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
+            rescheduler.originThread = originThread;
+            rescheduler.port = port;
+            rescheduler.cause = cause;
             rescheduler.recurrencePeriod = approxDelay;
             rescheduler.isActive = true;
         }
     }
+
 
     /**
      * Connection terminated because we are reconnected from the current peer.
