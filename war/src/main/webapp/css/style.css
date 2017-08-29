@@ -1917,12 +1917,12 @@ body.no-sticker #bottom-sticker {
 /* ----------- Manage Jenkins ----------- */
 
 .manage-messages {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .manage-messages a, .manage-messages a:visited {
-  color: inherit !important;
-  text-decoration: none;
+    color: inherit !important;
+    text-decoration: none;
 }
 
 .manage-messages a:hover, .manage-messages a:focus {
