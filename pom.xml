@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.38</version>
+    <version>1.39-20170829.224904-1</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
@@ -603,7 +603,6 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
