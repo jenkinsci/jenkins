@@ -484,7 +484,7 @@ public class SearchTest {
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
         assertNotNull(jsonArray);
 
-        assertEquals(1, jsonArray.size());
+        assertEquals(2, jsonArray.size());
 
         Page searchResult = wc.goTo("search?q=" + myMockFolder.getName() + "%2F" + freeStyleProject.getName());
 

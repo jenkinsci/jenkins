@@ -178,14 +178,14 @@ public class ListView extends View implements DirectlyModifiableView {
 
 
     /**
-    * Returns a read-only view of all {@link Job}s in this view.
+     * Returns a read-only view of all {@link Job}s in this view.
      *
      *
      * <p>
-     *     This method returns a separate copy each time to avoid
-     *     concurrent modification issue.
-     *     @Param recurse false not to recurse in ItemGroups
-     *     true to recurse in ItemGroups
+     * This method returns a separate copy each time to avoid
+     * concurrent modification issue.
+     * @param recurse false not to recurse in ItemGroups
+     * true to recurse in ItemGroups
      */
      private List<TopLevelItem> getItems(boolean recurse) {
         SortedSet<String> names;
@@ -240,7 +240,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
         });
         // add the display name for each item in the search index
-        addDisplayNamesToSearchIndex(sib, getItems(false));
+        addDisplayNamesToSearchIndex(sib, getItems(true));
         return sib;
     }
 
