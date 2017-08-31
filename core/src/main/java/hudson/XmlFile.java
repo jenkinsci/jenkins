@@ -120,6 +120,7 @@ public final class XmlFile {
     private final XStream xs;
     private final File file;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
+    private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
     public XmlFile(File file) {
         this(DEFAULT_XSTREAM,file);
@@ -175,10 +176,12 @@ public final class XmlFile {
         try {
             w.write("<?xml version='1.0' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
+            writing.set(file);
             try {
                 xs.toXML(o, w);
             } finally {
                 beingWritten.remove(o);
+                writing.set(null);
             }
             w.commit();
         } catch(StreamException e) {
@@ -203,8 +206,7 @@ public final class XmlFile {
         if (beingWritten.containsKey(o)) {
             return o;
         } else {
-            // Unfortunately we cannot easily tell which XML file is actually being saved here, at least without implementing a custom Converter.
-            LOGGER.log(Level.WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", o);
+            LOGGER.log(Level.WARNING, "JENKINS-45892: reference to " + o +" being saved from unexpected " + writing.get(), new IllegalStateException());
             return replacement.get();
         }
     }

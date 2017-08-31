@@ -23,6 +23,8 @@
  */
 package hudson.model;
 
+import hudson.XmlFile;
+import java.util.logging.Level;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import org.junit.Test;
@@ -30,12 +32,16 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class AbstractItem2Test {
 
     @Rule
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(XmlFile.class, Level.WARNING).capture(100);
 
     @Issue("JENKINS-45892")
     @Test
@@ -50,6 +56,8 @@ public class AbstractItem2Test {
                 String text = p2.getConfigFile().asString();
                 assertThat(text, not(containsString("<description>this is p1</description>")));
                 assertThat(text, containsString("<fullName>p1</fullName>"));
+                assertThat(logging.getMessages().toString(), containsString(p1.toString()));
+                assertThat(logging.getMessages().toString(), containsString(p2.getConfigFile().toString()));
             }
         });
         rr.addStep(new Statement() {
