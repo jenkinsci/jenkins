@@ -40,6 +40,7 @@ THE SOFTWARE.
   <properties>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
     <findbugs.failOnError>true</findbugs.failOnError>
+    <java.level>8</java.level>
   </properties>
 
   <dependencies>
@@ -48,12 +49,7 @@ THE SOFTWARE.
       <artifactId>version-number</artifactId>
       <version>1.4</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-    </dependency>
-
+    
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>

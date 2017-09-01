@@ -23,17 +23,17 @@
  */
 package jenkins.bootstrap;
 
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Delete;
-import org.apache.tools.ant.taskdefs.Expand;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -154,26 +154,32 @@ class Plugin {
         if(explodeTime.exists() && explodeTime.lastModified()==archive.lastModified())
             return; // no need to expand
 
-        Project p = new Project();
-
         if (destDir.exists()) {
             // delete the contents so that old files won't interfere with new files
-            Delete d = new Delete();
-            d.setProject(p);
             if (destDir.isDirectory())
-                d.setDir(destDir);
+                Files.walk(destDir.toPath()).map(Path::toFile).forEach(File::delete);
             else
-                d.setFile(destDir);
-            d.execute();
+                destDir.delete();
         }
 
         // expand the contents
-        Expand e = new Expand();
-        e.setProject(p);
-        e.setTaskType("unzip");
-        e.setSrc(archive);
-        e.setDest(destDir);
-        e.execute();
+        try (JarFile jar = new JarFile(archive)) {
+            Enumeration enumEntries = jar.entries();
+            while (enumEntries.hasMoreElements()) {
+                JarEntry file = (JarEntry) enumEntries.nextElement();
+                File f = new File(destDir + File.separator + file.getName());
+                if (file.isDirectory()) { // if its a directory, create it
+                    f.mkdir();
+                    continue;
+                }
+                try (InputStream is = jar.getInputStream(file); // get the input stream
+                    FileOutputStream fos = new FileOutputStream(f)) {
+                    while (is.available() > 0) {  // write contents of 'is' to 'fos'
+                        fos.write(is.read());
+                    }
+                }
+            }
+        }
 
         if (new File(destDir,"WEB-INF/classes").exists()) {
             throw new IOException("Core override plugin cannot have WEB-INF/classes: "+destDir);
