@@ -28,11 +28,7 @@ import hudson.security.HudsonFilter;
 import hudson.security.csrf.CrumbFilter;
 import hudson.util.CharacterEncodingFilter;
 import hudson.util.PluginServletFilter;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardOpenOption;
-import jenkins.ContextClasssLoaderFilter;
+import jenkins.ContextClassLoaderFilter;
 import jenkins.JenkinsHttpSessionListener;
 import jenkins.bootstrap.BootLogic;
 import jenkins.bootstrap.Bootstrap;
@@ -64,15 +60,10 @@ import org.kohsuke.stapler.compression.CompressionFilter;
 import org.kohsuke.stapler.jelly.JellyFacet;
 import org.apache.tools.ant.types.FileSet;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
@@ -83,7 +74,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -358,7 +348,7 @@ public class WebAppMain implements BootLogic {
 
     private void setupFilters() {
         // TODO: should be turned into a proper ExtensionPoint, and clear up PluginServletFilter
-        addFilter(ContextClasssLoaderFilter.class);
+        addFilter(ContextClassLoaderFilter.class);
         addFilter(DiagnosticThreadNameFilter.class);
         addFilter(CharacterEncodingFilter.class);
         addFilter(CompressionFilter.class);

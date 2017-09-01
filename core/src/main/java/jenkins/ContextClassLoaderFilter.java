@@ -13,14 +13,14 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class ContextClasssLoaderFilter implements Filter {
+public class ContextClassLoaderFilter implements Filter {
     private final ClassLoader classLoader;
 
-    public ContextClasssLoaderFilter(ClassLoader classLoader) {
+    public ContextClassLoaderFilter(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
-    public ContextClasssLoaderFilter() {
+    public ContextClassLoaderFilter() {
         this(Thread.currentThread().getContextClassLoader());
     }
 
