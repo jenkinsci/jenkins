@@ -28,6 +28,10 @@ import hudson.security.HudsonFilter;
 import hudson.security.csrf.CrumbFilter;
 import hudson.util.CharacterEncodingFilter;
 import hudson.util.PluginServletFilter;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardOpenOption;
 import jenkins.ContextClasssLoaderFilter;
 import jenkins.JenkinsHttpSessionListener;
 import jenkins.bootstrap.BootLogic;
@@ -310,14 +314,10 @@ public class WebAppMain implements BootLogic {
      * @see BootFailure
      */
     private void recordBootAttempt(File home) {
-        FileOutputStream o=null;
-        try {
-            o = new FileOutputStream(BootFailure.getBootFailureFile(home), true);
+        try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             o.write((new Date().toString() + System.getProperty("line.separator", "\n")).toString().getBytes());
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
-        } finally {
-            IOUtils.closeQuietly(o);
         }
     }
 
@@ -385,10 +385,16 @@ public class WebAppMain implements BootLogic {
 
     public void contextDestroyed(ServletContextEvent event) {
         try (ACLContext old = ACL.as(ACL.SYSTEM)) {
-            terminated = true;
             Jenkins instance = Jenkins.getInstanceOrNull();
-            if (instance != null)
-                instance.cleanUp();
+            try {
+                if (instance != null) {
+                    instance.cleanUp();
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+            }
+
+            terminated = true;
             Thread t = initThread;
             if (t != null && t.isAlive()) {
                 LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));

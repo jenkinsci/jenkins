@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
 import hudson.XmlFile;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -295,5 +296,16 @@ public class XStream2Test {
         assertEquals("3.2", XStream2.trimVersion("3.2"));
         assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
         assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
+    }
+
+    @Issue("SECURITY-503")
+    @Test
+    public void crashXstream() throws Exception {
+        try {
+            new XStream2().fromXML("<void/>");
+            fail("expected to throw ForbiddenClassException, but why are we still alive?");
+        } catch (ForbiddenClassException ex) {
+            // pass
+        }
     }
 }

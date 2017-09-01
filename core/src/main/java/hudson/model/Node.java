@@ -40,6 +40,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
+import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
@@ -65,6 +66,8 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.jvnet.localizer.Localizable;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -214,8 +217,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
 
     /**
      * Creates a new {@link Computer} object that acts as the UI peer of this {@link Node}.
+     * 
      * Nobody but {@link Jenkins#updateComputerList()} should call this method.
+     * @return Created instance of the computer.
+     *         Can be {@code null} if the {@link Node} implementation does not support it (e.g. {@link Cloud} agent).
      */
+    @CheckForNull
+    @Restricted(ProtectedExternally.class)
     protected abstract Computer createComputer();
 
     /**
@@ -458,7 +466,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * 
      * @return null if the property is not configured
      * 
-     * @since TODO
+     * @since 2.37
      */
     @CheckForNull
     public <T extends NodeProperty> T getNodeProperty(Class<T> clazz)
@@ -479,7 +487,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * 
      * @return null if the property is not configured
      * 
-     * @since TODO
+     * @since 2.37
      */
     @CheckForNull
     public NodeProperty getNodeProperty(String className)

@@ -48,6 +48,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import jenkins.AgentProtocol;
 import jenkins.model.identity.InstanceIdentityProvider;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
 import org.jenkinsci.remoting.protocol.IOHub;
@@ -58,10 +59,11 @@ import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustMa
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol4Handler} for more details.
  *
- * @since 2.27 available as the experimental protocol 
- * @since TODO enabled by default
+ * @since 2.27 available as experimental protocol 
+ * @since 2.41 enabled by default
  */
 @Extension
+@Symbol("jnlp4")
 public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     /**
      * Our logger.
@@ -101,7 +103,13 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
+        if (identityCertificate == null) {
+            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
+        }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
+        if (privateKey == null) {
+            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+        }
 
         // prepare our keyStore so we can provide our authentication
         keyStore = KeyStore.getInstance("JKS");

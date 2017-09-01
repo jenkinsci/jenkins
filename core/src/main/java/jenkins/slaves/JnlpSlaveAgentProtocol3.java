@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol3Handler;
@@ -25,10 +26,11 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * <p>@see {@link org.jenkinsci.remoting.engine.JnlpProtocol3Handler} for more details.
  *
- * @since 1.XXX
+ * @since 1.653
  */
 @Deprecated
 @Extension
+@Symbol("jnlp3")
 public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
     private NioChannelSelector hub;
 
@@ -65,6 +67,11 @@ public class JnlpSlaveAgentProtocol3 extends AgentProtocol {
         return Messages.JnlpSlaveAgentProtocol3_displayName();
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+    
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
         handler.handle(socket,

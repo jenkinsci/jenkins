@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Argument;
 
+@SuppressWarnings("deprecation") // Remoting-based CLI usages intentional
 public class Security218CliTest {
 
     @Rule
@@ -57,7 +58,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-218")
     public void probeCommonsCollections1() throws Exception {
-        probe(Payload.CommonsCollections1, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.CommonsCollections1, 1);
     }
     
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -73,7 +74,7 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeCommonsCollections3() throws Exception {
-        probe(Payload.CommonsCollections3, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.CommonsCollections3, 1);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -87,14 +88,14 @@ public class Security218CliTest {
     @Test
     @Issue("SECURITY-317")
     public void probeCommonsCollections5() throws Exception {
-        probe(Payload.CommonsCollections5, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.CommonsCollections5, 1);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test
     @Issue("SECURITY-317")
     public void probeCommonsCollections6() throws Exception {
-        probe(Payload.CommonsCollections6, PayloadCaller.EXIT_CODE_REJECTED);
+        probe(Payload.CommonsCollections6, 1);
     }
 
     @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
@@ -169,6 +170,13 @@ public class Security218CliTest {
         probe(Payload.Ldap, PayloadCaller.EXIT_CODE_REJECTED);
     }
 
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
+    @Test
+    @Issue("SECURITY-429")
+    public void jsonLibSignedObject() throws Exception {
+        probe(Payload.JsonLibSignedObject, 1);
+    }
+
     private void probe(Payload payload, int expectedResultCode) throws Exception {
         File file = File.createTempFile("security-218", payload + "-payload");
         File moved = new File(file.getAbsolutePath() + "-moved");
@@ -197,8 +205,8 @@ public class Security218CliTest {
         
         @Argument(metaVar = "command", usage = "Command to be launched by the payload", required = true, index = 1)
         public String command;
-        
 
+        @Override
         protected int run() throws Exception {
             Payload payloadItem = Payload.valueOf(this.payload);
             PayloadCaller callable = new PayloadCaller(payloadItem, command);

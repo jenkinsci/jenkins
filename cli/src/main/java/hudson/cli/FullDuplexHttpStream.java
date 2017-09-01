@@ -20,7 +20,7 @@ import org.apache.commons.codec.binary.Base64;
  * @author Kohsuke Kawaguchi
  */
 public class FullDuplexHttpStream {
-    private final URL target;
+    private final URL base;
     /**
      * Authorization header value needed to get through the HTTP layer.
      */
@@ -49,14 +49,35 @@ public class FullDuplexHttpStream {
     }
 
     /**
-     * @param target
+     * @param target something like {@code http://jenkins/cli?remoting=true}
+     *               which we then need to split into {@code http://jenkins/} + {@code cli?remoting=true}
+     *               in order to construct a crumb issuer request
+     * @deprecated use {@link #FullDuplexHttpStream(URL, String, String)} instead
+     */
+    @Deprecated
+    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
+        this(new URL(target.toString().replaceFirst("/cli.*$", "/")), target.toString().replaceFirst("^.+/(cli.*)$", "$1"), authorization);
+    }
+
+    /**
+     * @param base the base URL of Jenkins
+     * @param relativeTarget
      *      The endpoint that we are making requests to.
      * @param authorization
      *      The value of the authorization header, if non-null.
      */
-    public FullDuplexHttpStream(URL target, String authorization) throws IOException {
-        this.target = target;
+    public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
+        if (!base.toString().endsWith("/")) {
+            throw new IllegalArgumentException(base.toString());
+        }
+        if (relativeTarget.startsWith("/")) {
+            throw new IllegalArgumentException(relativeTarget);
+        }
+
+        this.base = tryToResolveRedirects(base, authorization);
         this.authorization = authorization;
+
+        URL target = new URL(this.base, relativeTarget);
 
         CrumbData crumbData = new CrumbData();
 
@@ -77,8 +98,9 @@ public class FullDuplexHttpStream {
         con.getOutputStream().close();
         input = con.getInputStream();
         // make sure we hit the right URL
-        if(con.getHeaderField("Hudson-Duplex")==null)
-            throw new IOException(target+" doesn't look like Jenkins");
+        if (con.getHeaderField("Hudson-Duplex") == null) {
+            throw new CLI.NotTalkingToJenkinsException("There's no Jenkins running at " + target + ", or is not serving the HTTP Duplex transport");
+        }
 
         // client->server uses chunked encoded POST for unlimited capacity. 
         con = (HttpURLConnection) target.openConnection();
@@ -96,6 +118,24 @@ public class FullDuplexHttpStream {
             con.addRequestProperty(crumbData.crumbName, crumbData.crumb);
         }
         output = con.getOutputStream();
+    }
+
+    // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
+    private URL tryToResolveRedirects(URL base, String authorization) {
+        try {
+            HttpURLConnection con = (HttpURLConnection) base.openConnection();
+            if (authorization != null) {
+                con.addRequestProperty("Authorization", authorization);
+            }
+            con.getInputStream().close();
+            base = con.getURL();
+        } catch (Exception ex) {
+            // Do not obscure the problem propagating the exception. If the problem is real it will manifest during the
+            // actual exchange so will be reported properly there. If it is not real (no permission in UI but sufficient
+            // for CLI connection using one of its mechanisms), there is no reason to bother user about it.
+            LOGGER.log(Level.FINE, "Failed to resolve potential redirects", ex);
+        }
+        return base;
     }
 
     static final int BLOCK_SIZE = 1024;
@@ -128,8 +168,7 @@ public class FullDuplexHttpStream {
     	}
 
     	private String createCrumbUrlBase() {
-            String url = target.toExternalForm();    		
-            return new StringBuilder(url.substring(0, url.lastIndexOf("/cli"))).append("/crumbIssuer/api/xml/").toString();
+            return base + "crumbIssuer/api/xml/";
     	}
 
     	private String readData(String dest) throws IOException {
@@ -137,8 +176,9 @@ public class FullDuplexHttpStream {
             if (authorization != null) {
                 con.addRequestProperty("Authorization", authorization);
             }
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            CLI.verifyJenkinsConnection(con);
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
                 String line = reader.readLine();
                 String nextLine = reader.readLine();
                 if (nextLine != null) {

@@ -193,6 +193,7 @@ public class UpdateSite {
     /**
      * This is the endpoint that receives the update center data file from the browser.
      */
+    @RequirePOST
     public FormValidation doPostBack(StaplerRequest req) throws IOException, GeneralSecurityException {
         DownloadSettings.checkPostBackAccess();
         return updateData(IOUtils.toString(req.getInputStream(),"UTF-8"), true);
@@ -526,7 +527,7 @@ public class UpdateSite {
         /**
          * List of warnings (mostly security) published with the update site.
          *
-         * @since TODO
+         * @since 2.40
          */
         private final Set<Warning> warnings = new HashSet<Warning>();
 
@@ -576,7 +577,7 @@ public class UpdateSite {
         /**
          * Returns the set of warnings
          * @return the set of warnings
-         * @since TODO
+         * @since 2.40
          */
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
@@ -692,7 +693,7 @@ public class UpdateSite {
      *
      * The {@link #pattern} is used to determine whether a given warning applies to the current installation.
      *
-     * @since TODO
+     * @since 2.40
      */
     @Restricted(NoExternalUse.class)
     public static final class WarningVersionRange {
@@ -745,7 +746,7 @@ public class UpdateSite {
      * @see UpdateSiteWarningsConfiguration
      * @see jenkins.security.UpdateSiteWarningsMonitor
      *
-     * @since TODO
+     * @since 2.40
      */
     @Restricted(NoExternalUse.class)
     public static final class Warning {
@@ -1128,7 +1129,7 @@ public class UpdateSite {
         }
 
         /**
-         * @since TODO
+         * @since 2.40
          */
         @CheckForNull
         @Restricted(NoExternalUse.class)
@@ -1163,7 +1164,7 @@ public class UpdateSite {
         }
 
         /**
-         * @since TODO
+         * @since 2.40
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {

@@ -53,6 +53,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A UserProperty that remembers user-private views.
@@ -152,6 +153,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return new HttpRedirect("view/" + Util.rawEncode(getPrimaryView().getViewName()) + "/");
     }
 
+    @RequirePOST
     public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
@@ -226,10 +228,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     public ViewsTabBar getViewsTabBar() {
         return Jenkins.getInstance().getViewsTabBar();
-    }
-
-    public ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Jenkins.getInstance();
     }
 
     public List<Action> getViewActions() {

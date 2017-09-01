@@ -28,6 +28,7 @@ import hudson.BulkChange;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.FeedAdapter;
 import hudson.PermalinkList;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -36,6 +37,8 @@ import hudson.model.Fingerprint.Range;
 import hudson.model.Fingerprint.RangeSet;
 import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.ItemListener;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.SCM;
 import hudson.search.QuickSilver;
 import hudson.search.SearchIndex;
 import hudson.search.SearchIndexBuilder;
@@ -83,12 +86,14 @@ import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
+import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
-import jenkins.util.io.OnMaster;
+import jenkins.triggers.SCMTriggerItem;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -262,20 +267,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
     }
 
-    @Override
-    protected void performDelete() throws IOException, InterruptedException {
-        // if a build is in progress. Cancel it.
-        RunT lb = getLastBuild();
-        if (lb != null) {
-            Executor e = lb.getExecutor();
-            if (e != null) {
-                e.interrupt();
-                // should we block until the build is cancelled?
-            }
-        }
-        super.performDelete();
-    }
-
     /*package*/ TextFile getNextBuildNumberFile() {
         return new TextFile(new File(this.getRootDir(), "nextBuildNumber"));
     }
@@ -383,13 +374,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
     public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        EnvVars env;
+        EnvVars env = new EnvVars();
 
-        if (node!=null) {
+        if (node != null) {
             final Computer computer = node.toComputer();
-            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
-        } else {
-            env = new EnvVars();
+            if (computer != null) {
+                // we need to get computer environment to inherit platform details 
+                env = computer.getEnvironment();
+                env.putAll(computer.buildEnvironment(listener));
+            }
         }
 
         env.putAll(getCharacteristicEnvVars());
@@ -964,7 +957,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
     
     /**
-     * Returns the last 'numberOfBuilds' builds with a build result >= 'threshold'
+     * Returns the last {@code numberOfBuilds} builds with a build result ≥ {@code threshold}
      * 
      * @return a list with the builds. May be smaller than 'numberOfBuilds' or even empty
      *   if not enough builds satisfying the threshold have been found. Never null.
@@ -1056,7 +1049,84 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         return permalinks;
     }
-    
+
+    /**
+     * RSS feed for changes in this project.
+     *
+     * @since 2.60
+     */
+    public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        class FeedItem {
+            ChangeLogSet.Entry e;
+            int idx;
+
+            public FeedItem(ChangeLogSet.Entry e, int idx) {
+                this.e = e;
+                this.idx = idx;
+            }
+
+            Run<?, ?> getBuild() {
+                return e.getParent().build;
+            }
+        }
+
+        List<FeedItem> entries = new ArrayList<FeedItem>();
+        String scmDisplayName = "";
+        if (this instanceof SCMTriggerItem) {
+            SCMTriggerItem scmItem = (SCMTriggerItem) this;
+            List<String> scmNames = new ArrayList<>();
+            for (SCM s : scmItem.getSCMs()) {
+                scmNames.add(s.getDescriptor().getDisplayName());
+            }
+            scmDisplayName = " " + Util.join(scmNames, ", ");
+        }
+
+        for (RunT r = getLastBuild(); r != null; r = r.getPreviousBuild()) {
+            int idx = 0;
+            if (r instanceof RunWithSCM) {
+                for (ChangeLogSet<? extends ChangeLogSet.Entry> c : ((RunWithSCM<?,?>) r).getChangeSets()) {
+                    for (ChangeLogSet.Entry e : c) {
+                        entries.add(new FeedItem(e, idx++));
+                    }
+                }
+            }
+        }
+        RSS.forwardToRss(
+                getDisplayName() + scmDisplayName + " changes",
+                getUrl() + "changes",
+                entries, new FeedAdapter<FeedItem>() {
+                    public String getEntryTitle(FeedItem item) {
+                        return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
+                    }
+
+                    public String getEntryUrl(FeedItem item) {
+                        return item.getBuild().getUrl() + "changes#detail" + item.idx;
+                    }
+
+                    public String getEntryID(FeedItem item) {
+                            return getEntryUrl(item);
+                        }
+
+                    public String getEntryDescription(FeedItem item) {
+                        StringBuilder buf = new StringBuilder();
+                        for (String path : item.e.getAffectedPaths())
+                            buf.append(path).append('\n');
+                        return buf.toString();
+                    }
+
+                    public Calendar getEntryTimestamp(FeedItem item) {
+                            return item.getBuild().getTimestamp();
+                        }
+
+                    public String getEntryAuthor(FeedItem entry) {
+                        return JenkinsLocationConfiguration.get().getAdminAddress();
+                    }
+                },
+                req, rsp);
+    }
+
+
+
     @Override public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         // not sure what would be really useful here. This needs more thoughts.
         // for the time being, I'm starting with permalinks

@@ -55,22 +55,8 @@ public class JenkinsReloadConfigurationTest {
     }
 
     @Test
-    public void reloadUserConfig() throws Exception {
-        User user = User.get("some_user", true, null);
-        user.setFullName("oldName");
-        user.save();
-
-        replace("users/some_user/config.xml", "oldName", "newName");
-
-        assertEquals("oldName", user.getFullName());
-
-        User.reload();
-
-        assertEquals("newName", user.getFullName());
-    }
-
-    @Test
     public void reloadUserConfigUsingGlobalReload() throws Exception {
+        {
         User user = User.get("some_user", true, null);
         user.setFullName("oldName");
         user.save();
@@ -78,10 +64,11 @@ public class JenkinsReloadConfigurationTest {
         replace("users/some_user/config.xml", "oldName", "newName");
 
         assertEquals("oldName", user.getFullName());
-
+        }
         j.jenkins.reload();
-
-        assertEquals("newName", user.getFullName());
+        {
+        assertEquals("newName", User.getById("some_user", false).getFullName());
+        }
     }
 
     @Test

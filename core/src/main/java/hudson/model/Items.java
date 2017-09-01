@@ -85,7 +85,7 @@ public class Items {
      * If you are replacing {@link #getAllItems(ItemGroup, Class)} with {@link #allItems(ItemGroup, Class)} and
      * need to restore the sort order of a further filtered result, you probably want {@link #BY_FULL_NAME}.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public static final Comparator<Item> BY_NAME = new Comparator<Item>() {
         @Override public int compare(Item i1, Item i2) {
@@ -103,7 +103,7 @@ public class Items {
     /**
      * A comparator of {@link Item} instances that uses a case-insensitive comparison of {@link Item#getFullName()}.
      *
-     * @since FIXME
+     * @since 2.37
      */
     public static final Comparator<Item> BY_FULL_NAME = new Comparator<Item>() {
         @Override public int compare(Item i1, Item i2) {
@@ -430,7 +430,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since FIXME
+     * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(ItemGroup root, Class<T> type) {
         return allItems(Jenkins.getAuthentication(), root, type);
@@ -448,7 +448,7 @@ public class Items {
      * @param type the type.
      * @param <T> the type.
      * @return An {@link Iterable} for all items.
-     * @since FIXME
+     * @since 2.37
      */
     public static <T extends Item> Iterable<T> allItems(Authentication authentication, ItemGroup root, Class<T> type) {
         return new AllItemsIterable<>(root, authentication, type);

@@ -57,6 +57,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -87,11 +89,14 @@ import org.kohsuke.stapler.StaplerResponse;
  * On February, 2016 a general renaming was done internally: the "slave" term was replaced by
  * "Agent". This change was applied in: UI labels/HTML pages, javadocs and log messages.
  * Java classes, fields, methods, etc were not renamed to avoid compatibility issues.
- * See <a href="https://issues.jenkins-ci.org/browse/JENKINS-27268">JENKINS-27268</a>.
+ * See <a href="https://jenkins-ci.org/issue/27268">JENKINS-27268</a>.
  *
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
+    
+    private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
+    
     /**
      * Name of this agent node.
      */
@@ -220,7 +225,8 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        return launcher == null ? new JNLPLauncher() : launcher;
+        // Default launcher does not use Work Directory
+        return launcher == null ? new JNLPLauncher(false) : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {
@@ -412,13 +418,61 @@ public abstract class Slave extends Node implements Serializable {
      *      If there is no computer it will return a {@link hudson.Launcher.DummyLauncher}, otherwise it
      *      will return a {@link hudson.Launcher.RemoteLauncher} instead.
      */
+    @Nonnull
     public Launcher createLauncher(TaskListener listener) {
         SlaveComputer c = getComputer();
         if (c == null) {
-            listener.error("Issue with creating launcher for agent " + name + ".");
+            listener.error("Issue with creating launcher for agent " + name + ". Computer has been disconnected");
             return new Launcher.DummyLauncher(listener);
         } else {
-            return new RemoteLauncher(listener, c.getChannel(), c.isUnix()).decorateFor(this);
+            // TODO: ideally all the logic below should be inside the SlaveComputer class with proper locking to prevent race conditions, 
+            // but so far there is no locks for setNode() hence it requires serious refactoring
+            
+            // Ensure that the Computer instance still points to this node
+            // Otherwise we may end up running the command on a wrong (reconnected) Node instance.
+            Slave node = c.getNode();
+            if (node != this) {
+                String message = "Issue with creating launcher for agent " + name + ". Computer has been reconnected";
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, message, new IllegalStateException("Computer has been reconnected, this Node instance cannot be used anymore"));
+                }
+                return new Launcher.DummyLauncher(listener);
+            }
+            
+            // RemoteLauncher requires an active Channel instance to operate correctly
+            final Channel channel = c.getChannel();
+            if (channel == null) { 
+                reportLauncerCreateError("The agent has not been fully initialized yet",
+                                         "No remoting channel to the agent OR it has not been fully initialized yet", listener);
+                return new Launcher.DummyLauncher(listener);
+            }
+            if (channel.isClosingOrClosed()) {
+                reportLauncerCreateError("The agent is being disconnected",
+                                         "Remoting channel is either in the process of closing down or has closed down", listener);
+                return new Launcher.DummyLauncher(listener);
+            }
+            final Boolean isUnix = c.isUnix();
+            if (isUnix == null) {
+                // isUnix is always set when the channel is not null, so it should never happen
+                reportLauncerCreateError("The agent has not been fully initialized yet",
+                                         "Cannot determing if the agent is a Unix one, the System status request has not completed yet. " +
+                                         "It is an invalid channel state, please report a bug to Jenkins if you see it.", 
+                                         listener);
+                return new Launcher.DummyLauncher(listener);
+            }
+            
+            return new RemoteLauncher(listener, channel, isUnix).decorateFor(this);
+        }
+    }
+    
+    private void reportLauncerCreateError(@Nonnull String humanReadableMsg, @CheckForNull String exceptionDetails, @Nonnull TaskListener listener) {
+        String message = "Issue with creating launcher for agent " + name + ". " + humanReadableMsg;
+        listener.error(message);
+        if (LOGGER.isLoggable(Level.WARNING)) {
+            // Send stacktrace to the log as well in order to diagnose the root cause of issues like JENKINS-38527
+            LOGGER.log(Level.WARNING, message
+                    + "Probably there is a race condition with Agent reconnection or disconnection, check other log entries", 
+                    new IllegalStateException(exceptionDetails != null ? exceptionDetails : humanReadableMsg));
         }
     }
 
@@ -451,7 +505,7 @@ public abstract class Slave extends Node implements Serializable {
         // convert the old format to the new one
         if (launcher == null) {
             launcher = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPLauncher()
+                    ? new JNLPLauncher(false)
                     : new CommandLauncher(agentCommand);
         }
         if(nodeProperties==null)

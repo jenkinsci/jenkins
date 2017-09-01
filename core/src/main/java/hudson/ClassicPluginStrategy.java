@@ -23,6 +23,11 @@
  */
 package hudson;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+
+import jenkins.util.AntWithFindResourceClassLoader;
 import jenkins.util.SystemProperties;
 import com.google.common.collect.Lists;
 import hudson.Plugin.DummyImpl;
@@ -123,11 +128,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             try {
                 // Locate the manifest
                 String firstLine;
-                FileInputStream manifestHeaderInput = new FileInputStream(archive);
-                try {
+                try (InputStream manifestHeaderInput = Files.newInputStream(archive.toPath())) {
                     firstLine = IOUtils.readFirstLine(manifestHeaderInput, "UTF-8");
-                } finally {
-                    manifestHeaderInput.close();
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
                 if (firstLine.startsWith("Manifest-Version:")) {
                     // this is the manifest already
@@ -137,11 +141,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                 }
                 
                 // Read the manifest
-                FileInputStream manifestInput = new FileInputStream(archive);
-                try {
+                try (InputStream manifestInput = Files.newInputStream(archive.toPath())) {
                     return new Manifest(manifestInput);
-                } finally {
-                    manifestInput.close();
+                } catch (InvalidPathException e) {
+                    throw new IOException(e);
                 }
             } catch (IOException e) {
                 throw new IOException("Failed to load " + archive, e);
@@ -173,8 +176,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
                         "Plugin installation failed. No manifest at "
                                 + manifestFile);
             }
-            try (FileInputStream fin = new FileInputStream(manifestFile)) {
+            try (InputStream fin = Files.newInputStream(manifestFile.toPath())) {
                 manifest = new Manifest(fin);
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
             }
         }
 
@@ -195,8 +200,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
             baseResourceURL = resolve(archive,atts.getValue("Resource-Path")).toURI().toURL();
         } else {
             File classes = new File(expandDir, "WEB-INF/classes");
-            if (classes.exists())
+            if (classes.exists()) { // should not normally happen, due to createClassJarFromWebInfClasses
+                LOGGER.log(Level.WARNING, "Deprecated unpacked classes directory found in {0}", classes);
                 paths.add(classes);
+            }
             File lib = new File(expandDir, "WEB-INF/lib");
             File[] libs = lib.listFiles(JAR_FILTER);
             if (libs != null)
@@ -407,7 +414,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
          * Gets the minimum required version for the current version of Jenkins.
          *
          * @return the minimum required version for the current version of Jenkins.
-         * @sice 2.16
+         * @since 2.16
          */
         public VersionNumber getRequiredVersion() {
             return new VersionNumber(requiredVersion);
@@ -679,6 +686,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
             z.add(mapper);
             z.execute();
         }
+        if (classesJar.isFile()) {
+            LOGGER.log(Level.WARNING, "Created {0}; update plugin to a version created with a newer harness", classesJar);
+        }
     }
 
     private static void unzipExceptClasses(File archive, File destDir, Project prj) {
@@ -835,53 +845,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * {@link AntClassLoader} with a few methods exposed, {@link Closeable} support, and {@link Transformer} support.
      */
-    private final class AntClassLoader2 extends AntClassLoader implements Closeable {
-        private final Vector pathComponents;
-
+    private final class AntClassLoader2 extends AntWithFindResourceClassLoader implements Closeable {
         private AntClassLoader2(ClassLoader parent) {
-            super(parent,true);
-
-            try {
-                Field $pathComponents = AntClassLoader.class.getDeclaredField("pathComponents");
-                $pathComponents.setAccessible(true);
-                pathComponents = (Vector)$pathComponents.get(this);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new Error(e);
-            }
+            super(parent, true);
         }
-
-
-        public void addPathFiles(Collection<File> paths) throws IOException {
-            for (File f : paths)
-                addPathFile(f);
-        }
-
-        public void close() throws IOException {
-            cleanup();
-        }
-
-        /**
-         * As of 1.8.0, {@link AntClassLoader} doesn't implement {@link #findResource(String)}
-         * in any meaningful way, which breaks fast lookup. Implement it properly.
-         */
-        @Override
-        protected URL findResource(String name) {
-            URL url = null;
-
-            // try and load from this loader if the parent either didn't find
-            // it or wasn't consulted.
-            Enumeration e = pathComponents.elements();
-            while (e.hasMoreElements() && url == null) {
-                File pathComponent = (File) e.nextElement();
-                url = getResourceURL(pathComponent, name);
-                if (url != null) {
-                    log("Resource " + name + " loaded from ant loader", Project.MSG_DEBUG);
-                }
-            }
-
-            return url;
-        }
-
+        
         @Override
         protected Class defineClassFromData(File container, byte[] classData, String classname) throws IOException {
             if (!DISABLE_TRANSFORMER)

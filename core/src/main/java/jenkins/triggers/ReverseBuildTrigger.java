@@ -65,7 +65,7 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -73,6 +73,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
@@ -91,12 +92,21 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
 
     private String upstreamProjects;
-    private final Result threshold;
+    private Result threshold = Result.SUCCESS;
+
+    /**
+     * Legacy constructor used before {@link #threshold} was moved to a {@code @DataBoundSetter}. Kept around for binary
+     * compatibility.
+     */
+    @Deprecated
+    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+        this(upstreamProjects);
+        this.threshold = threshold;
+    }
 
     @DataBoundConstructor
-    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+    public ReverseBuildTrigger(String upstreamProjects) {
         this.upstreamProjects = upstreamProjects;
-        this.threshold = threshold;
     }
 
     public String getUpstreamProjects() {
@@ -107,40 +117,60 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         return threshold;
     }
 
+    @DataBoundSetter
+    public void setThreshold(Result r) {
+        this.threshold = r;
+    }
+
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
         Jenkins jenkins = Jenkins.getInstance();
         if (job == null) {
             return false;
         }
+
+        boolean downstreamVisible = false;
+        boolean downstreamDiscoverable = false;
+
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
-        boolean downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        try {
+            downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        } catch (AccessDeniedException ex) {
+            // Fails because of missing Item.READ but upstream user has Item.DISCOVER
+            downstreamDiscoverable = true;
+        }
+
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
-        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-            auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
-        }
+
         SecurityContext orig = ACL.impersonate(auth);
+        Item authUpstream = null;
         try {
-            if (jenkins.getItemByFullName(upstream.getFullName()) != upstream) {
-                if (downstreamVisible) {
-                    // TODO ModelHyperlink
-                    listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(), upstream.getFullName(), job.getFullName()));
-                } else {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2} (but cannot tell {3} that)", new Object[] {auth.getName(), upstream, job, originalAuth.getName()});
-                }
-                return false;
-            }
+            authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
+        } catch (AccessDeniedException ade) {
+            // Fails because of missing Item.READ but downstream user has Item.DISCOVER
         } finally {
             SecurityContextHolder.setContext(orig);
+        }
+
+        if(authUpstream != upstream) {
+            if (downstreamVisible) {
+                // TODO ModelHyperlink
+                listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(),
+                        upstream.getFullName(), job.getFullName()));
+            } else  {
+                LOGGER.log(Level.WARNING, "Running as {0} cannot even {1} {2} for trigger from {3}, (but cannot tell {4} that)",
+                        new Object [] { auth.getName(), downstreamDiscoverable ? "READ" : "DISCOVER", upstream, job, originalAuth.getName()});
+            }
+            return false;
         }
         Result result = upstreamBuild.getResult();
         return result != null && result.isBetterOrEqualTo(threshold);
     }
 
     @Override public void buildDependencyGraph(final AbstractProject downstream, DependencyGraph graph) {
-        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), upstreamProjects, AbstractProject.class)) {
+        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), Util.fixNull(upstreamProjects), AbstractProject.class)) {
             graph.addDependency(new DependencyGraph.Dependency(upstream, downstream) {
                 @Override public boolean shouldTriggerBuild(AbstractBuild upstreamBuild, TaskListener listener, List<Action> actions) {
                     return shouldTrigger(upstreamBuild, listener);
@@ -202,7 +232,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
-        
+
         static RunListenerImpl get() {
             return ExtensionList.lookup(RunListener.class).get(RunListenerImpl.class);
         }
@@ -223,7 +253,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         continue;
                     }
                     List<Job> upstreams =
-                            Items.fromNameList(downstream.getParent(), trigger.upstreamProjects, Job.class);
+                            Items.fromNameList(downstream.getParent(), Util.fixNull(trigger.upstreamProjects), Job.class);
                     LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
                     for (Job upstream : upstreams) {
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
@@ -280,8 +310,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {
                         String revised =
-                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects,
-                                        p.getParent());
+                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName,
+                                        Util.fixNull(t.upstreamProjects), p.getParent());
                         if (!revised.equals(t.upstreamProjects)) {
                             t.upstreamProjects = revised;
                             try {

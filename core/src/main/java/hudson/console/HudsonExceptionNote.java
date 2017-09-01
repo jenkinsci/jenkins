@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010-2011, CloudBees, Inc.
+ * Copyright (c) 2010-2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,73 +27,31 @@ import hudson.Extension;
 import hudson.MarkupText;
 import org.jenkinsci.Symbol;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+// TODO: the implementation has been deprecated due to JENKINS-42861
+// Consider providing alternate search mechanisms (JIRA, grepcode, etc.) as proposed in 
+// https://github.com/jenkinsci/jenkins/pull/2808#pullrequestreview-27467560 (JENKINS-43612)
 /**
- * Placed on the beginning of the exception stack trace produced by Hudson, which in turn produces hyperlinked stack trace.
+ * Placed on the beginning of the exception stack trace produced by Jenkins, 
+ * which in turn produces hyperlinked stack trace.
  *
  * <p>
  * Exceptions in the user code (like junit etc) should be handled differently. This is only for exceptions
- * that occur inside Hudson.
+ * that occur inside Jenkins.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.349
+ * @since 1.349 - produces search hyperlinks to the http://stacktrace.jenkins-ci.org service
+ * @since 2.56 - does nothing due to JENKINS-42861
+ * @deprecated This ConsoleNote used to provide hyperlinks to the
+ *             <code>http://stacktrace.jenkins-ci.org/</code> service, which is dead now (JENKINS-42861).
+ *             This console note does nothing right now.
  */
+@Deprecated
 public class HudsonExceptionNote extends ConsoleNote<Object> {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        // An exception stack trace looks like this:
-        // org.acme.FooBarException: message
-        // <TAB>at org.acme.Foo.method(Foo.java:123)
-        // Caused by: java.lang.ClassNotFoundException:
-        String line = text.getText();
-        int end = line.indexOf(':',charPos);
-        if (end<0) {
-            if (CLASSNAME.matcher(line.substring(charPos)).matches())
-                end = line.length();
-            else
-                return null;    // unexpected format. abort.
-        }
-        text.addHyperlinkLowKey(charPos,end,annotateClassName(line.substring(charPos,end)));
 
-        return new ConsoleAnnotator() {
-            public ConsoleAnnotator annotate(Object context, MarkupText text) {
-                String line = text.getText();
-
-                Matcher m = STACK_TRACE_ELEMENT.matcher(line);
-                if (m.find()) {// allow the match to happen in the middle of a line to cope with prefix. Ant and Maven put them, among many other tools.
-                    text.addHyperlinkLowKey(m.start()+4,m.end(),annotateMethodName(m.group(1),m.group(2),m.group(3),Integer.parseInt(m.group(4))));
-                    return this;
-                }
-
-                int idx = line.indexOf(CAUSED_BY);
-                if (idx>=0) {
-                    int s = idx + CAUSED_BY.length();
-                    int e = line.indexOf(':', s);
-                    if (e<0)    e = line.length();
-                    text.addHyperlinkLowKey(s,e,annotateClassName(line.substring(s,e)));
-                    return this;
-                }
-
-                if (AND_MORE.matcher(line).matches())
-                    return this;
-
-                // looks like we are done with the stack trace
-                return null;
-            }
-        };
-    }
-
-    // TODO; separate out the annotations and mark up
-
-    private String annotateMethodName(String className, String methodName, String sourceFileName, int lineNumber) {
-        return "http://stacktrace.jenkins-ci.org/search/?query="+className+'.'+methodName+"&entity=method";
-    }
-
-    private String annotateClassName(String className) {
-        return "http://stacktrace.jenkins-ci.org/search?query="+className;
+        return null;
     }
 
     @Extension @Symbol("stackTrace")
@@ -103,21 +61,4 @@ public class HudsonExceptionNote extends ConsoleNote<Object> {
             return "Exception Stack Trace";
         }
     }
-
-    /**
-     * Regular expression that represents a valid class name.
-     */
-    private static final String CLASSNAME_PATTERN = "[\\p{L}0-9$_.]+";
-
-    private static final Pattern CLASSNAME = Pattern.compile(CLASSNAME_PATTERN+"\r?\n?");
-
-    /**
-     * Matches to the line like "\tat org.acme.Foo.method(File.java:123)"
-     * and captures class name, method name, source file name, and line number separately.
-     */
-    private static final Pattern STACK_TRACE_ELEMENT = Pattern.compile("\tat ("+CLASSNAME_PATTERN+")\\.([\\p{L}0-9$_<>]+)\\((\\S+):([0-9]+)\\)");
-
-    private static final String CAUSED_BY = "Caused by: ";
-
-    private static final Pattern AND_MORE = Pattern.compile("\t... [0-9]+ more\n");
 }

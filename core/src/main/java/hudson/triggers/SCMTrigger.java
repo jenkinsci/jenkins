@@ -42,13 +42,13 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
 import hudson.util.TimeUnit2;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -72,10 +72,12 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -91,7 +93,7 @@ import static java.util.logging.Level.WARNING;
  * You can add UI elements under the SCM section by creating a
  * config.jelly or config.groovy in the resources area for
  * your class that inherits from SCMTrigger and has the 
- * @{@link hudson.model.Extension} annotation. The UI should 
+ * {@link Extension} annotation. The UI should 
  * be wrapped in an f:section element to denote it.
  *
  * @author Kohsuke Kawaguchi
@@ -358,6 +360,24 @@ public class SCMTrigger extends Trigger<Item> {
                 return FormValidation.ok();
             return FormValidation.validateNonNegativeInteger(value);
         }
+
+        /**
+         * Performs syntax check.
+         */
+        public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
+                                                  @QueryParameter boolean ignorePostCommitHooks,
+                                                  @AncestorInPath Item item) {
+            if (StringUtils.isBlank(value)) {
+                if (ignorePostCommitHooks) {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+                } else {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_hooks());
+                }
+            } else {
+                return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
+                        .doCheckSpec(value, item);
+            }
+        }
     }
 
     @Extension
@@ -430,12 +450,10 @@ public class SCMTrigger extends Trigger<Item> {
          */
         public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-            FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-            try {
+            try (OutputStream os = rsp.getCompressedOutputStream(req);
+                 // Prevent jelly from flushing stream so Content-Length header can be added afterwards
+                 FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);
-            } finally {
-                IOUtils.closeQuietly(out);
             }
         }
 

@@ -34,6 +34,8 @@ import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
@@ -338,6 +340,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
 
@@ -426,12 +429,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         byNameLock.readLock().lock();
         User u;
         try {
-            u = byName.get(idkey);
+            u = AllUsers.byName().get(idkey);
         } finally {
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (!configFile.isFile() && !configFile.getParentFile().isDirectory()) {
+        if (u == null && !configFile.isFile() && !configFile.getParentFile().isDirectory()) {
             // check for legacy users and migrate if safe to do so.
             File[] legacy = getLegacyConfigFilesFor(id);
             if (legacy != null && legacy.length > 0) {
@@ -464,7 +467,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             User prev;
             byNameLock.readLock().lock();
             try {
-                prev = byName.putIfAbsent(idkey, u = tmp);
+                prev = AllUsers.byName().putIfAbsent(idkey, u = tmp);
             } finally {
                 byNameLock.readLock().unlock();
             }
@@ -534,36 +537,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return getOrCreate(id, id, create);
     }
 
-    private static volatile long lastScanned;
-
     /**
      * Gets all the users.
      */
     public static @Nonnull Collection<User> getAll() {
         final IdStrategy strategy = idStrategy();
-        if(System.currentTimeMillis() -lastScanned>10000) {
-            // occasionally scan the file system to check new users
-            // whether we should do this only once at start up or not is debatable.
-            // set this right away to avoid another thread from doing the same thing while we do this.
-            // having two threads doing the work won't cause race condition, but it's waste of time.
-            lastScanned = System.currentTimeMillis();
-
-            File[] subdirs = getRootDir().listFiles((FileFilter)DirectoryFileFilter.INSTANCE);
-            if(subdirs==null)       return Collections.emptyList(); // shall never happen
-
-            for (File subdir : subdirs)
-                if(new File(subdir,"config.xml").exists()) {
-                    String name = strategy.idFromFilename(subdir.getName());
-                    User.getOrCreate(name, name, true);
-                }
-
-            lastScanned = System.currentTimeMillis();
-        }
-
         byNameLock.readLock().lock();
         ArrayList<User> r;
         try {
-            r = new ArrayList<User>(byName.values());
+            r = new ArrayList<User>(AllUsers.byName().values());
         } finally {
             byNameLock.readLock().unlock();
         }
@@ -577,27 +559,32 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Reloads the configuration from disk.
+     * To be called from {@link Jenkins#reload} only.
      */
+    @Restricted(NoExternalUse.class)
     public static void reload() {
         byNameLock.readLock().lock();
         try {
-            for (User u : byName.values()) {
-                u.load();
-            }
+            AllUsers.byName().clear();
         } finally {
             byNameLock.readLock().unlock();
-            UserDetailsCache.get().invalidateAll();
         }
+        UserDetailsCache.get().invalidateAll();
+        AllUsers.scanAll();
     }
 
     /**
-     * Stop gap hack. Don't use it. To be removed in the trunk.
+     * @deprecated Used to be called by test harnesses; now ignored in that case.
      */
+    @Deprecated
     public static void clear() {
+        if (ExtensionList.lookup(AllUsers.class).isEmpty()) {
+            // Historically this was called by JenkinsRule prior to startup. Ignore!
+            return;
+        }
         byNameLock.writeLock().lock();
         try {
-            byName.clear();
+            AllUsers.byName().clear();
         } finally {
             byNameLock.writeLock().unlock();
         }
@@ -611,6 +598,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         final IdStrategy strategy = idStrategy();
         byNameLock.writeLock().lock();
         try {
+            ConcurrentMap<String, User> byName = AllUsers.byName();
             for (Map.Entry<String, User> e : byName.entrySet()) {
                 String idkey = strategy.keyFor(e.getValue().id);
                 if (!idkey.equals(e.getKey())) {
@@ -655,7 +643,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @SuppressWarnings("unchecked")
     @WithBridgeMethods(List.class)
     public @Nonnull RunList getBuilds() {
-        return RunList.fromJobs(Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
+        return RunList.fromJobs((Iterable)Jenkins.getInstance().allItems(Job.class)).filter(new Predicate<Run<?,?>>() {
             @Override public boolean apply(Run<?,?> r) {
                 return r instanceof AbstractBuild && relatedTo((AbstractBuild<?,?>) r);
             }
@@ -708,7 +696,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Is the ID allowed? Some are prohibited for security reasons. See SECURITY-166.
-     * <p/>
+     * <p>
      * Note that this is only enforced when saving. These users are often created
      * via the constructor (and even listed on /asynchPeople), but our goal is to
      * prevent anyone from logging in as these users. Therefore, we prevent
@@ -747,6 +735,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(User u) {
+            id = u.getId();
+        }
+        private Object readResolve() {
+            return getById(id, false);
+        }
+    }
+
     /**
      * Deletes the data directory and removes this user from Hudson.
      *
@@ -757,7 +758,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         final IdStrategy strategy = idStrategy();
         byNameLock.readLock().lock();
         try {
-            byName.remove(strategy.keyFor(id));
+            AllUsers.byName().remove(strategy.keyFor(id));
         } finally {
             byNameLock.readLock().unlock();
         }
@@ -864,16 +865,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Keyed by {@link User#id}. This map is used to ensure
-     * singleton-per-id semantics of {@link User} objects.
-     *
-     * The key needs to be generated by {@link IdStrategy#keyFor(String)}.
-     */
-    @GuardedBy("byNameLock")
-    private static final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
-
-    /**
-     * This lock is used to guard access to the {@link #byName} map. Use
+     * This lock is used to guard access to the {@link AllUsers#byName} map. Use
      * {@link java.util.concurrent.locks.ReadWriteLock#readLock()} for normal access and
      * {@link java.util.concurrent.locks.ReadWriteLock#writeLock()} for {@link #rekey()} or any other operation
      * that requires operating on the map as a whole.
@@ -1010,6 +1002,45 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         final Set<String> res = new HashSet<>();
         res.addAll(Arrays.asList(ILLEGAL_PERSISTED_USERNAMES));
         return res;
+    }
+
+    /** Per-{@link Jenkins} holder of all known {@link User}s. */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static final class AllUsers {
+
+        @Initializer(after = InitMilestone.JOB_LOADED) // so Jenkins.loadConfig has been called
+        public static void scanAll() {
+            IdStrategy strategy = idStrategy();
+            File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+            if (subdirs != null) {
+                for (File subdir : subdirs) {
+                    if (new File(subdir, "config.xml").exists()) {
+                        String name = strategy.idFromFilename(subdir.getName());
+                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true);
+                    }
+                }
+            }
+        }
+
+        @GuardedBy("User.byNameLock")
+        private final ConcurrentMap<String,User> byName = new ConcurrentHashMap<String, User>();
+
+        /**
+         * Keyed by {@link User#id}. This map is used to ensure
+         * singleton-per-id semantics of {@link User} objects.
+         *
+         * The key needs to be generated by {@link IdStrategy#keyFor(String)}.
+         */
+        @GuardedBy("User.byNameLock")
+        static ConcurrentMap<String,User> byName() {
+            ExtensionList<AllUsers> instances = ExtensionList.lookup(AllUsers.class);
+            if (instances.size() != 1) {
+                throw new IllegalStateException();
+            }
+            return instances.get(0).byName;
+        }
+
     }
 
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {

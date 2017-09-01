@@ -635,7 +635,7 @@ public abstract class FormFieldValidator {
     }
 
     /**
-     * Verifies that the 'value' parameter is an integer >= 0.
+     * Verifies that the {@code value} parameter is an integer ≥ 0.
      *
      * @since 1.282
      * @deprecated as of 1.294

@@ -24,6 +24,7 @@
 package hudson.model;
 
 import hudson.BulkChange;
+import hudson.model.listeners.SaveableListener;
 import java.io.IOException;
 
 /**

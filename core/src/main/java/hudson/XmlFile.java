@@ -33,6 +33,8 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -44,16 +46,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Represents an XML data file that Jenkins uses as a data file.
@@ -113,6 +119,7 @@ import java.util.logging.Logger;
 public final class XmlFile {
     private final XStream xs;
     private final File file;
+    private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
 
     public XmlFile(File file) {
         this(DEFAULT_XSTREAM,file);
@@ -138,9 +145,9 @@ public final class XmlFile {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("Reading "+file);
         }
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
-        } catch (XStreamException | Error e) {
+        } catch (XStreamException | Error | InvalidPathException e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -154,10 +161,10 @@ public final class XmlFile {
      */
     public Object unmarshal( Object o ) throws IOException {
 
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (XStreamException | Error e) {
+        } catch (XStreamException | Error | InvalidPathException e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -167,12 +174,38 @@ public final class XmlFile {
         AtomicFileWriter w = new AtomicFileWriter(file);
         try {
             w.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-            xs.toXML(o,w);
+            beingWritten.put(o, null);
+            try {
+                xs.toXML(o, w);
+            } finally {
+                beingWritten.remove(o);
+            }
             w.commit();
         } catch(StreamException e) {
             throw new IOException(e);
         } finally {
             w.abort();
+        }
+    }
+
+    /**
+     * Provides an XStream replacement for an object unless a call to {@link #write} is currently in progress.
+     * As per JENKINS-45892 this may be used by any class which expects to be written at top level to an XML file
+     * but which cannot safely be serialized as a nested object (for example, because it expects some {@code onLoad} hook):
+     * implement a {@code writeReplace} method delegating to this method.
+     * The replacement need not be {@link Serializable} since it is only necessary for use from XStream.
+     * @param o an object ({@code this} from {@code writeReplace})
+     * @param replacement a supplier of a safely serializable replacement object with a {@code readResolve} method
+     * @return {@code o}, if {@link #write} is being called on it, else the replacement
+     * @since 2.74
+     */
+    public static Object replaceIfNotAtTopLevel(Object o, Supplier<Object> replacement) {
+        if (beingWritten.containsKey(o)) {
+            return o;
+        } else {
+            // Unfortunately we cannot easily tell which XML file is actually being saved here, at least without implementing a custom Converter.
+            LOGGER.log(Level.WARNING, "JENKINS-45892: reference to {0} being saved but not at top level", o);
+            return replacement.get();
         }
     }
 
@@ -201,14 +234,18 @@ public final class XmlFile {
      * @return Reader for the file. should be close externally once read.
      */
     public Reader readRaw() throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(file);
         try {
-            return new InputStreamReader(fileInputStream, sniffEncoding());
-        } catch(IOException ex) {
-            // Exception may happen if we fail to find encoding or if this encoding is unsupported.
-            // In such case we close the underlying stream and rethrow.
-            Util.closeAndLogFailures(fileInputStream, LOGGER, "FileInputStream", file.toString());
-            throw ex;
+            InputStream fileInputStream = Files.newInputStream(file.toPath());
+            try {
+                return new InputStreamReader(fileInputStream, sniffEncoding());
+            } catch (IOException ex) {
+                // Exception may happen if we fail to find encoding or if this encoding is unsupported.
+                // In such case we close the underlying stream and rethrow.
+                Util.closeAndLogFailures(fileInputStream, LOGGER, "FileInputStream", file.toString());
+                throw ex;
+            }
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -227,7 +264,7 @@ public final class XmlFile {
      */
     public void writeRawTo(Writer w) throws IOException {
         try (Reader r = readRaw()) {
-            Util.copyStream(r, w);
+            IOUtils.copy(r, w);
         }
     }
 
@@ -247,7 +284,7 @@ public final class XmlFile {
             }
         }
 
-        try (InputStream in = new FileInputStream(file)) {
+        try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
             JAXP.newSAXParser().parse(input,new DefaultHandler() {
@@ -288,7 +325,9 @@ public final class XmlFile {
             // in such a case, assume UTF-8 rather than fail, since Jenkins internally always write XML in UTF-8
             return "UTF-8";
         } catch (SAXException e) {
-            throw new IOException("Failed to detect encoding of "+file,e);
+            throw new IOException("Failed to detect encoding of " + file, e);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         } catch (ParserConfigurationException e) {
             throw new AssertionError(e);    // impossible
         }
