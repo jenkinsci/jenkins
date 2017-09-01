@@ -207,7 +207,7 @@ public class Bootstrap implements ServletContextListener {
         });
 
         if (r.isEmpty()) {
-            throw new IllegalStateException("No @BootLogic found. Aborting");
+            throw new IllegalStateException("No BootLogic found. Aborting");
         }
 
         return r;
