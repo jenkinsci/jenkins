@@ -203,10 +203,11 @@ public final class XmlFile {
      * @since 2.74
      */
     public static Object replaceIfNotAtTopLevel(Object o, Supplier<Object> replacement) {
-        if (beingWritten.containsKey(o)) {
+        File currentlyWriting = writing.get();
+        if (beingWritten.containsKey(o) || currentlyWriting == null) {
             return o;
         } else {
-            LOGGER.log(Level.WARNING, "JENKINS-45892: reference to " + o +" being saved from unexpected " + writing.get(), new IllegalStateException());
+            LOGGER.log(Level.WARNING, "JENKINS-45892: reference to " + o + " being saved from unexpected " + currentlyWriting, new IllegalStateException());
             return replacement.get();
         }
     }
