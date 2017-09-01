@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -111,6 +112,12 @@ public class Bootstrap implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent event) {
         for (BootLogic b : bootLogics) {
             b.contextDestroyed(event);
+        }
+        try {
+            if (coreClassLoader instanceof Closeable)
+                ((Closeable)coreClassLoader).close();
+        } catch (IOException e) {
+            LOGGER.log(SEVERE, "Failed to clean up core classloader", e);
         }
     }
 
