@@ -82,7 +82,7 @@ public class Bootstrap implements ServletContextListener {
     private final OverrideJournal overrides = new OverrideJournal();
 
     /**
-     * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
+     * Creates the sole instance of Jenkins and register it to the {@link ServletContext}.
      */
     public void contextInitialized(ServletContextEvent event) {
         context = event.getServletContext();
