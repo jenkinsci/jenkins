@@ -169,6 +169,7 @@ class Plugin {
             else
                 destDir.delete();
         }
+        destDir.mkdirs();
 
         // expand the contents
         try (JarFile jar = new JarFile(archive)) {
