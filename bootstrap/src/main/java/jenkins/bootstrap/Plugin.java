@@ -75,18 +75,26 @@ class Plugin {
         explode();
 
         File dependencies = new File(destDir,"META-INF/dependencies.txt");
+        boolean hasDependenciesNewerThanCore = false;
         try (InputStream i = new FileInputStream(dependencies)) {
             DependenciesTxt deps = new DependenciesTxt(i);
             for (Dependency d : deps.dependencies) {
+                if (!core.hasNewerThan(d)) {
+                    hasDependenciesNewerThanCore = true;
+                }
+            }
+            if (!hasDependenciesNewerThanCore) {
+                // Nothing to override
+                LOGGER.info("Skipping core override plugin "+archive+" because core contains newer versions");
+                return;
+            }
+            for (Dependency d : deps.dependencies) {
                 if (core.hasNewerThan(d)) {
-                    // core has a newer version. abort.
-                    LOGGER.warning("Skipping core override plugin "+archive+" because core contains a newer version of "+d.ga);
-                    return;
+                    LOGGER.warning("Skipping core override plugin "+archive+" because core contains newer versions of " + d.ga);
                 }
             }
             overrides.add(deps);
         }
-
 
         File lib = new File(destDir, "WEB-INF/lib");
         LOGGER.info("Loading core overrides from "+lib);
