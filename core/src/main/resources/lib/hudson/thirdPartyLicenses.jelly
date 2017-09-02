@@ -42,6 +42,7 @@ THE SOFTWARE.
           <a href="${attrs.url}">${attrs.name}</a>
         </td>
         <td>
+          <!-- if overriden, strike this and put where the override comes from -->
           ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
         </td>
         <td>

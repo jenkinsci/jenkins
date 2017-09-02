@@ -102,6 +102,17 @@ class DependenciesTxt {
         return x != null && x.equals(d.vv);
     }
 
+    /**
+     * Finds a dependency that has the matching groupId/artifactId
+     */
+    public Dependency getMatchingDependency(Dependency src) {
+        for (Dependency d : dependencies) {
+            if (src.ga.equals(d.ga))
+                return d;
+        }
+        return null;
+    }
+
     public boolean contains(String ga) {
         return jars.containsKey(ga);
     }

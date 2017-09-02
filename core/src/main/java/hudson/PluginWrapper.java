@@ -398,6 +398,13 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns true if this plugin overrides core components.
+     */
+    public boolean isCoreComponentOverride() throws IOException {
+        return "true".equals(manifest.getMainAttributes().getValue("Core-Component"));
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     @Exported

@@ -72,6 +72,10 @@ public class Bootstrap implements ServletContextListener {
      * JENKINS_HOME
      */
     private File home;
+    /**
+     * From a dependency that was overriden to a dependency that overrode it.
+      */
+    private final OverrideJournal overrides = new OverrideJournal();
 
     /**
      * Creates the sole instance of {@link jenkins.model.Jenkins} and register it to the {@link ServletContext}.
@@ -144,7 +148,6 @@ public class Bootstrap implements ServletContextListener {
 
     private ClassLoader buildCoreClassLoader() throws IOException {
         List<URL> urls = new ArrayList<>();
-        List<DependenciesTxt> overrides = new ArrayList<>();
 
         DependenciesTxt core = new DependenciesTxt(getClass().getClassLoader().getResourceAsStream("dependencies.txt"));
 
@@ -167,7 +170,6 @@ public class Bootstrap implements ServletContextListener {
             throw new IllegalStateException("No WEB-INF/jars");
         }
 
-        OUTER:
         for (String jar : jars) {
             if (!jar.endsWith(".jar"))
                 continue;   // not a jar file
@@ -181,10 +183,8 @@ public class Bootstrap implements ServletContextListener {
                 // not to block a desparate attempt by an admin
                 LOGGER.log(INFO, "Allowing unexpected core jar file without override check: "+jar);
             } else {
-                for (DependenciesTxt o : overrides) {
-                    if (o.contains(d.ga))
-                        continue OUTER; // this jar got overriden
-                }
+                if (overrides.isOverridden(d))
+                    continue; // this jar got overriden
             }
 
             urls.add(context.getResource(jar));

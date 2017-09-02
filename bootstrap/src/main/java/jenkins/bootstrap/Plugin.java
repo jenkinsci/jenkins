@@ -69,7 +69,7 @@ class Plugin {
         this.destDir = getDestDir();
     }
 
-    void process(DependenciesTxt core, List<URL> jars, List<DependenciesTxt> overrides) throws IOException {
+    void process(DependenciesTxt core, List<URL> jars, OverrideJournal overrides) throws IOException {
         if (!isCoreComponentOverride() || isDisabled())
             return;
 
@@ -98,7 +98,7 @@ class Plugin {
                 }
                 return;
             }
-            overrides.add(deps);
+            overrides.add(core,deps);
         }
 
         File lib = new File(destDir, "WEB-INF/lib");
