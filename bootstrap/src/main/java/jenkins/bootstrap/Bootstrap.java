@@ -37,7 +37,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -210,12 +209,7 @@ public class Bootstrap implements ServletContextListener {
             r.add(b);
         }
 
-        Collections.sort(r, new Comparator<BootLogic>() {
-            @Override
-            public int compare(BootLogic o1, BootLogic o2) {
-                return -Float.compare(o1.ordinal(),o2.ordinal());
-            }
-        });
+        r.sort((o1, o2) -> -Float.compare(o1.ordinal(), o2.ordinal()));
 
         if (r.isEmpty()) {
             throw new IllegalStateException("No BootLogic found. Aborting");
