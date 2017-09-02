@@ -32,6 +32,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -181,7 +182,7 @@ class Plugin {
         if (destDir.exists()) {
             // delete the contents so that old files won't interfere with new files
             if (destDir.isDirectory())
-                Files.walk(destDir.toPath()).map(Path::toFile).forEach(File::delete);
+                Files.walk(destDir.toPath()).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
             else
                 destDir.delete();
         }
