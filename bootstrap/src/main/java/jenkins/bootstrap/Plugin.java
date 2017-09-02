@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -76,11 +77,14 @@ class Plugin {
 
         File dependencies = new File(destDir,"META-INF/dependencies.txt");
         boolean hasDependenciesNewerThanCore = false;
+        List<Dependency> olderThanCore = new ArrayList<>();
         try (InputStream i = new FileInputStream(dependencies)) {
             DependenciesTxt deps = new DependenciesTxt(i);
             for (Dependency d : deps.dependencies) {
                 if (!core.hasNewerThan(d)) {
                     hasDependenciesNewerThanCore = true;
+                } else if (!core.hasSame(d)){
+                    olderThanCore.add(d);
                 }
             }
             if (!hasDependenciesNewerThanCore) {
@@ -88,10 +92,11 @@ class Plugin {
                 LOGGER.info("Skipping core override plugin "+archive+" because core contains newer versions");
                 return;
             }
-            for (Dependency d : deps.dependencies) {
-                if (core.hasNewerThan(d)) {
-                    LOGGER.warning("Skipping core override plugin "+archive+" because core contains newer versions of " + d.ga);
+            if (olderThanCore.size() > 0)  {
+                for (Dependency d : olderThanCore) {
+                    LOGGER.warning("Skipping core override plugin " + archive + " because core contains newer versions of " + d.ga);
                 }
+                return;
             }
             overrides.add(deps);
         }

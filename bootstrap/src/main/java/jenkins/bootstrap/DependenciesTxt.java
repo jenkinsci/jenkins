@@ -97,6 +97,11 @@ class DependenciesTxt {
         return x != null && x.isNewerThan(d.vv);
     }
 
+    public boolean hasSame(Dependency d) {
+        VersionNumber x = jars.get(d.ga);
+        return x != null && x.equals(d.vv);
+    }
+
     public boolean contains(String ga) {
         return jars.containsKey(ga);
     }
