@@ -56,4 +56,25 @@ final class Dependency {
         return a+"-"+v+(c==null?"":"-"+c)+".jar";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Dependency that = (Dependency) o;
+        return this.g.equals(that.g)
+            && this.a.equals(that.a)
+            && this.v.equals(that.v)
+            && eq(this.c,that.c);
+    }
+
+    @Override
+    public int hashCode() {
+        return g.hashCode() ^ a.hashCode() ^ v.hashCode();
+    }
+
+    private static boolean eq(Object lhs, Object rhs) {
+        if (lhs == rhs) return true;
+        if (lhs == null || rhs == null) return false;
+        return lhs.equals(rhs);
+    }
 }
