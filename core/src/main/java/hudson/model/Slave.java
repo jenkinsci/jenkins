@@ -389,12 +389,15 @@ public abstract class Slave extends Node implements Serializable {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
             
-            if (name.equals("hudson-cli.jar"))  {
-                name="jenkins-cli.jar";
-            } else if (name.equals("slave.jar") || name.equals("remoting.jar")) {
-                name = "lib/" + Which.jarFile(Channel.class).getName();
+            if (name.equals("slave.jar") || name.equals("remoting.jar")) {
+                final File file = Which.jarFile(Channel.class);
+                return file.toURI().toURL();
             }
-            
+
+            if (name.equals("hudson-cli.jar")) {
+                name = "jenkins-cli.jar";
+            }
+
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
                 // during the development this path doesn't have the files.
