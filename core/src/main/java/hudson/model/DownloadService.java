@@ -132,18 +132,6 @@ public class DownloadService extends PageDecorator {
     }
 
     private String mapHttps(String url) {
-        /*
-            HACKISH:
-
-            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
-            The elegant way to solve the problem is to always load update center from HTTPS,
-            but our backend mirroring scheme isn't ready for that. So this hack serves regular
-            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
-
-            We'll monitor the traffic to see if we can sustain this added traffic.
-         */
-        if (url.startsWith("http://updates.jenkins-ci.org/") && Jenkins.getInstance().isRootUrlSecure())
-            return "https"+url.substring(4);
         return url;
     }
 
