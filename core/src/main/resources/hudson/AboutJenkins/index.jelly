@@ -39,7 +39,7 @@ THE SOFTWARE.
           <j:set var="uri" value="${it.licensesURL}"/>
           <j:choose>
             <j:when test="${uri != null}">
-              <t:thirdPartyLicenses>
+              <t:thirdPartyLicenses overrides="${it.overrideJournal}">
                 <j:include uri="${uri}"/>
               </t:thirdPartyLicenses>
             </j:when>

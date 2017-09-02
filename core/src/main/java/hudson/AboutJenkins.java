@@ -3,9 +3,13 @@ package hudson;
 import hudson.model.ManagementLink;
 import java.net.URL;
 
+import jenkins.bootstrap.Bootstrap;
+import jenkins.bootstrap.OverrideJournal;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+import javax.inject.Inject;
 
 /**
  * Show "About Jenkins" link.
@@ -14,6 +18,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Extension @Symbol("about")
 public class AboutJenkins extends ManagementLink {
+    @Inject
+    private Bootstrap bootstrap;
+
     @Override
     public String getIconFileName() {
         return "help.png";
@@ -38,4 +45,7 @@ public class AboutJenkins extends ManagementLink {
         return AboutJenkins.class.getResource("/META-INF/licenses.xml");
     }
 
+    public OverrideJournal getOverrideJournal() {
+        return bootstrap.getOverrides();
+    }
 }

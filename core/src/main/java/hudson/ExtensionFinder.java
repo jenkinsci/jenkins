@@ -44,6 +44,7 @@ import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionFilter;
 import jenkins.ExtensionRefreshException;
 import jenkins.ProxyInjector;
+import jenkins.bootstrap.Bootstrap;
 import jenkins.model.Jenkins;
 import net.java.sezpoz.Index;
 import net.java.sezpoz.IndexItem;
@@ -268,6 +269,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                     Jenkins j = Jenkins.getInstance();
                     bind(Jenkins.class).toInstance(j);
                     bind(PluginManager.class).toInstance(j.getPluginManager());
+                    bind(Bootstrap.class).toInstance(Bootstrap.get(j.servletContext));
                 }
             });
             modules.add(new SezpozModule(sezpozIndex));

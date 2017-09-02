@@ -25,6 +25,15 @@ THE SOFTWARE.
 <!-- 3rd party license acknowledgements and  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+  <st:documentation>
+    Renders licenses.xml into HTML
+
+    <st:attribute name="overrides" use="optional">
+      Instance of OverrideJournal. If specified, use the information to show what components are overriden.
+    </st:attribute>
+  </st:documentation>
+  <j:set var="overrides" value="${attrs.overrides}"/>
+
   <d:taglib uri="licenses">
     <d:tag name="dependencies">
       <table class="pane sortable bigtable">
@@ -42,8 +51,21 @@ THE SOFTWARE.
           <a href="${attrs.url}">${attrs.name}</a>
         </td>
         <td>
-          <!-- if overriden, strike this and put where the override comes from -->
-          ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
+          <j:set var="o" value="${overrides.getOverrideOf(attrs.groupId, attrs.artifactId)}" />
+          <j:choose>
+            <j:when test="${o!=null}">
+              <div>
+                <!--this version is overridden -->
+                ${attrs.groupId}:${attrs.artifactId}:<strike>${attrs.version}</strike> &#x2192; <b>${o.to.version}</b>
+              </div>
+              <div style="color:gray">
+                (${%overridden(o.pluginShortName)})
+              </div>
+            </j:when>
+            <j:otherwise>
+              ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
+            </j:otherwise>
+          </j:choose>
         </td>
         <td>
           <d:invokeBody />

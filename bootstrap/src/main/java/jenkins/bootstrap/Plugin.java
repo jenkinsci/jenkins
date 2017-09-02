@@ -64,9 +64,12 @@ class Plugin {
      */
     private final File destDir;
 
-    Plugin(File archive) {
+    private final Manifest manifest;
+
+    Plugin(File archive) throws IOException {
         this.archive = archive;
         this.destDir = getDestDir();
+        this.manifest = loadManifest();
     }
 
     void process(DependenciesTxt core, List<URL> jars, OverrideJournal overrides) throws IOException {
@@ -98,7 +101,7 @@ class Plugin {
                 }
                 return;
             }
-            overrides.add(core,deps);
+            overrides.add(core,this,deps);
         }
 
         File lib = new File(destDir, "WEB-INF/lib");
@@ -128,9 +131,17 @@ class Plugin {
      * Returns true if this plugin overrides core components.
      */
     private boolean isCoreComponentOverride() throws IOException {
-        Manifest mf = loadManifest();
-        return "true".equals(mf.getMainAttributes().getValue("Core-Component"));
+        return "true".equals(manifest.getMainAttributes().getValue("Core-Component"));
     }
+
+    public String getShortName() {
+        return manifest.getMainAttributes().getValue("Short-Name");
+    }
+
+    public String getLongName() {
+        return manifest.getMainAttributes().getValue("Long-Name");
+    }
+
 
     public boolean isDisabled() {
         File disableFile = new File(archive.getPath() + ".disabled");

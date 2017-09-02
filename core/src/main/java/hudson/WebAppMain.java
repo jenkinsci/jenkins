@@ -35,7 +35,6 @@ import jenkins.bootstrap.Bootstrap;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.util.BootFailure;
@@ -69,7 +68,6 @@ import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -292,9 +290,7 @@ public class WebAppMain implements BootLogic {
     }
 
     protected File getHome() {
-        Bootstrap bootstrap = (Bootstrap) context.getAttribute(Bootstrap.class.getName());
-
-        return bootstrap.getHome();
+        return Bootstrap.get(context).getHome();
     }
 
     public void joinInit() throws InterruptedException {

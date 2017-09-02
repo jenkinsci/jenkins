@@ -30,7 +30,7 @@ import hudson.util.VersionNumber;
  *
  * @author Kohsuke Kawaguchi
  */
-final class Dependency {
+public final class Dependency {
     /**
      * groupId, artifactId, and version.
      */
@@ -50,6 +50,22 @@ final class Dependency {
         this.c = "".equals(c) ? null : c;
         this.vv = new VersionNumber(v);
         this.ga = g+':'+a;
+    }
+
+    public String getGroupId() {
+        return g;
+    }
+
+    public String getArtifactId() {
+        return a;
+    }
+
+    public String getVersion() {
+        return v;
+    }
+
+    public VersionNumber getVersionNumber() {
+        return vv;
     }
 
     String getFileName() {

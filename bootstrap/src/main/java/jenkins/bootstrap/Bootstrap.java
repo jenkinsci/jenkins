@@ -49,7 +49,11 @@ import static java.util.logging.Level.*;
 /**
  * Entry point when Jenkins is used as a webapp.
  *
+ * <p>
+ * This is a singleton component that can be injected.
+ *
  * @author Kohsuke Kawaguchi
+ * @see #get(ServletContext)
  */
 public class Bootstrap implements ServletContextListener {
 
@@ -144,6 +148,13 @@ public class Bootstrap implements ServletContextListener {
      */
     public File getHome() {
         return home;
+    }
+
+    /**
+     * Obtains the record of core component overrides.
+     */
+    public OverrideJournal getOverrides() {
+        return overrides;
     }
 
     private ClassLoader buildCoreClassLoader() throws IOException {
@@ -324,5 +335,12 @@ public class Bootstrap implements ServletContextListener {
      */
     public static File getBootFailureFile(File home) {
         return new File(home, "failed-boot-attempts.txt");
+    }
+
+    /**
+     * Access the sole instance of {@link Bootstrap} constructed during the boot up
+     */
+    public static Bootstrap get(ServletContext context) {
+        return (Bootstrap) context.getAttribute(Bootstrap.class.getName());
     }
 }
