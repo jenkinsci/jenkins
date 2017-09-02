@@ -190,10 +190,6 @@ class Plugin {
             }
         }
 
-        if (new File(destDir,"WEB-INF/classes").exists()) {
-            throw new IOException("Core override plugin cannot have WEB-INF/classes: "+destDir);
-        }
-
         // update timestamp file
         new FileOutputStream(explodeTime).close();
         explodeTime.setLastModified(archive.lastModified());
