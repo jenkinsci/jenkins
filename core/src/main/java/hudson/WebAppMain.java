@@ -110,6 +110,8 @@ public class WebAppMain implements BootLogic {
         this.context = context;
         setupServlet();
         setupFilters();
+        // dummy bootstrap to fool components that attempt to look up this object
+        context.setAttribute(Bootstrap.class.getName(),new Bootstrap());
     }
 
     /**
