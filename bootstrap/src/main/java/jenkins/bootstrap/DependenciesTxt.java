@@ -102,6 +102,12 @@ class DependenciesTxt {
         return x != null && x.equals(d.vv);
     }
 
+    public boolean hasOlderThan(Dependency d) {
+        VersionNumber x = jars.get(d.ga);
+        return x != null && x.isOlderThan(d.vv);
+    }
+
+
     /**
      * Finds a dependency that has the matching groupId/artifactId
      */

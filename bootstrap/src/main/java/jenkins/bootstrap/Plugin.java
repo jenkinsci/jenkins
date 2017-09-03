@@ -85,7 +85,7 @@ class Plugin {
         try (InputStream i = new FileInputStream(dependencies)) {
             DependenciesTxt deps = new DependenciesTxt(i);
             for (Dependency d : deps.dependencies) {
-                if (!core.hasNewerThan(d)) {
+                if (core.hasOlderThan(d)) {
                     hasDependenciesNewerThanCore = true;
                 } else if (!core.hasSame(d)){
                     olderThanCore.add(d);
