@@ -894,14 +894,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         };
     }
 
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     /**
      * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */

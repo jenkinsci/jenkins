@@ -1457,16 +1457,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     }
 
     @Override
-    public void checkPermission(@Nonnull Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull Permission p) {
-        return getACL().hasPermission(p);
-    }
-
-    @Override
     public ACL getACL() {
         // for now, don't maintain ACL per run, and do it at project level
         return getParent().getACL();
