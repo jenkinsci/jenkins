@@ -32,17 +32,17 @@ if (!my.isDone()) {
 }
 
 if (my.isFixingActive()) {
-    div(class:"info") {
-        raw _("rekeyInProgress",my.url)
+    div(class:"alert alert-info") {
+        raw _("rekeyInProgress", my.url)
     }
 } else if (my.logFile.exists()) {
     if (my.isDone()) {
-        div(class:"info") {
-            raw _("rekeySuccessful",my.url)
+        div(class:"alert alert-info") {
+            raw _("rekeySuccessful", my.url)
         }
     } else {
-        div(class:"warning") {
-            raw _("rekeyHadProblems",my.url)
+        div(class:"alert alert-warning") {
+            raw _("rekeyHadProblems", my.url)
         }
     }
 }

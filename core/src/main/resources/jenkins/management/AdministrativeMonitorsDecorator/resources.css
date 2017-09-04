@@ -6,7 +6,7 @@
     font-size: 20px;
     font-weight: bold;
     background-color: #e01716;
-    color: #fff;;
+    color: #fff;
     margin: 0;
     line-height: 40px;
     text-decoration: none;
@@ -70,13 +70,18 @@
 #visible-am-container .am-message .alert form {
     position: relative;
     float: right;
-    margin: -6px 0 0 15px !important;
+    margin: -6px 0 0 0 !important;
+
 }
 
 #visible-am-container .am-message .alert form span {
-    margin: 0 !important;
+    margin: 0 0 0 4px !important;
 }
 
 #visible-am-container .am-message .alert {
     margin-bottom: 0 !important;
+}
+
+#visible-am-container .am-message dl dt::after {
+    content: ": ";
 }

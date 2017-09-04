@@ -4,13 +4,13 @@
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="correct" value="${%Correct}"/>
     </form>
-    <h4>${%Dependency errors}</h4>
+    ${%Dependency errors}
     <j:forEach items="${it.plugins}" var="plugin">
     <dl>
-        <dt>${plugin.longName} v${plugin.version}</dt>
-        <j:forEach items="${plugin.dependencyErrors}" var="d">
+      <dt>${plugin.longName} v${plugin.version}</dt>
+      <j:forEach items="${plugin.dependencyErrors}" var="d">
         <dd>${d}</dd>
-        </j:forEach>
+      </j:forEach>
     </dl>
     </j:forEach>
   </div>
