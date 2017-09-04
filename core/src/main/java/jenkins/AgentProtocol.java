@@ -8,6 +8,8 @@ import hudson.TcpSlaveAgentListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -18,6 +20,15 @@ import jenkins.model.Jenkins;
  * Implementations of this extension point is singleton, and its {@link #handle(Socket)} method
  * gets invoked concurrently whenever a new connection comes in.
  *
+ * <h2>Extending UI</h2>
+ * <dl>
+ *  <dt>description.jelly</dt>
+ *  <dd>Optional protocol description</dd>
+ *  <dt>deprecationCause.jelly</dt>
+ *  <dd>Optional. If the protocol is marked as {@link #isDeprecated()}, 
+ *      clarifies the deprecation reason and provides extra documentation links</dd>
+ * </dl>
+ * 
  * @author Kohsuke Kawaguchi
  * @since 1.467
  * @see TcpSlaveAgentListener
@@ -53,6 +64,16 @@ public abstract class AgentProtocol implements ExtensionPoint {
     public boolean isRequired() {
         return false;
     }
+    
+    /**
+     * Checks if the protocol is deprecated.
+     * 
+     * @since TODO
+     */
+    public boolean isDeprecated() {
+        return false;
+    }
+    
     /**
      * Protocol name.
      *
@@ -86,6 +107,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
         return ExtensionList.lookup(AgentProtocol.class);
     }
 
+    @CheckForNull
     public static AgentProtocol of(String protocolName) {
         for (AgentProtocol p : all()) {
             String n = p.getName();

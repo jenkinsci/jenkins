@@ -27,7 +27,9 @@ THE SOFTWARE.
   <script>
     var checkAjax=new Ajax.Request('${rootURL}/${it.url}/test', {
         onComplete : function(transport) {
-          if (transport.status==0 || transport.status==404) {
+          if (transport.status != 200) {
+          
+            
             // redirect failed. Unfortunately, according to the spec http://www.w3.org/TR/XMLHttpRequest/
             // in case of error, we can either get 0 or a failure code
             $$('redirect-error').style.display = "block";

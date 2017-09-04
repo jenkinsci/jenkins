@@ -251,7 +251,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -903,26 +902,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
 
-            // TODO pending move to standard blacklist, or API to append filter
-            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
-                try {
-                    Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
-                    blacklistPatternsF.setAccessible(true);
-                    Object[] blacklistPatternsA = (Object[]) blacklistPatternsF.get(ClassFilter.DEFAULT);
-                    boolean found = false;
-                    for (int i = 0; i < blacklistPatternsA.length; i++) {
-                        if (blacklistPatternsA[i] instanceof Pattern) {
-                            blacklistPatternsA[i] = Pattern.compile("(" + blacklistPatternsA[i] + ")|(java[.]security[.]SignedObject)");
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        throw new Error("no Pattern found among " + Arrays.toString(blacklistPatternsA));
-                    }
-                } catch (NoSuchFieldException | IllegalAccessException x) {
-                    throw new Error("Unexpected ClassFilter implementation in bundled remoting.jar: " + x, x);
-                }
+            try {
+                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
+            } catch (ClassFilter.ClassFilterException ex) {
+                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
             }
 
             // initialization consists of ...
@@ -2176,7 +2159,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns the enabled and activated administrative monitors.
-     * @since TODO
+     * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         return administrativeMonitors.stream().filter(m -> m.isEnabled() && m.isActivated()).collect(Collectors.toList());
@@ -2326,12 +2309,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * It is done in this order so that it can work correctly even in the face
      * of a reverse proxy.
      *
-     * @return null if this parameter is not configured by the user and the calling thread is not in an HTTP request; otherwise the returned URL will always have the trailing {@code /}
+     * @return {@code null} if this parameter is not configured by the user and the calling thread is not in an HTTP request; 
+     *                      otherwise the returned URL will always have the trailing {@code /}
+     * @throws IllegalStateException {@link JenkinsLocationConfiguration} cannot be retrieved.
+     *                      Jenkins instance may be not ready, or there is an extension loading glitch.
      * @since 1.66
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public @Nullable String getRootUrl() {
-        String url = JenkinsLocationConfiguration.get().getUrl();
+    public @Nullable String getRootUrl() throws IllegalStateException {
+        final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        if (config == null) {
+            // Try to get standard message if possible
+            final Jenkins j = Jenkins.getInstance();
+            throw new IllegalStateException("Jenkins instance " + j + " has been successfully initialized, but JenkinsLocationConfiguration is undefined.");
+        }
+        String url = config.getUrl();
         if(url!=null) {
             return Util.ensureEndsWith(url,"/");
         }

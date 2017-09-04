@@ -52,6 +52,8 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import jenkins.CLI;
@@ -62,6 +64,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -127,6 +130,13 @@ public class SetupWizard extends PageDecorator {
                     // Disable CLI over Remoting
                     CLI.get().setEnabled(false);
 
+                    // Disable old Non-Encrypted protocols ()
+                    HashSet<String> newProtocols = new HashSet<>(jenkins.getAgentProtocols());
+                    newProtocols.removeAll(Arrays.asList(
+                            "JNLP2-connect", "JNLP-connect", "CLI-connect"   
+                    ));
+                    jenkins.setAgentProtocols(newProtocols);
+                    
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     
