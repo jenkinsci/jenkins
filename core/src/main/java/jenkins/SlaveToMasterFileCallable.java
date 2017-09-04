@@ -7,7 +7,7 @@ import org.jenkinsci.remoting.RoleChecker;
 /**
  * {@link FileCallable}s that can be executed on the master, sent by the agent.
  *
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class SlaveToMasterFileCallable<T> implements FileCallable<T> {
     @Override

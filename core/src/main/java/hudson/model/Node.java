@@ -509,14 +509,6 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public final void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public final boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     public Node reconfigure(final StaplerRequest req, JSONObject form) throws FormException {
         if (form==null)     return null;
 
