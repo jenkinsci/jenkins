@@ -76,6 +76,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -91,6 +92,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
 
+    @CheckForNull
     private String upstreamProjects;
     private Result threshold = Result.SUCCESS;
 
@@ -109,6 +111,11 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         this.upstreamProjects = upstreamProjects;
     }
 
+    /**
+     * Gets the upstream projects.
+     * 
+     * @return Upstream projects or empty("") if upstream projects is null.
+     */
     public String getUpstreamProjects() {
         return Util.fixNull(upstreamProjects);
     }
