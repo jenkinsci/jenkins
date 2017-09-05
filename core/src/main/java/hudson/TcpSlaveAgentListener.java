@@ -218,8 +218,8 @@ public final class TcpSlaveAgentListener extends Thread {
             setUncaughtExceptionHandler((t, e) -> {
                 LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener ConnectionHandler " + t, e);
                 try {
-                    parentTerminator.run(e);
                     s.close();
+                    parentTerminator.run(e);
                 } catch (IOException e1) {
                     LOGGER.log(Level.WARNING, "Could not close socket after unexpected thread death", e1);
                 }
@@ -432,6 +432,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * Reschedules the <code>TcpSlaveAgentListener</code> on demand.  Disables itself after running.
      */
     @Extension
+    @Restricted(NoExternalUse.class)
     public static class TcpSlaveAgentListenerRescheduler extends AperiodicWork {
         private Thread originThread;
         private int port;
@@ -465,10 +466,10 @@ public final class TcpSlaveAgentListener extends Thread {
                     }
                     new TcpSlaveAgentListener(port).start();
                     LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
-                } catch (IOException e1) {
-                    LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener", cause);
+                    isActive = false;
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener - trying again.", cause);
                 }
-                isActive = false;
             }
         }
 
