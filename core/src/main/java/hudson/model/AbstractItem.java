@@ -493,20 +493,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Short for {@code getACL().checkPermission(p)}
-     */
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    /**
-     * Short for {@code getACL().hasPermission(p)}
-     */
-    public boolean hasPermission(Permission p) {
-        return getACL().hasPermission(p);
-    }
-
-    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
@@ -517,6 +503,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     public final XmlFile getConfigFile() {
         return Items.getConfigFile(this);
+    }
+
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String fullName;
+        Replacer(AbstractItem i) {
+            fullName = i.getFullName();
+        }
+        private Object readResolve() {
+            Jenkins j = Jenkins.getInstanceOrNull();
+            if (j == null) {
+                return null;
+            }
+            // Will generally only work if called after job loading:
+            return j.getItemByFullName(fullName);
+        }
     }
 
     public Descriptor getDescriptorByName(String className) {

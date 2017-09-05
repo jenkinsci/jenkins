@@ -735,6 +735,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(User u) {
+            id = u.getId();
+        }
+        private Object readResolve() {
+            return getById(id, false);
+        }
+    }
+
     /**
      * Deletes the data directory and removes this user from Hudson.
      *
@@ -879,14 +892,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         || base.hasPermission(a, permission);
             }
         };
-    }
-
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     /**

@@ -332,14 +332,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause.
