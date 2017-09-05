@@ -81,13 +81,39 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
+        String authCode = "Basic "+Scrambler.scramble(userAndPass);
+        doMakeRequestWithAuthAndVerify(authCode, username);
+    }
+
+    private void doMakeRequestWithAuthAndVerify(String authCode, String expected) throws IOException, SAXException {
         WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
         req.setEncodingType(null);
-        if (userAndPass!=null)
-            req.setAdditionalHeader("Authorization","Basic "+Scrambler.scramble(userAndPass));
+        if (authCode!=null)
+            req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
+        assertEquals(expected, p.getWebResponse().getContentAsString().trim());
+    }
 
-        assertEquals(username, p.getWebResponse().getContentAsString().trim());
+    @Test
+    public void testAuthHeaderCaseInSensitive() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        wc = j.createWebClient();
+
+        String[][] data = new String[][]{
+                {"Basic", "foo", "foo"},
+                {"BASIC", "foo", "foo"},
+                {"basic", "foo", "foo"},
+                {"Basic", "bar", "foo"},
+                {"BASIC", "bar", "foo"},
+                {"basic", "bar", "foo"},
+        };
+        for (String[] testCase : data) {
+            String basicVar = testCase[0];
+            String username = testCase[1];
+            String password = testCase[2];
+            String authCode = basicVar+" "+Scrambler.scramble(username+":"+password);
+            doMakeRequestWithAuthAndVerify(authCode, username);
+        }
     }
 
     @TestExtension
