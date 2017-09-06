@@ -332,14 +332,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     /**
      * If the computer was offline (either temporarily or not),
      * this method will return the cause.
@@ -976,7 +968,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
      *
      * @return the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
-     * @since TODO
+     * @since 2.55
      */
     public List<Executor> getAllExecutors() {
         List<Executor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());

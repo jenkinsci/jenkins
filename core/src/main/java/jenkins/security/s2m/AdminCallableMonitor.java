@@ -18,7 +18,7 @@ import java.io.IOException;
  * Report any rejected {@link Callable}s and {@link FilePath} executions and allow
  * admins to whitelist them.
  *
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  * @author Kohsuke Kawaguchi
  */
 @Extension @Symbol("slaveToMasterAccessControl")

@@ -47,12 +47,17 @@ public class CliProtocol extends AgentProtocol {
         return jenkins.CLI.get().isEnabled() ? "CLI-connect" : null;
     }
 
+    @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public String getDisplayName() {
-        return "Jenkins CLI Protocol/1";
+        return "Jenkins CLI Protocol/1 (deprecated, unencrypted)";
     }
 
     @Override
