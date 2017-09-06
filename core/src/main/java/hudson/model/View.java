@@ -579,14 +579,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    public boolean hasPermission(Permission p) {
-        return getACL().hasPermission(p);
-    }
-
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
     @Deprecated
     public void onJobRenamed(Item item, String oldName, String newName) {}

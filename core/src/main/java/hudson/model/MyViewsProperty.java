@@ -185,14 +185,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return user.getACL();
     }
 
-    public void checkPermission(Permission permission) throws AccessDeniedException {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     ///// Action methods /////
     public String getDisplayName() {
         return Messages.MyViewsProperty_DisplayName();
