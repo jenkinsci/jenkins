@@ -120,6 +120,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -374,13 +377,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
     public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        EnvVars env;
+        EnvVars env = new EnvVars();
 
-        if (node!=null) {
+        if (node != null) {
             final Computer computer = node.toComputer();
-            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
-        } else {
-            env = new EnvVars();
+            if (computer != null) {
+                // we need to get computer environment to inherit platform details 
+                env = computer.getEnvironment();
+                env.putAll(computer.buildEnvironment(listener));
+            }
         }
 
         env.putAll(getCharacteristicEnvVars());
@@ -1051,7 +1056,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * RSS feed for changes in this project.
      *
-     * @since TODO
+     * @since 2.60
      */
     public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         class FeedItem {
@@ -1604,4 +1609,58 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    
+    /**
+     * Check new name for job
+     * @param newName - New name for job
+     * @return {@code true} - if newName occupied and user has permissions for this job
+     *         {@code false} - if newName occupied and user hasn't permissions for this job
+     *         {@code null} - if newName didn't occupied
+     * 
+     * @throws Failure if the given name is not good
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public Boolean checkIfNameIsUsed(@Nonnull String newName) throws Failure{
+        
+        Item item = null;
+        Jenkins.checkGoodName(newName);
+        
+        try {
+            item = getParent().getItem(newName);
+        } catch(AccessDeniedException ex) {  
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                        "User {2} has {3} permission, but no {4} for existing job with the same name", 
+                        new Object[] {this.getFullName(), newName, User.current().getFullName(), Item.DISCOVER.name, Item.READ.name} );
+            }
+            return true;
+        }
+        
+        if (item != null) {
+            // User has Read permissions for existing job with the same name
+            return true;
+        } else {
+            SecurityContext initialContext = null;
+            try {
+                initialContext = hudson.security.ACL.impersonate(ACL.SYSTEM);
+                item = getParent().getItem(newName);
+
+                if (item != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                                "User {2} has no {3} permission for existing job with the same name", 
+                                new Object[] {this.getFullName(), newName, initialContext.getAuthentication().getName(), Item.DISCOVER.name} );
+                    }
+                    return false;
+                }
+
+            } finally {
+                if (initialContext != null) {
+                    SecurityContextHolder.setContext(initialContext);
+                }
+            }
+        }
+        return null;
+    }
 }

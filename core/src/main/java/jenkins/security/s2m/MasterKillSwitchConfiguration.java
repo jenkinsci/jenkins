@@ -12,7 +12,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * Exposes {@link AdminWhitelistRule#masterKillSwitch} to the admin.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 @Extension
 public class MasterKillSwitchConfiguration extends GlobalConfiguration {

@@ -328,7 +328,7 @@ public final class CronTab {
      * This method modifies the given calendar and returns the same object.
      *
      * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years after it indicates an impossible
-     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in TODO
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar ceil(Calendar cal) {
         Calendar twoYearsFuture = (Calendar) cal.clone();
@@ -389,7 +389,7 @@ public final class CronTab {
      * This method modifies the given calendar and returns the same object.
      *
      * @throws RareOrImpossibleDateException if the date isn't hit in the 2 years before it indicates an impossible
-     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in TODO
+     * (e.g. Jun 31) date, or at least a date too rare to be useful. This addresses JENKINS-41864 and was added in 2.49
      */
     public Calendar floor(Calendar cal) {
         Calendar twoYearsAgo = (Calendar) cal.clone();
@@ -537,7 +537,7 @@ public final class CronTab {
      * Returns the configured time zone, or null if none is configured
      *
      * @return the configured time zone, or null if none is configured
-     * @since TODO
+     * @since 2.54
      */
     @CheckForNull public TimeZone getTimeZone() {
         if (this.specTimezone == null) {

@@ -155,7 +155,7 @@ public class EnvironmentVariableNodePropertyTest extends HudsonTestCase {
 		// use a timeout so we don't wait infinitely in case of failure
 		FreeStyleBuild build = project.scheduleBuild2(0).get(/*10, TimeUnit.SECONDS*/);
 		
-		System.out.println(build.getLog());
+		System.out.println(build.getLog()); // TODO switch to BuildWatcher when converted to JenkinsRule
 		assertEquals(Result.SUCCESS, build.getResult());
 
 		return builder.getEnvVars();

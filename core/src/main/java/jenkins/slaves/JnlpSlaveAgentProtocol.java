@@ -80,6 +80,11 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
     }
 
     @Override
+    public boolean isDeprecated() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return handler.isEnabled() ? handler.getName() : null;
     }

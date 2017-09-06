@@ -16,7 +16,7 @@
   определен момент няма достатъчно свободни машини, то заявките за изграждане ще
   изчакват в опашка както обикновено.
   <p>
-  Включването на паралелните изграждание е полезно при проекти с дълги тестове,
+  Включването на паралелните изграждане е полезно при проекти с дълги тестове,
   защото това позволява отделното изграждане да съдържа сравнително малък на
   брой промени, без това да увеличава прекомерно много времето за работа, защото
   всяко ново изграждане няма нужда да изчаква завършването на всички предишни
@@ -25,18 +25,19 @@
   може да са напълно независими едно от друго — при определени стойности на
   параметрите.
   <p>
-  Всяко Each concurrently executed build occurs in its own build workspace, isolated
-  from any other builds.  By default, Jenkins appends "<tt>@&lt;num&gt;</tt>" to
-  the workspace directory name, e.g. "<tt>@2</tt>".<br>
-  The separator "<tt>@</tt>" can be changed by setting the
-  <tt>hudson.slaves.WorkspaceList</tt> Java system property when starting
-  Jenkins.  For example, "<tt>hudson.slaves.WorkspaceList=-</tt>" would change
-  the separator to a hyphen.<br>
-  For more information on setting system properties, see the <a
+  Всяко паралелно изпълнявано изграждане се извършва в отделно от всички други
+  работни пространства.  Стандартно добавя „<tt>@&lt;номер&gt;</tt>“ към името на
+  работната директория, например „<tt>@2</tt>“.<br>
+  Разделителят „<tt>@</tt>“ може да се смени с промяната на системното свойство
+  на Java — „<tt>hudson.slaves.WorkspaceList</tt>“ при стартирането на Jenkins.
+  Например чрез „<tt>hudson.slaves.WorkspaceList=-</tt>“ ще смените разделителя
+  с тирето от ASCII.<br>
+  За повече информация погледнете <a
   href="https://jenkins.io/redirect/setting-system-properties"
-  target="_blank">wiki page</a>.
+  target="_blank">документацията в уикито</a>.
   <p>
-  However, if you enable the <i>Use custom workspace</i> option, all builds will
-  be executed in the same workspace.  Therefore caution is required, as multiple
-  builds may end up altering the same directory at the same time.
+  Ако настройката <i>Специално работно пространство</i> е включена, всички
+  изграждания на проекта ще се правят в едно и също работно пространство,
+  поради което трябва да внимавате, защото множество изпълнения може едновременно
+  да променят работната директория.
 </div>

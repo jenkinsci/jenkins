@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <div class="warning">
+    ${%blurb(it.deprecatedProtocols)}
+    <a href="${rootURL}/configureSecurity">${%Protocol Configuration}</a>
+  </div>
+</j:jelly>

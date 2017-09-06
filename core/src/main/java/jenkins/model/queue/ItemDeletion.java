@@ -41,7 +41,7 @@ import javax.annotation.concurrent.GuardedBy;
 /**
  * A {@link Queue.QueueDecisionHandler} that blocks items being deleted from entering the queue.
  *
- * @since TODO
+ * @since 2.55
  */
 @Extension
 public class ItemDeletion extends Queue.QueueDecisionHandler {

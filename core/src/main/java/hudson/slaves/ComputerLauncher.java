@@ -48,7 +48,7 @@ import org.apache.tools.ant.util.DeweyDecimal;
  * </dl>
  *
  * @author Stephen Connolly
- * @since 24-Apr-2008 22:12:35
+ * @since 1.216-ish
  * @see ComputerConnector
  */
 public abstract class ComputerLauncher extends AbstractDescribableImpl<ComputerLauncher> implements ExtensionPoint {

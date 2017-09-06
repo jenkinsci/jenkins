@@ -203,7 +203,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 
 	var getJenkinsVersion = function() {
-		return getJenkinsVersionFull().replace(/(\d[.]\d).*/,'$1');
+		return getJenkinsVersionFull().replace(/(\d[.][\d.]+).*/,'$1');
 	};
 
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
