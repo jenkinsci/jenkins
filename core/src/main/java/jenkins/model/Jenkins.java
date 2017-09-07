@@ -4314,23 +4314,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * For system diagnostics.
-     * Run arbitrary Groovy script.
-     */
-    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, req.getView(this, "_script.jelly"), FilePath.localChannel, getACL());
-    }
-
-    /**
-     * Run arbitrary Groovy script and return result as plain text.
-     */
-    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, req.getView(this, "_scriptText.jelly"), FilePath.localChannel, getACL());
-    }
-
-    /**
      * @since 1.509.1
+     *
+     * @deprecated (used by Maven Plugin probe action)
      */
+    @Deprecated
     public static void _doScript(StaplerRequest req, StaplerResponse rsp, RequestDispatcher view, VirtualChannel channel, ACL acl) throws IOException, ServletException {
         // ability to run arbitrary script is dangerous
         acl.checkPermission(RUN_SCRIPTS);
@@ -4354,24 +4342,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         view.forward(req, rsp);
-    }
-
-    /**
-     * Evaluates the Jelly script submitted by the client.
-     *
-     * This is useful for system administration as well as unit testing.
-     */
-    @RequirePOST
-    public void doEval(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        checkPermission(RUN_SCRIPTS);
-
-        try {
-            MetaClass mc = WebApp.getCurrent().getMetaClass(getClass());
-            Script script = mc.classLoader.loadTearOff(JellyClassLoaderTearOff.class).createContext().compileScript(new InputSource(req.getReader()));
-            new JellyRequestDispatcher(this,script).forward(req,rsp);
-        } catch (JellyException e) {
-            throw new ServletException(e);
-        }
     }
 
     /**

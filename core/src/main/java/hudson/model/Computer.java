@@ -1417,21 +1417,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    /**
-     * For system diagnostics.
-     * Run arbitrary Groovy script.
-     */
-    public void doScript(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, "_script.jelly");
-    }
-
-    /**
-     * Run arbitrary Groovy script and return result as plain text.
-     */
-    public void doScriptText(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        _doScript(req, rsp, "_scriptText.jelly");
-    }
-
     protected void _doScript(StaplerRequest req, StaplerResponse rsp, String view) throws IOException, ServletException {
         Jenkins._doScript(req, rsp, req.getView(this, view), getChannel(), getACL());
     }
