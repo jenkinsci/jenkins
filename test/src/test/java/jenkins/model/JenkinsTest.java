@@ -24,7 +24,6 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -34,13 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -302,64 +295,6 @@ public class JenkinsTest {
         assertEquals(3,j.jenkins.getExtensionList(RootAction.class).get(RootActionImpl.class).count);
     }
 
-    @Test
-    public void testDoScript() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
-            grant(Jenkins.ADMINISTER).everywhere().to("alice").
-            grant(Jenkins.READ).everywhere().to("bob").
-            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
-        WebClient wc = j.createWebClient();
-        wc.login("alice");
-        wc.goTo("script");
-        wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        assertNull(System.getProperty("hack"));
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
-        assertEquals("me", System.getProperty("hack"));
-        wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
-        assertEquals("you", System.getProperty("huck"));
-        wc.login("bob");
-        wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
-        wc.login("charlie");
-        wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
-    }
-
-    @Test
-    public void testDoEval() throws Exception {
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
-            grant(Jenkins.ADMINISTER).everywhere().to("alice").
-            grant(Jenkins.READ).everywhere().to("bob").
-            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
-        WebClient wc = j.createWebClient();
-        wc.login("alice");
-        wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
-        assertEquals("3", eval(wc));
-        wc.login("bob");
-        try {
-            eval(wc);
-            fail("bob has only READ");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
-        wc.login("charlie");
-        try {
-            eval(wc);
-            fail("charlie has ADMINISTER but not RUN_SCRIPTS");
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
-        }
-    }
-    private String eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), HttpMethod.POST);
-        req.setEncodingType(null);
-        req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
-        return wc.getPage(req).getWebResponse().getContentAsString();
-    }
-
     @TestExtension("testUnprotectedRootAction")
     public static class RootActionImpl implements UnprotectedRootAction {
         private int count;
@@ -455,24 +390,6 @@ public class JenkinsTest {
 
     @TestExtension(value = "testComputerListenerNotifiedOnRestart")
     public static final ComputerListener listenerMock = Mockito.mock(ComputerListener.class);
-
-    @Test
-    public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave(true);
-        j.disconnectSlave(slave);
-
-        URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
-
-        WebClient wc = j.createWebClient();
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-
-        WebRequest req = new WebRequest(url, HttpMethod.POST);
-        Page page = wc.getPage(wc.addCrumb(req));
-        WebResponse rsp = page.getWebResponse();
-
-        assertThat(rsp.getContentAsString(), containsString("Node is offline"));
-        assertThat(rsp.getStatusCode(), equalTo(404));
-    }
 
     @Test
     @Issue("JENKINS-38487")

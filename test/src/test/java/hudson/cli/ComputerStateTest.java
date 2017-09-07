@@ -142,10 +142,6 @@ public class ComputerStateTest {
 
         assertLinkDoesNotExist(page, "Disconnect");
 
-        assertLinkDoesNotExist(page, "Script Console");
-        HtmlPage script = wc.getPage(slave, "script");
-        assertThat(script.getByXPath("//form[@action='script']"), empty());
-
         assertLinkDoesNotExist(page, "System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
         assertThat(info.asText(), not(containsString("Environment Variables")));
@@ -154,10 +150,6 @@ public class ComputerStateTest {
     private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
         HtmlPage main = wc.getPage(slave);
         main.getAnchorByText("Disconnect");
-
-        main.getAnchorByText("Script Console");
-        HtmlPage script = wc.getPage(slave, "script");
-        assertThat(script.getByXPath("//form[@action='script']"), not(empty()));
 
         main.getAnchorByText("System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
