@@ -84,8 +84,6 @@ public class PingThreadTest {
                 // Expected
             }
 
-            Thread.sleep(10000);
-
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
