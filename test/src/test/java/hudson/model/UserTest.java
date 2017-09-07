@@ -28,6 +28,7 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.security.ACL;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -56,6 +57,8 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
@@ -64,6 +67,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -688,6 +692,31 @@ public class UserTest {
         assertSame("'user1' should resolve to u1", u1, u);
         u = User.getById("user2", false);
         assertSame("'user2' should resolve to u2", u2, u);
+    }
+
+    @Test
+    @Issue("SECURITY-514")
+    public void getAllPropertiesRequiresAdmin() {
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin)")
+                .grant(Jenkins.READ).everywhere().toEveryone());
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+
+        User admin = User.get("admin");
+        User alice = User.get("alice");
+        User bob = User.get("bob");
+
+        // Admin can access user properties for all users
+        ACL.impersonate(admin.impersonate());
+        assertThat(alice.getAllProperties(), not(empty()));
+        assertThat(bob.getAllProperties(), not(empty()));
+        assertThat(admin.getAllProperties(), not(empty()));
+
+        // Non admins can only view their own
+        ACL.impersonate(alice.impersonate());
+        assertThat(alice.getAllProperties(), not(empty()));
+        assertThat(bob.getAllProperties(), empty());
+        assertThat(admin.getAllProperties(), empty());
     }
 
      public static class SomeUserProperty extends UserProperty {
