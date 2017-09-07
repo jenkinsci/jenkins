@@ -188,7 +188,8 @@ public class ChannelPinger extends ComputerListener {
                     boolean inClosed = isInClosed.get();
                     // Disassociate computer channel before closing it
                     if (computer != null) {
-                        computer.disconnect(); // TODO specify cause
+                        Exception exception = cause instanceof Exception ? (Exception) cause: new IOException(cause);
+                        computer.disconnect(new OfflineCause.ChannelTermination(exception));
                     }
                     if (inClosed) {
                         LOGGER.log(Level.FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
