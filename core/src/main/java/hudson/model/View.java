@@ -463,9 +463,18 @@ public abstract class View extends AbstractModelObject implements AccessControll
         Collection<TopLevelItem> items = getItems();
         List<Queue.Item> result = new ArrayList<Queue.Item>();
         for (Queue.Item qi : base) {
-            if (items.contains(qi.task)) {
-                result.add(qi);
-            } else
+            // Check if the task of parent tasks are in the list of items.
+            // Pipeline jobs and other jobs which allow parts require us to
+            // check owner tasks as well.
+            Queue.Task currentTask = null;
+            do {
+                currentTask = currentTask == null ? qi.task : currentTask.getOwnerTask();
+                if (items.contains(currentTask)) {
+                    result.add(qi);
+                    break;
+                }
+            } while (currentTask.getOwnerTask() != currentTask);
+            // Check root project for sub-job projects (e.g. matrix jobs).
             if (qi.task instanceof AbstractProject<?, ?>) {
                 AbstractProject<?,?> project = (AbstractProject<?, ?>) qi.task;
                 if (items.contains(project.getRootProject())) {
