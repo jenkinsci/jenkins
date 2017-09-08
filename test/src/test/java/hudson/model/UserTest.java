@@ -30,6 +30,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.AccessDeniedException2;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -690,7 +691,7 @@ public class UserTest {
     @Issue("SECURITY-514")
     public void getAllPropertiesRequiresAdmin() {
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.ADMINISTER).everywhere().to("admin)")
+                .grant(Jenkins.ADMINISTER).everywhere().to("admin")
                 .grant(Jenkins.READ).everywhere().toEveryone());
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
@@ -699,16 +700,18 @@ public class UserTest {
         User bob = User.get("bob");
 
         // Admin can access user properties for all users
-        ACL.impersonate(admin.impersonate());
-        assertThat(alice.getAllProperties(), not(empty()));
-        assertThat(bob.getAllProperties(), not(empty()));
-        assertThat(admin.getAllProperties(), not(empty()));
+        try (ACLContext as = ACL.as(admin)) {
+            assertThat(alice.getAllProperties(), not(empty()));
+            assertThat(bob.getAllProperties(), not(empty()));
+            assertThat(admin.getAllProperties(), not(empty()));
+        }
 
         // Non admins can only view their own
-        ACL.impersonate(alice.impersonate());
-        assertThat(alice.getAllProperties(), not(empty()));
-        assertThat(bob.getAllProperties(), empty());
-        assertThat(admin.getAllProperties(), empty());
+        try (ACLContext as = ACL.as(alice)) {
+            assertThat(alice.getAllProperties(), not(empty()));
+            assertThat(bob.getAllProperties(), empty());
+            assertThat(admin.getAllProperties(), empty());
+        }
     }
 
      public static class SomeUserProperty extends UserProperty {
