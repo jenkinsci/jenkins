@@ -105,7 +105,7 @@ final class TarArchiver extends Archiver {
 
                 try (InputStream fin = Files.newInputStream(file.toPath());
                      BoundedInputStream in = new BoundedInputStream(fin, size)) {
-                    // Separate tray block not to wrap exception thrown while opening the input stream into an exception
+                    // Separate try block not to wrap exception thrown while opening the input stream into an exception
                     // indicating a problem while writing
                     try {
                         int len;
@@ -113,8 +113,7 @@ final class TarArchiver extends Archiver {
                             tar.write(buf, 0, len);
                         }
                     } catch (IOException | InvalidPathException e) {// log the exception in any case
-                        IOException ioE = new IOException("Error writing to tar file from: " + file, e);
-                        throw ioE;
+                        throw new IOException("Error writing to tar file from: " + file, e);
                     }
                 }
             }
