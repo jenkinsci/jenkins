@@ -391,7 +391,7 @@ public abstract class Slave extends Node implements Serializable {
             
             if (name.equals("hudson-cli.jar"))  {
                 name="jenkins-cli.jar";
-            } else if (name.equals("slave.jar") || name.equals("remoting.jar")) {
+            } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
                 name = "lib/" + Which.jarFile(Channel.class).getName();
             }
             
@@ -674,5 +674,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }
