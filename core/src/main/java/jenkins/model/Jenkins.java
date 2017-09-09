@@ -294,6 +294,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
+import javax.annotation.CheckForSigned;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -576,10 +577,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * TCP agent port.
-     * 0 for random, -1 to disable.
+     * {@code 0} for random, {@code -1} to disable.
      */
+    @CheckForSigned
     private int slaveAgentPort = getSlaveAgentPortInitialValue(0);
 
+    @CheckForSigned
     private static int getSlaveAgentPortInitialValue(int def) {
         return SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort", def);
     }
@@ -1127,6 +1130,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *         Port number otherwise.
      */
     @Exported
+    @CheckForSigned
     public int getSlaveAgentPort() {
         return slaveAgentPort;
     }
@@ -1279,6 +1283,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return Jenkins.class.getName() + ".slaveAgentPort";
         }
 
+        @CheckForSigned
         public int getExpectedPort() {
             int slaveAgentPort = j.slaveAgentPort;
             return Jenkins.getSlaveAgentPortInitialValue(slaveAgentPort);
