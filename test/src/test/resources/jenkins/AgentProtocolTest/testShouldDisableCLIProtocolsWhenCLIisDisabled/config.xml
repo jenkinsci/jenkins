@@ -27,7 +27,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>all</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <slaveAgentPort>5000</slaveAgentPort>
   <enabledAgentProtocols>
     <string>CLI-connect</string>
     <string>CLI2-connect</string>

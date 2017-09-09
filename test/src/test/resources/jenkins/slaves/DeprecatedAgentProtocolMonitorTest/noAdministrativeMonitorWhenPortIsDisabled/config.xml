@@ -27,7 +27,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>all</primaryView>
-  <slaveAgentPort>5000</slaveAgentPort>
+  <slaveAgentPort>-1</slaveAgentPort>
   <!-- Disabled to emulate defaults
   <enabledAgentProtocols>
     <string>JNLP4-connect</string>

@@ -27,7 +27,7 @@
     </hudson.model.AllView>
   </views>
   <primaryView>all</primaryView>
-  <slaveAgentPort>0</slaveAgentPort>
+  <slaveAgentPort>5000</slaveAgentPort>
   <!-- YOLO: unstable configuration -->
   <enabledAgentProtocols>
     <string>CLI-connect</string>
