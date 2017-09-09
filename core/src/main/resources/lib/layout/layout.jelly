@@ -34,8 +34,7 @@ THE SOFTWARE.
       Title of the HTML page. Rendered into &lt;title> tag.
     </st:attribute>
     <st:attribute name="norefresh">
-      If non-null and not "false", auto refresh is disabled on this page.
-      This is necessary for pages that include forms.
+      Deprecated: Used to disable auto refresh for a page. The feature has been removed.
     </st:attribute>
     <st:attribute name="css" deprecated="true">
       specify path that starts from "/" for loading additional CSS stylesheet.

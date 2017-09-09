@@ -35,7 +35,7 @@ THE SOFTWARE.
     405 is "Method Not Allowed" and this fits here because we need POST.
   -->
   <st:statusCode value="405" />
-  <l:layout title="${it.displayName}" norefresh="true">
+  <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
       <div class="behavior-loading">${%LOADING}</div>

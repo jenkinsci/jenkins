@@ -28,7 +28,7 @@ THE SOFTWARE.
     This is the page designated by web.xml and UncaughtExceptionHandler to process an exception thrown by us.
   -->
   <st:statusCode value="500" />
-  <l:layout title="Jenkins" norefresh="true">
+  <l:layout title="Jenkins">
     <l:header />
     <l:side-panel>
       <l:task href="https://jenkins.io/" icon="icon-next icon-md" title="${%Jenkins project}"/>
