@@ -25,7 +25,6 @@ package jenkins.slaves;
 
 import static jenkins.AgentProtocolTest.assertMonitorNotActive;
 import static jenkins.AgentProtocolTest.assertProtocols;
-import static jenkins.AgentProtocolTest.assertMonitorTriggered;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -41,15 +40,9 @@ public class DeprecatedAgentProtocolMonitorTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
     
-    /**
-     * Checks that Jenkins does not disable agent protocols by default after the upgrade.
-     * 
-     * @throws Exception Test failure
-     * @see SetupWizardTest#shouldDisableUnencryptedProtocolsByDefault() 
-     */
     @Test
     @LocalData
-    @Issue("JENKINS-45841")
+    @Issue("JENKINS-46760")
     public void noAdministrativeMonitorWhenPortIsDisabled() throws Exception {
         assertProtocols(j.jenkins, true, "Legacy Non-encrypted JNLP/CLI protocols should be enabled", 
                 "JNLP-connect", "JNLP2-connect", "JNLP4-connect", "CLI-connect");

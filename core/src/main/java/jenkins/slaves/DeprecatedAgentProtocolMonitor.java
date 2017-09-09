@@ -66,7 +66,12 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        final Set<String> agentProtocols = Jenkins.getInstance().getAgentProtocols();
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins.getSlaveAgentPort() == -1) {
+            // TCP Agent Port is disabled, no need to worry about enabled protocols, right?
+            return false;
+        }
+        final Set<String> agentProtocols = jenkins.getAgentProtocols();
         for (String name : agentProtocols) {
             AgentProtocol pr = AgentProtocol.of(name);
             if (pr != null && pr.isDeprecated()) {
