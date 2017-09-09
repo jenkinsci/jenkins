@@ -72,8 +72,19 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestAndFail(String userAndPass) throws IOException, SAXException {
+        makeRequestWithAuthCodeAndFail(encrypt("Basic", userAndPass));
+    }
+    
+    private String encrypt(String prefix, String userAndPass) {
+        if (userAndPass==null) {
+            return null;
+        }
+        return prefix+" "+Scrambler.scramble(userAndPass);
+    }
+
+    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
         try {
-            makeRequestWithAuthAndVerify(userAndPass, "-");
+            makeRequestWithAuthCodeAndVerify(authCode, "-");
             fail();
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(401, e.getStatusCode());
@@ -81,13 +92,45 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
+        makeRequestWithAuthCodeAndVerify(encrypt("Basic", userAndPass), username);
+    }
+
+    private void makeRequestWithAuthCodeAndVerify(String authCode, String expected) throws IOException, SAXException {
         WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
         req.setEncodingType(null);
-        if (userAndPass!=null)
-            req.setAdditionalHeader("Authorization","Basic "+Scrambler.scramble(userAndPass));
+        if (authCode!=null)
+            req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
+        assertEquals(expected, p.getWebResponse().getContentAsString().trim());
+    }
 
-        assertEquals(username, p.getWebResponse().getContentAsString().trim());
+    @Test
+    public void testAuthHeaderCaseInSensitive() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User foo = User.get("foo");
+        wc = j.createWebClient();
+
+        String[] basicCandidates = {"Basic", "BASIC", "basic", "bASIC"};
+        
+        for (String prefix : basicCandidates) {
+            // call with API token
+            ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
+            final String token = t.getApiToken();
+            String authCode1 = encrypt(prefix,"foo:"+token);
+            makeRequestWithAuthCodeAndVerify(authCode1, "foo");
+            
+            // call with invalid API token
+            String authCode2 = encrypt(prefix,"foo:abcd"+token);
+            makeRequestWithAuthCodeAndFail(authCode2);
+
+            // call with password
+            String authCode3 = encrypt(prefix,"foo:foo");
+            makeRequestWithAuthCodeAndVerify(authCode3, "foo");
+
+            // call with incorrect password
+            String authCode4 = encrypt(prefix,"foo:bar");
+            makeRequestWithAuthCodeAndFail(authCode4);
+        }
     }
 
     @TestExtension
