@@ -1121,6 +1121,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return adjuncts;
     }
 
+    /**
+     * Get TCP port, which is used to connect Jenkins agents, Remoting CLI and other remote components.
+     * @return {@code 0} for random, {@code -1} to disable. 
+     *         Port number otherwise.
+     */
     @Exported
     public int getSlaveAgentPort() {
         return slaveAgentPort;

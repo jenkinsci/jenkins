@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForSigned;
 
 import javax.servlet.ServletException;
 
@@ -72,6 +73,12 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.getInstance().getMarkupFormatter();
     }
 
+    /**
+     * Get TCP port, which is used to connect Jenkins agents, Remoting CLI and other remote components.
+     * @return {@code 0} for random, {@code -1} to disable. 
+     *         Port number otherwise.
+     */
+    @CheckForSigned
     public int getSlaveAgentPort() {
         return Jenkins.getInstance().getSlaveAgentPort();
     }
