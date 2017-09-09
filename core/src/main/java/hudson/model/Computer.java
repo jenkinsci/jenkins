@@ -1624,11 +1624,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
     }
 
-    @Override
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-
     /**
      * A value class to provide a consistent snapshot view of the state of an executor to avoid race conditions
      * during rendering of the executors list.
