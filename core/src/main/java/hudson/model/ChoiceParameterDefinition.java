@@ -2,6 +2,9 @@ package hudson.model;
 
 import hudson.util.FormValidation;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -10,7 +13,10 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONObject;
 import hudson.Extension;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
 
@@ -24,7 +30,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     public static final String CHOICES_DELIMETER = CHOICES_DELIMITER;
 
 
-    private final List<String> choices;
+    private /* quasi-final */ List<String> choices;
     private final String defaultValue;
 
     public static boolean areValidChoices(String choices) {
@@ -32,7 +38,6 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return !StringUtils.isEmpty(strippedChoices) && strippedChoices.split(CHOICES_DELIMITER).length > 0;
     }
 
-    @DataBoundConstructor
     public ChoiceParameterDefinition(String name, String choices, String description) {
         super(name, description);
         this.choices = Arrays.asList(choices.split(CHOICES_DELIMITER));
@@ -49,6 +54,58 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         super(name, description);
         this.choices = choices;
         this.defaultValue = defaultValue;
+    }
+
+    /**
+     *
+     * @param name
+     * @param description
+     *
+     * @since TODO
+     */
+    @DataBoundConstructor
+    @Restricted(NoExternalUse.class) // there are specific constructors with String and List arguments for 'choices'
+    public ChoiceParameterDefinition(String name, String description) {
+        super(name, description);
+        this.choices = new ArrayList<>();
+        this.defaultValue = null;
+    }
+
+    /**
+     * Set the list of choices. Legal arguments are String (in which case the arguments gets split into lines) and Collection
+     * which sets the list of legal parameters to the String representations of the argument's non-null entries.
+     *
+     * See JENKINS-26143 for background.
+     *
+     * This retains the compatibility with the legacy String 'choices' parameter, while supporting the list type as generated
+     * by the snippet generator.
+     *
+     * @param choices String or Collection representing this parameter definition's possible values.
+     *
+     * @since TODO
+     *
+     */
+    @DataBoundSetter
+    @Restricted(NoExternalUse.class) // this is terrible enough without being used anywhere
+    public void setChoices(Object choices) {
+        if (choices instanceof String) {
+            setChoicesText((String) choices);
+            return;
+        }
+        if (choices instanceof Collection) {
+            this.choices = new ArrayList<>();
+            for (Object o : (Collection) choices) {
+                if (o != null) {
+                    this.choices.add(o.toString());
+                }
+            }
+            return;
+        }
+        throw new IllegalArgumentException("expected String or Collection, but got " + choices);
+    }
+
+    private void setChoicesText(String choices) {
+        this.choices = Arrays.asList(choices.split(CHOICES_DELIMITER));
     }
 
     @Override
@@ -102,6 +159,19 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         @Override
         public String getHelpFile() {
             return "/help/parameter/choice.html";
+        }
+
+        @Override
+        /*
+         * We need this for JENKINS-26143 -- reflective creation cannot handle setChoices(Object). See that method for context.
+         */
+        public ParameterDefinition newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+            String name = formData.getString("name");
+            String desc = formData.getString("description");
+            String choiceText = formData.getString("choices");
+            ChoiceParameterDefinition parameterDefinition = new ChoiceParameterDefinition(name, desc);
+            parameterDefinition.setChoicesText(choiceText);
+            return parameterDefinition;
         }
 
         /**
