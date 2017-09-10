@@ -523,10 +523,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         }
     }
 
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-
     /**
      * Accepts the new description.
      */
