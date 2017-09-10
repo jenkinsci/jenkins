@@ -380,7 +380,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
         TopLevelItem item = resolveName(name);
         if (item==null)
-            throw new Failure("Query parameter 'name' does not correspond to a known item");
+            throw new Failure("Query parameter 'name' does not correspond to a known and readable item");
 
         if (remove(item))
             owner.save();
