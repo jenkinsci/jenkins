@@ -107,7 +107,7 @@ THE SOFTWARE.
                         <div class="compatWarning">${%coreWarning(p.requiredCore)}</div>
                       </j:if>
                       <j:if test="${p.isForNewerJava()}">
-                        <div class="compatWarning">${%javaWarning(p.minimumJavaVersion)}</div>
+                        <div class="compatWarning">${%javaWarning(p.requiredJava)}</div>
                       </j:if>
                       <j:if test="${!p.isNeededDependenciesCompatibleWithInstalledVersion(cache)}">
                         <div class="compatWarning">${%depCompatWarning}</div>

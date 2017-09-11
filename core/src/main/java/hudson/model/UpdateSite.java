@@ -954,7 +954,7 @@ public class UpdateSite {
          * @since TODO
          */
         @Exported
-        public final String minimumJavaVersion;
+        public final String requiredJava;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be null.
@@ -981,7 +981,7 @@ public class UpdateSite {
             this.title = get(o,"title");
             this.excerpt = get(o,"excerpt");
             this.compatibleSinceVersion = get(o,"compatibleSinceVersion");
-            this.minimumJavaVersion = get(o,"minimumJavaVersion");
+            this.requiredJava = get(o,"requiredJava");
 
             this.requiredCore = get(o,"requiredCore");
             this.categories = o.has("labels") ? (String[])o.getJSONArray("labels").toArray(new String[0]) : null;
@@ -1113,7 +1113,7 @@ public class UpdateSite {
          */
         public boolean isForNewerJava() {
             try {
-                return minimumJavaVersion != null && new VersionNumber(minimumJavaVersion).isNewerThan(
+                return requiredJava != null && new VersionNumber(requiredJava).isNewerThan(
                         new VersionNumber(System.getProperty("java.version")));
             } catch (NumberFormatException nfe) {
                 return false; // plugin doesn't declare a minimum Java version
@@ -1141,7 +1141,7 @@ public class UpdateSite {
         public VersionNumber getNeededDependenciesRequiredJava() {
             VersionNumber versionNumber = null;
             try {
-                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
+                versionNumber = requiredJava == null ? null : new VersionNumber(requiredJava);
             } catch (NumberFormatException nfe) {
                 // unable to parse version
             }
