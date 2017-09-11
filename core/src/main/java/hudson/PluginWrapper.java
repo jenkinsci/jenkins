@@ -458,6 +458,20 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     }
 
     /**
+     * Returns the required Java version of this plugin.
+     * @return the required Java version of this plugin.
+     *
+     * @since TODO
+     */
+    @Exported
+    public @CheckForNull String getRequiredJavaVersion() {
+        String v = manifest.getMainAttributes().getValue("Minimum-Java-Version");
+        if (v!= null) return v;
+
+        return null;
+    }
+
+    /**
      * Returns the version number of this plugin
      */
     public VersionNumber getVersionNumber() {
@@ -598,6 +612,15 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
                 VersionNumber actualVersion = Jenkins.getVersion();
                 if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
                     versionDependencyError(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), Jenkins.getVersion().toString(), requiredCoreVersion);
+                }
+            }
+
+            String requiredJavaVersion = getRequiredJavaVersion();
+            if (requiredJavaVersion != null) {
+                // TODO replace with calls to Runtime.version() once we're on Java 9
+                VersionNumber actualVersion = new VersionNumber(System.getProperty("java.version"));
+                if (actualVersion.isOlderThan(new VersionNumber(requiredJavaVersion))) {
+                    dependencyErrors.add(Messages.PluginWrapper_obsoleteJava(actualVersion.toString(), requiredJavaVersion));
                 }
             }
         }
