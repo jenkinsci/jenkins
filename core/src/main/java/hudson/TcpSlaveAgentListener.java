@@ -102,9 +102,15 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
-            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
-            shutdown();
-            TcpSlaveAgentListenerRescheduler.schedule(t, port, e);
+            int slaveAgentPort = Jenkins.getInstance().getSlaveAgentPort();
+            if (slaveAgentPort == -1) {
+                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ". Port is disabled, not rescheduling", e);
+                shutdown();
+            } else {
+                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
+                shutdown();
+                TcpSlaveAgentListenerRescheduler.schedule(t, slaveAgentPort, e);
+            }
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -166,9 +172,15 @@ public final class TcpSlaveAgentListener extends Thread {
                 new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this, configuredPort) {
                     @Override
                     public void run(Throwable cause) {
-                        LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
-                        shutdown();
-                        TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), getPort(), cause);
+                        int slaveAgentPort = Jenkins.getInstance().getSlaveAgentPort();
+                        if (slaveAgentPort == -1) {
+                            LOGGER.log(Level.WARNING, "Connection handler failed", cause);
+                            shutdown();
+                        } else {
+                            LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
+                            shutdown();
+                            TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), slaveAgentPort, cause);
+                        }
                     }
                 }).start();
             }
