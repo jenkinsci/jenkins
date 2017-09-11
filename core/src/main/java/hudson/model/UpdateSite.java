@@ -1108,8 +1108,11 @@ public class UpdateSite {
         }
 
         /**
+         * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
+         *
+         * @return true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
+         *
          * @since TODO
-         * @return
          */
         public boolean isForNewerJava() {
             try {
@@ -1135,8 +1138,11 @@ public class UpdateSite {
         }
 
         /**
+         * Returns the minimum Java version needed to use the plugin and all its dependencies.
+         *
+         * @return the minimum Java version needed to use the plugin and all its dependencies.
+         *
          * @since TODO
-         * @return
          */
         public VersionNumber getNeededDependenciesRequiredJava() {
             VersionNumber versionNumber = null;
@@ -1173,6 +1179,13 @@ public class UpdateSite {
             });
         }
 
+        /**
+         * Returns true iff this plugin or any of its dependencies require a newer Java than Jenkins is running on.
+         *
+         * @return true iff this plugin or any of its dependencies require a newer Java than Jenkins is running on.
+         *
+         * @since TODO
+         */
         public boolean isNeededDependenciesForNewerJava() {
             for (Plugin p: getNeededDependencies()) {
                 if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
