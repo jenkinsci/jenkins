@@ -280,6 +280,14 @@ THE SOFTWARE.
           </rules>
         </configuration>
       </plugin>
+      <plugin> <!-- https://stackoverflow.com/a/19503679/12916 ysoserial deliberately uses internal APIs; suppress warnings about them -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgument>-XDignore.symbol.file</compilerArgument>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
