@@ -418,6 +418,20 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
+     * Convenience method allowing lookup of the first instance of a given type.
+     * Equivalent to {@code ExtensionList.lookup(Class).get(Class)}.
+     *
+     * @param type The type to look up.
+     * @param <U>
+     * @return
+     *
+     * @since TODO
+     */
+    public static @CheckForNull <U> U lookupFirst(Class<U> type) {
+        return lookup(type).get(type);
+    }
+
+    /**
      * Places to store static-scope legacy instances.
      */
     private static final Memoizer<Class,CopyOnWriteArrayList> staticLegacyInstances = new Memoizer<Class,CopyOnWriteArrayList>() {
