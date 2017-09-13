@@ -114,7 +114,8 @@ public class CommandLauncher extends ComputerLauncher {
                 if (rootUrl!=null) {
                     pb.environment().put("HUDSON_URL", rootUrl);    // for backward compatibility
                     pb.environment().put("JENKINS_URL", rootUrl);
-                    pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/slave.jar");
+                    pb.environment().put("SLAVEJAR_URL", rootUrl+"/jnlpJars/agent.jar");
+                    pb.environment().put("AGENTJAR_URL", rootUrl+"/jnlpJars/agent.jar");
                 }
             }
 

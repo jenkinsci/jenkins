@@ -70,6 +70,7 @@ public class Slave2Test {
         Slave slave = rule.createSlave();
         
         // Spot-check correct requests
+        assertJnlpJarUrlIsAllowed(slave, "agent.jar");
         assertJnlpJarUrlIsAllowed(slave, "slave.jar");
         assertJnlpJarUrlIsAllowed(slave, "remoting.jar");
         assertJnlpJarUrlIsAllowed(slave, "jenkins-cli.jar");

@@ -164,7 +164,7 @@ public class Channels {
      * @param workDir
      *      If non-null, the new JVM will have this directory as the working directory. This must be a local path.
      * @param classpath
-     *      The classpath of the new JVM. Can be null if you just need {@code slave.jar} (and everything else
+     *      The classpath of the new JVM. Can be null if you just need {@code agent.jar} (and everything else
      *      can be sent over the channel.) But if you have jars that are known to be necessary by the new JVM,
      *      setting it here will improve the classloading performance (by avoiding remote class file transfer.)
      *      Classes in this classpath will also take precedence over any other classes that's sent via the channel
@@ -195,7 +195,7 @@ public class Channels {
      * @param workDir
      *      If non-null, the new JVM will have this directory as the working directory. This must be a local path.
      * @param classpath
-     *      The classpath of the new JVM. Can be null if you just need {@code slave.jar} (and everything else
+     *      The classpath of the new JVM. Can be null if you just need {@code agent.jar} (and everything else
      *      can be sent over the channel.) But if you have jars that are known to be necessary by the new JVM,
      *      setting it here will improve the classloading performance (by avoiding remote class file transfer.)
      *      Classes in this classpath will also take precedence over any other classes that's sent via the channel
