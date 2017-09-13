@@ -114,6 +114,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jenkins.scm.RunWithSCM.*;
@@ -455,34 +456,49 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return false;
     }
 
+    private final static int FILTER_LOOP_MAX_COUNT = 10;
+
     private List<Queue.Item> filterQueue(List<Queue.Item> base) {
         if (!isFilterQueue()) {
             return base;
         }
-
         Collection<TopLevelItem> items = getItems();
-        List<Queue.Item> result = new ArrayList<Queue.Item>();
-        for (Queue.Item qi : base) {
-            // Check if the task of parent tasks are in the list of items.
-            // Pipeline jobs and other jobs which allow parts require us to
-            // check owner tasks as well.
-            Queue.Task currentTask = null;
-            do {
-                currentTask = currentTask == null ? qi.task : currentTask.getOwnerTask();
-                if (items.contains(currentTask)) {
-                    result.add(qi);
-                    break;
-                }
-            } while (currentTask.getOwnerTask() != currentTask);
-            // Check root project for sub-job projects (e.g. matrix jobs).
-            if (qi.task instanceof AbstractProject<?, ?>) {
-                AbstractProject<?,?> project = (AbstractProject<?, ?>) qi.task;
-                if (items.contains(project.getRootProject())) {
-                    result.add(qi);
-                }
+        return base.stream().filter(qi -> filterQueueItemTest(qi, items))
+                .collect(Collectors.toList());
+    }
+
+    private boolean filterQueueItemTest(Queue.Item item, Collection<TopLevelItem> viewItems) {
+        // Check if the task of parent tasks are in the list of viewItems.
+        // Pipeline jobs and other jobs which allow parts require us to
+        // check owner tasks as well.
+        Queue.Task currentTask = item.task;
+        for (int count = 1;; count++) {
+            if (viewItems.contains(currentTask)) {
+                return true;
+            }
+            Queue.Task next = currentTask.getOwnerTask();
+            if (next == currentTask) {
+                break;
+            } else {
+                currentTask = next;
+            }
+            if (count == FILTER_LOOP_MAX_COUNT) {
+                LOGGER.warning(String.format(
+                        "Failed to find root task for queue item '%s' for " +
+                        "view '%s' in under %d iterations, aborting!",
+                        item.getDisplayName(), getDisplayName(),
+                        FILTER_LOOP_MAX_COUNT));
+                break;
             }
         }
-        return result;
+        // Check root project for sub-job projects (e.g. matrix jobs).
+        if (item.task instanceof AbstractProject<?, ?>) {
+            AbstractProject<?,?> project = (AbstractProject<?, ?>) item.task;
+            if (viewItems.contains(project.getRootProject())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Queue.Item> getQueueItems() {
