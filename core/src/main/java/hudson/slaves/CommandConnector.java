@@ -25,11 +25,15 @@ package hudson.slaves;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Executes a program on the master and expect that script to connect.
@@ -42,6 +46,12 @@ public class CommandConnector extends ComputerConnector {
     @DataBoundConstructor
     public CommandConnector(String command) {
         this.command = command;
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+    }
+
+    private Object readResolve() {
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        return this;
     }
 
     @Override
@@ -55,5 +65,17 @@ public class CommandConnector extends ComputerConnector {
         public String getDisplayName() {
             return Messages.CommandLauncher_displayName();
         }
+
+        public FormValidation doCheckCommand(@QueryParameter String value) {
+            if (!Jenkins.getInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
+                return FormValidation.warning(Messages.CommandLauncher_cannot_be_configured_by_non_administrato());
+            }
+            if (Util.fixEmptyAndTrim(value) == null) {
+                return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
+            } else {
+                return FormValidation.ok();
+            }
+        }
+
     }
 }
