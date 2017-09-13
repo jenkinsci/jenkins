@@ -549,7 +549,7 @@ public class CLI implements AutoCloseable {
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     h.setLevel(level);
                 }
-                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
+                for (Logger logger : new Logger[] {LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
                 }
                 args = args.subList(2, args.size());
