@@ -53,7 +53,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2.26-20170913.084530-2</version> <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/69 -->
+      <version>2.26</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
