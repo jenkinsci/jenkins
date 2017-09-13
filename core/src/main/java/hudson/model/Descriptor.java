@@ -984,6 +984,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
+            if (d.getDescriptor()==null) {
+                LOGGER.log(Level.WARNING, "Failed to load descriptor for {0}", d);
+                continue;
+            }
             m.put(d.getDescriptor(),d);
         }
         return m;
