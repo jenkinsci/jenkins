@@ -33,6 +33,7 @@ import hudson.model.Slave;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
+import hudson.security.ACL;
 import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
 import hudson.util.ProcessTree;
@@ -74,6 +75,12 @@ public class CommandLauncher extends ComputerLauncher {
     public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+    }
+    
+    private Object readResolve() {
+        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        return this;
     }
 
     public String getCommand() {
@@ -191,6 +198,9 @@ public class CommandLauncher extends ComputerLauncher {
         }
 
         public FormValidation doCheckCommand(@QueryParameter String value) {
+            if (!Jenkins.getInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
+                return FormValidation.warning(Messages.CommandLauncher_cannot_be_configured_by_non_administrato());
+            }
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
             else
