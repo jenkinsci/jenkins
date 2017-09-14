@@ -107,7 +107,7 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
     @Restricted(NoExternalUse.class)
     public static void initializerCheck() {
         String protocols = getDeprecatedProtocolsString();
-        if(protocols != null) {
+        if(Jenkins.getInstance().getSlaveAgentPort() != -1 && protocols != null) {
             LOGGER.log(Level.WARNING, "This Jenkins instance uses deprecated Remoting protocols: {0}"
                     + "It may impact stability of the instance. " 
                     + "If newer protocol versions are supported by all system components "
