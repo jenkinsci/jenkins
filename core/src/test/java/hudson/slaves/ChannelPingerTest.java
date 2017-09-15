@@ -59,12 +59,12 @@ public class ChannelPingerTest {
     @Test
     public void testDefaults() throws Exception {
         ChannelPinger channelPinger = new ChannelPinger();
-        channelPinger.install(mockChannel);
+        channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT,
                                                                       ChannelPinger.PING_INTERVAL_SECONDS_DEFAULT)));
         verifyStatic();
-        ChannelPinger.setUpPingForChannel(mockChannel, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT,
+        ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT,
                                           ChannelPinger.PING_INTERVAL_SECONDS_DEFAULT, true);
     }
 
@@ -74,11 +74,11 @@ public class ChannelPingerTest {
         System.setProperty("hudson.slaves.ChannelPinger.pingIntervalSeconds", "73");
 
         ChannelPinger channelPinger = new ChannelPinger();
-        channelPinger.install(mockChannel);
+        channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(new ChannelPinger.SetUpRemotePing(42, 73));
         verifyStatic();
-        ChannelPinger.setUpPingForChannel(mockChannel, 42, 73, true);
+        ChannelPinger.setUpPingForChannel(mockChannel, null, 42, 73, true);
     }
 
     @Test
@@ -86,11 +86,11 @@ public class ChannelPingerTest {
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
         ChannelPinger channelPinger = new ChannelPinger();
-        channelPinger.install(mockChannel);
+        channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 420)));
         verifyStatic();
-        ChannelPinger.setUpPingForChannel(mockChannel, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 420, true);
+        ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 420, true);
     }
 
     @Test
@@ -99,11 +99,11 @@ public class ChannelPingerTest {
         System.setProperty("hudson.slaves.ChannelPinger.pingInterval", "7");
 
         ChannelPinger channelPinger = new ChannelPinger();
-        channelPinger.install(mockChannel);
+        channelPinger.install(mockChannel, null);
 
         verify(mockChannel).call(eq(new ChannelPinger.SetUpRemotePing(ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 73)));
         verifyStatic();
-        ChannelPinger.setUpPingForChannel(mockChannel, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 73, true);
+        ChannelPinger.setUpPingForChannel(mockChannel, null, ChannelPinger.PING_TIMEOUT_SECONDS_DEFAULT, 73, true);
     }
 
     @Test
