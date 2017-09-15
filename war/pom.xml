@@ -582,6 +582,10 @@ THE SOFTWARE.
                     <requireMavenVersion>
                       <version>3.1.0</version>
                     </requireMavenVersion>
+                    <requireJavaVersion>
+                      <!-- let's encrypt certs used for https://updates.jenkins.io -->
+                      <version>[1.8.0-101,]</version>
+                    </requireJavaVersion>
                   </rules>
                 </configuration>
               </execution>
