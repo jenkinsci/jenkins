@@ -78,11 +78,13 @@
         <executions>
           <execution>
             <goals>
-              <goal>attached</goal>
+              <goal>single</goal>
             </goals>
             <phase>package</phase>
             <configuration>
-              <descriptorId>jar-with-dependencies</descriptorId>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
               <archive>
                 <manifest>
                   <mainClass>hudson.cli.CLI</mainClass>
