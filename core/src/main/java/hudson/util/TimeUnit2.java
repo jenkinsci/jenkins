@@ -31,7 +31,7 @@ package hudson.util;
 
 import hudson.RestrictedSince;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import java.util.concurrent.TimeUnit;
 
@@ -72,7 +72,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Deprecated
 @RestrictedSince("TODO")
-@Restricted(DoNotUse.class)
+@Restricted(NoExternalUse.class)
 public enum TimeUnit2 {
     NANOSECONDS {
         @Override public long toNanos(long d)   { return d; }

@@ -95,7 +95,7 @@ THE SOFTWARE.
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
     <test-annotations.version>1.2</test-annotations.version>
-    <access-modifier.version>1.12-PR6-SNAPSHOT</access-modifier.version>
+    <access-modifier.version>1.11</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
