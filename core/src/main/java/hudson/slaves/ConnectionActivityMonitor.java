@@ -27,7 +27,7 @@ import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import hudson.model.Computer;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.remoting.VirtualChannel;
 import hudson.remoting.Channel;
 import hudson.Extension;
@@ -84,20 +84,20 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     }
 
     public long getRecurrencePeriod() {
-        return enabled ? FREQUENCY : TimeUnit2.DAYS.toMillis(30);
+        return enabled ? FREQUENCY : TimeUnit.DAYS.toMillis(30);
     }
 
     /**
      * Time till initial ping
      */
-    private static final long TIME_TILL_PING = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(3));
+    private static final long TIME_TILL_PING = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit.MINUTES.toMillis(3));
 
-    private static final long FREQUENCY = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".frequency",TimeUnit2.SECONDS.toMillis(10));
+    private static final long FREQUENCY = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".frequency",TimeUnit.SECONDS.toMillis(10));
 
     /**
      * When do we abandon the effort and cut off?
      */
-    private static final long TIMEOUT = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit2.MINUTES.toMillis(4));
+    private static final long TIMEOUT = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit.MINUTES.toMillis(4));
 
 
     // disabled by default until proven in the production
