@@ -102,14 +102,13 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
-            int slaveAgentPort = Jenkins.getInstance().getSlaveAgentPort();
-            if (slaveAgentPort == -1) {
+            if (Jenkins.getInstance().getSlaveAgentPort() == -1) {
                 LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ". Port is disabled, not rescheduling", e);
                 shutdown();
             } else {
                 LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
                 shutdown();
-                TcpSlaveAgentListenerRescheduler.schedule(t, slaveAgentPort, e);
+                TcpSlaveAgentListenerRescheduler.schedule(t, e);
             }
         });
 
@@ -172,14 +171,13 @@ public final class TcpSlaveAgentListener extends Thread {
                 new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this, configuredPort) {
                     @Override
                     public void run(Throwable cause) {
-                        int slaveAgentPort = Jenkins.getInstance().getSlaveAgentPort();
-                        if (slaveAgentPort == -1) {
+                        if (Jenkins.getInstance().getSlaveAgentPort() == -1) {
                             LOGGER.log(Level.WARNING, "Connection handler failed", cause);
                             shutdown();
                         } else {
                             LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
                             shutdown();
-                            TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), slaveAgentPort, cause);
+                            TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), cause);
                         }
                     }
                 }).start();
@@ -447,14 +445,12 @@ public final class TcpSlaveAgentListener extends Thread {
     @Restricted(NoExternalUse.class)
     public static class TcpSlaveAgentListenerRescheduler extends AperiodicWork {
         private Thread originThread;
-        private int port;
         private Throwable cause;
         private long recurrencePeriod = 5000;
         private boolean isActive;
 
-        public TcpSlaveAgentListenerRescheduler(Thread originThread, int port, Throwable cause) {
+        public TcpSlaveAgentListenerRescheduler(Thread originThread, Throwable cause) {
             this.originThread = originThread;
-            this.port = port;
             this.cause = cause;
             this.isActive = false;
         }
@@ -466,7 +462,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
         @Override
         public AperiodicWork getNewInstance() {
-            return new TcpSlaveAgentListenerRescheduler(originThread, port, cause);
+            return new TcpSlaveAgentListenerRescheduler(originThread, cause);
         }
 
         @Override
@@ -476,8 +472,13 @@ public final class TcpSlaveAgentListener extends Thread {
                     if (originThread.isAlive()) {
                         originThread.interrupt();
                     }
-                    new TcpSlaveAgentListener(port).start();
-                    LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+                    int port = Jenkins.getInstance().getSlaveAgentPort();
+                    if (port != -1) {
+                        new TcpSlaveAgentListener(port).start();
+                        LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+                    } else {
+                        LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + originThread + ". Port is disabled, not rescheduling", cause);
+                    }
                     isActive = false;
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener - trying again.", cause);
@@ -485,14 +486,13 @@ public final class TcpSlaveAgentListener extends Thread {
             }
         }
 
-        public static void schedule(Thread originThread, int port, Throwable cause) {
-            schedule(originThread, port, cause,5000);
+        public static void schedule(Thread originThread, Throwable cause) {
+            schedule(originThread, cause,5000);
         }
 
-        public static void schedule(Thread originThread, int port, Throwable cause, long approxDelay) {
+        public static void schedule(Thread originThread, Throwable cause, long approxDelay) {
             TcpSlaveAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
             rescheduler.originThread = originThread;
-            rescheduler.port = port;
             rescheduler.cause = cause;
             rescheduler.recurrencePeriod = approxDelay;
             rescheduler.isActive = true;
