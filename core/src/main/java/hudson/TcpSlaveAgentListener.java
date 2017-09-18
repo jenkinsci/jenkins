@@ -102,14 +102,9 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
-            if (Jenkins.getInstance().getSlaveAgentPort() == -1) {
-                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ". Port is disabled, not rescheduling", e);
-                shutdown();
-            } else {
-                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
-                shutdown();
-                TcpSlaveAgentListenerRescheduler.schedule(t, e);
-            }
+            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
+            shutdown();
+            TcpSlaveAgentListenerRescheduler.schedule(t, e);
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -171,14 +166,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this, configuredPort) {
                     @Override
                     public void run(Throwable cause) {
-                        if (Jenkins.getInstance().getSlaveAgentPort() == -1) {
-                            LOGGER.log(Level.WARNING, "Connection handler failed", cause);
-                            shutdown();
-                        } else {
-                            LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
-                            shutdown();
-                            TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), cause);
-                        }
+                        LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
+                        shutdown();
+                        TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), cause);
                     }
                 }).start();
             }
