@@ -169,9 +169,8 @@ public class ListView extends View implements DirectlyModifiableView {
     public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
         return columns;
     }
-    
 
-     @Override
+
      public List<TopLevelItem> getItems() {
         return getItems(this.recurse);
      }
@@ -184,7 +183,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * <p>
      * This method returns a separate copy each time to avoid
      * concurrent modification issue.
-     * @param recurse false not to recurse in ItemGroups
+     * @param recurse {@code false} not to recurse in ItemGroups
      * true to recurse in ItemGroups
      */
      private List<TopLevelItem> getItems(boolean recurse) {

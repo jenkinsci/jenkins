@@ -478,7 +478,6 @@ public class SearchTest {
         j.assertGoodStatus(result);
 
         String content = result.getWebResponse().getContentAsString();
-        System.out.println(content);
         JSONObject jsonContent = (JSONObject)JSONSerializer.toJSON(content);
         assertNotNull(jsonContent);
         JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
