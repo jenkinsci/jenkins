@@ -34,7 +34,7 @@ import com.gargoylesoftware.htmlunit.TextPage;
 import hudson.Functions;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
