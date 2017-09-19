@@ -35,7 +35,7 @@ THE SOFTWARE.
     The following value assumes that you have java in your PATH.
   -->
   <executable>@JAVA@</executable>
-  <arguments>-Xrs @VMARGS@ -jar "%BASE%\slave.jar" @ARGS@</arguments>
+  <arguments>-Xrs @VMARGS@ -jar "%BASE%\agent.jar" @ARGS@</arguments>
   <!--
     interactive flag causes the empty black Java window to be displayed.
     I'm still debugging this.

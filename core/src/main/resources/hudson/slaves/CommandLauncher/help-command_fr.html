@@ -16,36 +16,36 @@
   <p>
   Quand une commande est spécifiée dans ce champ, elle est exécutée
   sur le maître et Jenkins suppose que le programme exécuté lance le
-  programme <tt>slave.jar</tt> sur la bonne machine esclave.
+  programme <tt>agent.jar</tt> sur la bonne machine esclave.
 
   <p>
-  Une copie du <tt>slave.jar</tt> est disponible dans le répertoire
-    <a href="${rootURL}/jnlpJars/slave.jar"><tt>WEB-INF/slave.jar</tt></a>.
+  Une copie du <tt>agent.jar</tt> peut être téléchargée
+    <a href="${rootURL}/jnlpJars/agent.jar"><tt>ici</tt></a>.
 
   <p>
   Pour un cas simple, cette commande pourrait être du type
-  "ssh <i>hostname</i> java -jar ~/bin/slave.jar".
+  "ssh <i>hostname</i> java -jar ~/bin/agent.jar".
 
   Cela dit, il est généralement préférable d'écrire un petit script sur
   l'esclave, comme celui qui suit, afin de gérer le répertoire
-  d'installation de Java et/ou de slave.jar. Vous pouvez aussi
+  d'installation de Java et/ou de agent.jar. Vous pouvez aussi
   positionner des variables d'environnement spécifiques à cette machine
   esclave, comme le PATH.
   
 <pre>
 #!/bin/sh
-exec java -jar ~/bin/slave.jar
+exec java -jar ~/bin/agent.jar
 </pre>
 
   <p>
   Vous pouvez utiliser n'importe quelle commande d'exécution d'un
   process sur la machine-esclave, comme RSH, du moment que les
   sorties stdin/stdout de ce process sont au final connectées
-  sur "java -jar ~/bin/slave.jar".
+  sur "java -jar ~/bin/agent.jar".
 
   <p>
   Dans un déploiement à plus grande échelle, on peut envisager de charger
-  <tt>slave.jar</tt> à partir d'une location commune montée par NFS, afin
+  <tt>agent.jar</tt> à partir d'une location commune montée par NFS, afin
   de ne pas nécessiter la mise à jour de ce fichier à chaque mise à jour
   de Jenkins.
 

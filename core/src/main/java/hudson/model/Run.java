@@ -1015,11 +1015,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return id != null ? id : Integer.toString(number);
     }
     
-    @Override
-    public @CheckForNull Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-
     /**
      * Get the root directory of this {@link Run} on the master.
      * Files related to this {@link Run} should be stored below this directory.
