@@ -103,6 +103,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -1175,17 +1176,26 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Checks if the given item should be prevented from entering into the {@link #buildables} state
      * and instead stay in the {@link #blockedProjects} state.
+     *
+     * @return the reason of blockage if it exists null otherwise.
      */
-    private boolean isBuildBlocked(Item i) {
-        if (i.task.isBuildBlocked() || !canRun(i.task.getResourceList()))
-            return true;
+    @Nullable
+    private CauseOfBlockage getCauseOfBlockage(Item i) {
+        if (i.task.isBuildBlocked())
+            return i.task.getCauseOfBlockage();
 
-        for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-            if (d.canRun(i)!=null)
-                return true;
+        if (!canRun(i.task.getResourceList())) {
+            // TODO remove
+            return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
         }
 
-        return false;
+        for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
+            CauseOfBlockage causeOfBlockage = d.canRun(i);
+            if (causeOfBlockage != null)
+                return causeOfBlockage;
+        }
+
+        return null;
     }
 
     /**
@@ -1472,7 +1482,8 @@ public class Queue extends ResourceController implements Saveable {
                 for (BlockedItem p : blockedItems) {
                     String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
                     LOGGER.log(Level.FINEST, "Current blocked item: {0}", taskDisplayName);
-                    if (!isBuildBlocked(p) && allowNewBuildableTask(p.task)) {
+                    CauseOfBlockage causeOfBlockage = getCauseOfBlockage(p);
+                    if (causeOfBlockage == null && allowNewBuildableTask(p.task)) {
                         LOGGER.log(Level.FINEST,
                                 "BlockedItem {0}: blocked -> buildable as the build is not blocked and new tasks are allowed",
                                 taskDisplayName);
@@ -1487,6 +1498,8 @@ public class Queue extends ResourceController implements Saveable {
                             // determine if they are blocked by the lucky winner
                             updateSnapshot();
                         }
+                    } else {
+                        p.setCauseOfBlockage(causeOfBlockage);
                     }
                 }
             }
@@ -1502,7 +1515,8 @@ public class Queue extends ResourceController implements Saveable {
 
                 top.leave(this);
                 Task p = top.task;
-                if (!isBuildBlocked(top) && allowNewBuildableTask(p)) {
+                CauseOfBlockage causeOfBlockage = getCauseOfBlockage(top);
+                if (causeOfBlockage == null && allowNewBuildableTask(p)) {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
                     String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
@@ -1511,12 +1525,12 @@ public class Queue extends ResourceController implements Saveable {
                         r.run();
                     } else {
                         LOGGER.log(Level.FINEST, "Item {0} was unable to be made a buildable and is now a blocked item.", topTaskDisplayName);
-                        new BlockedItem(top).enter(this);
+                        new BlockedItem(top, CauseOfBlockage.fromMessage(Messages._Queue_HudsonIsAboutToShutDown())).enter(this);
                     }
                 } else {
                     // this can't be built now because another build is in progress
                     // set this project aside.
-                    new BlockedItem(top).enter(this);
+                    new BlockedItem(top, causeOfBlockage).enter(this);
                 }
             }
 
@@ -1530,9 +1544,10 @@ public class Queue extends ResourceController implements Saveable {
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
                 // one last check to make sure this build is not blocked.
-                if (isBuildBlocked(p)) {
+                CauseOfBlockage causeOfBlockage = getCauseOfBlockage(p);
+                if (causeOfBlockage != null) {
                     p.leave(this);
-                    new BlockedItem(p).enter(this);
+                    new BlockedItem(p, causeOfBlockage).enter(this);
                     LOGGER.log(Level.FINE, "Catching that {0} is blocked in the last minute", p);
                     // JENKINS-28926 we have moved an unblocked task into the blocked state, update snapshot
                     // so that other buildables which might have been blocked by this can see the state change
@@ -1596,7 +1611,7 @@ public class Queue extends ResourceController implements Saveable {
                     // The creation of a snapshot itself should be relatively cheap given the expected rate of
                     // job execution. You probably would need 100's of jobs starting execution every iteration
                     // of maintain() before this could even start to become an issue and likely the calculation
-                    // of isBuildBlocked(p) will become a bottleneck before updateSnapshot() will. Additionally
+                    // of getCauseOfBlockage(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
                     // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
@@ -2443,12 +2458,20 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#blockedProjects} stage.
      */
     public final class BlockedItem extends NotWaitingItem {
-        public BlockedItem(WaitingItem wi) {
+        private transient CauseOfBlockage causeOfBlockage = null;
+
+        public BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
+            this.causeOfBlockage = causeOfBlockage;
         }
 
-        public BlockedItem(NotWaitingItem ni) {
+        public BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
             super(ni);
+            this.causeOfBlockage = causeOfBlockage;
+        }
+
+        public void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
+            this.causeOfBlockage = causeOfBlockage;
         }
 
         public CauseOfBlockage getCauseOfBlockage() {
@@ -2459,10 +2482,8 @@ public class Queue extends ResourceController implements Saveable {
                 return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
             }
 
-            for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-                CauseOfBlockage cause = d.canRun(this);
-                if (cause != null)
-                    return cause;
+            if (causeOfBlockage != null) {
+                return causeOfBlockage;
             }
 
             return task.getCauseOfBlockage();
