@@ -234,8 +234,31 @@ public class SlaveComputer extends Computer {
         return launcher.isLaunchSupported();
     }
 
+    /**
+     * Return the {@code ComputerLauncher} for this SlaveComputer.
+     * @since 1.312
+     */
     public ComputerLauncher getLauncher() {
         return launcher;
+    }
+
+    /**
+     * Return the {@code ComputerLauncher} for this SlaveComputer, strips off
+     * any {@code DelegatingComputerLauncher}s or {@code ComputerLauncherFilter}s.
+     * @since 2.83
+     */
+    public ComputerLauncher getDelegatedLauncher() {
+        ComputerLauncher l = launcher;
+        while (true) {
+            if (l instanceof DelegatingComputerLauncher) {
+                l = ((DelegatingComputerLauncher) l).getLauncher();
+            } else if (l instanceof ComputerLauncherFilter) {
+                l = ((ComputerLauncherFilter) l).getCore();
+            } else {
+                break;
+            }
+        }
+        return l;
     }
 
     protected Future<?> _connect(boolean forceReconnect) {
