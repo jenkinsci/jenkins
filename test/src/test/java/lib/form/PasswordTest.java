@@ -26,6 +26,7 @@ package lib.form;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import hudson.Extension;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
@@ -37,6 +38,7 @@ import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.util.FormValidation;
 import hudson.util.Secret;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -55,10 +57,10 @@ import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest;
 
-/**
- * @author Kohsuke Kawaguchi
- */
 public class PasswordTest extends HudsonTestCase implements Describable<PasswordTest> {
     public Secret secret;
 
@@ -160,17 +162,41 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }
     }
+
+    @Issue("SECURITY-616")
+    public void testCheckMethod() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("p");
+        p.addProperty(new VulnerableProperty(Secret.fromString("")));
+        HtmlPasswordInput field = createWebClient().getPage(p, "configure").getFormByName("config").getInputByName("_.secret");
+        while (VulnerableProperty.DescriptorImpl.incomingURL == null) { // waitForBackgroundJavaScript does not work well
+            Thread.sleep(100); // form validation of saved value
+        }
+        VulnerableProperty.DescriptorImpl.incomingURL = null;
+        String secret = "s3cr3t";
+        field.setText(secret);
+        while (VulnerableProperty.DescriptorImpl.incomingURL == null) {
+            Thread.sleep(100); // form validation of edited value
+        }
+        assertThat(VulnerableProperty.DescriptorImpl.incomingURL, not(containsString(secret)));
+        assertEquals(secret, VulnerableProperty.DescriptorImpl.checkedSecret);
+    }
+
     public static class VulnerableProperty extends JobProperty<FreeStyleProject> {
         public final Secret secret;
         @DataBoundConstructor
         public VulnerableProperty(Secret secret) {
             this.secret = secret;
         }
-        @TestExtension("testExposedCiphertext")
+        @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
-            @Override // TODO delete in 1.635+
-            public String getDisplayName() {
-                return "VulnerableProperty";
+            static String incomingURL;
+            static String checkedSecret;
+            public FormValidation doCheckSecret(@QueryParameter String value) {
+                StaplerRequest req = Stapler.getCurrentRequest();
+                incomingURL = req.getRequestURIWithQueryString();
+                System.err.println("processing " + incomingURL + " via " + req.getMethod() + ": " + value);
+                checkedSecret = value;
+                return FormValidation.ok();
             }
         }
     }
