@@ -144,6 +144,7 @@ public class JNLPLauncherTest {
                 jnlpLauncher.getWorkDirSettings().isDisabled());
     }
     
+    @Test
     @Issue("JENKINS-44112")
     public void testDefaults() throws Exception {
         String errorMsg = "Work directory should be disabled for agents created via old API";
