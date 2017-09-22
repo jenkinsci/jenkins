@@ -259,6 +259,32 @@ public class ListViewTest {
         assertEquals("job1", items.get(0).getName());
     }
 
+    @Issue("JENKINS-23411")
+    @Test public void doRemoveJobFromViewNullItem() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
+        view.add(job);
+        
+        List<TopLevelItem> items = view.getItems();
+        assertEquals(1, items.size());
+        assertEquals("job1", items.get(0).getName());
+
+        // remove a contained job
+        view.doRemoveJobFromView("job1");
+        List<TopLevelItem> itemsNow = view.getItems();
+        assertEquals(0, itemsNow.size());
+        
+        // remove a not contained job
+        try {
+            view.doRemoveJobFromView("job2");
+            fail("Remove job2");
+        } catch(Failure e) {
+            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known item");
+        }
+    }
+
     private static class AllButViewsAuthorizationStrategy extends AuthorizationStrategy {
         @Override public ACL getRootACL() {
             return UNSECURED.getRootACL();

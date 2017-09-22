@@ -41,6 +41,7 @@ import hudson.util.TextFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
@@ -49,7 +50,6 @@ import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-import java.util.concurrent.TimeUnit;
 import jenkins.model.ProjectNamingStrategy;
 
 import org.hamcrest.Matchers;

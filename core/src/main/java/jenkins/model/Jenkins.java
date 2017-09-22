@@ -165,7 +165,7 @@ import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.views.DefaultMyViewsTabBar;
@@ -251,7 +251,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -901,28 +900,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // JSON binding needs to be able to see all the classes from all the plugins
             WebApp.get(servletContext).setClassLoader(pluginManager.uberClassLoader);
 
-            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit2.DAYS.toMillis(365));
+            adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
-            // TODO pending move to standard blacklist, or API to append filter
-            if (System.getProperty(ClassFilter.FILE_OVERRIDE_LOCATION_PROPERTY) == null) { // not using SystemProperties since ClassFilter does not either
-                try {
-                    Field blacklistPatternsF = ClassFilter.DEFAULT.getClass().getDeclaredField("blacklistPatterns");
-                    blacklistPatternsF.setAccessible(true);
-                    Object[] blacklistPatternsA = (Object[]) blacklistPatternsF.get(ClassFilter.DEFAULT);
-                    boolean found = false;
-                    for (int i = 0; i < blacklistPatternsA.length; i++) {
-                        if (blacklistPatternsA[i] instanceof Pattern) {
-                            blacklistPatternsA[i] = Pattern.compile("(" + blacklistPatternsA[i] + ")|(java[.]security[.]SignedObject)");
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        throw new Error("no Pattern found among " + Arrays.toString(blacklistPatternsA));
-                    }
-                } catch (NoSuchFieldException | IllegalAccessException x) {
-                    throw new Error("Unexpected ClassFilter implementation in bundled remoting.jar: " + x, x);
-                }
+            try {
+                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
+            } catch (ClassFilter.ClassFilterException ex) {
+                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
             }
 
             // initialization consists of ...
@@ -968,7 +951,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 protected void doRun() throws Exception {
                     trimLabels();
                 }
-            }, TimeUnit2.MINUTES.toMillis(5), TimeUnit2.MINUTES.toMillis(5), TimeUnit.MILLISECONDS);
+            }, TimeUnit.MINUTES.toMillis(5), TimeUnit.MINUTES.toMillis(5), TimeUnit.MILLISECONDS);
 
             updateComputerList();
 
@@ -3208,6 +3191,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
+        version = VERSION;
+
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -3685,9 +3670,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
-
-            version = VERSION;
-
+            
             save();
             updateComputerList();
             if(result)

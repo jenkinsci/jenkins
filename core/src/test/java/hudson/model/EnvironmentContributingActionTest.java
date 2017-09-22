@@ -3,7 +3,6 @@ package hudson.model;
 import hudson.EnvVars;
 import org.junit.Test;
 
-import javax.annotation.CheckForNull;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -16,7 +15,7 @@ public class EnvironmentContributingActionTest {
         private boolean wasCalled = false;
 
         @Override
-        public void buildEnvVars(Run<?, ?> run, EnvVars env, @CheckForNull Node node) {
+        public void buildEnvironment(Run<?, ?> run, EnvVars env) {
             wasCalled = true;
         }
 
@@ -50,7 +49,7 @@ public class EnvironmentContributingActionTest {
         }
 
         @Override
-        public void buildEnvVars(Run<?, ?> run, EnvVars env, @CheckForNull Node node) {
+        public void buildEnvironment(Run<?, ?> run, EnvVars env) {
             wasCalledRun = true;
         }
 
@@ -71,7 +70,7 @@ public class EnvironmentContributingActionTest {
         Node node = mock(Node.class);
 
         OverrideRun overrideRun = new OverrideRun();
-        overrideRun.buildEnvVars(run, envVars, node);
+        overrideRun.buildEnvironment(run, envVars);
 
         assertTrue(overrideRun.wasNewMethodCalled());
     }
@@ -99,10 +98,9 @@ public class EnvironmentContributingActionTest {
     @Test
     public void testOverrideAbstractBuildAndCallNewMethodWithAbstractBuild() throws Exception {
         AbstractBuild abstractBuild = mock(AbstractBuild.class);
-        Node node = mock(Node.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
-        action.buildEnvVars(abstractBuild, envVars, node);
+        action.buildEnvironment(abstractBuild, envVars);
 
         assertTrue(action.wasDeprecatedMethodCalled());
     }
@@ -114,10 +112,9 @@ public class EnvironmentContributingActionTest {
     @Test
     public void testOverrideAbstractBuildAndCallNewMethodWithRun() throws Exception {
         Run run = mock(Run.class);
-        Node node = mock(Node.class);
 
         OverrideAbstractBuild action = new OverrideAbstractBuild();
-        action.buildEnvVars(run, envVars, node);
+        action.buildEnvironment(run, envVars);
 
         assertFalse(action.wasDeprecatedMethodCalled());
     }
@@ -139,10 +136,9 @@ public class EnvironmentContributingActionTest {
     @Test
     public void testOverrideBothAndCallNewMethod() throws Exception {
         Run run = mock(Run.class);
-        Node node = mock(Node.class);
 
         OverrideBoth overrideRun = new OverrideBoth();
-        overrideRun.buildEnvVars(run, envVars, node);
+        overrideRun.buildEnvironment(run, envVars);
 
         assertTrue(overrideRun.wasRunCalled());
     }

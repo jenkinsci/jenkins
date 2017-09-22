@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.36</version>
+    <version>1.39</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.76-SNAPSHOT</version>
+  <version>2.80-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -94,7 +94,6 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
-    <test-annotations.version>1.2</test-annotations.version>
     <access-modifier.version>1.11</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
@@ -168,7 +167,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.10</version>
+        <version>3.12</version>
       </dependency>
 
       <dependency>
@@ -239,14 +238,12 @@ THE SOFTWARE.
       <!-- for JRE requirement check annotation -->
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>animal-sniffer-annotations</artifactId>
-      <version>1.9</version>
       <scope>provided</scope>
       <optional>true</optional><!-- no need to have this at runtime -->
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
-      <version>${test-annotations.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -350,12 +347,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.8</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.0</version>
           <configuration>
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -364,17 +359,14 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>2.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.3</version>
           <configuration>
             <quiet>true</quiet>
           </configuration>
@@ -382,17 +374,14 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.20</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
             <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
@@ -406,7 +395,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
@@ -426,7 +414,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <!--
@@ -461,7 +448,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.7</version>
           <executions>
             <execution>
               <goals>
@@ -478,7 +464,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.24</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -501,7 +486,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -528,7 +512,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
-          <version>2.7.1</version>
         </plugin>
         <plugin>
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
@@ -544,12 +527,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.3</version>
           <dependencies>
             <dependency>
               <groupId>org.kohsuke</groupId>
@@ -561,7 +542,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M1</version> <!-- TODO 3.0.0 when released -->
       </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
@@ -606,7 +586,6 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -618,7 +597,6 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.1</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
@@ -681,25 +659,6 @@ THE SOFTWARE.
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>1.8.0</version>
-                </requireJavaVersion>
-                <requireMavenVersion>
-                  <version>3.0</version>
-                </requireMavenVersion>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>1.${java.level}</maxJdkVersion>
-                </enforceBytecodeVersion>
-                <requireUpperBoundDeps />
-              </rules>
-            </configuration>
-          </execution>
-          <execution>
             <id>enforce-banned-dependencies</id>
             <goals>
               <goal>enforce</goal>
@@ -719,13 +678,7 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>extra-enforcer-rules</artifactId>
-            <version>1.0-beta-6</version>
-          </dependency>
-        </dependencies>
+
       </plugin>
 
       <plugin>
@@ -862,7 +815,7 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <goals>
-                  <goal>attached</goal>
+                  <goal>single</goal>
                 </goals>
                 <phase>package</phase>
                 <configuration>

@@ -128,14 +128,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
     }
 
-    public final void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public final boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     /**
      * Provisions new {@link Node}s from this cloud.
      *

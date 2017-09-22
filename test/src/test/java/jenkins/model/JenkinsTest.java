@@ -62,6 +62,7 @@ import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -600,5 +601,20 @@ public class JenkinsTest {
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
         assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
                 j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+    }
+
+    @Issue("JENKINS-42577")
+    @Test
+    public void versionIsSavedInSave() throws Exception {
+        Jenkins.VERSION = "1.0";
+        j.jenkins.save();
+        VersionNumber storedVersion = Jenkins.getStoredVersion();
+        assertNotNull(storedVersion);
+        assertEquals(storedVersion.toString(), "1.0");
+
+        Jenkins.VERSION = null;
+        j.jenkins.save();
+        VersionNumber nullVersion = Jenkins.getStoredVersion();
+        assertNull(nullVersion);
     }
 }

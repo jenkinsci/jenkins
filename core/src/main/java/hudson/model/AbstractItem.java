@@ -493,20 +493,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Short for {@code getACL().checkPermission(p)}
-     */
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    /**
-     * Short for {@code getACL().hasPermission(p)}
-     */
-    public boolean hasPermission(Permission p) {
-        return getACL().hasPermission(p);
-    }
-
-    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
@@ -535,10 +521,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // Will generally only work if called after job loading:
             return j.getItemByFullName(fullName);
         }
-    }
-
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
     }
 
     /**

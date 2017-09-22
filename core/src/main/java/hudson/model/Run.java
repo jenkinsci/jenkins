@@ -1015,11 +1015,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         return id != null ? id : Integer.toString(number);
     }
     
-    @Override
-    public @CheckForNull Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-
     /**
      * Get the root directory of this {@link Run} on the master.
      * Files related to this {@link Run} should be stored below this directory.
@@ -1454,16 +1449,6 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     public @Nonnull Api getApi() {
         return new Api(this);
-    }
-
-    @Override
-    public void checkPermission(@Nonnull Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull Permission p) {
-        return getACL().hasPermission(p);
     }
 
     @Override
@@ -2301,8 +2286,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         for (EnvironmentContributor ec : EnvironmentContributor.all().reverseView())
             ec.buildEnvironmentFor(this,env,listener);
 
-        for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class))
-            a.buildEnvVars(this,env,n);
+        if (!(this instanceof AbstractBuild)) {
+            for (EnvironmentContributingAction a : getActions(EnvironmentContributingAction.class)) {
+                a.buildEnvironment(this, env);
+            }
+        } // else for compatibility reasons, handled in override after buildEnvironments
 
         return env;
     }

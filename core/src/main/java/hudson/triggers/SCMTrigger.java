@@ -45,7 +45,7 @@ import hudson.util.FormValidation;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -748,5 +748,5 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
+    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit.HOURS.toMillis(1));
 }

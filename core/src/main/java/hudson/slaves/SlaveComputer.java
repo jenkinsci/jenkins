@@ -362,7 +362,7 @@ public class SlaveComputer extends Computer {
      * Creates a {@link Channel} from the given stream and sets that to this agent.
      *
      * @param in
-     *      Stream connected to the remote "slave.jar". It's the caller's responsibility to do
+     *      Stream connected to the remote agent. It's the caller's responsibility to do
      *      buffering on this stream, if that's necessary.
      * @param out
      *      Stream connected to the remote peer. It's the caller's responsibility to do
@@ -454,6 +454,9 @@ public class SlaveComputer extends Computer {
         }
         @Override public Integer call() {
             Channel c = Channel.current();
+            if (c == null) {
+                return -1;
+            }
             return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
         }
     }
@@ -471,6 +474,9 @@ public class SlaveComputer extends Computer {
         }
         @Override public Long call() {
             Channel c = Channel.current();
+            if (c == null) {
+                return Long.valueOf(-1);
+            }
             return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
         }
     }
@@ -515,7 +521,7 @@ public class SlaveComputer extends Computer {
             channel.addListener(listener);
 
         String slaveVersion = channel.call(new SlaveVersion());
-        log.println("Slave.jar version: " + slaveVersion);
+        log.println("Remoting version: " + slaveVersion);
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
