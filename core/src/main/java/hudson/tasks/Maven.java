@@ -709,6 +709,27 @@ public class Maven extends Builder {
                 return ((MavenInstallation)obj).mavenHome;
             }
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final MavenInstallation that = (MavenInstallation) o;
+
+            if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+            if (getHome() != null ? !getHome().equals(that.getHome()) : that.getHome() != null) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getName() != null ? getName().hashCode() : 0;
+            result = 31 * result + (getHome() != null ? getHome().hashCode() : 0);
+            //result = 31 * result + (getProperties() != null ? getProperties().hashCode() : 0);
+            return result;
+        }
+
     }
 
     /**
