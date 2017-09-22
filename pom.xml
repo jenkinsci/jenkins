@@ -230,6 +230,19 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
+
+      <!--  make sure these plugins are never used by us or by any plugins which end up depening on this version -->
+
+      <dependency>
+        <!-- Jenkins test Harness tries to fudge this, causes issues with some IDEs -->
+        <groupId>javax.servlet</groupId>
+        <!-- the old artifactID for the servlet API -->
+        <artifactId>servlet-api</artifactId>
+        <version>[0-SNAPSHOT]</version>
+        <scope>provided</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--  TODO also add commons-logging and log4j -->
     </dependencies>
   </dependencyManagement>
 
@@ -245,6 +258,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
+      <groupId>javax.servlet</groupId>
+      <!-- the old artifactID for the servlet API -->
+      <artifactId>servlet-api</artifactId>
     </dependency>
   </dependencies>
 
@@ -324,8 +343,8 @@ THE SOFTWARE.
             <dependency>
               <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
               <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.4</version>
+              <artifactId>javax.servlet-api</artifactId>
+              <version>3.1.0</version>
             </dependency>
             <dependency>
               <groupId>org.codehaus.gmaven.runtime</groupId>

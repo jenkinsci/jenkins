@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.252</stapler.version>
+    <stapler.version>1.253-SNAPSHOT</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
@@ -472,9 +472,9 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency><!-- needed by Jelly -->
-      <groupId>javax.servlet</groupId>
-      <artifactId>jstl</artifactId>
-      <version>1.1.0</version>
+      <groupId>javax.servlet.jsp.jstl</groupId>
+      <artifactId>javax.servlet.jsp.jstl-api</artifactId>
+      <version>1.2.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

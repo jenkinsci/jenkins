@@ -61,12 +61,8 @@ THE SOFTWARE.
           jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
         -->
         <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>jsp-api</artifactId>
+          <groupId>javax.servlet.jsp</groupId>
+          <artifactId>javax.servlet.jsp-api</artifactId>
         </exclusion>
         <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
         <exclusion>
