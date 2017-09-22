@@ -40,7 +40,6 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.codehaus.groovy.runtime.Security218;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -256,7 +255,6 @@ public class CLIActionTest {
         // -ssh mode does not pass client locale or encoding
     }
 
-    @Ignore("TODO JENKINS-46659 seems to be broken")
     @Issue("JENKINS-41745")
     @Test
     public void interleavedStdio() throws Exception {
