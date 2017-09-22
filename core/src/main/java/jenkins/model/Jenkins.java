@@ -3181,6 +3181,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
+        version = VERSION;
+
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -3658,9 +3660,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
-
-            version = VERSION;
-
+            
             save();
             updateComputerList();
             if(result)
