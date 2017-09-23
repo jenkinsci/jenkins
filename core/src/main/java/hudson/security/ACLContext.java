@@ -23,7 +23,6 @@
  */
 package hudson.security;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
