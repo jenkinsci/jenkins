@@ -45,6 +45,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -378,13 +379,16 @@ public class ListView extends View implements DirectlyModifiableView {
             throw new Failure("Query parameter 'name' is required");
 
         TopLevelItem item = resolveName(name);
+        if (item==null)
+            throw new Failure("Query parameter 'name' does not correspond to a known and readable item");
+
         if (remove(item))
             owner.save();
 
         return HttpResponses.ok();
     }
 
-    private TopLevelItem resolveName(String name) {
+    private @CheckForNull TopLevelItem resolveName(String name) {
         TopLevelItem item = getOwner().getItemGroup().getItem(name);
         if (item == null) {
             name = Items.getCanonicalName(getOwner().getItemGroup(), name);

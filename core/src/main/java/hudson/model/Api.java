@@ -53,6 +53,8 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Used to expose remote access API for ".../api/"
@@ -228,7 +230,8 @@ public class Api extends AbstractModelObject {
         return false;
     }
 
-    private void setHeaders(StaplerResponse rsp) {
+    @Restricted(NoExternalUse.class)
+    protected void setHeaders(StaplerResponse rsp) {
         rsp.setHeader("X-Jenkins", Jenkins.VERSION);
         rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
     }
