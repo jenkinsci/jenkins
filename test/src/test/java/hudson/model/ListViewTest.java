@@ -266,7 +266,7 @@ public class ListViewTest {
         folder.addView(view);
         FreeStyleProject job = folder.createProject(FreeStyleProject.class, "job1");
         view.add(job);
-        
+
         List<TopLevelItem> items = view.getItems();
         assertEquals(1, items.size());
         assertEquals("job1", items.get(0).getName());
@@ -275,13 +275,13 @@ public class ListViewTest {
         view.doRemoveJobFromView("job1");
         List<TopLevelItem> itemsNow = view.getItems();
         assertEquals(0, itemsNow.size());
-        
+
         // remove a not contained job
         try {
             view.doRemoveJobFromView("job2");
             fail("Remove job2");
         } catch(Failure e) {
-            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known item");
+            assertEquals(e.getMessage(), "Query parameter 'name' does not correspond to a known and readable item");
         }
     }
 
