@@ -1307,7 +1307,7 @@ public abstract class Launcher {
                         try {
                             Channel.current().syncIO();
                         } catch (Throwable t) {
-                            // this includes a failure to sync, slave.jar too old, etc
+                            // this includes a failure to sync, agent.jar too old, etc
                         }
                     }
                 }

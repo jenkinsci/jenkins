@@ -735,6 +735,19 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         SaveableListener.fireOnChange(this, getConfigFile());
     }
 
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String id;
+        Replacer(User u) {
+            id = u.getId();
+        }
+        private Object readResolve() {
+            return getById(id, false);
+        }
+    }
+
     /**
      * Deletes the data directory and removes this user from Hudson.
      *
@@ -881,14 +894,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         };
     }
 
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
-    }
-
     /**
      * With ADMINISTER permission, can delete users with persisted data but can't delete self.
      */
@@ -930,10 +935,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return r;
     }
 
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-    
     public Object getDynamic(String token) {
         for(Action action: getTransientActions()){
             if(Objects.equals(action.getUrlName(), token))

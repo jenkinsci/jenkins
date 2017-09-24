@@ -25,10 +25,12 @@
 package hudson.model;
 
 import hudson.tasks.Mailer;
-import org.junit.Test;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 import org.junit.Rule;
-import org.junit.runners.model.Statement;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 public class UserRestartTest {
@@ -37,25 +39,46 @@ public class UserRestartTest {
     public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
     @Test public void persistedUsers() throws Exception {
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", true);
-                bob.setFullName("Bob");
-                bob.addProperty(new Mailer.UserProperty("bob@nowhere.net"));
-            }
+        rr.then(r -> {
+            User bob = User.getById("bob", true);
+            bob.setFullName("Bob");
+            bob.addProperty(new Mailer.UserProperty("bob@nowhere.net"));
         });
-        rr.addStep(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                User bob = User.getById("bob", false);
-                assertNotNull(bob);
-                assertEquals("Bob", bob.getFullName());
-                Mailer.UserProperty email = bob.getProperty(Mailer.UserProperty.class);
-                assertNotNull(email);
-                assertEquals("bob@nowhere.net", email.getAddress());
-            }
+        rr.then(r -> {
+            User bob = User.getById("bob", false);
+            assertNotNull(bob);
+            assertEquals("Bob", bob.getFullName());
+            Mailer.UserProperty email = bob.getProperty(Mailer.UserProperty.class);
+            assertNotNull(email);
+            assertEquals("bob@nowhere.net", email.getAddress());
         });
+    }
+
+    @Issue("JENKINS-45892")
+    @Test
+    public void badSerialization() {
+        rr.then(r -> {
+            r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+            FreeStyleProject p = r.createFreeStyleProject("p");
+            User u = User.get("pqhacker");
+            u.setFullName("Pat Q. Hacker");
+            u.save();
+            p.addProperty(new BadProperty(u));
+            String text = p.getConfigFile().asString();
+            assertThat(text, not(containsString("<fullName>Pat Q. Hacker</fullName>")));
+            assertThat(text, containsString("<id>pqhacker</id>"));
+        });
+        rr.then(r -> {
+            FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+            User u = p.getProperty(BadProperty.class).user; // do not inline: call User.get second
+            assertEquals(User.get("pqhacker"), u);
+        });
+    }
+    static class BadProperty extends JobProperty<FreeStyleProject> {
+        final User user;
+        BadProperty(User user) {
+            this.user = user;
+        }
     }
 
 }

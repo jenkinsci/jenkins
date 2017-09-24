@@ -31,7 +31,7 @@ import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -355,6 +355,10 @@ public class Executor extends Thread implements ModelObject {
                         LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                     SubTask task = workUnit.work;
                     Executable executable = task.createExecutable();
+                    if (executable == null) {
+                        String displayName = task instanceof Queue.Task ? ((Queue.Task) task).getFullDisplayName() : task.getDisplayName();
+                        LOGGER.log(WARNING, "{0} cannot be run (for example because it is disabled)", displayName);
+                    }
                     lock.writeLock().lock();
                     try {
                         Executor.this.executable = executable;
@@ -387,7 +391,7 @@ public class Executor extends Thread implements ModelObject {
                 // by tasks. In such case Jenkins starts the workUnit in order
                 // to report results to console outputs.
                 if (executable == null) {
-                    throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
+                    return;
                 }
 
                 if (executable instanceof Actionable) {
@@ -440,7 +444,7 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
         } catch(Exception | Error e) {
-            LOGGER.log(SEVERE, "Unexpected executor death", e);
+            LOGGER.log(SEVERE, getName()+": Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
                 finish2();
@@ -720,7 +724,7 @@ public class Executor extends Thread implements ModelObject {
             return d * 10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit2.MILLISECONDS.toHours(elapsed) > 24;
+            return TimeUnit.MILLISECONDS.toHours(elapsed) > 24;
         }
     }
 

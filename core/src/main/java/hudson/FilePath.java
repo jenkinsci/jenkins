@@ -2042,7 +2042,7 @@ public final class FilePath implements Serializable {
 
     /**
      * With fix to JENKINS-11251 (remoting 2.15), this is no longer necessary.
-     * But I'm keeping it for a while so that users who manually deploy slave.jar has time to deploy new version
+     * But I'm keeping it for a while so that users who manually deploy agent.jar has time to deploy new version
      * before this goes away.
      */
     private void syncIO() throws InterruptedException {
@@ -2050,9 +2050,9 @@ public final class FilePath implements Serializable {
             if (channel!=null)
                 channel.syncLocalIO();
         } catch (AbstractMethodError e) {
-            // legacy slave.jar. Handle this gracefully
+            // legacy agent.jar. Handle this gracefully
             try {
-                LOGGER.log(Level.WARNING,"Looks like an old slave.jar. Please update "+ Which.jarFile(Channel.class)+" to the new version",e);
+                LOGGER.log(Level.WARNING,"Looks like an old agent.jar. Please update "+ Which.jarFile(Channel.class)+" to the new version",e);
             } catch (IOException _) {
                 // really ignore this time
             }

@@ -76,6 +76,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -91,6 +92,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
 
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
 
+    @CheckForNull
     private String upstreamProjects;
     private Result threshold = Result.SUCCESS;
 
@@ -109,8 +111,13 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         this.upstreamProjects = upstreamProjects;
     }
 
+    /**
+     * Gets the upstream projects.
+     * 
+     * @return Upstream projects or empty("") if upstream projects is null.
+     */
     public String getUpstreamProjects() {
-        return upstreamProjects;
+        return Util.fixNull(upstreamProjects);
     }
 
     public Result getThreshold() {
@@ -170,7 +177,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Override public void buildDependencyGraph(final AbstractProject downstream, DependencyGraph graph) {
-        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), upstreamProjects, AbstractProject.class)) {
+        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), getUpstreamProjects(), AbstractProject.class)) {
             graph.addDependency(new DependencyGraph.Dependency(upstream, downstream) {
                 @Override public boolean shouldTriggerBuild(AbstractBuild upstreamBuild, TaskListener listener, List<Action> actions) {
                     return shouldTrigger(upstreamBuild, listener);
@@ -253,7 +260,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                         continue;
                     }
                     List<Job> upstreams =
-                            Items.fromNameList(downstream.getParent(), trigger.upstreamProjects, Job.class);
+                            Items.fromNameList(downstream.getParent(), trigger.getUpstreamProjects(), Job.class);
                     LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
                     for (Job upstream : upstreams) {
                         if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
@@ -310,8 +317,8 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
                     ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
                     if (t != null) {
                         String revised =
-                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects,
-                                        p.getParent());
+                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName,
+                                        t.getUpstreamProjects(), p.getParent());
                         if (!revised.equals(t.upstreamProjects)) {
                             t.upstreamProjects = revised;
                             try {
