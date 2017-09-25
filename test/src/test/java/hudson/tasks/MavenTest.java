@@ -355,6 +355,7 @@ public class MavenTest {
                 log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
     }
 
+    @Issue("JENKINS-34138")
     @Test public void checkMavenInstallationEquals() throws Exception {
         MavenInstallation maven = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureMaven3();
@@ -362,6 +363,7 @@ public class MavenTest {
         assertTrue(maven.equals(maven2));
     }
 
+    @Issue("JENKINS-34138")
     @Test public void checkMavenInstallationNotEquals() throws Exception {
         MavenInstallation maven3 = ToolInstallations.configureMaven3();
         MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
