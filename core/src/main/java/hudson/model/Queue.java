@@ -103,7 +103,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -1179,20 +1178,42 @@ public class Queue extends ResourceController implements Saveable {
      *
      * @return the reason of blockage if it exists null otherwise.
      */
-    @Nullable
+    @CheckForNull
     private CauseOfBlockage getCauseOfBlockage(Item i) {
-        if (i.task.isBuildBlocked())
-            return i.task.getCauseOfBlockage();
-
-        if (!canRun(i.task.getResourceList())) {
-            // TODO remove
-            return CauseOfBlockage.createNeedsMoreExecutor(Messages._Queue_WaitingForNextAvailableExecutor());
+        CauseOfBlockage causeOfBlockage = getCauseOfBlockageForTask(i.task);
+        if (causeOfBlockage != null) {
+            return causeOfBlockage;
         }
 
         for (QueueTaskDispatcher d : QueueTaskDispatcher.all()) {
-            CauseOfBlockage causeOfBlockage = d.canRun(i);
+            causeOfBlockage = d.canRun(i);
             if (causeOfBlockage != null)
                 return causeOfBlockage;
+        }
+
+        return null;
+    }
+
+    /**
+     *
+     * Checks if the given task knows the reasons to be blocked or it needs some unavailable resources
+     *
+     * @param task the task.
+     * @return the reason of blockage if it exists null otherwise.
+     */
+    @CheckForNull
+    private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
+        if(task.isBuildBlocked()) {
+            return task.getCauseOfBlockage();
+        }
+
+        if (!canRun(task.getResourceList())) {
+            ResourceActivity r = getBlockingActivity(task);
+            if (r != null) {
+                if (r == task) // blocked by itself, meaning another build is in progress
+                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
+                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
+            }
         }
 
         return null;
@@ -2460,6 +2481,22 @@ public class Queue extends ResourceController implements Saveable {
     public final class BlockedItem extends NotWaitingItem {
         private transient CauseOfBlockage causeOfBlockage = null;
 
+        /**
+         * @deprecated Use {@link #BlockedItem(WaitingItem, CauseOfBlockage)} instead
+         */
+        @Deprecated
+        public BlockedItem(WaitingItem wi) {
+            this(wi, null);
+        }
+
+        /**
+         * @deprecated Use {@link #BlockedItem(NotWaitingItem, CauseOfBlockage)} instead
+         */
+        @Deprecated
+        public BlockedItem(NotWaitingItem ni) {
+            this(ni, null);
+        }
+
         public BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
             this.causeOfBlockage = causeOfBlockage;
@@ -2475,18 +2512,12 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         public CauseOfBlockage getCauseOfBlockage() {
-            ResourceActivity r = getBlockingActivity(task);
-            if (r != null) {
-                if (r == task) // blocked by itself, meaning another build is in progress
-                    return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
-                return CauseOfBlockage.fromMessage(Messages._Queue_BlockedBy(r.getDisplayName()));
-            }
-
             if (causeOfBlockage != null) {
                 return causeOfBlockage;
             }
 
-            return task.getCauseOfBlockage();
+            // fallback for backward compatibility
+            return getCauseOfBlockageForTask(task);
         }
 
         /*package*/ void enter(Queue q) {
