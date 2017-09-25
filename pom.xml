@@ -238,7 +238,7 @@ THE SOFTWARE.
         <groupId>javax.servlet</groupId>
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
-        <version>[0-SNAPSHOT]</version>
+        <version>[0]</version>
         <scope>provided</scope>
         <optional>true</optional>
       </dependency>
