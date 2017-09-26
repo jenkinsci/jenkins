@@ -194,6 +194,24 @@ THE SOFTWARE.
         <!-- version specified in grandparent pom -->
         <configuration>
           <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
+          <nonFilteredFileExtensions>
+            <nonFilteredExtension>eot</nonFilteredExtension>
+            <nonFilteredExtension>hudson-community</nonFilteredExtension>
+            <nonFilteredExtension>hudson</nonFilteredExtension>
+            <nonFilteredExtension>ico</nonFilteredExtension>
+            <nonFilteredExtension>jenkins-update-center-root-ca</nonFilteredExtension>
+            <nonFilteredExtension>otf</nonFilteredExtension>
+            <nonFilteredExtension>psd</nonFilteredExtension>
+            <nonFilteredExtension>svg</nonFilteredExtension>
+            <nonFilteredExtension>swf</nonFilteredExtension>
+            <nonFilteredExtension>ttf</nonFilteredExtension>
+            <nonFilteredExtension>vsd</nonFilteredExtension>
+            <nonFilteredExtension>woff2</nonFilteredExtension>
+            <nonFilteredExtension>woff</nonFilteredExtension>
+            <nonFilteredExtension>xcf</nonFilteredExtension>
+          </nonFilteredFileExtensions>
+
+
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
