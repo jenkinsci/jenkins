@@ -72,7 +72,9 @@ public class CrumbFilter implements Filter {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.log(Level.WARNING, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
+                    // JENKINS-40344: Don't spam the log just because a session is expired
+                    Level level = Jenkins.getAuthentication() == Jenkins.ANONYMOUS ? Level.FINE : Level.WARNING;
+                    LOGGER.log(level, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
 
