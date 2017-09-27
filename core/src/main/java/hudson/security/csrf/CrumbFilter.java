@@ -68,12 +68,14 @@ public class CrumbFilter implements Filter {
                 // compatibility for clients that hard-code the default crumb name up to Jenkins 1.TODO
                 extractCrumbFromRequest(httpRequest, ".crumb");
             }
+
+            // JENKINS-40344: Don't spam the log just because a session is expired
+            Level level = Jenkins.getAuthentication() == Jenkins.ANONYMOUS ? Level.FINE : Level.WARNING;
+
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    // JENKINS-40344: Don't spam the log just because a session is expired
-                    Level level = Jenkins.getAuthentication() == Jenkins.ANONYMOUS ? Level.FINE : Level.WARNING;
                     LOGGER.log(level, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
@@ -81,7 +83,7 @@ public class CrumbFilter implements Filter {
             if (valid) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.log(Level.WARNING, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
+                LOGGER.log(level, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
