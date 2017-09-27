@@ -3191,7 +3191,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
-        version = VERSION;
+
+        if (initLevel == InitMilestone.COMPLETED) {
+            LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
+            version = VERSION;
+        } else {
+            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+        }
 
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
