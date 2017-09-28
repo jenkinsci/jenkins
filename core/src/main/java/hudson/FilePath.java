@@ -2166,7 +2166,7 @@ public final class FilePath implements Serializable {
                                 writing(new File(dest, target));
                                 Util.createSymlink(dest, target, relativePath, TaskListener.NULL);
                             } catch (InterruptedException x) {
-                                throw (IOException) new IOException(x.toString()).initCause(x);
+                                throw new IOException(x);
                             }
                             count.incrementAndGet();
                         }
@@ -2199,7 +2199,12 @@ public final class FilePath implements Serializable {
                 future.get();
                 return future2.get();
             } catch (ExecutionException e) {
-                throw new IOException(e);
+                Throwable cause = e.getCause();
+                if (cause == null) cause = e;
+                throw cause instanceof IOException
+                        ? (IOException) cause
+                        : new IOException(cause)
+                ;
             }
         } else {
             // remote -> local copy
@@ -2221,7 +2226,8 @@ public final class FilePath implements Serializable {
                     throw e;    // the remote side completed successfully, so the error must be local
                 } catch (ExecutionException x) {
                     // report both errors
-                    throw new IOException(Functions.printThrowable(e),x);
+                    e.addSuppressed(x);
+                    throw e;
                 } catch (TimeoutException _) {
                     // remote is hanging
                     throw e;
@@ -2230,7 +2236,12 @@ public final class FilePath implements Serializable {
             try {
                 return future.get();
             } catch (ExecutionException e) {
-                throw new IOException(e);
+                Throwable cause = e.getCause();
+                if (cause == null) cause = e;
+                throw cause instanceof IOException
+                        ? (IOException) cause
+                        : new IOException(cause)
+                ;
             }
         }
     }
