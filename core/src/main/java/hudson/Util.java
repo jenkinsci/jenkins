@@ -573,7 +573,7 @@ public class Util {
      * @param potentialChild the path to check
      * @return true if so
      * @throws IOException for invalid paths
-     * @since FIXME
+     * @since 2.80
      * @see InvalidPathException
      */
     public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
