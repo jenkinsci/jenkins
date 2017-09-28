@@ -29,15 +29,19 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import hudson.XmlFile;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.UpdateNodeCommand;
 import hudson.model.Computer;
 import hudson.model.User;
+import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -73,6 +77,7 @@ public class CommandLauncher2Test {
                 rr.j.submit(form);
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by GUI", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertSerialForm(s, "echo configured by GUI");
                 // Then by REST.
                 String configDotXml = s.toComputer().getUrl() + "config.xml";
                 String xml = wc.goTo(configDotXml, "application/xml").getWebResponse().getContentAsString();
@@ -83,14 +88,17 @@ public class CommandLauncher2Test {
                 wc.getPage(req);
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by REST", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertSerialForm(s, "echo configured by REST");
                 // Then by CLI.
                 CLICommand cmd = new UpdateNodeCommand();
                 cmd.setTransportAuth(User.get("admin").impersonate());
                 assertThat(new CLICommandInvoker(rr.j, cmd).withStdin(new StringInputStream(xml.replace("echo configured by GUI", "echo configured by CLI"))).invokeWithArgs("s"), CLICommandInvoker.Matcher.succeededSilently());
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by CLI", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertSerialForm(s, "echo configured by CLI");
                 // Now verify that all modes failed as dev. First as GUI.
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
+                s.save();
                 wc = rr.j.createWebClient().login("dev");
                 form = wc.getPage(s, "configure").getFormByName("config");
                 input = form.getInputByName("_.command");
@@ -104,6 +112,7 @@ public class CommandLauncher2Test {
                 }
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by admin", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertSerialForm(s, "echo configured by admin");
                 // Then by REST.
                 req = new WebRequest(wc.createCrumbedUrl(configDotXml), HttpMethod.POST);
                 req.setEncodingType(null);
@@ -115,6 +124,7 @@ public class CommandLauncher2Test {
                 }
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertNotEquals(CommandLauncher.class, s.getLauncher().getClass()); // currently seems to reset it to JNLPLauncher, whatever
+                assertSerialForm(s, null);
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
                 // Then by CLI.
                 cmd = new UpdateNodeCommand();
@@ -123,9 +133,16 @@ public class CommandLauncher2Test {
                     CLICommandInvoker.Matcher./* gets swallowed by RobustReflectionConverter, hmm*/succeededSilently());
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertNotEquals(CommandLauncher.class, s.getLauncher().getClass());
+                assertSerialForm(s, null);
                 // Now also check that SYSTEM deserialization works after a restart.
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
                 s.save();
+            }
+            private void assertSerialForm(DumbSlave s, @CheckForNull String expectedCommand) throws IOException {
+                // cf. private methods in Nodes
+                File nodesDir = new File(rr.j.jenkins.getRootDir(), "nodes");
+                XmlFile configXml = new XmlFile(Jenkins.XSTREAM, new File(new File(nodesDir, s.getNodeName()), "config.xml"));
+                assertThat(configXml.asString(), expectedCommand != null ? containsString("<agentCommand>" + expectedCommand + "</agentCommand>") : not(containsString("<agentCommand>")));
             }
         });
         rr.addStep(new Statement() {
