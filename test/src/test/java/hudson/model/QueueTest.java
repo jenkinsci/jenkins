@@ -103,6 +103,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -905,6 +906,7 @@ public class QueueTest {
         public static class DescriptorImpl extends NodePropertyDescriptor {}
     }
 
+    @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
 
@@ -954,6 +956,12 @@ public class QueueTest {
         List projects = p3.getByXPath("/queue/discoverableItem/task/name/text()");
         assertEquals(1, projects.size());
         assertEquals("project", projects.get(0).toString());
+
+        // Also check individual item exports.
+        String url = project.getQueueItem().getUrl() + "api/xml";
+        r.createWebClient().login("bob").goToXml(url); // OK, 200
+        r.createWebClient().login("james").assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
+        r.createWebClient().login("alice").assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
     }
 
     //we force the project not to be executed so that it stays in the queue
