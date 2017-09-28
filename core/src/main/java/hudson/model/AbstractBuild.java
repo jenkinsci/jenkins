@@ -1108,7 +1108,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
 
                 AbstractBuild<?,?> b = p.getBuildByNumber(i);
                 if (b!=null)
-                    return Messages.AbstractBuild_KeptBecause(b);
+                    return Messages.AbstractBuild_KeptBecause(p.hasPermission(Item.READ) ? b.toString() : "?");
             }
         }
 
