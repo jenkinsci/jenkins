@@ -1,16 +1,44 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2015, CloudBees, Inc. and others
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package hudson.security;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import hudson.model.User;
+import hudson.remoting.Base64;
 import static hudson.security.HudsonPrivateSecurityRealm.CLASSIC;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
+import hudson.security.pages.SignupPage;
+import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+import jenkins.security.ApiTokenProperty;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.xml.HasXPath.hasXPath;
-
-import java.io.UnsupportedEncodingException;
-
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -18,17 +46,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 
-import hudson.model.User;
-import hudson.remoting.Base64;
-import jenkins.security.ApiTokenProperty;
-
-/**
- * @author Kohsuke Kawaguchi
- */
 public class HudsonPrivateSecurityRealmTest {
 
     @Rule
@@ -169,6 +187,76 @@ public class HudsonPrivateSecurityRealmTest {
         String auth = Base64.encode(str.getBytes("US-ASCII"));
         String authHeader = "Basic " + auth;
         return authHeader;
+    }
+
+    @Test
+    public void signup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("alice");
+        signup.enterPassword("alice");
+        signup.enterFullName("Alice User");
+        signup.enterEmail("alice@nowhere.com");
+        HtmlPage success = signup.submit(j);
+        assertThat(success.getElementById("main-panel").getTextContent(), containsString("Success"));
+        assertThat(success.getAnchorByHref("/jenkins/user/alice").getTextContent(), containsString("Alice User"));
+
+
+        assertEquals("Alice User", securityRealm.getUser("alice").getDisplayName());
+
+    }
+
+    @Issue("SECURITY-166")
+    @Test
+    public void anonymousCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("anonymous");
+        signup.enterFullName("Bob");
+        signup.enterPassword("nothing");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("prohibited as a username");
+        assertNull(User.get("anonymous", false, Collections.emptyMap()));
+    }
+
+    @Issue("SECURITY-166")
+    @Test
+    public void systemCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("system");
+        signup.enterFullName("Bob");
+        signup.enterPassword("nothing");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("prohibited as a username");
+        assertNull(User.get("system",false, Collections.emptyMap()));
+    }
+
+    /**
+     * We don't allow prohibited fullnames since this may encumber auditing.
+     */
+    @Issue("SECURITY-166")
+    @Test
+    public void fullNameOfUnknownCantSignup() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+        JenkinsRule.WebClient wc = j.createWebClient();
+        SignupPage signup = new SignupPage(wc.goTo("signup"));
+        signup.enterUsername("unknown2");
+        signup.enterPassword("unknown2");
+        signup.enterFullName("unknown");
+        signup.enterEmail("noone@nowhere.com");
+        signup = new SignupPage(signup.submit(j));
+        signup.assertErrorContains("prohibited as a full name");
+        assertNull(User.get("unknown2",false, Collections.emptyMap()));
     }
 
 }
