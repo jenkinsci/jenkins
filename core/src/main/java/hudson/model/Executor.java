@@ -64,12 +64,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
+import hudson.security.AccessControlled;
 import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.queue.AsynchronousExecution;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
@@ -483,7 +485,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     public @CheckForNull Queue.Executable getCurrentExecutable() {
         lock.readLock().lock();
         try {
@@ -491,6 +492,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    /**
+     * Same as {@link #getCurrentExecutable} but checks {@link Item#READ}.
+     */
+    @Exported(name="currentExecutable")
+    @Restricted(DoNotUse.class) // for exporting only
+    public Queue.Executable getCurrentExecutableForApi() {
+        Executable candidate = getCurrentExecutable();
+        return candidate instanceof AccessControlled && ((AccessControlled) candidate).hasPermission(Item.READ) ? candidate : null;
     }
     
     /**
@@ -510,7 +521,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
         try {
