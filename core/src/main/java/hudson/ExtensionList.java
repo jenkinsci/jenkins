@@ -422,8 +422,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Equivalent to {@code ExtensionList.lookup(Class).get(Class)}.
      *
      * @param type The type to look up.
-     * @param <U>
-     * @return
+     * @return the first instance of the given type in its list.
      *
      * @since TODO
      */
