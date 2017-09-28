@@ -83,7 +83,7 @@ public class CrumbFilter implements Filter {
             if (valid) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.log(level, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
+                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication().getName(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {
