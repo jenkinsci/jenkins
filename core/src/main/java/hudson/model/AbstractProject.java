@@ -1576,14 +1576,36 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the other {@link AbstractProject}s that should be built
      * when a build of this project is completed.
      */
-    @Exported
     public final List<AbstractProject> getDownstreamProjects() {
         return Jenkins.getInstance().getDependencyGraph().getDownstream(this);
     }
 
-    @Exported
+    @Exported(name="downstreamProjects")
+    @Restricted(DoNotUse.class) // only for exporting
+    public List<AbstractProject> getDownstreamProjectsForApi() {
+        List<AbstractProject> r = new ArrayList<>();
+        for (AbstractProject p : getDownstreamProjects()) {
+            if (p.hasPermission(Item.READ)) {
+                r.add(p);
+            }
+        }
+        return r;
+    }
+
     public final List<AbstractProject> getUpstreamProjects() {
         return Jenkins.getInstance().getDependencyGraph().getUpstream(this);
+    }
+
+    @Exported(name="upstreamProjects")
+    @Restricted(DoNotUse.class) // only for exporting
+    public List<AbstractProject> getUpstreamProjectsForApi() {
+        List<AbstractProject> r = new ArrayList<>();
+        for (AbstractProject p : getUpstreamProjects()) {
+            if (p.hasPermission(Item.READ)) {
+                r.add(p);
+            }
+        }
+        return r;
     }
 
     /**
