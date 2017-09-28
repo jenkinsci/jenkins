@@ -2206,9 +2206,20 @@ public class Queue extends ResourceController implements Saveable {
             return Tasks.getDefaultAuthenticationOf(task, this);
         }
 
-
-        public Api getApi() {
-            return new Api(this);
+        @Restricted(DoNotUse.class) // only for Stapler export
+        public Api getApi() throws AccessDeniedException {
+            if (task instanceof AccessControlled) {
+                AccessControlled ac = (AccessControlled) task;
+                if (!ac.hasPermission(hudson.model.Item.DISCOVER)) {
+                    return null; // same as getItem(long) returning null (details are printed only in case of -Dstapler.trace=true)
+                } else if (!ac.hasPermission(hudson.model.Item.READ)) {
+                    throw new AccessDeniedException("Please log in to access " + task.getUrl()); // like Jenkins.getItem
+                } else { // have READ
+                    return new Api(this);
+                }
+            } else { // err on the safe side
+                return null;
+            }
         }
 
         private Object readResolve() {
