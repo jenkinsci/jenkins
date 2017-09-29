@@ -439,10 +439,26 @@ public final class TcpSlaveAgentListener extends Thread {
         private long recurrencePeriod = 5000;
         private boolean isActive;
 
+        public TcpSlaveAgentListenerRescheduler() {
+            isActive = false;
+        }
+
         public TcpSlaveAgentListenerRescheduler(Thread originThread, Throwable cause) {
             this.originThread = originThread;
             this.cause = cause;
             this.isActive = false;
+        }
+
+        public void setOriginThread(Thread originThread) {
+            this.originThread = originThread;
+        }
+
+        public void setCause(Throwable cause) {
+            this.cause = cause;
+        }
+
+        public void setActive(boolean active) {
+            isActive = active;
         }
 
         @Override
