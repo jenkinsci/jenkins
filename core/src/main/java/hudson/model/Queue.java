@@ -1179,7 +1179,7 @@ public class Queue extends ResourceController implements Saveable {
      * @return the reason of blockage if it exists null otherwise.
      */
     @CheckForNull
-    private CauseOfBlockage getCauseOfBlockage(Item i) {
+    private CauseOfBlockage getCauseOfBlockageForItem(Item i) {
         CauseOfBlockage causeOfBlockage = getCauseOfBlockageForTask(i.task);
         if (causeOfBlockage != null) {
             return causeOfBlockage;
@@ -1189,6 +1189,20 @@ public class Queue extends ResourceController implements Saveable {
             causeOfBlockage = d.canRun(i);
             if (causeOfBlockage != null)
                 return causeOfBlockage;
+        }
+
+        if(!(i instanceof BuildableItem)) {
+            // Make sure we don't queue two tasks of the same project to be built
+            // unless that project allows concurrent builds. Once item is buildable it's ok.
+            //
+            // This check should never pass. And must be remove once we can completely rely on `getCauseOfBlockage`.
+            // If `task.isConcurrentBuild` returns `false`,
+            // it should also return non-null value for `task.getCauseOfBlockage` in case of on-going execution.
+            // But both are public non-final methods, so, we need to keep backward compatibility here.
+            // And check one more time across all `buildables` and `pendings` for O(N) each.
+            if (!i.task.isConcurrentBuild() && (buildables.containsKey(i.task) || pendings.containsKey(i.task))) {
+                return CauseOfBlockage.fromMessage(Messages._Queue_InProgress());
+            }
         }
 
         return null;
@@ -1203,7 +1217,8 @@ public class Queue extends ResourceController implements Saveable {
      */
     @CheckForNull
     private CauseOfBlockage getCauseOfBlockageForTask(Task task) {
-        if(task.isBuildBlocked()) {
+        CauseOfBlockage causeOfBlockage = task.getCauseOfBlockage();
+        if (causeOfBlockage != null) {
             return task.getCauseOfBlockage();
         }
 
@@ -1217,17 +1232,6 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         return null;
-    }
-
-    /**
-     * Make sure we don't queue two tasks of the same project to be built
-     * unless that project allows concurrent builds.
-     */
-    private boolean allowNewBuildableTask(Task t) {
-        if (t.isConcurrentBuild()) {
-            return true;
-        }
-        return !buildables.containsKey(t) && !pendings.containsKey(t);
     }
 
     /**
@@ -1503,8 +1507,8 @@ public class Queue extends ResourceController implements Saveable {
                 for (BlockedItem p : blockedItems) {
                     String taskDisplayName = LOGGER.isLoggable(Level.FINEST) ? p.task.getFullDisplayName() : null;
                     LOGGER.log(Level.FINEST, "Current blocked item: {0}", taskDisplayName);
-                    CauseOfBlockage causeOfBlockage = getCauseOfBlockage(p);
-                    if (causeOfBlockage == null && allowNewBuildableTask(p.task)) {
+                    CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(p);
+                    if (causeOfBlockage == null) {
                         LOGGER.log(Level.FINEST,
                                 "BlockedItem {0}: blocked -> buildable as the build is not blocked and new tasks are allowed",
                                 taskDisplayName);
@@ -1535,9 +1539,8 @@ public class Queue extends ResourceController implements Saveable {
                 }
 
                 top.leave(this);
-                Task p = top.task;
-                CauseOfBlockage causeOfBlockage = getCauseOfBlockage(top);
-                if (causeOfBlockage == null && allowNewBuildableTask(p)) {
+                CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(top);
+                if (causeOfBlockage == null) {
                     // ready to be executed immediately
                     Runnable r = makeBuildable(new BuildableItem(top));
                     String topTaskDisplayName = LOGGER.isLoggable(Level.FINEST) ? top.task.getFullDisplayName() : null;
@@ -1565,7 +1568,7 @@ public class Queue extends ResourceController implements Saveable {
             for (BuildableItem p : new ArrayList<BuildableItem>(
                     buildables)) {// copy as we'll mutate the list in the loop
                 // one last check to make sure this build is not blocked.
-                CauseOfBlockage causeOfBlockage = getCauseOfBlockage(p);
+                CauseOfBlockage causeOfBlockage = getCauseOfBlockageForItem(p);
                 if (causeOfBlockage != null) {
                     p.leave(this);
                     new BlockedItem(p, causeOfBlockage).enter(this);
@@ -1632,7 +1635,7 @@ public class Queue extends ResourceController implements Saveable {
                     // The creation of a snapshot itself should be relatively cheap given the expected rate of
                     // job execution. You probably would need 100's of jobs starting execution every iteration
                     // of maintain() before this could even start to become an issue and likely the calculation
-                    // of getCauseOfBlockage(p) will become a bottleneck before updateSnapshot() will. Additionally
+                    // of getCauseOfBlockageForItem(p) will become a bottleneck before updateSnapshot() will. Additionally
                     // since the snapshot itself only ever has at most one reference originating outside of the stack
                     // it should remain in the eden space and thus be cheap to GC.
                     // See https://jenkins-ci.org/issue/27708?focusedCommentId=225819&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-225819
@@ -1813,7 +1816,7 @@ public class Queue extends ResourceController implements Saveable {
          * for temporary reasons.
          *
          * <p>
-         * Short-hand for {@code getCauseOfBlockage()!=null}.
+         * Short-hand for {@code getCauseOfBlockageForItem()!=null}.
          */
         boolean isBuildBlocked();
 
@@ -1838,6 +1841,9 @@ public class Queue extends ResourceController implements Saveable {
          */
         @CheckForNull
         default CauseOfBlockage getCauseOfBlockage() {
+            if (isBuildBlocked()) {
+                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
+            }
             return null;
         }
 
@@ -2517,7 +2523,7 @@ public class Queue extends ResourceController implements Saveable {
             }
 
             // fallback for backward compatibility
-            return getCauseOfBlockageForTask(task);
+            return getCauseOfBlockageForItem(this);
         }
 
         /*package*/ void enter(Queue q) {
