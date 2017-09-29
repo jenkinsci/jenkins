@@ -101,6 +101,9 @@ THE SOFTWARE.
     <java.level>8</java.level>
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
+
+    <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
