@@ -71,11 +71,15 @@ public final class WorkUnit {
 
     public void setExecutor(@CheckForNull Executor e) {
         executor = e;
+        if (e != null) {
+            context.future.addExecutor(e);
+        }
     }
 
     /**
      * If the execution has already started, return the executable that was created.
      */
+    @CheckForNull
     public Executable getExecutable() {
         return executable;
     }

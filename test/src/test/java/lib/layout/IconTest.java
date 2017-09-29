@@ -23,9 +23,7 @@
  */
 package lib.layout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.collect.Lists;
@@ -53,8 +51,8 @@ public class IconTest extends HudsonTestCase  {
 
     public void testIcons() throws Exception {
         HtmlPage p = createWebClient().goTo("self/01_testIcons");
-        HtmlElement iconsBlock = p.getElementById("iconsBlock");
-        List<HtmlElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
+        DomElement iconsBlock = p.getElementById("iconsBlock");
+        List<DomElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
 
         assertIconToImageOkay(icons.get(0), "/images/16x16/aborted.png", "icon-aborted icon-sm");
         assertIconToImageOkay(icons.get(1), "/images/24x24/aborted.png", "icon-aborted icon-md");
@@ -72,12 +70,12 @@ public class IconTest extends HudsonTestCase  {
     public void testBallColorTd() throws Exception {
         HtmlPage p = createWebClient().goTo("self/02_testBallColorTd");
 
-        HtmlElement ballColorAborted = p.getElementById("ballColorAborted");
-        List<HtmlElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
+        DomElement ballColorAborted = p.getElementById("ballColorAborted");
+        List<DomElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
         assertIconToImageOkay(ballIcons.get(0), "/images/32x32/aborted.png", "icon-aborted icon-lg");
 
-        HtmlElement statusIcons = p.getElementById("statusIcons");
-        List<HtmlElement> statusIconsList = Lists.newArrayList(statusIcons.getChildElements());
+        DomElement statusIcons = p.getElementById("statusIcons");
+        List<DomElement> statusIconsList = Lists.newArrayList(statusIcons.getChildElements());
         assertIconToImageOkay(statusIconsList.get(0), "/images/32x32/folder.png", "icon-folder icon-lg");
 
         assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
@@ -86,8 +84,8 @@ public class IconTest extends HudsonTestCase  {
     public void testTasks() throws Exception {
         HtmlPage p = createWebClient().goTo("self/03_testTask");
 
-        HtmlElement tasksDiv = p.getElementById("tasks");
-        List<HtmlElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
+        DomElement tasksDiv = p.getElementById("tasks");
+        List<DomElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
 
         assertIconToImageOkay(taskDivs.get(0).getElementsByTagName("img").get(0), "/images/24x24/up.png", "icon-up icon-md");
         assertIconToImageOkay(taskDivs.get(1).getElementsByTagName("img").get(0), "/images/24x24/folder.png", "icon-folder icon-md");
@@ -120,11 +118,11 @@ public class IconTest extends HudsonTestCase  {
         };
     }
 
-    private void assertIconToImageOkay(HtmlElement icon, String imgPath) {
+    private void assertIconToImageOkay(DomElement icon, String imgPath) {
         assertIconToImageOkay(icon, imgPath, null);
     }
 
-    private void assertIconToImageOkay(HtmlElement icon, String imgPath, String classSpec) {
+    private void assertIconToImageOkay(DomElement icon, String imgPath, String classSpec) {
         assertEquals("img", icon.getTagName());
         assertTrue(icon.getAttribute("src").endsWith(imgPath));
         if (classSpec != null) {

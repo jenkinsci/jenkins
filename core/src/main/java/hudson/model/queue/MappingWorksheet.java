@@ -25,12 +25,12 @@ package hudson.model.queue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.LoadBalancer;
 import hudson.model.Node;
+import hudson.model.Queue;
 import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.JobOffer;
@@ -374,8 +374,8 @@ public class MappingWorksheet {
 
         // group execution units into chunks. use of LinkedHashMap ensures that the main work comes at the top
         Map<Object,List<SubTask>> m = new LinkedHashMap<Object,List<SubTask>>();
-        for (SubTask meu : Tasks.getSubTasksOf(item.task)) {
-            Object c = Tasks.getSameNodeConstraintOf(meu);
+        for (SubTask meu : item.task.getSubTasks()) {
+            Object c = meu.getSameNodeConstraint();
             if (c==null)    c = new Object();
 
             List<SubTask> l = m.get(c);

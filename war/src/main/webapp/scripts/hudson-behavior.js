@@ -29,6 +29,11 @@
 //     for memory leak patterns and how to prevent them.
 //
 
+if (window.isRunAsTest) {
+    // Disable postMessage when running in test mode (HtmlUnit).
+    window.postMessage = false;
+}
+
 // create a new object whose prototype is the given object
 function object(o) {
     function F() {}
@@ -117,6 +122,13 @@ var crumb = {
         var div = document.createElement("div");
         div.innerHTML = "<input type=hidden name='"+this.fieldName+"' value='"+this.value+"'>";
         form.appendChild(div);
+        if (form.enctype == "multipart/form-data") {
+            if (form.action.indexOf("?") != -1) {
+                form.action = form.action+"&"+this.fieldName+"="+this.value;
+            } else {
+                form.action = form.action+"?"+this.fieldName+"="+this.value;
+            }
+        }
     }
 }
 
@@ -338,7 +350,14 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
+    return directionF(src,function(e){ 
+        if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
+            var r = 0;
+            while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
+                r = e.name.indexOf('_',r+8)+1;
+            return name == e.name.substring(r);
+        }
+        return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 }
 
 /**
@@ -952,7 +971,7 @@ var jenkinsRules = {
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisisble : function(b) {
+            makeOuterVisible : function(b) {
                 this.outerVisible = b;
                 this.updateVisibility();
             },
@@ -963,7 +982,7 @@ var jenkinsRules = {
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisisble : function(b) {
+            makeInnerVisible : function(b) {
                 this.innerVisible = b;
                 this.updateVisibility();
             },
@@ -975,7 +994,7 @@ var jenkinsRules = {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
                 for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
                     } else {
                         e.style.display = display;
@@ -1025,7 +1044,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
-        // can sandwitch row-set-end
+        // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
@@ -1096,7 +1115,7 @@ var jenkinsRules = {
                 var f = $(subForms[i]);
 
                 if (show)   renderOnDemand(f.next());
-                f.rowVisibilityGroup.makeInnerVisisble(show);
+                f.rowVisibilityGroup.makeInnerVisible(show);
 
                 // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
                 // so far dropdownList doesn't create such a situation.
@@ -1183,6 +1202,7 @@ var jenkinsRules = {
         Element.observe(window,"resize",adjustSticker);
         // initial positioning
         Element.observe(window,"load",adjustSticker);
+        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
         adjustSticker();
         layoutUpdateCallback.add(adjustSticker);
     },
@@ -1344,7 +1364,7 @@ function updateOptionalBlock(c,scroll) {
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
-    vg.rowVisibilityGroup.makeInnerVisisble(checked);
+    vg.rowVisibilityGroup.makeInnerVisible(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
@@ -1473,6 +1493,7 @@ function expandTextArea(button,id) {
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 function refreshPart(id,url) {
+    var intervalID = null;
     var f = function() {
         if(isPageVisible()) {
             new Ajax.Request(url, {
@@ -1480,6 +1501,8 @@ function refreshPart(id,url) {
                     var hist = $(id);
                     if (hist == null) {
                         console.log("There's no element that has ID of " + id);
+                        if (intervalID !== null)
+                            window.clearInterval(intervalID);
                         return;
                     }
                     var p = hist.up();
@@ -1492,22 +1515,14 @@ function refreshPart(id,url) {
 
                     Behaviour.applySubtree(node);
                     layoutUpdateCallback.call();
-
-                    if(isRunAsTest) return;
-                    refreshPart(id,url);
                 }
-            });    
-        } else {
-            // Reschedule
-            if(isRunAsTest) return;
-            refreshPart(id,url);
+            });
         }
-        
     };
     // if run as test, just do it once and do it now to make sure it's working,
     // but don't repeat.
     if(isRunAsTest) f();
-    else    window.setTimeout(f, 5000);
+    else intervalID = window.setInterval(f, 5000);
 }
 
 
@@ -1583,11 +1598,19 @@ function fireBuildHistoryChanged() {
 function updateBuildHistory(ajaxUrl,nBuild) {
     if(isRunAsTest) return;
     var bh = $('buildHistory');
+    
+    // If the build history pane is collapsed, just return immediately and don't set up
+    // the build history refresh.
+    if (bh.hasClassName('collapsed')) {
+        return;
+    }
+    
+    var buildHistoryPage = $('buildHistoryPage');
 
     bh.headers = ["n",nBuild];
 
     function getDataTable(buildHistoryDiv) {
-        return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
+	return $(buildHistoryDiv).getElementsBySelector('table.pane')[0];
     }
 
     var leftRightPadding = 4;
@@ -1898,8 +1921,12 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     var rows = dataTable.rows;
 
                     //delete rows with transitive data
-                    while (rows.length > 0 && Element.hasClassName(rows[0], "transitive")) {
-                        Element.remove(rows[0]);
+                    var firstBuildRow = 0;
+                    if (Element.hasClassName(rows[firstBuildRow], "build-search-row")) {
+                        firstBuildRow++;
+                    }
+                    while (rows.length > 0 && Element.hasClassName(rows[firstBuildRow], "transitive")) {
+                        Element.remove(rows[firstBuildRow]);
                     }
 
                     // insert new rows
@@ -1907,8 +1934,9 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                     div.innerHTML = rsp.responseText;
                     Behaviour.applySubtree(div);
 
-                    var pivot = rows[0];
-                    var newRows = getDataTable(div).rows;
+                    var pivot = rows[firstBuildRow];
+                    var newDataTable = getDataTable(div);
+                    var newRows = newDataTable.rows;
                     while (newRows.length > 0) {
                         if (pivot !== undefined) {
                             // The data table has rows.  Insert before a "pivot" row (first row).
@@ -1917,28 +1945,206 @@ function updateBuildHistory(ajaxUrl,nBuild) {
                             // The data table has no rows.  In this case, we just add all new rows directly to the
                             // table, one after the other i.e. we don't insert before a "pivot" row (first row).
                             dataTable.appendChild(newRows[0]);
-                        }
+			            }
+			        }
+
+                    if (Element.hasClassName(newDataTable, 'hasPageData')) {
+                        buildHistoryPage.setAttribute('page-entry-newest', newDataTable.getAttribute('page-entry-newest'));
                     }
 
                     // next update
                     bh.headers = ["n",rsp.getResponseHeader("n")];
-                    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
-
                     checkAllRowCellOverflows();
+                    createRefreshTimeout();
                 }
-            });
-        } else {
+	        });
+	    } else {
             // Reschedule again
-            window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
+	        createRefreshTimeout();
         }
     }
 
+    var buildRefreshTimeout;
+    function createRefreshTimeout() {
+        cancelRefreshTimeout();
+        buildRefreshTimeout = window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
+    }
+    function cancelRefreshTimeout() {
+        if (buildRefreshTimeout) {
+            window.clearTimeout(buildRefreshTimeout);
+            buildRefreshTimeout = undefined;
+        }
+    }
+
+    createRefreshTimeout();
     checkAllRowCellOverflows();
-    window.setTimeout(updateBuilds, updateBuildsRefreshInterval);
 
     onBuildHistoryChange(function() {
         checkAllRowCellOverflows();
     });
+
+    function setupHistoryNav() {
+        var sidePanel = $('side-panel');
+        var buildHistoryPageNav = $('buildHistoryPageNav');
+
+        // Show/hide the nav as the mouse moves into the sidepanel and build history.
+        sidePanel.observe('mouseover', function() {
+            Element.addClassName($(buildHistoryPageNav), "mouseOverSidePanel");
+        });
+        sidePanel.observe('mouseout', function() {
+            Element.removeClassName($(buildHistoryPageNav), "mouseOverSidePanel");
+        });
+        bh.observe('mouseover', function() {
+            Element.addClassName($(buildHistoryPageNav), "mouseOverSidePanelBuildHistory");
+        });
+        bh.observe('mouseout', function() {
+            Element.removeClassName($(buildHistoryPageNav), "mouseOverSidePanelBuildHistory");
+        });
+
+        var pageSearchInput = Element.getElementsBySelector(bh, '.build-search-row input')[0];
+        var pageSearchClear = Element.getElementsBySelector(bh, '.build-search-row .clear')[0];
+        var pageOne = Element.getElementsBySelector(buildHistoryPageNav, '.pageOne')[0];
+        var pageUp = Element.getElementsBySelector(buildHistoryPageNav, '.pageUp')[0];
+        var pageDown = Element.getElementsBySelector(buildHistoryPageNav, '.pageDown')[0];
+
+        function hasPageUp() {
+            return buildHistoryPage.getAttribute('page-has-up') === 'true';
+        }
+        function hasPageDown() {
+            return buildHistoryPage.getAttribute('page-has-down') === 'true';
+        }
+        function getNewestEntryId() {
+            return buildHistoryPage.getAttribute('page-entry-newest');
+        }
+        function getOldestEntryId() {
+            return buildHistoryPage.getAttribute('page-entry-oldest');
+        }
+        function updatePageParams(dataTable) {
+            buildHistoryPage.setAttribute('page-has-up', dataTable.getAttribute('page-has-up'));
+            buildHistoryPage.setAttribute('page-has-down', dataTable.getAttribute('page-has-down'));
+            buildHistoryPage.setAttribute('page-entry-newest', dataTable.getAttribute('page-entry-newest'));
+            buildHistoryPage.setAttribute('page-entry-oldest', dataTable.getAttribute('page-entry-oldest'));
+        }
+        function togglePageUpDown() {
+            Element.removeClassName($(buildHistoryPageNav), "hasUpPage");
+            Element.removeClassName($(buildHistoryPageNav), "hasDownPage");
+            if (hasPageUp()) {
+                Element.addClassName($(buildHistoryPageNav), "hasUpPage");
+            }
+            if (hasPageDown()) {
+                Element.addClassName($(buildHistoryPageNav), "hasDownPage");
+            }
+        }
+        function logPageParams() {
+            console.log('-----');
+            console.log('Has up: '   + hasPageUp());
+            console.log('Has down: ' + hasPageDown());
+            console.log('Newest: '   + getNewestEntryId());
+            console.log('Oldest: '   + getOldestEntryId());
+            console.log('-----');
+        }
+
+        function loadPage(params, focusOnSearch) {
+            var searchString = pageSearchInput.value;
+
+            if (searchString !== '') {
+                if (params === undefined) {
+                    params = {};
+                }
+                params.search = searchString;
+            }
+
+            new Ajax.Request(ajaxUrl + toQueryString(params), {
+                onSuccess: function(rsp) {
+                    var dataTable = getDataTable(bh);
+                    var rows = dataTable.rows;
+
+                    // delete all rows
+                    var searchRow;
+                    if (Element.hasClassName(rows[0], "build-search-row")) {
+                        searchRow = rows[0];
+                    }
+                    while (rows.length > 0) {
+                        Element.remove(rows[0]);
+                    }
+                    if (searchRow) {
+                        dataTable.appendChild(searchRow);
+                    }
+
+                    // insert new rows
+                    var div = document.createElement('div');
+                    div.innerHTML = rsp.responseText;
+                    Behaviour.applySubtree(div);
+
+                    var newDataTable = getDataTable(div);
+                    var newRows = newDataTable.rows;
+                    while (newRows.length > 0) {
+                        dataTable.appendChild(newRows[0]);
+                    }
+
+                    checkAllRowCellOverflows();
+                    updatePageParams(newDataTable);
+                    togglePageUpDown();
+                    if (!hasPageUp()) {
+                        createRefreshTimeout();
+                    }
+
+                    if (focusOnSearch) {
+                        pageSearchInput.focus();
+                    }
+                    //logPageParams();
+                }
+            });
+        }
+
+        pageSearchInput.observe('keypress', function(e) {
+            var key = e.which || e.keyCode;
+            // On enter
+            if (key === 13) {
+                loadPage({}, true);
+            }
+        });
+        pageSearchClear.observe('click', function() {
+            pageSearchInput.value = '';
+            loadPage({}, true);
+        });
+        pageOne.observe('click', function() {
+            loadPage();
+        });
+        pageUp.observe('click', function() {
+            loadPage({'newer-than': getNewestEntryId()});
+        });
+        pageDown.observe('click', function() {
+            if (hasPageDown()) {
+                cancelRefreshTimeout();
+                loadPage({'older-than': getOldestEntryId()});
+            } else {
+                // wrap back around to the top
+                loadPage();
+            }
+        });
+
+        togglePageUpDown();
+        //logPageParams();
+    }
+    setupHistoryNav();
+}
+
+function toQueryString(params) {
+    var query = '';
+    if (params) {
+        for (var paramName in params) {
+            if (params.hasOwnProperty(paramName)) {
+                if (query === '') {
+                    query = '?';
+                } else {
+                    query += '&';
+                }
+                query += paramName + '=' + encodeURIComponent(params[paramName]);
+            }
+        }
+    }
+    return query;
 }
 
 function getElementOverflowParams(element) {
@@ -2156,6 +2362,7 @@ function createSearchBox(searchURL) {
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
     ac.autoHighlight = false;
+    ac.formatResult = ac.formatEscapedResult;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
@@ -2252,7 +2459,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
+//   see https://jenkins.io/redirect/developer/structured-form-submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elements as keys
@@ -2357,6 +2564,7 @@ function buildFormTree(form) {
                 // switch to multipart/form-data to support file submission
                 // @enctype is the standard, but IE needs @encoding.
                 form.enctype = form.encoding = "multipart/form-data";
+                crumb.appendToForm(form);
                 break;
             case "radio":
                 if(!e.checked)  break;

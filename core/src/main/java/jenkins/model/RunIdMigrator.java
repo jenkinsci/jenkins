@@ -34,11 +34,9 @@ import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -71,7 +69,7 @@ import static java.util.logging.Level.*;
 /**
  * Converts legacy {@code builds} directories to the current format.
  *
- * There would be one instance associated with each {@link Job}, to retain ID -> build# mapping.
+ * There would be one instance associated with each {@link Job}, to retain ID → build# mapping.
  *
  * The {@link Job#getBuildDir} is passed to every method call (rather than being cached) in case it is moved.
  */
@@ -166,7 +164,7 @@ public final class RunIdMigrator {
         doMigrate(dir);
         save(dir);
         if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome))
-            LOGGER.log(WARNING, "Build record migration (https://wiki.jenkins-ci.org/display/JENKINS/JENKINS-24380+Migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
+            LOGGER.log(WARNING, "Build record migration (https://jenkins.io/redirect/build-record-migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
         return true;
     }
 
@@ -278,30 +276,10 @@ public final class RunIdMigrator {
      * TODO candidate for moving to {@link Util}
      */
     static void move(File src, File dest) throws IOException {
-        Class<?> pathC;
         try {
-            pathC = Class.forName("java.nio.file.Path");
-        } catch (ClassNotFoundException x) {
-            // Java 6, do our best
-            if (dest.exists()) {
-                throw new IOException(dest + " already exists");
-            }
-            if (src.renameTo(dest)) {
-                return;
-            }
-            throw new IOException("could not move " + src + " to " + dest);
-        }
-        try {
-            Method toPath = File.class.getMethod("toPath");
-            Class<?> copyOptionAC = Class.forName("[Ljava.nio.file.CopyOption;");
-            Class.forName("java.nio.file.Files").getMethod("move", pathC, pathC, copyOptionAC).invoke(null, toPath.invoke(src), toPath.invoke(dest), Array.newInstance(copyOptionAC.getComponentType(), 0));
-        } catch (InvocationTargetException x) {
-            Throwable cause = x.getCause();
-            if (cause instanceof IOException) {
-                throw (IOException) cause;
-            } else {
-                throw new IOException(cause);
-            }
+            Files.move(src.toPath(), dest.toPath());
+        } catch (IOException x) {
+            throw x;
         } catch (Exception x) {
             throw new IOException(x);
         }
@@ -350,6 +328,12 @@ public final class RunIdMigrator {
             return;
         }
         for (File job : jobDirs) {
+
+            if (job.getName().equals("builds")) {
+                // Might be maven modules, matrix builds, etc. which are direct children of job
+                unmigrateBuildsDir(job);
+            }
+
             File[] kids = job.listFiles();
             if (kids == null) {
                 continue;
@@ -361,7 +345,8 @@ public final class RunIdMigrator {
                 if (kid.getName().equals("builds")) {
                     unmigrateBuildsDir(kid);
                 } else {
-                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation returns grandchildren.
+                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation
+                    // returns grandchildren, unmigrateJobsDir(job) call above handles children.
                     unmigrateJobsDir(kid);
                 }
             }

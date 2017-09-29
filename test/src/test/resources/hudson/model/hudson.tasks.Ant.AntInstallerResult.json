@@ -1,0 +1,32 @@
+downloadService.post('hudson.tasks.Ant.AntInstaller',{"list": [
+  {
+  "id": "1.9.6",
+  "name": "1.9.6",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.6-bin.zip"
+  },
+  {
+  "id": "1.9.5",
+  "name": "1.9.5",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.5-bin.zip"
+  },
+  {
+  "id": "1.9.4",
+  "name": "1.9.4",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip"
+  },
+  {
+  "id": "1.9.2",
+  "name": "1.9.2",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.2-bin.zip"
+  },
+  {
+  "id": "1.9.1",
+  "name": "1.9.1",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.1-bin.zip"
+  },
+  {
+  "id": "1.9.3",
+  "name": "1.9.6",
+  "url": "http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.6-bin.zip"
+  }
+]})

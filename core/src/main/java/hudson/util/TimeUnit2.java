@@ -29,6 +29,10 @@
 
 package hudson.util;
 
+import hudson.RestrictedSince;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,7 +67,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 1.5
  * @author Doug Lea
+ * @deprecated use {@link TimeUnit}. (Java 5 did not have all the units required, so {@link TimeUnit2} was introduced
+ * because it had better conversion until Java 6 went out.)
  */
+@Deprecated
+@RestrictedSince("TODO")
+@Restricted(NoExternalUse.class)
 public enum TimeUnit2 {
     NANOSECONDS {
         @Override public long toNanos(long d)   { return d; }

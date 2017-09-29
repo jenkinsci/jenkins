@@ -26,14 +26,14 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
-import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+
 import hudson.model.ListView;
+import hudson.model.TreeView;
 import hudson.model.View;
 import jenkins.model.Jenkins;
 
@@ -63,9 +63,41 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("aView")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the View/Configure permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the View/Configure permission"));
+    }
+
+    /**
+     * This test shows that updating a view using an XML that will be
+     * converted by XStream via an alias will rightfully succeed.
+     *
+     * @throws Exception
+     */
+    @Test public void updateViewWithRenamedClass() throws Exception {
+        ListView tv  = new ListView("tView");
+        j.jenkins.addView(tv);
+        j.jenkins.XSTREAM2.addCompatibilityAlias("org.acme.old.Foo", ListView.class);
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/testview-foo.xml"))
+                .invokeWithArgs("tView");
+
+        assertThat(result, succeededSilently());
+    }
+
+    @Test public void updateViewWithWrongViewTypeShouldFail() throws Exception {
+        TreeView tv = new TreeView("aView");
+        j.jenkins.addView(tv);
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(View.READ, View.CONFIGURE, Jenkins.READ)
+                .withStdin(this.getClass().getResourceAsStream("/hudson/cli/view.xml"))
+                .invokeWithArgs("aView")
+                ;
+
+        assertThat(result, failedWith(1));
+        assertThat(result.stderr(), containsString("Expecting view type: "+ tv.getClass()
+                + " but got: class hudson.model.ListView instead."));
     }
 
     @Test public void updateViewShouldModifyViewConfiguration() throws Exception {
@@ -96,8 +128,9 @@ public class UpdateViewCommandTest {
                 .invokeWithArgs("not_created")
         ;
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No view named not_created inside view Jenkins"));
+        assertThat(result.stderr(), containsString("ERROR: No view named not_created inside view Jenkins"));
     }
+
 }

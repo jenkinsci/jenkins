@@ -5,25 +5,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpWebConnection;
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Util;
 import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.util.Scrambler;
+import java.net.URL;
 import jenkins.model.Jenkins;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScheme;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
-import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
+import org.jvnet.hudson.test.Issue;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -40,40 +40,30 @@ public class ApiTokenPropertyTest {
     public void basics() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
-        ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         final String token = t.getApiToken();
 
-        // make sure the UI shows the token
-        HtmlPage config = j.createWebClient().goTo(u.getUrl() + "/configure");
+        // Make sure that user is able to get the token via the interface
+        try (ACLContext _ = ACL.as(u)) {
+            assertEquals("User is unable to get its own token", token, t.getApiToken());
+        }
+
+        // test the authentication via Token
+        WebClient wc = createClientForUser("foo");
+        assertEquals(u, wc.executeOnServer(new Callable<User>() {
+            public User call() throws Exception {
+                return User.current();
+            }
+        }));
+        
+        // Make sure the UI shows the token to the user
+        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
         HtmlForm form = config.getFormByName("config");
         assertEquals(token, form.getInputByName("_.apiToken").getValueAttribute());
 
         // round-trip shouldn't change the API token
         j.submit(form);
         assertSame(t, u.getProperty(ApiTokenProperty.class));
-
-        WebClient wc = j.createWebClient();
-        wc.setCredentialsProvider(new CredentialsProvider() {
-            public Credentials getCredentials(AuthScheme scheme, String host, int port, boolean proxy) throws CredentialsNotAvailableException {
-                return new UsernamePasswordCredentials("foo", token);
-            }
-        });
-        wc.setWebConnection(new HttpWebConnection(wc) {
-            @Override
-            protected HttpClient getHttpClient() {
-                HttpClient c = super.getHttpClient();
-                c.getParams().setAuthenticationPreemptive(true);
-                c.getState().setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM), new UsernamePasswordCredentials("foo", token));
-                return c;
-            }
-        });
-
-        // test the authentication
-        assertEquals(u,wc.executeOnServer(new Callable<User>() {
-            public User call() throws Exception {
-                return User.current();
-            }
-        }));
     }
 
     @Test
@@ -98,4 +88,58 @@ public class ApiTokenPropertyTest {
         u.addProperty(t);
         assertTrue(t.getApiToken().equals(Util.getDigestOf(historicalInitialValue+"somethingElse")));
     }
+    
+    @Issue("SECURITY-200")
+    @Test
+    public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User u = User.get("foo");
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        final String token = t.getApiToken();
+        
+        // Make sure the UI does not show the token to another user
+        WebClient wc = createClientForUser("bar");
+        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlForm form = config.getFormByName("config");
+        assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValueAttribute());
+    }
+    
+    @Issue("SECURITY-200")
+    @Test
+    public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User foo = User.get("foo");
+        User bar = User.get("bar");
+        final ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
+        final ApiTokenProperty.DescriptorImpl descriptor = (ApiTokenProperty.DescriptorImpl) t.getDescriptor();
+        
+        // Make sure that Admin can reset a token of another user
+        WebClient wc = createClientForUser("bar");
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        assertEquals("method should not be allowed", 405, requirePOST.getWebResponse().getStatusCode());
+
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
+        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
+        wc.addCrumb(request);
+        HtmlPage res = wc.getPage(request);
+
+        // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
+//        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
+        assertEquals("Update token response is incorrect", 
+                Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
+    }
+    
+    @Nonnull
+    private WebClient createClientForUser(final String username) throws Exception {
+        User u = User.get(username);
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        // Yes, we use the insecure call in the test stuff
+        final String token = t.getApiTokenInsecure();
+        
+        WebClient wc = j.createWebClient();
+        wc.addRequestHeader("Authorization", "Basic " + Scrambler.scramble(username + ":" + token));
+        return wc;
+    }
+
 }

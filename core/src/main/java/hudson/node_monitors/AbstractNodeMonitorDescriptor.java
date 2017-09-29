@@ -26,7 +26,6 @@ package hudson.node_monitors;
 import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Run;
 import jenkins.model.Jenkins;
 import hudson.model.ComputerSet;
 import hudson.model.AdministrativeMonitor;
@@ -50,7 +49,7 @@ import java.util.logging.Logger;
  * and taking some action based on its result.
  *
  * @param <T>
- *     represents the the result of the monitoring.
+ *     represents the result of the monitoring.
  * @author Kohsuke Kawaguchi
  */
 public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMonitor> {

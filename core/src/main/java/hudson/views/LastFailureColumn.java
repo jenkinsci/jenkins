@@ -24,6 +24,7 @@
 package hudson.views;
 
 import hudson.Extension;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastFailureColumn extends ListViewColumn {
@@ -31,7 +32,7 @@ public class LastFailureColumn extends ListViewColumn {
     public LastFailureColumn() {
     }
 
-    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-2)
+    @Extension(ordinal=DEFAULT_COLUMNS_ORDINAL_PROPERTIES_START-2) @Symbol("lastFailure")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {

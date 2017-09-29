@@ -26,6 +26,9 @@ package hudson.model;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
 
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import org.apache.commons.io.IOUtils;
 import org.jfree.chart.JFreeChart;
 import org.junit.Test;
@@ -87,11 +90,9 @@ public class LoadStatisticsTest {
         BufferedImage image = chart.createBufferedImage(400, 200);
 
         File tempFile = File.createTempFile("chart-", "png");
-        FileOutputStream os = new FileOutputStream(tempFile);
-        try {
+        try (OutputStream os = Files.newOutputStream(tempFile.toPath(), StandardOpenOption.DELETE_ON_CLOSE)) {
             ImageIO.write(image, "PNG", os);
         } finally {
-            IOUtils.closeQuietly(os);
             tempFile.delete();
         }
     }

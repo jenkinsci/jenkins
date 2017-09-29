@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import javax.servlet.ServletException;
@@ -41,16 +42,20 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.junit.Assert.*;
 
+import jenkins.security.UpdateSiteWarningsConfiguration;
+import jenkins.security.UpdateSiteWarningsMonitor;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.server.HttpConnection;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.mortbay.jetty.HttpConnection;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.bio.SocketConnector;
-import org.mortbay.jetty.handler.AbstractHandler;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class UpdateSiteTest {
 
@@ -76,18 +81,17 @@ public class UpdateSiteTest {
     @Before
     public void setUpWebServer() throws Exception {
         server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         server.addConnector(connector);
         server.setHandler(new AbstractHandler() {
-            public void handle(String target, HttpServletRequest request,
-                    HttpServletResponse response, int dispatch) throws IOException,
-                    ServletException {
+            @Override
+            public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
                 if (target.startsWith(RELATIVE_BASE)) {
                     target = target.substring(RELATIVE_BASE.length());
                 }
                 String responseBody = getResource(target);
                 if (responseBody != null) {
-                    HttpConnection.getCurrentConnection().getRequest().setHandled(true);
+                    baseRequest.setHandled(true);
                     response.setContentType("text/plain; charset=utf-8");
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getOutputStream().write(responseBody.getBytes());
@@ -127,5 +131,24 @@ public class UpdateSiteTest {
         assertEquals(FormValidation.ok(), us.updateDirectly(/* TODO the certificate is now expired, and downloading a fresh copy did not seem to help */false).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
     }
-    
+
+    @Test public void lackOfDataDoesNotFailWarningsCode() throws Exception {
+        assertNull("plugin data is not present", j.jenkins.getUpdateCenter().getSite("default").getData());
+
+        // nothing breaking?
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActivePluginWarningsByPlugin();
+        j.jenkins.getExtensionList(UpdateSiteWarningsMonitor.class).get(0).getActiveCoreWarnings();
+        j.jenkins.getExtensionList(UpdateSiteWarningsConfiguration.class).get(0).getAllWarnings();
+    }
+
+    @Test public void incompleteWarningsJson() throws Exception {
+        PersistedList<UpdateSite> sites = j.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = new URL(baseUrl, "/plugins/warnings-update-center-malformed.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertEquals("number of warnings", 7, site.getData().getWarnings().size());
+        assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
+    }
 }

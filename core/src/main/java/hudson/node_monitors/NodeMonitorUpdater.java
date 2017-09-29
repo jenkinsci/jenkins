@@ -10,12 +10,11 @@ import jenkins.model.Jenkins;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import jenkins.util.Timer;
 
 /**
- * When a slave is connected, redo the node monitoring.
+ * When an agent is connected, redo the node monitoring.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -35,7 +34,7 @@ public class NodeMonitorUpdater extends ComputerListener {
 
     /**
      * Triggers the update with 5 seconds quiet period, to avoid triggering data check too often
-     * when multiple slaves become online at about the same time.
+     * when multiple agents become online at about the same time.
      */
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {

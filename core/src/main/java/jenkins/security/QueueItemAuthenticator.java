@@ -9,6 +9,7 @@ import hudson.model.CauseAction;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
+import hudson.model.queue.Tasks;
 import java.util.Calendar;
 import java.util.Collections;
 import javax.annotation.CheckForNull;
@@ -20,8 +21,9 @@ import org.acegisecurity.Authentication;
  * @author Kohsuke Kawaguchi
  * @since 1.520
  * @see QueueItemAuthenticatorConfiguration
+ * @see QueueItemAuthenticatorProvider
  * @see Item#authenticate()
- * @see Task#getDefaultAuthentication()
+ * @see Tasks#getAuthenticationOf
  */
 public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<QueueItemAuthenticator> implements ExtensionPoint {
     /**

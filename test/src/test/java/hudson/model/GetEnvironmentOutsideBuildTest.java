@@ -4,11 +4,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.io.StringReader;
 
 import hudson.EnvVars;
+import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.maven.MavenModuleSet;
+import hudson.maven.MavenModuleSetBuild;
 import hudson.tasks.Maven.MavenInstallation;
 import hudson.util.StreamTaskListener;
 
@@ -17,6 +18,7 @@ import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.ToolInstallations;
 
 /**
  * Tests that getEnvironment() calls outside of builds are safe.
@@ -52,8 +54,8 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     }
 
     private MavenModuleSet createSimpleMavenProject() throws Exception {
-        MavenModuleSet project = createMavenProject();
-        MavenInstallation mi = configureMaven3();
+        MavenModuleSet project = jenkins.createProject(MavenModuleSet.class, "mms");
+        MavenInstallation mi = ToolInstallations.configureMaven3();
         project.setScm(new ExtractResourceSCM(getClass().getResource(
                 "/simple-projects.zip")));
         project.setMaven(mi.getName());
@@ -69,24 +71,23 @@ public class GetEnvironmentOutsideBuildTest extends HudsonTestCase {
     public void testMaven() throws Exception {
         MavenModuleSet m = createSimpleMavenProject();
 
-        assertGetEnvironmentCallOutsideBuildWorks(m);
+        final MavenModuleSetBuild build = buildAndAssertSuccess(m);
+
+        assertGetEnvironmentWorks(build);
     }
 
     public void testFreestyle() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
 
-        assertGetEnvironmentCallOutsideBuildWorks(project);
+        final FreeStyleBuild build = buildAndAssertSuccess(project);
+
+        assertGetEnvironmentWorks(build);
     }
 
     public void testMatrix() throws Exception {
-        MatrixProject createMatrixProject = createMatrixProject();
+        MatrixProject createMatrixProject = jenkins.createProject(MatrixProject.class, "mp");
 
-        assertGetEnvironmentCallOutsideBuildWorks(createMatrixProject);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void assertGetEnvironmentCallOutsideBuildWorks(AbstractProject job) throws Exception {
-        AbstractBuild build = buildAndAssertSuccess(job);
+        final MatrixBuild build = buildAndAssertSuccess(createMatrixProject);
 
         assertGetEnvironmentWorks(build);
     }

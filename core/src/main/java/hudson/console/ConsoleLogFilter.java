@@ -26,11 +26,14 @@ package hudson.console;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Run;
 import hudson.tasks.BuildWrapper;
 import hudson.util.ArgumentListBuilder;
-import jenkins.model.Jenkins;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -48,8 +51,53 @@ public abstract class ConsoleLogFilter implements ExtensionPoint {
     /**
      * Called on the start of each build, giving extensions a chance to intercept
      * the data that is written to the log.
+     *
+     * @deprecated as of 1.632. Use {@link #decorateLogger(Run, OutputStream)}
      */
-    public abstract OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException;
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
+        if (Util.isOverridden(ConsoleLogFilter.class, getClass(), "decorateLogger", Run.class, OutputStream.class)) {
+            // old client calling newer implementation. forward the call.
+            return decorateLogger((Run) build, logger);
+        } else {
+            // happens only if the subtype fails to override neither decorateLogger method
+            throw new AssertionError("The plugin '" + this.getClass().getName() + "' still uses " +
+                    "deprecated decorateLogger(AbstractBuild,OutputStream) method. " +
+                    "Update the plugin to use setUp(Run,OutputStream) instead.");
+        }
+    }
+
+    /**
+     * Called on the start of each build, giving extensions a chance to intercept
+     * the data that is written to the log.
+     *
+     * <p>
+     * Even though this method is not marked 'abstract', this is the method that must be overridden
+     * by extensions.
+     */
+    public OutputStream decorateLogger(Run build, OutputStream logger) throws IOException, InterruptedException {
+        // this implementation is backward compatibility thunk in case subtypes only override the
+        // old signature (AbstractBuild,OutputStream)
+
+        if (build instanceof AbstractBuild) {
+            // maybe the plugin implements the old signature.
+            return decorateLogger((AbstractBuild) build, logger);
+        } else {
+            // this ConsoleLogFilter can only decorate AbstractBuild, so just pass through
+            return logger;
+        }
+    }
+
+    /**
+     * Called to decorate logger for master/agent communication.
+     *
+     * @param computer
+     *      Agent computer for which the logger is getting decorated. Useful to do
+     *      contextual decoration.
+     * @since 1.632
+     */
+    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+        return logger;      // by default no-op
+    }
 
     /**
      * All the registered {@link ConsoleLogFilter}s.

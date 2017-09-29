@@ -25,6 +25,7 @@
 package jenkins.triggers;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.console.ModelHyperlinkNote;
 import hudson.model.AbstractBuild;
@@ -46,6 +47,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.RunListener;
 import hudson.model.queue.Tasks;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.tasks.BuildTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -63,14 +65,19 @@ import java.util.logging.Logger;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Like {@link BuildTrigger} but defined on the downstream project.
@@ -84,58 +91,93 @@ import org.kohsuke.stapler.QueryParameter;
 public final class ReverseBuildTrigger extends Trigger<Job> implements DependencyDeclarer {
 
     private static final Logger LOGGER = Logger.getLogger(ReverseBuildTrigger.class.getName());
-    private static final Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger = new WeakHashMap<Job,Collection<ReverseBuildTrigger>>();
 
+    @CheckForNull
     private String upstreamProjects;
-    private final Result threshold;
+    private Result threshold = Result.SUCCESS;
 
-    @DataBoundConstructor public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
-        this.upstreamProjects = upstreamProjects;
+    /**
+     * Legacy constructor used before {@link #threshold} was moved to a {@code @DataBoundSetter}. Kept around for binary
+     * compatibility.
+     */
+    @Deprecated
+    public ReverseBuildTrigger(String upstreamProjects, Result threshold) {
+        this(upstreamProjects);
         this.threshold = threshold;
     }
 
+    @DataBoundConstructor
+    public ReverseBuildTrigger(String upstreamProjects) {
+        this.upstreamProjects = upstreamProjects;
+    }
+
+    /**
+     * Gets the upstream projects.
+     * 
+     * @return Upstream projects or empty("") if upstream projects is null.
+     */
     public String getUpstreamProjects() {
-        return upstreamProjects;
+        return Util.fixNull(upstreamProjects);
     }
 
     public Result getThreshold() {
         return threshold;
     }
 
+    @DataBoundSetter
+    public void setThreshold(Result r) {
+        this.threshold = r;
+    }
+
     private boolean shouldTrigger(Run upstreamBuild, TaskListener listener) {
         Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins == null) {
+        if (job == null) {
             return false;
         }
+
+        boolean downstreamVisible = false;
+        boolean downstreamDiscoverable = false;
+
         // This checks Item.READ also on parent folders; note we are checking as the upstream auth currently:
-        boolean downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        try {
+            downstreamVisible = jenkins.getItemByFullName(job.getFullName()) == job;
+        } catch (AccessDeniedException ex) {
+            // Fails because of missing Item.READ but upstream user has Item.DISCOVER
+            downstreamDiscoverable = true;
+        }
+
         Authentication originalAuth = Jenkins.getAuthentication();
         Job upstream = upstreamBuild.getParent();
         Authentication auth = Tasks.getAuthenticationOf((Queue.Task) job);
-        if (auth.equals(ACL.SYSTEM) && !QueueItemAuthenticatorConfiguration.get().getAuthenticators().isEmpty()) {
-            auth = Jenkins.ANONYMOUS; // cf. BuildTrigger
-        }
+
         SecurityContext orig = ACL.impersonate(auth);
+        Item authUpstream = null;
         try {
-            if (jenkins.getItemByFullName(upstream.getFullName()) != upstream) {
-                if (downstreamVisible) {
-                    // TODO ModelHyperlink
-                    listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(), upstream.getFullName(), job.getFullName()));
-                } else {
-                    LOGGER.log(Level.WARNING, "Running as {0} cannot even see {1} for trigger from {2} (but cannot tell {3} that)", new Object[] {auth.getName(), upstream, job, originalAuth.getName()});
-                }
-                return false;
-            }
+            authUpstream = jenkins.getItemByFullName(upstream.getFullName());
             // No need to check Item.BUILD on downstream, because the downstream project’s configurer has asked for this.
+        } catch (AccessDeniedException ade) {
+            // Fails because of missing Item.READ but downstream user has Item.DISCOVER
         } finally {
             SecurityContextHolder.setContext(orig);
+        }
+
+        if(authUpstream != upstream) {
+            if (downstreamVisible) {
+                // TODO ModelHyperlink
+                listener.getLogger().println(Messages.ReverseBuildTrigger_running_as_cannot_even_see_for_trigger_f(auth.getName(),
+                        upstream.getFullName(), job.getFullName()));
+            } else  {
+                LOGGER.log(Level.WARNING, "Running as {0} cannot even {1} {2} for trigger from {3}, (but cannot tell {4} that)",
+                        new Object [] { auth.getName(), downstreamDiscoverable ? "READ" : "DISCOVER", upstream, job, originalAuth.getName()});
+            }
+            return false;
         }
         Result result = upstreamBuild.getResult();
         return result != null && result.isBetterOrEqualTo(threshold);
     }
 
     @Override public void buildDependencyGraph(final AbstractProject downstream, DependencyGraph graph) {
-        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), upstreamProjects, AbstractProject.class)) {
+        for (AbstractProject upstream : Items.fromNameList(downstream.getParent(), getUpstreamProjects(), AbstractProject.class)) {
             graph.addDependency(new DependencyGraph.Dependency(upstream, downstream) {
                 @Override public boolean shouldTriggerBuild(AbstractBuild upstreamBuild, TaskListener listener, List<Action> actions) {
                     return shouldTrigger(upstreamBuild, listener);
@@ -144,39 +186,18 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
     }
 
-    @Override public void start(Job project, boolean newInstance) {
+    @Override public void start(@Nonnull Job project, boolean newInstance) {
         super.start(project, newInstance);
-        SecurityContext orig = ACL.impersonate(ACL.SYSTEM);
-        try {
-            for (Job upstream : Items.fromNameList(project.getParent(), upstreamProjects, Job.class)) {
-                if (upstream instanceof AbstractProject && project instanceof AbstractProject) {
-                    continue; // handled specially
-                }
-                synchronized (upstream2Trigger) {
-                    Collection<ReverseBuildTrigger> triggers = upstream2Trigger.get(upstream);
-                    if (triggers == null) {
-                        triggers = new LinkedList<ReverseBuildTrigger>();
-                        upstream2Trigger.put(upstream, triggers);
-                    }
-                    triggers.remove(this);
-                    triggers.add(this);
-                }
-            }
-        } finally {
-            SecurityContextHolder.setContext(orig);
-        }
+        RunListenerImpl.get().invalidateCache();
     }
 
     @Override public void stop() {
         super.stop();
-        synchronized (upstream2Trigger) {
-            for (Collection<ReverseBuildTrigger> triggers : upstream2Trigger.values()) {
-                triggers.remove(this);
-            }
-        }
+        RunListenerImpl.get().invalidateCache();
     }
 
-    @Extension public static final class DescriptorImpl extends TriggerDescriptor {
+    @Extension @Symbol("upstream")
+    public static final class DescriptorImpl extends TriggerDescriptor {
 
         @Override public String getDisplayName() {
             return Messages.ReverseBuildTrigger_build_after_other_projects_are_built();
@@ -199,11 +220,7 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
             while(tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
                 if (StringUtils.isNotBlank(projectName)) {
-                    Jenkins jenkins = Jenkins.getInstance();
-                    if (jenkins == null) {
-                        return FormValidation.ok();
-                    }
-                    Job item = jenkins.getItem(projectName, project, Job.class);
+                    Job item = Jenkins.getInstance().getItem(projectName, project, Job.class);
                     if (item == null) {
                         Job nearest = Items.findNearest(Job.class, projectName, project.getParent());
                         String alternative = nearest != null ? nearest.getRelativeNameFrom(project) : "?";
@@ -222,14 +239,57 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
     }
 
     @Extension public static final class RunListenerImpl extends RunListener<Run> {
-        @Override public void onCompleted(Run r, TaskListener listener) {
+
+        static RunListenerImpl get() {
+            return ExtensionList.lookup(RunListener.class).get(RunListenerImpl.class);
+        }
+
+        private Map<Job,Collection<ReverseBuildTrigger>> upstream2Trigger;
+
+        synchronized void invalidateCache() {
+            upstream2Trigger = null;
+        }
+
+        private Map<Job,Collection<ReverseBuildTrigger>> calculateCache() {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                final Map<Job, Collection<ReverseBuildTrigger>> result = new WeakHashMap<>();
+                for (Job<?, ?> downstream : Jenkins.getInstance().allItems(Job.class)) {
+                    ReverseBuildTrigger trigger =
+                            ParameterizedJobMixIn.getTrigger(downstream, ReverseBuildTrigger.class);
+                    if (trigger == null) {
+                        continue;
+                    }
+                    List<Job> upstreams =
+                            Items.fromNameList(downstream.getParent(), trigger.getUpstreamProjects(), Job.class);
+                    LOGGER.log(Level.FINE, "from {0} see upstreams {1}", new Object[]{downstream, upstreams});
+                    for (Job upstream : upstreams) {
+                        if (upstream instanceof AbstractProject && downstream instanceof AbstractProject) {
+                            continue; // handled specially
+                        }
+                        Collection<ReverseBuildTrigger> triggers = result.get(upstream);
+                        if (triggers == null) {
+                            triggers = new LinkedList<>();
+                            result.put(upstream, triggers);
+                        }
+                        triggers.remove(trigger);
+                        triggers.add(trigger);
+                    }
+                }
+                return result;
+            }
+        }
+
+        @Override public void onCompleted(@Nonnull Run r, @Nonnull TaskListener listener) {
             Collection<ReverseBuildTrigger> triggers;
-            synchronized (upstream2Trigger) {
+            synchronized (this) {
+                if (upstream2Trigger == null) {
+                    upstream2Trigger = calculateCache();
+                }
                 Collection<ReverseBuildTrigger> _triggers = upstream2Trigger.get(r.getParent());
                 if (_triggers == null || _triggers.isEmpty()) {
                     return;
                 }
-                triggers = new ArrayList<ReverseBuildTrigger>(_triggers);
+                triggers = new ArrayList<>(_triggers);
             }
             for (final ReverseBuildTrigger trigger : triggers) {
                 if (trigger.shouldTrigger(r, listener)) {
@@ -248,22 +308,26 @@ public final class ReverseBuildTrigger extends Trigger<Job> implements Dependenc
         }
     }
 
-    @Extension public static class ItemListenerImpl extends ItemListener {
-        @Override public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            Jenkins jenkins = Jenkins.getInstance();
-            if (jenkins == null) {
-                return;
-            }
-            for (Job<?,?> p : jenkins.getAllItems(Job.class)) {
-                ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
-                if (t != null) {
-                    String revised = Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName, t.upstreamProjects, p.getParent());
-                    if (!revised.equals(t.upstreamProjects)) {
-                        t.upstreamProjects = revised;
-                        try {
-                            p.save();
-                        } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, "Failed to persist project setting during rename from " + oldFullName + " to " + newFullName, e);
+    @Extension
+    public static class ItemListenerImpl extends ItemListener {
+        @Override
+        public void onLocationChanged(Item item, final String oldFullName, final String newFullName) {
+            try (ACLContext _ = ACL.as(ACL.SYSTEM)) {
+                for (Job<?, ?> p : Jenkins.getInstance().allItems(Job.class)) {
+                    ReverseBuildTrigger t = ParameterizedJobMixIn.getTrigger(p, ReverseBuildTrigger.class);
+                    if (t != null) {
+                        String revised =
+                                Items.computeRelativeNamesAfterRenaming(oldFullName, newFullName,
+                                        t.getUpstreamProjects(), p.getParent());
+                        if (!revised.equals(t.upstreamProjects)) {
+                            t.upstreamProjects = revised;
+                            try {
+                                p.save();
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING,
+                                        "Failed to persist project setting during rename from " + oldFullName + " to "
+                                                + newFullName, e);
+                            }
                         }
                     }
                 }

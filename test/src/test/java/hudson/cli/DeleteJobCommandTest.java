@@ -33,7 +33,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
 
-import static hudson.cli.CLICommandInvoker.Matcher.*;
+import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
@@ -60,9 +62,9 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(6));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("user is missing the Job/Delete permission"));
+        assertThat(result.stderr(), containsString("ERROR: user is missing the Job/Delete permission"));
     }
 
     @Test public void deleteJobShouldFailWithoutJobReadPermission() throws IOException {
@@ -73,9 +75,9 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job 'aProject'"));
+        assertThat(result.stderr(), containsString("ERROR: No such job 'aProject'"));
     }
 
     @Test public void deleteJobShouldSucceed() throws Exception {
@@ -96,9 +98,9 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("never_created");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: No such job 'never_created'"));
     }
 
     @Test public void deleteJobManyShouldSucceed() throws Exception {
@@ -117,7 +119,45 @@ public class DeleteJobCommandTest {
         assertThat(j.jenkins.getItem("aProject3"), nullValue());
     }
 
-    @Test public void deleteJobManyShouldFailIfAJobDoesNotExist() throws Exception {
+    @Test public void deleteJobManyShouldFailIfFirstJobDoesNotExist() throws Exception {
+
+        j.createFreeStyleProject("aProject1");
+        j.createFreeStyleProject("aProject2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .invokeWithArgs("never_created", "aProject1", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getItem("aProject1"), nullValue());
+        assertThat(j.jenkins.getItem("aProject2"), nullValue());
+        assertThat(j.jenkins.getItem("never_created"), nullValue());
+    }
+
+    @Test public void deleteJobManyShouldFailIfMiddleJobDoesNotExist() throws Exception {
+
+        j.createFreeStyleProject("aProject1");
+        j.createFreeStyleProject("aProject2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .invokeWithArgs("aProject1","never_created", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getItem("aProject1"), nullValue());
+        assertThat(j.jenkins.getItem("aProject2"), nullValue());
+        assertThat(j.jenkins.getItem("never_created"), nullValue());
+    }
+
+    @Test public void deleteJobManyShouldFailIfLastJobDoesNotExist() throws Exception {
 
         j.createFreeStyleProject("aProject1");
         j.createFreeStyleProject("aProject2");
@@ -126,13 +166,35 @@ public class DeleteJobCommandTest {
                 .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
                 .invokeWithArgs("aProject1", "aProject2", "never_created");
 
-        assertThat(result, failedWith(-1));
+        assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());
-        assertThat(result.stderr(), containsString("No such job 'never_created'"));
+        assertThat(result.stderr(), containsString("never_created: No such job 'never_created'"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
 
         assertThat(j.jenkins.getItem("aProject1"), nullValue());
         assertThat(j.jenkins.getItem("aProject2"), nullValue());
         assertThat(j.jenkins.getItem("never_created"), nullValue());
+    }
+
+    @Test public void deleteJobManyShouldFailIfMoreJobsDoNotExist() throws Exception {
+
+        j.createFreeStyleProject("aProject1");
+        j.createFreeStyleProject("aProject2");
+
+        final CLICommandInvoker.Result result = command
+                .authorizedTo(Job.READ, Job.DELETE, Jenkins.READ)
+                .invokeWithArgs("aProject1", "never_created1", "never_created2", "aProject2");
+
+        assertThat(result, failedWith(5));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result.stderr(), containsString("never_created1: No such job 'never_created1'"));
+        assertThat(result.stderr(), containsString("never_created2: No such job 'never_created2'"));
+        assertThat(result.stderr(), containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT));
+
+        assertThat(j.jenkins.getItem("aProject1"), nullValue());
+        assertThat(j.jenkins.getItem("aProject2"), nullValue());
+        assertThat(j.jenkins.getItem("never_created1"), nullValue());
+        assertThat(j.jenkins.getItem("never_created2"), nullValue());
     }
 
     @Test public void deleteJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {

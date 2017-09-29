@@ -74,11 +74,6 @@ public class SCMCheckoutStrategyTest {
             public boolean isApplicable(AbstractProject project) {
                 return true;
             }
-
-            @Override
-            public String getDisplayName() {
-                return getClass().getName();
-            }
         }
     }
 }

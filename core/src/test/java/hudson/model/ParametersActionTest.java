@@ -89,7 +89,7 @@ public class ParametersActionTest {
     
     @Test
     @Issue("JENKINS-15094")
-    public void checkNullParamaterValues() {
+    public void checkNullParameterValues() {
         SubTask subtask = mock(SubTask.class);
         Build build = mock(Build.class);
                    
@@ -105,7 +105,7 @@ public class ParametersActionTest {
         
         // Interaction with build
         EnvVars vars = new EnvVars();
-        parametersAction.buildEnvVars(build, vars);
+        parametersAction.buildEnvironment(build, vars);
         assertEquals(2, vars.size());   
         parametersAction.createVariableResolver(build);
         

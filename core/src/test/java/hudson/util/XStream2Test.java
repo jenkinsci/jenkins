@@ -28,6 +28,7 @@ import static org.junit.Assert.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
 import hudson.XmlFile;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -272,37 +273,6 @@ public class XStream2Test {
         ConcurrentHashMap<String,String> m = new ConcurrentHashMap<String,String>();
     }
 
-    /**
-     * Tests that ConcurrentHashMap is serialized into a more compact format,
-     * but still can deserialize to older, verbose format.
-     */
-    @Test
-    public void concurrentHashMapSerialization() throws Exception {
-        Foo2 foo = new Foo2();
-        foo.m.put("abc","def");
-        foo.m.put("ghi","jkl");
-        File v = File.createTempFile("hashmap", "xml");
-        try {
-            new XmlFile(v).write(foo);
-
-            // should serialize like map
-            String xml = FileUtils.readFileToString(v);
-            assertFalse(xml.contains("java.util.concurrent"));
-            //System.out.println(xml);
-            Foo2 deserialized = (Foo2) new XStream2().fromXML(xml);
-            assertEquals(2,deserialized.m.size());
-            assertEquals("def", deserialized.m.get("abc"));
-            assertEquals("jkl", deserialized.m.get("ghi"));
-        } finally {
-            v.delete();
-        }
-
-        // should be able to read in old data just fine
-        Foo2 map = (Foo2) new XStream2().fromXML(getClass().getResourceAsStream("old-concurrentHashMap.xml"));
-        assertEquals(1,map.m.size());
-        assertEquals("def",map.m.get("abc"));
-    }
-
     @Issue("SECURITY-105")
     @Test
     public void dynamicProxyBlocked() {
@@ -326,5 +296,16 @@ public class XStream2Test {
         assertEquals("3.2", XStream2.trimVersion("3.2"));
         assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
         assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
+    }
+
+    @Issue("SECURITY-503")
+    @Test
+    public void crashXstream() throws Exception {
+        try {
+            new XStream2().fromXML("<void/>");
+            fail("expected to throw ForbiddenClassException, but why are we still alive?");
+        } catch (ForbiddenClassException ex) {
+            // pass
+        }
     }
 }

@@ -25,23 +25,28 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -51,13 +56,13 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.LegacySecurityRealm;
-import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,8 +75,15 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import org.junit.Assume;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  * @author kingfai
@@ -80,6 +92,28 @@ import java.net.URL;
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Issue("SECURITY-406")
+    @Test
+    public void testUserCreationFromUrlForAdmins() throws Exception {
+        WebClient wc = j.createWebClient();
+
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        wc.assertFails("user/nonexistent", 404);
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+
+        try {
+            User.ALLOW_USER_CREATION_VIA_URL = true;
+
+            // expected to work
+            wc.goTo("user/nonexistent2");
+
+            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+
+        } finally {
+            User.ALLOW_USER_CREATION_VIA_URL = false;
+        }
+    }
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
@@ -242,7 +276,7 @@ public class JenkinsTest {
         j.submit(f);
 
         // build a dummy project
-        MavenModuleSet m = j.createMavenProject();
+        MavenModuleSet m = j.jenkins.createProject(MavenModuleSet.class, "p");
         m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
         MavenModuleSetBuild b = m.scheduleBuild2(0).get();
 
@@ -271,27 +305,21 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
-        WebRequestSettings req = new WebRequestSettings(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
         wc.getPage(wc.addCrumb(req));
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        req = new WebRequestSettings(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
+        req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
         wc.getPage(wc.addCrumb(req));
         assertEquals("you", System.getProperty("huck"));
         wc.login("bob");
@@ -302,17 +330,11 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
@@ -333,7 +355,8 @@ public class JenkinsTest {
         }
     }
     private String eval(WebClient wc) throws Exception {
-        WebRequestSettings req = new WebRequestSettings(wc.createCrumbedUrl("eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), HttpMethod.POST);
+        req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req).getWebResponse().getContentAsString();
     }
@@ -393,7 +416,7 @@ public class JenkinsTest {
         assertTrue(!Jenkins.getInstance().getACL().hasPermission(Jenkins.ANONYMOUS,Jenkins.READ));
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("error/reportError");
 
         assertEquals(p.asText(), 400, p.getWebResponse().getStatusCode());  // not 403 forbidden
@@ -436,17 +459,162 @@ public class JenkinsTest {
 
     @Test
     public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave();
+        DumbSlave slave = j.createSlave(true);
+        j.disconnectSlave(slave);
+
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
         WebClient wc = j.createWebClient();
-        wc.setThrowExceptionOnFailingStatusCode(false);
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
-        WebRequestSettings req = new WebRequestSettings(url, HttpMethod.POST);
+        WebRequest req = new WebRequest(url, HttpMethod.POST);
         Page page = wc.getPage(wc.addCrumb(req));
         WebResponse rsp = page.getWebResponse();
 
         assertThat(rsp.getContentAsString(), containsString("Node is offline"));
         assertThat(rsp.getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    @Issue("JENKINS-38487")
+    public void startupShouldNotFailOnFailingOnlineListener() {
+        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+        // boot failure if the issue is not fixed.
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
+    public static final class FailingOnOnlineListener extends ComputerListener {
+        
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            throw new IOException("Something happened (the listener always throws this exception)");
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP3-connect")));
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add("JNLP3-connect");
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertThat("JNLP3-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have additional enabled protocol", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP3-connect"));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("At least one protocol is enabled", defaultProtocols.size(), greaterThan(0));
+        
+        final String protocolToDisable = defaultProtocols.iterator().next();
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertThat(protocolToDisable + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled one protocol", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
+        assertThat(protocolToDisable + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP3-connect")));
+        Assume.assumeThat("We assume that JNLP4-connect is disabled", 
+                defaultProtocols, not(hasItem("JNLP4-connect")));
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add("JNLP3-connect");
+        newProtocols.add("JNLP4-connect");
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertThat("JNLP3-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
+        assertThat("JNLP4-connect must be enabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), hasItem("JNLP4-connect"));
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have two additional enabled protocols", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP3-connect"));
+        assertThat("JNLP3-connect must be enabled after the roundtrip", 
+                reloadedProtocols, hasItem("JNLP4-connect"));
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        Assume.assumeThat("At least two protocol should be enabled", defaultProtocols.size(), greaterThan(1));
+        
+        Iterator<String> iterator = defaultProtocols.iterator();
+        final String protocolToDisable1 = iterator.next();
+        final String protocolToDisable2 = iterator.next();
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable1);
+        newProtocols.remove(protocolToDisable2);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertThat(protocolToDisable1 + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
+        assertThat(protocolToDisable2 + " must be disabled before the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled two protocols", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
+        assertThat(protocolToDisable1 + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
+        assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+    }
+
+    @Issue("JENKINS-42577")
+    @Test
+    public void versionIsSavedInSave() throws Exception {
+        Jenkins.VERSION = "1.0";
+        j.jenkins.save();
+        VersionNumber storedVersion = Jenkins.getStoredVersion();
+        assertNotNull(storedVersion);
+        assertEquals(storedVersion.toString(), "1.0");
+
+        Jenkins.VERSION = null;
+        j.jenkins.save();
+        VersionNumber nullVersion = Jenkins.getStoredVersion();
+        assertNull(nullVersion);
     }
 }

@@ -220,15 +220,11 @@ public class LogRotatorTest {
         }
 
         public Descriptor<Publisher> getDescriptor() {
-            return new Descriptor<Publisher>(TestsFail.class) {
-                public String getDisplayName() {
-                    return "TestsFail";
-                }
-            };
+            return new Descriptor<Publisher>(TestsFail.class) {};
         }
     }
     
-    static class StallBuilder extends TestBuilder {
+    public static class StallBuilder extends TestBuilder {
         
         private int syncBuildNumber;
         

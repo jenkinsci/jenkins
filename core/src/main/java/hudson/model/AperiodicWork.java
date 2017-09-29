@@ -27,11 +27,9 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
-import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 
 import java.util.Random;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 

@@ -27,7 +27,6 @@ import hudson.Functions;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.remoting.VirtualChannel;
 import hudson.Util;
-import hudson.slaves.OfflineCause;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 
 import java.io.File;

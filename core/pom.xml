@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>1.624-SNAPSHOT</version>
+    <version>2.82-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,9 +39,11 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.237</stapler.version>
+    <stapler.version>1.252</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
-    <groovy.version>1.8.9</groovy.version>
+    <groovy.version>2.4.11</groovy.version>
+    <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
+    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
 
   <dependencies>
@@ -63,7 +65,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>version-number</artifactId>
-      <version>1.1</version>
+      <version>1.4</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -93,6 +95,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
+      <exclusions>
+        <exclusion> <!-- TODO it seems to want Guava 16; apparently it manages to run against 11 -->
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency> <!-- for compatibility only; all new code should use JNR -->
@@ -103,7 +111,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>com.github.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
-      <version>3.0.1</version>
+      <version>3.0.41</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -113,7 +121,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>trilead-ssh2</artifactId>
-      <version>build217-jenkins-8</version>
+      <version>build-217-jenkins-11</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -147,7 +155,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>windows-package-checker</artifactId>
-      <version>1.0</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -157,7 +165,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -195,12 +203,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <version>1.7</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>1.5</version>
+      <version>1.8</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -210,7 +218,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
       <artifactId>localizer</artifactId>
-      <version>1.23</version>
+      <version>1.24</version>
     </dependency>
     <dependency>
       <groupId>antlr</groupId>
@@ -243,8 +251,8 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.4</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -275,6 +283,11 @@ THE SOFTWARE.
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <version>1.8.3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.10</version>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
@@ -396,10 +409,6 @@ THE SOFTWARE.
           <groupId>org.springframework</groupId>
           <artifactId>spring-support</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -407,16 +416,16 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
     </dependency>
-    <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
+    <dependency><!-- groovy shell uses this but uses an optional dependency -->
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>0.9.94</version>
+      <version>2.12</version>
       <scope>compile</scope>
     </dependency>
     <dependency><!-- groovy shell uses this but it doesn't declare this dependency -->
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>1.9</version>
+      <version>1.11</version>
     </dependency>
     <dependency>
       <!--
@@ -468,12 +477,17 @@ THE SOFTWARE.
       <version>1.1.0</version>
     </dependency>
     <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.txw2</groupId>
@@ -483,12 +497,12 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
-      <version>3.2.1</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.jvnet.winp</groupId>
       <artifactId>winp</artifactId>
-      <version>1.22</version>
+      <version>1.25</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -508,7 +522,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>4.1.0</version>
+      <version>4.2.1</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
@@ -521,9 +535,9 @@ THE SOFTWARE.
       <version>1.8</version>
     </dependency>
     <dependency>
-      <groupId>org.jvnet.libzfs</groupId>
+      <groupId>org.kohsuke</groupId>
       <artifactId>libzfs</artifactId>
-      <version>0.5</version>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.sun.solaris</groupId>
@@ -533,7 +547,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.java.sezpoz</groupId>
       <artifactId>sezpoz</artifactId>
-      <version>1.9</version>
+      <version>1.12</version>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.jinterop</groupId>
@@ -552,6 +566,11 @@ THE SOFTWARE.
       <artifactId>robust-http-client</artifactId>
       <version>1.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>symbol-annotation</artifactId>
+      <version>1.1</version>
+    </dependency>
 
     <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
       <groupId>commons-codec</groupId>
@@ -562,7 +581,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
-      <version>1.4</version>
     </dependency>
 
     <dependency>
@@ -578,12 +596,6 @@ THE SOFTWARE.
       <version>1.3.1-jenkins-1</version>
     </dependency>
 
-    <dependency>
-        <groupId>org.mindrot</groupId>
-        <artifactId>jbcrypt</artifactId>
-        <version>0.3m</version>
-    </dependency>
-
     <!-- offline profiler API to put in the classpath if we need it -->
     <!--dependency>
       <groupId>com.yourkit.api</groupId>
@@ -593,10 +605,21 @@ THE SOFTWARE.
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
 
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <exclusions>
+        <exclusion> <!-- pick up from Stapler -->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- Overriding Stapler’s 1.1.3 version to diagnose JENKINS-20618: -->
     <dependency>
       <groupId>com.jcraft</groupId>
@@ -626,7 +649,7 @@ THE SOFTWARE.
                  </configuration>
              </execution>
          </executions>
-      </plugin>    
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>
@@ -634,6 +657,7 @@ THE SOFTWARE.
           <execution>
             <goals>
               <goal>generate-taglib-interface</goal>
+              <goal>record-core-location</goal>
             </goals>
           </execution>
         </executions>
@@ -683,6 +707,7 @@ THE SOFTWARE.
             <configuration>
               <fileMask>Messages.properties</fileMask>
               <outputDirectory>target/generated-sources/localizer</outputDirectory>
+              <accessModifierAnnotations>true</accessModifierAnnotations>
             </configuration>
           </execution>
         </executions>
@@ -690,7 +715,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.kohsuke</groupId>
         <artifactId>access-modifier-checker</artifactId>
-        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
@@ -741,7 +765,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>com.sun.winsw</groupId>
                   <artifactId>winsw</artifactId>
-                  <version>1.16</version>
+                  <version>2.1.2</version>
                   <classifier>bin</classifier>
                   <type>exe</type>
                   <outputDirectory>${project.build.outputDirectory}/windows-service</outputDirectory>
@@ -757,7 +781,7 @@ THE SOFTWARE.
         <configuration>
           <forkCount>0.5C</forkCount>
           <reuseForks>true</reuseForks>
-          <argLine>-XX:MaxPermSize=128m -noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
+          <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
         </configuration>
       </plugin>
       <plugin><!-- set main class -->
@@ -791,6 +815,10 @@ THE SOFTWARE.
             <version>${groovy.version}</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -828,21 +856,9 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin><!-- execute apt:process for "Extension points" Wiki page generation -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>apt-maven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>process</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <!--
-              generate jelly taglib docs from src/main/resoruces.
+              generate jelly taglib docs from src/main/resources.
               this is necessary in addition to the <reporting> configuration
               to get the results deployed.
             -->
@@ -867,20 +883,12 @@ THE SOFTWARE.
     </profile>
     <profile>
       <!-- Run FindBugs for better error detection. Run as "mvn -Pfindbugs install site". -->
+      <!-- FindBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>findbugs</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-              <effort>Max</effort>
-              <threshold>High</threshold>
-              <excludeFilterFile>src/findbugs-filter.xml</excludeFilterFile>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
+      <properties>
+        <!-- In the default profile we always fail the build if there FindBugs errors -->
+        <findbugs.failOnError>true</findbugs.failOnError>
+      </properties>
     </profile>
     <profile>
       <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->

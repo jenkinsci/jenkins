@@ -30,7 +30,7 @@ public class ListViewTest {
         mockStatic(Items.class);
         mockStatic(ListViewColumn.class);
         List<ListViewColumn> columns = Collections.emptyList();
-        when(ListViewColumn.createDefaultInitialColumnList()).thenReturn(columns);
+        when(ListViewColumn.createDefaultInitialColumnList(ListView.class)).thenReturn(columns);
         ViewGroup owner = mock(ViewGroup.class);
         ItemGroup itemGroupOwner = mock(ItemGroup.class);
         when(owner.getItemGroup()).thenReturn(itemGroupOwner);
@@ -49,7 +49,7 @@ public class ListViewTest {
         mockStatic(Items.class);
         mockStatic(ListViewColumn.class);
         List<ListViewColumn> columns = Collections.emptyList();
-        when(ListViewColumn.createDefaultInitialColumnList()).thenReturn(columns);
+        when(ListViewColumn.createDefaultInitialColumnList(ListView.class)).thenReturn(columns);
         ViewGroup owner = mock(ViewGroup.class);
         ItemGroup ig = mock(ItemGroup.class);
         when(owner.getItemGroup()).thenReturn(ig);

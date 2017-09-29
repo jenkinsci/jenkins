@@ -27,8 +27,10 @@ import com.google.common.collect.ImmutableMap;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Functions;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -52,6 +54,7 @@ import net.sf.json.JSONObject;
 import org.acegisecurity.AccessDeniedException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.FileSet;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -82,7 +85,7 @@ import jenkins.tasks.SimpleBuildStep;
  * @author Kohsuke Kawaguchi
  */
 public class Fingerprinter extends Recorder implements Serializable, DependencyDeclarer, SimpleBuildStep {
-    public static boolean enableFingerprintsInDependencyGraph = Boolean.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
+    public static boolean enableFingerprintsInDependencyGraph = SystemProperties.getBoolean(Fingerprinter.class.getName() + ".enableFingerprintsInDependencyGraph");
     
     /**
      * Comma-separated list of files/directories to be fingerprinted.
@@ -135,7 +138,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
                 Jenkins.getInstance().rebuildDependencyGraphAsync();
             }
         } catch (IOException e) {
-            e.printStackTrace(listener.error(Messages.Fingerprinter_Failed()));
+            Functions.printStackTrace(e, listener.error(Messages.Fingerprinter_Failed()));
             build.setResult(Result.FAILURE);
         }
 
@@ -248,7 +251,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
         }
     }
 
-    @Extension
+    @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();

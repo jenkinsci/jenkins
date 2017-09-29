@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.logging.Level;
 
 /**
  * {@link TokenBasedRememberMeServices} with modification so as not to rely
@@ -94,7 +93,7 @@ public class TokenBasedRememberMeServices2 extends TokenBasedRememberMeServices 
 			return;
 		}
 
-		Jenkins j = Jenkins.getInstance();
+		Jenkins j = Jenkins.getInstanceOrNull();
 		if (j != null && j.isDisableRememberMe()) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Did not send remember-me cookie because 'Remember Me' is disabled in " +

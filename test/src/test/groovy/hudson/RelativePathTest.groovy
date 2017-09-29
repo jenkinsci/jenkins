@@ -38,22 +38,12 @@ class RelativePathTest extends HudsonTestCase implements Describable<RelativePat
     }
 
     @TestExtension
-    static class DescriptorImpl extends Descriptor<RelativePathTest> {
-        @Override
-        String getDisplayName() {
-            return "";
-        }
-    }
+    static class DescriptorImpl extends Descriptor<RelativePathTest> {}
 
     static class Model extends AbstractDescribableImpl<Model> {
         @TestExtension
         static class DescriptorImpl extends Descriptor<Model> {
             boolean touched;
-
-            @Override
-            String getDisplayName() {
-                return "test";
-            }
 
             ListBoxModel doFillAbcItems(@RelativePath("..") @QueryParameter String name) {
                 assert name=="Alice";

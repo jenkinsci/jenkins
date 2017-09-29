@@ -23,12 +23,12 @@
  */
 package hudson.security;
 
+import hudson.Extension;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-import hudson.Extension;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
-import org.kohsuke.stapler.StaplerRequest;
-import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -43,6 +43,10 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
         add(new GrantedAuthoritySid("admin"), Jenkins.ADMINISTER,true);
     }};
 
+    @DataBoundConstructor
+    public LegacyAuthorizationStrategy() {
+    }
+
     public ACL getRootACL() {
         return LEGACY_ACL;
     }
@@ -51,14 +55,10 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
         return Collections.singleton("admin");
     }
 
-    @Extension
+    @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();
-        }
-
-        public LegacyAuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LegacyAuthorizationStrategy();
         }
     }
 }

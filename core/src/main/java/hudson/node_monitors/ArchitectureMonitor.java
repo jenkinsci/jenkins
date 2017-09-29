@@ -28,17 +28,18 @@ import hudson.remoting.Callable;
 import hudson.Extension;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 
 /**
- * Discovers the architecture of the system to display in the slave list page.
+ * Discovers the architecture of the system to display in the agent list page.
  *
  * @author Kohsuke Kawaguchi
  */
 public class ArchitectureMonitor extends NodeMonitor {
-    @Extension
+    @Extension @Symbol("architecture")
     public static final class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<String> {
         @Override
         protected Callable<String, IOException> createCallable(Computer c) {

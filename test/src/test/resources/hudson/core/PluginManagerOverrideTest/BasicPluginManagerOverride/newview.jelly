@@ -1,0 +1,6 @@
+<!-- Trivial dummy view with a dummy element to demonstrate adding view -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <st:contentType value="text/html;charset=UTF-8" />
+    <div style="margin-top:1em" id="dummyElement">LoremIpsum</div>
+</j:jelly>

@@ -32,6 +32,7 @@ import java.util.Collection;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -120,7 +121,7 @@ public class ProxyView extends View implements StaplerFallback {
             return FormValidation.error(Messages.ProxyView_NoSuchViewExists(value));
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends ViewDescriptor {
 
         @Override

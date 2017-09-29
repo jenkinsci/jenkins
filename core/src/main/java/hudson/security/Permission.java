@@ -314,7 +314,7 @@ public final class Permission {
 //
 // Root Permissions.
 //
-// These permisisons are meant to be used as the 'impliedBy' permission for other more specific permissions.
+// These permissions are meant to be used as the 'impliedBy' permission for other more specific permissions.
 // The intention is to allow a simplified AuthorizationStrategy implementation agnostic to
 // specific permissions.
 

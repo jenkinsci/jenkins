@@ -27,7 +27,6 @@ import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionListView;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
 import hudson.model.User;
 
 import java.util.List;
@@ -59,7 +58,7 @@ public abstract class UserNameResolver implements ExtensionPoint {
      *
      * <p>
      * When multiple resolvers are installed, they are consulted in order and
-     * the search will be over when a name is found by someoene.
+     * the search will be over when a name is found by someone.
      *
      * <p>
      * Since {@link UserNameResolver} is singleton, this method can be invoked concurrently

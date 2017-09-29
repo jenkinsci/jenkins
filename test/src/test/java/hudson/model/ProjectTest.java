@@ -23,24 +23,27 @@
  */
 package hudson.model;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
+import hudson.tasks.*;
 import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
+
+import java.net.URL;
 import java.util.Collections;
 
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.PollingResult;
-import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Util;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.model.queue.SubTaskContributor;
-import hudson.model.queue.AbstractSubTask;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
@@ -58,15 +61,13 @@ import java.io.Serializable;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
 import java.io.File;
-import hudson.FilePath;
+
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.EnvVars;
 import hudson.model.labels.LabelAtom;
 import hudson.scm.SCMDescriptor;
 import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProvisioner;
-import hudson.tasks.Shell;
 import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
 import java.util.ArrayList;
@@ -77,9 +78,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
-import hudson.tasks.Fingerprinter;
-import hudson.tasks.ArtifactArchiver;
-import hudson.tasks.BuildTrigger;
+
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -190,7 +189,8 @@ public class ProjectTest {
         getFilePath = true;
         assertNotNull("Project should have any workspace because WorkspaceBrowser find some.", p.getSomeWorkspace());
         getFilePath = false;
-        p.getBuildersList().add(new Shell("echo ahoj > some.log"));
+        String cmd = "echo ahoj > some.log";
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(p);
         assertNotNull("Project should has any workspace.", p.getSomeWorkspace());
     }
@@ -198,7 +198,8 @@ public class ProjectTest {
     @Test
     public void testGetSomeBuildWithWorkspace() throws Exception{
         FreeStyleProject p = j.createFreeStyleProject("project");
-        p.getBuildersList().add(new Shell("echo ahoj > some.log"));
+        String cmd = "echo ahoj > some.log";
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
         assertNull("Project which has never run should not have any build with workspace.", p.getSomeBuildWithWorkspace());
         j.buildAndAssertSuccess(p);
         assertEquals("Last build should have workspace.", p.getLastBuild(), p.getSomeBuildWithWorkspace());
@@ -209,7 +210,8 @@ public class ProjectTest {
     @Issue("JENKINS-10450")
     @Test public void workspaceBrowsing() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        p.getBuildersList().add(new Shell("echo ahoj > some.log"));
+        String cmd = "echo ahoj > some.log";
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(p);
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.goTo("job/project/ws/some.log", "text/plain");
@@ -334,7 +336,7 @@ public class ProjectTest {
         assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
         assertTrue("Project did not save block if downstream is building.", p.blockBuildWhenDownstreamBuilding());
-        assertTrue("Project did not save block if upstream is buildidng.", p.blockBuildWhenUpstreamBuilding());
+        assertTrue("Project did not save block if upstream is building.", p.blockBuildWhenUpstreamBuilding());
         assertNotNull("Project did not save jdk", p.getJDK());
         assertEquals("Project did not save custom workspace.", "/some/path", p.getCustomWorkspace());
     }
@@ -356,14 +358,14 @@ public class ProjectTest {
     @Test
     public void testGetCauseOfBlockage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
-        p.getBuildersList().add(new Shell("sleep 10"));
+        p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
         assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
-        downstream.getBuildersList().add(new Shell("sleep 10"));
+        downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
         Jenkins.getInstance().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
@@ -602,9 +604,12 @@ public class ProjectTest {
         auth.add(Jenkins.READ, user.getId());
         Slave slave = j.createOnlineSlave();
         project.setAssignedLabel(slave.getSelfLabel());
-        project.getBuildersList().add(new Shell("echo hello > change.log"));
+        String cmd = "echo hello > change.log";
+        project.getBuildersList().add(Functions.isWindows()? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(project);
-        HtmlPage page = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl() + "doWipeOutWorkspace");
+        JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        HtmlPage p = wc.getPage(request);
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
     }
@@ -836,11 +841,7 @@ public class ProjectTest {
             return true;
         }
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {
-                @Override public String getDisplayName() {
-                    return "";
-                }
-            };
+            return new SCMDescriptor<SCM>(null) {};
         }
         
         @Override
@@ -922,7 +923,7 @@ public class ProjectTest {
         
     }
     
-    public static class SubTaskImpl extends AbstractSubTask{
+    public static class SubTaskImpl implements SubTask{
         
         public String projectName;
 

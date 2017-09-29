@@ -34,6 +34,8 @@ import java.io.File;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
+
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,10 +48,7 @@ public class LauncherTest {
 
     @Issue("JENKINS-4611")
     @Test public void remoteKill() throws Exception {
-        if (File.pathSeparatorChar != ':') {
-            System.err.println("Skipping, currently Unix-specific test");
-            return;
-        }
+        Assume.assumeFalse("Skipping, currently Unix-specific test", Functions.isWindows());
 
         File tmp = temp.newFile();
 
@@ -62,7 +61,8 @@ public class LauncherTest {
             p.kill();
             assertTrue(p.join()!=0);
             long end = System.currentTimeMillis();
-            assertTrue("join finished promptly", (end - start < 15000));
+            long terminationTime = end - start;
+            assertTrue("Join did not finish promptly. The completion time (" + terminationTime + "ms) is longer than expected 15s", terminationTime < 15000);
             channels.french.call(NOOP); // this only returns after the other side of the channel has finished executing cancellation
             Thread.sleep(2000); // more delay to make sure it's gone
             assertNull("process should be gone",ProcessTree.get().get(Integer.parseInt(FileUtils.readFileToString(tmp).trim())));

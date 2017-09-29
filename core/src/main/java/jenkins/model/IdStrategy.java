@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.util.CaseInsensitiveComparator;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -161,6 +162,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             return id.toLowerCase(Locale.ENGLISH);
@@ -174,7 +176,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return CaseInsensitiveComparator.INSTANCE.compare(id1, id2);
         }
 
-        @Extension
+        @Extension @Symbol("caseInsensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
             /**
@@ -288,6 +290,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             return id;
@@ -301,7 +304,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
             return id1.compareTo(id2);
         }
 
-        @Extension
+        @Extension @Symbol("caseSensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
             /**
@@ -318,7 +321,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * A case sensitive email address {@link IdStrategy}. Providing this implementation among the set of default
      * implementations as given the history of misunderstanding in the Jenkins code base around ID case sensitivity,
      * if not provided people will get this wrong.
-     * <p/>
+     * <p>
      * Note: Not all email addresses are case sensitive. It is knowledge that belongs to the server that holds the
      * mailbox. Most sane system administrators do not configure their accounts using case sensitive mailboxes
      * but the RFC does allow them the option to configure that way. Domain names are always case insensitive per RFC.
@@ -348,6 +351,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         /**
          * {@inheritDoc}
          */
+        @Override
         @Nonnull
         public String keyFor(@Nonnull String id) {
             int index = id.lastIndexOf('@'); // The @ can be used in local-part if quoted correctly

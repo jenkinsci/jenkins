@@ -15,11 +15,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.SleepBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
@@ -190,7 +188,7 @@ public class LabelLoadStatisticsQueueLengthTest {
     private FreeStyleProject createTestProject() throws IOException {
         FreeStyleProject project = j.createFreeStyleProject(PROJECT_NAME);
         // In order to queue multiple builds of the job it needs to be
-        // parameterised.
+        // parameterized.
         project.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition(PARAMETER_NAME, "0")));
         // Prevent builds from being queued as blocked by allowing concurrent

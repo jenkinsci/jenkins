@@ -61,6 +61,9 @@ var breadcrumbs = (function() {
             var form = document.createElement('form');
             form.setAttribute('method', cfg.post ? 'POST' : 'GET');
             form.setAttribute('action', cfg.url);
+            if (cfg.post) {
+                crumb.appendToForm(form);
+            }
             document.body.appendChild(form);
             form.submit();
         }

@@ -26,7 +26,6 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -47,6 +46,7 @@ public class CommandLauncherTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
+    // TODO sometimes gets EOFException as in commandSucceedsWithoutChannel
     public void commandFails() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("false");
@@ -57,8 +57,9 @@ public class CommandLauncherTest {
         assertThat(log, not(containsString("ERROR: Process terminated with exit code 0")));
     }
 
+    // TODO Sometimes gets `EOFException: unexpected stream termination` before then on CI builder; maybe needs to wait in a loop for a message to appear?
     @Test
-    public void commandSuceedsWithoutChannel() throws Exception {
+    public void commandSucceedsWithoutChannel() throws Exception {
         assumeTrue(!Functions.isWindows());
         DumbSlave slave = createSlave("true");
 

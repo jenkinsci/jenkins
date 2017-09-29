@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
+import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -10,6 +11,7 @@ import hudson.Util;
 import hudson.util.Secret;
 import hudson.util.SecretHelper;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.Recipe.Runner;
 import org.xml.sax.SAXException;
@@ -19,6 +21,9 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -26,6 +31,8 @@ import java.lang.annotation.Annotation;
 public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     @Inject
     RekeySecretAdminMonitor monitor;
+
+    final String plain_regex_match = ".*\\{[A-Za-z0-9+/]+={0,2}}.*";
 
     @Override
     protected void setUp() throws Exception {
@@ -75,8 +82,8 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
     private void verifyRewrite(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        assertEquals("<foo>" + encryptNew(TEST_KEY) + "</foo>".trim(),
-                FileUtils.readFileToString(xml).trim());
+        Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
+        assertTrue(pattern.matcher(FileUtils.readFileToString(xml).trim()).matches());
     }
 
     // TODO sometimes fails: "Invalid request submission: {json=[Ljava.lang.String;@2c46358e, .crumb=[Ljava.lang.String;@35661457}"
@@ -100,8 +107,8 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
         // should be no warning/error now
         HtmlPage manage = wc.goTo("manage");
-        assertEquals(0,manage.selectNodes("//*[class='error']").size());
-        assertEquals(0,manage.selectNodes("//*[class='warning']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
 
         // and the data should be rewritten
         verifyRewrite(jenkins.getRootDir());
@@ -140,8 +147,8 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
 
         // should be no warning/error now
         HtmlPage manage = wc.goTo("/manage");
-        assertEquals(0,manage.selectNodes("//*[class='error']").size());
-        assertEquals(0,manage.selectNodes("//*[class='warning']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='error']").size());
+        assertEquals(0, DomNodeUtil.selectNodes(manage, "//*[class='warning']").size());
     }
 
     private String encryptOld(String str) throws Exception {

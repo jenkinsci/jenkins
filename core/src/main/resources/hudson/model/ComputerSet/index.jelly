@@ -68,7 +68,7 @@ THE SOFTWARE.
           <td><!-- config link -->
             <j:if test="${c.hasPermission(c.CONFIGURE)}">
               <a href="${rootURL}/${c.url}configure">
-                <l:icon class="icon-setting icon-lg" tooltip="${%Configure}"/>
+                <l:icon class="icon-gear2 icon-lg" tooltip="${%Configure}"/>
               </a>
             </j:if>
           </td>
@@ -96,7 +96,7 @@ THE SOFTWARE.
     </table>
     <j:if test="${app.hasPermission(app.ADMINISTER)}">
       <div align="right" style="margin-top:0.5em">
-        <form method="get" action="updateNow">
+        <form method="post" action="updateNow">
           <s:submit value="${%Refresh status}"/>
         </form>
       </div>

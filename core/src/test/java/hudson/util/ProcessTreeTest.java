@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import jenkins.security.MasterToSlaveCallable;
 import static org.junit.Assert.*;
+
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,9 +28,7 @@ public class ProcessTreeTest {
     }
     
     @Test public void remoting() throws Exception {
-        // on some platforms where we fail to list any processes, this test will just not work
-        if (ProcessTree.get()==ProcessTree.DEFAULT)
-            return;
+        Assume.assumeFalse("on some platforms where we fail to list any processes", ProcessTree.get()==ProcessTree.DEFAULT);
 
         Tag t = channels.french.call(new MyCallable());
 

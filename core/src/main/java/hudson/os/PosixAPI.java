@@ -22,6 +22,7 @@ public class PosixAPI {
     /**
      * Load the JNR implementation of the POSIX APIs for the current platform.
      * Runtime exceptions will be of type {@link PosixException}.
+     * {@link IllegalStateException} will be thrown for methods not implemented on this platform.
      * @return some implementation (even on Windows or unsupported Unix)
      * @since 1.518
      */
