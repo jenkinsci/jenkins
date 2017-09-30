@@ -33,6 +33,7 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 
 import java.io.ByteArrayInputStream;
@@ -49,6 +50,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -205,6 +207,51 @@ public class ItemGroupMixInTest {
         Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes()));
         // if no exception then JAXP is swallowing these - so there should be no entity in the description.
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
+    }
+
+    @Issue("JENKINS-46911")
+    @Test
+    public void testCreateProjectCheckGoodName() throws Exception{
+        String xmlFile = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<project>\n" +
+                "<description></description>\n" +
+                "<keepDependencies>false</keepDependencies>\n" +
+                "<properties/>\n" +
+                "<triggers/>\n" +
+                "<concurrentBuild>false</concurrentBuild>\n" +
+                "<builders/>\n" +
+                "<publishers/>\n" +
+                "<buildWrappers/>\n" +
+                "</project>";
+        String[] illegalNames = {"ab\\c", "abc/", "ab/c", "", " ", "   ", "..", ".", "?", "*", "6%",
+                "x!", "-@", "#", "$", "^", "&", "|", "<", ">", "[", "]", ":", ";", "../.", null};
+        Jenkins j = Jenkins.getInstance();
+
+        int created = 0;
+        for (String name : illegalNames){
+            try{
+                InputStream is = new ByteArrayInputStream(xmlFile.getBytes());
+                j.createProjectFromXML(name, is);
+                created++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+            } catch (IOException e){
+                assertEquals(IOException.class, e.getClass());
+            }
+        }
+
+        for (String name : illegalNames){
+            try{
+                j.createProject(FreeStyleProject.class, name);
+                created++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+            } catch (IOException e){
+                assertEquals(IOException.class, e.getClass());
+            }
+        }
+        // Checks that no illegal named project has been created.
+        assertEquals(0, created);
     }
 
 }
