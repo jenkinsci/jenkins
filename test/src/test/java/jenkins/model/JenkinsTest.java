@@ -71,11 +71,14 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
@@ -616,5 +619,82 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber nullVersion = Jenkins.getStoredVersion();
         assertNull(nullVersion);
+    }
+
+    @Issue("JENKINS-46911")
+    @Test
+    public void testCreateProjectCheckGoodName() throws Exception{
+        String xmlFile = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<project>\n" +
+                "<description></description>\n" +
+                "<keepDependencies>false</keepDependencies>\n" +
+                "<properties/>\n" +
+                "<triggers/>\n" +
+                "<concurrentBuild>false</concurrentBuild>\n" +
+                "<builders/>\n" +
+                "<publishers/>\n" +
+                "<buildWrappers/>\n" +
+                "</project>";
+        String[] illegalNames = {"ab\\c", "abc/", "ab/c", "", " ", "   ", "..", ".", "?", "*", "6%",
+                "x!", "-@", "#", "$", "^", "&", "|", "<", ">", "[", "]", ":", ";", "../.", null};
+        Jenkins j = Jenkins.getInstance();
+
+        int created = 0;
+        for (String name : illegalNames){
+            try{
+                InputStream is = new ByteArrayInputStream(xmlFile.getBytes());
+                j.createProjectFromXML(name, is);
+                created++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+            } catch (IOException e){
+                assertEquals(IOException.class, e.getClass());
+            }
+        }
+
+        for (String name : illegalNames){
+            try{
+                j.createProject(FreeStyleProject.class, name);
+                created++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+            } catch (IOException e){
+                assertEquals(IOException.class, e.getClass());
+            }
+        }
+        // Checks that no illegal named project has been created.
+        assertEquals(0, created);
+    }
+
+    @Issue("JENKINS-46911")
+    @WithoutJenkins
+    @Test
+    public void testCheckGoodName() throws Exception{
+        String[] illegalNames = {"ab\\c", "abc/", "ab/c", " ", "   ", "", "..", ".", "?", "*", "6%",
+                "x!", "-@", "#", "$", "^", "&", "|", "<", ">", "[", "]", ":", ";", "../.", null};
+        String[] legalNames = {"abc", "a bc", "abc ", " abc", "a.bc", ". ."};
+        int exceptions = 0;
+        int goodNames = 0;
+
+        for (String name : illegalNames){
+            try {
+                Jenkins.checkGoodName(name);
+                goodNames++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+                exceptions++;
+            }
+        }
+        for (String name : legalNames){
+            try {
+                Jenkins.checkGoodName(name);
+                goodNames++;
+            } catch (Failure e){
+                assertEquals(Failure.class, e.getClass());
+                exceptions++;
+            }
+        }
+        assertEquals("checkGoodNameTest found a legal name. Please check.", illegalNames.length, exceptions);
+        assertEquals(legalNames.length, goodNames);
     }
 }

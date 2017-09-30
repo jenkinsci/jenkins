@@ -257,7 +257,9 @@ public abstract class ItemGroupMixIn {
         return result;
     }
 
-    public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
+    public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException, Failure {
+        Jenkins.checkGoodName(name);
+
         acl.checkPermission(Item.CREATE);
 
         Jenkins.getInstance().getProjectNamingStrategy().checkName(name);
@@ -308,7 +310,9 @@ public abstract class ItemGroupMixIn {
     }
 
     public synchronized TopLevelItem createProject( TopLevelItemDescriptor type, String name, boolean notify )
-            throws IOException {
+            throws IOException, Failure {
+        Jenkins.checkGoodName(name);
+
         acl.checkPermission(Item.CREATE);
         type.checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, type);
