@@ -171,7 +171,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
             if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
@@ -199,7 +199,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
-                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
