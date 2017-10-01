@@ -43,6 +43,7 @@ public class TimeDuration {
 
     /**
      * Returns the duration of this instance in <em>seconds</em>.
+     * @since TODO
      */
     public int getTimeInSeconds() {
         return (int) (millis / 1000L);
