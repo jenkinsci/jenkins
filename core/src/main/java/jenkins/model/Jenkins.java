@@ -3709,9 +3709,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             JSONObject json = req.getSubmittedForm();
 
-            MasterBuildConfiguration mbc = MasterBuildConfiguration.all().get(MasterBuildConfiguration.class);
-            if (mbc!=null)
-                mbc.configure(req,json);
+            MasterBuildConfiguration mbc = ExtensionList.lookupSingleton(MasterBuildConfiguration.class);
+            mbc.configure(req,json);
 
             getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
         } finally {
@@ -4520,7 +4519,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RestrictedSince("2.37")
     @Deprecated
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).doCheckURIEncoding(request);
+        return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).doCheckURIEncoding(request);
     }
 
     /**
@@ -4530,7 +4529,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RestrictedSince("2.37")
     @Deprecated
     public static boolean isCheckURIEncodingEnabled() {
-        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).isCheckEnabled();
+        return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
     /**

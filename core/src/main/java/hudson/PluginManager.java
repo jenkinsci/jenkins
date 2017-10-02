@@ -2000,8 +2000,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
          * @return this monitor.
          */
-        public static final PluginUpdateMonitor getInstance() {
-            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
+        public static PluginUpdateMonitor getInstance() {
+            return ExtensionList.lookupSingleton(PluginUpdateMonitor.class);
         }
 
         /**

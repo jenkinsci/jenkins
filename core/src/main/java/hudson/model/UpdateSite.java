@@ -1122,14 +1122,8 @@ public class UpdateSite {
         @CheckForNull
         @Restricted(NoExternalUse.class)
         public Set<Warning> getWarnings() {
-            ExtensionList<UpdateSiteWarningsConfiguration> list = ExtensionList.lookup(UpdateSiteWarningsConfiguration.class);
-            if (list.size() == 0) {
-                return Collections.emptySet();
-            }
-
+            UpdateSiteWarningsConfiguration configuration = ExtensionList.lookupSingleton(UpdateSiteWarningsConfiguration.class);
             Set<Warning> warnings = new HashSet<>();
-
-            UpdateSiteWarningsConfiguration configuration = list.get(0);
 
             for (Warning warning: configuration.getAllWarnings()) {
                 if (configuration.isIgnored(warning)) {

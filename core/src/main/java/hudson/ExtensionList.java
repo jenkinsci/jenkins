@@ -418,16 +418,21 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     }
 
     /**
-     * Convenience method allowing lookup of the first instance of a given type.
-     * Equivalent to {@code ExtensionList.lookup(Class).get(Class)}.
+     * Convenience method allowing lookup of the only instance of a given type.
+     * Equivalent to {@code ExtensionList.lookup(Class).get(Class)} if there is one instance,
+     * and throws an {@code IllegalStateException} otherwise.
      *
      * @param type The type to look up.
-     * @return the first instance of the given type in its list.
+     * @return the singleton instance of the given type in its list.
      *
      * @since TODO
      */
-    public static @CheckForNull <U> U lookupFirst(Class<U> type) {
-        return lookup(type).get(type);
+    public static @Nonnull <U> U lookupSingleton(Class<U> type) {
+        ExtensionList<U> all = lookup(type);
+        if (all.size() != 1) {
+            throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
+        }
+        return all.get(0);
     }
 
     /**

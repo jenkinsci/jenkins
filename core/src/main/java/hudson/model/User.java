@@ -1026,11 +1026,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          */
         @GuardedBy("User.byNameLock")
         static ConcurrentMap<String,User> byName() {
-            ExtensionList<AllUsers> instances = ExtensionList.lookup(AllUsers.class);
-            if (instances.size() != 1) {
-                throw new IllegalStateException();
-            }
-            return instances.get(0).byName;
+            return ExtensionList.lookupSingleton(AllUsers.class).byName;
         }
 
     }
