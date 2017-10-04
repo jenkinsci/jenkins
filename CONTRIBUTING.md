@@ -75,7 +75,10 @@ There is no extra action items required from pull request authors at this point.
 
 ## Copyright
 
-Jenkins core is licensed under MIT license, with few exceptions in the bundled classes.
+Jenkins core is licensed under [MIT license](./LICENSE.txt), with few exceptions in bundled classes.
+We consider all contributions as MIT unless it's explicitly stated otherwise.
+MIT-incompatible code contributions will be rejected.
+Contributions under MIT-compatible licenses may be also rejected if it is not ultimately necessary.
 
 We **Do NOT** require pull request submitters to sign the [contributor agreement](https://wiki.jenkins.io/display/JENKINS/Copyright+on+source+code)
 while the code is licensed under MIT and merged by one of the contributors with the signed agreement.
