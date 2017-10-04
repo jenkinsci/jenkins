@@ -31,6 +31,8 @@ import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -408,6 +410,11 @@ public abstract class Cause {
         @Exported(visibility = 3)
         public String getUserName() {
             return userId == null ? "anonymous" : User.get(userId).getDisplayName();
+        }
+
+        @Restricted(DoNotUse.class) // for Jelly
+        public String getUserUrl() {
+            return userId == null ? null : User.get(userId).getUrl();
         }
 
         @Override
