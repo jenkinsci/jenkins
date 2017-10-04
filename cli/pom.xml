@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.78-SNAPSHOT</version>
+    <version>2.83-SNAPSHOT</version>
   </parent>
 
   <artifactId>cli</artifactId>
@@ -78,11 +78,13 @@
         <executions>
           <execution>
             <goals>
-              <goal>attached</goal>
+              <goal>single</goal>
             </goals>
             <phase>package</phase>
             <configuration>
-              <descriptorId>jar-with-dependencies</descriptorId>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
               <archive>
                 <manifest>
                   <mainClass>hudson.cli.CLI</mainClass>

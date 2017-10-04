@@ -29,6 +29,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.PermalinkList;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -68,6 +69,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -678,6 +680,40 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static class SubItemBuildsLocationImpl extends ItemListener {
+        @Override
+        public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            final Jenkins jenkins = Jenkins.getInstance();
+            if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
+                File newBuildDir = ((Job)item).getBuildDir();
+                try {
+                    if (!Util.isDescendant(item.getRootDir(), newBuildDir)) {
+                        //OK builds are stored somewhere outside of the item's root, so none of the other move operations has probably moved it.
+                        //So let's try even though we lack some information
+                        String oldBuildsDir = Jenkins.expandVariablesForDirectory(jenkins.getRawBuildsDir(), oldFullName, "<NOPE>");
+                        if (oldBuildsDir.contains("<NOPE>")) {
+                            LOGGER.severe(String.format("Builds directory for job %1$s appears to be outside of item root," +
+                                    " but somehow still containing the item root path, which is unknown. Cannot move builds from %2$s to %1$s.", newFullName, oldFullName));
+                        } else {
+                            File oldDir = new File(oldBuildsDir);
+                            if (oldDir.isDirectory()) {
+                                try {
+                                    FileUtils.moveDirectory(oldDir, newBuildDir);
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.SEVERE, String.format("Failed to move %s to %s", oldBuildsDir, newBuildDir.getAbsolutePath()), e);
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to inspect " + item.getRootDir() + ". Builds might not be moved.", e);
+                }
+            }
+        }
     }
 
     /**

@@ -672,4 +672,42 @@ public class UtilTest {
         }
     }
 
+    @Test
+    public void testIsDescendant() throws IOException {
+        File root;
+        File other;
+        if (Functions.isWindows()) {
+            root = new File("C:\\Temp");
+            other = new File("C:\\Windows");
+        } else {
+            root = new File("/tmp");
+            other = new File("/usr");
+
+        }
+        assertTrue(Util.isDescendant(root, new File(root,"child")));
+        assertTrue(Util.isDescendant(root, new File(new File(root,"child"), "grandchild")));
+        assertFalse(Util.isDescendant(root, other));
+        assertFalse(Util.isDescendant(root, new File(other, "child")));
+
+        assertFalse(Util.isDescendant(new File(root,"child"), root));
+        assertFalse(Util.isDescendant(new File(new File(root,"child"), "grandchild"), root));
+
+        //.. whithin root
+        File convoluted = new File(root, "child");
+        convoluted = new File(convoluted, "..");
+        convoluted = new File(convoluted, "child");
+        assertTrue(Util.isDescendant(root, convoluted));
+
+        //.. going outside of root
+        convoluted = new File(root, "..");
+        convoluted = new File(convoluted, other.getName());
+        convoluted = new File(convoluted, "child");
+        assertFalse(Util.isDescendant(root, convoluted));
+
+        //. on root
+        assertTrue(Util.isDescendant(new File(root, "."), new File(root, "child")));
+        //. on both
+        assertTrue(Util.isDescendant(new File(root, "."), new File(new File(root, "child"), ".")));
+    }
+
 }

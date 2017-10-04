@@ -36,7 +36,7 @@ import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.HttpResponses;
 import hudson.util.TextFile;
-import static hudson.util.TimeUnit2.*;
+import static java.util.concurrent.TimeUnit.*;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
