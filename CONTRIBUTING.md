@@ -73,6 +73,17 @@ the repository maintainers will integrate it, prepare changelogs and
 ensure it gets released in one of incoming Weekly releases.
 There is no extra action items required from pull request authors at this point.
 
+## Copyright
+
+Jenkins core is licensed under MIT license, with few exceptions in the bundled classes.
+
+We **Do NOT** require pull request submitters to sign the [contributor agreement](https://wiki.jenkins.io/display/JENKINS/Copyright+on+source+code)
+while the code is licensed under MIT and merged by one of the contributors with the signed agreement.
+
+We still encourage people to sign contributor agreements if they do many commits.
+It is also a mandatory prerequisite for getting merge/push permissions to core repositories 
+and for joining teams like [Jenkins Security Team](https://jenkins.io/security/#team).
+
 ## Continuous Integration
 
 Jenkins project has a Continuous Integration server... powered by Jenkins, of course.
@@ -82,4 +93,11 @@ Jenkins project uses [Jenkins Pipeline](https://jenkins.io/doc/book/pipeline/) t
 The core build flow is described in [Jenkinsfile](./Jenkinsfile) in the repository root.
 If you want to update the build flow (e.g. "add more checks"),
 you can also propose pull requests.
+
+# Links
+
+* [Jenkins Contribution Landing Page](https://jenkins.io/redirect/contribute/)
+* [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
+* [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
+
 
