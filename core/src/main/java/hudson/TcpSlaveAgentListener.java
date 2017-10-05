@@ -163,7 +163,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 // we take care of buffering on our own
                 s.setTcpNoDelay(true);
 
-                new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this, configuredPort) {
+                new ConnectionHandler(s, new ConnectionHandlerFailureCallback(this) {
                     @Override
                     public void run(Throwable cause) {
                         LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
@@ -328,15 +328,9 @@ public final class TcpSlaveAgentListener extends Thread {
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
     private abstract class ConnectionHandlerFailureCallback {
         private Thread parentThread;
-        private int port;
 
-        public ConnectionHandlerFailureCallback(Thread parentThread, int port) {
+        public ConnectionHandlerFailureCallback(Thread parentThread) {
             this.parentThread = parentThread;
-            this.port = port;
-        }
-
-        public int getPort() {
-            return port;
         }
 
         public Thread getParentThread() {
