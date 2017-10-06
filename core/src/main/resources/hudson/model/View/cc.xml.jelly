@@ -32,19 +32,7 @@ THE SOFTWARE.
   <j:new var="h" className="hudson.Functions" />
 
   <Projects>
-    <j:invokeStatic var="request" className="org.kohsuke.stapler.Stapler" method="getCurrentRequest" />
-    <j:choose>
-      <j:when test="${request.getParameter('recursive') != null}">
-        <j:invokeStatic var="topLevelItems" className="hudson.model.Items" method="getAllItems">
-          <j:arg type="hudson.model.ItemGroup" value="${it.owner.itemGroup}" />
-          <j:arg type="java.lang.Class" value="hudson.model.TopLevelItem" />
-        </j:invokeStatic>
-      </j:when>
-      <j:otherwise>
-        <j:set var="topLevelItems" value="${it.items}" />
-      </j:otherwise>
-    </j:choose>
-    <j:forEach var="p" items="${topLevelItems}">
+    <j:forEach var="p" items="${h.getCCItems(it)}">
       <j:set var="lb" value="${p.lastCompletedBuild}"/>
       <j:if test="${lb!=null}">
         <Project  name="${p.fullDisplayName}"
