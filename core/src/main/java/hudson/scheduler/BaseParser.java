@@ -70,15 +70,23 @@ abstract class BaseParser extends LLkParser {
     protected long doRange(int start, int end, int step, int field) throws ANTLRException {
         rangeCheck(start, field);
         rangeCheck(end, field);
+        if (field == 1 && start>end) // Hour-value passes midnight
+            end += 24;
         if (step <= 0)
             error(Messages.BaseParser_MustBePositive(step));
         if (start>end)
             error(Messages.BaseParser_StartEndReversed(end,start));
 
         long bits = 0;
-        for (int i = start; i <= end; i += step) {
-            bits |= 1L << i;
-        }
+        if (field == 1)
+            for (int i = start; i <= end; i += step) {
+                // Make sure the hours past midnight are smaller than 24
+                bits |= 1L << i % 24;
+            }
+        else
+            for (int i = start; i <= end; i += step) {
+                bits |= 1L << i;
+            }
         return bits;
     }
 
@@ -103,14 +111,22 @@ abstract class BaseParser extends LLkParser {
     protected long doHash(int s, int e, int step, int field) throws ANTLRException {
         rangeCheck(s, field);
         rangeCheck(e, field);
+        if (field == 1 && e < s) // Hour-value passes midnight
+            e += 24;
         if (step > e - s + 1) {
             error(Messages.BaseParser_OutOfRange(step, 1, e - s + 1));
             throw new AssertionError();
         } else if (step > 1) {
             long bits = 0;
-            for (int i = hash.next(step) + s; i <= e; i += step) {
-                bits |= 1L << i;
-            }
+            if (field == 1)
+                for (int i = hash.next(step) + s; i <= e; i += step) {
+                    // Make sure the hours past midnight are smaller than 24
+                    bits |= 1L << i % 24;
+                }
+            else
+                for (int i = hash.next(step) + s; i <= e; i += step) {
+                    bits |= 1L << i;
+                }
             assert bits != 0;
             return bits;
         } else if (step <=0) {
@@ -119,6 +135,9 @@ abstract class BaseParser extends LLkParser {
         } else {
             assert step==NO_STEP;
             // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
+            if (field == 1)
+                // Make sure if the hour is past midnight, it is smaller than 24
+                return 1L << (s+hash.next(e+1-s)) % 24;
             return 1L << (s+hash.next(e+1-s));
         }
     }

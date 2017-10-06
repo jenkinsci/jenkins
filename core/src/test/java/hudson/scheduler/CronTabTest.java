@@ -314,4 +314,46 @@ public class CronTabTest {
         assertEquals("[35, 56]", times.toString());
     }
 
+    @Issue("JENKINS-18313")
+    @Test public void passingMidnight() throws Exception {
+        // Every Hour
+        CronTabList tabs = CronTabList.create("0 20-5 * * *", Hash.from("seed"));
+        List<Integer> times = new ArrayList<Integer>();
+        for (int i = 0; i < 24; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, i, 0, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[0, 1, 2, 3, 4, 5, 20, 21, 22, 23]", times.toString());
+
+        // Every third hour
+        tabs = CronTabList.create("0 20-5/3 * * *", Hash.from("seed"));
+        times = new ArrayList<Integer>();
+        for (int i = 0; i < 24; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, i, 0, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[2, 5, 20, 23]", times.toString());
+
+        // Once in the interval
+        tabs = CronTabList.create("0 H(20-5) * * *", Hash.from("seed"));
+        times = new ArrayList<Integer>();
+        for (int i = 0; i < 24; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, i, 0, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[1]", times.toString());
+
+        // Every third hour, random
+        tabs = CronTabList.create("0 H(20-5)/3 * * *", Hash.from("seed"));
+        times = new ArrayList<Integer>();
+        for (int i = 0; i < 24; i++) {
+            if (tabs.check(new GregorianCalendar(2013, 3, 3, i, 0, 0))) {
+                times.add(i);
+            }
+        }
+        assertEquals("[1, 4, 22]", times.toString());
+    }
 }
