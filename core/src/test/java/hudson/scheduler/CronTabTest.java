@@ -25,6 +25,7 @@ package hudson.scheduler;
 
 import antlr.ANTLRException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -316,7 +317,7 @@ public class CronTabTest {
 
     @Issue("JENKINS-18313")
     @Test public void passingMidnight() throws Exception {
-        // Every Hour
+        // Every Hour, every day, 0-5 and 20-23
         CronTabList tabs = CronTabList.create("0 20-5 * * *", Hash.from("seed"));
         List<Integer> times = new ArrayList<Integer>();
         for (int i = 0; i < 24; i++) {
@@ -326,7 +327,7 @@ public class CronTabTest {
         }
         assertEquals("[0, 1, 2, 3, 4, 5, 20, 21, 22, 23]", times.toString());
 
-        // Every third hour
+        // Every third hour, every day, 0-5 and 20-23, calculating from 20
         tabs = CronTabList.create("0 20-5/3 * * *", Hash.from("seed"));
         times = new ArrayList<Integer>();
         for (int i = 0; i < 24; i++) {
@@ -336,7 +337,7 @@ public class CronTabTest {
         }
         assertEquals("[2, 5, 20, 23]", times.toString());
 
-        // Once in the interval
+        // Random value once in the interval
         tabs = CronTabList.create("0 H(20-5) * * *", Hash.from("seed"));
         times = new ArrayList<Integer>();
         for (int i = 0; i < 24; i++) {
@@ -346,7 +347,7 @@ public class CronTabTest {
         }
         assertEquals("[1]", times.toString());
 
-        // Every third hour, random
+        // Every third hour, random value
         tabs = CronTabList.create("0 H(20-5)/3 * * *", Hash.from("seed"));
         times = new ArrayList<Integer>();
         for (int i = 0; i < 24; i++) {
@@ -355,5 +356,55 @@ public class CronTabTest {
             }
         }
         assertEquals("[1, 4, 22]", times.toString());
+
+        // Every hour, 0-2 and 22-23, only on Sundays
+        tabs = CronTabList.create("0 22-2 * * 0", Hash.from("seed"));
+        List<String> datesAndTimes = new ArrayList<String>();
+        DateFormat formatter = new SimpleDateFormat("MM/dd HH:mm");
+        for (int i = 1; i < 31; i++) {
+          for (int j = 0; j < 24; j++) {
+              GregorianCalendar calendarToCheck = new GregorianCalendar(2017, 9, i, j, 0, 0);
+              if (tabs.check(calendarToCheck)) {
+                  datesAndTimes.add(formatter.format(calendarToCheck.getTime()));
+              }
+          }
+        }
+        assertEquals("[10/01 00:00, 10/01 01:00, 10/01 02:00, 10/01 22:00, 10/01 23:00,"
+            + " 10/08 00:00, 10/08 01:00, 10/08 02:00, 10/08 22:00, 10/08 23:00,"
+            + " 10/15 00:00, 10/15 01:00, 10/15 02:00, 10/15 22:00, 10/15 23:00,"
+            + " 10/22 00:00, 10/22 01:00, 10/22 02:00, 10/22 22:00, 10/22 23:00,"
+            + " 10/29 00:00, 10/29 01:00, 10/29 02:00, 10/29 22:00, 10/29 23:00]",
+            datesAndTimes.toString());
+
+        // Random value once in the interval, only on Sunday
+        tabs = CronTabList.create("0 H(20-5) * * 0", Hash.from("seed"));
+        datesAndTimes = new ArrayList<String>();
+        for (int i = 1; i < 31; i++) {
+          for (int j = 0; j < 24; j++) {
+              GregorianCalendar calendarToCheck = new GregorianCalendar(2017, 9, i, j, 0, 0);
+              if (tabs.check(calendarToCheck)) {
+                  datesAndTimes.add(formatter.format(calendarToCheck.getTime()));
+              }
+          }
+        }
+        assertEquals("[10/01 01:00, 10/08 01:00, 10/15 01:00, 10/22 01:00, 10/29 01:00]", datesAndTimes.toString());
+
+        // Every third hour, random value, only on Sunday
+        tabs = CronTabList.create("0 H(20-5)/3 * * 0", Hash.from("seed"));
+        datesAndTimes = new ArrayList<String>();
+        for (int i = 1; i < 31; i++) {
+          for (int j = 0; j < 24; j++) {
+              GregorianCalendar calendarToCheck = new GregorianCalendar(2017, 9, i, j, 0, 0);
+              if (tabs.check(calendarToCheck)) {
+                  datesAndTimes.add(formatter.format(calendarToCheck.getTime()));
+              }
+          }
+        }
+        assertEquals("[10/01 01:00, 10/01 04:00, 10/01 22:00,"
+            + " 10/08 01:00, 10/08 04:00, 10/08 22:00,"
+            + " 10/15 01:00, 10/15 04:00, 10/15 22:00,"
+            + " 10/22 01:00, 10/22 04:00, 10/22 22:00,"
+            + " 10/29 01:00, 10/29 04:00, 10/29 22:00]",
+            datesAndTimes.toString());
     }
 }

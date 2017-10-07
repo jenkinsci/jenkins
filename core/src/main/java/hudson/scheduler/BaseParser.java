@@ -70,7 +70,11 @@ abstract class BaseParser extends LLkParser {
     protected long doRange(int start, int end, int step, int field) throws ANTLRException {
         rangeCheck(start, field);
         rangeCheck(end, field);
-        if (field == 1 && start>end) // Hour-value passes midnight
+        // The 'start' and 'end' values are within their legitimate ranges. If the field being checked is the 'hour'-field,
+        // and the value for 'start' is larger than that of 'end', an evening-to-morning value has been entered. To be able
+        // to handle this, we add 24 hours to the 'end'-value, so it becomes larger than the 'start'-value and we can
+        // actually use a loop for the values inbetween.
+        if (field == 1 && start>end)
             end += 24;
         if (step <= 0)
             error(Messages.BaseParser_MustBePositive(step));
@@ -78,9 +82,11 @@ abstract class BaseParser extends LLkParser {
             error(Messages.BaseParser_StartEndReversed(end,start));
 
         long bits = 0;
+        // Because we possibly added 24 to the value of 'end' above, we have to make sure the values we add to the bit are
+        // in the legitimate range (0-23). To do this, we mod all values by 24. However, we only need to do this if the
+        // field is the 'hour'-field.
         if (field == 1)
             for (int i = start; i <= end; i += step) {
-                // Make sure the hours past midnight are smaller than 24
                 bits |= 1L << i % 24;
             }
         else
@@ -111,16 +117,22 @@ abstract class BaseParser extends LLkParser {
     protected long doHash(int s, int e, int step, int field) throws ANTLRException {
         rangeCheck(s, field);
         rangeCheck(e, field);
-        if (field == 1 && e < s) // Hour-value passes midnight
+        // The 'start' and 'end' values are within their legitimate ranges. If the field being checked is the 'hour'-field,
+        // and the value for 'start' is larger than that of 'end', an evening-to-morning value has been entered. To be able
+        // to handle this, we add 24 hours to the 'end'-value, so it becomes larger than the 'start'-value and we can
+        // actually use a loop for the values inbetween.
+        if (field == 1 && e < s)
             e += 24;
         if (step > e - s + 1) {
             error(Messages.BaseParser_OutOfRange(step, 1, e - s + 1));
             throw new AssertionError();
         } else if (step > 1) {
             long bits = 0;
+            // Because we possibly added 24 to the value of 'end' above, we have to make sure the values we add to the bit are
+            // in the legitimate range (0-23). To do this, we mod all values by 24. However, we only need to do this if the
+            // field is the 'hour'-field.
             if (field == 1)
                 for (int i = hash.next(step) + s; i <= e; i += step) {
-                    // Make sure the hours past midnight are smaller than 24
                     bits |= 1L << i % 24;
                 }
             else
@@ -135,8 +147,10 @@ abstract class BaseParser extends LLkParser {
         } else {
             assert step==NO_STEP;
             // step=1 (i.e. omitted) in the case of hash is actually special; means pick one value, not step by 1
+            // Because we possibly added 24 to the value of 'end' above, we have to make sure the value we return is
+            // in the legitimate range (0-23). To do this, we use a modulus of 24 on it. However, we only need to do
+            // this if the field is the 'hour'-field.
             if (field == 1)
-                // Make sure if the hour is past midnight, it is smaller than 24
                 return 1L << (s+hash.next(e+1-s)) % 24;
             return 1L << (s+hash.next(e+1-s));
         }
