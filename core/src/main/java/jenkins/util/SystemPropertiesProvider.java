@@ -6,6 +6,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +44,26 @@ public abstract class SystemPropertiesProvider {
         String providerId = provider.getClass().getName();
         LOGGER.log(Level.INFO, "Registering new SystemPropertyProvider: {0}", providerId);
         return providers.put(providerId, provider);
+    }
+
+    /**
+     * Removes provider.
+     * @param providerClass Class of the provider to be removed.
+     * @return Removed provider (if any)
+     */
+    @CheckForNull
+    public static SystemPropertiesProvider removeProvider(@Nonnull Class<?> providerClass) {
+        String providerId = providerClass.getName();
+        LOGGER.log(Level.INFO, "Registering new SystemPropertyProvider: {0}", providerId);
+        return providers.remove(providerId);
+    }
+
+    /**
+     * Gets all registered providers.
+     * @return Collection of registered providers.
+     */
+    public static Collection<SystemPropertiesProvider> all() {
+        return Collections.unmodifiableCollection(providers.values());
     }
 
     @CheckForNull
