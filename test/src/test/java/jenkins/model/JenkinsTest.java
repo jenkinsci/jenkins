@@ -626,6 +626,7 @@ public class JenkinsTest {
         String[] illegalNames = {"ab\\c", "abc/", "ab/c", " ", "   ", "", "..", ".", "?", "*", "6%",
                 "x!", "-@", "#", "$", "^", "&", "|", "<", ">", "[", "]", ":", ";", "../.", null};
         String[] legalNames = {"abc", "a bc", "abc ", " abc", "a.bc", ". ."};
+        String msg = "checkGoodNameTest found a legal name. Please check.";
         int exceptions = 0;
         int goodNames = 0;
 
@@ -634,20 +635,23 @@ public class JenkinsTest {
                 Jenkins.checkGoodName(name);
                 goodNames++;
             } catch (Failure e){
-                assertEquals(Failure.class, e.getClass());
                 exceptions++;
             }
         }
+        assertEquals(msg, illegalNames.length, exceptions);
+        assertEquals(0, goodNames);
+
+        exceptions = 0;
+        goodNames = 0;
         for (String name : legalNames){
             try {
                 Jenkins.checkGoodName(name);
                 goodNames++;
             } catch (Failure e){
-                assertEquals(Failure.class, e.getClass());
                 exceptions++;
             }
         }
-        assertEquals("checkGoodNameTest found a legal name. Please check.", illegalNames.length, exceptions);
+        assertEquals(msg, 0, exceptions);
         assertEquals(legalNames.length, goodNames);
     }
 }

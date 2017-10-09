@@ -233,22 +233,14 @@ public class ItemGroupMixInTest {
                 InputStream is = new ByteArrayInputStream(xmlFile.getBytes());
                 j.createProjectFromXML(name, is);
                 created++;
-            } catch (Failure e){
-                assertEquals(Failure.class, e.getClass());
-            } catch (IOException e){
-                assertEquals(IOException.class, e.getClass());
-            }
+            } catch (Failure | IOException e){}
         }
 
         for (String name : illegalNames){
             try{
                 j.createProject(FreeStyleProject.class, name);
                 created++;
-            } catch (Failure e){
-                assertEquals(Failure.class, e.getClass());
-            } catch (IOException e){
-                assertEquals(IOException.class, e.getClass());
-            }
+            } catch (Failure | IOException e){}
         }
         // Checks that no illegal named project has been created.
         assertEquals(0, created);
