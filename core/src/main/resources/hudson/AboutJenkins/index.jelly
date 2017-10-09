@@ -35,7 +35,7 @@ THE SOFTWARE.
           <h1 version="${app.VERSION}">${%about(app.VERSION)}</h1>
           <p>${%blurb}</p>
           <h2>${%dependencies}</h2>
-          <h3>Mavenized dependencies</h3>
+          <h3>${%maven.dependencies}</h3>
           <j:set var="uri" value="${it.licensesURL}"/>
           <j:choose>
             <j:when test="${uri != null}">
