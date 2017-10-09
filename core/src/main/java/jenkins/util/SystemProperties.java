@@ -28,7 +28,6 @@ import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -64,7 +63,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties implements OnMaster {
+public class SystemProperties {
 
     /**
      * Logger.
