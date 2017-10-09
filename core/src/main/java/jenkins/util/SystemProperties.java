@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Johannes Ernst http://upon2020.com/
+ * Copyright 2015- Johannes Ernst http://upon2020.com/, CloudBees Inc., Oleg Nenashev, and other contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,9 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import jenkins.util.io.OnMaster;
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +36,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
- * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
+ * the {@link SystemPropertiesProvider}s, so properties like {@code hudson.DNSMultiCast.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not
  * have to be changed.
  *
@@ -63,18 +58,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * because {@link EnvVars} is only for build variables, not Jenkins itself variables.
  *
  * @author Johannes Ernst
+ * @author Oleg Nenashev
  * @since 2.4
+ * @see SystemPropertiesProvider
  */
 //TODO: Define a correct design of this engine later. Should be accessible in libs (remoting, stapler) and Jenkins modules too
 @Restricted(NoExternalUse.class)
-public class SystemProperties implements ServletContextListener, OnMaster {
-    // this class implements ServletContextListener and is declared in WEB-INF/web.xml
-
-    /**
-     * The ServletContext to get the "init" parameters from.
-     */
-    @CheckForNull
-    private static ServletContext theContext;
+public class SystemProperties implements OnMaster {
 
     /**
      * Logger.
@@ -87,19 +77,9 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     public SystemProperties() {}
 
     /**
-     * Called by the servlet container to initialize the {@link ServletContext}.
-     */
-    @Override
-    @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-            justification = "Currently Jenkins instance may have one ond only one context")
-    public void contextInitialized(ServletContextEvent event) {
-        theContext = event.getServletContext();
-    }
-
-    /**
      * Gets the system property indicated by the specified key.
      * This behaves just like {@link System#getProperty(java.lang.String)}, except that it
-     * also consults the {@link ServletContext}'s "init" parameters.
+     * also consults with {@link SystemPropertiesProvider}s.
      * 
      * @param      key   the name of the system property.
      * @return     the string value of the system property,
@@ -118,7 +98,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
             return value;
         }
         
-        value = tryGetValueFromContext(key);
+        value = tryGetValueFromProviders(key);
         if (value != null) {
             if (LOGGER.isLoggable(Level.CONFIG)) {
                 LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
@@ -135,7 +115,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     /**
      * Gets the system property indicated by the specified key, or a default value.
      * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
-     * that it also consults the {@link ServletContext}'s "init" parameters.
+     * that it also consults with {@link SystemPropertiesProvider}s.
      * 
      * @param      key   the name of the system property.
      * @param      def   a default value.
@@ -152,7 +132,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     /**
      * Gets the system property indicated by the specified key, or a default value.
      * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
-     * that it also consults the {@link ServletContext}'s "init" parameters.
+     * that it also consults with {@link SystemPropertiesProvider}s.
      *
      * @param      key   the name of the system property.
      * @param      def   a default value.
@@ -172,7 +152,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
             return value;
         } 
         
-        value = tryGetValueFromContext(key);
+        value = tryGetValueFromProviders(key);
         if (value != null) {
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
@@ -189,13 +169,12 @@ public class SystemProperties implements ServletContextListener, OnMaster {
 
     /**
       * Returns {@code true} if the system property
-      * named by the argument exists and is equal to the string
-      * {@code "true"}. If the system property does not exist, return
-      * {@code "false"}. if a property by this name exists in the {@link ServletContext}
-      * and is equal to the string {@code "true"}.
+      * named by the argument exists or if there is a {@link SystemPropertiesProvider} for that.
+      * The value should be {@code "true"}. If the system property does not exist, return
+      * {@code "false"}.
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)}, except that it
-      * also consults the {@link ServletContext}'s "init" parameters.
+      * that it also consults with {@link SystemPropertiesProvider}s.
       * 
       * @param   name   the system property name.
       * @return  the {@code boolean} value of the system property.
@@ -208,12 +187,12 @@ public class SystemProperties implements ServletContextListener, OnMaster {
       * Returns {@code true} if the system property
       * named by the argument exists and is equal to the string
       * {@code "true"}, or a default value. If the system property does not exist, return
-      * {@code "true"} if a property by this name exists in the {@link ServletContext}
+      * {@code "true"} if a property by this name exists in {@link SystemPropertiesProvider}s
       * and is equal to the string {@code "true"}. If that property does not
       * exist either, return the default value.
       * 
       * This behaves just like {@link Boolean#getBoolean(java.lang.String)} with a default
-      * value, except that it also consults the {@link ServletContext}'s "init" parameters.
+      * value, except that it also consults with {@link SystemPropertiesProvider}s.
       * 
       * @param   name   the system property name.
       * @param   def   a default value.
@@ -248,7 +227,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
       * specified name.
       * 
       * This behaves just like {@link Integer#getInteger(java.lang.String)}, except that it
-      * also consults the {@link ServletContext}'s "init" parameters.
+      * also consults with {@link SystemPropertiesProvider}s.
       * 
       * @param   name property name.
       * @return  the {@code Integer} value of the property.
@@ -312,7 +291,7 @@ public class SystemProperties implements ServletContextListener, OnMaster {
       * specified name.
       * 
       * This behaves just like {@link Long#getLong(java.lang.String)}, except that it
-      * also consults the {@link ServletContext}'s "init" parameters.
+      * also consults with {@link SystemPropertiesProvider}s.
       * 
       * @param   name property name.
       * @return  the {@code Long} value of the property.
@@ -372,10 +351,10 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     }
 
     @CheckForNull
-    private static String tryGetValueFromContext(String key) {
-        if (StringUtils.isNotBlank(key) && theContext != null) {
+    private static String tryGetValueFromProviders(String key) {
+        if (StringUtils.isNotBlank(key)) {
             try {
-                String value = theContext.getInitParameter(key);
+                String value = SystemPropertiesProvider.findProperty(key);
                 if (value != null) {
                     return value;
                 }
@@ -385,10 +364,5 @@ public class SystemProperties implements ServletContextListener, OnMaster {
             }
         }
         return null;
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent event) {
-        // nothing to do
     }
 }
