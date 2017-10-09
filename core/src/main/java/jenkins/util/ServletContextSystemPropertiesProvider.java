@@ -46,6 +46,6 @@ public class ServletContextSystemPropertiesProvider extends SystemPropertiesProv
     @CheckForNull
     @Override
     public String getProperty(@Nonnull String key) {
-        return theContext.getInitParameter(key);
+        return theContext != null ? theContext.getInitParameter(key) : null;
     }
 }
