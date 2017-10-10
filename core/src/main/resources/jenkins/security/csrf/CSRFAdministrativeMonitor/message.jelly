@@ -1,0 +1,10 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <div class="warning">
+        ${%warningMessage}
+        <a href="https://jenkins.io/redirect/csrf-protection" target="_blank">${%this page}</a>.
+        <br />
+        ${%changeConfiguration}
+        <a href="${rootURL}/configureSecurity">${%CSRF Protection}</a>.
+    </div>
+</j:jelly>
