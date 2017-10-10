@@ -2776,6 +2776,11 @@ public final class FilePath implements Serializable {
             return classLoader;
         }
 
+        @Override
+        public String toString() {
+            return callable.toString();
+        }
+
         private static final long serialVersionUID = 1L;
     }
 

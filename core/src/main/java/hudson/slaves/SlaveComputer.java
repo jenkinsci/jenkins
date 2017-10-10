@@ -43,7 +43,6 @@ import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
-import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
@@ -538,6 +537,14 @@ public class SlaveComputer extends Computer {
                     lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
                     logger.log(lr);
                 }
+            }
+            @Override
+            public void write(Channel channel, Object cmd, long blockSize) {
+                logger.finest(() -> channel.getName() + " wrote " + blockSize + ": " + cmd);
+            }
+            @Override
+            public void read(Channel channel, Object cmd, long blockSize) {
+                logger.finest(() -> channel.getName() + " read " + blockSize + ": " + cmd);
             }
         });
         if(listener!=null)
