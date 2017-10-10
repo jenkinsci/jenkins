@@ -38,7 +38,9 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.Command;
 import hudson.remoting.Launcher;
+import hudson.remoting.Response;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
@@ -539,12 +541,20 @@ public class SlaveComputer extends Computer {
                 }
             }
             @Override
-            public void write(Channel channel, Object cmd, long blockSize) {
+            public void onWrite(Channel channel, Command cmd, long blockSize) {
                 logger.finest(() -> channel.getName() + " wrote " + blockSize + ": " + cmd);
             }
             @Override
-            public void read(Channel channel, Object cmd, long blockSize) {
-                logger.finest(() -> channel.getName() + " read " + blockSize + ": " + cmd);
+            public void onRead(Channel channel, Command cmd, long blockSize) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest(() -> channel.getName() + " read " + blockSize + ": " + cmd);
+                    if (cmd instanceof Response) {
+                        long totalTime = ((Response) cmd).getTotalTime();
+                        if (totalTime != 0) {
+                            logger.finest(() -> "received response in " + totalTime / 1_000_000 + "ms");
+                        }
+                    }
+                }
             }
         });
         if(listener!=null)
