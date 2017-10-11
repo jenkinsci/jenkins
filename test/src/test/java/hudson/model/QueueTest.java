@@ -863,6 +863,7 @@ public class QueueTest {
                     enteredTheQueue = true;
                 }
             }
+            Thread.sleep(10);
         }
         //let's wait for the upstream project to actually start so that we're sure the Queue has been updated
         //when the upstream starts the downstream has already left the buildable queue and the queue is empty
