@@ -110,6 +110,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
       <version>${matrix-project.version}</version>
+      <exclusions>
+        <exclusion> <!-- TODO pick up from command-launcher, so long as that is a dep -->
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>script-security</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -121,6 +127,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>1.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency> <!-- TODO at least pending a signature change in JenkinsRule.createComputerLauncher -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>command-launcher</artifactId>
+      <version>1.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>

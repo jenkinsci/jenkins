@@ -33,7 +33,6 @@ import hudson.model.Slave;
 import jenkins.model.Jenkins;
 import hudson.model.TaskListener;
 import hudson.remoting.Channel;
-import hudson.security.ACL;
 import hudson.util.StreamCopyThread;
 import hudson.util.FormValidation;
 import hudson.util.ProcessTree;
@@ -45,6 +44,10 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.command_launcher.CommandLanguage;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -67,19 +70,30 @@ public class CommandLauncher extends ComputerLauncher {
      */
     private final EnvVars env;
 
+    /** Constructor for use from UI. Conditionally approves the script. */
     @DataBoundConstructor
     public CommandLauncher(String command) {
-        this(command, null);
+        agentCommand = command;
+        env = null;
+        // TODO add withKey if we can determine the Slave.nodeName being configured
+        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create().withCurrentUser());
     }
 
+    /** Constructor for programmatic use. Always approves the script. */
     public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
-        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        ScriptApproval.get().preapprove(command, CommandLanguage.get());
+    }
+
+    /** Constructor for use from {@link CommandConnector}. Never approves the script. */
+    CommandLauncher(EnvVars env, String command) {
+        this.agentCommand = command;
+        this.env = env;
     }
     
     private Object readResolve() {
-        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        ScriptApproval.get().configuring(agentCommand, CommandLanguage.get(), ApprovalContext.create());
         return this;
     }
 
@@ -104,14 +118,15 @@ public class CommandLauncher extends ComputerLauncher {
                 throw new AbortException("Cannot launch commands on deleted nodes");
             }
 
-            listener.getLogger().println(hudson.model.Messages.Slave_Launching(getTimestamp()));
-            if(getCommand().trim().length()==0) {
-                listener.getLogger().println(Messages.CommandLauncher_NoLaunchCommand());
+            listener.getLogger().println(org.jenkinsci.plugins.command_launcher.Messages.Slave_Launching(getTimestamp()));
+            String command = ScriptApproval.get().using(getCommand(), CommandLanguage.get());
+            if (command.trim().length() == 0) {
+                listener.getLogger().println(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
                 return;
             }
-            listener.getLogger().println("$ " + getCommand());
+            listener.getLogger().println("$ " + command);
 
-            ProcessBuilder pb = new ProcessBuilder(Util.tokenize(getCommand()));
+            ProcessBuilder pb = new ProcessBuilder(Util.tokenize(command));
             final EnvVars cookie = _cookie = EnvVars.createCookie();
             pb.environment().putAll(cookie);
             pb.environment().put("WORKSPACE", StringUtils.defaultString(computer.getAbsoluteRemoteFs(), node.getRemoteFS())); //path for local slave log
@@ -153,6 +168,8 @@ public class CommandLauncher extends ComputerLauncher {
             LOGGER.info("agent launched for " + computer.getDisplayName());
         } catch (InterruptedException e) {
             Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_abortedLaunch()));
+        } catch (UnapprovedUsageException e) {
+            listener.error(e.getMessage());
         } catch (RuntimeException e) {
             Functions.printStackTrace(e, listener.error(Messages.ComputerLauncher_unexpectedError()));
         } catch (Error e) {
@@ -167,7 +184,7 @@ public class CommandLauncher extends ComputerLauncher {
                 msg = " : " + msg;
                 // FIXME TODO i18n what is this!?
             }
-            msg = hudson.model.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
+            msg = org.jenkinsci.plugins.command_launcher.Messages.Slave_UnableToLaunch(computer.getDisplayName(), msg);
             LOGGER.log(Level.SEVERE, msg, e);
             Functions.printStackTrace(e, listener.error(msg));
 
@@ -196,17 +213,14 @@ public class CommandLauncher extends ComputerLauncher {
     @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         public String getDisplayName() {
-            return Messages.CommandLauncher_displayName();
+            return org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_displayName();
         }
 
         public FormValidation doCheckCommand(@QueryParameter String value) {
-            if (!Jenkins.getInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
-                return FormValidation.warning(Messages.CommandLauncher_cannot_be_configured_by_non_administrato());
-            }
             if(Util.fixEmptyAndTrim(value)==null)
-                return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
+                return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
-                return FormValidation.ok();
+                return ScriptApproval.get().checking(value, CommandLanguage.get());
         }
     }
 }

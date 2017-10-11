@@ -404,6 +404,14 @@ THE SOFTWARE.
                   <version>2.16.0</version>
                   <type>hpi</type>
                 </artifactItem>
+                <!-- TODO after split:
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>command-launcher</artifactId>
+                  <version>1.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                -->
               </artifactItems>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/detached-plugins</outputDirectory>
               <stripVersion>true</stripVersion>

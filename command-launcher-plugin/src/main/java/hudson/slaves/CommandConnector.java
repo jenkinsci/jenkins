@@ -28,11 +28,13 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.io.IOException;
-import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.command_launcher.CommandLanguage;
+import org.jenkinsci.plugins.command_launcher.Messages;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -46,17 +48,19 @@ public class CommandConnector extends ComputerConnector {
     @DataBoundConstructor
     public CommandConnector(String command) {
         this.command = command;
-        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        // TODO add withKey if we can determine the Cloud.name being configured
+        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create().withCurrentUser());
     }
 
     private Object readResolve() {
-        Jenkins.getInstance().checkPermission(Jenkins.RUN_SCRIPTS);
+        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create());
         return this;
     }
 
     @Override
     public CommandLauncher launch(String host, TaskListener listener) throws IOException, InterruptedException {
-        return new CommandLauncher(command,new EnvVars("SLAVE",host));
+        // no need to call ScriptApproval.using here; CommandLauncher.launch will do that
+        return new CommandLauncher(new EnvVars("SLAVE", host), command);
     }
 
     @Extension @Symbol("command")
@@ -67,13 +71,10 @@ public class CommandConnector extends ComputerConnector {
         }
 
         public FormValidation doCheckCommand(@QueryParameter String value) {
-            if (!Jenkins.getInstance().hasPermission(Jenkins.RUN_SCRIPTS)) {
-                return FormValidation.warning(Messages.CommandLauncher_cannot_be_configured_by_non_administrato());
-            }
             if (Util.fixEmptyAndTrim(value) == null) {
                 return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
             } else {
-                return FormValidation.ok();
+                return ScriptApproval.get().checking(value, CommandLanguage.get());
             }
         }
 

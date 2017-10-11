@@ -24,7 +24,6 @@
 
 package hudson.slaves;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -37,19 +36,23 @@ import hudson.model.Computer;
 import hudson.model.User;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.util.Collections;
+import java.util.Set;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.hamcrest.Matchers.*;
-import org.junit.Test;
+import org.jenkinsci.plugins.command_launcher.CommandLanguage;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import static org.junit.Assert.*;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class CommandLauncher2Test {
 
@@ -58,14 +61,15 @@ public class CommandLauncher2Test {
 
     @Issue("SECURITY-478")
     @Test
-    public void requireRunScripts() throws Exception {
-        rr.addStep(new Statement() {
+    public void requireApproval() throws Exception {
+        rr.addStep(new Statement() { // TODO .then, when using sufficiently new jenkins-test-harness
             @Override
             public void evaluate() throws Throwable {
                 rr.j.jenkins.setSecurityRealm(rr.j.createDummySecurityRealm());
                 rr.j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                     grant(Jenkins.ADMINISTER).everywhere().to("admin").
                     grant(Jenkins.READ, Computer.CONFIGURE).everywhere().to("dev"));
+                ScriptApproval.get().preapprove("echo unconfigured", CommandLanguage.get());
                 DumbSlave s = new DumbSlave("s", "/", new CommandLauncher("echo unconfigured"));
                 rr.j.jenkins.addNode(s);
                 // First, reconfigure using GUI.
@@ -95,48 +99,58 @@ public class CommandLauncher2Test {
                 assertThat(new CLICommandInvoker(rr.j, cmd).withStdin(new StringInputStream(xml.replace("echo configured by GUI", "echo configured by CLI"))).invokeWithArgs("s"), CLICommandInvoker.Matcher.succeededSilently());
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
                 assertEquals("echo configured by CLI", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertEquals(Collections.emptySet(), ScriptApproval.get().getPendingScripts());
                 assertSerialForm(s, "echo configured by CLI");
                 // Now verify that all modes failed as dev. First as GUI.
+                ScriptApproval.get().preapprove("echo configured by admin", CommandLanguage.get());
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
                 s.save();
                 wc = rr.j.createWebClient().login("dev");
                 form = wc.getPage(s, "configure").getFormByName("config");
                 input = form.getInputByName("_.command");
                 assertEquals("echo configured by admin", input.getText());
-                input.setText("echo ATTACK");
-                try {
-                    rr.j.submit(form);
-                    fail();
-                } catch (FailingHttpStatusCodeException x) {
-                    assertEquals("403 would be more natural but Descriptor.newInstance wraps AccessDeniedException2 in Error", 500, x.getStatusCode());
-                }
+                input.setText("echo GUI ATTACK");
+                rr.j.submit(form);
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
-                assertEquals("echo configured by admin", ((CommandLauncher) s.getLauncher()).getCommand());
-                assertSerialForm(s, "echo configured by admin");
+                assertEquals("echo GUI ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
+                Set<ScriptApproval.PendingScript> pendingScripts = ScriptApproval.get().getPendingScripts();
+                assertEquals(1, pendingScripts.size());
+                ScriptApproval.PendingScript pendingScript = pendingScripts.iterator().next();
+                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals("echo GUI ATTACK", pendingScript.script);
+                assertEquals("dev", pendingScript.getContext().getUser());
+                ScriptApproval.get().denyScript(pendingScript.getHash());
+                assertSerialForm(s, "echo GUI ATTACK");
                 // Then by REST.
                 req = new WebRequest(wc.createCrumbedUrl(configDotXml), HttpMethod.POST);
                 req.setEncodingType(null);
-                req.setRequestBody(xml.replace("echo configured by GUI", "echo ATTACK"));
-                try {
-                    wc.getPage(req);
-                } catch (FailingHttpStatusCodeException x) {
-                    assertEquals(HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
-                }
+                req.setRequestBody(xml.replace("echo configured by GUI", "echo REST ATTACK"));
+                wc.getPage(req);
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
-                assertNotEquals(CommandLauncher.class, s.getLauncher().getClass()); // currently seems to reset it to JNLPLauncher, whatever
-                assertSerialForm(s, null);
-                s.setLauncher(new CommandLauncher("echo configured by admin"));
+                assertEquals("echo REST ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
+                pendingScripts = ScriptApproval.get().getPendingScripts();
+                assertEquals(1, pendingScripts.size());
+                pendingScript = pendingScripts.iterator().next();
+                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals("echo REST ATTACK", pendingScript.script);
+                assertEquals(/* deserialization, not recording user */ null, pendingScript.getContext().getUser());
+                ScriptApproval.get().denyScript(pendingScript.getHash());
+                assertSerialForm(s, "echo REST ATTACK");
                 // Then by CLI.
                 cmd = new UpdateNodeCommand();
                 cmd.setTransportAuth(User.get("dev").impersonate());
-                assertThat(new CLICommandInvoker(rr.j, cmd).withStdin(new StringInputStream(xml.replace("echo configured by GUI", "echo ATTACK"))).invokeWithArgs("s"),
-                    CLICommandInvoker.Matcher./* gets swallowed by RobustReflectionConverter, hmm*/succeededSilently());
+                assertThat(new CLICommandInvoker(rr.j, cmd).withStdin(new StringInputStream(xml.replace("echo configured by GUI", "echo CLI ATTACK"))).invokeWithArgs("s"), CLICommandInvoker.Matcher.succeededSilently());
                 s = (DumbSlave) rr.j.jenkins.getNode("s");
-                assertNotEquals(CommandLauncher.class, s.getLauncher().getClass());
-                assertSerialForm(s, null);
+                assertEquals("echo CLI ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
+                pendingScripts = ScriptApproval.get().getPendingScripts();
+                assertEquals(1, pendingScripts.size());
+                pendingScript = pendingScripts.iterator().next();
+                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals("echo CLI ATTACK", pendingScript.script);
+                assertEquals(/* ditto */null, pendingScript.getContext().getUser());
+                ScriptApproval.get().denyScript(pendingScript.getHash());
+                assertSerialForm(s, "echo CLI ATTACK");
                 // Now also check that SYSTEM deserialization works after a restart.
-                s.setLauncher(new CommandLauncher("echo configured by admin"));
-                s.save();
             }
             private void assertSerialForm(DumbSlave s, @CheckForNull String expectedCommand) throws IOException {
                 // cf. private methods in Nodes
@@ -149,7 +163,26 @@ public class CommandLauncher2Test {
             @Override
             public void evaluate() throws Throwable {
                 DumbSlave s = (DumbSlave) rr.j.jenkins.getNode("s");
-                assertEquals("echo configured by admin", ((CommandLauncher) s.getLauncher()).getCommand());
+                assertEquals("echo CLI ATTACK", ((CommandLauncher) s.getLauncher()).getCommand());
+                Set<ScriptApproval.PendingScript> pendingScripts = ScriptApproval.get().getPendingScripts();
+                assertEquals(1, pendingScripts.size());
+                ScriptApproval.PendingScript pendingScript = pendingScripts.iterator().next();
+                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals("echo CLI ATTACK", pendingScript.script);
+                assertEquals(/* ditto */null, pendingScript.getContext().getUser());
+            }
+        });
+    }
+
+    @LocalData // saved by Hudson 1.215
+    @Test
+    public void ancientSerialForm() {
+        rr.addStep(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                ComputerLauncher launcher = ((DumbSlave) rr.j.jenkins.getNode("test")).getLauncher();
+                assertThat(launcher, instanceOf(CommandLauncher.class));
+                assertEquals("echo from CLI", ((CommandLauncher) launcher).getCommand());
             }
         });
     }

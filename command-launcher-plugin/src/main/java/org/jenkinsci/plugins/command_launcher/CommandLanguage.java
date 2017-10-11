@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2010, InfraDNA, Inc.
+ * Copyright 2017 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.slaves;
 
-import org.jvnet.hudson.test.HudsonTestCase;
+package org.jenkinsci.plugins.command_launcher;
+
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.Util;
+import org.jenkinsci.plugins.scriptsecurity.scripts.Language;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * @author Kohsuke Kawaguchi
+ * Language for launched processes, as per {@link Util#tokenize(String)} and {@link ProcessBuilder}.
  */
-public class ComputerConnectorTest extends HudsonTestCase {
-    public void testConfigRoundtrip() throws Exception {
-        CommandConnector cc = new CommandConnector("abc def");
-        assertEqualDataBoundBeans(cc,configRoundtrip(cc));
+@Restricted(NoExternalUse.class) // TODO move to script-security
+@Extension
+public class CommandLanguage extends Language {
+
+    public static Language get() {
+        return ExtensionList.lookup(Language.class).get(CommandLanguage.class);
     }
+
+    @Override
+    public String getName() {
+        return "command";
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "External Commands";
+    }
+
 }
