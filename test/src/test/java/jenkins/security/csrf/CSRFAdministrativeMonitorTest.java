@@ -55,5 +55,4 @@ public class CSRFAdministrativeMonitorTest {
         CSRFAdministrativeMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(CSRFAdministrativeMonitor.class);
         assertFalse("Monitor must be activated", monitor.isActivated());
     }
-    
 }
