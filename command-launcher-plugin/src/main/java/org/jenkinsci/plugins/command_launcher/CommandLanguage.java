@@ -34,7 +34,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Language for launched processes, as per {@link Util#tokenize(String)} and {@link ProcessBuilder}.
  */
-@Restricted(NoExternalUse.class) // TODO move to script-security
+@Restricted(NoExternalUse.class) // TODO move to script-security after split
 @Extension
 public class CommandLanguage extends Language {
 
