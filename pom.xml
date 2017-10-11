@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.84-SNAPSHOT</version>
+  <version>2.85-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -164,7 +164,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-httpclient</groupId>
         <artifactId>commons-httpclient</artifactId>
-        <version>3.1</version>
+        <version>3.1-jenkins-1</version>
       </dependency>
 
       <dependency>
