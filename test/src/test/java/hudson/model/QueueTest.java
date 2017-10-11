@@ -120,6 +120,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -812,6 +813,8 @@ public class QueueTest {
         assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 
+    @Ignore("TODO too flaky; upstream can finish before we even examine the queue")
+    @Issue("JENKINS-30084")
     @Test
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
         MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
@@ -856,6 +859,7 @@ public class QueueTest {
             throw new Exception("the upstream task could not be scheduled, thus the test will be interrupted");
         }
         //let s wait for the Upstream to enter the buildable Queue
+        Thread.sleep(1000);
         boolean enteredTheQueue = false;
         while (!enteredTheQueue) {
             for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
