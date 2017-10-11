@@ -318,10 +318,25 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.419
      */
     public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
+        return this.impersonate(this.getUserDetailsForImpersonation());
+    }
+    
+    /**
+     * Provide a way to split the job of {@link #impersonate()} into two calls in order to be able
+     * to retrieve the {@link UserDetails} used for the impersonation.
+     * First part of the split.
+     *
+     * @throws UsernameNotFoundException
+     *      If this user is not a valid user in the backend {@link SecurityRealm}.
+     */
+    @Restricted(NoExternalUse.class)
+    public @CheckForNull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+        ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
+                Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails
+        );
+        
         try {
-            UserDetails u = new ImpersonatingUserDetailsService(
-                    Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
-            return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
+            return userDetailsService.loadUserByUsername(id);
         } catch (UserMayOrMayNotExistException e) {
             // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
@@ -331,10 +346,23 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         } catch (DataAccessException e) {
             // seems like it's in the same boat as UserMayOrMayNotExistException
         }
+        
+        return null;
+    }
 
+    /**
+     * Second part of the split.
+     * @param userDetails Provided by {@link #getUserDetailsForImpersonation()}
+     * @see #getUserDetailsForImpersonation()
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull Authentication impersonate(UserDetails userDetails) {
+        if(userDetails != null){
+            return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
+        }
         // seems like a legitimate user we have no idea about. proceed with minimum access
         return new UsernamePasswordAuthenticationToken(id, "",
-            new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+                new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
     }
 
     /**

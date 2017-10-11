@@ -3,6 +3,7 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.model.User;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
 
@@ -28,7 +29,12 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
         ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         if (t!=null && t.matchesPassword(password)) {
             try {
-                return u.impersonate();
+                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                Authentication auth = u.impersonate(userDetails);
+
+                SecurityListener.fireAuthenticated(userDetails);
+
+                return auth;
             } catch (UsernameNotFoundException x) {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.
