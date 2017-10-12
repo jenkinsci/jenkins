@@ -22,6 +22,10 @@ import static java.util.logging.Level.*;
  */
 @Extension
 public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
+    /**
+     * Note: if the token does not exist or does not match, we do not use {@link SecurityListener#fireFailedToAuthenticate(String)}
+     * because it will be done in the {@link BasicHeaderRealPasswordAuthenticator} in the case the password is not valid either
+     */
     @Override
     public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         // attempt to authenticate as API token
@@ -44,6 +48,8 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 throw new ServletException(x);
             }
         }
+        
+        
         return null;
     }
 
