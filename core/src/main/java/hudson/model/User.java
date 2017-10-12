@@ -322,9 +322,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
     
     /**
-     * Provide a way to split the job of {@link #impersonate()} into two calls in order to be able
-     * to retrieve the {@link UserDetails} used for the impersonation.
-     * First part of the split.
+     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
+     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
+     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
+     * logged in.
      *
      * @throws UsernameNotFoundException
      *      If this user is not a valid user in the backend {@link SecurityRealm}.
@@ -351,7 +352,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     /**
-     * Second part of the split.
+     * Creates an {@link Authentication} object that represents this user using the given userDetails
+     *
      * @param userDetails Provided by {@link #getUserDetailsForImpersonation()}
      * @see #getUserDetailsForImpersonation()
      */
