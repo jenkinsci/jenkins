@@ -40,6 +40,7 @@ public class BasicHeaderProcessorTest {
     
     @Before
     public void prepareListeners(){
+        //TODO simplify using #3021 into ExtensionList.lookupSingleton(DummySecurityListener.class)
         this.dummyListener = ExtensionList.lookup(SecurityListener.class).get(DummySecurityListener.class);
         dummyListener.clearPreviousCalls();
     }
@@ -54,11 +55,11 @@ public class BasicHeaderProcessorTest {
         User bar = User.get("bar");
 
         wc = j.createWebClient();
-    
+
         // call without authentication
         makeRequestWithAuthAndVerify(null, "anonymous");
-
-        // anonymous does not trigger any event
+        dummyListener.authenticatedCalls.assertNoNewEvents();
+        dummyListener.failedToAuthenticateCalls.assertNoNewEvents();
 
         // call with API token
         ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
@@ -191,16 +192,10 @@ public class BasicHeaderProcessorTest {
     
     @TestExtension
     public static class DummySecurityListener extends SecurityListener {
-        final EventQueue<UserDetails> authenticatedCalls;
-        final EventQueue<String> failedToAuthenticateCalls;
-        final EventQueue<String> loggedInCalls;
+        final EventQueue<UserDetails> authenticatedCalls = new EventQueue<>();
+        final EventQueue<String> failedToAuthenticateCalls = new EventQueue<>();
+        final EventQueue<String> loggedInCalls = new EventQueue<>();
 
-        public DummySecurityListener(){
-            this.authenticatedCalls = new EventQueue<>();
-            this.failedToAuthenticateCalls = new EventQueue<>();
-            this.loggedInCalls = new EventQueue<>();
-        }
-        
         void clearPreviousCalls(){
             this.authenticatedCalls.clear();
             this.failedToAuthenticateCalls.clear();
