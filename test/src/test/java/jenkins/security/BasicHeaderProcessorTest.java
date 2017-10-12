@@ -9,6 +9,7 @@ import hudson.model.User;
 import hudson.util.HttpResponses;
 import hudson.util.Scrambler;
 import org.acegisecurity.userdetails.UserDetails;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +43,10 @@ public class BasicHeaderProcessorTest {
     public void prepareListeners(){
         //TODO simplify using #3021 into ExtensionList.lookupSingleton(DummySecurityListener.class)
         this.dummyListener = ExtensionList.lookup(SecurityListener.class).get(DummySecurityListener.class);
+    }
+    
+    @After
+    public void clearListener(){
         dummyListener.clearPreviousCalls();
     }
     
@@ -67,24 +72,24 @@ public class BasicHeaderProcessorTest {
         makeRequestWithAuthAndVerify("foo:"+token, "foo");
         //TODO verify why there are two events "authenticated" that are triggered
         // the whole authentication process seems to be done twice
-        dummyListener.authenticatedCalls.assertLastEventIs(u -> u.getUsername().equals("foo"));
+        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with invalid API token
         makeRequestAndFail("foo:abcd"+token);
-        dummyListener.failedToAuthenticateCalls.assertLastEventIs("foo");
+        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
         // call with password
         makeRequestWithAuthAndVerify("foo:foo", "foo");
-        dummyListener.authenticatedCalls.assertLastEventIs(u -> u.getUsername().equals("foo"));
+        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with incorrect password
         makeRequestAndFail("foo:bar");
-        dummyListener.failedToAuthenticateCalls.assertLastEventIs("foo");
+        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
 
         wc.login("bar");
-        dummyListener.authenticatedCalls.assertLastEventIs(u -> u.getUsername().equals("bar"));
-        dummyListener.loggedInCalls.assertLastEventIs("bar");
+        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("bar"));
+        dummyListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("bar");
 
         // if the session cookie is valid, then basic header won't be needed
         makeRequestWithAuthAndVerify(null, "bar");
@@ -98,7 +103,7 @@ public class BasicHeaderProcessorTest {
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
         makeRequestAndFail("foo:bar");
-        dummyListener.failedToAuthenticateCalls.assertLastEventIs("foo");
+        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
     }
 
     private void makeRequestAndFail(String userAndPass) throws IOException, SAXException {
@@ -148,22 +153,22 @@ public class BasicHeaderProcessorTest {
             final String token = t.getApiToken();
             String authCode1 = encode(prefix,"foo:"+token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
-            dummyListener.authenticatedCalls.assertLastEventIs(u -> u.getUsername().equals("foo"));
+            dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
             
             // call with invalid API token
             String authCode2 = encode(prefix,"foo:abcd"+token);
             makeRequestWithAuthCodeAndFail(authCode2);
-            dummyListener.failedToAuthenticateCalls.assertLastEventIs("foo");
+            dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
             // call with password
             String authCode3 = encode(prefix,"foo:foo");
             makeRequestWithAuthCodeAndVerify(authCode3, "foo");
-            dummyListener.authenticatedCalls.assertLastEventIs(u -> u.getUsername().equals("foo"));
+            dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with incorrect password
             String authCode4 = encode(prefix,"foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
-            dummyListener.failedToAuthenticateCalls.assertLastEventIs("foo");
+            dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
         }
     }
 
@@ -231,15 +236,15 @@ public class BasicHeaderProcessorTest {
     private static class EventQueue<T> {
         private final List<T> eventList = new ArrayList<>();
     
-        void assertLastEventIs(T expected){
-            assertLastEventIs(actual -> actual.equals(expected));
+        void assertLastEventIsAndThenRemoveIt(T expected){
+            assertLastEventIsAndThenRemoveIt(expected::equals);
         }
 
-        void assertLastEventIs(Predicate<T> predicate){
+        void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate){
             if(eventList.isEmpty()){
                 fail("event list is empty");
             }
-        
+
             T t = eventList.remove(eventList.size() - 1);
             assertTrue(predicate.test(t));
             eventList.clear();
