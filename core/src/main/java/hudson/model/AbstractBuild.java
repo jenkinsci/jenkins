@@ -456,7 +456,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
                 if (node instanceof Jenkins) {
                     listener.getLogger().print(Messages.AbstractBuild_BuildingOnMaster());
                 } else {
-                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, builtOn)));
+                    listener.getLogger().print(Messages.AbstractBuild_BuildingRemotely(ModelHyperlinkNote.encodeTo("/computer/" + builtOn, node.getDisplayName())));
                     Set<LabelAtom> assignedLabels = new HashSet<LabelAtom>(node.getAssignedLabels());
                     assignedLabels.remove(node.getSelfLabel());
                     if (!assignedLabels.isEmpty()) {
