@@ -27,6 +27,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -151,8 +152,8 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
         
-        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value) {
-            return AutoCompletionCandidates.ofJobNames(Job.class, value, null, Jenkins.getInstance());
+        public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value, @AncestorInPath Item self, @AncestorInPath ItemGroup container) {
+            return AutoCompletionCandidates.ofJobNames(Job.class, value, self, container);
         }
 
     }
