@@ -126,7 +126,6 @@ public class ClientAuthenticationCacheTest {
     }
     
     @Test
-    @Ignore("Currently the getPropertyKey is not consistent if the rootUrl is not set")
     public void getPropertyKey_mustBeEquivalentOverTime_rootUrlNotSet() throws Exception {
         ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
         JenkinsLocationConfiguration.get().setUrl(null);

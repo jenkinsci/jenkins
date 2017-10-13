@@ -38,7 +38,12 @@ public class ClientAuthenticationCache implements Serializable {
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ClientAuthenticationCache.class, "MAC");
     private static final Logger LOGGER = Logger.getLogger(ClientAuthenticationCache.class.getName());
-
+    
+    /**
+     * Unique id used only by this instance for that run
+     */
+    private static volatile String randomId;
+    
     /**
      * Where the store should be placed.
      */
@@ -104,7 +109,7 @@ public class ClientAuthenticationCache implements Serializable {
             return Jenkins.ANONYMOUS;
         }
     }
-
+    
     /**
      * Computes the key that identifies this Hudson among other Hudsons that the user has a credential for.
      */
@@ -114,7 +119,15 @@ public class ClientAuthenticationCache implements Serializable {
         if (url!=null)  return url;
         
         LOGGER.log(Level.WARNING, "The instance is not configured using a rootUrl, the key that represents your instance will not be stable");
-        return Secret.fromString("key").getEncryptedValue();
+        if(randomId == null){
+            synchronized (this){
+                if(randomId == null){
+                    randomId = Secret.fromString("key").getEncryptedValue();
+                }
+            }
+        }
+
+        return randomId;
     }
 
     /**
