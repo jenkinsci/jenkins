@@ -116,6 +116,7 @@ public class ClientAuthenticationCacheTest {
     }
     
     @Test
+    @Issue("JENKINS-47426")
     public void getPropertyKey_mustBeEquivalentOverTime_rootUrlSet() throws Exception {
         ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
 
@@ -126,6 +127,7 @@ public class ClientAuthenticationCacheTest {
     }
     
     @Test
+    @Issue("JENKINS-47426")
     public void getPropertyKey_mustBeEquivalentOverTime_rootUrlNotSet() throws Exception {
         ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
         JenkinsLocationConfiguration.get().setUrl(null);
