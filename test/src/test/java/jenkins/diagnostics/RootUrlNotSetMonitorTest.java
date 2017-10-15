@@ -42,10 +42,11 @@ public class RootUrlNotSetMonitorTest {
     @Test
     @Issue("JENKINS-31661")
     public void testWithRootUrl_configured() {
+        // test relies on the default JTH behavior
         assertTrue(StringUtils.isNotBlank(JenkinsLocationConfiguration.get().getUrl()));
         
         RootUrlNotSetMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(RootUrlNotSetMonitor.class);
-        assertFalse("Monitor must be activated", monitor.isActivated());
+        assertFalse("Monitor must not be activated", monitor.isActivated());
     }
     
     @Test
@@ -54,6 +55,6 @@ public class RootUrlNotSetMonitorTest {
         JenkinsLocationConfiguration.get().setUrl(null);
         
         RootUrlNotSetMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(RootUrlNotSetMonitor.class);
-        assertTrue("Monitor must not be activated", monitor.isActivated());
+        assertTrue("Monitor must be activated", monitor.isActivated());
     }
 }
