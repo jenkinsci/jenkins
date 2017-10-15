@@ -43,6 +43,18 @@ THE SOFTWARE.
         <l:task href="${rootURL}/${it.viewUrl}newJob" icon="icon-new-package icon-md" it="${app}" permission="${it.itemCreatePermission}" title="${%NewJob(it.newPronoun)}"/>
       </st:include>
 
+
+      <j:choose>
+        <j:when test="${it.class.name=='hudson.model.AllView'}">
+          <l:task href="${rootURL}/newView" icon="icon-new-document icon-md" permission="${it.CREATE}" title="${%NewView}"/>
+        </j:when>
+        <j:otherwise>
+          <l:task href="${rootURL}/${it.viewUrl}/newView" icon="icon-new-document icon-md" permission="${it.CREATE}" title="${%NewView}"/>
+        </j:otherwise>
+      </j:choose>
+
+
+
       <j:choose>
         <j:when test="${it.class.name=='hudson.model.AllView'}">
           <l:task href="${rootURL}/asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
