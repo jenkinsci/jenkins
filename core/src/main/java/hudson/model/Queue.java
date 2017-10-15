@@ -2498,33 +2498,25 @@ public class Queue extends ResourceController implements Saveable {
     public final class BlockedItem extends NotWaitingItem {
         private transient CauseOfBlockage causeOfBlockage = null;
 
-        /**
-         * @deprecated Use {@link #BlockedItem(WaitingItem, CauseOfBlockage)} instead
-         */
-        @Deprecated
         public BlockedItem(WaitingItem wi) {
             this(wi, null);
         }
 
-        /**
-         * @deprecated Use {@link #BlockedItem(NotWaitingItem, CauseOfBlockage)} instead
-         */
-        @Deprecated
         public BlockedItem(NotWaitingItem ni) {
             this(ni, null);
         }
 
-        public BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
+        BlockedItem(WaitingItem wi, CauseOfBlockage causeOfBlockage) {
             super(wi);
             this.causeOfBlockage = causeOfBlockage;
         }
 
-        public BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
+        BlockedItem(NotWaitingItem ni, CauseOfBlockage causeOfBlockage) {
             super(ni);
             this.causeOfBlockage = causeOfBlockage;
         }
 
-        public void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
+        void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
             this.causeOfBlockage = causeOfBlockage;
         }
 
