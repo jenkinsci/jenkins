@@ -39,7 +39,7 @@ THE SOFTWARE.
       <div style="height:2em"/><!-- spacer -->
 
       <div>
-          <a href="cc.xml">${%Export as plain XML}</a> (<a href="cc.xml?recursive">${%Recursively include jobs in folders}</a>)
+          <a href="cc.xml">${%Export as plain XML}</a> (<a href="cc.xml?recursive">${%Recurse in subfolders}</a>)
       </div>
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
