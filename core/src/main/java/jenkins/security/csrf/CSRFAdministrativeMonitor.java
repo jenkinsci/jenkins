@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2013-2015, CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,50 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.model;
+package jenkins.security.csrf;
 
-import hudson.model.queue.CauseOfBlockage;
-
-import java.util.Collections;
-import java.util.List;
+import hudson.Extension;
+import hudson.model.AdministrativeMonitor;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ * Monitor that the CSRF protection is enabled on the application.
+ *
+ * @since TODO
  */
-public class MockItem extends Queue.Item {
-
-    public MockItem(long id) {
-        super(null, Collections.<Action>emptyList(), id, null);
-    }
-
-    public MockItem(Queue.Task task) {
-        super(task, Collections.emptyList(), -1, null);
-    }
-
-    public MockItem(Queue.Task task, List<Action> actions, long id) {
-        super(task, actions, id, null);
-    }
-
-    /**
-     * Override as needed.
-     */
+@Extension
+@Symbol("csrf")
+@Restricted(NoExternalUse.class)
+public class CSRFAdministrativeMonitor extends AdministrativeMonitor {
     @Override
-    public CauseOfBlockage getCauseOfBlockage() {
-        return null;
+    public String getDisplayName() {
+        return Messages.CSRFAdministrativeMonitor_displayName();
     }
-
-    /**
-     * Override as needed.
-     */
+    
     @Override
-    void enter(Queue q) {
-    }
-
-    /**
-     * Override as needed.
-     */
-    @Override
-    boolean leave(Queue q) {
-        return true;
+    public boolean isActivated() {
+        return Jenkins.getInstance().getCrumbIssuer() == null;
     }
 }
