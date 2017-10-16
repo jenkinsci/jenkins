@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2017, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Generate status XML compatible with CruiseControl.
-  See http://confluence.public.thoughtworks.org/display/CI/Multiple+Project+Summary+Reporting+Standard
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:contentType value="text/xml;charset=UTF-8" />
-  <j:new var="h" className="hudson.Functions" />
-
-  <Projects>
-    <j:forEach var="p" items="${h.getCCItems(it)}">
-      <j:set var="lb" value="${p.lastCompletedBuild}"/>
-      <j:if test="${lb!=null}">
-        <Project  name="${p.fullDisplayName}"
-                  activity="${p.isBuilding() ? 'Building' : 'Sleeping'}"
-                  lastBuildStatus="${h.toCCStatus(p)}"
-                  lastBuildLabel="${lb.number}"
-                  lastBuildTime="${lb.timestampString2}"
-                  webUrl="${app.rootUrl}${p.url}"
-          />
-      </j:if>
-    </j:forEach>
-  </Projects>
+<j:jelly xmlns:j="jelly:core">
+    <div class="warning">
+        ${%warningMessage(rootURL)}
+    </div>
 </j:jelly>

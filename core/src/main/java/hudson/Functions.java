@@ -2043,4 +2043,13 @@ public class Functions {
         }
     }
 
+    @Restricted(NoExternalUse.class) // for cc.xml.jelly
+    public static Collection<TopLevelItem> getCCItems(View v) {
+        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
+            return Items.getAllItems(v.getOwner().getItemGroup(), TopLevelItem.class);
+        } else {
+            return v.getItems();
+        }
+    }
+
 }

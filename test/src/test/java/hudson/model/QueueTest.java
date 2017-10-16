@@ -69,6 +69,7 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
+import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.triggers.ReverseBuildTrigger;
@@ -120,6 +121,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -528,16 +530,24 @@ public class QueueTest {
     }
     static class TestTask implements Queue.Task {
         private final AtomicInteger cnt;
+        private final boolean isBlocked;
+
         TestTask(AtomicInteger cnt) {
-            this.cnt = cnt;
+            this(cnt, false);
         }
+
+        TestTask(AtomicInteger cnt, boolean isBlocked) {
+            this.cnt = cnt;
+            this.isBlocked = isBlocked;
+        }
+
         @Override public boolean equals(Object o) {
             return o instanceof TestTask && cnt == ((TestTask) o).cnt;
         }
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return false;}
+        @Override public boolean isBuildBlocked() {return isBlocked;}
         @Override public String getWhyBlocked() {return null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
@@ -770,7 +780,7 @@ public class QueueTest {
         final FreeStyleProject projectB = r.createFreeStyleProject(prefix+"B");
         projectB.getBuildersList().add(new SleepBuilder(10000));     
         projectB.setBlockBuildWhenUpstreamBuilding(true);
-        
+
         final FreeStyleProject projectC = r.createFreeStyleProject(prefix+"C");
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
@@ -812,6 +822,8 @@ public class QueueTest {
         assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 
+    @Ignore("TODO too flaky; upstream can finish before we even examine the queue")
+    @Issue("JENKINS-30084")
     @Test
     public void shouldBeAbleToBlockFlyweightTaskAtTheLastMinute() throws Exception {
         MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "downstream");
@@ -856,6 +868,7 @@ public class QueueTest {
             throw new Exception("the upstream task could not be scheduled, thus the test will be interrupted");
         }
         //let s wait for the Upstream to enter the buildable Queue
+        Thread.sleep(1000);
         boolean enteredTheQueue = false;
         while (!enteredTheQueue) {
             for (Queue.BuildableItem item : Queue.getInstance().getBuildableItems()) {
@@ -863,6 +876,7 @@ public class QueueTest {
                     enteredTheQueue = true;
                 }
             }
+            Thread.sleep(10);
         }
         //let's wait for the upstream project to actually start so that we're sure the Queue has been updated
         //when the upstream starts the downstream has already left the buildable queue and the queue is empty
@@ -972,5 +986,38 @@ public class QueueTest {
                 }
             };
         }
+    }
+
+    @Test
+    public void testDefaultImplementationOfGetCauseOfBlockageForBlocked() throws Exception {
+        Queue queue = r.getInstance().getQueue();
+        queue.schedule2(new TestTask(new AtomicInteger(0), true), 0);
+
+        queue.maintain();
+
+        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
+        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
+        CauseOfBlockage expected = CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
+
+        assertEquals(expected.getShortDescription(), actual.getShortDescription());
+    }
+
+    @Test
+    public void testGetCauseOfBlockageForNonConcurrentFreestyle() throws Exception {
+        Queue queue = r.getInstance().getQueue();
+        FreeStyleProject t1 = r.createFreeStyleProject("project");
+        t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
+        t1.setConcurrentBuild(false);
+
+        t1.scheduleBuild2(0).waitForStart();
+        t1.scheduleBuild2(0);
+
+        queue.maintain();
+
+        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
+        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
+        CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
+
+        assertEquals(expected.getShortDescription(), actual.getShortDescription());
     }
 }
