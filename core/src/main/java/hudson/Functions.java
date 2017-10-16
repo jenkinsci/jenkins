@@ -136,6 +136,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -1566,12 +1567,21 @@ public class Functions {
     }
 
     private static final Pattern LINE_END = Pattern.compile("\r?\n");
-
+    
     /**
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return isAnonymous(Jenkins.getAuthentication());
+    }
+
+    /**
+     * Checks if the given authentication is anonymous.
+     * @since TODO
+     */
+    public static boolean isAnonymous(Authentication authentication) {
+        //TODO use AuthenticationTrustResolver instead to be consistent through the application
+        return authentication instanceof AnonymousAuthenticationToken;
     }
 
     /**

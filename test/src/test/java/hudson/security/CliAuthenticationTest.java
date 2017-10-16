@@ -5,11 +5,16 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
 import jenkins.model.Jenkins;
+import jenkins.security.SecurityListener;
+import jenkins.security.SpySecurityListener;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.NullInputStream;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -27,6 +32,19 @@ public class CliAuthenticationTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+    
+    private SpySecurityListener spySecurityListener;
+
+    @Before
+    public void prepareListeners(){
+        //TODO simplify using #3021 into ExtensionList.lookupSingleton(SpySecurityListener.class)
+        this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
+    }
+
+    @After
+    public void clearListener(){
+        spySecurityListener.clearPreviousCalls();
+    }
 
     @Test
     public void test() throws Exception {
@@ -91,9 +109,22 @@ public class CliAuthenticationTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         successfulCommand("login","--username","abc","--password","abc");
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(userDetails -> userDetails.getUsername().equals("abc"));
+        spySecurityListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("abc");
+    
         successfulCommand("test"); // now we can run without an explicit credential
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(userDetails -> userDetails.getUsername().equals("abc"));
+        spySecurityListener.loggedInCalls.assertNoNewEvents();
+    
         successfulCommand("logout");
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(userDetails -> userDetails.getUsername().equals("abc"));
+        spySecurityListener.loggedOutCalls.assertLastEventIsAndThenRemoveIt("abc");
+    
         successfulCommand("anonymous"); // now we should run as anonymous
+        spySecurityListener.authenticatedCalls.assertNoNewEvents();
+        spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
+        spySecurityListener.loggedInCalls.assertNoNewEvents();
+        spySecurityListener.loggedOutCalls.assertNoNewEvents();
     }
 
     /**
@@ -112,4 +143,7 @@ public class CliAuthenticationTest {
         assertTrue(out1.contains("Bad Credentials. Search the server log for"));
         assertTrue(out2.contains("Bad Credentials. Search the server log for"));
     }
+
+    @TestExtension
+    public static class SpySecurityListenerImpl extends SpySecurityListener {}
 }

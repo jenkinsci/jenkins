@@ -8,7 +8,6 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
 import hudson.util.Scrambler;
-import org.acegisecurity.userdetails.UserDetails;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,12 +18,8 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.xml.sax.SAXException;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
 
@@ -37,19 +32,19 @@ public class BasicHeaderProcessorTest {
 
     private WebClient wc;
 
-    private DummySecurityListener dummyListener;
-    
+    private SpySecurityListener spySecurityListener;
+
     @Before
     public void prepareListeners(){
-        //TODO simplify using #3021 into ExtensionList.lookupSingleton(DummySecurityListener.class)
-        this.dummyListener = ExtensionList.lookup(SecurityListener.class).get(DummySecurityListener.class);
+        //TODO simplify using #3021 into ExtensionList.lookupSingleton(SpySecurityListener.class)
+        this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
-    
+
     @After
     public void clearListener(){
-        dummyListener.clearPreviousCalls();
+        spySecurityListener.clearPreviousCalls();
     }
-    
+
     /**
      * Tests various ways to send the Basic auth.
      */
@@ -63,8 +58,8 @@ public class BasicHeaderProcessorTest {
 
         // call without authentication
         makeRequestWithAuthAndVerify(null, "anonymous");
-        dummyListener.authenticatedCalls.assertNoNewEvents();
-        dummyListener.failedToAuthenticateCalls.assertNoNewEvents();
+        spySecurityListener.authenticatedCalls.assertNoNewEvents();
+        spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
 
         // call with API token
         ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
@@ -72,38 +67,38 @@ public class BasicHeaderProcessorTest {
         makeRequestWithAuthAndVerify("foo:"+token, "foo");
         //TODO verify why there are two events "authenticated" that are triggered
         // the whole authentication process seems to be done twice
-        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with invalid API token
         makeRequestAndFail("foo:abcd"+token);
-        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
         // call with password
         makeRequestWithAuthAndVerify("foo:foo", "foo");
-        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with incorrect password
         makeRequestAndFail("foo:bar");
-        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
 
         wc.login("bar");
-        dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("bar"));
-        dummyListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("bar");
+        spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("bar"));
+        spySecurityListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("bar");
 
         // if the session cookie is valid, then basic header won't be needed
         makeRequestWithAuthAndVerify(null, "bar");
-        dummyListener.authenticatedCalls.assertNoNewEvents();
-        dummyListener.failedToAuthenticateCalls.assertNoNewEvents();
+        spySecurityListener.authenticatedCalls.assertNoNewEvents();
+        spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
 
         // if the session cookie is valid, and basic header is set anyway login should not fail either
         makeRequestWithAuthAndVerify("bar:bar", "bar");
-        dummyListener.authenticatedCalls.assertNoNewEvents();
-        dummyListener.failedToAuthenticateCalls.assertNoNewEvents();
+        spySecurityListener.authenticatedCalls.assertNoNewEvents();
+        spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
         makeRequestAndFail("foo:bar");
-        dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
     }
 
     private void makeRequestAndFail(String userAndPass) throws IOException, SAXException {
@@ -153,22 +148,22 @@ public class BasicHeaderProcessorTest {
             final String token = t.getApiToken();
             String authCode1 = encode(prefix,"foo:"+token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
-            dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+            spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
             
             // call with invalid API token
             String authCode2 = encode(prefix,"foo:abcd"+token);
             makeRequestWithAuthCodeAndFail(authCode2);
-            dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+            spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
             // call with password
             String authCode3 = encode(prefix,"foo:foo");
             makeRequestWithAuthCodeAndVerify(authCode3, "foo");
-            dummyListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+            spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with incorrect password
             String authCode4 = encode(prefix,"foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
-            dummyListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+            spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
         }
     }
 
@@ -194,73 +189,7 @@ public class BasicHeaderProcessorTest {
             return HttpResponses.plainText(u!=null ? u.getId() : "anonymous");
         }
     }
-    
+
     @TestExtension
-    public static class DummySecurityListener extends SecurityListener {
-        final EventQueue<UserDetails> authenticatedCalls = new EventQueue<>();
-        final EventQueue<String> failedToAuthenticateCalls = new EventQueue<>();
-        final EventQueue<String> loggedInCalls = new EventQueue<>();
-
-        void clearPreviousCalls(){
-            this.authenticatedCalls.clear();
-            this.failedToAuthenticateCalls.clear();
-            this.loggedInCalls.clear();
-        }
-        
-        @Override
-        protected void authenticated(@Nonnull UserDetails details) {
-            this.authenticatedCalls.add(details);
-        }
-
-        @Override
-        protected void failedToAuthenticate(@Nonnull String username) {
-            this.failedToAuthenticateCalls.add(username);
-        }
-
-        @Override
-        protected void loggedIn(@Nonnull String username) {
-            this.loggedInCalls.add(username);
-        }
-
-        @Override
-        protected void failedToLogIn(@Nonnull String username) {
-        
-        }
-    
-        @Override
-        protected void loggedOut(@Nonnull String username) {
-        
-        }
-    }
-    
-    private static class EventQueue<T> {
-        private final List<T> eventList = new ArrayList<>();
-    
-        void assertLastEventIsAndThenRemoveIt(T expected){
-            assertLastEventIsAndThenRemoveIt(expected::equals);
-        }
-
-        void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate){
-            if(eventList.isEmpty()){
-                fail("event list is empty");
-            }
-
-            T t = eventList.remove(eventList.size() - 1);
-            assertTrue(predicate.test(t));
-            eventList.clear();
-        }
-        
-        void assertNoNewEvents(){
-            assertEquals("list of event should be empty", eventList.size(), 0);
-        }
-    
-        EventQueue add(T t){
-            eventList.add(t);
-            return this;
-        }
-        
-        void clear(){
-            eventList.clear();
-        }
-    }
+    public static class SpySecurityListenerImpl extends SpySecurityListener {}
 }
