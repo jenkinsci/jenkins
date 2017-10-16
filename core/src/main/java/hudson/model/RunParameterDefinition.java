@@ -27,6 +27,8 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -151,7 +153,8 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
-        
+
+        @Restricted(NoExternalUse.class)
         public AutoCompletionCandidates doAutoCompleteProjectName(@QueryParameter String value, @AncestorInPath Item self, @AncestorInPath ItemGroup container) {
             return AutoCompletionCandidates.ofJobNames(Job.class, value, self, container);
         }
