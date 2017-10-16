@@ -172,10 +172,17 @@ public class ListView extends View implements DirectlyModifiableView {
     }
 
 
-     public List<TopLevelItem> getItems() {
+    /**
+     * Returns a read-only view of all {@link Job}s in this view.
+     *
+     * <p>
+     * This method returns a separate copy each time to avoid
+     * concurrent modification issue.
+     */
+    @Override
+    public List<TopLevelItem> getItems() {
         return getItems(this.recurse);
      }
-
 
     /**
      * Returns a read-only view of all {@link Job}s in this view.
@@ -187,7 +194,7 @@ public class ListView extends View implements DirectlyModifiableView {
      * @param recurse {@code false} not to recurse in ItemGroups
      * true to recurse in ItemGroups
      */
-     private List<TopLevelItem> getItems(boolean recurse) {
+    private List<TopLevelItem> getItems(boolean recurse) {
         SortedSet<String> names;
         List<TopLevelItem> items = new ArrayList<TopLevelItem>();
 
