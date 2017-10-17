@@ -1207,7 +1207,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             return true;    // no SCM
 
         FilePath workspace = build.getWorkspace();
-        workspace.mkdirs();
+        if(workspace!=null){
+            workspace.mkdirs();
+        }
+        else{
+            return true;
+        }
+
 
         boolean r = scm.checkout(build, launcher, workspace, listener, changelogFile);
         if (r) {
