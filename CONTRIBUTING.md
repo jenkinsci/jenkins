@@ -73,7 +73,7 @@ It is a good practice is to create branches instead of pushing to master.
 Once your Pull Request is ready to be merged,
 the repository maintainers will integrate it, prepare changelogs and
 ensure it gets released in one of incoming Weekly releases.
-There is no additinal action required from pull request authors at this point.
+There is no additional action required from pull request authors at this point.
 
 ## Copyright
 
@@ -85,7 +85,7 @@ Contributions under MIT-compatible licenses may be also rejected if they are not
 We **Do NOT** require pull request submitters to sign the [contributor agreement](https://wiki.jenkins.io/display/JENKINS/Copyright+on+source+code)
 as long as the code is licensed under MIT and merged by one of the contributors with the signed agreement.
 
-We still encourage people to sign the contributor agreement if they intend to submit more than a few pull ruquests.
+We still encourage people to sign the contributor agreement if they intend to submit more than a few pull requests.
 Signing is also a mandatory prerequisite for getting merge/push permissions to core repositories
 and for joining teams like [Jenkins Security Team](https://jenkins.io/security/#team).
 
@@ -101,8 +101,8 @@ just submit a pull request.
 
 # Links
 
-* [Jenkins Contribution Landing Page](https://jenkins.io/paricipate/)
-* [Jenkisn IRC Channel](https://jenkins.io/chat/)
+* [Jenkins Contribution Landing Page](https://jenkins.io/participate/)
+* [Jenkins IRC Channel](https://jenkins.io/chat/)
 * [Beginners Guide To Contributing](https://wiki.jenkins.io/display/JENKINS/Beginners+Guide+to+Contributing)
 * [List of newbie-friendly issues in the core](https://issues.jenkins-ci.org/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
 
