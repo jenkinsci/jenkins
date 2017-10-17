@@ -49,7 +49,6 @@ THE SOFTWARE.
 
   <modules>
     <module>core</module>
-    <module>command-launcher-plugin</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>
