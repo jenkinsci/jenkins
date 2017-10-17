@@ -426,7 +426,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
             new DetachedPlugin("junit", "1.577.*", "1.0"),
             new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0"),
-            new DetachedPlugin("command-launcher", "2.85.*", "1.0-SNAPSHOT") // TODO update after split
+            new DetachedPlugin("command-launcher", "2.86.*", "1.0-SNAPSHOT") // TODO update after split
     ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
