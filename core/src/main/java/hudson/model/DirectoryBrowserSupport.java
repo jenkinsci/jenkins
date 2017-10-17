@@ -32,8 +32,10 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -409,6 +411,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         */
         private final long lastModified;
 
+        @Restricted(NoExternalUse.class)
         public Path(String href, String title, boolean isFolder, long size, boolean isReadable, long lastModified) {
             this.href = href;
             this.title = title;
@@ -452,13 +455,25 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             return size;
         }
 
+        /**
+         *
+         * @return A long value representing the time the file was last modified, measured in milliseconds since
+         * the epoch (00:00:00 GMT, January 1, 1970), or 0L if is not possible to obtain the times.
+         * @since TODO
+         */
         public long getLastModified() {
             return lastModified;
         }
 
-        public java.util.Calendar getLastModifiedAsCalendar() {
-            final java.util.Calendar cal = new java.util.GregorianCalendar();
-
+        /**
+         *
+         * @return A Calendar representing the time the file was last modified, it lastModified is 0L
+         * it will return 00:00:00 GMT, January 1, 1970.
+         * @since TODO
+         */
+        @Restricted(NoExternalUse.class)
+        public Calendar getLastModifiedAsCalendar() {
+            final Calendar cal = new GregorianCalendar();
             cal.setTimeInMillis(lastModified);
             return cal;
         }
@@ -537,7 +552,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                                 break;
                             f = sub.get(0);
                             relPath += '/'+Util.rawEncode(f.getName());
-                            l.add(new Path(relPath,f.getName(),true,0, f.canRead(),0));
+                            l.add(new Path(relPath,f.getName(),true, f.length(), f.canRead(), f.lastModified()));
                         }
                         r.add(l);
                     }

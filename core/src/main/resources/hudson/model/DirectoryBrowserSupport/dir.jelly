@@ -71,7 +71,7 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
-                      ${h.rfc822Date(x.getLastModifiedAsCalendar())}
+                      <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
                     </td>
                     <td class="fileSize">
                       ${h.humanReadableByteSize(x.getSize())}
