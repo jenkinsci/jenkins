@@ -42,7 +42,7 @@ import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.hamcrest.Matchers.*;
-import org.jenkinsci.plugins.command_launcher.CommandLanguage;
+import org.jenkinsci.plugins.command_launcher.SystemCommandLanguage;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import static org.junit.Assert.*;
 import org.junit.Rule;
@@ -69,7 +69,7 @@ public class CommandLauncher2Test {
                 rr.j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                     grant(Jenkins.ADMINISTER).everywhere().to("admin").
                     grant(Jenkins.READ, Computer.CONFIGURE).everywhere().to("dev"));
-                ScriptApproval.get().preapprove("echo unconfigured", CommandLanguage.get());
+                ScriptApproval.get().preapprove("echo unconfigured", SystemCommandLanguage.get());
                 DumbSlave s = new DumbSlave("s", "/", new CommandLauncher("echo unconfigured"));
                 rr.j.jenkins.addNode(s);
                 // First, reconfigure using GUI.
@@ -102,7 +102,7 @@ public class CommandLauncher2Test {
                 assertEquals(Collections.emptySet(), ScriptApproval.get().getPendingScripts());
                 assertSerialForm(s, "echo configured by CLI");
                 // Now verify that all modes failed as dev. First as GUI.
-                ScriptApproval.get().preapprove("echo configured by admin", CommandLanguage.get());
+                ScriptApproval.get().preapprove("echo configured by admin", SystemCommandLanguage.get());
                 s.setLauncher(new CommandLauncher("echo configured by admin"));
                 s.save();
                 wc = rr.j.createWebClient().login("dev");
@@ -116,7 +116,7 @@ public class CommandLauncher2Test {
                 Set<ScriptApproval.PendingScript> pendingScripts = ScriptApproval.get().getPendingScripts();
                 assertEquals(1, pendingScripts.size());
                 ScriptApproval.PendingScript pendingScript = pendingScripts.iterator().next();
-                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
                 assertEquals("echo GUI ATTACK", pendingScript.script);
                 assertEquals("dev", pendingScript.getContext().getUser());
                 ScriptApproval.get().denyScript(pendingScript.getHash());
@@ -131,7 +131,7 @@ public class CommandLauncher2Test {
                 pendingScripts = ScriptApproval.get().getPendingScripts();
                 assertEquals(1, pendingScripts.size());
                 pendingScript = pendingScripts.iterator().next();
-                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
                 assertEquals("echo REST ATTACK", pendingScript.script);
                 assertEquals(/* deserialization, not recording user */ null, pendingScript.getContext().getUser());
                 ScriptApproval.get().denyScript(pendingScript.getHash());
@@ -145,7 +145,7 @@ public class CommandLauncher2Test {
                 pendingScripts = ScriptApproval.get().getPendingScripts();
                 assertEquals(1, pendingScripts.size());
                 pendingScript = pendingScripts.iterator().next();
-                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
                 assertEquals("echo CLI ATTACK", pendingScript.script);
                 assertEquals(/* ditto */null, pendingScript.getContext().getUser());
                 ScriptApproval.get().denyScript(pendingScript.getHash());
@@ -167,7 +167,7 @@ public class CommandLauncher2Test {
                 Set<ScriptApproval.PendingScript> pendingScripts = ScriptApproval.get().getPendingScripts();
                 assertEquals(1, pendingScripts.size());
                 ScriptApproval.PendingScript pendingScript = pendingScripts.iterator().next();
-                assertEquals(CommandLanguage.get(), pendingScript.getLanguage());
+                assertEquals(SystemCommandLanguage.get(), pendingScript.getLanguage());
                 assertEquals("echo CLI ATTACK", pendingScript.script);
                 assertEquals(/* ditto */null, pendingScript.getContext().getUser());
             }

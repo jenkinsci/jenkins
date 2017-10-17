@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.command_launcher.CommandLanguage;
+import org.jenkinsci.plugins.command_launcher.SystemCommandLanguage;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.jenkinsci.plugins.scriptsecurity.scripts.UnapprovedUsageException;
@@ -76,14 +76,14 @@ public class CommandLauncher extends ComputerLauncher {
         agentCommand = command;
         env = null;
         // TODO add withKey if we can determine the Slave.nodeName being configured
-        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create().withCurrentUser());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser());
     }
 
     /** Constructor for programmatic use. Always approves the script. */
     public CommandLauncher(String command, EnvVars env) {
     	this.agentCommand = command;
     	this.env = env;
-        ScriptApproval.get().preapprove(command, CommandLanguage.get());
+        ScriptApproval.get().preapprove(command, SystemCommandLanguage.get());
     }
 
     /** Constructor for use from {@link CommandConnector}. Never approves the script. */
@@ -93,7 +93,7 @@ public class CommandLauncher extends ComputerLauncher {
     }
     
     private Object readResolve() {
-        ScriptApproval.get().configuring(agentCommand, CommandLanguage.get(), ApprovalContext.create());
+        ScriptApproval.get().configuring(agentCommand, SystemCommandLanguage.get(), ApprovalContext.create());
         return this;
     }
 
@@ -119,7 +119,7 @@ public class CommandLauncher extends ComputerLauncher {
             }
 
             listener.getLogger().println(org.jenkinsci.plugins.command_launcher.Messages.Slave_Launching(getTimestamp()));
-            String command = ScriptApproval.get().using(getCommand(), CommandLanguage.get());
+            String command = ScriptApproval.get().using(getCommand(), SystemCommandLanguage.get());
             if (command.trim().length() == 0) {
                 listener.getLogger().println(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
                 return;
@@ -220,7 +220,7 @@ public class CommandLauncher extends ComputerLauncher {
             if(Util.fixEmptyAndTrim(value)==null)
                 return FormValidation.error(org.jenkinsci.plugins.command_launcher.Messages.CommandLauncher_NoLaunchCommand());
             else
-                return ScriptApproval.get().checking(value, CommandLanguage.get());
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get());
         }
     }
 }

@@ -36,20 +36,20 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(NoExternalUse.class) // TODO move to script-security after split
 @Extension
-public class CommandLanguage extends Language {
+public class SystemCommandLanguage extends Language {
 
     public static Language get() {
-        return ExtensionList.lookup(Language.class).get(CommandLanguage.class);
+        return ExtensionList.lookup(Language.class).get(SystemCommandLanguage.class);
     }
 
     @Override
     public String getName() {
-        return "command";
+        return "system-command";
     }
 
     @Override
     public String getDisplayName() {
-        return "External Commands";
+        return "System Commands";
     }
 
 }

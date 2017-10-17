@@ -30,8 +30,8 @@ import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import java.io.IOException;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.command_launcher.CommandLanguage;
 import org.jenkinsci.plugins.command_launcher.Messages;
+import org.jenkinsci.plugins.command_launcher.SystemCommandLanguage;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -49,11 +49,11 @@ public class CommandConnector extends ComputerConnector {
     public CommandConnector(String command) {
         this.command = command;
         // TODO add withKey if we can determine the Cloud.name being configured
-        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create().withCurrentUser());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create().withCurrentUser());
     }
 
     private Object readResolve() {
-        ScriptApproval.get().configuring(command, CommandLanguage.get(), ApprovalContext.create());
+        ScriptApproval.get().configuring(command, SystemCommandLanguage.get(), ApprovalContext.create());
         return this;
     }
 
@@ -74,7 +74,7 @@ public class CommandConnector extends ComputerConnector {
             if (Util.fixEmptyAndTrim(value) == null) {
                 return FormValidation.error(Messages.CommandLauncher_NoLaunchCommand());
             } else {
-                return ScriptApproval.get().checking(value, CommandLanguage.get());
+                return ScriptApproval.get().checking(value, SystemCommandLanguage.get());
             }
         }
 

@@ -14,13 +14,13 @@
         <jenkins.version>2.86-SNAPSHOT</jenkins.version> <!-- TODO pending split -->
         <java.level>8</java.level>
     </properties>
-    <name>Command Launcher Plugin</name>
+    <name>Command Agent Launcher Plugin</name>
     <description>Allows agents to be launched using a specified command.</description>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Command+Launcher+Plugin</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/Command+Agent+Launcher+Plugin</url>
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
+            <url>https://opensource.org/licenses/MIT</url>
         </license>
     </licenses>
     <!-- TODO after split
