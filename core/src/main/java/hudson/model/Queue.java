@@ -1814,18 +1814,22 @@ public class Queue extends ResourceController implements Saveable {
         /**
          * Returns true if the execution should be blocked
          * for temporary reasons.
-         *
-         * <p>
-         * Short-hand for {@code getCauseOfBlockageForItem()!=null}.
+         * @deprecated Use {@link #getCauseOfBlockage} != null
          */
-        boolean isBuildBlocked();
+        @Deprecated
+        default boolean isBuildBlocked() {
+            return getCauseOfBlockage() != null;
+        }
 
         /**
          * @deprecated as of 1.330
          *      Use {@link CauseOfBlockage#getShortDescription()} instead.
          */
         @Deprecated
-        String getWhyBlocked();
+        default String getWhyBlocked() {
+            CauseOfBlockage cause = getCauseOfBlockage();
+            return cause != null ? cause.getShortDescription() : null;
+        }
 
         /**
          * If the execution of this task should be blocked for temporary reasons,

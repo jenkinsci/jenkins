@@ -547,8 +547,7 @@ public class QueueTest {
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return isBlocked;}
-        @Override public String getWhyBlocked() {return null;}
+        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
         @Override public void checkAbortPermission() {}
