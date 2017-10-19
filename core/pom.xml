@@ -575,7 +575,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke</groupId>
       <artifactId>access-modifier-annotation</artifactId>
-      <version>1.4</version>
+      <version>1.11</version>
     </dependency>
 
     <dependency>
