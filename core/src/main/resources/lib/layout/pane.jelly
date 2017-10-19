@@ -66,6 +66,11 @@ THE SOFTWARE.
             <div class="col-xs-24 cell">${attrs.collapsedText}</div>
           </div>
         </j:when>
+        <j:when test="${fluid}">
+          <div class="${attrs.class}">
+            <d:invokeBody />
+          </div>
+        </j:when>
         <j:otherwise>
           <table class="pane ${attrs.class}">
             <d:invokeBody />
