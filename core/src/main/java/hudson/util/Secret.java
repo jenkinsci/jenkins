@@ -165,7 +165,7 @@ public final class Secret implements Serializable {
      */
     @CheckForNull
     public static Secret decrypt(@CheckForNull String data) {
-        if(data==null)      return null;
+        if(data==null || "{}".equals(data))      return null;
 
         if (data.startsWith("{") && data.endsWith("}")) { //likely CBC encrypted/containing metadata but could be plain text
             byte[] payload;
