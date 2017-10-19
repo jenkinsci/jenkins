@@ -1841,9 +1841,6 @@ public class Queue extends ResourceController implements Saveable {
          */
         @CheckForNull
         default CauseOfBlockage getCauseOfBlockage() {
-            if (isBuildBlocked()) {
-                return CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
-            }
             return null;
         }
 
