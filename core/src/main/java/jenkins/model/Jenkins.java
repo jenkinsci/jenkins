@@ -3709,8 +3709,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             JSONObject json = req.getSubmittedForm();
 
-            MasterBuildConfiguration mbc = ExtensionList.lookupSingleton(MasterBuildConfiguration.class);
-            mbc.configure(req,json);
+            ExtensionList.lookupSingleton(MasterBuildConfiguration.class).configure(req,json);
 
             getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
         } finally {
