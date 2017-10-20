@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.80-SNAPSHOT</version>
+    <version>2.86-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -402,6 +402,12 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
                   <version>2.16.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>command-launcher</artifactId>
+                  <version>1.0</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
