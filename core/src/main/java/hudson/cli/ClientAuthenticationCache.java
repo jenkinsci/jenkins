@@ -40,11 +40,6 @@ public class ClientAuthenticationCache implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(ClientAuthenticationCache.class.getName());
     
     /**
-     * Unique id used only by this instance for that run
-     */
-    private static volatile String randomId;
-    
-    /**
      * Where the store should be placed.
      */
     private final FilePath store;
@@ -109,25 +104,18 @@ public class ClientAuthenticationCache implements Serializable {
             return Jenkins.ANONYMOUS;
         }
     }
-    
+
     /**
      * Computes the key that identifies this Hudson among other Hudsons that the user has a credential for.
      */
     @VisibleForTesting
     String getPropertyKey() {
-        String url = Jenkins.getActiveInstance().getRootUrl();
+        Jenkins j = Jenkins.getActiveInstance();
+        String url = j.getRootUrl();
         if (url!=null)  return url;
         
         LOGGER.log(Level.WARNING, "The instance is not configured using a rootUrl, the key that represents your instance will not be stable");
-        if(randomId == null){
-            synchronized (this){
-                if(randomId == null){
-                    randomId = Secret.fromString("key").getEncryptedValue();
-                }
-            }
-        }
-
-        return randomId;
+        return j.getLegacyInstanceId();
     }
 
     /**
