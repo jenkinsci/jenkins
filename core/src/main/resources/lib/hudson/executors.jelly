@@ -59,9 +59,9 @@ THE SOFTWARE.
               <j:otherwise>
                 <!-- not actually optional, but it helps with backward compatibility -->
                 <j:set var="executor" value="${e}" />
+                <table>
                 <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
-                <div style="padding: 5px; display: flex; flex-wrap: wrap; align-items: stretch; justify-content: space-between;">
-                  <div>
+                  <td class="pane" style="width: 100%; vertical-align: top;">
                     <div style="white-space: normal">
                       <j:set var="exe" value="${e.currentExecutable}" />
                       <j:set var="wu" value="${e.currentWorkUnit}" />
@@ -79,7 +79,7 @@ THE SOFTWARE.
                           </j:choose>
                         </j:when>
                         <j:when test="${exe == null and wu == null}">
-                        <!-- went idle concurrent with testing for idle -->
+                          <!-- went idle concurrent with testing for idle -->
                           ${%Idle}
                         </j:when>
                         <j:otherwise>
@@ -99,14 +99,14 @@ THE SOFTWARE.
                         </j:otherwise>
                       </j:choose>
                     </div>
-                  </div>
-                <div>
+                  </td>
+                <td class="pane">
                   <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
                       <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
                   </j:if>
-                </div>
-              </div>
+                </td>
                 </st:include>
+                </table>
                 <div style="padding: 5px">
                   <j:if test="${e.hasStopPermission()}">
                     <l:stopButton href="${rootURL}/${c.url}${url}/stop" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
