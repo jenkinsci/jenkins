@@ -547,8 +547,7 @@ public class QueueTest {
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return isBlocked;}
-        @Override public String getWhyBlocked() {return null;}
+        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
         @Override public void checkAbortPermission() {}
@@ -986,20 +985,6 @@ public class QueueTest {
                 }
             };
         }
-    }
-
-    @Test
-    public void testDefaultImplementationOfGetCauseOfBlockageForBlocked() throws Exception {
-        Queue queue = r.getInstance().getQueue();
-        queue.schedule2(new TestTask(new AtomicInteger(0), true), 0);
-
-        queue.maintain();
-
-        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
-        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
-        CauseOfBlockage expected = CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
-
-        assertEquals(expected.getShortDescription(), actual.getShortDescription());
     }
 
     @Test
