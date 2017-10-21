@@ -1211,7 +1211,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
             workspace.mkdirs();
         }
         else{
-            return true;
+            LOGGER.log(Level.SEVERE,"Workspace does not exist!!");
+            return false;
         }
 
 
