@@ -50,34 +50,34 @@ public abstract class SecurityListener implements ExtensionPoint {
      * Only {@link AbstractPasswordBasedSecurityRealm}s are considered.
      * @param details details of the newly authenticated user, such as name and groups
      */
-    protected abstract void authenticated(@Nonnull UserDetails details);
+    protected void authenticated(@Nonnull UserDetails details){}
 
     /**
      * Fired when a user tried to authenticate by password but failed.
      * @param username the user
      * @see #authenticated
      */
-    protected abstract void failedToAuthenticate(@Nonnull String username);
+    protected void failedToAuthenticate(@Nonnull String username){}
 
     /**
      * Fired when a user has logged in via the web UI.
      * Would be called after {@link #authenticated}.
      * @param username the user
      */
-    protected abstract void loggedIn(@Nonnull String username);
+    protected void loggedIn(@Nonnull String username){}
 
     /**
      * Fired when a user has failed to log in via the web UI.
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
      */
-    protected abstract void failedToLogIn(@Nonnull String username);
+    protected void failedToLogIn(@Nonnull String username){}
 
     /**
      * Fired when a user logs out.
      * @param username the user
      */
-    protected abstract void loggedOut(@Nonnull String username);
+    protected void loggedOut(@Nonnull String username){}
 
     /** @since 1.569 */
     public static void fireAuthenticated(@Nonnull UserDetails details) {

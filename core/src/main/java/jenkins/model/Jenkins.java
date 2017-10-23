@@ -158,14 +158,12 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
-import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
-import java.util.concurrent.TimeUnit;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.views.DefaultMyViewsTabBar;
@@ -461,20 +459,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
-    private transient final Memoizer<Class,ExtensionList> extensionLists = new Memoizer<Class,ExtensionList>() {
-        public ExtensionList compute(Class key) {
-            return ExtensionList.create(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, ExtensionList> extensionLists = new ConcurrentHashMap<>();
 
     /**
      * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
-    private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
-        public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.createDescriptorList(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<>();
 
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
@@ -2636,7 +2628,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        return extensionLists.get(extensionType);
+        return extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
     }
 
     /**
@@ -2657,7 +2649,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
-        return descriptorLists.get(type);
+        return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 
     /**
