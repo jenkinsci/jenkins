@@ -70,7 +70,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StaplerResponse temp = new ResponseImpl(req.getStapler(), new HttpServletResponseWrapper(res) {
                 @Override public ServletOutputStream getOutputStream() throws IOException {
-                    return new FilterServletOutputStream(baos);
+                    return new FilterServletOutputStream(baos, super.getOutputStream());
                 }
                 @Override public PrintWriter getWriter() throws IOException {
                     throw new IllegalStateException();
