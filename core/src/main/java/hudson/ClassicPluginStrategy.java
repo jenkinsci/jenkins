@@ -425,7 +425,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
             new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
             new DetachedPlugin("junit", "1.577.*", "1.0"),
-            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0")
+            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0"),
+            new DetachedPlugin("command-launcher", "2.86.*", "1.0")
     ));
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
@@ -434,6 +435,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
             "script-security/windows-slaves",
             "script-security/antisamy-markup-formatter",
             "script-security/matrix-project",
+            "script-security/bouncycastle-api",
+            "script-security/command-launcher",
             "credentials/matrix-auth",
             "credentials/windows-slaves"
     ));

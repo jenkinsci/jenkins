@@ -1016,24 +1016,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>
-     * A project must be blocked if its own previous build is in progress,
-     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
-     * project is building, but derived classes can also check other conditions.
-     */
-    @Override
-    public boolean isBuildBlocked() {
-        return getCauseOfBlockage()!=null;
-    }
-
-    public String getWhyBlocked() {
-        CauseOfBlockage cb = getCauseOfBlockage();
-        return cb!=null ? cb.getShortDescription() : null;
-    }
-
-    /**
      * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
     @Deprecated
@@ -1075,6 +1057,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * A project must be blocked if its own previous build is in progress,
+     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
+     * project is building, but derived classes can also check other conditions.
+     */
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
