@@ -24,8 +24,11 @@
 package hudson.model;
 
 import hudson.Extension;
+import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -35,15 +38,26 @@ import org.kohsuke.stapler.StaplerRequest;
 public class StringParameterDefinition extends SimpleParameterDefinition {
 
     private String defaultValue;
+    private final boolean trim;
 
     @DataBoundConstructor
-    public StringParameterDefinition(String name, String defaultValue, String description) {
+    public StringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
         super(name, description);
         this.defaultValue = defaultValue;
+        this.trim = trim;
     }
 
+    /** 
+     *
+     * @since TODO
+     */
+    @Nonnull
+    public StringParameterDefinition(String name, String defaultValue, String description) {
+        this(name, defaultValue, description, false);
+    }
+    
     public StringParameterDefinition(String name, String defaultValue) {
-        this(name, defaultValue, null);
+        this(name, defaultValue, null, false);
     }
 
     @Override
@@ -60,14 +74,42 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         return defaultValue;
     }
 
+    /**
+     * 
+     * @return original or trimmed defaultValue (depending on trim)
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public String getDefaultValue4Build() {
+        if (isTrim() && defaultValue != null) {
+            return defaultValue.trim();
+        } else {
+            return defaultValue;
+        }
+    }
+    
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    /**
+     * 
+     * @return trim - {@code true}, if trim options has been selected, else return {@code false}.
+     *      Trimming will happen when creating {@link StringParameterValue}s,
+     *      the value in the config will not be changed.
+     * @since TODO
+     */
+    public boolean isTrim() {
+        return trim;
     }
     
     @Override
     public StringParameterValue getDefaultParameterValue() {
-        StringParameterValue v = new StringParameterValue(getName(), defaultValue, getDescription());
-        return v;
+        StringParameterValue value = new StringParameterValue(getName(), defaultValue, getDescription());
+        if (isTrim()) {
+            value.doTrim();
+        }
+        return value;
     }
 
     @Extension @Symbol({"string","stringParam"})
@@ -86,11 +128,18 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         StringParameterValue value = req.bindJSON(StringParameterValue.class, jo);
+        if (isTrim() && value!=null) {
+            value.doTrim();
+        }
         value.setDescription(getDescription());
         return value;
     }
 
-    public ParameterValue createValue(String value) {
-        return new StringParameterValue(getName(), value, getDescription());
+    public ParameterValue createValue(String str) {
+        StringParameterValue value = new StringParameterValue(getName(), str, getDescription());
+        if (isTrim()&& value!=null) {
+            value.doTrim();
+        }
+        return value;
     }
 }

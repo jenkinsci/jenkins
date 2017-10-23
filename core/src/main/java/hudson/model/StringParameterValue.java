@@ -30,13 +30,17 @@ import org.kohsuke.stapler.export.Exported;
 import java.util.Locale;
 
 import hudson.util.VariableResolver;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
 public class StringParameterValue extends ParameterValue {
     @Exported(visibility=4)
-    public final String value;
+    @Restricted(NoExternalUse.class)
+    public String value;
+    private boolean trim;
 
     @DataBoundConstructor
     public StringParameterValue(String name, String value) {
@@ -48,6 +52,17 @@ public class StringParameterValue extends ParameterValue {
         this.value = value;
     }
 
+    /**
+     * 
+     * @param trim - {@code true}, if trim options select, else - {@code false}.
+     * @return {@code StringParameterValue} object with {@code trim} parameter.
+     * @since TODO
+     */
+    public StringParameterValue withTrim(boolean trim) {
+        this.trim = trim;
+        return this;
+    }
+    
     /**
      * Exposes the name/value as an environment variable.
      */
@@ -69,6 +84,15 @@ public class StringParameterValue extends ParameterValue {
     @Override
     public Object getValue() {
         return value;
+    }
+     
+    /**
+     * Trimming for value
+     */
+    public void doTrim() {
+        if (value != null) {
+           value = value.trim(); 
+        } 
     }
 
     @Override
