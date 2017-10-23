@@ -118,10 +118,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -129,6 +131,9 @@ import org.junit.Ignore;
 public class QueueTest {
 
     @Rule public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(Queue.class, Level.FINE);
 
     /**
      * Checks the persistence of queue.
@@ -520,17 +525,19 @@ public class QueueTest {
 
     @Test public void taskEquality() throws Exception {
         AtomicInteger cnt = new AtomicInteger();
-        ScheduleResult result = r.jenkins.getQueue().schedule2(new TestTask(cnt), 0);
+        TestTask originalTask = new TestTask(cnt, true);
+        ScheduleResult result = r.jenkins.getQueue().schedule2(originalTask, 0);
         assertTrue(result.isCreated());
         WaitingItem item = result.getCreateItem();
         assertFalse(r.jenkins.getQueue().schedule2(new TestTask(cnt), 0).isCreated());
+        originalTask.isBlocked = false;
         item.getFuture().get();
         r.waitUntilNoActivity();
         assertEquals(1, cnt.get());
     }
     static class TestTask implements Queue.Task {
         private final AtomicInteger cnt;
-        private final boolean isBlocked;
+        boolean isBlocked;
 
         TestTask(AtomicInteger cnt) {
             this(cnt, false);
@@ -547,8 +554,7 @@ public class QueueTest {
         @Override public int hashCode() {
             return cnt.hashCode();
         }
-        @Override public boolean isBuildBlocked() {return isBlocked;}
-        @Override public String getWhyBlocked() {return null;}
+        @Override public CauseOfBlockage getCauseOfBlockage() {return isBlocked ? CauseOfBlockage.fromMessage(Messages._Queue_Unknown()) : null;}
         @Override public String getName() {return "test";}
         @Override public String getFullDisplayName() {return "Test";}
         @Override public void checkAbortPermission() {}
@@ -986,20 +992,6 @@ public class QueueTest {
                 }
             };
         }
-    }
-
-    @Test
-    public void testDefaultImplementationOfGetCauseOfBlockageForBlocked() throws Exception {
-        Queue queue = r.getInstance().getQueue();
-        queue.schedule2(new TestTask(new AtomicInteger(0), true), 0);
-
-        queue.maintain();
-
-        assertEquals(1, r.jenkins.getQueue().getBlockedItems().size());
-        CauseOfBlockage actual = r.jenkins.getQueue().getBlockedItems().get(0).getCauseOfBlockage();
-        CauseOfBlockage expected = CauseOfBlockage.fromMessage(Messages._Queue_Unknown());
-
-        assertEquals(expected.getShortDescription(), actual.getShortDescription());
     }
 
     @Test
