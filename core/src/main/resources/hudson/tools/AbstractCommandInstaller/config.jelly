@@ -25,7 +25,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:t="/hudson/tools">
     <t:label />
     <f:entry title="${%Command}" field="command">
-        <f:textarea/>
+        <f:textarea checkMethod="post"/>
     </f:entry>
     <f:entry title="${%Tool Home}" field="toolHome">
         <f:textbox/>
