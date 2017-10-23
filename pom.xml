@@ -230,7 +230,6 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
-
       <!--  make sure these plugins are never used by us or by any plugins which end up depening on this version -->
 
       <dependency>
@@ -243,6 +242,11 @@ THE SOFTWARE.
         <optional>true</optional>
       </dependency>
       <!--  TODO also add commons-logging and log4j -->
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
