@@ -49,10 +49,13 @@ var breadcrumbs = (function() {
         return a+'/'+b+qs;
     }
 
-    function postRequest(action, event, url) {
-        new Ajax.Request(url);
+    function postRequest(action, event, cfg) {
+        new Ajax.Request(cfg.url);
         if (event.length == 1 && event[0].target != null) {
             hoverNotification('Done.', event[0].target);
+        }
+        if (cfg.invalidate) {
+            cfg.menu.items = undefined
         }
     }
 
@@ -202,16 +205,16 @@ var breadcrumbs = (function() {
             xhr = new Ajax.Request(combinePath(e.getAttribute("href"),contextMenuUrl), {
                 onComplete:function (x) {
                     var a = x.responseText.evalJSON().items;
-                    function fillMenuItem(e) {
-                        e.text = makeMenuHtml(e.icon, e.displayName);
-                        if (e.subMenu!=null)
-                            e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
-                        if (e.requiresConfirmation) {
-                            e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
-                            delete e.url;
-                        } else if (e.post) {
-                            e.onclick = {fn: postRequest, obj: e.url};
-                            delete e.url;
+                    function fillMenuItem(item) {
+                        item.text = makeMenuHtml(item.icon, item.displayName);
+                        if (item.subMenu!=null)
+                            item.subMenu = {id:"submenu"+(iota++), itemdata:item.subMenu.items.each(fillMenuItem)};
+                        if (item.requiresConfirmation) {
+                            item.onclick = {fn: requireConfirmation, obj: {url: item.url, displayName: item.displayName, post: item.post}};
+                            delete item.url;
+                        } else if (item.post) {
+                            item.onclick = {fn: postRequest, obj: {url: item.url, invalidate: item.requestsMenuInvalidate, menu: e}};
+                            delete item.url;
                         }
                     }
                     a.each(fillMenuItem);

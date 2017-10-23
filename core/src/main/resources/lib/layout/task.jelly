@@ -72,6 +72,11 @@ THE SOFTWARE.
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
     </st:attribute>
+    <st:attribute name="requestsMenuInvalidate" type="boolean">
+      Request menu reload after a click.
+      Used for reloading breadcrumb menu then project state changed.
+      (since 2.87)
+    </st:attribute>
   </st:documentation>
 
   <!--
@@ -147,10 +152,10 @@ THE SOFTWARE.
         <div class="task">
           <j:choose>
             <j:when test="${iconMetadata != null}">
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true') : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconMetadata.getQualifiedUrl(context), title, post == 'true', requiresConfirmation == 'true', requestsMenuInvalidate == 'true') : null}
             </j:when>
             <j:otherwise>
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true') : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, icon, title, post == 'true', requiresConfirmation == 'true', requestsMenuInvalidate == 'true') : null}
             </j:otherwise>
           </j:choose>
 

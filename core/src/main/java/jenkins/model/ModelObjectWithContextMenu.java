@@ -128,6 +128,19 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since 2.87 */
+        public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation,
+                               boolean requestsMenuInvalidate) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url,icon,text);
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.requestsMenuInvalidate = requestsMenuInvalidate;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Adds a manually constructed {@link MenuItem}
          *
@@ -258,6 +271,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @since 1.512
          */
         @Exported public boolean requiresConfirmation;
+
+         /**
+         * True to require menu reload after a click.
+         * @since 2.87
+         */
+        @Exported public boolean requestsMenuInvalidate;
 
         /**
          * If this is a submenu, definition of subitems.

@@ -45,4 +45,22 @@ THE SOFTWARE.
             <l:task href="${url}/configure" icon="icon-gear2 icon-md" title="${%View Configuration}"/>
         </j:when>
     </j:choose>
+    <j:if test="${it.supportsMakeDisabled()}">
+        <j:choose>
+            <j:when test="${it.disabled}">
+                <l:task href="${url}/enable" post="true" icon="icon-next icon-md" title="${%Enable build}" onclick="return postAndReload(this)" permission="${it.CONFIGURE}" requestsMenuInvalidate="true"/>
+            </j:when>
+            <j:otherwise>
+                <l:task href="${url}/disable" post="true" icon="icon-folder-delete icon-md" title="${%Disable build}" onclick="return postAndReload(this)" permission="${it.CONFIGURE}" requestsMenuInvalidate="true"/>
+            </j:otherwise>
+        </j:choose>
+        <script>
+            function postAndReload(a) {
+                new Ajax.Request(a.href);
+                location.reload();
+                return false;
+            }
+        </script>
+    </j:if>
+
 </j:jelly>
