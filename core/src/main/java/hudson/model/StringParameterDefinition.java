@@ -24,11 +24,10 @@
 package hudson.model;
 
 import hudson.Extension;
+import hudson.Util;
 import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -79,13 +78,11 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      * @return original or trimmed defaultValue (depending on trim)
      * @since TODO
      */
-    @Restricted(NoExternalUse.class)
     public String getDefaultValue4Build() {
-        if (isTrim() && defaultValue != null) {
-            return defaultValue.trim();
-        } else {
-            return defaultValue;
+        if (isTrim()) {
+            return Util.fixNull(defaultValue).trim();
         }
+        return defaultValue;
     }
     
     public void setDefaultValue(String defaultValue) {
@@ -137,7 +134,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
 
     public ParameterValue createValue(String str) {
         StringParameterValue value = new StringParameterValue(getName(), str, getDescription());
-        if (isTrim()&& value!=null) {
+        if (isTrim() && value!=null) {
             value.doTrim();
         }
         return value;
