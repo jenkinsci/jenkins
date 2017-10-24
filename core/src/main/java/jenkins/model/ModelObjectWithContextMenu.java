@@ -102,33 +102,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu add(String url, String icon, String text) {
-            if (text != null && icon != null && url != null)
-                items.add(new MenuItem(url,icon,text));
-            return this;
+            return add(url, icon, text, false);
         }
 
         /** @since 1.504 */
         public ContextMenu add(String url, String icon, String text, boolean post) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url,icon,text);
-                item.post = post;
-                items.add(item);
-            }
-            return this;
+            return add(url, icon, text, post, false);
         }
 
         /** @since 1.512 */
         public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url,icon,text);
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
-                items.add(item);
-            }
-            return this;
+            return add(url, icon, text, post, requiresConfirmation, false);
         }
 
-        /** @since 2.87 */
+        /** @since TODO */
         public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation,
                                boolean requestsMenuInvalidate) {
             if (text != null && icon != null && url != null) {
@@ -274,7 +261,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
          /**
          * True to require menu reload after a click.
-         * @since 2.87
+         * @since TODO
          */
         @Exported public boolean requestsMenuInvalidate;
 

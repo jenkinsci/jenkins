@@ -75,7 +75,7 @@ THE SOFTWARE.
     <st:attribute name="requestsMenuInvalidate" type="boolean">
       Request menu reload after a click.
       Used for reloading breadcrumb menu then project state changed.
-      (since 2.87)
+      <!--(since TODO)-->
     </st:attribute>
   </st:documentation>
 

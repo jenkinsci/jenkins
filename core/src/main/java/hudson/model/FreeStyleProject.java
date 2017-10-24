@@ -56,7 +56,6 @@ public class FreeStyleProject extends Project<FreeStyleProject,FreeStyleBuild> i
         return FreeStyleBuild.class;
     }
 
-    @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
