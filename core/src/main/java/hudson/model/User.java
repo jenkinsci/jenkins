@@ -339,22 +339,22 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(id);
-            LOGGER.log(Level.FINE, "Impersonation of the user '{0}' was a success", new Object[]{ id });
+            LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", new Object[]{ id });
             return userDetails;
         } catch (UserMayOrMayNotExistException e) {
-            LOGGER.log(Level.FINE, "The user '{0}' may or may not exist in the SecurityRealm, so we provide minimum access", new Object[]{ id });
+            LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", new Object[]{ id });
             // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
             // if the user no longer exists in the backend, we need to refuse impersonating this user
             if(ALLOW_NON_EXISTENT_USER_TO_LOGIN){
-                LOGGER.log(Level.FINE, "The user '{0}' was not found in the SecurityRealm but we are required to let it passes, due to 'ALLOW_NON_EXISTENT_USER_TO_LOGIN'", new Object[]{ id });
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm but we are required to let it passes, due to ALLOW_NON_EXISTENT_USER_TO_LOGIN", new Object[]{ id });
             }else{
-                LOGGER.log(Level.FINE, "The user '{0}' was not found in the SecurityRealm", new Object[]{ id });
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", new Object[]{ id });
                 throw e;
             }
         } catch (DataAccessException e) {
             // seems like it's in the same boat as UserMayOrMayNotExistException
-            LOGGER.log(Level.FINE, "The user '{0}' retrieval just thrown a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{ id, e.getMessage() });
+            LOGGER.log(Level.FINE, "The user {0} retrieval just thrown a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{ id, e.getMessage() });
         }
         
         return new LegitimateButUnknownUserDetails(id);
