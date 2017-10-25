@@ -909,13 +909,20 @@ var createPluginSetupWizard = function(appendTarget) {
 	
 	// call to submit the firstuser
 	var saveFirstUser = function() {
+		var rootUrl = $('iframe[src]').contents().find('form.root-url');
+		securityConfig.saveRootUrl(rootUrl, function(){
+			securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+		});
 		$('button').prop({disabled:true});
-		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
 	};
 
 	var skipFirstUser = function() {
+		var rootUrl = $('iframe[src]').contents().find('form.root-url');
+		securityConfig.saveRootUrl(rootUrl, function(){
+			showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
+		});
+
 		$('button').prop({disabled:true});
-		showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
 	};
 	
 	// call to setup the proxy

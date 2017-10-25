@@ -21,6 +21,13 @@
           margin-top: 30px;
           font-weight: 500;
         }
+  
+        #create-admin-user h3 {
+          font-family: 'roboto', sans-serif;
+          font-size: 32px;
+          margin-top: 30px;
+          font-weight: 500;
+        }
 
         #create-admin-user tr td {
           padding-bottom: 2px;
@@ -43,6 +50,29 @@
           <local:_entryForm it="${app.securityRealm}" host="${app.securityRealm}" title="${%Create First Admin User}" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
           <script>
             $('username').focus();
+          </script>
+       </form>
+       <form action="${rootURL}/setupWizard/configureRootUrl" class="root-url no-json" method="post">
+          <h3>${%Configuration of the root URL}</h3>
+          <div style="margin: 2em;">
+            <table>
+            <tr>
+              <td><label for="root-url">${%Jenkins root URL}:</label></td>
+              <td><input type="text" name="rootUrl" id="root-url" class="root-url" value="" /></td>
+            </tr>
+            </table>
+          </div>
+         <script>
+            (function setInitialRootUrlFieldValue(){
+              var iframeUrl = window.location.href;
+              var iframeRelativeUrl = '/setupWizard/setupWizardFirstUser';
+              var rootUrl = iframeUrl.substr(0, iframeUrl.length - iframeRelativeUrl.length);
+              // to keep only the root url
+              var rootUrlField = $('root-url');
+              rootUrlField.value = rootUrl
+              // to adjust the width of the input,
+              rootUrlField.size = Math.min(50, rootUrl.length);
+            })();
           </script>
         </form>
      </div>

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -234,6 +235,19 @@ public class SetupWizard extends PageDecorator {
             }
         }
         return false;
+    }
+
+    @RequirePOST
+    public HttpResponse doConfigureRootUrl(StaplerRequest req, StaplerResponse rsp) {
+        Jenkins j = Jenkins.getInstance();
+        j.checkPermission(Jenkins.ADMINISTER);
+
+        String rootUrl = req.getParameter("rootUrl");
+        LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
+
+        JenkinsLocationConfiguration.get().setUrl(rootUrl);
+
+        return HttpResponses.okJSON();
     }
 
     /**
