@@ -1,0 +1,8 @@
+credentials matrix-auth
+credentials windows-slaves
+script-security antisamy-markup-formatter
+script-security bouncycastle-api
+script-security command-launcher
+script-security matrix-auth
+script-security matrix-project
+script-security windows-slaves
