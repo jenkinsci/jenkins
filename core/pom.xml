@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.252</stapler.version>
+    <stapler.version>1.253</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
@@ -572,10 +572,9 @@ THE SOFTWARE.
       <version>1.1</version>
     </dependency>
 
-    <dependency><!-- Jenkins doesn't depend on it but some plugin wants the latest version. Bundling 1.6 until we figure out a mechanism to let plugins load its own -->
+    <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.8</version>
     </dependency>
 
     <dependency>
