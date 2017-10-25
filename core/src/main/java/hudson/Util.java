@@ -568,6 +568,25 @@ public class Util {
     }
 
     /**
+     * A check if a file path is a descendant of a parent path
+     * @param forParent the parent the child should be a descendant of
+     * @param potentialChild the path to check
+     * @return true if so
+     * @throws IOException for invalid paths
+     * @since 2.80
+     * @see InvalidPathException
+     */
+    public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
+        try {
+            Path child = potentialChild.getAbsoluteFile().toPath().normalize();
+            Path parent = forParent.getAbsoluteFile().toPath().normalize();
+            return child.startsWith(parent);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {

@@ -158,14 +158,12 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
-import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
-import java.util.concurrent.TimeUnit;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.views.DefaultMyViewsTabBar;
@@ -409,7 +407,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * This value will be variable-expanded as per {@link #expandVariablesForDirectory}.
      * @see #getBuildDirFor(Job)
      */
-    private String buildsDir = "${ITEM_ROOTDIR}/builds";
+    private String buildsDir = DEFAULT_BUILDS_DIR;
 
     /**
      * Message displayed in the top page.
@@ -461,20 +459,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
-    private transient final Memoizer<Class,ExtensionList> extensionLists = new Memoizer<Class,ExtensionList>() {
-        public ExtensionList compute(Class key) {
-            return ExtensionList.create(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, ExtensionList> extensionLists = new ConcurrentHashMap<>();
 
     /**
      * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
-    private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
-        public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.createDescriptorList(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<>();
 
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
@@ -2439,12 +2431,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return expandVariablesForDirectory(buildsDir, job);
     }
 
+    /**
+     * If the configured buildsDir has it's default value or has been changed.
+     *
+     * @return true if default value.
+     */
+    @Restricted(NoExternalUse.class)
+    public boolean isDefaultBuildDir() {
+        return DEFAULT_BUILDS_DIR.equals(buildsDir);
+    }
+
     private File expandVariablesForDirectory(String base, Item item) {
         return new File(expandVariablesForDirectory(base, item.getFullName(), item.getRootDir().getPath()));
     }
 
     @Restricted(NoExternalUse.class)
-    static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
+    public static String expandVariablesForDirectory(String base, String itemFullName, String itemRootDir) {
         return Util.replaceMacro(base, ImmutableMap.of(
                 "JENKINS_HOME", Jenkins.getInstance().getRootDir().getPath(),
                 "ITEM_ROOTDIR", itemRootDir,
@@ -2626,7 +2628,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        return extensionLists.get(extensionType);
+        return extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
     }
 
     /**
@@ -2647,7 +2649,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
-        return descriptorLists.get(type);
+        return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 
     /**
@@ -3181,6 +3183,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public synchronized void save() throws IOException {
         if(BulkChange.contains(this))   return;
+
+        if (initLevel == InitMilestone.COMPLETED) {
+            LOGGER.log(FINE, "setting version {0} to {1}", new Object[] {version, VERSION});
+            version = VERSION;
+        } else {
+            LOGGER.log(FINE, "refusing to set version {0} to {1} during {2}", new Object[] {version, VERSION, initLevel});
+        }
+
         getConfigFile().write(this);
         SaveableListener.fireOnChange(this, getConfigFile());
     }
@@ -3658,9 +3668,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             boolean result = true;
             for (Descriptor<?> d : Functions.getSortedDescriptorsForGlobalConfigUnclassified())
                 result &= configureDescriptor(req,json,d);
-
-            version = VERSION;
-
+            
             save();
             updateComputerList();
             if(result)
@@ -5067,6 +5075,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Switch to enable people to use a shorter workspace name.
      */
     private static final String WORKSPACE_DIRNAME = Configuration.getStringConfigParameter("workspaceDirName", "workspace");
+
+    /**
+     * Default value of job's builds dir.
+     * @see #getRawBuildsDir()
+     */
+    private static final String DEFAULT_BUILDS_DIR = "${ITEM_ROOTDIR}/builds";
 
     /**
      * Automatically try to launch an agent when Jenkins is initialized or a new agent computer is created.

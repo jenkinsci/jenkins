@@ -100,7 +100,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     private transient Run<?, ?> run;
 
     public ParametersAction(List<ParameterValue> parameters) {
-        this.parameters = parameters;
+        this.parameters = new ArrayList<>(parameters);
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
         if (paramNames != null) {
