@@ -28,6 +28,8 @@ import hudson.Util;
 import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -76,8 +78,8 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
     /**
      * 
      * @return original or trimmed defaultValue (depending on trim)
-     * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public String getDefaultValue4Build() {
         if (isTrim()) {
             return Util.fixNull(defaultValue).trim();
