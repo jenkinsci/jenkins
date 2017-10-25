@@ -100,6 +100,7 @@ public class ClientAuthenticationCache implements Serializable {
             LOGGER.log(Level.FINER, "Loaded stored CLI authentication for {0}", username);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (AuthenticationException | DataAccessException e) {
+            //TODO there is not check to be consistent with User.ALLOW_NON_EXISTENT_USER_TO_LOGIN
             LOGGER.log(Level.FINE, "Stored CLI authentication did not correspond to a valid user: " + username, e);
             return Jenkins.ANONYMOUS;
         }

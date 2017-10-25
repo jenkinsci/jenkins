@@ -45,6 +45,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.User;
 import org.acegisecurity.userdetails.UserDetails;
 import org.apache.commons.discovery.ResourceClassIterator;
 import org.apache.commons.discovery.ResourceNameIterator;
@@ -350,8 +351,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Authentication authLoadedFromCache = new ClientAuthenticationCache(channel).get();
 
                 if(!Functions.isAnonymous(authLoadedFromCache)){
-                    String username = authLoadedFromCache.getName();
-                    UserDetails userDetails = Jenkins.getInstance().getSecurityRealm().loadUserByUsername(username);
+                    UserDetails userDetails = new CLIUserDetails(authLoadedFromCache);
                     SecurityListener.fireAuthenticated(userDetails);
                 }
 
@@ -651,6 +651,12 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
                 CmdLineParser.registerHandler(c,h);
             }
+        }
+    }
+
+    public static class CLIUserDetails extends User {
+        public CLIUserDetails(Authentication auth) {
+            super(auth.getName(), "", true, true, true, true, auth.getAuthorities());
         }
     }
 }

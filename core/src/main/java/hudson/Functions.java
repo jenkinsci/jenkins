@@ -1567,7 +1567,7 @@ public class Functions {
     }
 
     private static final Pattern LINE_END = Pattern.compile("\r?\n");
-    
+
     /**
      * Checks if the current user is anonymous.
      */
