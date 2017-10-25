@@ -230,9 +230,8 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
-      <!--  make sure these plugins are never used by us or by any plugins which end up depening on this version -->
-
       <dependency>
+        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depening on this version -->
         <!-- Jenkins test Harness tries to fudge this, causes issues with some IDEs -->
         <groupId>javax.servlet</groupId>
         <!-- the old artifactID for the servlet API -->
