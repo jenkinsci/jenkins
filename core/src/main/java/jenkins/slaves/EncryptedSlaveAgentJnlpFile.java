@@ -128,7 +128,7 @@ public class EncryptedSlaveAgentJnlpFile implements HttpResponse {
         public void setWriteListener(WriteListener writeListener) {
             // we are always ready to write so we just call once to say we are ready.
             try {
-                // should we do this on a separate thread to avoid deadlocaks?
+                // should we do this on a separate thread to avoid deadlocks?
                 writeListener.onWritePossible();
             } catch (IOException e) {
                 LOG.log(Level.WARNING, "Failed to notify WriteListener.onWritePossible", e);

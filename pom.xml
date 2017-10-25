@@ -234,8 +234,9 @@ THE SOFTWARE.
         <version>${access-modifier-annotation.version}</version>
       </dependency>
       <dependency>
-        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depening on this version -->
-        <!-- Jenkins test Harness tries to fudge this, causes issues with some IDEs -->
+        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
+        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty,
+              and ends up causing issues with some IDEs -->
         <groupId>javax.servlet</groupId>
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
