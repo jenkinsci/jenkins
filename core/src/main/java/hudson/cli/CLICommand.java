@@ -654,8 +654,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
     }
 
+    /**
+     * User details loaded from the CLI {@link ClientAuthenticationCache}
+     * The user is never anonymous since it must be authenticated to be stored in the cache
+     */
+    @Restricted(NoExternalUse.class)
     public static class CLIUserDetails extends User {
-        public CLIUserDetails(Authentication auth) {
+        private CLIUserDetails(Authentication auth) {
             super(auth.getName(), "", true, true, true, true, auth.getAuthorities());
         }
     }

@@ -327,12 +327,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
      * logged in.
      *
-     * @return userDetails for the user, in case he's not found, we provide a userDetails with minimum access
+     * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
      *
      * @throws UsernameNotFoundException
      *      If this user is not a valid user in the backend {@link SecurityRealm}.
      */
-    @Restricted(NoExternalUse.class)
     public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
         ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
                 Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails
