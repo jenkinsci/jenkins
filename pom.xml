@@ -237,6 +237,14 @@ THE SOFTWARE.
         <!-- the old artifactID for the servlet API -->
         <artifactId>servlet-api</artifactId>
         <version>[0]</version>
+        <!-- 
+              "[0]" is a range that must be exaclty 0
+              this is different to "0" which is hint to use version 0.
+              therefore unless anyone else uses ranges (they should not) this version will always win
+              We have deployed a version 0 to jenkins repo which has an empty jar
+              This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
+              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
+        -->
         <scope>provided</scope>
         <optional>true</optional>
       </dependency>
