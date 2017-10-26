@@ -13,7 +13,7 @@ exports.saveFirstUser = function($form, success, error) {
 			'/setupWizard/createAdminUser',
 		$form,
 		function(response) {
-			var crumbRequestField = response.data.crumbRequestField;
+        		var crumbRequestField = response.data.crumbRequestField;
 			if (crumbRequestField) {
 				require('window-handle').getWindow().crumb.init(crumbRequestField, response.data.crumb);
 			}
