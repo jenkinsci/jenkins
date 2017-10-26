@@ -912,7 +912,7 @@ var createPluginSetupWizard = function(appendTarget) {
 
 		var rootUrl = $('iframe[src]').contents().find('form.root-url');
 		securityConfig.saveRootUrl(rootUrl, callback);
-	}
+	};
 
 	// call to submit the firstuser
 	var saveFirstUser = function() {

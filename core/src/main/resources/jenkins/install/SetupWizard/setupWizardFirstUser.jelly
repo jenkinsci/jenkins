@@ -53,11 +53,11 @@
           </script>
        </form>
        <form action="${rootURL}/setupWizard/configureRootUrl" class="root-url no-json" method="post">
-          <h3>${%Configuration of the root URL}</h3>
+          <h3>${%Other Configuration}</h3>
           <div style="margin: 2em;">
             <table>
             <tr>
-              <td><label for="root-url">${%Jenkins root URL}:</label></td>
+              <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td><input type="text" name="rootUrl" id="root-url" class="root-url" value="" /></td>
             </tr>
             </table>
