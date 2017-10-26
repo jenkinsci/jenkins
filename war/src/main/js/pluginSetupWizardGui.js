@@ -906,23 +906,25 @@ var createPluginSetupWizard = function(appendTarget) {
 			showStatePanel();
 		}
 	};
-	
+
+	var beforeFirstUserSendRootUrl = function(callback){
+		$('button').prop({disabled:true});
+
+		var rootUrl = $('iframe[src]').contents().find('form.root-url');
+		securityConfig.saveRootUrl(rootUrl, callback);
+	}
+
 	// call to submit the firstuser
 	var saveFirstUser = function() {
-		var rootUrl = $('iframe[src]').contents().find('form.root-url');
-		securityConfig.saveRootUrl(rootUrl, function(){
+		beforeFirstUserSendRootUrl(function(){
 			securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
 		});
-		$('button').prop({disabled:true});
 	};
 
 	var skipFirstUser = function() {
-		var rootUrl = $('iframe[src]').contents().find('form.root-url');
-		securityConfig.saveRootUrl(rootUrl, function(){
+		beforeFirstUserSendRootUrl(function(){
 			showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
 		});
-
-		$('button').prop({disabled:true});
 	};
 	
 	// call to setup the proxy
