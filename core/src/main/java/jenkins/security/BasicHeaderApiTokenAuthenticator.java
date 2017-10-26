@@ -48,8 +48,6 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
                 throw new ServletException(x);
             }
         }
-        
-        
         return null;
     }
 

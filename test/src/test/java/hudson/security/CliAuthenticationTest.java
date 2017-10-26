@@ -46,11 +46,6 @@ public class CliAuthenticationTest {
         this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
-    @After
-    public void clearListener(){
-        spySecurityListener.clearPreviousCalls();
-    }
-
     @Test
     public void test() throws Exception {
         // dummy security realm that authenticates when username==password

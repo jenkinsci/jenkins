@@ -40,11 +40,6 @@ public class BasicHeaderProcessorTest {
         this.spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
-    @After
-    public void clearListener(){
-        spySecurityListener.clearPreviousCalls();
-    }
-
     /**
      * Tests various ways to send the Basic auth.
      */
