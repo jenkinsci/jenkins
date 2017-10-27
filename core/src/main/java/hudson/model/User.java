@@ -291,7 +291,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Exported(name="property",inline=true)
     public List<UserProperty> getAllProperties() {
-        return Collections.unmodifiableList(properties);
+        if (hasPermission(Jenkins.ADMINISTER)) {
+            return Collections.unmodifiableList(properties);
+        }
+
+        return Collections.emptyList();
     }
     
     /**
