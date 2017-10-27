@@ -2871,7 +2871,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      or it exists but it's no an instance of the given type.
      * @throws AccessDeniedException as per {@link ItemGroup#getItem}
      */
-    public @CheckForNull <T extends Item> T getItemByFullName(String fullName, Class<T> type) throws AccessDeniedException {
+    public @CheckForNull <T extends Item> T getItemByFullName(@Nonnull String fullName, Class<T> type) throws AccessDeniedException {
         StringTokenizer tokens = new StringTokenizer(fullName,"/");
         ItemGroup parent = this;
 
