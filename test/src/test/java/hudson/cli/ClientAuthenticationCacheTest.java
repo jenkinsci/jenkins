@@ -112,7 +112,7 @@ public class ClientAuthenticationCacheTest {
         assertEquals(r.getURL().toString(), cache.getPropertyKey());
         JenkinsLocationConfiguration.get().setUrl(null);
         String key = cache.getPropertyKey();
-        assertTrue(key, Secret.decrypt(key) != null);
+        assertEquals(r.jenkins.getLegacyInstanceId(), key);
     }
     
     @Test
