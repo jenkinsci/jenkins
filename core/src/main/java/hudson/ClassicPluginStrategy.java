@@ -76,6 +76,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jenkinsci.bytecode.Transformer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -407,6 +409,11 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public VersionNumber getRequiredVersion() {
             return new VersionNumber(requiredVersion);
         }
+
+        @Override
+        public String toString() {
+            return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
+        }
     }
 
     /** Record of which plugins which removed from core and when. */
@@ -416,21 +423,22 @@ public class ClassicPluginStrategy implements PluginStrategy {
     private static final Set<String> BREAK_CYCLES;
 
     static {
-        List<DetachedPlugin> detached = new ArrayList<>();
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
-            for (String line : org.apache.commons.io.IOUtils.readLines(is, StandardCharsets.UTF_8)) {
+            DETACHED_LIST = ImmutableList.copyOf(configLines(is).map(line -> {
                 String[] pieces = line.split(" ");
-                detached.add(new DetachedPlugin(pieces[0], pieces[1] + ".*", pieces[2]));
-            }
+                return new DetachedPlugin(pieces[0], pieces[1] + ".*", pieces[2]);
+            }).collect(Collectors.toList()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }
-        DETACHED_LIST = ImmutableList.copyOf(detached);
         try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugin-cycles.txt")) {
-            BREAK_CYCLES = ImmutableSet.copyOf(org.apache.commons.io.IOUtils.readLines(is, StandardCharsets.UTF_8));
+            BREAK_CYCLES = ImmutableSet.copyOf(configLines(is).collect(Collectors.toSet()));
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }
+    }
+    private static Stream<String> configLines(InputStream is) throws IOException {
+        return org.apache.commons.io.IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*"));
     }
 
     /**
