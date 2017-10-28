@@ -145,6 +145,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            event.reject(new ConnectionRefusalException("beforeChannel: Jnlp connection in abnormal state (null), " +
+                    "rejecting the connection."));
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
@@ -163,6 +168,11 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     @Override
     public void afterChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
+        if (state == null) {
+            event.reject(new ConnectionRefusalException("afterChannel: Jnlp connection in abnormal state (null), " +
+                    "rejecting the connection."));
+            return;
+        }
         final SlaveComputer computer = state.getNode();
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);

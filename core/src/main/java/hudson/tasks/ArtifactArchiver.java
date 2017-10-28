@@ -343,6 +343,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
         @Override
         public ArtifactArchiver newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            if (req == null)
+                throw new FormException("ArtifactArchiver new instance method is called for null Stapler request.",
+                        "req");
             return req.bindJSON(ArtifactArchiver.class,formData);
         }
 

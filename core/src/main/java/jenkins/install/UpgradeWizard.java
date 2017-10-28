@@ -1,6 +1,7 @@
 package jenkins.install;
 
 import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
 
 import java.io.File;
 import java.io.IOException;
@@ -143,8 +144,10 @@ public class UpgradeWizard extends InstallState {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         File f = SetupWizard.getUpdateStateFile();
         FileUtils.touch(f);
-        f.setLastModified(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
-        LOGGER.log(FINE, "Snoozed the upgrade wizard notice");
+        if (f.setLastModified(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1)))
+            LOGGER.log(FINE, "Snoozed the upgrade wizard notice");
+        else LOGGER.log(WARNING, "Could not snooze the upgrade wizard notice");
+
         return HttpResponses.redirectToContextRoot();
     }
     

@@ -148,6 +148,9 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
         @Override
         public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            if (req == null)
+                throw new FormException("ParameterDefinition new instance method is called for null Stapler request.",
+                        "req");
             return req.bindJSON(RunParameterDefinition.class, formData);
         }
         
