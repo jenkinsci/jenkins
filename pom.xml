@@ -883,7 +883,7 @@ THE SOFTWARE.
       </build>
     </profile>
     <profile>
-      <id>single-test</id>
+      <id>specific-test</id>
       <activation>
         <property>
           <name>test</name>
