@@ -263,7 +263,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * True to require menu reload after a click.
          * @since TODO
          */
-        @Exported public boolean requestsMenuInvalidate;
+        private boolean requestsMenuInvalidate;
 
         /**
          * If this is a submenu, definition of subitems.
@@ -323,6 +323,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         public MenuItem withDisplayName(ModelObject o) {
             return withDisplayName(o.getDisplayName());
+        }
+
+        @Exported
+        public boolean isRequestsMenuInvalidate() {
+            return requestsMenuInvalidate;
         }
     }
 
