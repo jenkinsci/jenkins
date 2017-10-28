@@ -494,11 +494,44 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Gets the {@link User} object by its id or full name.
+     *
+     * Creates a user on-demand.
+     *
+     * <p>
      * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @deprecated This method is deprecated, because it causes unexpected {@link User} creation
+     *             by API usage code.
+     *             Use {@link #getById} when you know you have an ID.
+     *             Otherwise use {@link #getOrCreate(String)} or {@link #get(String, boolean, Map)}.
      */
+    @Deprecated
     public static @Nonnull User get(String idOrFullName) {
-        return get(idOrFullName,true);
+        return getOrCreate(idOrFullName);
     }
+
+    /**
+     * Get the user y ID or Full Name.
+     *
+     * If the user does not exist, creates a new one on-demand.
+     *
+     * <p>
+     * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @param idOrFullName User ID or full name
+     * @return User instance
+     * @since TODO
+     */
+    public static @Nonnull User getOrCreate(@Nonnull String idOrFullName) {
+        return get(idOrFullName,true, Collections.emptyMap());
+    }
+
 
     /**
      * Gets the {@link User} object representing the currently logged-in user, or null

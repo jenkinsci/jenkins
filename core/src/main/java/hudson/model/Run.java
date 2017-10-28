@@ -1712,7 +1712,10 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
                     if (!auth.equals(ACL.SYSTEM)) {
                         String name = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
-                            name = ModelHyperlinkNote.encodeTo(User.get(name));
+                            final User usr = User.get(name, false, Collections.emptyMap());
+                            if (usr != null) { // Encode user hyperlink for existing users
+                                name = ModelHyperlinkNote.encodeTo(usr);
+                            }
                         }
                         listener.getLogger().println(Messages.Run_running_as_(name));
                     }
