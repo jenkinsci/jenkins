@@ -1939,6 +1939,7 @@ body.no-sticker #bottom-sticker {
 
 .manage-messages dl dt {
     margin-top: 10px;
+    font-weight: normal;
 }
 
 .manage-messages dl dd {

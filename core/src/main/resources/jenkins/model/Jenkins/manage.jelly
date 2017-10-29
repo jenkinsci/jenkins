@@ -31,6 +31,7 @@ THE SOFTWARE.
 
   <l:header>
      <link rel="stylesheet" href="${resURL}/bootstrap/css/bootstrap.min.css" type="text/css" />
+     <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
   </l:header>
 
   <j:if test="${taskTags==null}">
@@ -46,7 +47,6 @@ THE SOFTWARE.
     </j:forEach>
     <st:include page="downgrade.jelly" />
     </div>
-
 
     <j:forEach var="m" items="${it.managementLinks}">
       <l:hasPermission permission="${m.requiredPermission}">
