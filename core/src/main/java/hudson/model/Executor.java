@@ -31,7 +31,7 @@ import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
 import hudson.security.ACLContext;
+import hudson.security.AccessControlled;
 import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
@@ -71,6 +72,7 @@ import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
@@ -498,7 +500,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     public @CheckForNull Queue.Executable getCurrentExecutable() {
         lock.readLock().lock();
         try {
@@ -506,6 +507,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    /**
+     * Same as {@link #getCurrentExecutable} but checks {@link Item#READ}.
+     */
+    @Exported(name="currentExecutable")
+    @Restricted(DoNotUse.class) // for exporting only
+    public Queue.Executable getCurrentExecutableForApi() {
+        Executable candidate = getCurrentExecutable();
+        return candidate instanceof AccessControlled && ((AccessControlled) candidate).hasPermission(Item.READ) ? candidate : null;
     }
     
     /**
@@ -525,7 +536,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     @CheckForNull
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
@@ -724,7 +734,7 @@ public class Executor extends Thread implements ModelObject {
             return d * 10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit2.MILLISECONDS.toHours(elapsed) > 24;
+            return TimeUnit.MILLISECONDS.toHours(elapsed) > 24;
         }
     }
 

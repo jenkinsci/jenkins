@@ -29,7 +29,6 @@ import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
 import hudson.tasks.*;
-import org.acegisecurity.context.SecurityContextHolder;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
@@ -65,6 +64,8 @@ import java.io.File;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.model.labels.LabelAtom;
 import hudson.scm.SCMDescriptor;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.slaves.Cloud;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProvisioner;
@@ -535,8 +536,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doCancelQueue(null, null);
             fail("User should not have permission to build project");
         }
@@ -556,8 +556,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doDoDelete(null, null);
             fail("User should not have permission to build project");
         }
@@ -588,8 +587,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doDoWipeOutWorkspace();
             fail("User should not have permission to build project");
         }
@@ -623,8 +621,7 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm); 
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        try{
+        try (ACLContext as = ACL.as(user)) {
             project.doDisable();
             fail("User should not have permission to build project");
         }
@@ -654,9 +651,10 @@ public class ProjectTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith", "password");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate()); 
-        project.disable();
-        try{
+        try (ACLContext as = ACL.as(user)) {
+            project.disable();
+        }
+        try (ACLContext as = ACL.as(user)) {
             project.doEnable();
             fail("User should not have permission to build project");
         }

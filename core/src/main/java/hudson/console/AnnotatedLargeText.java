@@ -28,7 +28,7 @@ package hudson.console;
 import com.trilead.ssh2.crypto.Base64;
 import jenkins.model.Jenkins;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.security.CryptoConfidentialKey;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.Stapler;
@@ -123,7 +123,7 @@ public class AnnotatedLargeText<T> extends LargeText {
                         Jenkins.getInstance().pluginManager.uberClassLoader);
                 try {
                     long timestamp = ois.readLong();
-                    if (TimeUnit2.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
+                    if (TimeUnit.HOURS.toMillis(1) > abs(System.currentTimeMillis()-timestamp))
                         // don't deserialize something too old to prevent a replay attack
                         return (ConsoleAnnotator)ois.readObject();
                 } finally {

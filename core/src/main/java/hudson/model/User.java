@@ -291,7 +291,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @Exported(name="property",inline=true)
     public List<UserProperty> getAllProperties() {
-        return Collections.unmodifiableList(properties);
+        if (hasPermission(Jenkins.ADMINISTER)) {
+            return Collections.unmodifiableList(properties);
+        }
+
+        return Collections.emptyList();
     }
     
     /**
@@ -935,10 +939,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return r;
     }
 
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
-    }
-    
     public Object getDynamic(String token) {
         for(Action action: getTransientActions()){
             if(Objects.equals(action.getUrlName(), token))
@@ -1026,11 +1026,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          */
         @GuardedBy("User.byNameLock")
         static ConcurrentMap<String,User> byName() {
-            ExtensionList<AllUsers> instances = ExtensionList.lookup(AllUsers.class);
-            if (instances.size() != 1) {
-                throw new IllegalStateException();
-            }
-            return instances.get(0).byName;
+            return ExtensionList.lookupSingleton(AllUsers.class).byName;
         }
 
     }

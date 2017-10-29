@@ -28,12 +28,12 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.38</version>
+    <version>1.39</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.78-SNAPSHOT</version>
+  <version>2.87-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -101,6 +101,9 @@ THE SOFTWARE.
     <java.level>8</java.level>
 
     <changelog.url>https://jenkins.io/changelog</changelog.url>
+
+    <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+
   </properties>
 
   <!-- Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -161,13 +164,13 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-httpclient</groupId>
         <artifactId>commons-httpclient</artifactId>
-        <version>3.1</version>
+        <version>3.1-jenkins-1</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.11</version>
+        <version>3.13</version>
       </dependency>
 
       <dependency>
@@ -230,6 +233,31 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
+      <dependency>
+        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
+        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty,
+              and ends up causing issues with some IDEs -->
+        <groupId>javax.servlet</groupId>
+        <!-- the old artifactID for the servlet API -->
+        <artifactId>servlet-api</artifactId>
+        <version>[0]</version>
+        <!-- 
+              "[0]" is a range that must be exaclty 0
+              this is different to "0" which is hint to use version 0.
+              therefore unless anyone else uses ranges (they should not) this version will always win
+              We have deployed a version 0 to jenkins repo which has an empty jar
+              This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
+              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
+        -->
+        <scope>provided</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--  TODO also add commons-logging and log4j -->
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -245,6 +273,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
+      <groupId>javax.servlet</groupId>
+      <!-- the old artifactID for the servlet API -->
+      <artifactId>servlet-api</artifactId>
     </dependency>
   </dependencies>
 
@@ -324,8 +358,8 @@ THE SOFTWARE.
             <dependency>
               <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
               <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.4</version>
+              <artifactId>javax.servlet-api</artifactId>
+              <version>3.1.0</version>
             </dependency>
             <dependency>
               <groupId>org.codehaus.gmaven.runtime</groupId>
@@ -347,12 +381,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.8</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.0</version>
           <configuration>
             <fork>true</fork>
             <compilerReuseStrategy>alwaysNew</compilerReuseStrategy>
@@ -361,17 +393,14 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>2.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.3</version>
           <configuration>
             <quiet>true</quiet>
           </configuration>
@@ -379,17 +408,14 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.20</version> <!-- ignoring ${maven-surefire-plugin.version} -->
           <configuration>
             <argLine>-noverify</argLine> <!-- some versions of JDK7/8 causes VerifyError during mock tests: http://code.google.com/p/powermock/issues/detail?id=504 -->
             <systemPropertyVariables>
@@ -403,7 +429,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
@@ -423,7 +448,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <!--
@@ -458,7 +482,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>com.cloudbees</groupId>
           <artifactId>maven-license-plugin</artifactId>
-          <version>1.7</version>
           <executions>
             <execution>
               <goals>
@@ -475,7 +498,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jvnet.localizer</groupId>
           <artifactId>maven-localizer-plugin</artifactId>
-          <version>1.24</version>
           <configuration>
             <outputEncoding>UTF-8</outputEncoding>
           </configuration>
@@ -498,7 +520,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.5.2</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -525,7 +546,6 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
-          <version>2.7.1</version>
         </plugin>
         <plugin>
           <!-- this is really just a patched version of maven-jetty-plugin to workaround issue #932 -->
@@ -541,12 +561,10 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jenkins-ci.tools</groupId>
           <artifactId>maven-hpi-plugin</artifactId>
-          <version>2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.3</version>
           <dependencies>
             <dependency>
               <groupId>org.kohsuke</groupId>
@@ -558,7 +576,6 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.0.0-M1</version> <!-- TODO 3.0.0 when released -->
       </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
@@ -603,7 +620,6 @@ THE SOFTWARE.
         <plugin>
 	        <groupId>org.codehaus.mojo</groupId>
 	        <artifactId>animal-sniffer-maven-plugin</artifactId>
-	        <version>1.15</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -615,7 +631,6 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.1</version>
         <configuration>
           <!-- enable release profile during the release, create IPS package, and sign bits. -->
           <prepareVerifyArgs>-P release,sign</prepareVerifyArgs>
@@ -834,7 +849,7 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <goals>
-                  <goal>attached</goal>
+                  <goal>single</goal>
                 </goals>
                 <phase>package</phase>
                 <configuration>

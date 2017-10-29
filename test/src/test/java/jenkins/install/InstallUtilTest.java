@@ -23,7 +23,6 @@
  */
 package jenkins.install;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -81,6 +80,9 @@ public class InstallUtilTest {
      */
     @Test
     public void test_typeTransitions() {
+        InstallUtil.getLastExecVersionFile().delete();
+        InstallUtil.getConfigFile().delete();
+        
         // A new test instance sets up security first
         Assert.assertEquals(InstallState.INITIAL_SECURITY_SETUP, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
@@ -127,12 +129,10 @@ public class InstallUtilTest {
     }
 
     private void setStoredVersion(String version) throws Exception {
-        Field versionField = Jenkins.class.getDeclaredField("version");
-        versionField.setAccessible(true);
-        versionField.set(jenkinsRule.jenkins, version);
-        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
+        Jenkins.VERSION = version;
         // Force a save of the config.xml
         jenkinsRule.jenkins.save();
+        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
     }
 
     /**

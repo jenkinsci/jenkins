@@ -549,7 +549,7 @@ public class CLI implements AutoCloseable {
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     h.setLevel(level);
                 }
-                for (Logger logger : new Logger[] {LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
+                for (Logger logger : new Logger[] {LOGGER, FullDuplexHttpStream.LOGGER, PlainCLIProtocol.LOGGER, Logger.getLogger("org.apache.sshd")}) { // perhaps also Channel
                     logger.setLevel(level);
                 }
                 args = args.subList(2, args.size());
@@ -703,6 +703,22 @@ public class CLI implements AutoCloseable {
                         LOGGER.log(Level.WARNING, null, x);
                     }
                 }
+            }.start();
+            new Thread("ping") { // JENKINS-46659
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(10_000);
+                        while (!connection.complete) {
+                            LOGGER.fine("sending ping");
+                            connection.sendEncoding(Charset.defaultCharset().name()); // no-op at this point
+                            Thread.sleep(10_000);
+                        }
+                    } catch (IOException | InterruptedException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
+                }
+
             }.start();
             synchronized (connection) {
                 while (!connection.complete) {

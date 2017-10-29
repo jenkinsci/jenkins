@@ -26,15 +26,16 @@ package hudson.model;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
 import hudson.Util;
+import hudson.cli.CLI;
 import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
@@ -47,6 +48,7 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -57,6 +59,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
@@ -225,6 +229,15 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
+        if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
+            try {
+                launcher = (ComputerLauncher) Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
+                agentCommand = null;
+                save();
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
+            }
+        }
         // Default launcher does not use Work Directory
         return launcher == null ? new JNLPLauncher(false) : launcher;
     }
@@ -389,18 +402,56 @@ public abstract class Slave extends Node implements Serializable {
                 throw new MalformedURLException("The specified file path " + fileName + " is not allowed due to security reasons");
             }
             
-            if (name.equals("hudson-cli.jar"))  {
-                name="jenkins-cli.jar";
-            } else if (name.equals("slave.jar") || name.equals("remoting.jar")) {
-                name = "lib/" + Which.jarFile(Channel.class).getName();
+            if (name.equals("hudson-cli.jar") || name.equals("jenkins-cli.jar"))  {
+                File cliJar = Which.jarFile(CLI.class);
+                if (cliJar.isFile()) {
+                    name = "jenkins-cli.jar";
+                } else {
+                    URL res = findExecutableJar(cliJar, CLI.class);
+                    if (res != null) {
+                        return res;
+                    }
+                }
+            } else if (name.equals("agent.jar") || name.equals("slave.jar") || name.equals("remoting.jar")) {
+                File remotingJar = Which.jarFile(hudson.remoting.Launcher.class);
+                if (remotingJar.isFile()) {
+                    name = "lib/" + remotingJar.getName();
+                } else {
+                    URL res = findExecutableJar(remotingJar, hudson.remoting.Launcher.class);
+                    if (res != null) {
+                        return res;
+                    }
+                }
             }
             
             URL res = Jenkins.getInstance().servletContext.getResource("/WEB-INF/" + name);
             if(res==null) {
-                // during the development this path doesn't have the files.
-                res = new URL(new File(".").getAbsoluteFile().toURI().toURL(),"target/jenkins/WEB-INF/"+name);
+                throw new FileNotFoundException(name); // giving up
+            } else {
+                LOGGER.log(Level.FINE, "found {0}", res);
             }
             return res;
+        }
+
+        /** Useful for {@code JenkinsRule.createSlave}, {@code hudson-dev:run}, etc. */
+        private @CheckForNull URL findExecutableJar(File notActuallyJAR, Class<?> mainClass) throws IOException {
+            if (notActuallyJAR.getName().equals("classes")) {
+                File[] siblings = notActuallyJAR.getParentFile().listFiles();
+                if (siblings != null) {
+                    for (File actualJar : siblings) {
+                        if (actualJar.getName().endsWith(".jar")) {
+                            try (JarFile jf = new JarFile(actualJar, false)) {
+                                Manifest mf = jf.getManifest();
+                                if (mf != null && mainClass.getName().equals(mf.getMainAttributes().getValue("Main-Class"))) {
+                                    LOGGER.log(Level.FINE, "found {0}", actualJar);
+                                    return actualJar.toURI().toURL();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public byte[] readFully() throws IOException {
@@ -502,12 +553,6 @@ public abstract class Slave extends Node implements Serializable {
      * Invoked by XStream when this object is read into memory.
      */
     protected Object readResolve() {
-        // convert the old format to the new one
-        if (launcher == null) {
-            launcher = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPLauncher(false)
-                    : new CommandLauncher(agentCommand);
-        }
         if(nodeProperties==null)
             nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
         return this;
@@ -674,5 +719,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = ImmutableSet.of("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

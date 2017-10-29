@@ -23,6 +23,8 @@
  */
 package hudson;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -58,25 +60,24 @@ import org.apache.tools.zip.ZipOutputStream;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jenkinsci.bytecode.Transformer;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -268,7 +269,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (detached.shortName.equals(pluginName)) {
                 continue;
             }
-            if (BREAK_CYCLES.contains(pluginName + '/' + detached.shortName)) {
+            if (BREAK_CYCLES.contains(pluginName + ' ' + detached.shortName)) {
                 LOGGER.log(Level.FINE, "skipping implicit dependency {0} → {1}", new Object[] {pluginName, detached.shortName});
                 continue;
             }
@@ -408,35 +409,37 @@ public class ClassicPluginStrategy implements PluginStrategy {
         public VersionNumber getRequiredVersion() {
             return new VersionNumber(requiredVersion);
         }
+
+        @Override
+        public String toString() {
+            return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
+        }
     }
 
-    private static final List<DetachedPlugin> DETACHED_LIST = Collections.unmodifiableList(Arrays.asList(
-            new DetachedPlugin("maven-plugin", "1.296", "1.296"),
-            new DetachedPlugin("subversion", "1.310", "1.0"),
-            new DetachedPlugin("cvs", "1.340", "0.1"),
-            new DetachedPlugin("ant", "1.430.*", "1.0"),
-            new DetachedPlugin("javadoc", "1.430.*", "1.0"),
-            new DetachedPlugin("external-monitor-job", "1.467.*", "1.0"),
-            new DetachedPlugin("ldap", "1.467.*", "1.0"),
-            new DetachedPlugin("pam-auth", "1.467.*", "1.0"),
-            new DetachedPlugin("mailer", "1.493.*", "1.2"),
-            new DetachedPlugin("matrix-auth", "1.535.*", "1.0.2"),
-            new DetachedPlugin("windows-slaves", "1.547.*", "1.0"),
-            new DetachedPlugin("antisamy-markup-formatter", "1.553.*", "1.0"),
-            new DetachedPlugin("matrix-project", "1.561.*", "1.0"),
-            new DetachedPlugin("junit", "1.577.*", "1.0"),
-            new DetachedPlugin("bouncycastle-api", "2.16.*", "2.16.0")
-    ));
+    /** Record of which plugins which removed from core and when. */
+    private static final List<DetachedPlugin> DETACHED_LIST;
 
     /** Implicit dependencies that are known to be unnecessary and which must be cut out to prevent a dependency cycle among bundled plugins. */
-    private static final Set<String> BREAK_CYCLES = new HashSet<String>(Arrays.asList(
-            "script-security/matrix-auth",
-            "script-security/windows-slaves",
-            "script-security/antisamy-markup-formatter",
-            "script-security/matrix-project",
-            "credentials/matrix-auth",
-            "credentials/windows-slaves"
-    ));
+    private static final Set<String> BREAK_CYCLES;
+
+    static {
+        try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugins.txt")) {
+            DETACHED_LIST = ImmutableList.copyOf(configLines(is).map(line -> {
+                String[] pieces = line.split(" ");
+                return new DetachedPlugin(pieces[0], pieces[1] + ".*", pieces[2]);
+            }).collect(Collectors.toList()));
+        } catch (IOException x) {
+            throw new ExceptionInInitializerError(x);
+        }
+        try (InputStream is = ClassicPluginStrategy.class.getResourceAsStream("/jenkins/split-plugin-cycles.txt")) {
+            BREAK_CYCLES = ImmutableSet.copyOf(configLines(is).collect(Collectors.toSet()));
+        } catch (IOException x) {
+            throw new ExceptionInInitializerError(x);
+        }
+    }
+    private static Stream<String> configLines(InputStream is) throws IOException {
+        return org.apache.commons.io.IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*"));
+    }
 
     /**
      * Computes the classloader that takes the class masking into account.
