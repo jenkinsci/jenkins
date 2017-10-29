@@ -341,16 +341,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
+     * @param req the request to get the form data from (is also used for redirection)
+     * @param rsp the response to use for forwarding if the creation fails
+     * @param validateCaptcha whether to attempt to validate a captcha in the request
+     * @param formView the view to redirect to if creation fails
+     *
      * @return
      *      null if failed. The browser is already redirected to retry by the time this method returns.
      *      a valid {@link User} object if the user creation was successful.
      */
-    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
-        SignupInfo si = validateAccountCreationForm(req, selfRegistration);
+    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
+        SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
 
-        if(si.errorMessage!=null) {
+        if (si.errorMessage != null) {
             // failed. ask the user to try again.
-            req.getView(this, formView).forward(req,rsp);
+            req.getView(this, formView).forward(req, rsp);
             return null;
         }
 
@@ -358,28 +363,32 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * @param req the request to process
-     * @param selfRegistration whether this account creation was issued by the user themselves
-     * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with
-     * {@link SignupInfo#errorMessage} set to a non-null value if any of the supported fields are invalid
+     * @param req              the request to process
+     * @param validateCaptcha  whether to attempt to validate a captcha in the request
+     *
+     * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
+     * SignupInfo#errorMessage} set to a non-null value if any of the supported fields are invalid
      */
-    private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean selfRegistration) {
+    private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo(req);
 
-        if(selfRegistration && !validateCaptcha(si.captcha))
+        if (validateCaptcha && !validateCaptcha(si.captcha)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
+        }
 
-        if(si.password1 != null && !si.password1.equals(si.password2))
+        if (si.password1 != null && !si.password1.equals(si.password2)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
+        }
 
-        if(!(si.password1 != null && si.password1.length() != 0))
+        if (!(si.password1 != null && si.password1.length() != 0)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
+        }
 
-        if(si.username==null || si.username.length()==0)
+        if (si.username == null || si.username.length() == 0) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
-        else {
+        } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
             User user = User.getById(si.username, false);
             if (null != user)
@@ -388,20 +397,22 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                     si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
         }
 
-        if(si.fullname==null || si.fullname.length()==0)
+        if (si.fullname == null || si.fullname.length() == 0) {
             si.fullname = si.username;
+        }
 
-        if(isMailerPluginPresent() && (si.email==null || !si.email.contains("@")))
+        if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
+        }
 
-        if (! User.isIdOrFullnameAllowed(si.username)) {
+        if (!User.isIdOrFullnameAllowed(si.username)) {
             si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
         }
 
-        if (! User.isIdOrFullnameAllowed(si.fullname)) {
+        if (!User.isIdOrFullnameAllowed(si.fullname)) {
             si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
         }
-        req.setAttribute("data",si); // for error messages in the view
+        req.setAttribute("data", si); // for error messages in the view
         return si;
     }
 
@@ -414,18 +425,18 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * @throws IllegalArgumentException if an invalid signup info is passed
      */
     private User createAccount(SignupInfo si) throws IOException {
-        if(si.errorMessage != null) {
+        if (si.errorMessage != null) {
             throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + si.errorMessage);
         }
         // register the user
-        User user = createAccount(si.username,si.password1);
+        User user = createAccount(si.username, si.password1);
         user.setFullName(si.fullname);
-        if(isMailerPluginPresent()) {
+        if (isMailerPluginPresent()) {
             try {
                 // legacy hack. mail support has moved out to a separate plugin
                 Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
                 Constructor<?> c = up.getDeclaredConstructor(String.class);
-                user.addProperty((UserProperty)c.newInstance(si.email));
+                user.addProperty((UserProperty) c.newInstance(si.email));
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
