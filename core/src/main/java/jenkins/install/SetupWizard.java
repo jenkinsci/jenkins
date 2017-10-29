@@ -39,6 +39,7 @@ import hudson.model.PageDecorator;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.User;
+import hudson.security.AccountCreationFailedException;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
@@ -240,7 +241,7 @@ public class SetupWizard extends PageDecorator {
      * Called during the initial setup to create an admin user
      */
     @RequirePOST
-    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
         
@@ -253,34 +254,33 @@ public class SetupWizard extends PageDecorator {
                 admin.delete(); // assume the new user may well be 'admin'
             }
             
-            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", null);
-            if (u != null) {
-                if(admin != null) {
-                    admin = null;
-                }
-                
-                // Success! Delete the temporary password file:
-                try {
-                    getInitialAdminPasswordFile().delete();
-                } catch (InterruptedException e) {
-                    throw new IOException(e);
-                }
-                
-                InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
-                
-                // ... and then login
-                Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
-                a = securityRealm.getSecurityComponents().manager.authenticate(a);
-                SecurityContextHolder.getContext().setAuthentication(a);
-                CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
-                JSONObject data = new JSONObject();
-                if (crumbIssuer != null) {
-                    data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
-                }
-                return HttpResponses.okJSON(data);
-            } else {
-                return HttpResponses.okJSON();
+            User u = securityRealm.createAccountFromSetupWizard(req);
+            if(admin != null) {
+                admin = null;
             }
+
+            // Success! Delete the temporary password file:
+            try {
+                getInitialAdminPasswordFile().delete();
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+
+            InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
+
+            // ... and then login
+            Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
+            a = securityRealm.getSecurityComponents().manager.authenticate(a);
+            SecurityContextHolder.getContext().setAuthentication(a);
+            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            JSONObject data = new JSONObject();
+            if (crumbIssuer != null) {
+                data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+            }
+            return HttpResponses.okJSON(data);
+        } catch (AccountCreationFailedException e) {
+            rsp.setStatus(400);
+            return HttpResponses.forwardToView(securityRealm, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly");
         } finally {
             if(admin != null) {
                 admin.save(); // recreate this initial user if something failed
