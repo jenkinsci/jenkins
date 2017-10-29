@@ -1868,19 +1868,6 @@ select.select-ajax-pending {
     display: none;
 }
 
-.alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-}
-
-.alert-warning {
-    color: #8a6d3b;
-    background-color: #fcf8e3;
-    border-color: #faebcc;
-}
-
 body.no-decoration #main-panel {
     margin: 0 auto !important;
 }
@@ -2035,3 +2022,26 @@ body.no-sticker #bottom-sticker {
 }
 
 /* -------------------------------------- */
+
+
+/* -------------- Deprecated ------------ */
+
+
+/* @since 2.88, use https://getbootstrap.com/docs/3.3/components/#alerts */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+/* @since 2.88, use https://getbootstrap.com/docs/3.3/components/#alerts */
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+/* -------------------------------------- */
+
+
