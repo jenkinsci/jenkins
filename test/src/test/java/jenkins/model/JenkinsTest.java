@@ -64,6 +64,7 @@ import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 
+import jenkins.AgentProtocol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -77,17 +78,19 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import org.junit.Assume;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
+import javax.annotation.CheckForNull;
+
 /**
- * @author kingfai
- *
+ * Tests of {@link Jenkins} class instance logic.
+ * @see Jenkins
+ * @see JenkinsRule
  */
 public class JenkinsTest {
 
@@ -495,16 +498,13 @@ public class JenkinsTest {
     @Issue("JENKINS-39465")
     public void agentProtocols_singleEnable_roundtrip() throws Exception {
         final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
-                defaultProtocols, not(hasItem("JNLP3-connect")));
         
         final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add("JNLP3-connect");
+        newProtocols.add(MockOptInProtocol1.NAME);
         j.jenkins.setAgentProtocols(newProtocols);
         j.jenkins.save();
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertThat("JNLP3-connect must be enabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
         
         j.jenkins.reload();
         
@@ -512,95 +512,154 @@ public class JenkinsTest {
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
         assertThat("We should have additional enabled protocol", 
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
-        assertThat("JNLP3-connect must be enabled after the roundtrip", 
-                reloadedProtocols, hasItem("JNLP3-connect"));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
     }
     
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_multipleDisable_roundtrip() throws Exception {
         final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        Assume.assumeThat("At least one protocol is enabled", defaultProtocols.size(), greaterThan(0));
-        
-        final String protocolToDisable = defaultProtocols.iterator().next();
-        
+        assertProtocolEnabled(MockOptOutProtocol1.NAME, "after startup");
+
         final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.remove(protocolToDisable);
+        newProtocols.remove(MockOptOutProtocol1.NAME);
         j.jenkins.setAgentProtocols(newProtocols);
         j.jenkins.save();
-        assertThat(protocolToDisable + " must be disabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "before the roundtrip");
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
         assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled one protocol", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
-        assertThat(protocolToDisable + " must be disabled after the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable)));
+
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "after the roundtrip");
     }
     
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_multipleEnable_roundtrip() throws Exception {
         final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        Assume.assumeThat("We assume that JNLP3-connect is disabled", 
-                defaultProtocols, not(hasItem("JNLP3-connect")));
-        Assume.assumeThat("We assume that JNLP4-connect is disabled", 
-                defaultProtocols, not(hasItem("JNLP4-connect")));
-        
         final Set<String> newProtocols = new HashSet<>(defaultProtocols);
-        newProtocols.add("JNLP3-connect");
-        newProtocols.add("JNLP4-connect");
+        newProtocols.add(MockOptInProtocol1.NAME);
+        newProtocols.add(MockOptInProtocol2.NAME);
         j.jenkins.setAgentProtocols(newProtocols);
         j.jenkins.save();
+
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
-        assertThat("JNLP3-connect must be enabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), hasItem("JNLP3-connect"));
-        assertThat("JNLP4-connect must be enabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), hasItem("JNLP4-connect"));
-        
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "before the roundtrip");
+
         j.jenkins.reload();
         
         final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
-        assertThat("We should have two additional enabled protocols", 
+        assertThat("There should be two additional enabled protocols",
                 reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
-        assertThat("JNLP3-connect must be enabled after the roundtrip", 
-                reloadedProtocols, hasItem("JNLP3-connect"));
-        assertThat("JNLP3-connect must be enabled after the roundtrip", 
-                reloadedProtocols, hasItem("JNLP4-connect"));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "after the roundtrip");
     }
     
     @Test
     @Issue("JENKINS-39465")
     public void agentProtocols_singleDisable_roundtrip() throws Exception {
         final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
-        Assume.assumeThat("At least two protocol should be enabled", defaultProtocols.size(), greaterThan(1));
-        
-        Iterator<String> iterator = defaultProtocols.iterator();
-        final String protocolToDisable1 = iterator.next();
-        final String protocolToDisable2 = iterator.next();
+        final String protocolToDisable1 = MockOptOutProtocol1.NAME;
+        final String protocolToDisable2 = MockOptOutProtocol2.NAME;
         
         final Set<String> newProtocols = new HashSet<>(defaultProtocols);
         newProtocols.remove(protocolToDisable1);
         newProtocols.remove(protocolToDisable2);
         j.jenkins.setAgentProtocols(newProtocols);
         j.jenkins.save();
-        assertThat(protocolToDisable1 + " must be disabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
-        assertThat(protocolToDisable2 + " must be disabled before the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+        assertProtocolDisabled(protocolToDisable1, "before the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "before the roundtrip");
         final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
         j.jenkins.reload();
         
         assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
         assertThat("We should have disabled two protocols", 
                 j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
-        assertThat(protocolToDisable1 + " must be disabled after the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable1)));
-        assertThat(protocolToDisable2 + " must be disabled after the roundtrip", 
-                j.jenkins.getAgentProtocols(), not(hasItem(protocolToDisable2)));
+        assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
+    }
+
+    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
+    }
+
+    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), hasItem(protocolName));
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol1 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol2 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptInProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return true;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol1 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol2 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptOutProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return false;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
     }
 
     @Issue("JENKINS-42577")
