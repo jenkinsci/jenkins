@@ -45,29 +45,31 @@ public abstract class SecurityListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**
-     * Fired when a user was successfully authenticated by password.
-     * This might be via the web UI, or via REST (not with an API token) or CLI (not with an SSH key).
-     * Only {@link AbstractPasswordBasedSecurityRealm}s are considered.
-     * @param details details of the newly authenticated user, such as name and groups
+     * Fired when a user was successfully authenticated using credentials. It could password or any other credentials.
+     * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
+     * or any other way plugins can propose.
+     * @param details details of the newly authenticated user, such as name and groups.
      */
     protected void authenticated(@Nonnull UserDetails details){}
 
     /**
-     * Fired when a user tried to authenticate by password but failed.
+     * Fired when a user tried to authenticate but failed.
+     * In case the authentication method uses multiple layers to validate the credentials,
+     * we do fire this event only when even the last layer failed to authenticate.
      * @param username the user
      * @see #authenticated
      */
     protected void failedToAuthenticate(@Nonnull String username){}
 
     /**
-     * Fired when a user has logged in via the web UI.
+     * Fired when a user has logged in. Compared to authenticated, there is a notion of storage / cache.
      * Would be called after {@link #authenticated}.
      * @param username the user
      */
     protected void loggedIn(@Nonnull String username){}
 
     /**
-     * Fired when a user has failed to log in via the web UI.
+     * Fired when a user has failed to log in.
      * Would be called after {@link #failedToAuthenticate}.
      * @param username the user
      */
