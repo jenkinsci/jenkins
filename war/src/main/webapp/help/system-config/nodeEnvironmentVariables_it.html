@@ -1,0 +1,29 @@
+<div>
+  Le variabili d'ambiente definite qui saranno rese disponibili a ogni
+  compilazione eseguita da quest'agente e prevarranno sulle variabili d'ambiente
+  con lo stesso <i>Nome</i> di quelle definite nella pagina <i>Configura
+  sistema</i>.
+  <p>
+  Utilizzando la sintassi <code>$NOME</code> o <code>${NOME}</code>
+  (<code>%NOME%</code> su Windows), queste variabili possono essere utilizzate
+  nelle configurazioni dei processi o da processi avviati da una compilazione.
+  <p>
+  Jenkins supporta anche una sintassi speciale, <code>BASE+EXTRA</code>, che
+  consente di aggiungere qui coppie chiave-valore multiple che saranno
+  anteposte a una variabile d'ambiente esistente.
+  <p>
+  Ad esempio, se si ha una macchina con <code>PATH=/usr/bin</code>, si possono
+  aggiungere percorsi al path standard definendo qui una variabile d'ambiente
+  cone nome <code>PATH+LOCAL_BIN</code> e valore <code>/usr/local/bin</code>.
+  <br>
+  Ciò risulterebbe nell'esportazione di <code>PATH=/usr/local/bin:/usr/bin</code>
+  durante le compilazioni eseguite su questa macchina. Sarà anche esportata
+  <code>PATH+LOCAL_BIN=/usr/local/bin</code>.
+  <br>
+  Voci multiple sono anteposte alla variabile "base" in base all'ordine alfabetico
+  della parte "extra" del nome.
+  <p>
+  Se il <i>Valore</i> è vuoto o consiste solo di spazi bianchi, non sarà aggiunto
+  all'ambiente, né prevarrà o rimuoverà le variabili d'ambiente con lo stesso
+  nome eventualmente esistenti (ad esempio una variabile definita dal sistema).
+</div>

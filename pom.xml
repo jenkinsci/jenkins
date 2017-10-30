@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.84-SNAPSHOT</version>
+  <version>2.88-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -164,13 +164,13 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-httpclient</groupId>
         <artifactId>commons-httpclient</artifactId>
-        <version>3.1</version>
+        <version>3.1-jenkins-1</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.12</version>
+        <version>3.13</version>
       </dependency>
 
       <dependency>
@@ -233,6 +233,30 @@ THE SOFTWARE.
         <artifactId>access-modifier-annotation</artifactId>
         <version>${access-modifier-annotation.version}</version>
       </dependency>
+      <dependency>
+        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
+        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
+        <groupId>javax.servlet</groupId>
+        <!-- the old artifactID for the servlet API -->
+        <artifactId>servlet-api</artifactId>
+        <version>[0]</version>
+        <!-- 
+              "[0]" is a range that must be exaclty 0
+              this is different to "0" which is hint to use version 0.
+              therefore unless anyone else uses ranges (they should not) this version will always win
+              We have deployed a version 0 to jenkins repo which has an empty jar
+              This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
+              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
+        -->
+        <scope>provided</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--  TODO also add commons-logging and log4j -->
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.9</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -248,6 +272,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>test-annotations</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
+      <groupId>javax.servlet</groupId>
+      <!-- the old artifactID for the servlet API -->
+      <artifactId>servlet-api</artifactId>
     </dependency>
   </dependencies>
 
@@ -327,8 +357,8 @@ THE SOFTWARE.
             <dependency>
               <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
               <groupId>javax.servlet</groupId>
-              <artifactId>servlet-api</artifactId>
-              <version>2.4</version>
+              <artifactId>javax.servlet-api</artifactId>
+              <version>3.1.0</version>
             </dependency>
             <dependency>
               <groupId>org.codehaus.gmaven.runtime</groupId>

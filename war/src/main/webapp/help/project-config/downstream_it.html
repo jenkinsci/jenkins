@@ -1,0 +1,25 @@
+<div>
+    Attiva le compilazioni degli altri progetti una volta completata con successo
+    una compilazione. È possibile specificare progetti multipli utilizzando
+    virgole, ad esempio "abc, def".
+
+    <p>
+        A parte il caso d'uso ovvio in cui si desidera compilare altri progetti dipendenti da quello
+        corrente, ciò può essere utile anche per dividere un processo di compilazione lungo in più
+        passi (ad esempio, il passo di compilazione e quello di test).
+    </p>
+
+    <p>
+        I progetti nidificati devono essere specificati utilizzando un percorso.
+        Questo può essere un percorso assoluto che ha origine nella radice di
+        Jenkins, come "/grp/abc" dove "grp" è situato nella root di Jenkins.
+        Può anche essere un percorso relativo rispetto al percorso del progetto
+        corrente, come "grp/abc" dove "grp" è situato al medesimo livello del
+        progetto corrente.
+        Alcuni esempi di plugin che forniscono tale implementazione includono,
+        ma non sono limitati a, il
+        <a href="https://plugins.jenkins.io/cloudbees-folder">plugin CloudBees Folder</a>
+        e il
+        <a href="https://plugins.jenkins.io/workflow-multibranch">plugin Pipeline Multibranch</a>
+    </p>
+</div>

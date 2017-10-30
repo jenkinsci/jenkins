@@ -91,14 +91,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     @Extension
     public static class SecurityListenerImpl extends SecurityListener {
         @Override
-        protected void authenticated(@Nonnull UserDetails details) {
-        }
-
-        @Override
-        protected void failedToAuthenticate(@Nonnull String username) {
-        }
-
-        @Override
         protected void loggedIn(@Nonnull String username) {
             try {
                 // user should have been created but may not have been saved for some realms
@@ -142,10 +134,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 //            } catch (IOException e) {
 //                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
 //            }
-        }
-
-        @Override
-        protected void loggedOut(@Nonnull String username) {
         }
     }
 
