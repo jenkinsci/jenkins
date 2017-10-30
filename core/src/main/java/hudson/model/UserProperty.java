@@ -32,6 +32,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Extensible property of {@link User}.
  *
@@ -63,8 +65,8 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
     }
 
     // descriptor must be of the UserPropertyDescriptor type
-    public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+    public @CheckForNull UserPropertyDescriptor getDescriptor() {
+        return (UserPropertyDescriptor) Jenkins.getInstance().getDescriptor(getClass());
     }
 
     /**
@@ -75,6 +77,10 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
     }
 
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return form==null ? null : getDescriptor().newInstance(req, form);
+        if (form==null) {
+            return null;
+        }
+        UserPropertyDescriptor descriptor = getDescriptor();
+        return descriptor==null ? this : descriptor.newInstance(req, form);
     }
 }

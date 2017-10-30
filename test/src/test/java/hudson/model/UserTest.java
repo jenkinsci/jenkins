@@ -28,6 +28,8 @@ import com.gargoylesoftware.htmlunit.WebAssert;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import net.sf.json.JSONObject;
+
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AbstractPasswordBasedSecurityRealm;
@@ -693,6 +695,22 @@ public class UserTest {
         assertSame("'user1' should resolve to u1", u1, u);
         u = User.getById("user2", false);
         assertSame("'user2' should resolve to u2", u2, u);
+    }
+    
+    @Test
+    @Issue("JENKINS-45977")
+    public void testAllowGetDescriptorReturnsNull() throws Exception {
+        UserProperty noDescriptor = new UserProperty() {
+            {}
+        };
+        assertNull(noDescriptor.getDescriptor());
+        UserProperty reconfigured1 = noDescriptor.reconfigure(null, new JSONObject());
+        assertEquals(noDescriptor, reconfigured1);
+        UserProperty hasDescriptor = new SomeUserProperty();
+        assertNotNull(hasDescriptor.getDescriptor());
+        UserProperty property = hasDescriptor.reconfigure(null, new JSONObject());
+        assertNotNull(property);
+        assertNotEquals(hasDescriptor, property);
     }
 
     @Test
