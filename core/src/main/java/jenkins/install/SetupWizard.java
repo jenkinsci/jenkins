@@ -29,6 +29,7 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -238,11 +239,10 @@ public class SetupWizard extends PageDecorator {
     }
 
     @RequirePOST
-    public HttpResponse doConfigureRootUrl(StaplerRequest req, StaplerResponse rsp) {
+    public HttpResponse doConfigureRootUrl(@QueryParameter String rootUrl) {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
 
-        String rootUrl = req.getParameter("rootUrl");
         LOGGER.log(Level.FINE, "Root URL set during SetupWizard to {0}", new Object[]{ rootUrl });
 
         JenkinsLocationConfiguration.get().setUrl(rootUrl);

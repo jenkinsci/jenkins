@@ -52,7 +52,7 @@
             $('username').focus();
           </script>
        </form>
-       <form action="${rootURL}/setupWizard/configureRootUrl" class="root-url no-json" method="post">
+       <form class="root-url no-json">
           <h3>${%Other Configuration}</h3>
           <div style="margin: 2em;">
             <table>
