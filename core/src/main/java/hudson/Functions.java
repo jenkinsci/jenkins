@@ -1577,6 +1577,7 @@ public class Functions {
 
     /**
      * Checks if the given authentication is anonymous.
+     * @see Jenkins#ANONYMOUS
      * @since TODO
      */
     public static boolean isAnonymous(Authentication authentication) {
