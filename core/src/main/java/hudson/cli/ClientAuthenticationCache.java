@@ -114,7 +114,6 @@ public class ClientAuthenticationCache implements Serializable {
         String url = j.getRootUrl();
         if (url!=null)  return url;
         
-        LOGGER.log(Level.WARNING, "The instance is not configured using a rootUrl, the key that represents your instance will not be stable");
         return j.getLegacyInstanceId();
     }
 
