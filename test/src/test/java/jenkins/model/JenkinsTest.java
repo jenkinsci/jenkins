@@ -88,7 +88,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import javax.annotation.CheckForNull;
 
 /**
- * Tests of {@link Jenkins} class instance logic.
+ * Tests of the {@link Jenkins} class instance logic.
  * @see Jenkins
  * @see JenkinsRule
  */
