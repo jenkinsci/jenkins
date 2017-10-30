@@ -106,7 +106,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
-import hudson.remoting.ClassFilter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -182,6 +181,7 @@ import jenkins.install.InstallState;
 import jenkins.install.InstallUtil;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
@@ -284,7 +284,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static hudson.Util.*;
@@ -894,11 +893,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
-            try {
-                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
-            } catch (ClassFilter.ClassFilterException ex) {
-                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
-            }
+            ClassFilterImpl.register();
 
             // initialization consists of ...
             executeReactor( is,
@@ -3278,6 +3273,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (JenkinsJVM.isJenkinsJVM()) {
                 JenkinsJVMAccess._setJenkinsJVM(oldJenkinsJVM);
             }
+            ClassFilterImpl.unregister();
         }
     }
 

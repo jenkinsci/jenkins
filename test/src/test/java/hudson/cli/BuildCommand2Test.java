@@ -31,6 +31,7 @@ import hudson.model.FileParameterDefinition;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import org.junit.ClassRule;
@@ -69,6 +70,35 @@ public class BuildCommand2Test {
         FreeStyleBuild b = p.getBuildByNumber(1);
         assertNotNull(b);
         r.assertLogContains("uploaded content here", b);
+    }
+
+    /**
+     * Just schedules a build and return.
+     */
+    @Test
+    public void async() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        OneShotEvent started = new OneShotEvent();
+        OneShotEvent completed = new OneShotEvent();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                started.signal();
+                completed.block();
+                return true;
+            }
+        });
+
+        // this should be asynchronous
+        CLI cli = new CLI(r.getURL());
+        try {
+            assertEquals(0, cli.execute("build", p.getName()));
+            started.block();
+            assertTrue(p.getBuildByNumber(1).isBuilding());
+            completed.signal();
+        } finally {
+            cli.close();
+        }
     }
 
 }

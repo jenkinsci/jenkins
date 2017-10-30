@@ -68,8 +68,6 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
@@ -462,14 +460,8 @@ public class XStream2 extends XStream {
             if (type == null) {
                 return false;
             }
-            try {
-                ClassFilter.DEFAULT.check(type);
-                ClassFilter.DEFAULT.check(type.getName());
-            } catch (SecurityException se) {
-                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
-                return true;
-            }
-            return false;
+            // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+            return ClassFilter.DEFAULT.isBlacklisted(type.getName()) || ClassFilter.DEFAULT.isBlacklisted(type);
         }
     }
 }

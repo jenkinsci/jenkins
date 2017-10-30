@@ -186,8 +186,8 @@ public class Security218CliTest {
         try (CLI cli = new CLI(r.getURL())) {
             int exitCode = cli.execute("send-payload",
                     payload.toString(), "mv " + file.getAbsolutePath() + " " + moved.getAbsolutePath());
-            assertEquals("Unexpected result code.", expectedResultCode, exitCode);
             assertTrue("Payload should not invoke the move operation " + file, !moved.exists());
+            assertEquals("Unexpected result code.", expectedResultCode, exitCode);
             file.delete();
         }
     }
@@ -254,6 +254,7 @@ public class Security218CliTest {
                     }
                 });
             } catch (Exception ex) {
+                ex.printStackTrace();
                 Throwable cause = ex;
                 while (cause.getCause() != null) {
                     cause = cause.getCause();

@@ -73,31 +73,6 @@ public class BuildCommandTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     /**
-     * Just schedules a build and return.
-     */
-    @Test void async() {
-        def p = j.createFreeStyleProject();
-        def started = new OneShotEvent();
-        def completed = new OneShotEvent();
-        p.buildersList.add([perform: {AbstractBuild build, Launcher launcher, BuildListener listener ->
-            started.signal();
-            completed.block();
-            return true;
-        }] as TestBuilder);
-
-        // this should be asynchronous
-        def cli = new CLI(j.URL)
-        try {
-            assertEquals(0,cli.execute(["build", p.name]))
-            started.block()
-            assertTrue(p.getBuildByNumber(1).isBuilding())
-            completed.signal()
-        } finally {
-            cli.close();
-        }
-    }
-
-    /**
      * Tests synchronous execution.
      */
     @Test void sync() {
