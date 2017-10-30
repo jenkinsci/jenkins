@@ -1576,8 +1576,7 @@ public class Functions {
     }
 
     /**
-     * Checks if the given authentication is anonymous.
-     * @see Jenkins#ANONYMOUS
+     * Checks if the given authentication is anonymous, accordingly to {@link Jenkins#ANONYMOUS}
      * @since TODO
      */
     public static boolean isAnonymous(Authentication authentication) {
