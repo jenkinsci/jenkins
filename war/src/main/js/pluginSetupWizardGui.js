@@ -907,7 +907,7 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 	};
 
-	var beforeFirstUserSendRootUrl = function(callback){
+	var saveJenkinsUrl = function(callback){
 		$('button').prop({disabled:true});
 
 		var rootUrl = $('iframe[src]').contents().find('form.root-url');
@@ -916,13 +916,13 @@ var createPluginSetupWizard = function(appendTarget) {
 
 	// call to submit the firstuser
 	var saveFirstUser = function() {
-		beforeFirstUserSendRootUrl(function(){
+		saveJenkinsUrl(function(){
 			securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
 		});
 	};
 
 	var skipFirstUser = function() {
-		beforeFirstUserSendRootUrl(function(){
+		saveJenkinsUrl(function(){
 			showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
 		});
 	};
