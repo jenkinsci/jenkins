@@ -38,7 +38,7 @@ public class ClientAuthenticationCache implements Serializable {
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ClientAuthenticationCache.class, "MAC");
     private static final Logger LOGGER = Logger.getLogger(ClientAuthenticationCache.class.getName());
-
+    
     /**
      * Where the store should be placed.
      */
@@ -110,9 +110,12 @@ public class ClientAuthenticationCache implements Serializable {
      */
     @VisibleForTesting
     String getPropertyKey() {
-        String url = Jenkins.getActiveInstance().getRootUrl();
+        Jenkins j = Jenkins.getActiveInstance();
+        String url = j.getRootUrl();
         if (url!=null)  return url;
-        return Secret.fromString("key").getEncryptedValue();
+        
+        LOGGER.log(Level.WARNING, "The instance is not configured using a rootUrl, the key that represents your instance will not be stable");
+        return j.getLegacyInstanceId();
     }
 
     /**
