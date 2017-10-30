@@ -1576,9 +1576,10 @@ public class Functions {
     }
 
     /**
-     * Checks if the given authentication is anonymous, accordingly to {@link Jenkins#ANONYMOUS}
-     * @since TODO
+     * Checks if the given authentication is anonymous, accordingly to {@link Jenkins#ANONYMOUS}.
+     * TODO not the best place to put that method, but no other place at the moment
      */
+    @Restricted(NoExternalUse.class)
     public static boolean isAnonymous(Authentication authentication) {
         //TODO use AuthenticationTrustResolver instead to be consistent through the application
         return authentication instanceof AnonymousAuthenticationToken;
