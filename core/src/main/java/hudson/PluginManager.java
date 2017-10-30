@@ -254,7 +254,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * All discovered plugins.
      */
-    protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> plugins = new CopyOnWriteArrayList<>();
 
     /**
      * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
@@ -463,10 +463,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         cgd.run(getPlugins());
 
                                         // obtain topologically sorted list and overwrite the list
-                                        ListIterator<PluginWrapper> litr = getPlugins().listIterator();
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            litr.next();
-                                            litr.set(p);
                                             if(p.isActive())
                                                 activePlugins.add(p);
                                         }
@@ -1132,9 +1129,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Exported
     public List<PluginWrapper> getPlugins() {
-        List<PluginWrapper> out = new ArrayList<PluginWrapper>(plugins.size());
-        out.addAll(plugins);
-        return out;
+        return Collections.unmodifiableList(plugins);
     }
 
     public List<FailedPlugin> getFailedPlugins() {
@@ -2000,8 +1995,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
          * @return this monitor.
          */
-        public static final PluginUpdateMonitor getInstance() {
-            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
+        public static PluginUpdateMonitor getInstance() {
+            return ExtensionList.lookupSingleton(PluginUpdateMonitor.class);
         }
 
         /**
