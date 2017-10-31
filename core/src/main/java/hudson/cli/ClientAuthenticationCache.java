@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.HMACConfidentialKey;
 
+import javax.annotation.Nonnull;
+
 /**
  * Represents the authentication credential store of the CLI client.
  *
@@ -73,7 +75,7 @@ public class ClientAuthenticationCache implements Serializable {
      *
      * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
-    public Authentication get() {
+    public @Nonnull Authentication get() {
         Jenkins h = Jenkins.getActiveInstance();
         String val = props.getProperty(getPropertyKey());
         if (val == null) {

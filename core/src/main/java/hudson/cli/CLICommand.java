@@ -30,6 +30,7 @@ import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
 import hudson.Functions;
+import hudson.security.ACL;
 import jenkins.security.SecurityListener;
 import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
@@ -350,7 +351,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             if (channel!=null){
                 Authentication authLoadedFromCache = new ClientAuthenticationCache(channel).get();
 
-                if(!Functions.isAnonymous(authLoadedFromCache)){
+                if(!ACL.isAnonymous(authLoadedFromCache)){
                     UserDetails userDetails = new CLIUserDetails(authLoadedFromCache);
                     SecurityListener.fireAuthenticated(userDetails);
                 }

@@ -26,6 +26,7 @@
 package hudson;
 
 import hudson.model.Slave;
+import hudson.security.*;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -56,11 +57,6 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
-import hudson.security.AccessControlled;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.Permission;
-import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -1572,17 +1568,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return isAnonymous(Jenkins.getAuthentication());
-    }
-
-    /**
-     * Checks if the given authentication is anonymous, accordingly to {@link Jenkins#ANONYMOUS}.
-     * TODO not the best place to put that method, but no other place at the moment
-     */
-    @Restricted(NoExternalUse.class)
-    public static boolean isAnonymous(Authentication authentication) {
-        //TODO use AuthenticationTrustResolver instead to be consistent through the application
-        return authentication instanceof AnonymousAuthenticationToken;
+        return ACL.isAnonymous(Jenkins.getAuthentication());
     }
 
     /**
