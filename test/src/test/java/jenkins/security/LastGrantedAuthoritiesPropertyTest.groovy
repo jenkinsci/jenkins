@@ -50,6 +50,12 @@ class LastGrantedAuthoritiesPropertyTest {
         p = u.getProperty(LastGrantedAuthoritiesProperty.class)
         assertAuthorities(p,"authenticated:alice:development:uk")
         assertAuthorities(u.impersonate(),"authenticated:alice:development:uk")
+
+        // if securityRealm already grant the "authenticated" group, we should avoid having duplicates
+        wc.login("alice","alice:authenticated:development:uk")
+        p = u.getProperty(LastGrantedAuthoritiesProperty.class)
+        assertAuthorities(p,"authenticated:alice:development:uk")
+        assertAuthorities(u.impersonate(),"authenticated:alice:development:uk")
     }
 
     void assertAuthorities(p,expected) {
