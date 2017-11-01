@@ -40,7 +40,6 @@ public class StringParameterValue extends ParameterValue {
     @Exported(visibility=4)
     @Restricted(NoExternalUse.class)
     public String value;
-    private boolean trim;
 
     @DataBoundConstructor
     public StringParameterValue(String name, String value) {
@@ -50,17 +49,6 @@ public class StringParameterValue extends ParameterValue {
     public StringParameterValue(String name, String value, String description) {
         super(name, description);
         this.value = value;
-    }
-
-    /**
-     * 
-     * @param trim - {@code true}, if trim options select, else - {@code false}.
-     * @return {@code StringParameterValue} object with {@code trim} parameter.
-     * @since TODO
-     */
-    public StringParameterValue withTrim(boolean trim) {
-        this.trim = trim;
-        return this;
     }
     
     /**
@@ -88,6 +76,7 @@ public class StringParameterValue extends ParameterValue {
      
     /**
      * Trimming for value
+     * @since TODO
      */
     public void doTrim() {
         if (value != null) {
