@@ -34,8 +34,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -1600,14 +1598,14 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Run chmod via jnr-posix
+     * Change permissions via NIO.
      */
     private static void _chmod(File f, int mask) throws IOException {
         // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
+        Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), IOUtils.modeToPermissions(mask));
     }
 
     private static boolean CHMOD_WARNED = false;
@@ -1620,12 +1618,12 @@ public final class FilePath implements Serializable {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException, PosixException {
+    public int mode() throws IOException, InterruptedException {
         if(!isUnix())   return -1;
         return act(new SecureFileCallable<Integer>() {
             private static final long serialVersionUID = 1L;
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                return IOUtils.mode(stating(f));
+                return IOUtils.mode(stating(f).toPath());
             }
         });
     }

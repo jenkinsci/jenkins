@@ -1,15 +1,18 @@
 package hudson.util;
 
 import hudson.Functions;
-import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -122,10 +125,56 @@ public class IOUtils {
      * Gets the mode of a file/directory, if appropriate.
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
+     * @deprecated Use {@link IOUtils#mode(Path)} or {@link Files#getPosixFilePermissions} instead.
      */
     public static int mode(File f) throws PosixException {
-        if(Functions.isWindows())   return -1;
-        return PosixAPI.jnr().stat(f.getPath()).mode();
+        try {
+            return mode(f.toPath());
+        } catch (IOException cause) {
+            PosixException e = new PosixException("Unable to get file permissions", null);
+            e.initCause(cause);
+            throw e;
+        }
+    }
+
+    /**
+     * Gets the mode of a file/directory, if appropriate.
+     * @return a file mode, or -1 if on Windows
+     * @throws IOException if the permissions could not be found
+     * @see Files#getPosixFilePermissions
+     */
+    public static int mode(Path p) throws IOException {
+        if (Functions.isWindows()) {
+            return -1;
+        }
+        return permissionsToMode(Files.getPosixFilePermissions(p));
+    }
+
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+        //               rwxrwxrwx
+        int MAX_MODE = 0b111111111;
+        if ((mode & MAX_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
     }
 
     /**

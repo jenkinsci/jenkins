@@ -242,7 +242,7 @@ public class FilePathTest {
                     throw x;
                 }
             } finally {
-                toF.chmod(700);
+                toF.chmod(0700);
             }
     }
 
