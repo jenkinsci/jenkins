@@ -45,7 +45,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(SecurityListener.class.getName());
 
     /**
-     * Fired when a user was successfully authenticated using credentials. It could password or any other credentials.
+     * Fired when a user was successfully authenticated using credentials. It could be password or any other credentials.
      * This might be via the web UI, or via REST (using API token or Basic), or CLI (remoting, auth, ssh)
      * or any other way plugins can propose.
      * @param details details of the newly authenticated user, such as name and groups.
@@ -64,6 +64,7 @@ public abstract class SecurityListener implements ExtensionPoint {
     /**
      * Fired when a user has logged in. Compared to authenticated, there is a notion of storage / cache.
      * Would be called after {@link #authenticated}.
+     * It should be called after the {@link org.acegisecurity.context.SecurityContextHolder#getContext()}'s authentication is set.
      * @param username the user
      */
     protected void loggedIn(@Nonnull String username){}
