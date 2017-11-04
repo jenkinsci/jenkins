@@ -224,7 +224,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     public List<Action> getViewActions() {
         // Jenkins.getInstance().getViewActions() are tempting but they are in a wrong scope
-        return Collections.emptyList();
+        return Collections.singletonList(new NewViewAction());
     }
 
     public Object getStaplerFallback() {
@@ -254,7 +254,23 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 		public String getUrlName() {
 			return "/me/my-views";
 		}
-		
+
     }
-   
+
+    private static class NewViewAction implements Action {
+        @Override
+        public String getIconFileName() {
+            return "new-document.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.MyViewsProperty_NewViewAction_DisplayName();
+        }
+
+        @Override
+        public String getUrlName() {
+            return "newView";
+        }
+    }
 }
