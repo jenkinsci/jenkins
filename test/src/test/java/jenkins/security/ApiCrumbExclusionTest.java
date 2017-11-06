@@ -27,6 +27,9 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.security.csrf.DefaultCrumbIssuer;
@@ -72,6 +75,7 @@ public class ApiCrumbExclusionTest {
         makeRequestWithAuthAndVerify("foo:foo", "foo");
 
         wc.login("foo");
+        checkWeCanChangeMyDescription(200);
 
         wc = j.createWebClient();
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
@@ -82,6 +86,7 @@ public class ApiCrumbExclusionTest {
         makeRequestAndFail("foo:foo", 403);
 
         wc.login("foo");
+        checkWeCanChangeMyDescription(200);
     }
 
     private String encode(String prefix, String userAndPass) {
@@ -116,6 +121,15 @@ public class ApiCrumbExclusionTest {
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(expectedCode, e.getStatusCode());
         }
+    }
+
+    private void checkWeCanChangeMyDescription(int expectedCode) throws IOException, SAXException {
+        HtmlPage page = wc.goTo("me/configure");
+        HtmlForm form = page.getFormByName("config");
+        form.getTextAreaByName("_.description").setText("random description: " + Math.random());
+
+        Page result = HtmlFormUtil.submit(form);
+        assertEquals(expectedCode, result.getWebResponse().getStatusCode());
     }
 
     @TestExtension
