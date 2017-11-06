@@ -168,16 +168,16 @@ public class DownloadService extends PageDecorator {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
             responseCode = ((HttpURLConnection) con).getResponseCode();
         }
-        if(HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
+        if (HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
             // No OK Status and no redirection
             throw new IOException("Could not find JSON in " + src);
-        } else if(HttpURLConnection.HTTP_OK != responseCode) {
+        } else if (HttpURLConnection.HTTP_OK != responseCode) {
             // In case of redirection, we have to connect to the new URL
             String redirection = ((HttpURLConnection) con).getHeaderField("Location");
             con = ProxyConfiguration.open(new URL(redirection));
             responseCode = ((HttpURLConnection) con).getResponseCode();
         }
-        if(HttpURLConnection.HTTP_OK != responseCode) {
+        if (HttpURLConnection.HTTP_OK != responseCode) {
             throw new IOException("Could not find JSON in " + src);
         }
         //JENKINS-47819
@@ -210,16 +210,16 @@ public class DownloadService extends PageDecorator {
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
             responseCode = ((HttpURLConnection) con).getResponseCode();
         }
-        if(HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
+        if (HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
             // No OK Status and no redirection
             throw new IOException("Could not find JSON in " + src);
-        } else if(HttpURLConnection.HTTP_OK != responseCode) {
+        } else if (HttpURLConnection.HTTP_OK != responseCode) {
             // In case of redirection, we have to connect to the new URL
             String redirection = ((HttpURLConnection) con).getHeaderField("Location");
             con = ProxyConfiguration.open(new URL(redirection));
             responseCode = ((HttpURLConnection) con).getResponseCode();
         }
-        if(HttpURLConnection.HTTP_OK != responseCode) {
+        if (HttpURLConnection.HTTP_OK != responseCode) {
             throw new IOException("Could not find JSON in " + src);
         }
         // JENKINS-47819

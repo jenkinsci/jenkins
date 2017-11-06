@@ -103,7 +103,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
                     // JENKINS-47819
                     // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
                     int responseCode = ((HttpURLConnection)conn).getResponseCode();
-                    if(HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
+                    if (HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
                         // In case of redirection, we have to connect to the new URL
                         String redirection = ((HttpURLConnection) conn).getHeaderField("Location");
                         conn = ProxyConfiguration.open(new URL(redirection));

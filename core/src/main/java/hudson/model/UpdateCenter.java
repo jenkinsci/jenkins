@@ -1252,18 +1252,18 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             try {
                 URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
 
-                if(connection instanceof HttpURLConnection) {
+                if (connection instanceof HttpURLConnection) {
                     int responseCode = ((HttpURLConnection)connection).getResponseCode();
                     // JENKINS-47819
                     // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
-                    if(HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
+                    if (HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
                         // In case of redirection, we have to connect to the new URL
                         String redirection = ((HttpURLConnection) connection).getHeaderField("Location");
                         connection = ProxyConfiguration.open(new URL(redirection));
                         responseCode = ((HttpURLConnection) connection).getResponseCode();
                     }
                     // JENKINS-47819
-                    if(HttpURLConnection.HTTP_OK != responseCode) {
+                    if (HttpURLConnection.HTTP_OK != responseCode) {
                         throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
                     }
                 } else {
