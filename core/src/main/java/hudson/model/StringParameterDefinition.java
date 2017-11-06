@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -48,10 +48,6 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
         this.trim = trim;
     }
 
-    /** 
-     *
-     * @since TODO
-     */
     @Nonnull
     public StringParameterDefinition(String name, String defaultValue, String description) {
         this(name, defaultValue, description, false);
@@ -79,7 +75,7 @@ public class StringParameterDefinition extends SimpleParameterDefinition {
      * 
      * @return original or trimmed defaultValue (depending on trim)
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(DoNotUse.class) // Jelly
     public String getDefaultValue4Build() {
         if (isTrim()) {
             return Util.fixNull(defaultValue).trim();

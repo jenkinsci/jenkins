@@ -50,7 +50,7 @@ public class StringParameterValue extends ParameterValue {
         super(name, description);
         this.value = value;
     }
-    
+
     /**
      * Exposes the name/value as an environment variable.
      */
