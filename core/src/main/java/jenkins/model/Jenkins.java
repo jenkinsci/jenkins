@@ -294,6 +294,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
+import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -2178,8 +2179,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
-        public FormValidation doCheckNumExecutors(@QueryParameter String value) {
-            return FormValidation.validateNonNegativeInteger(value);
+        public void doCheckNumExecutors(@QueryParameter String value) throws FormException {
+
+            if(value.matches("^(\\d+)")) {
+                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "value");
+            }
         }
 
         public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
@@ -2758,7 +2762,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return initLevel;
     }
 
-    public void setNumExecutors(int n) throws IOException {
+    public void setNumExecutors(@Nonnegative int n) throws IOException {
         if (this.numExecutors != n) {
             this.numExecutors = n;
             updateComputerList();
