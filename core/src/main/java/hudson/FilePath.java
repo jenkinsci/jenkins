@@ -1605,7 +1605,7 @@ public final class FilePath implements Serializable {
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), IOUtils.modeToPermissions(mask));
+        Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
     }
 
     private static boolean CHMOD_WARNED = false;

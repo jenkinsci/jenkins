@@ -69,6 +69,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -1686,6 +1687,35 @@ public class Util {
         } catch(IOException ex) {
             logger.log(Level.WARNING, String.format("Failed to close %s of %s", closeableName, closeableOwner), ex);
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+        //               rwxrwxrwx
+        int MAX_MODE = 0b111111111;
+        if ((mode & MAX_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));

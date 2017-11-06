@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.os.PosixException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -147,34 +148,7 @@ public class IOUtils {
         if (Functions.isWindows()) {
             return -1;
         }
-        return permissionsToMode(Files.getPosixFilePermissions(p));
-    }
-
-    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
-        PosixFilePermission[] allPermissions = PosixFilePermission.values();
-        int result = 0;
-        for (int i = 0; i < allPermissions.length; i++) {
-            result <<= 1;
-            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
-        }
-        return result;
-    }
-
-    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
-        //               rwxrwxrwx
-        int MAX_MODE = 0b111111111;
-        if ((mode & MAX_MODE) != mode) {
-            throw new IOException("Invalid mode: " + mode);
-        }
-        PosixFilePermission[] allPermissions = PosixFilePermission.values();
-        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
-        for (int i = 0; i < allPermissions.length; i++) {
-            if ((mode & 1) == 1) {
-                result.add(allPermissions[allPermissions.length - i - 1]);
-            }
-            mode >>= 1;
-        }
-        return result;
+        return Util.permissionsToMode(Files.getPosixFilePermissions(p));
     }
 
     /**

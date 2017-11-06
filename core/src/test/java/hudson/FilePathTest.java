@@ -736,4 +736,21 @@ public class FilePathTest {
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
     }
+
+    @Test
+    public void chmod() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFile("file");
+        FilePath fp = new FilePath(f);
+        int prevMode = fp.mode();
+        assertEquals(0400, chmodAndMode(fp, 0400));
+        assertEquals(0412, chmodAndMode(fp, 0412));
+        assertEquals(0777, chmodAndMode(fp, 0777));
+        assertEquals(prevMode, chmodAndMode(fp, prevMode));
+    }
+
+    private int chmodAndMode(FilePath path, int mode) throws Exception {
+        path.chmod(mode);
+        return path.mode();
+    }
 }
