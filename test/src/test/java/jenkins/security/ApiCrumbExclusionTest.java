@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class ApiCrumbExclusionTest {
     @Rule
@@ -55,6 +57,7 @@ public class ApiCrumbExclusionTest {
     @Issue("JENKINS-22474")
     public void callUsingApiTokenDoesNotRequireCSRFToken() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setCrumbIssuer(null);
         User foo = User.get("foo");
 
         wc = j.createWebClient();
@@ -62,12 +65,23 @@ public class ApiCrumbExclusionTest {
         // call with API token
         ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
         String token = t.getApiToken();
-        makeRequestWithAuthAndVerify("foo:" + token, "foo");
 
+        // API Token
+        makeRequestWithAuthAndVerify("foo:" + token, "foo");
+        // Basic auth using password
+        makeRequestWithAuthAndVerify("foo:foo", "foo");
+
+        wc.login("foo");
+
+        wc = j.createWebClient();
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
 
         // even with crumbIssuer enabled, we are not required to send a CSRF token when using API token
         makeRequestWithAuthAndVerify("foo:" + token, "foo");
+        // Basic auth using password requires crumb
+        makeRequestAndFail("foo:foo", 403);
+
+        wc.login("foo");
     }
 
     private String encode(String prefix, String userAndPass) {
@@ -89,6 +103,19 @@ public class ApiCrumbExclusionTest {
             req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
         assertEquals(expected, p.getWebResponse().getContentAsString().trim());
+    }
+
+    private void makeRequestAndFail(String userAndPass, int expectedCode) throws IOException, SAXException {
+        makeRequestWithAuthCodeAndFail(encode("Basic", userAndPass), expectedCode);
+    }
+
+    private void makeRequestWithAuthCodeAndFail(String authCode, int expectedCode) throws IOException, SAXException {
+        try {
+            makeRequestWithAuthCodeAndVerify(authCode, "-");
+            fail();
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(expectedCode, e.getStatusCode());
+        }
     }
 
     @TestExtension
