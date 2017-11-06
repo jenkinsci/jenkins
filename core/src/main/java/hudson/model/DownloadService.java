@@ -160,10 +160,27 @@ public class DownloadService extends PageDecorator {
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
         URLConnection con = ProxyConfiguration.open(src);
+        // JENKINS-47819
+        // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
+        int responseCode = HttpURLConnection.HTTP_OK;
         if (con instanceof HttpURLConnection) {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+            responseCode = ((HttpURLConnection) con).getResponseCode();
         }
+        if(HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
+            // No OK Status and no redirection
+            throw new IOException("Could not find JSON in " + src);
+        } else if(HttpURLConnection.HTTP_OK != responseCode) {
+            // In case of redirection, we have to connect to the new URL
+            String redirection = ((HttpURLConnection) con).getHeaderField("Location");
+            con = ProxyConfiguration.open(new URL(redirection));
+            responseCode = ((HttpURLConnection) con).getResponseCode();
+        }
+        if(HttpURLConnection.HTTP_OK != responseCode) {
+            throw new IOException("Could not find JSON in " + src);
+        }
+        //JENKINS-47819
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             int start = jsonp.indexOf('{');
@@ -185,10 +202,27 @@ public class DownloadService extends PageDecorator {
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
         URLConnection con = ProxyConfiguration.open(src);
+        // JENKINS-47819
+        // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
+        int responseCode = HttpURLConnection.HTTP_OK;
         if (con instanceof HttpURLConnection) {
             // prevent problems from misbehaving plugins disabling redirects by default
             ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+            responseCode = ((HttpURLConnection) con).getResponseCode();
         }
+        if(HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
+            // No OK Status and no redirection
+            throw new IOException("Could not find JSON in " + src);
+        } else if(HttpURLConnection.HTTP_OK != responseCode) {
+            // In case of redirection, we have to connect to the new URL
+            String redirection = ((HttpURLConnection) con).getHeaderField("Location");
+            con = ProxyConfiguration.open(new URL(redirection));
+            responseCode = ((HttpURLConnection) con).getResponseCode();
+        }
+        if(HttpURLConnection.HTTP_OK != responseCode) {
+            throw new IOException("Could not find JSON in " + src);
+        }
+        // JENKINS-47819
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             String preamble = "window.parent.postMessage(JSON.stringify(";
