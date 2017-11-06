@@ -27,8 +27,9 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
         User u = User.getById(username, true);
         ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
         if (t!=null && t.matchesPassword(password)) {
+            Authentication auth;
             try {
-                return u.impersonate();
+                auth = u.impersonate();
             } catch (UsernameNotFoundException x) {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.
@@ -37,6 +38,9 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
             } catch (DataAccessException x) {
                 throw new ServletException(x);
             }
+
+            req.setAttribute(BasicHeaderApiTokenAuthenticator.class.getName(), true);
+            return auth;
         }
         return null;
     }
