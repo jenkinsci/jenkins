@@ -53,7 +53,9 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         }
 
         String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length);
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
+        grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
+
         for (int i = 0; i < roles.length; i++){
             // to avoid having twice that role
             if(!authenticatedRole.equals(roles[i])){
