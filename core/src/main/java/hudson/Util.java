@@ -67,8 +67,11 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -507,39 +510,19 @@ public class Util {
          *  both as symlinks, let's use that function and always call it before calling down to the
          *  NIO2 API.
          *
+         *  JENKINS-39179, JENKINS-36088.
+         *  JNA can cause deadlocks, so we avoid it. WindowsFileAttributes.isOther() includes devices,
+         *  but reading the attributes of a device with NIO fails or returns false for isOther(). Named
+         *  pipes are not devices, and return false for isOther().
          */
-        if (Functions.isWindows()) {
-            try {
-                return Kernel32Utils.isJunctionOrSymlink(file);
-            } catch (UnsupportedOperationException | LinkageError e) {
-                // fall through
-            }
-        }
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
-        String name = file.getName();
-        if (name.equals(".") || name.equals(".."))
-            return false;
-
-        File fileInCanonicalParent;
-        File parentDir = file.getParentFile();
-        if ( parentDir == null ) {
-            fileInCanonicalParent = file;
+        Path path = file.toPath();
+        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        if (attrs.isSymbolicLink()) {
+            return true;
+        } else if (attrs instanceof DosFileAttributes) {
+            return attrs.isOther();
         } else {
-            fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
-        }
-        return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }
-
-    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
-    private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
-        try {
-            Path path = file.toPath();
-            return Files.isSymbolicLink(path);
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            return false;
         }
     }
 

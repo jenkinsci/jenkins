@@ -44,6 +44,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -735,5 +736,39 @@ public class FilePathTest {
         FilePath outDir = new FilePath(dstFolder);
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
+
+    @Test public void deleteRecursive() throws Exception {
+        assumeTrue(!Functions.isWindows());
+        Path targetDir = temp.newFolder("target").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("symlink target should not be deleted", Files.exists(targetDir));
+        assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Test public void deleteRecursiveOnWindows() throws Exception {
+        assumeTrue(Functions.isWindows());
+        Path targetDir = temp.newFolder("targetDir").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Process p = new ProcessBuilder()
+                .directory(toDelete.toFile())
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        assertEquals("junction could not be created", 0, p.waitFor());
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("junction target should not be deleted", Files.exists(targetDir));
+        assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
     }
 }
