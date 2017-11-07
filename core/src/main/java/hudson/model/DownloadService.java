@@ -160,7 +160,6 @@ public class DownloadService extends PageDecorator {
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
         URLConnection con = ProxyConfiguration.open(src);
-        // JENKINS-47819
         // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
         int responseCode = HttpURLConnection.HTTP_OK;
         if (con instanceof HttpURLConnection) {
@@ -180,7 +179,6 @@ public class DownloadService extends PageDecorator {
         if (HttpURLConnection.HTTP_OK != responseCode) {
             throw new IOException("Could not find JSON in " + src);
         }
-        //JENKINS-47819
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             int start = jsonp.indexOf('{');
@@ -202,7 +200,6 @@ public class DownloadService extends PageDecorator {
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
         URLConnection con = ProxyConfiguration.open(src);
-        // JENKINS-47819
         // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
         int responseCode = HttpURLConnection.HTTP_OK;
         if (con instanceof HttpURLConnection) {
@@ -222,7 +219,6 @@ public class DownloadService extends PageDecorator {
         if (HttpURLConnection.HTTP_OK != responseCode) {
             throw new IOException("Could not find JSON in " + src);
         }
-        // JENKINS-47819
         try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             String preamble = "window.parent.postMessage(JSON.stringify(";

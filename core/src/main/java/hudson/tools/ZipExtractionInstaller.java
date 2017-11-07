@@ -100,7 +100,6 @@ public class ZipExtractionInstaller extends ToolInstaller {
                 URLConnection conn = ProxyConfiguration.open(new URL(value));
                 conn.connect();
                 if (conn instanceof HttpURLConnection) {
-                    // JENKINS-47819
                     // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
                     int responseCode = ((HttpURLConnection)conn).getResponseCode();
                     if (HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
@@ -109,7 +108,6 @@ public class ZipExtractionInstaller extends ToolInstaller {
                         conn = ProxyConfiguration.open(new URL(redirection));
                         responseCode = ((HttpURLConnection) conn).getResponseCode();
                     }
-                    // JENKINS-47819
                     if (responseCode != HttpURLConnection.HTTP_OK) {
                         return FormValidation.error(Messages.ZipExtractionInstaller_bad_connection());
                     }

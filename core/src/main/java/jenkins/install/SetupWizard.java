@@ -378,7 +378,6 @@ public class SetupWizard extends PageDecorator {
                 
                 try {
                     if (connection instanceof HttpURLConnection) {
-                        // JENKINS-47819
                         // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
                         ((HttpURLConnection) connection).setInstanceFollowRedirects(true);
                         int responseCode = ((HttpURLConnection)connection).getResponseCode();
@@ -388,7 +387,6 @@ public class SetupWizard extends PageDecorator {
                             connection = ProxyConfiguration.open(new URL(redirection));
                             responseCode = ((HttpURLConnection) connection).getResponseCode();
                         }
-                        // JENKINS-47819
                         if (HttpURLConnection.HTTP_OK != responseCode) {
                             throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
                         }
