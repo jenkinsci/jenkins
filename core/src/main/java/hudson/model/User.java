@@ -536,6 +536,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *            <code>null</code> if {@link User} object with the given id doesn't exist.
      * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
      *         and the user does not exist.
+     * @since 1.651.2 / 2.3
      */
     public static @Nullable User getById(String id, boolean create) {
         return getOrCreate(id, id, create);
