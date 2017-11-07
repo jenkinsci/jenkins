@@ -68,6 +68,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -515,13 +516,17 @@ public class Util {
          *  but reading the attributes of a device with NIO fails or returns false for isOther(). Named
          *  pipes are not devices, and return false for isOther().
          */
-        Path path = file.toPath();
-        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-        if (attrs.isSymbolicLink()) {
-            return true;
-        } else if (attrs instanceof DosFileAttributes) {
-            return attrs.isOther();
-        } else {
+        try {
+            Path path = file.toPath();
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (attrs.isSymbolicLink()) {
+                return true;
+            } else if (attrs instanceof DosFileAttributes) {
+                return attrs.isOther();
+            } else {
+                return false;
+            }
+        } catch (NoSuchFileException e) {
             return false;
         }
     }
