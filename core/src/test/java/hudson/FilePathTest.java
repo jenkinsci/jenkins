@@ -762,7 +762,7 @@ public class FilePathTest {
                 .directory(toDelete.toFile())
                 .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
                 .start();
-        assertEquals("junction could not be created", 0, p.waitFor());
+        assertEquals("unable to create junction", 0, p.waitFor());
         Files.createFile(toDelete.resolve("foo"));
         Files.createFile(toDelete.resolve("bar"));
         FilePath f = new FilePath(toDelete.toFile());
