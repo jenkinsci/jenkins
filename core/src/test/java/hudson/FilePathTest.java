@@ -738,8 +738,8 @@ public class FilePathTest {
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
     }
 
-    @Test public void deleteRecursive() throws Exception {
-        assumeTrue(!Functions.isWindows());
+    @Test public void deleteRecursiveOnUnix() throws Exception {
+        assumeFalse(Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
         Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
         Path toDelete = temp.newFolder("toDelete").toPath();
