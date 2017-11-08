@@ -749,6 +749,20 @@ public class FilePathTest {
         assertEquals(prevMode, chmodAndMode(fp, prevMode));
     }
 
+    @Test
+    public void chmodInvalidPermissions() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFolder("folder");
+        FilePath fp = new FilePath(f);
+        int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
+        try {
+            chmodAndMode(fp, invalidMode);
+            fail("Setting sticky bit should fail");
+        } catch (IOException e) {
+            assertEquals("Invalid mode: " + invalidMode, e.getMessage());
+        }
+    }
+
     private int chmodAndMode(FilePath path, int mode) throws Exception {
         path.chmod(mode);
         return path.mode();

@@ -52,7 +52,7 @@ final class ZipArchiver extends Archiver {
     }
 
     public void visit(final File f, final String _relativePath) throws IOException {
-        int mode = IOUtils.mode(f.toPath());
+        int mode = IOUtils.mode(f);
 
         // On Windows, the elements of relativePath are separated by 
         // back-slashes (\), but Zip files need to have their path elements separated

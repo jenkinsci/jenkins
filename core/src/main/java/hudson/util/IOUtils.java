@@ -8,12 +8,8 @@ import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -123,14 +119,20 @@ public class IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate.
+     * Gets the mode of a file/directory, if appropriate. Only includes read, write, and
+     * execute permissions for the owner, group, and others, i.e. the max return value
+     * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
+     * care about access permissions.
+     *
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
-     * @deprecated Use {@link IOUtils#mode(Path)} or {@link Files#getPosixFilePermissions} instead.
      */
     public static int mode(File f) throws PosixException {
         try {
-            return mode(f.toPath());
+            if (Functions.isWindows()) {
+                return -1;
+            }
+            return Util.permissionsToMode(Files.getPosixFilePermissions(f.toPath()));
         } catch (IOException cause) {
             PosixException e = new PosixException("Unable to get file permissions", null);
             e.initCause(cause);
@@ -138,20 +140,7 @@ public class IOUtils {
         }
     }
 
-    /**
-     * Gets the mode of a file/directory, if appropriate.
-     * @return a file mode, or -1 if on Windows
-     * @throws IOException if the permissions could not be found
-     * @see Files#getPosixFilePermissions
-     */
-    public static int mode(Path p) throws IOException {
-        if (Functions.isWindows()) {
-            return -1;
-        }
-        return Util.permissionsToMode(Files.getPosixFilePermissions(p));
-    }
-
-    /**
+   /**
      * Read the first line of the given stream, close it, and return that line.
      *
      * @param encoding
