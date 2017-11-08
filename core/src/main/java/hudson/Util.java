@@ -497,7 +497,6 @@ public class Util {
     /**
      * Checks if the given file represents a symlink.
      */
-    //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
@@ -506,15 +505,10 @@ public class Util {
          *  you have to go through BasicFileAttributes and do the following check:
          *     isSymbolicLink() || isOther()
          *  The isOther() call will include Windows reparse points, of which a directory junction is.
-         *
-         *  Since we already have a function that detects Windows junctions or symlinks and treats them
-         *  both as symlinks, let's use that function and always call it before calling down to the
-         *  NIO2 API.
-         *
-         *  JENKINS-39179, JENKINS-36088.
-         *  JNA can cause deadlocks, so we avoid it. WindowsFileAttributes.isOther() includes devices,
-         *  but reading the attributes of a device with NIO fails or returns false for isOther(). Named
-         *  pipes are not devices, and return false for isOther().
+         *  It also includes includes devices, but reading the attributes of a device with NIO fails
+         *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
+         *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
+         *  calling readAttributes.
          */
         try {
             Path path = file.toPath();
