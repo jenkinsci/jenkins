@@ -94,6 +94,10 @@ public class Kernel32Utils {
         }
     }
 
+    /**
+     * @deprecated Use {@link Util#isSymlink} to detect symbolic links and junctions instead.
+     */
+    @Deprecated
     public static boolean isJunctionOrSymlink(File file) throws IOException {
         return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
     }
