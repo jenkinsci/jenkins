@@ -276,15 +276,6 @@ public abstract class Slave extends Node implements Serializable {
         this.numExecutors = n;
     }
 
-    @DataBoundSetter
-    @Restricted(NoExternalUse.class)
-    public void setNumExecutors(String  n) throws FormException{
-        if (!n.matches("^(\\d+)")) {
-            throw new FormException(Messages.Slave_InvalidConfig_Executors(name), null);
-        }
-        this.numExecutors = Integer.parseInt(n);
-    }
-
     public Mode getMode() {
         return mode;
     }

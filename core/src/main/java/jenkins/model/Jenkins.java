@@ -2179,11 +2179,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             return false;
         }
 
-        public void doCheckNumExecutors(@QueryParameter String value) throws FormException {
-
-            if(value.matches("^(\\d+)")) {
-                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "value");
-            }
+        public FormValidation doCheckNumExecutors(@QueryParameter String value) {
+            return FormValidation.validateNonNegativeInteger(value);
         }
 
         public FormValidation doCheckRawBuildsDir(@QueryParameter String value) {
