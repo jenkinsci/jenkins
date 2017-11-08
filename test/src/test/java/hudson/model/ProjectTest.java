@@ -573,7 +573,7 @@ public class ProjectTest {
         auth.add(Job.DELETE, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.usingBasicCredentials(user.getId(), "password");
+        wc.withBasicCredentials(user.getId(), "password");
         HtmlPage p = wc.goTo(project.getUrl() + "delete");
 
         List<HtmlForm> forms = p.getForms();
@@ -615,7 +615,7 @@ public class ProjectTest {
         j.buildAndAssertSuccess(project);
 
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.usingBasicCredentials(user.getId(), "password");
+        wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         assertEquals(p.getWebResponse().getStatusCode(), 200);
@@ -647,7 +647,7 @@ public class ProjectTest {
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.usingBasicCredentials(user.getId(), "password");
+        wc.withBasicCredentials(user.getId(), "password");
         HtmlPage p = wc.goTo(project.getUrl());
 
         List<HtmlForm> forms = p.getForms();
@@ -685,7 +685,7 @@ public class ProjectTest {
         auth.add(Jenkins.READ, user.getId());
 
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.usingBasicCredentials(user.getId(), "password");
+        wc.withBasicCredentials(user.getId(), "password");
         HtmlPage p = wc.goTo(project.getUrl());
 
         List<HtmlForm> forms = p.getForms();

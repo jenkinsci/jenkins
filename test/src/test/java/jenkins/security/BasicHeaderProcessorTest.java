@@ -45,24 +45,24 @@ public class BasicHeaderProcessorTest {
         makeRequestAndVerify("anonymous");
 
         // call with API token
-        try(AutoCloseable ac = wc.withBasicApiToken("foo")){
-            makeRequestAndVerify( "foo");
-        }
+        wc.withBasicApiToken("foo", it ->
+            makeRequestAndVerify( "foo")
+        );
 
         // call with invalid API token
-        try(AutoCloseable ac = wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken())){
-            makeRequestAndFail();
-        }
+        wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken(), it ->
+            makeRequestAndFail()
+        );
 
         // call with password
-        try(AutoCloseable ac = wc.withBasicCredentials("foo", "foo")){
-            makeRequestAndVerify("foo");
-        }
+        wc.withBasicCredentials("foo", it ->
+            makeRequestAndVerify("foo")
+        );
 
         // call with incorrect password
-        try(AutoCloseable ac = wc.withBasicCredentials("foo", "bar")){
-            makeRequestAndFail();
-        }
+        wc.withBasicCredentials("foo", "bar", it ->
+            makeRequestAndFail()
+        );
 
         wc.login("bar");
 
@@ -70,14 +70,14 @@ public class BasicHeaderProcessorTest {
         makeRequestAndVerify("bar");
 
         // if the session cookie is valid, and basic header is set anyway login should not fail either
-        try(AutoCloseable ac = wc.withBasicCredentials("bar", "bar")){
-            makeRequestAndVerify("bar");
-        }
+        wc.withBasicCredentials("bar", "bar", it ->
+            makeRequestAndVerify("bar")
+        );
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
-        try(AutoCloseable ac = wc.withBasicCredentials("foo", "bar")){
-            makeRequestAndFail();
-        }
+        wc.withBasicCredentials("foo", "bar", it ->
+            makeRequestAndFail()
+        );
     }
 
     private void makeRequestAndFail() throws IOException, SAXException {
