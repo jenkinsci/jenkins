@@ -56,16 +56,20 @@ public class AbstractProject2Test {
             grant(Item.READ).everywhere().to("alice").
             grant(Item.READ).onItems(us).to("bob").
             grant(Item.READ).onItems(ds).to("charlie"));
-        String api = r.createWebClient().login("alice").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+
+        String api = r.createWebClient().usingBasicCredentials("alice", "alice").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, containsString("downstream-project"));
-        api = r.createWebClient().login("alice").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+
+        api = r.createWebClient().usingBasicCredentials("alice", "alice").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, containsString("upstream-project"));
-        api = r.createWebClient().login("bob").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+
+        api = r.createWebClient().usingBasicCredentials("bob", "bob").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, not(containsString("downstream-project")));
-        api = r.createWebClient().login("charlie").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+
+        api = r.createWebClient().usingBasicCredentials("charlie", "charlie").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, not(containsString("upstream-project")));
     }

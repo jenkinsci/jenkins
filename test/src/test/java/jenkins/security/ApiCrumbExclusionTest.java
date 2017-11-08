@@ -65,14 +65,15 @@ public class ApiCrumbExclusionTest {
 
         wc = j.createWebClient();
 
-        // call with API token
-        ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
-        String token = t.getApiToken();
-
         // API Token
-        makeRequestWithAuthAndVerify("foo:" + token, "foo");
+        wc.usingBasicApiToken(foo);
+        makeRequestAndVerify("foo");
+        wc.removeBasicAuthorizationHeader();
+
         // Basic auth using password
-        makeRequestWithAuthAndVerify("foo:foo", "foo");
+        wc.usingBasicCredentials("foo", "foo");
+        makeRequestAndVerify("foo");
+        wc.removeBasicAuthorizationHeader();
 
         wc.login("foo");
         checkWeCanChangeMyDescription(200);
@@ -81,42 +82,30 @@ public class ApiCrumbExclusionTest {
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
 
         // even with crumbIssuer enabled, we are not required to send a CSRF token when using API token
-        makeRequestWithAuthAndVerify("foo:" + token, "foo");
+        wc.usingBasicApiToken(foo);
+        makeRequestAndVerify("foo");
+        wc.removeBasicAuthorizationHeader();
+
         // Basic auth using password requires crumb
-        makeRequestAndFail("foo:foo", 403);
+        wc.usingBasicCredentials("foo", "foo");
+        makeRequestAndFail( 403);
+        wc.removeBasicAuthorizationHeader();
 
         wc.login("foo");
         checkWeCanChangeMyDescription(200);
     }
 
-    private String encode(String prefix, String userAndPass) {
-        if (userAndPass == null) {
-            return null;
-        }
-        return prefix + " " + Scrambler.scramble(userAndPass);
-    }
-
-    private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
-        makeRequestWithAuthCodeAndVerify(encode("Basic", userAndPass), username);
-    }
-
-    private void makeRequestWithAuthCodeAndVerify(String authCode, String expected) throws IOException, SAXException {
+    private void makeRequestAndVerify(String expected) throws IOException, SAXException {
         WebRequest req = new WebRequest(new URL(j.getURL(), "test-post"));
         req.setHttpMethod(HttpMethod.POST);
         req.setEncodingType(null);
-        if (authCode != null)
-            req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
         assertEquals(expected, p.getWebResponse().getContentAsString().trim());
     }
 
-    private void makeRequestAndFail(String userAndPass, int expectedCode) throws IOException, SAXException {
-        makeRequestWithAuthCodeAndFail(encode("Basic", userAndPass), expectedCode);
-    }
-
-    private void makeRequestWithAuthCodeAndFail(String authCode, int expectedCode) throws IOException, SAXException {
+    private void makeRequestAndFail(int expectedCode) throws IOException, SAXException {
         try {
-            makeRequestWithAuthCodeAndVerify(authCode, "-");
+            makeRequestAndVerify("-");
             fail();
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(expectedCode, e.getStatusCode());
@@ -151,7 +140,7 @@ public class ApiCrumbExclusionTest {
 
         public HttpResponse doIndex() {
             User u = User.current();
-            return HttpResponses.plainText(u != null ? u.getId() : "anonymous");
+            return HttpResponses.text(u != null ? u.getId() : "anonymous");
         }
     }
 }
