@@ -44,8 +44,7 @@ import java.io.IOException;
 public class ApiCrumbExclusion extends CrumbExclusion {
     @Override
     public boolean process(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        Object apiTokenValid = request.getAttribute(BasicHeaderApiTokenAuthenticator.class.getName());
-        if (apiTokenValid != null && apiTokenValid == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(request.getAttribute(BasicHeaderApiTokenAuthenticator.class.getName()))) {
             chain.doFilter(request, response);
             return true;
         }
