@@ -66,14 +66,14 @@ public class ApiCrumbExclusionTest {
         wc = j.createWebClient();
 
         // API Token
-        wc.usingBasicApiToken(foo);
-        makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
+        try(AutoCloseable ac = wc.withBasicApiToken(foo)){
+            makeRequestAndVerify("foo");
+        }
 
         // Basic auth using password
-        wc.usingBasicCredentials("foo", "foo");
-        makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "foo")){
+            makeRequestAndVerify("foo");
+        }
 
         wc.login("foo");
         checkWeCanChangeMyDescription(200);
@@ -82,14 +82,14 @@ public class ApiCrumbExclusionTest {
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
 
         // even with crumbIssuer enabled, we are not required to send a CSRF token when using API token
-        wc.usingBasicApiToken(foo);
-        makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
+        try(AutoCloseable ac = wc.withBasicApiToken(foo)){
+            makeRequestAndVerify("foo");
+        }
 
         // Basic auth using password requires crumb
-        wc.usingBasicCredentials("foo", "foo");
-        makeRequestAndFail( 403);
-        wc.removeBasicAuthorizationHeader();
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "foo")) {
+            makeRequestAndFail(403);
+        }
 
         wc.login("foo");
         checkWeCanChangeMyDescription(200);

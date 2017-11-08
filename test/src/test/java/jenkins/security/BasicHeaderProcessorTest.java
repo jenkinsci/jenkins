@@ -36,72 +36,56 @@ public class BasicHeaderProcessorTest {
     @Test
     public void testVariousWaysToCall() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.get("foo");
-        User bar = User.get("bar");
+        User foo = User.getById("foo", true);
+        User.getById("bar", true);
 
         wc = j.createWebClient();
 
         // call without authentication
-        makeRequestWithAuthAndVerify(null, "anonymous");
+        makeRequestAndVerify("anonymous");
 
         // call with API token
-        ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
-        final String token = t.getApiToken();
-        makeRequestWithAuthAndVerify("foo:"+token, "foo");
+        try(AutoCloseable ac = wc.withBasicApiToken("foo")){
+            makeRequestAndVerify( "foo");
+        }
 
         // call with invalid API token
-        makeRequestAndFail("foo:abcd"+token);
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken())){
+            makeRequestAndFail();
+        }
 
         // call with password
-        makeRequestWithAuthAndVerify("foo:foo", "foo");
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "foo")){
+            makeRequestAndVerify("foo");
+        }
 
         // call with incorrect password
-        makeRequestAndFail("foo:bar");
-
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "bar")){
+            makeRequestAndFail();
+        }
 
         wc.login("bar");
 
         // if the session cookie is valid, then basic header won't be needed
-        makeRequestWithAuthAndVerify(null, "bar");
+        makeRequestAndVerify("bar");
 
         // if the session cookie is valid, and basic header is set anyway login should not fail either
-        makeRequestWithAuthAndVerify("bar:bar", "bar");
+        try(AutoCloseable ac = wc.withBasicCredentials("bar", "bar")){
+            makeRequestAndVerify("bar");
+        }
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
-        makeRequestAndFail("foo:bar");
-    }
-
-    private void makeRequestAndFail(String userAndPass) throws IOException, SAXException {
-        makeRequestWithAuthCodeAndFail(encrypt("Basic", userAndPass));
-    }
-    
-    private String encrypt(String prefix, String userAndPass) {
-        if (userAndPass==null) {
-            return null;
-        }
-        return prefix+" "+Scrambler.scramble(userAndPass);
-    }
-
-    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
-        try {
-            makeRequestWithAuthCodeAndVerify(authCode, "-");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
+        try(AutoCloseable ac = wc.withBasicCredentials("foo", "bar")){
+            makeRequestAndFail();
         }
     }
 
-    private void makeRequestWithAuthAndVerify(String userAndPass, String username) throws IOException, SAXException {
-        makeRequestWithAuthCodeAndVerify(encrypt("Basic", userAndPass), username);
+    private void makeRequestAndFail() throws IOException, SAXException {
+        makeRequestWithAuthCodeAndFail(null);
     }
 
-    private void makeRequestWithAuthCodeAndVerify(String authCode, String expected) throws IOException, SAXException {
-        WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
-        req.setEncodingType(null);
-        if (authCode!=null)
-            req.setAdditionalHeader("Authorization", authCode);
-        Page p = wc.getPage(req);
-        assertEquals(expected, p.getWebResponse().getContentAsString().trim());
+    private void makeRequestAndVerify(String expectedLogin) throws IOException, SAXException {
+        makeRequestWithAuthCodeAndVerify(null, expectedLogin);
     }
 
     @Test
@@ -116,20 +100,45 @@ public class BasicHeaderProcessorTest {
             // call with API token
             ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
             final String token = t.getApiToken();
-            String authCode1 = encrypt(prefix,"foo:"+token);
+            String authCode1 = encode(prefix,"foo:"+token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
             
             // call with invalid API token
-            String authCode2 = encrypt(prefix,"foo:abcd"+token);
+            String authCode2 = encode(prefix,"foo:abcd"+token);
             makeRequestWithAuthCodeAndFail(authCode2);
 
             // call with password
-            String authCode3 = encrypt(prefix,"foo:foo");
+            String authCode3 = encode(prefix,"foo:foo");
             makeRequestWithAuthCodeAndVerify(authCode3, "foo");
 
             // call with incorrect password
-            String authCode4 = encrypt(prefix,"foo:bar");
+            String authCode4 = encode(prefix,"foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
+        }
+    }
+
+    private String encode(String prefix, String userAndPass) {
+        if (userAndPass==null) {
+            return null;
+        }
+        return prefix+" "+Scrambler.scramble(userAndPass);
+    }
+
+    private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException, SAXException {
+        WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
+        req.setEncodingType(null);
+        if (authCode!=null)
+            req.setAdditionalHeader("Authorization", authCode);
+        Page p = wc.getPage(req);
+        assertEquals(expectedLogin, p.getWebResponse().getContentAsString().trim());
+    }
+
+    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
+        try {
+            makeRequestWithAuthCodeAndVerify(authCode, "-");
+            fail();
+        } catch (FailingHttpStatusCodeException e) {
+            assertEquals(401, e.getStatusCode());
         }
     }
 
@@ -152,7 +161,7 @@ public class BasicHeaderProcessorTest {
 
         public HttpResponse doIndex() {
             User u = User.current();
-            return HttpResponses.plainText(u!=null ? u.getId() : "anonymous");
+            return HttpResponses.text(u!=null ? u.getId() : "anonymous");
         }
     }
 }
