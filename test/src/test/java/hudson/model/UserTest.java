@@ -823,6 +823,13 @@ public class UserTest {
         assertFalse(new File(rootDir, "bla$phem.us").exists());
         assertTrue(user.getConfigFile().getFile().exists());
         assertThat(user.getFullName(), equalTo("Weird Username"));
+        user = User.getById("make\u1000000", false);
+        assertNotNull("we do not prevent accesses to the phony name, alas", user);
+        user = User.getById("make$1000000", false);
+        assertCorrectConfig(user, "users/make$00241000000/config.xml");
+        assertFalse(new File(rootDir, "make$1000000").exists());
+        assertTrue("but asking for the real name triggers migration", user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Greedy Fella"));
     }
 
     private static void assertCorrectConfig(User user, String unixPath) {
