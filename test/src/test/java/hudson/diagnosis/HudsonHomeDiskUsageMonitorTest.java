@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
@@ -70,13 +71,16 @@ public class HudsonHomeDiskUsageMonitorTest {
         auth.add(Jenkins.READ, "users");
         j.jenkins.setAuthorizationStrategy(auth);
 
-        WebRequest request = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        User bob = User.getById("bob", true);
+        User administrator = User.getById("administrator", true);
+
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
         NameValuePair param = new NameValuePair("no", "true");
         request.setRequestParameters(Collections.singletonList(param));
 
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
 
-        wc.withBasicCredentials("bob");
+        wc.withBasicApiToken(bob);
         try {
             wc.getPage(request);
             fail();
@@ -93,7 +97,7 @@ public class HudsonHomeDiskUsageMonitorTest {
             assertEquals(403, e.getStatusCode());
         }
 
-        wc.withBasicCredentials("administrator");
+        wc.withBasicApiToken(administrator);
         wc.getPage(request);
         assertFalse(mon.isEnabled());
 
