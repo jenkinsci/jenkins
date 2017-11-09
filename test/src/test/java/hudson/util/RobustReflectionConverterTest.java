@@ -26,17 +26,11 @@ package hudson.util;
 
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Items;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
-import hudson.model.Job;
-import hudson.model.Saveable;
+import hudson.model.*;
 import hudson.security.ACL;
 
 import java.io.ByteArrayInputStream;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
@@ -185,7 +179,9 @@ public class RobustReflectionConverterTest {
     @Test
     public void testRestInterfaceFailure() throws Exception {
         Items.XSTREAM2.addCriticalField(KeywordProperty.class, "criticalField");
-        
+
+        User test = User.getById("test", true);
+
         // without addCriticalField. This is accepted.
         {
             FreeStyleProject p = r.createFreeStyleProject();
@@ -198,11 +194,8 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.withBasicCredentials("test");
-            WebRequest req = new WebRequest(
-                    wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
-                    HttpMethod.POST
-            );
+            wc.withBasicApiToken(test);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
@@ -231,11 +224,8 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.withBasicCredentials("test");
-            WebRequest req = new WebRequest(
-                    wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
-                    HttpMethod.POST
-            );
+            wc.withBasicApiToken(test);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
             
