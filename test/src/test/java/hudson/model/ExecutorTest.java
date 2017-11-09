@@ -145,7 +145,7 @@ public class ExecutorTest {
 
         wc = j.createWebClient();
         wc.withBasicCredentials("regular-joe");
-        api = j.createWebClient().login("regular-joe").goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+        api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
     }
