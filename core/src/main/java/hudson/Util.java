@@ -516,6 +516,10 @@ public class Util {
             if (attrs.isSymbolicLink()) {
                 return true;
             } else if (attrs instanceof DosFileAttributes) {
+                /* Returns true for non-symbolic link reparse points and devices. We could call
+                 * WindowsFileAttributes#isReparsePoint with reflection instead to exclude devices,
+                 * but as mentioned in the above comment this does not appear to be an issue.
+                 */
                 return attrs.isOther();
             } else {
                 return false;
