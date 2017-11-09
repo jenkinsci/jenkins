@@ -1345,11 +1345,10 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.print("Symbolic links are not supported on this platform");
             Functions.printStackTrace(e, log);
-        } catch (FileSystemException e) {
-            if (Functions.isWindows()) {
+        } catch (IOException e) {
+            if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
             }
-        } catch (IOException e) {
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
             Util.displayIOException(e,listener);
