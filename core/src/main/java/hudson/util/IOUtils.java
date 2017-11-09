@@ -144,7 +144,7 @@ public class IOUtils {
         }
     }
 
-   /**
+    /**
      * Read the first line of the given stream, close it, and return that line.
      *
      * @param encoding
