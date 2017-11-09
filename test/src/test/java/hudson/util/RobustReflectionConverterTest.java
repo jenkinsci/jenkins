@@ -198,7 +198,7 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.login("test", "test");
+            wc.withBasicCredentials("test");
             WebRequest req = new WebRequest(
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
@@ -231,7 +231,7 @@ public class RobustReflectionConverterTest {
             // Configure a bad keyword via REST.
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
-            wc.login("test", "test");
+            wc.withBasicCredentials("test");
             WebRequest req = new WebRequest(
                     wc.createCrumbedUrl(String.format("%s/config.xml", p.getUrl())),
                     HttpMethod.POST
