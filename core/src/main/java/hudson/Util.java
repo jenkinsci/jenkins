@@ -25,15 +25,12 @@ package hudson;
 
 import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
-import com.sun.jna.Native;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
 import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.WinIOException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -84,9 +81,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import hudson.util.jna.Kernel32Utils;
-import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import java.security.DigestInputStream;
 
@@ -1328,78 +1322,6 @@ public class Util {
     public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
-            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
-                return;
-            }
-            if (NO_SYMLINK) {
-                return;
-            }
-
-            File symlinkFile = new File(baseDir, symlinkPath);
-            if (Functions.isWindows()) {
-                if (symlinkFile.exists()) {
-                    symlinkFile.delete();
-                }
-                File dst = new File(symlinkFile,"..\\"+targetPath);
-                try {
-                    Kernel32Utils.createSymbolicLink(symlinkFile,targetPath,dst.isDirectory());
-                } catch (WinIOException e) {
-                    if (e.getErrorCode()==1314) {/* ERROR_PRIVILEGE_NOT_HELD */
-                        warnWindowsSymlink();
-                        return;
-                    }
-                    throw e;
-                } catch (UnsatisfiedLinkError e) {
-                    // not available on this Windows
-                    return;
-                }
-            } else {
-                String errmsg = "";
-                // if a file or a directory exists here, delete it first.
-                // try simple delete first (whether exists() or not, as it may be symlink pointing
-                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
-                if (!symlinkFile.delete() && symlinkFile.exists())
-                    // ignore a failure.
-                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
-
-                Integer r=null;
-                if (!SYMLINK_ESCAPEHATCH) {
-                    try {
-                        r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        if (r!=0) {
-                            r = Native.getLastError();
-                            errmsg = LIBC.strerror(r);
-                        }
-                    } catch (LinkageError e) {
-                        // if JNA is unavailable, fall back.
-                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        POSIX posix = PosixAPI.jnr();
-                        if (posix.isNative()) {
-                            // TODO should we rethrow PosixException as IOException here?
-                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        }
-                    }
-                }
-                if (r==null) {
-                    // if all else fail, fall back to the most expensive approach of forking a process
-                    // TODO is this really necessary? JavaPOSIX should do this automatically
-                    r = new LocalProc(new String[]{
-                        "ln","-s", targetPath, symlinkPath},
-                        new String[0],listener.getLogger(), baseDir).join();
-                }
-                if (r!=0)
-                    listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
-            }
-        } catch (IOException e) {
-            PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
-            Util.displayIOException(e,listener);
-            Functions.printStackTrace(e, log);
-        }
-    }
-
-    private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
-        try {
             Path path = new File(baseDir, symlinkPath).toPath();
             Path target = Paths.get(targetPath, new String[0]);
 
@@ -1419,19 +1341,19 @@ public class Util {
                     throw fileAlreadyExistsException;
                 }
             }
-            return true;
         } catch (UnsupportedOperationException e) {
-                return true; // no symlinks on this platform
+            PrintStream log = listener.getLogger();
+            log.print("Symbolic links are not supported on this platform");
+            Functions.printStackTrace(e, log);
         } catch (FileSystemException e) {
             if (Functions.isWindows()) {
                 warnWindowsSymlink();
-                return true;
             }
-            return false;
-        } catch (IOException x) {
-            throw x;
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+        } catch (IOException e) {
+            PrintStream log = listener.getLogger();
+            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
+            Util.displayIOException(e,listener);
+            Functions.printStackTrace(e, log);
         }
     }
 
