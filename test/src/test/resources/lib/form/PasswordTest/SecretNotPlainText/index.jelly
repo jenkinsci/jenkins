@@ -26,7 +26,7 @@ THE SOFTWARE.
   Config page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
 <l:layout title="Making sure the password field gets an encrypted value">
   <l:main-panel>
     <f:form method="post" name="config" action="thisFormWillNotBeSubmitted">
@@ -34,6 +34,13 @@ THE SOFTWARE.
       <j:set var="descriptor" value="${it.descriptor}" />
       <f:entry field="secret">
         <f:password id="password" />
+      </f:entry>
+  
+      <f:entry field="toto">
+        <f:textbox name="parameter.defaultValue" value="${instance.toto}" />
+      </f:entry>
+      <f:entry field="titi">
+        <f:textbox name="parameter.defaultValue2" value="${instance.titi}" />
       </f:entry>
     </f:form>
   </l:main-panel>
