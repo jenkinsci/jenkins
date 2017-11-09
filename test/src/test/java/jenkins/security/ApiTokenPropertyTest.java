@@ -121,7 +121,6 @@ public class ApiTokenPropertyTest {
 
         wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
         WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
-        wc.addCrumb(request);
         HtmlPage res = wc.getPage(request);
 
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
