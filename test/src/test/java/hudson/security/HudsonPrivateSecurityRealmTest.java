@@ -67,6 +67,7 @@ public class HudsonPrivateSecurityRealmTest {
             // verify the sanity that the password is really used
             // this should fail
             j.createWebClient().login("bob", "bob");
+            fail();
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(401,e.getStatusCode());
         }
