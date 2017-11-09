@@ -66,11 +66,11 @@ public class TarArchiverTest {
 
             FilePath f = dir.child("a.txt");
             f.touch(0);
-            f.chmod(0100755);
+            f.chmod(0755);
 
             f = dir.child("subdir/b.txt");
             f.touch(0);
-            f.chmod(0100644);
+            f.chmod(0644);
             int dirMode = dir.child("subdir").mode();
 
             dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
