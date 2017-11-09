@@ -262,14 +262,14 @@ public class UtilTest {
 
     @Test
     public void testIsSymlink_onWindows_junction() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
         tmp.newFolder("targetDir");
         File d = tmp.newFolder("dir");
         Process p = new ProcessBuilder()
                 .directory(d)
                 .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
                 .start();
-        assertThat("unable to create junction", p.waitFor(), is(0));
+        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
         assertTrue(Util.isSymlink(new File(d, "junction")));
     }
 
