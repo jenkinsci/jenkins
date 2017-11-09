@@ -34,6 +34,8 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
+import hudson.os.PosixAPI;
+import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -124,7 +126,6 @@ import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
-import hudson.os.PosixAPI;
 import java.util.Collections;
         
 /**
@@ -1627,7 +1628,7 @@ public final class FilePath implements Serializable {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException {
+    public int mode() throws IOException, InterruptedException, PosixException {
         if(!isUnix())   return -1;
         return act(new SecureFileCallable<Integer>() {
             private static final long serialVersionUID = 1L;
