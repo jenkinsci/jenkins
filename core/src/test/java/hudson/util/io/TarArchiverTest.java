@@ -66,11 +66,11 @@ public class TarArchiverTest {
 
             FilePath f = dir.child("a.txt");
             f.touch(0);
-            f.chmod(0755);
+            f.chmod(100755);
 
             f = dir.child("subdir/b.txt");
             f.touch(0);
-            f.chmod(0644);
+            f.chmod(100644);
             int dirMode = dir.child("subdir").mode();
 
             dir.tar(Files.newOutputStream(tar.toPath()),"**/*");
@@ -83,9 +83,9 @@ public class TarArchiverTest {
             // extract via the tar command
             run(e, "tar", "xvpf", tar.getAbsolutePath());
 
-            assertEquals(0755,e.child("a.txt").mode());
+            assertEquals(100755,e.child("a.txt").mode());
             assertEquals(dirMode,e.child("subdir").mode());
-            assertEquals(0644,e.child("subdir/b.txt").mode());
+            assertEquals(100644,e.child("subdir/b.txt").mode());
 
 
             // extract via the zip command
