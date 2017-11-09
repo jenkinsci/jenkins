@@ -725,8 +725,10 @@ public class UtilTest {
         assertEquals(PosixFilePermissions.fromString("-wxr--rw-"), Util.modeToPermissions(0346));
         assertEquals(PosixFilePermissions.fromString("---------"), Util.modeToPermissions(0000));
 
+        assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
+
         try {
-            Util.modeToPermissions(0b1111111110);
+            Util.modeToPermissions(01777);
             fail("Did not detect invalid mode");
         } catch (IOException e) {
             assertThat(e.getMessage(), startsWith("Invalid mode"));
