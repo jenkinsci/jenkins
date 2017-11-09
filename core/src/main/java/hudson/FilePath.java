@@ -124,6 +124,7 @@ import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
+import hudson.os.PosixAPI;
 import java.util.Collections;
         
 /**
@@ -1594,7 +1595,6 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1610,7 +1610,11 @@ public final class FilePath implements Serializable {
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
+        if (Util.NATIVE_CHMOD_MODE) {
+            PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
+        } else {
+            Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
+        }
     }
 
     private static boolean CHMOD_WARNED = false;

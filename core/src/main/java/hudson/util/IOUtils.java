@@ -2,6 +2,7 @@ package hudson.util;
 
 import hudson.Functions;
 import hudson.Util;
+import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -131,8 +132,11 @@ public class IOUtils {
         try {
             if (Functions.isWindows()) {
                 return -1;
+            } else if (Util.NATIVE_CHMOD_MODE) {
+                return PosixAPI.jnr().stat(f.getPath()).mode();
+            } else {
+                return Util.permissionsToMode(Files.getPosixFilePermissions(f.toPath()));
             }
-            return Util.permissionsToMode(Files.getPosixFilePermissions(f.toPath()));
         } catch (IOException cause) {
             PosixException e = new PosixException("Unable to get file permissions", null);
             e.initCause(cause);
