@@ -23,6 +23,8 @@
  */
 package hudson.util.jna;
 
+import hudson.Util;
+
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,7 +101,7 @@ public class Kernel32Utils {
      */
     @Deprecated
     public static boolean isJunctionOrSymlink(File file) throws IOException {
-        return (file.exists() && (Kernel32.FILE_ATTRIBUTE_REPARSE_POINT & getWin32FileAttributes(file)) != 0);
+        return Util.isSymlink(file);
     }
 
     public static File getTempDir() {
