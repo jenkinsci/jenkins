@@ -813,6 +813,18 @@ public class UserTest {
         assertThat(empty.getFullName(), equalTo("Empty"));
     }
 
+    @Issue("JENKINS-47909")
+    @LocalData
+    @Test
+    public void shellyUsernameMigrated() {
+        File rootDir = new File(Jenkins.getInstance().getRootDir(), "users");
+        User user = User.getById("bla$phem.us", false);
+        assertCorrectConfig(user, "users/bla$0024phem.us/config.xml");
+        assertFalse(new File(rootDir, "bla$phem.us").exists());
+        assertTrue(user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Weird Username"));
+    }
+
     private static void assertCorrectConfig(User user, String unixPath) {
         assertThat(user.getConfigFile().getFile().getPath(), endsWith(unixPath.replace('/', File.separatorChar)));
     }
