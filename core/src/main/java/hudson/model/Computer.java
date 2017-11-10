@@ -1469,7 +1469,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
         if (!nExecutors.matches("^(\\d*[1-9]\\d*)$")) {
-            throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(), "numExecutors");
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
