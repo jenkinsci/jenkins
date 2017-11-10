@@ -523,9 +523,9 @@ public class JDKInstaller extends ToolInstaller {
                         String n = extractAttribute(fragment,"name");
                         String v = extractAttribute(fragment,"value");
                         if (n==null || v==null)     continue;
-                        if (n.equals("userid"))
+                        if (n.equals("userid") || n.equals("ssousername"))
                             v = u;
-                        if (n.equals("pass")) {
+                        if (n.equals("pass") || n.equals("password")) {
                             v = p.getPlainText();
                             if (authCount++ > 3) {
                                 log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
