@@ -1350,10 +1350,10 @@ public class Util {
         } catch (InvalidPathException | IOException e) {
             if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
+                return;
             }
             PrintStream log = listener.getLogger();
             log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
-            Util.displayIOException(e,listener);
             Functions.printStackTrace(e, log);
         }
     }
