@@ -79,6 +79,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -2016,6 +2017,23 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
+        // Use NIO copy with StandardCopyOption.COPY_ATTRIBUTES when copying on the same machine.
+        if (this.channel == target.channel) {
+            act(new SecureFileCallable<Void>() {
+                public Void invoke(File f, VirtualChannel channel) throws IOException {
+                    try {
+                        File targetFile = new File(target.remote).getAbsoluteFile();
+                        mkdirs(targetFile.getParentFile());
+                        Files.copy(reading(f).toPath(), writing(targetFile).toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (InvalidPathException e) {
+                        throw new IOException(e);
+                    }
+                    return null;
+                }
+            });
+            return;
+        }
+
         copyTo(target);
         // copy file permission
         target.chmod(mode());
