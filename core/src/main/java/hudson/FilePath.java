@@ -1615,7 +1615,11 @@ public final class FilePath implements Serializable {
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
         } else {
-            Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
+            try {
+                Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
         }
     }
 
