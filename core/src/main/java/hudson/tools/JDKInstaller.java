@@ -477,7 +477,12 @@ public class JDKInstaller extends ToolInstaller {
                     throw new IOException("Failed to request " + m.getURI() +" exit code="+r);
 
                 if (m.getURI().getHost().equals("login.oracle.com")) {
-                    /* Login flow:
+                    /* Oracle switched from old to new, and then back to old. This code should work for either.
+                     * Old Login flow:
+                     * 1. /mysso/signon.jsp: Form for username + password: Submit actions is:
+                     * 2. /oam/server/sso/auth_cred_submit: Returns a 302 to:
+                     * 3. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
+                     * New Login flow:
                      * 1. /oaam_server/oamLoginPage.jsp: Form for username + password. Submit action is:
                      * 2. /oaam_server/login.do: Returns a 302 to:
                      * 3. /oaam_server/loginAuth.do: After 2 seconds, JS sets window.location to:
@@ -485,9 +490,9 @@ public class JDKInstaller extends ToolInstaller {
                      * 5. /oam/server/dap/cred_submit: Returns a 302 to:
                      * 6. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
                      */
-                    if (m.getURI().getPath().contains("/loginAuth.do")) { // You are redirected to this page immediately after logging in.
+                    if (m.getURI().getPath().contains("/loginAuth.do")) {
                         try {
-                            Thread.sleep(2000); // Oracle website waits 2 seconds after logging in before redirecting.
+                            Thread.sleep(2000);
                             m.releaseConnection();
                             m = new GetMethod(new URI(m.getURI(), "/oaam_server/authJump.do?jump=false", true).toString());
                             continue;
