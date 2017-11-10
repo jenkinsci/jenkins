@@ -518,6 +518,8 @@ public class Util {
             } else {
                 return false;
             }
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         } catch (NoSuchFileException e) {
             return false;
         }
@@ -1345,7 +1347,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.print("Symbolic links are not supported on this platform");
             Functions.printStackTrace(e, log);
-        } catch (IOException e) {
+        } catch (InvalidPathException | IOException e) {
             if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
             }
