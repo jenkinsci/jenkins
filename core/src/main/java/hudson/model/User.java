@@ -453,7 +453,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         if (o instanceof User) {
                             if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
                                     .equals(legacyUserDir.getName())) {
-                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
+                                if (legacyUserDir.renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {legacyUserDir, configFile.getParentFile()});
+                                } else {
                                     LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
                                             new Object[]{legacyUserDir, configFile.getParentFile()});
                                 }
@@ -478,6 +480,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 try {
                     Files.createDirectory(configFile.getParentFile().toPath());
                     Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
+                    LOGGER.log(Level.INFO, "Migrated unsafe user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
                 } catch (IOException | InvalidPathException e) {
                     LOGGER.log(
                             Level.WARNING,

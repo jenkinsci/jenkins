@@ -303,7 +303,11 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
                         } else {
                             break;
                         }
-                        buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
+                        try {
+                            buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
+                        } catch (NumberFormatException x) {
+                            buf.append('$').append(hex);
+                        }
                     }
                 }
                 return buf.toString();
@@ -509,7 +513,11 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
                         } else {
                             break;
                         }
-                        buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
+                        try {
+                            buf.append(Character.valueOf((char)Integer.parseInt(hex.toString(), 16)));
+                        } catch (NumberFormatException x) {
+                            buf.append('$').append(hex);
+                        }
                     }
                 }
                 return buf.toString();
