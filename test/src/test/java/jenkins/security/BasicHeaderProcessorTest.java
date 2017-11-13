@@ -45,39 +45,38 @@ public class BasicHeaderProcessorTest {
         makeRequestAndVerify("anonymous");
 
         // call with API token
-        wc.withBasicApiToken("foo", it ->
-            makeRequestAndVerify( "foo")
-        );
+        wc = j.createWebClient();
+        wc.withBasicApiToken("foo");
+        makeRequestAndVerify( "foo");
 
         // call with invalid API token
-        wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken(), it ->
-            makeRequestAndFail()
-        );
+        wc = j.createWebClient();
+        wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken());
+        makeRequestAndFail();
 
         // call with password
-        wc.withBasicCredentials("foo", it ->
-            makeRequestAndVerify("foo")
-        );
+        wc = j.createWebClient();
+        wc.withBasicCredentials("foo");
+        makeRequestAndVerify("foo");
 
         // call with incorrect password
-        wc.withBasicCredentials("foo", "bar", it ->
-            makeRequestAndFail()
-        );
+        wc = j.createWebClient();
+        wc.withBasicCredentials("foo", "bar");
+        makeRequestAndFail();
 
+        wc = j.createWebClient();
         wc.login("bar");
 
         // if the session cookie is valid, then basic header won't be needed
         makeRequestAndVerify("bar");
 
         // if the session cookie is valid, and basic header is set anyway login should not fail either
-        wc.withBasicCredentials("bar", "bar", it ->
-            makeRequestAndVerify("bar")
-        );
+        wc.withBasicCredentials("bar");
+        makeRequestAndVerify("bar");
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
-        wc.withBasicCredentials("foo", "bar", it ->
-            makeRequestAndFail()
-        );
+        wc.withBasicCredentials("foo", "bar");
+        makeRequestAndFail();
     }
 
     private void makeRequestAndFail() throws IOException, SAXException {
@@ -95,14 +94,14 @@ public class BasicHeaderProcessorTest {
         wc = j.createWebClient();
 
         String[] basicCandidates = {"Basic", "BASIC", "basic", "bASIC"};
-        
+
         for (String prefix : basicCandidates) {
             // call with API token
             ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
             final String token = t.getApiToken();
             String authCode1 = encode(prefix,"foo:"+token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
-            
+
             // call with invalid API token
             String authCode2 = encode(prefix,"foo:abcd"+token);
             makeRequestWithAuthCodeAndFail(authCode2);

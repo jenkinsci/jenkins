@@ -68,13 +68,13 @@ public class ApiCrumbExclusionTest {
         // API Token
         wc.withBasicApiToken(foo);
         makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
 
         // Basic auth using password
+        wc = j.createWebClient();
         wc.withBasicCredentials("foo");
         makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
 
+        wc = j.createWebClient();
         wc.login("foo");
         checkWeCanChangeMyDescription(200);
 
@@ -84,13 +84,13 @@ public class ApiCrumbExclusionTest {
         // even with crumbIssuer enabled, we are not required to send a CSRF token when using API token
         wc.withBasicApiToken(foo);
         makeRequestAndVerify("foo");
-        wc.removeBasicAuthorizationHeader();
 
         // Basic auth using password requires crumb
+        wc = j.createWebClient();
         wc.withBasicCredentials("foo");
         makeRequestAndFail(403);
-        wc.removeBasicAuthorizationHeader();
 
+        wc = j.createWebClient();
         wc.login("foo");
         checkWeCanChangeMyDescription(200);
     }
