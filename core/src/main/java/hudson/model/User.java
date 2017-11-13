@@ -453,7 +453,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         if (o instanceof User) {
                             if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
                                     .equals(legacyUserDir.getName())) {
-                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
+                                if (legacyUserDir.renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {legacyUserDir, configFile.getParentFile()});
+                                } else {
                                     LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
                                             new Object[]{legacyUserDir, configFile.getParentFile()});
                                 }
@@ -478,6 +480,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 try {
                     Files.createDirectory(configFile.getParentFile().toPath());
                     Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
+                    LOGGER.log(Level.INFO, "Migrated unsafe user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
                 } catch (IOException | InvalidPathException e) {
                     LOGGER.log(
                             Level.WARNING,
@@ -578,6 +581,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *            <code>null</code> if {@link User} object with the given id doesn't exist.
      * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
      *         and the user does not exist.
+     * @since 1.651.2 / 2.3
      */
     public static @Nullable User getById(String id, boolean create) {
         return getOrCreate(id, id, create);

@@ -29,6 +29,7 @@ public class IdStrategyTest {
         assertCaseInsensitiveRoundTrip("NUL", "$006eul");
         assertEquals("foo", idStrategy.idFromFilename("~foo"));
         assertEquals("0123 _-@a", idStrategy.idFromFilename("0123 _-@~a"));
+        assertEquals("big$money", idStrategy.idFromFilename("big$money"));
     }
 
     @Test

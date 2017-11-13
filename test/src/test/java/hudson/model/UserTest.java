@@ -813,6 +813,25 @@ public class UserTest {
         assertThat(empty.getFullName(), equalTo("Empty"));
     }
 
+    @Issue("JENKINS-47909")
+    @LocalData
+    @Test
+    public void shellyUsernameMigrated() {
+        File rootDir = new File(Jenkins.getInstance().getRootDir(), "users");
+        User user = User.getById("bla$phem.us", false);
+        assertCorrectConfig(user, "users/bla$0024phem.us/config.xml");
+        assertFalse(new File(rootDir, "bla$phem.us").exists());
+        assertTrue(user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Weird Username"));
+        user = User.getById("make\u1000000", false);
+        assertNotNull("we do not prevent accesses to the phony name, alas", user);
+        user = User.getById("make$1000000", false);
+        assertCorrectConfig(user, "users/make$00241000000/config.xml");
+        assertFalse(new File(rootDir, "make$1000000").exists());
+        assertTrue("but asking for the real name triggers migration", user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Greedy Fella"));
+    }
+
     private static void assertCorrectConfig(User user, String unixPath) {
         assertThat(user.getConfigFile().getFile().getPath(), endsWith(unixPath.replace('/', File.separatorChar)));
     }
