@@ -845,7 +845,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
 
             // doing this early allows InitStrategy to set environment upfront
