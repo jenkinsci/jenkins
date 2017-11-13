@@ -728,6 +728,114 @@ public class UserTest {
         }
     }
 
+    @Test
+    @Issue("SECURITY-499")
+    public void createdUsersHaveCorrectConfigLocation() {
+        assertCorrectConfig(User.getById("admin", true), "users/admin/config.xml");
+        assertCorrectConfig(User.getById("foo", true), "users/foo/config.xml");
+        assertCorrectConfig(User.getById("foo/bar", true), "users/foo$002fbar/config.xml");
+        assertCorrectConfig(User.getById("foo/bar/baz", true), "users/foo$002fbar$002fbaz/config.xml");
+        assertCorrectConfig(User.getById("/", true), "users/$002f/config.xml");
+        assertCorrectConfig(User.getById(".", true), "users/$002f/config.xml");
+        assertCorrectConfig(User.getById("..", true), "users/$002e$002e/config.xml");
+        assertCorrectConfig(User.getById("../config.xml", true), "users/..$002fconfig.xml/config.xml");
+    }
+
+    @Test
+    @Issue("SECURITY-499")
+    @LocalData
+    public void legacyUserConfigDirsMigrated() {
+        File rootDir = new File(Jenkins.getInstance().getRootDir(), "users");
+
+        User admin = User.getById("admin", false);
+        assertCorrectConfig(admin, "users/admin/config.xml");
+        assertTrue(admin.getConfigFile().getFile().exists());
+        assertThat(admin.getFullName(), equalTo("Admin"));
+
+        User foo = User.getById("foo", false);
+        File fooDir = new File(rootDir, "foo");
+        assertCorrectConfig(foo, "users/foo/config.xml");
+        assertTrue(foo.getConfigFile().getFile().exists());
+        assertTrue(fooDir.exists());
+        assertThat(foo.getFullName(), equalTo("Foo"));
+
+        User fooBar = User.getById("foo/bar", false);
+        File fooBarDir = new File(fooDir, "bar");
+        assertCorrectConfig(fooBar, "users/foo$002fbar/config.xml");
+        assertTrue(fooBar.getConfigFile().getFile().exists());
+        assertTrue(fooDir.exists());
+        assertTrue(fooBarDir.exists());
+        assertThat(fooBar.getFullName(), equalTo("Foo Bar"));
+
+        User fooBaz = User.getById("foo/baz", false);
+        File fooBazDir = new File(fooDir, "baz");
+        assertCorrectConfig(fooBaz, "users/foo$002fbaz/config.xml");
+        assertTrue(fooBaz.getConfigFile().getFile().exists());
+        assertTrue(fooDir.exists());
+        assertFalse(fooBazDir.exists());
+        assertThat(fooBaz.getFullName(), equalTo("Foo Baz"));
+
+        User fooBarBaz = User.getById("foo/bar/baz", false);
+        File fooBarBazDir = new File(fooBarDir, "baz");
+        assertCorrectConfig(fooBarBaz, "users/foo$002fbar$002fbaz/config.xml");
+        assertTrue(fooBarBaz.getConfigFile().getFile().exists());
+        assertTrue(fooDir.exists());
+        assertFalse(fooBarBazDir.exists());
+        assertFalse(fooBarDir.exists());
+        assertThat(fooBarBaz.getFullName(), equalTo("Foo Bar Baz"));
+
+        User slash = User.getById("/", false);
+        File slashDir = new File(rootDir, "$002f");
+        assertCorrectConfig(slash, "users/$002f/config.xml");
+        assertTrue(slash.getConfigFile().getFile().exists());
+        assertTrue(slashDir.exists());
+        assertFalse(new File(rootDir, "config.xml").exists());
+        assertThat(slash.getFullName(), equalTo("Slash"));
+    }
+
+    @Test
+    @Issue("SECURITY-499")
+    @LocalData
+    public void emptyUsernameConfigMigrated() {
+        File rootDir = new File(Jenkins.getInstance().getRootDir(), "users");
+
+        User admin = User.getById("admin", false);
+        assertCorrectConfig(admin, "users/admin/config.xml");
+        assertTrue(admin.getConfigFile().getFile().exists());
+        assertThat(admin.getFullName(), equalTo("Admin"));
+
+        User empty = User.getById("", false);
+        File emptyDir = new File(rootDir, "$002f");
+        assertCorrectConfig(empty, "users/$002f/config.xml");
+        assertTrue(empty.getConfigFile().getFile().exists());
+        assertTrue(emptyDir.exists());
+        assertFalse(new File(rootDir, "config.xml").exists());
+        assertThat(empty.getFullName(), equalTo("Empty"));
+    }
+
+    @Issue("JENKINS-47909")
+    @LocalData
+    @Test
+    public void shellyUsernameMigrated() {
+        File rootDir = new File(Jenkins.getInstance().getRootDir(), "users");
+        User user = User.getById("bla$phem.us", false);
+        assertCorrectConfig(user, "users/bla$0024phem.us/config.xml");
+        assertFalse(new File(rootDir, "bla$phem.us").exists());
+        assertTrue(user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Weird Username"));
+        user = User.getById("make\u1000000", false);
+        assertNotNull("we do not prevent accesses to the phony name, alas", user);
+        user = User.getById("make$1000000", false);
+        assertCorrectConfig(user, "users/make$00241000000/config.xml");
+        assertFalse(new File(rootDir, "make$1000000").exists());
+        assertTrue("but asking for the real name triggers migration", user.getConfigFile().getFile().exists());
+        assertThat(user.getFullName(), equalTo("Greedy Fella"));
+    }
+
+    private static void assertCorrectConfig(User user, String unixPath) {
+        assertThat(user.getConfigFile().getFile().getPath(), endsWith(unixPath.replace('/', File.separatorChar)));
+    }
+
      public static class SomeUserProperty extends UserProperty {
          
         @TestExtension

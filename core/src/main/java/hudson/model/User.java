@@ -50,6 +50,10 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -449,7 +453,9 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         if (o instanceof User) {
                             if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
                                     .equals(legacyUserDir.getName())) {
-                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
+                                if (legacyUserDir.renameTo(configFile.getParentFile())) {
+                                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {legacyUserDir, configFile.getParentFile()});
+                                } else {
                                     LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
                                             new Object[]{legacyUserDir, configFile.getParentFile()});
                                 }
@@ -466,6 +472,45 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 }
             }
         }
+
+        File unsanitizedLegacyConfigFile = getUnsanitizedLegacyConfigFileFor(id);
+        if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
+            File ancestor = unsanitizedLegacyConfigFile.getParentFile();
+            if (!configFile.exists()) {
+                try {
+                    Files.createDirectory(configFile.getParentFile().toPath());
+                    Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
+                    LOGGER.log(Level.INFO, "Migrated unsafe user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
+                } catch (IOException | InvalidPathException e) {
+                    LOGGER.log(
+                            Level.WARNING,
+                            String.format("Failed to migrate user record from %s to %s, see SECURITY-499 for more information", idStrategy().legacyFilenameOf(id), idStrategy().filenameOf(id)),
+                            e);
+                }
+            }
+
+            // Don't clean up ancestors with other children; the directories should be cleaned up when the last child
+            // is migrated
+            File tmp = ancestor;
+            try {
+                while (!ancestor.equals(getRootDir())) {
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(ancestor.toPath())) {
+                        if (!stream.iterator().hasNext()) {
+                            tmp = ancestor;
+                            ancestor = tmp.getParentFile();
+                            Files.deleteIfExists(tmp.toPath());
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException | InvalidPathException e) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Could not delete " + tmp + " when cleaning up legacy user directories", e);
+                }
+            }
+        }
+
         if (u==null && (create || configFile.exists())) {
             User tmp = new User(id, fullName);
             User prev;
@@ -536,6 +581,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *            <code>null</code> if {@link User} object with the given id doesn't exist.
      * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
      *         and the user does not exist.
+     * @since 1.651.2 / 2.3
      */
     public static @Nullable User getById(String id, boolean create) {
         return getOrCreate(id, id, create);
@@ -689,6 +735,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                         pathname.getName(), id);
             }
         });
+    }
+
+    private static File getUnsanitizedLegacyConfigFileFor(String id) {
+        return new File(getRootDir(), idStrategy().legacyFilenameOf(id) + "/config.xml");
     }
 
     /**
