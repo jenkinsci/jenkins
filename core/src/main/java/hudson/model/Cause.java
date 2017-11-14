@@ -374,7 +374,7 @@ public abstract class Cause {
          */
         @Exported(visibility=3)
         public String getUserName() {
-        	final User user = User.get(authenticationName, false, Collections.emptyMap());
+        	final User user = User.getById(authenticationName, false);
         	return user != null ? user.getDisplayName() : authenticationName;
         }
 
