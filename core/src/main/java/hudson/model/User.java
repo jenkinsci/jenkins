@@ -401,23 +401,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      An existing or created user. May be {@code null} if a user does not exist and
      *      {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
 
         if(idOrFullName==null)
             return null;
 
-        // sort resolvers by priority
-        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(ExtensionList.lookup(CanonicalIdResolver.class));
-        Collections.sort(resolvers);
+        // TODO: In many cases the method should receive the canonical ID.
+        // Maybe it makes sense to try AllUsers.byName().get(idkey) before invoking all resolvers and other stuff
+        // oleg-nenashev: FullNameResolver with User.getAll() loading and iteration makes me think it's a good idea.
 
-        String id = null;
-        for (CanonicalIdResolver resolver : resolvers) {
-            id = resolver.resolveCanonicalId(idOrFullName, context);
-            if (id != null) {
-                LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
-                break;
-            }
-        }
+        String id = CanonicalIdResolver.resolve(idOrFullName, context);
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
         if (id == null) {
             throw new IllegalStateException("The user id should be always non-null thanks to DefaultUserCanonicalIdResolver");
@@ -1077,6 +1070,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     }
 
+    /**
+     * Resolves User IDs by ID, full names or other strings.
+     *
+     * This extension point may be useful to map SCM user names to Jenkins {@link User} IDs.
+     * Currently the extension point is used in {@link User#get(String, boolean, Map)}.
+     *
+     * @since 1.479
+     * @see jenkins.model.DefaultUserCanonicalIdResolver
+     * @see FullNameIdResolver
+     */
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
@@ -1086,6 +1089,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          */
         public static final String REALM = "realm";
 
+        @Override
         public int compareTo(CanonicalIdResolver o) {
             // reverse priority order
             int i = getPriority();
@@ -1097,12 +1101,55 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, @Nonnull Map<String, ?> context);
 
+        /**
+         * Gets priority of the resolver.
+         * Higher priority means that it will be checked earlier.
+         *
+         * Overriding methods must not use {@link Integer#MIN_VALUE}, because it will cause collisions
+         * with {@link jenkins.model.DefaultUserCanonicalIdResolver}.
+         *
+         * @return Priority of the resolver.
+         */
         public int getPriority() {
             return 1;
         }
 
+        //TODO: It is too late to use Extension Point ordinals, right?
+        //Such sorting and collection rebuild is not good for User#get(...) method performance.
+        /**
+         * Gets all extension points, sorted by priority.
+         * @return Sorted list of extension point implementations.
+         * @since TODO
+         */
+        public static List<CanonicalIdResolver> all() {
+            List<CanonicalIdResolver> resolvers = new ArrayList<>(ExtensionList.lookup(CanonicalIdResolver.class));
+            Collections.sort(resolvers);
+            return resolvers;
+        }
+
+        /**
+         * Resolves users using all available {@link CanonicalIdResolver}s.
+         * @param idOrFullName ID or full name of the user
+         * @param context Context
+         * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
+         */
+        @CheckForNull
+        public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
+            for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
+                //TODO: add try/catch for Runtime exceptions? It should not happen now && it may cause performance degradation
+                String id = resolver.resolveCanonicalId(idOrFullName, context);
+                if (id != null) {
+                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
+                    return id;
+                }
+            }
+
+            // De-facto it is not going to happen OOTB, because the current DefaultUserCanonicalIdResolver
+            // always returns a value. But we still need to check nulls if somebody disables the extension point
+            return null;
+        }
     }
 
 
