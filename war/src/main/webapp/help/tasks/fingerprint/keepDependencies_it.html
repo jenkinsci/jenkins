@@ -1,0 +1,20 @@
+<div>
+  Se quest'opzione è abilitata, tutte <a href="lastSuccessfulBuild/fingerprint">
+  le compilazioni a cui si fa riferimento</a> dalle compilazioni di altri
+  progetti (tramite impronte) saranno protette dalla rotazione dei registri.
+
+  <p>
+  Quando un processo dipende da altri processi su Jenkins e occasionalmente si
+  ha la necessità di aggiungere un'etichetta allo spazio di lavoro, spesso è
+  conveniente/necessario aggiungere etichette anche alle dipendenze su Jenkins.
+  Il problema è che la rotazione dei registri potrebbe interferire con questa
+  operazione, in quanto la compilazione utilizzata dal progetto potrebbe essere
+  già stata sottoposta alla rotazione dei registri (se sono avvenute molte
+  compilazioni per la dipendenza), e se ciò accade non si sarà in grado di
+  aggiungere etichette alle dipendenze in modo affidabile.
+
+  <p>
+  Questa funzionalità corregge tale problema "bloccando" le compilazioni da
+  cui si dipende, garantendo pertanto che si possa sempre essere in grado di
+  aggiungere etichette a tutte le dipendenze.
+</div>
