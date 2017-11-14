@@ -1134,6 +1134,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * @param idOrFullName ID or full name of the user
          * @param context Context
          * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
+         * @since TODO
          */
         @CheckForNull
         public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
