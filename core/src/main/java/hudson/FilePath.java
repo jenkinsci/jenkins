@@ -1615,7 +1615,7 @@ public final class FilePath implements Serializable {
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
         } else {
-            Files.setPosixFilePermissions(Util.fileToPath(f).toAbsolutePath(), Util.modeToPermissions(mask));
+            Files.setPosixFilePermissions(Util.fileToPath(f), Util.modeToPermissions(mask));
         }
     }
 
@@ -2021,7 +2021,7 @@ public final class FilePath implements Serializable {
         if (this.channel == target.channel) {
             act(new SecureFileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
-                    File targetFile = new File(target.remote).getAbsoluteFile();
+                    File targetFile = new File(target.remote);
                     File targetDir = targetFile.getParentFile();
                     filterNonNull().mkdirs(targetDir);
                     Files.createDirectories(Util.fileToPath(targetDir));
