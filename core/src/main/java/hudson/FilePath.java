@@ -1615,11 +1615,7 @@ public final class FilePath implements Serializable {
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
         } else {
-            try {
-                Files.setPosixFilePermissions(f.toPath().toAbsolutePath(), Util.modeToPermissions(mask));
-            } catch (InvalidPathException e) {
-                throw new IOException(e);
-            }
+            Files.setPosixFilePermissions(Util.fileToPath(f).toAbsolutePath(), Util.modeToPermissions(mask));
         }
     }
 
@@ -2025,13 +2021,11 @@ public final class FilePath implements Serializable {
         if (this.channel == target.channel) {
             act(new SecureFileCallable<Void>() {
                 public Void invoke(File f, VirtualChannel channel) throws IOException {
-                    try {
-                        File targetFile = new File(target.remote).getAbsoluteFile();
-                        mkdirs(targetFile.getParentFile());
-                        Files.copy(reading(f).toPath(), writing(targetFile).toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (InvalidPathException e) {
-                        throw new IOException(e);
-                    }
+                    File targetFile = new File(target.remote).getAbsoluteFile();
+                    File targetDir = targetFile.getParentFile();
+                    filterNonNull().mkdirs(targetDir);
+                    Files.createDirectories(Util.fileToPath(targetDir));
+                    Files.copy(Util.fileToPath(reading(f)), Util.fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                     return null;
                 }
             });

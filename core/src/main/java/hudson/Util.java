@@ -1722,6 +1722,19 @@ public class Util {
         return result;
     }
 
+    /**
+     * Converts a {@link File} into a {@link Path} and checks runtime exceptions.
+     * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!

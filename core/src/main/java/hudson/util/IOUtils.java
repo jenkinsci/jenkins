@@ -129,15 +129,14 @@ public class IOUtils {
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
+        if(Functions.isWindows())   return -1;
         try {
-            if (Functions.isWindows()) {
-                return -1;
-            } else if (Util.NATIVE_CHMOD_MODE) {
+            if (Util.NATIVE_CHMOD_MODE) {
                 return PosixAPI.jnr().stat(f.getPath()).mode();
             } else {
-                return Util.permissionsToMode(Files.getPosixFilePermissions(f.toPath()));
+                return Util.permissionsToMode(Files.getPosixFilePermissions(Util.fileToPath(f)));
             }
-        } catch (InvalidPathException | IOException cause) {
+        } catch (IOException cause) {
             PosixException e = new PosixException("Unable to get file permissions", null);
             e.initCause(cause);
             throw e;
