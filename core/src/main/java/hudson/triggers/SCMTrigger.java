@@ -301,6 +301,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Sets the number of concurrent threads used for SCM polling and resizes the thread pool accordingly
          * @param n number of concurrent threads, zero or less means unlimited, maximum is 100
          */
+        @DataBoundSetter
         public void setPollingThreadCount(int n) {
             // fool proof
             if(n<0)     n=0;
@@ -339,20 +340,6 @@ public class SCMTrigger extends Trigger<Item> {
         /*package*/ synchronized void resizeThreadPool() {
             queue.setExecutors(
                     (maximumThreads==0 ? Executors.newCachedThreadPool(threadFactory()) : Executors.newFixedThreadPool(maximumThreads, threadFactory())));
-        }
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-            String t = json.optString("pollingThreadCount",null);
-            if(t==null || t.length()==0)
-                setPollingThreadCount(0);
-            else
-                setPollingThreadCount(Integer.parseInt(t));
-
-            // Save configuration
-            save();
-
-            return true;
         }
 
         public FormValidation doCheckPollingThreadCount(@QueryParameter String value) {
