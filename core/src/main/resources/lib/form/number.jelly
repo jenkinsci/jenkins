@@ -43,6 +43,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="default">
       The default value of the text box, in case both @value is and 'instance[field]' is null.
+      If not set, will look for instance's {{field}}_default public constant.
     </st:attribute>
     <!-- Tomcat doesn't like us using the attribute called 'class' -->
     <st:attribute name="clazz">
@@ -70,7 +71,7 @@ THE SOFTWARE.
     On the other hand, HTML5 <input> permits floating-point numbers.
   -->
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
-  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="default" value="${attrs.default ?: instance[attrs.field+'_default'] ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
   <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
          class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs.clazz}"
