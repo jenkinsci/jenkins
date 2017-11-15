@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
+import hudson.os.PosixAPI;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
@@ -466,6 +467,25 @@ public class FilePathTest {
                 copy = new FilePath(channels.british, tmp.getPath()).child("copy"+i);
                 childP.copyToWithPermission(copy);
             }
+    }
+
+    @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
+        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        File tmp = temp.getRoot();
+        File original = new File(tmp,"original");
+        FilePath originalP = new FilePath(channels.french, original.getPath());
+        originalP.touch(0);
+        PosixAPI.jnr().chmod(original.getAbsolutePath(), 02777); // Read/write/execute for everyone and setuid.
+
+        File sameChannelCopy = new File(tmp,"sameChannelCopy");
+        FilePath sameChannelCopyP = new FilePath(channels.french, sameChannelCopy.getPath());
+        originalP.copyToWithPermission(sameChannelCopyP);
+        assertEquals("Special permissions should be copied on the same machine", 02777, PosixAPI.jnr().stat(sameChannelCopy.getAbsolutePath()).mode() & 07777);
+
+        File diffChannelCopy = new File(tmp,"diffChannelCopy");
+        FilePath diffChannelCopyP = new FilePath(channels.british, diffChannelCopy.getPath());
+        originalP.copyToWithPermission(diffChannelCopyP);
+        assertEquals("Special permissions should not be copied across machines", 00777, PosixAPI.jnr().stat(diffChannelCopy.getAbsolutePath()).mode() & 07777);
     }
 
     @Test public void symlinkInTar() throws Exception {
