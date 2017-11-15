@@ -1585,9 +1585,9 @@ public final class FilePath implements Serializable {
      *      so preceded by a '0' in java notation, ie <code>chmod(0644)</code>
      *      <p>
      *      Only supports setting read, write, or execute permissions for the
-     *      owner, group, or others, so the largest permissibly value is 0777.
+     *      owner, group, or others, so the largest permissible value is 0777.
      *      Attempting to set larger values (i.e. the setgid, setuid, or sticky
-     *      bits will cause an IOException to be thrown
+     *      bits) will cause an IOException to be thrown.
      *
      * @since 1.303
      * @see #mode()

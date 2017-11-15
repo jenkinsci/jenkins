@@ -1704,9 +1704,8 @@ public class Util {
     public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
          // Anything larger is a file type, not a permission.
         int PERMISSIONS_MASK = 07777;
-        // setigd/setuid/sticky are not supported.
-        //                         rwxrwxrwx
-        int MAX_SUPPORTED_MODE = 0b111111111;
+        // setgid/setuid/sticky are not supported.
+        int MAX_SUPPORTED_MODE = 0777;
         mode = mode & PERMISSIONS_MASK;
         if ((mode & MAX_SUPPORTED_MODE) != mode) {
             throw new IOException("Invalid mode: " + mode);
