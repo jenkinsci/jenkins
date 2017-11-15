@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.base.Defaults;
 import hudson.DescriptorExtensionList;
 import hudson.PluginWrapper;
 import hudson.RelativePath;
@@ -42,6 +43,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.jelly.JellyCompatibleFacet;
 import org.kohsuke.stapler.lang.Klass;
@@ -53,9 +55,11 @@ import static hudson.util.QuotedStringTokenizer.*;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import javax.servlet.ServletException;
 import javax.servlet.RequestDispatcher;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -802,8 +806,61 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      to keep the client in the same config page.
      */
     public boolean configure( StaplerRequest req, JSONObject json ) throws FormException {
-        // compatibility
-        return configure(req);
+
+        if (Util.isOverridden(Descriptor.class, getClass(), "configure", StaplerRequest.class)) {
+            // compatibility
+            return configure(req);
+        }
+
+        reset();
+        req.bindJSON(this, json);
+        save();
+        return true;
+    }
+
+    /**
+     * Reset descriptor data-bound attributes to default value.
+     *
+     * Properties are reset to their default values, calling the matchind DataBoundSetter method. Default value set is
+     * property type's default value, until a public static final field is declared with name
+     * <code>{{property_name}}_default</code>.
+     *
+     * Can overridden when this generic reset-to-defaults mechanism doesn't match with Descriptor's data model
+     * (in which case it is questionable if it shouldn't be fixed)
+     */
+    public void reset() {
+        for (PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(this)) {
+            final Method writeMethod = pd.getWriteMethod();
+            if (writeMethod != null && writeMethod.getAnnotation(DataBoundSetter.class) != null) {
+                try {
+                    final Class cl = writeMethod.getParameterTypes()[0];
+                    Object value;
+                    try {
+                        final Field field = getClass().getField(pd.getName() + "_default");
+                        value = field.get(this);
+                    } catch (NoSuchFieldException e) {
+                        value = Defaults.defaultValue(cl);
+                    }
+
+                    writeMethod.invoke(this, value);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    LOGGER.log(Level.WARNING, "Failed to reset DataBound property "+pd.getName(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get default value for a data-bound property
+     *
+     */
+    private void getDefaultValue(String name) {
+        try {
+            final Field field = getClass().getField(name + "_default");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public String getConfigPage() {
