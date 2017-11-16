@@ -49,6 +49,7 @@ THE SOFTWARE.
 
   <modules>
     <module>core</module>
+    <module>jdk-tool-plugin</module>
     <module>war</module>
     <module>test</module>
     <module>cli</module>
