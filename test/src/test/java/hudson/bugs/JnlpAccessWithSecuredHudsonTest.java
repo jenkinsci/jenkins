@@ -153,7 +153,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         }
         @Override
         public String call() throws Exception {
-            return Channel.current().call(new ScriptLoader(path));
+            return getChannelOrFail().call(new ScriptLoader(path));
         }
     }
 
