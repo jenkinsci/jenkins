@@ -29,8 +29,10 @@ import hudson.remoting.Pipe;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 
 import java.io.InputStream;
+import java.io.ObjectStreamException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -47,7 +49,7 @@ import java.util.logging.Logger;
  * @deprecated Specific to Remoting-based protocol.
  */
 @Deprecated
-public class CliManagerImpl implements CliEntryPoint, Serializable {
+public class CliManagerImpl implements CliEntryPoint, SerializableOnlyOverRemoting {
     private transient final Channel channel;
     
     private Authentication transportAuth;
@@ -87,10 +89,10 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         String subCmd = args.get(0);
         CLICommand cmd = CLICommand.clone(subCmd);
         if(cmd!=null) {
-            cmd.channel = Channel.current();
+            cmd.channel = Channel.currentOrFail();
             final CLICommand old = CLICommand.setCurrent(cmd);
             try {
-                transportAuth = Channel.current().getProperty(CLICommand.TRANSPORT_AUTHENTICATION);
+                transportAuth = cmd.channel.getProperty(CLICommand.TRANSPORT_AUTHENTICATION);
                 cmd.setTransportAuth(transportAuth);
                 return cmd.main(args.subList(1,args.size()),locale, stdin, out, err);
             } finally {
@@ -126,8 +128,8 @@ public class CliManagerImpl implements CliEntryPoint, Serializable {
         return VERSION;
     }
 
-    private Object writeReplace() {
-        return Channel.current().export(CliEntryPoint.class,this);
+    private Object writeReplace() throws ObjectStreamException {
+        return getChannelForSerialization().export(CliEntryPoint.class,this);
     }
 
     private static final Logger LOGGER = Logger.getLogger(CliManagerImpl.class.getName());

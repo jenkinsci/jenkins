@@ -48,6 +48,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
@@ -58,7 +60,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener extends AbstractTaskListener implements Serializable, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements SerializableOnlyOverRemoting, Closeable {
     private PrintStream out;
     private Charset charset;
 
