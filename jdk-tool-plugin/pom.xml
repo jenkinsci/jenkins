@@ -15,7 +15,7 @@
         <java.level>8</java.level>
     </properties>
     <name>JDK Tool Plugin</name>
-    <description>Provides installers for the JDK tool.</description>
+    <description>Allows the JDK tool to be installed via download from Oracle's website.</description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/JDK+Tool+Plugin</url>
     <licenses>
         <license>
