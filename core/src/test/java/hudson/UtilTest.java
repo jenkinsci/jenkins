@@ -42,6 +42,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
@@ -259,6 +260,19 @@ public class UtilTest {
         } finally {
             Util.deleteRecursive(d);
         }
+    }
+
+    @Test
+    public void testIsSymlink_onWindows_junction() throws Exception {
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        tmp.newFolder("targetDir");
+        File d = tmp.newFolder("dir");
+        Process p = new ProcessBuilder()
+                .directory(d)
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
+        assertTrue(Util.isSymlink(new File(d, "junction")));
     }
 
     @Test

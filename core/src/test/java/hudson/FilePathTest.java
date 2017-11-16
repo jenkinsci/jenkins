@@ -45,6 +45,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -60,7 +61,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assume.assumeFalse;
 import org.junit.Ignore;
@@ -756,7 +759,7 @@ public class FilePathTest {
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
     }
-
+    
     @Test
     public void chmod() throws Exception {
         assumeFalse(Functions.isWindows());
@@ -786,5 +789,39 @@ public class FilePathTest {
     private int chmodAndMode(FilePath path, int mode) throws Exception {
         path.chmod(mode);
         return path.mode();
+    }
+    
+    @Test public void deleteRecursiveOnUnix() throws Exception {
+        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("target").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("symlink target should not be deleted", Files.exists(targetDir));
+        assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Test public void deleteRecursiveOnWindows() throws Exception {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("targetDir").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Process p = new ProcessBuilder()
+                .directory(toDelete.toFile())
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        assumeThat("unable to create junction", p.waitFor(), is(0));
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("junction target should not be deleted", Files.exists(targetDir));
+        assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
     }
 }
