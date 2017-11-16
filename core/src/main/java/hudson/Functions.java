@@ -125,6 +125,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -1143,11 +1144,14 @@ public class Functions {
      *
      * @since 1.515
      * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
+     * @param g the ItemGroup used as point of reference for the item.
+     *          If the group is not specified, item's path will be used.
      * @param useDisplayName if true, returns a display name, otherwise returns a name
      * @return
-     *      String like "foo » bar"
+     *      String like "foo » bar".
+     *      {@code null} if item is null or if one of its parents is not an {@link ItemGroup}.
      */
+    @Nullable
     public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
         if (p == null) return null;
         if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
@@ -1182,7 +1186,7 @@ public class Functions {
 
             if (gr instanceof Item)
                 i = (Item)gr;
-            else
+            else // Parent is a group, but not an item
                 return null;
         }
     }
@@ -1194,8 +1198,10 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo/bar"
+     *      String like "foo/bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link ItemGroup}.
      */
+    @Nullable
     public static String getRelativeNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
     }    
@@ -1208,8 +1214,10 @@ public class Functions {
      * @param p the Item we want the relative display name
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "Foo » Bar"
+     *      String like "Foo » Bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link ItemGroup}.
      */
+    @Nullable
     public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
     }

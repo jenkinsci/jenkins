@@ -377,27 +377,9 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          */
         Map<TriggerDescriptor,Trigger<?>> getTriggers();
 
-        /**
-         * @deprecated use {@link #scheduleBuild(Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild() {
-            return getParameterizedJobMixIn().scheduleBuild();
-        }
-
         @Override
         default boolean scheduleBuild(Cause c) {
             return getParameterizedJobMixIn().scheduleBuild(c);
-        }
-
-        /**
-         * @deprecated use {@link #scheduleBuild(int, Cause)}
-         */
-        @Deprecated
-        @Override
-        default boolean scheduleBuild(int quietPeriod) {
-            return getParameterizedJobMixIn().scheduleBuild(quietPeriod);
         }
 
         @Override

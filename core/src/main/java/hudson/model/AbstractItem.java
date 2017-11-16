@@ -382,21 +382,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * @param p
-     *  The ItemGroup instance used as context to evaluate the relative name of this AbstractItem
-     * @return
-     *  The name of the current item, relative to p.
-     *  Nested ItemGroups are separated by / character.
-     */
-    public String getRelativeNameFrom(ItemGroup p) {
-        return Functions.getRelativeNameFrom(this, p);
-    }
-
-    public String getRelativeNameFrom(Item item) {
-        return getRelativeNameFrom(item.getParent());
-    }
-
-    /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opportunity to do a post load processing.
      */
@@ -470,12 +455,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getShortUrl();
     }
 
+    @Override
     @Exported(visibility=999,name="url")
     public final String getAbsoluteUrl() {
-        String r = Jenkins.getInstance().getRootUrl();
-        if(r==null)
-            throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
-        return Util.encode(r+getUrl());
+        return Item.super.getAbsoluteUrl();
     }
 
     /**
