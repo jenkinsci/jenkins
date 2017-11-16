@@ -23,6 +23,7 @@
  */
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -34,13 +35,17 @@ import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -62,6 +67,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -78,6 +84,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -201,7 +208,7 @@ public class JDKInstaller extends ToolInstaller {
             }
 
             int exit = starter
-                    .stdin(new ByteArrayInputStream("yes".getBytes())).stdout(out)
+                    .stdin(new ByteArrayInputStream("yes".getBytes(Charset.defaultCharset()))).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (exit != 0)
                 throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
@@ -276,7 +283,7 @@ public class JDKInstaller extends ToolInstaller {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
                 try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
-                    IOUtils.copy(in, new OutputStreamWriter(out));
+                    IOUtils.copy(in, new OutputStreamWriter(out, Charset.defaultCharset()));
                 }
                 throw new AbortException();
             }
@@ -415,7 +422,7 @@ public class JDKInstaller extends ToolInstaller {
         if (cache.exists() && cache.length()>1*1024*1024) return cache.toURL(); // if the file is too small, don't trust it. In the past, the download site served error message in 200 status code
 
         log.getLogger().println("Installing JDK "+id);
-        JDKFamilyList families = JDKList.all().get(JDKList.class).toList();
+        JDKFamilyList families = getJDKFamilyList();
         if (families.isEmpty())
             throw new IOException("JDK data is empty.");
 
@@ -425,6 +432,9 @@ public class JDKInstaller extends ToolInstaller {
 
         JDKFile primary=null,secondary=null;
         for (JDKFile f : release.files) {
+            if (f.name == null) {
+                throw new IOException("JDK file name is null");
+            }
             String vcap = f.name.toUpperCase(Locale.ENGLISH);
 
             // JDK files have either 'windows', 'linux', or 'solaris' in its name, so that allows us to throw
@@ -546,19 +556,17 @@ public class JDKInstaller extends ToolInstaller {
                     log.getLogger().println("Downloading " + m.getResponseContentLength() + " bytes");
 
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
-                    File tmp = new File(cache.getPath()+".tmp");
+                    Path tmp = fileToPath(new File(cache.getPath()+".tmp"));
                     try {
-                        tmp.getParentFile().mkdirs();
-                        try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
+                        Files.createDirectories(tmp);
+                        try (OutputStream out = Files.newOutputStream(tmp)) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
-                        } catch (InvalidPathException e) {
-                            throw new IOException(e);
                         }
 
-                        tmp.renameTo(cache);
+                        Files.move(tmp, fileToPath(cache), StandardCopyOption.REPLACE_EXISTING);
                         return cache.toURL();
                     } finally {
-                        tmp.delete();
+                        Files.delete(tmp);
                     }
                 }
             }
@@ -577,6 +585,22 @@ public class JDKInstaller extends ToolInstaller {
 
     private String getCredentialPageUrl() {
         return "/"+getDescriptor().getDescriptorUrl()+"/enterCredential";
+    }
+
+    private static @Nonnull JDKFamilyList getJDKFamilyList() throws IOException {
+        JDKList list = JDKList.all().get(JDKList.class);
+        if (list == null) {
+            throw new IOException("JDKList is not registered as a Downloadable");
+        }
+        return list.toList();
+    }
+
+    private static @Nonnull Path fileToPath(File f) throws IOException {
+        try {
+            return f.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     public enum Preference {
@@ -606,7 +630,11 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the platform of the given node.
          */
         public static Platform of(Node n) throws IOException,InterruptedException,DetectionFailedException {
-            return n.getChannel().call(new GetCurrentPlatform());
+            VirtualChannel channel = n.getChannel();
+            if (channel == null) {
+                throw new IOException("Channel is null, cannot determine Platform of: " + n.getDisplayName());
+            }
+            return channel.call(new GetCurrentPlatform());
         }
 
         public static Platform current() throws DetectionFailedException {
@@ -663,7 +691,11 @@ public class JDKInstaller extends ToolInstaller {
          * Determines the CPU of the given node.
          */
         public static CPU of(Node n) throws IOException,InterruptedException, DetectionFailedException {
-            return n.getChannel().call(new GetCurrentCPU());
+            VirtualChannel channel = n.getChannel();
+            if (channel == null) {
+                throw new IOException("Channel is null, cannot determine CPU of: " + n.getDisplayName());
+            }
+            return channel.call(new GetCurrentCPU());
         }
 
         /**
@@ -758,8 +790,14 @@ public class JDKInstaller extends ToolInstaller {
     }
 
     public static final class JDKFile {
+        @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
+                justification = "Field initialized during deserialization from JSON object")
         public String filepath;
+        @SuppressFBWarnings(value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
+                justification = "Field initialized during deserialization from JSON object")
         public String name;
+        @SuppressFBWarnings(value = "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD",
+                justification = "Field initialized during deserialization from JSON object")
         public String title;
     }
 
@@ -805,7 +843,7 @@ public class JDKInstaller extends ToolInstaller {
          * @return never null.
          */
         public List<JDKFamily> getInstallableJDKs() throws IOException {
-            return Arrays.asList(JDKList.all().get(JDKList.class).toList().data);
+            return Arrays.asList(getJDKFamilyList().data);
         }
 
         public FormValidation doCheckAcceptLicense(@QueryParameter boolean value) {
@@ -942,7 +980,7 @@ public class JDKInstaller extends ToolInstaller {
                 JDKFile file1 = iterator1.next();
                 for (Iterator<JDKFile> iterator2 = files2.iterator(); iterator2.hasNext(); ) {
                     JDKFile file2 = iterator2.next();
-                    if (file1.name.equals(file2.name)) {
+                    if (Objects.equals(file1.name, file2.name)) {
                         iterator2.remove();
                         //we assume the in one file list there are no duplicates so we break after we find the
                         //first match
