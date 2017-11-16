@@ -1135,7 +1135,7 @@ public class Functions {
      * @since 1.512
      */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
-      return Items.getAllItems(root, TopLevelItem.class);
+      return root.getAllItems(TopLevelItem.class);
     }
     
     /**
@@ -2046,7 +2046,7 @@ public class Functions {
     @Restricted(NoExternalUse.class) // for cc.xml.jelly
     public static Collection<TopLevelItem> getCCItems(View v) {
         if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
-            return Items.getAllItems(v.getOwner().getItemGroup(), TopLevelItem.class);
+            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
         } else {
             return v.getItems();
         }
