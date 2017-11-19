@@ -84,6 +84,9 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
      * This list at least always include people who made changes in this build, but
      * if the previous build was a failure it also includes the culprit list from there.
      *
+     * <p>
+     * Missing {@link User}s will be created on-demand.
+     *
      * @return
      *      can be empty but never null.
      */
@@ -99,7 +102,8 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
             public Iterator<User> iterator() {
                 return new AdaptedIterator<String,User>(culpritIds.iterator()) {
                     protected User adapt(String id) {
-                        return User.get(id);
+                        // TODO: Probably it should not auto-create users
+                        return User.getById(id, true);
                     }
                 };
             }
