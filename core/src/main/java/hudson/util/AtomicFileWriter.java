@@ -85,8 +85,9 @@ public class AtomicFileWriter extends Writer {
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
-        if (charset==null)
+        if (charset==null) {
             charset = Charset.defaultCharset();
+        }
         core = Files.newBufferedWriter(tmpFile, charset, StandardOpenOption.SYNC);
     }
 
