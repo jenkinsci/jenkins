@@ -119,8 +119,7 @@ public class AtomicFileWriter extends Writer {
      * the {@link #commit()} is called, to simplify coding.
      */
     public void abort() throws IOException {
-        close();
-        Files.deleteIfExists(tmpPath);
+        closeAndDeleteTempFile();
     }
 
     public void commit() throws IOException {
@@ -157,9 +156,16 @@ public class AtomicFileWriter extends Writer {
 
     @Override
     protected void finalize() throws Throwable {
+        closeAndDeleteTempFile();
+    }
+
+    private void closeAndDeleteTempFile() throws IOException {
         // one way or the other, temporary file should be deleted.
-        close();
-        Files.deleteIfExists(tmpPath);
+        try {
+            close();
+        } finally {
+            Files.deleteIfExists(tmpPath);
+        }
     }
 
     /**
