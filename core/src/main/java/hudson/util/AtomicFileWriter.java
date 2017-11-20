@@ -158,7 +158,7 @@ public class AtomicFileWriter extends Writer {
     /**
      * Until the data is committed, this file captures
      * the written content.
-     *
+     * @since TODO
      */
     public Path getTemporaryPath() {
         return tmpFile;
