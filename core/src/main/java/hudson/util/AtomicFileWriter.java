@@ -24,7 +24,6 @@
 package hudson.util;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,14 +64,17 @@ public class AtomicFileWriter extends Writer {
      */
     @Deprecated
     public AtomicFileWriter(@Nonnull File f, String encoding) throws IOException {
-        this(f.toPath(), Charset.forName(encoding));
+        this(f.toPath(), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
     }
 
     /**
      * @param destinationPath the destination path where to write the content when committed.
-     * @param charset File charset to write. If null, platform default encoding is chosen.
+     * @param charset File charset to write.
      */
-    public AtomicFileWriter(@Nonnull Path destinationPath, @Nullable Charset charset) throws IOException {
+    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset) throws IOException {
+        if (charset == null) { // be extra-defensive if people don't care
+            throw new IllegalArgumentException("charset is null");
+        }
         this.destPath = destinationPath;
         Path dir = this.destPath.getParent();
         try {
@@ -81,9 +83,7 @@ public class AtomicFileWriter extends Writer {
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
-        if (charset == null) {
-            charset = Charset.defaultCharset();
-        }
+
         core = Files.newBufferedWriter(tmpPath, charset, StandardOpenOption.SYNC);
     }
 
