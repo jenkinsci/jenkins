@@ -69,6 +69,7 @@ public class AtomicFileWriter extends Writer {
      *
      * @deprecated Use {@link #AtomicFileWriter(File, Charset)}
      */
+    @Deprecated
     public AtomicFileWriter(File f, String encoding) throws IOException {
         this(f, Charset.forName(encoding));
     }
