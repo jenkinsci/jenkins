@@ -148,7 +148,7 @@ public class AtomicFileWriter extends Writer {
      * Until the data is committed, this file captures
      * the written content.
      *
-     * @deprecated Use getTemporaryPath() for JDK 7+
+     * @deprecated Use getTemporaryPath()
      */
     @Deprecated
     public File getTemporaryFile() {
