@@ -23,24 +23,18 @@
  */
 package hudson.util;
 
-import hudson.Util;
-import java.io.BufferedWriter;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttribute;
 
 /**
  * Buffered {@link FileWriter} that supports atomic operations.
@@ -54,8 +48,8 @@ import java.nio.file.attribute.FileAttribute;
 public class AtomicFileWriter extends Writer {
 
     private final Writer core;
-    private final Path tmpFile;
-    private final Path destFile;
+    private final Path tmpPath;
+    private final Path destPath;
 
     /**
      * Writes with UTF-8 encoding.
@@ -67,29 +61,30 @@ public class AtomicFileWriter extends Writer {
     /**
      * @param encoding File encoding to write. If null, platform default encoding is chosen.
      *
-     * @deprecated Use {@link #AtomicFileWriter(File, Charset)}
+     * @deprecated Use {@link #AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(File f, String encoding) throws IOException {
-        this(f, Charset.forName(encoding));
+    public AtomicFileWriter(@Nonnull File f, String encoding) throws IOException {
+        this(f.toPath(), Charset.forName(encoding));
     }
 
     /**
+     * @param destinationPath the destination path where to write the content when committed.
      * @param charset File charset to write. If null, platform default encoding is chosen.
      */
-    public AtomicFileWriter(File f, Charset charset) throws IOException {
-        destFile = f.toPath();
-        Path dir = destFile.getParent();
+    public AtomicFileWriter(@Nonnull Path destinationPath, @Nullable Charset charset) throws IOException {
+        this.destPath = destinationPath;
+        Path dir = this.destPath.getParent();
         try {
             Files.createDirectories(dir);
-            tmpFile = Files.createTempFile(dir, "atomic", "tmp");
+            tmpPath = Files.createTempFile(dir, "atomic", "tmp");
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
-        if (charset==null) {
+        if (charset == null) {
             charset = Charset.defaultCharset();
         }
-        core = Files.newBufferedWriter(tmpFile, charset, StandardOpenOption.SYNC);
+        core = Files.newBufferedWriter(tmpPath, charset, StandardOpenOption.SYNC);
     }
 
     @Override
@@ -122,18 +117,18 @@ public class AtomicFileWriter extends Writer {
      */
     public void abort() throws IOException {
         close();
-        Files.deleteIfExists(tmpFile);
+        Files.deleteIfExists(tmpPath);
     }
 
     public void commit() throws IOException {
         close();
         try {
             // Try to make an atomic move.
-            Files.move(tmpFile, destFile, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException e) {
             // If it falls here that means that Atomic move is not supported by the OS.
             // In this case we need to fall-back to a copy option which is supported by all OSes.
-            Files.move(tmpFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -141,7 +136,7 @@ public class AtomicFileWriter extends Writer {
     protected void finalize() throws Throwable {
         // one way or the other, temporary file should be deleted.
         close();
-        Files.deleteIfExists(tmpFile);
+        Files.deleteIfExists(tmpPath);
     }
 
     /**
@@ -152,7 +147,7 @@ public class AtomicFileWriter extends Writer {
      */
     @Deprecated
     public File getTemporaryFile() {
-        return tmpFile.toFile();
+        return tmpPath.toFile();
     }
 
     /**
@@ -161,6 +156,6 @@ public class AtomicFileWriter extends Writer {
      * @since TODO
      */
     public Path getTemporaryPath() {
-        return tmpFile;
+        return tmpPath;
     }
 }
