@@ -205,7 +205,7 @@ public class BuildCommandTest {
         assertNull("Project should not be built", project.getBuildByNumber(1));
     }
 
-    @Test void refuseToBuildNewlyCoppiedProject() {
+    @Test void refuseToBuildNewlyCopiedProject() {
 
         def original = j.createFreeStyleProject("original");
         def newOne = (FreeStyleProject) j.jenkins.copy(original, "new-one");

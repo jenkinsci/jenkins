@@ -23,7 +23,7 @@ public class AtomicFileWriterTest {
     @Before
     public void setUp() throws IOException {
         af = tmp.newFile();
-        afw = new AtomicFileWriter(af, Charset.defaultCharset());
+        afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
     @Test

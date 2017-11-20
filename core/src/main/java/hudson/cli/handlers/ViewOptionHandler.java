@@ -88,8 +88,8 @@ public class ViewOptionHandler extends OptionHandler<View> {
      * @throws IllegalStateException
      *      If cannot get active Jenkins instance or view can't contain a views
      * @throws AccessDeniedException
-     *      If user doens't have a READ permission for the view
-     * @since TODO
+     *      If user doesn't have a READ permission for the view
+     * @since 1.618
      */
     @CheckForNull
     public View getView(final String name) {

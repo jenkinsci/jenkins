@@ -56,5 +56,9 @@ public class ReloadLink extends ManagementLink {
     @Override public boolean getRequiresConfirmation() {
         return true;
     }
-    
+
+    @Override
+    public boolean getRequiresPOST() {
+        return true;
+    }
 }

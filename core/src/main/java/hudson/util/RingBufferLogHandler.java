@@ -23,7 +23,6 @@
  */
 package hudson.util;
 
-import jenkins.util.SystemProperties;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -36,12 +35,17 @@ import java.util.logging.LogRecord;
  */
 public class RingBufferLogHandler extends Handler {
 
-    private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
+    private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
     private int start = 0;
     private final LogRecord[] records;
     private volatile int size = 0;
 
+    /**
+     * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
+     * as it's not legal to use it on remoting agents.
+     */
+    @Deprecated
     public RingBufferLogHandler() {
         this(DEFAULT_RING_BUFFER_SIZE);
     }

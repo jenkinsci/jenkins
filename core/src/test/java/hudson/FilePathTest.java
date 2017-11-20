@@ -43,6 +43,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,7 +60,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assume.assumeFalse;
 import org.junit.Ignore;
@@ -134,12 +138,12 @@ public class FilePathTest {
     }
 
     private void givenSomeContentInFile(File file, int size) throws IOException {
-        FileOutputStream os = new FileOutputStream(file);
-        byte[] buf = new byte[size];
-        for (int i=0; i<buf.length; i++)
-            buf[i] = (byte)(i%256);
-        os.write(buf);
-        os.close();
+        try (OutputStream os = Files.newOutputStream(file.toPath())) {
+            byte[] buf = new byte[size];
+            for (int i = 0; i < buf.length; i++)
+                buf[i] = (byte) (i % 256);
+            os.write(buf);
+        }
     }
     
     private List<Future<Integer>> whenFileIsCopied100TimesConcurrently(final File file) throws InterruptedException {
@@ -369,7 +373,7 @@ public class FilePathTest {
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(tmpDir);
-        int tar = tmpDirPath.tar(new FileOutputStream(tarFile), tempFile.getName());
+        int tar = tmpDirPath.tar(Files.newOutputStream(tarFile.toPath()), tempFile.getName());
         assertEquals("One file should have been compressed", 1, tar);
 
         // Decompress
@@ -725,7 +729,7 @@ public class FilePathTest {
 
         // Compress archive
         final FilePath tmpDirPath = new FilePath(srcFolder);
-        int tarred = tmpDirPath.tar(new FileOutputStream(archive), "**");
+        int tarred = tmpDirPath.tar(Files.newOutputStream(archive.toPath()), "**");
         assertEquals("One file should have been compressed", 3, tarred);
 
         // Decompress
@@ -734,5 +738,39 @@ public class FilePathTest {
         FilePath outDir = new FilePath(dstFolder);
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
+
+    @Test public void deleteRecursiveOnUnix() throws Exception {
+        assumeFalse("Uses Unix-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("target").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Util.createSymlink(toDelete.toFile(), "../targetDir", "link", TaskListener.NULL);
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("symlink target should not be deleted", Files.exists(targetDir));
+        assertTrue("symlink target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
+    }
+
+    @Test public void deleteRecursiveOnWindows() throws Exception {
+        assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        Path targetDir = temp.newFolder("targetDir").toPath();
+        Path targetContents = Files.createFile(targetDir.resolve("contents.txt"));
+        Path toDelete = temp.newFolder("toDelete").toPath();
+        Process p = new ProcessBuilder()
+                .directory(toDelete.toFile())
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        assumeThat("unable to create junction", p.waitFor(), is(0));
+        Files.createFile(toDelete.resolve("foo"));
+        Files.createFile(toDelete.resolve("bar"));
+        FilePath f = new FilePath(toDelete.toFile());
+        f.deleteRecursive();
+        assertTrue("junction target should not be deleted", Files.exists(targetDir));
+        assertTrue("junction target contents should not be deleted", Files.exists(targetContents));
+        assertFalse("could not delete target", Files.exists(toDelete));
     }
 }

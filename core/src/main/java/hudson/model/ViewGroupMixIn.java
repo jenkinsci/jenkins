@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.model.ItemGroupMixIn;
 import hudson.model.View;
 import hudson.model.ViewGroup;
+import java.util.Locale;
+import java.util.logging.Level;
 import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 
 /**
  * Implements {@link ViewGroup} to be used as a "mix-in".
@@ -42,19 +45,20 @@ import java.util.List;
  * <ol>
  * <li>
  * Create three data fields in your class:
- * <pre>
+ * <pre>{@code
  * private String primaryView;
- * private CopyOnWriteArrayList&lt;View> views;
+ * private CopyOnWriteArrayList<View> views;
  * private ViewsTabBar viewsTabBar;
- * </pre>
+ * }</pre>
  * <li>
  * Define a transient field and store ViewGroupMixIn subype, then wire up getters and setters:
  * <pre>
  * private transient ViewGroupMixIn = new ViewGroupMixIn() {
- *     List&lt;View> views() { return views; }
+ *     List&lt;View&gt; views() { return views; }
  *     ...
  * }
  * </pre>
+ * </ol>
  * @author Kohsuke Kawaguchi
  * @see ItemGroupMixIn
  */
@@ -89,7 +93,14 @@ public abstract class ViewGroupMixIn {
         owner.save();
     }
 
-    public View getView(String name) {
+    /**
+     * Gets a view by the specified name.
+     * The method iterates through {@link ViewGroup}s if required.
+     * @param name Name of the view
+     * @return View instance or {@code null} if it is missing
+     */
+    @CheckForNull
+    public View getView(@CheckForNull String name) {
         for (View v : views()) {
             if(v.getViewName().equals(name))
                 return v;
@@ -99,6 +110,15 @@ public abstract class ViewGroupMixIn {
             View pv = getPrimaryView();
             if (pv instanceof ViewGroup)
                 return ((ViewGroup)pv).getView(name);
+            if (pv instanceof AllView && AllView.DEFAULT_VIEW_NAME.equals(pv.name)) {
+                // JENKINS-38606: primary view is the default AllView, is somebody using an old link to localized form?
+                for (Locale l : Locale.getAvailableLocales()) {
+                    if (name.equals(Messages._Hudson_ViewName().toString(l))) {
+                        // why yes they are, let's keep that link working
+                        return pv;
+                    }
+                }
+            }
         }
         return null;
     }

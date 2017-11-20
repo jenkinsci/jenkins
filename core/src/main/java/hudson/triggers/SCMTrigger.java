@@ -27,6 +27,7 @@ package hudson.triggers;
 import antlr.ANTLRException;
 import com.google.common.base.Preconditions;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.AbstractBuild;
@@ -41,13 +42,13 @@ import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.util.FlushProofOutputStream;
 import hudson.util.FormValidation;
-import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.SequentialExecutionQueue;
 import hudson.util.StreamTaskListener;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -71,10 +72,12 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -90,7 +93,7 @@ import static java.util.logging.Level.WARNING;
  * You can add UI elements under the SCM section by creating a
  * config.jelly or config.groovy in the resources area for
  * your class that inherits from SCMTrigger and has the 
- * @{@link hudson.model.Extension} annotation. The UI should 
+ * {@link Extension} annotation. The UI should 
  * be wrapped in an f:section element to denote it.
  *
  * @author Kohsuke Kawaguchi
@@ -159,7 +162,7 @@ public class SCMTrigger extends Trigger<Item> {
 
     /**
      * Run the SCM trigger with additional build actions. Used by SubversionRepositoryStatus
-     * to trigger a build at a specific revisionn number.
+     * to trigger a build at a specific revision number.
      * 
      * @param additionalActions
      * @since 1.375
@@ -310,12 +313,24 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Restricted(NoExternalUse.class)
         public boolean isPollingThreadCountOptionVisible() {
+            if (getPollingThreadCount() != 0) {
+                // this is a user who already configured the option
+                return true;
+            }
             // unless you have a fair number of projects, this option is likely pointless.
             // so let's hide this option for new users to avoid confusing them
             // unless it was already changed
-            // TODO switch to check for SCMTriggerItem
-            return Jenkins.getInstance().getAllItems(AbstractProject.class).size() > 10
-                    || getPollingThreadCount() != 0;
+            int count = 0;
+            // we are faster walking some items with a lazy iterator than building a list of all items just to query
+            // the size. This also lets us check against SCMTriggerItem rather than AbstractProject
+            for (Item item: Jenkins.getInstance().allItems(Item.class)) {
+                if (item instanceof SCMTriggerItem) {
+                    if (++count > 10) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -345,10 +360,34 @@ public class SCMTrigger extends Trigger<Item> {
                 return FormValidation.ok();
             return FormValidation.validateNonNegativeInteger(value);
         }
+
+        /**
+         * Performs syntax check.
+         */
+        public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
+                                                  @QueryParameter boolean ignorePostCommitHooks,
+                                                  @AncestorInPath Item item) {
+            if (StringUtils.isBlank(value)) {
+                if (ignorePostCommitHooks) {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
+                } else {
+                    return FormValidation.ok(Messages.SCMTrigger_no_schedules_hooks());
+                }
+            } else {
+                return Jenkins.getInstance().getDescriptorByType(TimerTrigger.DescriptorImpl.class)
+                        .doCheckSpec(value, item);
+            }
+        }
     }
 
     @Extension
     public static final class AdministrativeMonitorImpl extends AdministrativeMonitor {
+
+        @Override
+        public String getDisplayName() {
+            return Messages.SCMTrigger_AdministrativeMonitorImpl_DisplayName();
+        }
+
         private boolean on;
 
         public boolean isActivated() {
@@ -411,12 +450,10 @@ public class SCMTrigger extends Trigger<Item> {
          */
         public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            // Prevent jelly from flushing stream so Content-Length header can be added afterwards
-            FlushProofOutputStream out = new FlushProofOutputStream(rsp.getCompressedOutputStream(req));
-            try {
+            try (OutputStream os = rsp.getCompressedOutputStream(req);
+                 // Prevent jelly from flushing stream so Content-Length header can be added afterwards
+                 FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);
-            } finally {
-                IOUtils.closeQuietly(out);
             }
         }
 
@@ -562,7 +599,7 @@ public class SCMTrigger extends Trigger<Item> {
                         logger.println("No changes");
                     return result;
                 } catch (Error | RuntimeException e) {
-                    e.printStackTrace(listener.error("Failed to record SCM polling for "+job));
+                    Functions.printStackTrace(e, listener.error("Failed to record SCM polling for " + job));
                     LOGGER.log(Level.SEVERE,"Failed to record SCM polling for "+job,e);
                     throw e;
                 } finally {
@@ -578,7 +615,7 @@ public class SCMTrigger extends Trigger<Item> {
             if (job == null) {
                 return;
             }
-            // we can pre-emtively check the SCMDecisionHandler instances here
+            // we can preemptively check the SCMDecisionHandler instances here
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {
@@ -711,5 +748,5 @@ public class SCMTrigger extends Trigger<Item> {
     /**
      * How long is too long for a polling activity to be in the queue?
      */
-    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit2.HOURS.toMillis(1));
+    public static long STARVATION_THRESHOLD = SystemProperties.getLong(SCMTrigger.class.getName()+".starvationThreshold", TimeUnit.HOURS.toMillis(1));
 }

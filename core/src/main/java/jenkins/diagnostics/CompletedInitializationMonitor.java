@@ -35,11 +35,17 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Performs monitoring of {@link Jenkins} {@link InitMilestone} status.
  *
  * @author Oleg Nenashev
- * @since TODO
+ * @since 2.21
  */
 @Restricted(NoExternalUse.class)
 @Extension @Symbol("completedInitialization")
 public class CompletedInitializationMonitor extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.CompletedInitializationMonitor_DisplayName();
+    }
+
     @Override
     public boolean isActivated() {
         final Jenkins instance = Jenkins.getInstance();

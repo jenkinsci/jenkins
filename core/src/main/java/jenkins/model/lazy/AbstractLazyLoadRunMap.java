@@ -293,7 +293,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
     }
 
     /**
-     * Checks if the the specified build exists.
+     * Checks if the specified build exists.
      *
      * @param number the build number to probe.
      * @return {@code true} if there is an run for the corresponding number, note that this does not mean that
@@ -315,8 +315,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer,R> i
      * @param d
      *      defines what we mean by "nearby" above.
      *      If EXACT, find #N or return null.
-     *      If ASC, finds the closest #M that satisfies M>=N.
-     *      If DESC, finds the closest #M that satisfies M&lt;=N.
+     *      If ASC, finds the closest #M that satisfies M ≥ N.
+     *      If DESC, finds the closest #M that satisfies M ≤ N.
      */
     public @CheckForNull R search(final int n, final Direction d) {
         switch (d) {

@@ -26,6 +26,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.slaves.WorkspaceList;
@@ -68,7 +69,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
         Jenkins j = Jenkins.getInstance();
         nodes.add(j);
         nodes.addAll(j.getNodes());
-        for (TopLevelItem item : j.getAllItems(TopLevelItem.class)) {
+        for (TopLevelItem item : j.allItems(TopLevelItem.class)) {
             if (item instanceof ModifiableTopLevelItemGroup) { // no such thing as TopLevelItemGroup, and ItemGroup offers no access to its type parameter
                 continue; // children will typically have their own workspaces as subdirectories; probably no real workspace of its own
             }
@@ -82,10 +83,10 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 try {
                     check = shouldBeDeleted(item, ws, node);
                 } catch (IOException x) {
-                    x.printStackTrace(listener.error("Failed to check " + node.getDisplayName()));
+                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 } catch (InterruptedException x) {
-                    x.printStackTrace(listener.error("Failed to check " + node.getDisplayName()));
+                    Functions.printStackTrace(x, listener.error("Failed to check " + node.getDisplayName()));
                     continue;
                 }
                 if (check) {
@@ -94,9 +95,9 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                         ws.deleteRecursive();
                         WorkspaceList.tempDir(ws).deleteRecursive();
                     } catch (IOException x) {
-                        x.printStackTrace(listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
+                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     } catch (InterruptedException x) {
-                        x.printStackTrace(listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
+                        Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
                 }
             }

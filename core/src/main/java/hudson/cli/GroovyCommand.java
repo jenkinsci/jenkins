@@ -71,14 +71,17 @@ public class GroovyCommand extends CLICommand {
         binding.setProperty("stdout",stdout);
         binding.setProperty("stderr",stderr);
         binding.setProperty("channel",channel);
-        String j = getClientEnvironmentVariable("JOB_NAME");
-        if (j!=null) {
-            Item job = Jenkins.getActiveInstance().getItemByFullName(j);
-            binding.setProperty("currentJob", job);
-            String b = getClientEnvironmentVariable("BUILD_NUMBER");
-            if (b!=null && job instanceof AbstractProject) {
-                Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
-                binding.setProperty("currentBuild", r);
+
+        if (channel != null) {
+            String j = getClientEnvironmentVariable("JOB_NAME");
+            if (j != null) {
+                Item job = Jenkins.getActiveInstance().getItemByFullName(j);
+                binding.setProperty("currentJob", job);
+                String b = getClientEnvironmentVariable("BUILD_NUMBER");
+                if (b != null && job instanceof AbstractProject) {
+                    Run r = ((AbstractProject) job).getBuildByNumber(Integer.parseInt(b));
+                    binding.setProperty("currentBuild", r);
+                }
             }
         }
 

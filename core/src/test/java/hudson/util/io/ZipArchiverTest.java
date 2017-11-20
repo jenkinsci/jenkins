@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -62,7 +63,7 @@ public class ZipArchiverTest {
 
         try {
             zipFile = File.createTempFile("test", ".zip");
-            archiver = new ZipArchiver(new FileOutputStream(zipFile));
+            archiver = new ZipArchiver(Files.newOutputStream(zipFile.toPath()));
 
             archiver.visit(tmpFile, "foo\\bar\\baz\\Test.txt");
         } catch (Exception e) {

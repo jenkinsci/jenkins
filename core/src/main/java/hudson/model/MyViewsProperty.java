@@ -53,6 +53,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * A UserProperty that remembers user-private views.
@@ -83,9 +84,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // this shouldn't happen, but an error in 1.319 meant the last view could be deleted
             views = new CopyOnWriteArrayList<View>();
 
-        if (views.isEmpty())
+        if (views.isEmpty()) {
             // preserve the non-empty invariant
-            views.add(new AllView(Messages.Hudson_ViewName(), this));
+            views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
+        }
+        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
@@ -150,6 +153,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return new HttpRedirect("view/" + Util.rawEncode(getPrimaryView().getViewName()) + "/");
     }
 
+    @RequirePOST
     public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
@@ -179,14 +183,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     public ACL getACL() {
         return user.getACL();
-    }
-
-    public void checkPermission(Permission permission) throws AccessDeniedException {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     ///// Action methods /////
@@ -224,10 +220,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     public ViewsTabBar getViewsTabBar() {
         return Jenkins.getInstance().getViewsTabBar();
-    }
-
-    public ItemGroup<? extends TopLevelItem> getItemGroup() {
-        return Jenkins.getInstance();
     }
 
     public List<Action> getViewActions() {

@@ -25,9 +25,13 @@ package jenkins.widgets;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import hudson.model.AbstractBuild;
 import hudson.model.Job;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
+import hudson.search.UserSearchProperty;
 import hudson.widgets.HistoryWidget;
 
 import javax.annotation.Nonnull;
@@ -37,6 +41,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * History page filter.
@@ -52,8 +57,8 @@ public class HistoryPageFilter<T> {
 
     // Need to use different Lists for Queue.Items and Runs because
     // we need access to them separately in the jelly files for rendering.
-    public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<HistoryPageEntry<Queue.Item>>();
-    public final List<HistoryPageEntry<Run>> runs = new ArrayList<HistoryPageEntry<Run>>();
+    public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<>();
+    public final List<HistoryPageEntry<Run>> runs = new ArrayList<>();
 
     public boolean hasUpPage = false; // there are newer builds than on this page
     public boolean hasDownPage = false; // there are older builds than on this page
@@ -117,7 +122,7 @@ public class HistoryPageFilter<T> {
      * Add build items to the History page.
      *
      * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
-     * @since TODO
+     * @since 2.17
      */
     public void add(@Nonnull Iterable<T> runItems) {
         addInternal(runItems);
@@ -128,7 +133,7 @@ public class HistoryPageFilter<T> {
      *
      * @param runItems The items to be added. Assumes the items are in descending queue ID order i.e. newest first.
      * @param queueItems The queue items to be added. Queue items do not need to be sorted.
-     * @since TODO
+     * @since 2.17
      */
     public void add(@Nonnull Iterable<T> runItems, @Nonnull List<Queue.Item> queueItems) {
         sort(queueItems);
@@ -343,6 +348,13 @@ public class HistoryPageFilter<T> {
             return true;
         } else if (fitsSearchString(run.getResult())) {
             return true;
+        } else if (run instanceof AbstractBuild && fitsSearchBuildVariables((AbstractBuild) run)) {
+            return true;
+        } else {
+            ParametersAction parametersAction = run.getAction(ParametersAction.class);
+            if (parametersAction != null && fitsSearchBuildParameters(parametersAction)) {
+                return true;
+            }
         }
         
         // Non of the fuzzy matches "liked" the search term. 
@@ -354,14 +366,38 @@ public class HistoryPageFilter<T> {
             return true;
         }
 
-        if (data != null) {
-            if (data instanceof Number) {
-                return data.toString().equals(searchString);
+        if (data == null) {
+            return false;
+        }
+
+        if (data instanceof Number) {
+            return data.toString().equals(searchString);
+        } else {
+            if (UserSearchProperty.isCaseInsensitive()) {
+                return data.toString().toLowerCase().contains(searchString.toLowerCase());
             } else {
-                return data.toString().toLowerCase().contains(searchString);
+                return data.toString().contains(searchString);
             }
         }
-        
+    }
+
+    private boolean fitsSearchBuildVariables(AbstractBuild<?, ?> runAsBuild) {
+        Map<String, String> buildVariables = runAsBuild.getBuildVariables();
+        for (String paramsValues : buildVariables.values()) {
+            if (fitsSearchString(paramsValues)) {
+                return true;
+            }
+        }
         return false;
-    }    
+    }
+
+    private boolean fitsSearchBuildParameters(ParametersAction parametersAction) {
+        List<ParameterValue> parameters = parametersAction.getParameters();
+        for (ParameterValue parameter : parameters) {
+            if (!parameter.isSensitive() && fitsSearchString(parameter.getValue())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

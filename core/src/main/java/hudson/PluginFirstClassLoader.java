@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.apache.tools.ant.AntClassLoader;
+import jenkins.util.AntWithFindResourceClassLoader;
 
 /**
  * classLoader which use first /WEB-INF/lib/*.jar and /WEB-INF/classes before core classLoader
@@ -42,10 +42,14 @@ import org.apache.tools.ant.AntClassLoader;
  * @since 1.371
  */
 public class PluginFirstClassLoader
-    extends AntClassLoader
+    extends AntWithFindResourceClassLoader
     implements Closeable
 {
-    
+
+    public PluginFirstClassLoader() {
+        super(null, false);
+    }
+
     private List<URL> urls = new ArrayList<URL>();
 
     public void addPathFiles( Collection<File> paths )
@@ -100,6 +104,5 @@ public class PluginFirstClassLoader
     {
         InputStream is = super.getResourceAsStream( name );
         return is;
-    }   
-    
+    }
 }

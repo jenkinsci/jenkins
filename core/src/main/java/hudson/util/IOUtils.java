@@ -3,6 +3,8 @@ package hudson.util;
 import hudson.Functions;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
@@ -26,20 +28,18 @@ public class IOUtils {
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
-        FileInputStream in = new FileInputStream(src);
-        try {
+        try (InputStream in = Files.newInputStream(src.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, out);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(in);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
     public static void copy(InputStream in, File out) throws IOException {
-        FileOutputStream fos = new FileOutputStream(out);
-        try {
+        try (OutputStream fos = Files.newOutputStream(out.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, fos);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(fos);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -71,7 +71,7 @@ public class IOUtils {
      *
      * <p>
      * {@link InputStream#skip(long)} has two problems. One is that
-     * it doesn't let us reliably differentiate "hit EOF" case vs "inpustream just returning 0 since there's no data
+     * it doesn't let us reliably differentiate "hit EOF" case vs "inputstream just returning 0 since there's no data
      * currently available at hand", and some subtypes (such as {@link FileInputStream#skip(long)} returning -1.
      *
      * <p>
@@ -136,12 +136,9 @@ public class IOUtils {
      * @since 1.422
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
-        BufferedReader reader = new BufferedReader(
-                encoding==null ? new InputStreamReader(is) : new InputStreamReader(is,encoding));
-        try {
+        try (BufferedReader reader = new BufferedReader(
+                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
-        } finally {
-            reader.close();
         }
     }
 
@@ -191,7 +188,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Reader)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Reader input) {
@@ -199,7 +196,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Writer)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Writer output) {
@@ -207,7 +204,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.InputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(InputStream input) {
@@ -215,7 +212,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.OutputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(OutputStream output) {

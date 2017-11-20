@@ -25,10 +25,14 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -42,6 +46,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
+import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -51,14 +56,15 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.util.HttpResponses;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.LegacySecurityRealm;
-import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
+import hudson.util.VersionNumber;
 
+import jenkins.AgentProtocol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -70,16 +76,47 @@ import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+
+import javax.annotation.CheckForNull;
 
 /**
- * @author kingfai
- *
+ * Tests of the {@link Jenkins} class instance logic.
+ * @see Jenkins
+ * @see JenkinsRule
  */
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Issue("SECURITY-406")
+    @Test
+    public void testUserCreationFromUrlForAdmins() throws Exception {
+        WebClient wc = j.createWebClient();
+
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+        wc.assertFails("user/nonexistent", 404);
+        assertNull("User not supposed to exist", User.getById("nonexistent", false));
+
+        try {
+            User.ALLOW_USER_CREATION_VIA_URL = true;
+
+            // expected to work
+            wc.goTo("user/nonexistent2");
+
+            assertNotNull("User supposed to exist", User.getById("nonexistent2", false));
+
+        } finally {
+            User.ALLOW_USER_CREATION_VIA_URL = false;
+        }
+    }
 
     @Test
     public void testIsDisplayNameUniqueTrue() throws Exception {
@@ -271,17 +308,11 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.goTo("script");
@@ -302,17 +333,11 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
-        j.jenkins.setSecurityRealm(new LegacySecurityRealm());
-        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy() {
-            @Override public boolean hasPermission(String sid, Permission p) {
-                return p == Jenkins.RUN_SCRIPTS ? hasExplicitPermission(sid, p) : super.hasPermission(sid, p);
-            }
-        };
-        gmas.add(Jenkins.ADMINISTER, "alice");
-        gmas.add(Jenkins.RUN_SCRIPTS, "alice");
-        gmas.add(Jenkins.READ, "bob");
-        gmas.add(Jenkins.ADMINISTER, "charlie");
-        j.jenkins.setAuthorizationStrategy(gmas);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("alice").
+            grant(Jenkins.READ).everywhere().to("bob").
+            grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
         wc.login("alice");
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
@@ -451,5 +476,204 @@ public class JenkinsTest {
 
         assertThat(rsp.getContentAsString(), containsString("Node is offline"));
         assertThat(rsp.getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    @Issue("JENKINS-38487")
+    public void startupShouldNotFailOnFailingOnlineListener() {
+        // We do nothing, FailingOnOnlineListener & JenkinsRule should cause the 
+        // boot failure if the issue is not fixed.
+    }
+
+    @TestExtension(value = "startupShouldNotFailOnFailingOnlineListener")
+    public static final class FailingOnOnlineListener extends ComputerListener {
+        
+        @Override
+        public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+            throw new IOException("Something happened (the listener always throws this exception)");
+        }
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add(MockOptInProtocol1.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
+        
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("We should have additional enabled protocol", 
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 1));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        assertProtocolEnabled(MockOptOutProtocol1.NAME, "after startup");
+
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(MockOptOutProtocol1.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "before the roundtrip");
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really refreshed", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled one protocol", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 1));
+
+        assertProtocolDisabled(MockOptOutProtocol1.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_multipleEnable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.add(MockOptInProtocol1.NAME);
+        newProtocols.add(MockOptInProtocol2.NAME);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "before the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "before the roundtrip");
+
+        j.jenkins.reload();
+        
+        final Set<String> reloadedProtocols = j.jenkins.getAgentProtocols();
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == reloadedProtocols);
+        assertThat("There should be two additional enabled protocols",
+                reloadedProtocols.size(), equalTo(defaultProtocols.size() + 2));
+        assertProtocolEnabled(MockOptInProtocol1.NAME, "after the roundtrip");
+        assertProtocolEnabled(MockOptInProtocol2.NAME, "after the roundtrip");
+    }
+    
+    @Test
+    @Issue("JENKINS-39465")
+    public void agentProtocols_singleDisable_roundtrip() throws Exception {
+        final Set<String> defaultProtocols = Collections.unmodifiableSet(j.jenkins.getAgentProtocols());
+        final String protocolToDisable1 = MockOptOutProtocol1.NAME;
+        final String protocolToDisable2 = MockOptOutProtocol2.NAME;
+        
+        final Set<String> newProtocols = new HashSet<>(defaultProtocols);
+        newProtocols.remove(protocolToDisable1);
+        newProtocols.remove(protocolToDisable2);
+        j.jenkins.setAgentProtocols(newProtocols);
+        j.jenkins.save();
+        assertProtocolDisabled(protocolToDisable1, "before the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "before the roundtrip");
+        final Set<String> agentProtocolsBeforeReload = j.jenkins.getAgentProtocols();
+        j.jenkins.reload();
+        
+        assertFalse("The protocol list must have been really reloaded", agentProtocolsBeforeReload == j.jenkins.getAgentProtocols());
+        assertThat("We should have disabled two protocols", 
+                j.jenkins.getAgentProtocols().size(), equalTo(defaultProtocols.size() - 2));
+        assertProtocolDisabled(protocolToDisable1, "after the roundtrip");
+        assertProtocolDisabled(protocolToDisable2, "after the roundtrip");
+    }
+
+    private void assertProtocolDisabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be disabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), not(hasItem(protocolName)));
+    }
+
+    private void assertProtocolEnabled(String protocolName, @CheckForNull String stage) throws AssertionError {
+        assertThat(protocolName + " must be enabled. Stage=" + (stage != null ? stage : "undefined"),
+                j.jenkins.getAgentProtocols(), hasItem(protocolName));
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol1 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptInProtocol2 extends MockOptInProtocol {
+
+        static final String NAME = "MOCK-OPTIN-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptInProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return true;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol1 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-1";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    @TestExtension
+    public static class MockOptOutProtocol2 extends MockOptOutProtocol {
+
+        static final String NAME = "MOCK-OPTOUT-2";
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+    }
+
+    private abstract static class MockOptOutProtocol extends AgentProtocol {
+        @Override
+        public boolean isOptIn() {
+            return false;
+        }
+
+        @Override
+        public void handle(Socket socket) throws IOException, InterruptedException {
+            throw new IOException("This is a mock agent protocol. It cannot be used for connection");
+        }
+    }
+
+    @Issue("JENKINS-42577")
+    @Test
+    public void versionIsSavedInSave() throws Exception {
+        Jenkins.VERSION = "1.0";
+        j.jenkins.save();
+        VersionNumber storedVersion = Jenkins.getStoredVersion();
+        assertNotNull(storedVersion);
+        assertEquals(storedVersion.toString(), "1.0");
+
+        Jenkins.VERSION = null;
+        j.jenkins.save();
+        VersionNumber nullVersion = Jenkins.getStoredVersion();
+        assertNull(nullVersion);
     }
 }

@@ -7,7 +7,7 @@ import org.jenkinsci.remoting.RoleChecker;
 /**
  * {@link FileCallable}s that are meant to be only used on the master.
  *
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
     @Override

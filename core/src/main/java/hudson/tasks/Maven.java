@@ -147,7 +147,7 @@ public class Maven extends Builder {
      *
      * Defaults to false unless user requests otherwise. Old configurations are set to true to mimic the legacy behaviour.
      *
-     * @since TODO
+     * @since 2.12
      */
     private @Nonnull Boolean injectBuildVariables;
 
@@ -298,7 +298,7 @@ public class Maven extends Builder {
         int startIndex = 0;
         int endIndex;
         do {
-            // split targets into multiple invokations of maven separated by |
+            // split targets into multiple invocations of maven separated by |
             endIndex = targets.indexOf('|', startIndex);
             if (-1 == endIndex) {
                 endIndex = targets.length();
@@ -340,12 +340,16 @@ public class Maven extends Builder {
                 }
             }
 
+            Set<String> sensitiveVars = build.getSensitiveBuildVariables();
+
+            // Inject environment variables only if chosen to do so
             if (isInjectBuildVariables()) {
-                Set<String> sensitiveVars = build.getSensitiveBuildVariables();
-                args.addKeyValuePairs("-D",build.getBuildVariables(),sensitiveVars);
-                final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
-                args.addKeyValuePairsFromPropertyString("-D",this.properties,resolver,sensitiveVars);
+                args.addKeyValuePairs("-D", build.getBuildVariables(), sensitiveVars);
             }
+
+            // Add properties from builder configuration, AFTER the injected build variables.
+            final VariableResolver<String> resolver = new Union<String>(new ByMap<String>(env), vr);
+            args.addKeyValuePairsFromPropertyString("-D", this.properties, resolver, sensitiveVars);
 
             if (usesPrivateRepository())
                 args.add("-Dmaven.repo.local=" + build.getWorkspace().child(".repository"));
@@ -366,7 +370,7 @@ public class Maven extends Builder {
                 }
             } catch (IOException e) {
                 Util.displayIOException(e,listener);
-                e.printStackTrace( listener.fatalError(Messages.Maven_ExecFailed()) );
+                Functions.printStackTrace(e, listener.fatalError(Messages.Maven_ExecFailed()));
                 return false;
             }
             startIndex = endIndex + 1;
@@ -501,7 +505,7 @@ public class Maven extends Builder {
 
         /**
          * @deprecated as of 1.308.
-         *      Use {@link #Maven.MavenInstallation(String, String, List)}
+         *      Use {@link #MavenInstallation(String, String, List)}
          */
         @Deprecated
         public MavenInstallation(String name, String home) {
@@ -705,6 +709,27 @@ public class Maven extends Builder {
                 return ((MavenInstallation)obj).mavenHome;
             }
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final MavenInstallation that = (MavenInstallation) o;
+
+            if (getHome() != null ? !getHome().equals(that.getHome()) : that.getHome() != null) return false;
+            if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getHome() != null ? getHome().hashCode() : 0;
+            result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+            //result = 31 * result + (getProperties() != null ? getProperties().hashCode() : 0);
+            return result;
+        }
+
     }
 
     /**

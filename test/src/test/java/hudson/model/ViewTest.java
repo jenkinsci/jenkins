@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -53,14 +54,22 @@ import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
@@ -73,10 +82,32 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class ViewTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
+    }
+
+    @Issue("JENKINS-43848")
+    @Test public void testNoCacheHeadersAreSet() throws Exception {
+        List<NameValuePair> responseHeaders = j.createWebClient()
+                .goTo("view/all/itemCategories", "application/json")
+                .getWebResponse()
+                .getResponseHeaders();
+
+
+        final Map<String, String> values = new HashMap<>();
+
+        for(NameValuePair p : responseHeaders) {
+            values.put(p.getName(), p.getValue());
+        }
+
+        String resp = values.get("Cache-Control");
+        assertThat(resp, is("no-cache, no-store, must-revalidate"));
+        assertThat(values.get("Expires"), is("0"));
+        assertThat(values.get("Pragma"), is("no-cache"));
     }
 
     /**
@@ -380,14 +411,14 @@ public class ViewTest {
     @Test
     public void testGetOwnerItemGroup() throws Exception {
         ListView view = listView("foo");
-        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwnerItemGroup());
+        assertEquals("View should have owner jenkins.",j.jenkins.getItemGroup(), view.getOwner().getItemGroup());
     }
     
     @Test
     public void testGetOwnerPrimaryView() throws Exception{
         ListView view = listView("foo");
         j.jenkins.setPrimaryView(view);
-        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwnerPrimaryView());
+        assertEquals("View should have primary view " + view.getDisplayName(),view, view.getOwner().getPrimaryView());
     }
     
     @Test
@@ -411,7 +442,7 @@ public class ViewTest {
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
-        assertNotNull("View should contains ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
+        assertNotNull("View should contain ViewPropertyImpl property.", view.getProperties().get(PropertyImpl.class));
     }
 
     private ListView listView(String name) throws IOException {
@@ -506,7 +537,34 @@ public class ViewTest {
     private void assertCheckJobName(ViewGroup context, String name, FormValidation.Kind expected) {
         assertEquals(expected, context.getPrimaryView().doCheckJobName(name).kind);
     }
-    
+
+    @Issue("JENKINS-41825")
+    @Test
+    public void brokenGetItems() throws Exception {
+        logging.capture(100).record("", Level.INFO);
+        j.jenkins.addView(new BrokenView());
+        j.createWebClient().goTo("view/broken/");
+        boolean found = false;
+        LOGS: for (LogRecord record : logging.getRecords()) {
+            for (Throwable t = record.getThrown(); t != null; t = t.getCause()) {
+                if (t instanceof IllegalStateException && BrokenView.ERR.equals(t.getMessage())) {
+                    found = true;
+                    break LOGS;
+                }
+            }
+        }
+        assertTrue(found);
+    }
+    private static class BrokenView extends ListView {
+        static final String ERR = "oops I cannot retrieve items";
+        BrokenView() {
+            super("broken");
+        }
+        @Override
+        public List<TopLevelItem> getItems() {
+            throw new IllegalStateException(ERR);
+        }
+    }
     
     @Test
     @Issue("JENKINS-36908")

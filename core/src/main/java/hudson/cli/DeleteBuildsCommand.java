@@ -24,21 +24,23 @@
 package hudson.cli;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Deletes builds records in a bulk.
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(DoNotUse.class) // command implementation only
 @Extension
-public class DeleteBuildsCommand extends AbstractBuildRangeCommand {
+public class DeleteBuildsCommand extends RunRangeCommand {
     @Override
     public String getShortDescription() {
         return Messages.DeleteBuildsCommand_ShortDescription();
@@ -52,12 +54,12 @@ public class DeleteBuildsCommand extends AbstractBuildRangeCommand {
     }
 
     @Override
-    protected int act(List<AbstractBuild<?, ?>> builds) throws IOException {
+    protected int act(List<Run<?, ?>> builds) throws IOException {
         job.checkPermission(Run.DELETE);
 
         final HashSet<Integer> hsBuilds = new HashSet<Integer>();
 
-        for (AbstractBuild build : builds) {
+        for (Run<?, ?> build : builds) {
             if (!hsBuilds.contains(build.number)) {
                 build.delete();
                 hsBuilds.add(build.number);

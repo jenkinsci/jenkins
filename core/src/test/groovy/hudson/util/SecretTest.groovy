@@ -31,7 +31,8 @@ import org.junit.Rule
 import org.junit.Test
 
 import java.util.Random;
-import javax.crypto.Cipher;
+import javax.crypto.Cipher
+import java.util.regex.Pattern;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -42,6 +43,8 @@ public class SecretTest {
 
     @Rule
     public MockSecretRule mockSecretRule = new MockSecretRule()
+
+    static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("\\{?[A-Za-z0-9+/]+={0,2}}?");
 
     @Test
     void testEncrypt() {
@@ -54,6 +57,11 @@ public class SecretTest {
 
         // can we round trip?
         assert secret==Secret.fromString(secret.encryptedValue);
+
+        //Two consecutive encryption requests of the same object should result in the same encrypted value - SECURITY-304
+        assert secret.encryptedValue == secret.encryptedValue
+        //Two consecutive encryption requests of different objects with the same value should not result in the same encrypted value - SECURITY-304
+        assert secret.encryptedValue != Secret.fromString(secret.plainText).encryptedValue
     }
 
     @Test
@@ -62,9 +70,16 @@ public class SecretTest {
             String plaintext = RandomStringUtils.random(new Random().nextInt(i));
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
             //println "${plaintext} → ${ciphertext}"
-            assert Secret.ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
+            assert ENCRYPTED_VALUE_PATTERN.matcher(ciphertext).matches();
         }
-        assert !Secret.ENCRYPTED_VALUE_PATTERN.matcher("hello world").matches();
+        //Not "plain" text
+        assert !ENCRYPTED_VALUE_PATTERN.matcher("hello world").matches();
+        //Not "plain" text
+        assert !ENCRYPTED_VALUE_PATTERN.matcher("helloworld!").matches();
+        //legacy key
+        assert ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr0123456789").matches();
+        //legacy key
+        assert ENCRYPTED_VALUE_PATTERN.matcher("abcdefghijklmnopqr012345678==").matches();
     }
 
     @Test
@@ -77,7 +92,7 @@ public class SecretTest {
         def s = Secret.fromString("Mr.Jenkins");
         def xml = Jenkins.XSTREAM.toXML(s);
         assert !xml.contains(s.plainText)
-        assert xml.contains(s.encryptedValue)
+        assert xml ==~ /<hudson\.util\.Secret>\{[A-Za-z0-9+\/]+={0,2}}<\/hudson\.util\.Secret>/
 
         def o = Jenkins.XSTREAM.fromXML(xml);
         assert o==s : xml;
@@ -104,11 +119,11 @@ public class SecretTest {
      */
     @Test
     void migrationFromLegacyKeyToConfidentialStore() {
-        def legacy = Secret.legacyKey
+        def legacy = HistoricalSecrets.legacyKey
         ["Hello world","","\u0000unprintable"].each { str ->
             def cipher = Secret.getCipher("AES");
             cipher.init(Cipher.ENCRYPT_MODE, legacy);
-            def old = new String(Base64.encode(cipher.doFinal((str + Secret.MAGIC).getBytes("UTF-8"))))
+            def old = new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
             def s = Secret.fromString(old)
             assert s.plainText==str : "secret by the old key should decrypt"
             assert s.encryptedValue!=old : "but when encrypting, ConfidentialKey should be in use"

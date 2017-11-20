@@ -42,7 +42,7 @@ THE SOFTWARE.
         <st:getOutput var="output" />
         <j:whitespace>${it.obtainLog().writeLogTo(0,output)}</j:whitespace>
       </pre>
-      <form method="get" action="clearError">
+      <form method="post" action="clearError">
         <f:submit value="${%Clear error to retry}" />
       </form>
     </j:otherwise>

@@ -41,6 +41,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
@@ -260,6 +261,19 @@ public class UtilTest {
     }
 
     @Test
+    public void testIsSymlink_onWindows_junction() throws Exception {
+        Assume.assumeTrue("Uses Windows-specific features", Functions.isWindows());
+        tmp.newFolder("targetDir");
+        File d = tmp.newFolder("dir");
+        Process p = new ProcessBuilder()
+                .directory(d)
+                .command("cmd.exe", "/C", "mklink /J junction ..\\targetDir")
+                .start();
+        Assume.assumeThat("unable to create junction", p.waitFor(), is(0));
+        assertTrue(Util.isSymlink(new File(d, "junction")));
+    }
+
+    @Test
     public void testDeleteFile() throws Exception {
         File f = tmp.newFile();
         // Test: File is deleted
@@ -441,16 +455,16 @@ public class UtilTest {
             Util.WAIT_BETWEEN_DELETION_RETRIES = -1000;
             Util.GC_AFTER_FAILED_DELETE = true;
             final AtomicReference<Throwable> thrown = new AtomicReference<Throwable>();
-            Thread deleteToBeInterupted = new Thread("deleteToBeInterupted") {
+            Thread deleteToBeInterrupted = new Thread("deleteToBeInterrupted") {
                 public void run() {
                     try { Util.deleteRecursive(dir); }
                     catch( Throwable x ) { thrown.set(x); }
                 }
             };
-            deleteToBeInterupted.start();
-            deleteToBeInterupted.interrupt();
-            deleteToBeInterupted.join(500);
-            assertFalse("deletion stopped", deleteToBeInterupted.isAlive());
+            deleteToBeInterrupted.start();
+            deleteToBeInterrupted.interrupt();
+            deleteToBeInterrupted.join(500);
+            assertFalse("deletion stopped", deleteToBeInterrupted.isAlive());
             assertTrue("d1f1 still exists", d1f1.exists());
             unlockFileForDeletion(d1f1);
             Throwable deletionInterruptedEx = thrown.get();
@@ -488,9 +502,13 @@ public class UtilTest {
         // On unix, can't use "chmod a-w" on the dir as the code-under-test undoes that.
         // On unix, can't use "chattr +i" because that needs root.
         // On unix, can't use "chattr +u" because ext fs ignores it.
+        // On Windows, can't use FileChannel.lock() because that doesn't block deletion
         // On Windows, we can't delete files that are open for reading, so we use that.
+        // NOTE: This is a hack in any case as there is no guarantee that all Windows filesystems
+        // will enforce blocking deletion on open files... just that the ones we normally
+        // test with seem to block.
         assert Functions.isWindows();
-        final InputStream s = new FileInputStream(f);
+        final InputStream s = new FileInputStream(f); // intentional use of FileInputStream
         unlockFileCallables.put(f, new Callable<Void>() {
             public Void call() throws IOException { s.close(); return null; };
         });
@@ -666,6 +684,44 @@ public class UtilTest {
         public void describeTo(Description description) {
             description.appendText("a relative path");
         }
+    }
+
+    @Test
+    public void testIsDescendant() throws IOException {
+        File root;
+        File other;
+        if (Functions.isWindows()) {
+            root = new File("C:\\Temp");
+            other = new File("C:\\Windows");
+        } else {
+            root = new File("/tmp");
+            other = new File("/usr");
+
+        }
+        assertTrue(Util.isDescendant(root, new File(root,"child")));
+        assertTrue(Util.isDescendant(root, new File(new File(root,"child"), "grandchild")));
+        assertFalse(Util.isDescendant(root, other));
+        assertFalse(Util.isDescendant(root, new File(other, "child")));
+
+        assertFalse(Util.isDescendant(new File(root,"child"), root));
+        assertFalse(Util.isDescendant(new File(new File(root,"child"), "grandchild"), root));
+
+        //.. whithin root
+        File convoluted = new File(root, "child");
+        convoluted = new File(convoluted, "..");
+        convoluted = new File(convoluted, "child");
+        assertTrue(Util.isDescendant(root, convoluted));
+
+        //.. going outside of root
+        convoluted = new File(root, "..");
+        convoluted = new File(convoluted, other.getName());
+        convoluted = new File(convoluted, "child");
+        assertFalse(Util.isDescendant(root, convoluted));
+
+        //. on root
+        assertTrue(Util.isDescendant(new File(root, "."), new File(root, "child")));
+        //. on both
+        assertTrue(Util.isDescendant(new File(root, "."), new File(new File(root, "child"), ".")));
     }
 
 }

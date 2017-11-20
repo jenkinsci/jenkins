@@ -43,7 +43,7 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.diagnosis.OldDataMonitor;
@@ -130,8 +130,8 @@ public class XStream2 extends XStream {
      * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
      * @param clazz a class which we expect to hold a non-{@code transient} field
      * @param field a field name in that class
+     * @since TODO
      */
-    @Restricted(NoExternalUse.class) // TODO could be opened up later
     public void addCriticalField(Class<?> clazz, String field) {
         reflectionConverter.addCriticalField(clazz, field);
     }
@@ -144,6 +144,9 @@ public class XStream2 extends XStream {
     private void init() {
         // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
+
+        // http://www.openwall.com/lists/oss-security/2017/04/03/4
+        denyTypes(new Class[] { void.class, Void.class });
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
@@ -306,15 +309,22 @@ public class XStream2 extends XStream {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class<?> t) {
+        @CheckForNull
+        private Converter findConverter(@CheckForNull Class<?> t) {
+            if (t == null) {
+                return null;
+            }
+            
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
-                if(t==null || t.getClassLoader()==null)
+                final ClassLoader classLoader = t.getClassLoader();
+                if(classLoader == null) {
                     return null;
-                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
+                }
+                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -415,7 +425,7 @@ public class XStream2 extends XStream {
 
         private PluginManager pm;
 
-        @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
+        @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
         @Override public String ownerOf(Class<?> clazz) {
             if (classOwnership != null) {
                 return classOwnership.ownerOf(clazz);

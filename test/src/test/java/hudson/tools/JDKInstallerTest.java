@@ -8,33 +8,27 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.tools.JDKInstaller.DescriptorImpl;
 
+import java.io.InputStream;
+import java.nio.file.Files;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import hudson.model.JDK;
-import hudson.model.FreeStyleProject;
-import hudson.model.FreeStyleBuild;
 import hudson.model.TaskListener;
-import hudson.tasks.Shell;
 import hudson.util.StreamTaskListener;
 import hudson.tools.JDKInstaller.Platform;
-import hudson.tools.JDKInstaller.CPU;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -54,8 +48,7 @@ public class JDKInstallerTest {
             LOGGER.warning(f+" doesn't exist. Skipping JDK installation tests");
         } else {
             Properties prop = new Properties();
-            FileInputStream in = new FileInputStream(f);
-            try {
+            try (InputStream in = Files.newInputStream(f.toPath())) {
                 prop.load(in);
                 String u = prop.getProperty("oracle.userName");
                 String p = prop.getProperty("oracle.password");
@@ -65,8 +58,6 @@ public class JDKInstallerTest {
                     DescriptorImpl d = j.jenkins.getDescriptorByType(DescriptorImpl.class);
                     d.doPostCredential(u,p);
                 }
-            } finally {
-                in.close();
             }
         }
     }
@@ -100,74 +91,6 @@ public class JDKInstallerTest {
         InstallSourceProperty isp = jdk.getProperties().get(InstallSourceProperty.class);
         assertEquals(1,isp.installers.size());
         j.assertEqualBeans(installer, isp.installers.get(JDKInstaller.class), "id,acceptLicense");
-    }
-
-    /**
-     * Can we locate the bundles?
-     */
-    @Test
-    public void locate() throws Exception {
-        Assume.assumeTrue("this is a really time consuming test, so only run it when we really want", Boolean.getBoolean("jenkins.testJDKInstaller"));
-
-        retrieveUpdateCenterData();
-
-        JDKInstaller i = new JDKInstaller("jdk-7u3-oth-JPR", true);
-        StreamTaskListener listener = StreamTaskListener.fromStdout();
-        i.locate(listener, Platform.LINUX, CPU.i386);
-        i.locate(listener, Platform.WINDOWS, CPU.amd64);
-        i.locate(listener, Platform.SOLARIS, CPU.Sparc);
-    }
-
-    private void retrieveUpdateCenterData() throws IOException, SAXException {
-        j.createWebClient().goTo("/"); // make sure data is loaded
-    }
-
-    /**
-     * Tests the auto installation.
-     */
-    @Test
-    public void autoInstallation6u13() throws Exception {
-        doTestAutoInstallation("jdk-6u13-oth-JPR@CDS-CDS_Developer", "1.6.0_13-b03");
-    }
-
-    /**
-     * JDK7 is distributed as a gzip file
-     */
-    @Test
-    public void autoInstallation7() throws Exception {
-        doTestAutoInstallation("jdk-7-oth-JPR", "1.7.0-b147");
-    }
-
-    @Test
-    @Issue("JENKINS-3989")
-    public void autoInstallation142_17() throws Exception {
-        doTestAutoInstallation("j2sdk-1.4.2_17-oth-JPR@CDS-CDS_Developer", "1.4.2_17-b06");
-    }
-
-    /**
-     * End-to-end installation test.
-     */
-    private void doTestAutoInstallation(String id, String fullversion) throws Exception {
-        Assume.assumeTrue("this is a really time consuming test, so only run it when we really want", Boolean.getBoolean("jenkins.testJDKInstaller"));
-
-        retrieveUpdateCenterData();
-
-        JDKInstaller installer = new JDKInstaller(id, true);
-
-        JDK jdk = new JDK("test", tmp.getRoot().getAbsolutePath(), Arrays.asList(
-                new InstallSourceProperty(Arrays.<ToolInstaller>asList(installer))));
-
-        j.jenkins.getJDKs().add(jdk);
-
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setJDK(jdk);
-        p.getBuildersList().add(new Shell("java -fullversion\necho $JAVA_HOME"));
-        FreeStyleBuild b = j.buildAndAssertSuccess(p);
-        @SuppressWarnings("deprecation") String log = b.getLog();
-        System.out.println(log);
-        // make sure it runs with the JDK that just got installed
-        assertTrue(log.contains(fullversion));
-        assertTrue(log.contains(tmp.getRoot().getAbsolutePath()));
     }
 
     /**
