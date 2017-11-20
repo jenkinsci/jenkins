@@ -80,9 +80,7 @@ public class AtomicFileWriter extends Writer {
         destFile = f.toPath();
         Path dir = destFile.getParent();
         try {
-            if (Files.notExists(dir)) {
-                Files.createDirectories(dir);
-            }
+            Files.createDirectories(dir);
             tmpFile = Files.createTempFile(dir, "atomic", "tmp");
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
