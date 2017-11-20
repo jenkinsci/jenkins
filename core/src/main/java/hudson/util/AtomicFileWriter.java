@@ -29,11 +29,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Buffered {@link FileWriter} that supports atomic operations.
@@ -45,6 +46,8 @@ import java.nio.file.StandardOpenOption;
  * @author Kohsuke Kawaguchi
  */
 public class AtomicFileWriter extends Writer {
+
+    private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
 
     private final Writer core;
     private final Path tmpPath;
@@ -125,10 +128,30 @@ public class AtomicFileWriter extends Writer {
         try {
             // Try to make an atomic move.
             Files.move(tmpPath, destPath, StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException e) {
-            // If it falls here that means that Atomic move is not supported by the OS.
-            // In this case we need to fall-back to a copy option which is supported by all OSes.
-            Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            // If it falls here that can mean many things. Either that the atomic move is not supported,
+            // or something wrong happened. Anyway, let's try to be over-diagnosing
+            LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.");
+            if (destPath.toFile().exists()) {
+                LOGGER.log(Level.WARNING, "The target file {0} was already existing?!?", destPath);
+            }
+
+            try {
+                Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e1) {
+                e1.addSuppressed(e);
+                LOGGER.log(Level.SEVERE, "Unable to move {0} to {1}. Attempting to delete {1} and abandoning.",
+                           new Path[]{tmpPath, destPath});
+                try {
+                    Files.deleteIfExists(tmpPath);
+                } catch (IOException e2) {
+                    e2.addSuppressed(e1);
+                    LOGGER.log(Level.SEVERE, "Unable to delete {0}, good bye then!", tmpPath);
+                    throw e2;
+                }
+
+                throw e1;
+            }
         }
     }
 
