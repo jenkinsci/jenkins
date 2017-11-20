@@ -74,9 +74,9 @@ public class AtomicFileWriter extends Writer {
         this(f, Charset.forName(encoding));
     }
 
-        /**
-         * @param charset File charset to write. If null, platform default encoding is chosen.
-         */
+    /**
+     * @param charset File charset to write. If null, platform default encoding is chosen.
+     */
     public AtomicFileWriter(File f, Charset charset) throws IOException {
         destFile = f.toPath();
         Path dir = destFile.getParent();
