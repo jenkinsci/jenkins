@@ -44,6 +44,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
+// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
+// The change needs API deprecation policy or external usages cleanup.
+
 /**
  * {@link TaskListener} that generates output into a single stream.
  *
@@ -52,7 +55,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener implements TaskListener, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     private PrintStream out;
     private Charset charset;
 
