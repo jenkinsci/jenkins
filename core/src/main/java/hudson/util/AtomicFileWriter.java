@@ -139,7 +139,7 @@ public class AtomicFileWriter extends Writer {
                 Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e1) {
                 e1.addSuppressed(e);
-                LOGGER.log(Level.SEVERE, "Unable to move {0} to {1}. Attempting to delete {1} and abandoning.",
+                LOGGER.log(Level.SEVERE, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
                            new Path[]{tmpPath, destPath});
                 try {
                     Files.deleteIfExists(tmpPath);
