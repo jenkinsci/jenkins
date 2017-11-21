@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -148,7 +149,12 @@ public class AtomicFileWriter extends Writer {
         } catch (IOException e) {
             // If it falls here that can mean many things. Either that the atomic move is not supported,
             // or something wrong happened. Anyway, let's try to be over-diagnosing
-            LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.");
+            if (e instanceof AtomicMoveNotSupportedException) {
+                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.");
+            } else {
+                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.");
+            }
+
             if (destPath.toFile().exists()) {
                 LOGGER.log(Level.WARNING, "The target file {0} was already existing?!?", destPath);
             }
