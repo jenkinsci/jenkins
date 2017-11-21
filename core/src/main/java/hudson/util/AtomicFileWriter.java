@@ -24,12 +24,14 @@
 package hudson.util;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -66,8 +68,24 @@ public class AtomicFileWriter extends Writer {
      * @deprecated Use {@link #AtomicFileWriter(Path, Charset)}
      */
     @Deprecated
-    public AtomicFileWriter(@Nonnull File f, String encoding) throws IOException {
-        this(f.toPath(), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
+    public AtomicFileWriter(@Nonnull File f, @Nullable String encoding) throws IOException {
+        this(toPath(f), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
+    }
+
+    /**
+     * Wraps potential {@link java.nio.file.InvalidPathException} thrown by {@link File#toPath()} in an
+     * {@link IOException} for backward compatibility.
+     *
+     * @param file
+     * @return the path for that file
+     * @see File#toPath()
+     */
+    private static Path toPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
