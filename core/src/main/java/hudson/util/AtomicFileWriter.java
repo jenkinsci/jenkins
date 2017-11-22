@@ -100,7 +100,9 @@ public class AtomicFileWriter extends Writer {
         this.destPath = destinationPath;
         Path dir = this.destPath.getParent();
         try {
-            Files.createDirectories(dir);
+            if (Files.notExists(dir)) { // This is required for dir symlink handling, see JDK-8130464
+                Files.createDirectories(dir);
+            }
             tmpPath = Files.createTempFile(dir, "atomic", "tmp");
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
