@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -61,6 +62,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Tom Huybrechts
  */
 public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback {
+
+    /**
+     * Name of the primary view defined by the user.
+     * {@code null} means that the View is not defined.
+     */
+    @CheckForNull
     private String primaryViewName;
 
     /**
@@ -71,7 +78,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     private transient ViewGroupMixIn viewGroupMixIn;
 
     @DataBoundConstructor
-    public MyViewsProperty(String primaryViewName) {
+    public MyViewsProperty(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
     }
 
@@ -99,11 +106,17 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return this;
     }
 
+    @CheckForNull
     public String getPrimaryViewName() {
         return primaryViewName;
     }
 
-    public void setPrimaryViewName(String primaryViewName) {
+    /**
+     * Sets the primary view.
+     * @param primaryViewName Name of the primary view to be set.
+     *                        {@code null} to make the primary view undefined.
+     */
+    public void setPrimaryViewName(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
     }
 
