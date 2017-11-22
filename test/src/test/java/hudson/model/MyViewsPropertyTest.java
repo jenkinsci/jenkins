@@ -294,9 +294,12 @@ public class MyViewsPropertyTest {
     @Issue("JENKINS-48157")
     public void shouldNotFailWhenMigratingLegacyViewsWithoutPrimaryOne() throws IOException {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+        User user = User.get("User");
 
         // Emulates creation of a new object with Reflection in User#load() does.
         MyViewsProperty property = new MyViewsProperty(null);
+        user.addProperty(property);
+
         // At AllView with non-default to invoke NPE path in AllView.migrateLegacyPrimaryAllViewLocalizedName()
         property.addView(new AllView("foobar"));
         property.readResolve();

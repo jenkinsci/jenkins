@@ -80,10 +80,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     @DataBoundConstructor
     public MyViewsProperty(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
+        readResolve(); // initialize fields
     }
 
     private MyViewsProperty() {
-        readResolve();
+        this(null);
     }
 
     public Object readResolve() {
@@ -95,7 +96,10 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // preserve the non-empty invariant
             views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
         }
-        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
+        if (primaryViewName != null) {
+            // It may happen when the default constructor is invoked
+            primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
+        }
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
