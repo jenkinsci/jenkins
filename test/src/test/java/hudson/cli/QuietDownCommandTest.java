@@ -405,7 +405,9 @@ public class QuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
-        exec_task.get(1, TimeUnit.SECONDS);
+
+        get(exec_task);
+
         assertJenkinsInQuietMode();
     }
 
@@ -448,7 +450,15 @@ public class QuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
-        exec_task.get(1, TimeUnit.SECONDS);
+        get(exec_task);
+    }
+
+    /**
+     * Will try to get the result and retry for some time before failing.
+     */
+    private static void get(FutureTask exec_task) {
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(exec_task::isDone);
     }
 
     /**
