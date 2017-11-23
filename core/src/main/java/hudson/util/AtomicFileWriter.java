@@ -152,9 +152,9 @@ public class AtomicFileWriter extends Writer {
             // If it falls here that can mean many things. Either that the atomic move is not supported,
             // or something wrong happened. Anyway, let's try to be over-diagnosing
             if (e instanceof AtomicMoveNotSupportedException) {
-                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.");
+                LOGGER.log(Level.WARNING, "Atomic move not supported. falling back to non-atomic move.", e);
             } else {
-                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.");
+                LOGGER.log(Level.WARNING, "Unable to move atomically, falling back to non-atomic move.", e);
             }
 
             if (destPath.toFile().exists()) {
