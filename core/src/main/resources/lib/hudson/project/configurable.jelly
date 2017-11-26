@@ -48,7 +48,7 @@ THE SOFTWARE.
     <j:if test="${it.supportsMakeDisabled()}">
         <j:choose>
             <j:when test="${it.disabled}">
-                <l:task href="${url}/enable" post="true" icon="icon-green icon-md" title="${%Enable build}" onclick="return postAndReload(this)" permission="${it.CONFIGURE}" requestsMenuInvalidate="true"/>
+                <l:task href="${url}/enable" post="true" icon="icon-blue icon-md" title="${%Enable build}" onclick="return postAndReload(this)" permission="${it.CONFIGURE}" requestsMenuInvalidate="true"/>
             </j:when>
             <j:otherwise>
                 <l:task href="${url}/disable" post="true" icon="icon-grey icon-md" title="${%Disable build}" onclick="return postAndReload(this)" permission="${it.CONFIGURE}" requestsMenuInvalidate="true"/>
