@@ -110,7 +110,29 @@ public class PluginManagerTimeMachine {
         }
     }
 
-    public void takeSnapshot(@Nonnull PluginManager pluginManager) {
+    private synchronized void doNowBackup(@Nonnull PluginSnapshotManifest nowSnapshot) throws IOException {
+        LOGGER.log(Level.INFO, "Creating plugin snapshot backup: " + nowSnapshot.getTakenAt());
+
+        // Backup the plugin directory...
+        File snapshotDir = new File(pluginsTimeMachineDir, Long.toString(nowSnapshot.getTakenAt()));
+        FileUtils.copyDirectory(pluginsDir, snapshotDir);
+
+        // Save the manifest to the backup dir ...
+        File manifestFile = new File(snapshotDir, PluginSnapshotManifest.MANIFEST_FILE_NAME);
+        nowSnapshot.save(manifestFile);
+
+        // And add nowSnapshot, making it the new latest...
+        addSnapshotManifest(nowSnapshot);
+    }
+
+    public synchronized void takeSnapshot(@Nonnull PluginManager pluginManager) throws IOException {
         PluginSnapshotManifest nowSnapshot = PluginSnapshotManifest.takeSnapshot(pluginManager);
+        PluginSnapshotManifest latestSnapshotBackup = getLatestSnapshot();
+
+        if (!nowSnapshot.equals(latestSnapshotBackup)) {
+            // Something has changed in the plugins. Backup the current
+            // set of plugins.
+            doNowBackup(nowSnapshot);
+        }
     }
 }
