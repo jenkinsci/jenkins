@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -108,7 +107,7 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
 
-        core = Files.newBufferedWriter(tmpPath, charset, StandardOpenOption.SYNC);
+        core = Files.newBufferedWriter(tmpPath, charset);
     }
 
     @Override
