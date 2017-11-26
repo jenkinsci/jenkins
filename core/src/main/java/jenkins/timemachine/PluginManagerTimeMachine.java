@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,12 +98,29 @@ public class PluginManagerTimeMachine {
             return;
         }
 
-        String rollbackToVersion = FileUtils.readFileToString(rollbackFile);
+        String rollbackToVersion = FileUtils.readFileToString(rollbackFile).trim();
+        File snapshotDir = new File(pluginsTimeMachineDir, rollbackToVersion);
 
-        LOGGER.log(Level.INFO, "Rolling plugins back to " + rollbackToVersion);
+        if (snapshotDir.exists()) {
+            File manifestFile = new File(snapshotDir, PluginSnapshotManifest.MANIFEST_FILE_NAME);
+            PluginSnapshotManifest snapshotManifest = PluginSnapshotManifest.load(manifestFile);
+            PluginSnapshotManifest latestSnapshotBackup = getLatestSnapshot();
 
-        FileUtils.deleteDirectory(pluginsDir);
-        FileUtils.copyDirectory(new File(pluginsTimeMachineDir, rollbackToVersion), pluginsDir);
+            if (!snapshotManifest.equals(latestSnapshotBackup)) {
+                LOGGER.log(Level.INFO, "Rolling plugins back to " + rollbackToVersion +
+                        " (taken " + new Date(snapshotManifest.getTakenAt()) + ").");
+
+                FileUtils.deleteDirectory(pluginsDir);
+                FileUtils.copyDirectory(snapshotDir, pluginsDir);
+            } else {
+                LOGGER.log(Level.INFO, "Not rolling plugins back to " + rollbackToVersion +
+                        " (taken " + new Date(snapshotManifest.getTakenAt()) +
+                        "). No difference i.e. same set of plugins.");
+            }
+        } else {
+            LOGGER.log(Level.WARNING, "Rollback marker file " + rollbackFile.getAbsolutePath()
+                    + " references an unknown snapshot '" + rollbackToVersion + "'. Ignoring.");
+        }
 
         // Rollback worked. Okay to delete the marker file now...
         if (!rollbackFile.delete()) {
@@ -133,6 +151,9 @@ public class PluginManagerTimeMachine {
             // Something has changed in the plugins. Backup the current
             // set of plugins.
             doNowBackup(nowSnapshot);
+        } else {
+            LOGGER.log(Level.INFO, "Current plugin set is the same as the last plugin snapshot taken "
+                    + new Date(latestSnapshotBackup.getTakenAt()) + ". No new plugin snapshot backup needed.");
         }
     }
 }
