@@ -26,6 +26,7 @@ package hudson;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACLContext;
+import jenkins.timemachine.PluginManagerTimeMachine;
 import jenkins.util.SystemProperties;
 import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
@@ -264,6 +265,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     protected final List<FailedPlugin> failedPlugins = new ArrayList<FailedPlugin>();
 
+    private final PluginManagerTimeMachine timeMachine;
+
     /**
      * Plug-in root directory.
      */
@@ -332,6 +335,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to load compatibility rewrite rules",e);
         }
+
+        timeMachine = new PluginManagerTimeMachine(rootDir);
     }
 
     public Transformer getCompatibilityTransformer() {
@@ -360,6 +365,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Override
     public Collection<PluginManagerStaplerOverride> getOverrides() {
         return PluginManagerStaplerOverride.all();
+    }
+
+    public @Nonnull PluginManagerTimeMachine getTimeMachine() {
+        return timeMachine;
     }
 
     /**
@@ -565,6 +574,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 @Override
                 public void run(Reactor reactor) throws Exception {
                     resolveDependantPlugins();
+                    // Take a snapshot of the plugins before Jenkins has completed it's init.
+                    timeMachine.takeSnapshot(PluginManager.this);
                 }
             });
         }});
