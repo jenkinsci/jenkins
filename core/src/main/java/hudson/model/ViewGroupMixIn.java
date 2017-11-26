@@ -67,7 +67,7 @@ public abstract class ViewGroupMixIn {
     private final ViewGroup owner;
 
     /**
-     * Returns all the views. This list must be modifyable and concurrently iterable.
+     * Returns all views in the group. This list must be modifiable and concurrently iterable.
      */
     @Nonnull
     protected abstract List<View> views();
