@@ -337,6 +337,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         timeMachine = new PluginManagerTimeMachine(rootDir);
+        timeMachine.loadSnapshotManifests();
     }
 
     public Transformer getCompatibilityTransformer() {

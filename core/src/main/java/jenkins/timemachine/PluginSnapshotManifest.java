@@ -2,8 +2,14 @@ package jenkins.timemachine;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.XmlFile;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -11,7 +17,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@Restricted(NoExternalUse.class)
 public class PluginSnapshotManifest {
+
+    public static final String MANIFEST_FILE_NAME = "manifest.xml";
 
     private long takenAt;
     private List<PluginSnapshot> plugins = new CopyOnWriteArrayList<>();
@@ -75,5 +84,32 @@ public class PluginSnapshotManifest {
         manifest.takenAt = System.currentTimeMillis();
 
         return manifest;
+    }
+
+    public static @CheckForNull PluginSnapshotManifest load(@Nonnull File manifestFile) throws IOException {
+        if (!manifestFile.exists()) {
+            throw new IllegalArgumentException("PluginSnapshotManifest file " + manifestFile.getAbsolutePath() + " does not exist.");
+        }
+
+        XmlFile xmlFile = new XmlFile(manifestFile);
+
+        try {
+            return (PluginSnapshotManifest) xmlFile.read();
+        } catch (ClassCastException e) {
+            throw new IOException("PluginSnapshotManifest file " + manifestFile.getAbsolutePath() + " does not contain a serialized instance of type PluginSnapshotManifest.");
+        }
+    }
+
+    public void save(@Nonnull File manifestFile) throws IOException {
+        File snapshotDir = manifestFile.getParentFile();
+
+        if (!snapshotDir.exists()) {
+            if (!snapshotDir.mkdirs()) {
+                throw new IOException("Error creating directory " + snapshotDir.getAbsolutePath());
+            }
+        }
+
+        XmlFile xmlFile = new XmlFile(manifestFile);
+        xmlFile.write(this);
     }
 }

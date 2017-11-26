@@ -1,12 +1,15 @@
 package jenkins.timemachine;
 
 import hudson.util.VersionNumber;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
+@Restricted(NoExternalUse.class)
 public class PluginSnapshot {
 
     private String pluginId;
