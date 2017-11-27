@@ -1143,16 +1143,17 @@ public class Functions {
      * Gets the relative name or display name to the given item from the specified group.
      *
      * @since 1.515
-     * @param p the Item we want the relative display name
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, a {@code null} will be returned by the method
      * @param g the ItemGroup used as point of reference for the item.
      *          If the group is not specified, item's path will be used.
      * @param useDisplayName if true, returns a display name, otherwise returns a name
      * @return
      *      String like "foo » bar".
-     *      {@code null} if item is null or if one of its parents is not an {@link ItemGroup}.
+     *      {@code null} if item is null or if one of its parents is not an {@link Item}.
      */
     @Nullable
-    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g, boolean useDisplayName) {
         if (p == null) return null;
         if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
         String separationString = useDisplayName ? " » " : "/";
@@ -1196,13 +1197,14 @@ public class Functions {
      *
      * @since 1.515
      * @param p the Item we want the relative display name
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
      *      String like "foo/bar".
-     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link ItemGroup}.
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
     @Nullable
-    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
     }    
     
@@ -1211,14 +1213,15 @@ public class Functions {
      * Gets the relative display name to the given item from the specified group.
      *
      * @since 1.512
-     * @param p the Item we want the relative display name
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
      *      String like "Foo » Bar".
-     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link ItemGroup}.
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
     @Nullable
-    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+    public static String getRelativeDisplayNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
     }
 
