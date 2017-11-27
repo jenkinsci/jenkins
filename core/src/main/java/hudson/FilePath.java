@@ -79,6 +79,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1400,17 +1402,15 @@ public final class FilePath implements Serializable {
      * @return
      *      The new FilePath pointing to the temporary directory
      * @since 1.311
-     * @see File#createTempFile(String, String)
+     * @see Files#createTempDirectory(Path, String, FileAttribute[])
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    File f = File.createTempFile(prefix, suffix, dir);
-                    f.delete();
-                    f.mkdir();
-                    return f.getName();
+                    Path tempPath = Files.createTempDirectory(dir.toPath(), prefix, null);
+                    return tempPath.toFile().getName();
                 }
             }));
         } catch (IOException e) {
