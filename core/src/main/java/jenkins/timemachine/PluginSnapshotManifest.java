@@ -10,8 +10,11 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -56,6 +59,23 @@ public class PluginSnapshotManifest {
                 .setVersion(pluginWrapper.getVersion())
                 .setEnabled(pluginWrapper.isEnabled())
         );
+    }
+
+    public PluginSnapshot find(@Nonnull String pluginId) {
+        for (PluginSnapshot plugin : plugins) {
+            if (pluginId.equals(plugin.getPluginId())) {
+                return plugin;
+            }
+        }
+        return null;
+    }
+
+    public Set<String> getPluginIds() {
+        Set<String> pluginIds = new LinkedHashSet<>();
+        for (PluginSnapshot plugin : plugins) {
+            pluginIds.add(plugin.getPluginId());
+        }
+        return pluginIds;
     }
 
     @Override
