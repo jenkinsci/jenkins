@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
-import java.util.List;
 
 /**
  * {@link BuildListener} that writes to an {@link OutputStream}.
@@ -64,20 +63,6 @@ public class StreamBuildListener extends StreamTaskListener implements BuildList
 
     public StreamBuildListener(PrintStream w, Charset charset) {
         super(w,charset);
-    }
-
-    public void started(List<Cause> causes) {
-        PrintStream l = getLogger();
-        if (causes==null || causes.isEmpty())
-            l.println("Started");
-        else for (Cause cause : causes) {
-            // TODO elide duplicates as per CauseAction.getCauseCounts (used in summary.jelly)
-            cause.print(this);
-        }
-    }
-
-    public void finished(Result result) {
-        getLogger().println("Finished: "+result);
     }
 
     private static final long serialVersionUID = 1L;

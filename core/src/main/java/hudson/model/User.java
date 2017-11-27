@@ -387,6 +387,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the {@link User} object by its id or full name.
      *
+     * In order to resolve the user ID, the method invokes {@link CanonicalIdResolver} extension points.
+     * Note that it may cause significant performance degradation.
+     * If you are sure the passed value is a User ID, it is recommended to use {@link #getById(String, boolean)}.
+     *
      * @param create
      *      If true, this method will never return null for valid input
      *      (by creating a new {@link User} object if none exists.)
@@ -539,11 +543,44 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Gets the {@link User} object by its id or full name.
+     *
+     * Creates a user on-demand.
+     *
+     * <p>
      * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @deprecated This method is deprecated, because it causes unexpected {@link User} creation
+     *             by API usage code and causes performance degradation of used to retrieve users by ID.
+     *             Use {@link #getById} when you know you have an ID.
+     *             Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
+    @Deprecated
     public static @Nonnull User get(String idOrFullName) {
-        return get(idOrFullName,true);
+        return getOrCreateByIdOrFullName(idOrFullName);
     }
+
+    /**
+     * Get the user by ID or Full Name.
+     *
+     * If the user does not exist, creates a new one on-demand.
+     *
+     * <p>
+     * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @param idOrFullName User ID or full name
+     * @return User instance. It will be created on-demand.
+     * @since TODO
+     */
+    public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
+        return get(idOrFullName,true, Collections.emptyMap());
+    }
+
 
     /**
      * Gets the {@link User} object representing the currently logged-in user, or null
