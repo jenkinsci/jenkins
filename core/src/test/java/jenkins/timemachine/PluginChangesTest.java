@@ -4,7 +4,6 @@ import jenkins.timemachine.pluginchange.Disabled;
 import jenkins.timemachine.pluginchange.Downgraded;
 import jenkins.timemachine.pluginchange.Enabled;
 import jenkins.timemachine.pluginchange.Installed;
-import jenkins.timemachine.pluginchange.PluginChange;
 import jenkins.timemachine.pluginchange.Uninstalled;
 import jenkins.timemachine.pluginchange.Upgraded;
 import org.junit.Assert;
