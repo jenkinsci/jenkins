@@ -68,6 +68,9 @@ public final class Permission {
 
     public final @Nonnull PermissionGroup group;
 
+    // if some plugin serialized old version of this class using XStream, `id` can be null
+    private final @CheckForNull String id;
+
     /**
      * Human readable ID of the permission.
      *
@@ -158,6 +161,7 @@ public final class Permission {
         this.impliedBy = impliedBy;
         this.enabled = enable;
         this.scopes = ImmutableSet.copyOf(scopes);
+        this.id = owner.getName() + '.' + name;
 
         group.add(this);
         ALL.add(this);
@@ -222,7 +226,10 @@ public final class Permission {
      * @see #fromId(String)
      */
     public @Nonnull String getId() {
-        return owner.getName()+'.'+name;
+        if (id == null) {
+            return owner.getName() + '.' + name;
+        }
+        return id;
     }
 
     @Override public boolean equals(Object o) {

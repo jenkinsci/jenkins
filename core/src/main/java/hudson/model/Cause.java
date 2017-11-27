@@ -25,6 +25,7 @@ package hudson.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import hudson.console.ModelHyperlinkNote;
@@ -366,9 +367,15 @@ public abstract class Cause {
             this.authenticationName = Jenkins.getAuthentication().getName();
         }
 
+        /**
+         * Gets user display name when possible.
+         * @return User display name.
+         *         If the User does not exist, returns its ID.
+         */
         @Exported(visibility=3)
         public String getUserName() {
-        	return User.get(authenticationName).getDisplayName();
+        	final User user = User.getById(authenticationName, false);
+        	return user != null ? user.getDisplayName() : authenticationName;
         }
 
         @Override
@@ -409,12 +416,15 @@ public abstract class Cause {
 
         @Exported(visibility = 3)
         public String getUserName() {
-            return userId == null ? "anonymous" : User.get(userId).getDisplayName();
+            final User user = userId == null ? null : User.getById(userId, false);
+            return user == null ? "anonymous" : user.getDisplayName();
         }
 
         @Restricted(DoNotUse.class) // for Jelly
+        @CheckForNull
         public String getUserUrl() {
-            return userId == null ? null : User.get(userId).getUrl();
+            final User user = userId == null ? null : User.getById(userId, false);
+            return user != null ? user.getUrl() : null;
         }
 
         @Override
