@@ -114,6 +114,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -1391,6 +1392,26 @@ public final class FilePath implements Serializable {
     }
 
     /**
+     * Utility method to convert a file to a path with a wrapped exception
+     *
+     * @param file
+     *      The file to be converted to a Path
+     * @return
+     *      The new Path obtained from the file
+     *
+     *  @see File#toPath()
+     */
+    static Path toPath(File file) throws IOException {
+        Path path;
+        try {
+            path = file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+        return path;
+    }
+
+    /**
      * Creates a temporary directory inside the directory represented by 'this'
      *
      * @param prefix
@@ -1406,10 +1427,20 @@ public final class FilePath implements Serializable {
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
+            String[] s;
+            if (StringUtils.isBlank(suffix)) {
+                s = new String[]{prefix, "tmp"}; // see File.createTempFile - tmp is used if suffix is null
+            } else {
+                s = new String[]{prefix, suffix};
+            }
+            String name = StringUtils.join(s, ".");
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    Path tempPath = Files.createTempDirectory(dir.toPath(), prefix, null);
+                    Path tempPath = Files.createTempDirectory(toPath(dir), name,  new FileAttribute<?>[] {});
+                    if (tempPath.toFile() == null) {
+                        throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
+                    }
                     return tempPath.toFile().getName();
                 }
             }));
@@ -2371,7 +2402,7 @@ public final class FilePath implements Serializable {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
-    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static final int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.

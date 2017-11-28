@@ -31,19 +31,17 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -62,6 +60,7 @@ import org.apache.tools.ant.taskdefs.Chmod;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assume.assumeFalse;
+
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -599,7 +598,7 @@ public class FilePathTest {
             when(con.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
 
-            assertFalse(d.installIfNecessaryFrom(url, null, null));
+            assertFalse(d.installIfNecessaryFrom(url, null, ""));
 
             verify(con).setIfModifiedSince(123000);
     }
@@ -618,7 +617,7 @@ public class FilePathTest {
             when(con.getInputStream())
               .thenReturn(someZippedContent());
 
-            assertTrue(d.installIfNecessaryFrom(url, null, null));
+            assertTrue(d.installIfNecessaryFrom(url, null, ""));
     }
 
     @Issue("JENKINS-26196")
@@ -735,5 +734,32 @@ public class FilePathTest {
         FilePath outDir = new FilePath(dstFolder);
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
+
+    @Issue("JENKINS-48227")
+    @Test
+    public void testToPath() throws IOException {
+        final File srcFolder = temp.newFolder("src");
+        final Path path = FilePath.toPath(srcFolder);
+
+        assertNotNull("Path should not be null", path);
+    }
+
+    @Issue("JENKINS-48227")
+    @Test
+    public void testCreateTempDir() throws IOException, InterruptedException  {
+        final File srcFolder = temp.newFolder("src");
+        final FilePath filePath = new FilePath(srcFolder);
+        FilePath x = filePath.createTempDir("jdk", "dmg");
+        FilePath y = filePath.createTempDir("jdk", "pkg");
+        FilePath z = filePath.createTempDir("jdk", null);
+
+        assertNotNull("FilePath x should not be null", x);
+        assertNotNull("FilePath y should not be null", y);
+        assertNotNull("FilePath z should not be null", z);
+
+        assertTrue(x.getName().contains("jdk.dmg"));
+        assertTrue(y.getName().contains("jdk.pkg"));
+        assertTrue(z.getName().contains("jdk.tmp"));
     }
 }
