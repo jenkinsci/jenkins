@@ -157,20 +157,20 @@ public class AtomicFileWriter extends Writer {
             }
 
             if (destPath.toFile().exists()) {
-                LOGGER.log(Level.WARNING, "The target file {0} was already existing?!?", destPath);
+                LOGGER.log(Level.INFO, "The target file {0} was already existing", destPath);
             }
 
             try {
                 Files.move(tmpPath, destPath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e1) {
                 e1.addSuppressed(e);
-                LOGGER.log(Level.SEVERE, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
+                LOGGER.log(Level.WARNING, "Unable to move {0} to {1}. Attempting to delete {0} and abandoning.",
                            new Path[]{tmpPath, destPath});
                 try {
                     Files.deleteIfExists(tmpPath);
                 } catch (IOException e2) {
                     e2.addSuppressed(e1);
-                    LOGGER.log(Level.SEVERE, "Unable to delete {0}, good bye then!", tmpPath);
+                    LOGGER.log(Level.WARNING, "Unable to delete {0}, good bye then!", tmpPath);
                     throw e2;
                 }
 
