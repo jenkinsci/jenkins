@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import static hudson.init.InitMilestone.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
@@ -44,6 +45,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.init.Initializer;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
@@ -83,6 +85,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import javax.annotation.CheckForNull;
@@ -675,5 +678,23 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber nullVersion = Jenkins.getStoredVersion();
         assertNull(nullVersion);
+    }
+
+    @Issue("JENKINS-47406")
+    @Test
+    public void jobCreatedByInitializerIsRetained() {
+        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
+    }
+
+    public static class JobAdder {
+        private static final Logger LOGGER = Logger.getLogger(JobAdder.class.getName());
+
+        @Initializer(after = JOB_LOADED)
+        public void addJob() throws IOException {
+            LOGGER.info("[JENKINS-47406] Adding job");
+            Jenkins jenkins = Jenkins.getInstance();
+            jenkins.createProject(FreeStyleProject.class, "JENKINS-47406");
+            LOGGER.info("[JENKINS-47406] Added job");
+        }
     }
 }
