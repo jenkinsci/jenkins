@@ -40,6 +40,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -55,7 +57,8 @@ public class AgentProtocolTest {
     
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
+    //TODO: Test is unstable on CI due to the race condition, needs to be reworked
     /**
      * Checks that Jenkins does not disable agent protocols by default after the upgrade.
      * 
@@ -63,6 +66,7 @@ public class AgentProtocolTest {
      * @see SetupWizardTest#shouldDisableUnencryptedProtocolsByDefault() 
      */
     @Test
+    @Ignore
     @LocalData
     @Issue("JENKINS-45841")
     public void testShouldNotDisableProtocolsForMigratedInstances() throws Exception {
@@ -128,9 +132,10 @@ public class AgentProtocolTest {
         }
     }
     
-    public static void assertMonitorNotActive() {
+    public static void assertMonitorNotActive(JenkinsRule j) {
         DeprecatedAgentProtocolMonitor monitor = new DeprecatedAgentProtocolMonitor();
-        assertFalse("Deprecated Agent Protocol Monitor should not be activated", monitor.isActivated());
+        assertFalse("Deprecated Agent Protocol Monitor should not be activated. Current protocols: "
+                + StringUtils.join(j.jenkins.getAgentProtocols(), ","), monitor.isActivated());
     }
     
     public static void assertMonitorTriggered(String ... expectedProtocols) {

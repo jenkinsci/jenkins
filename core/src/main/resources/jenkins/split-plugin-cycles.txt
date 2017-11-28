@@ -1,0 +1,12 @@
+# See ClassicPluginStrategy.BREAK_CYCLES. As of JENKINS-47634 also used by plugin-compat-tester.
+# JENKINS-28942 could make this obsolete.
+
+credentials matrix-auth
+credentials windows-slaves
+
+script-security antisamy-markup-formatter
+script-security bouncycastle-api
+script-security command-launcher
+script-security matrix-auth
+script-security matrix-project
+script-security windows-slaves
