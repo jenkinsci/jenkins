@@ -1722,42 +1722,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     */
-    public <T extends Item> List<T> getAllItems(Class<T> type) {
-        return Items.getAllItems(this, type);
-    }
-
-    /**
-     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     *
-     * @since 2.37
-     */
-    public <T extends Item> Iterable<T> allItems(Class<T> type) {
-        return Items.allItems(this, type);
-    }
-
-    /**
-     * Gets all the items recursively.
-     *
-     * @since 1.402
-     */
-    public List<Item> getAllItems() {
-        return getAllItems(Item.class);
-    }
-
-    /**
-     * Gets all the items unordered, lazily and recursively.
-     *
-     * @since 2.37
-     */
-    public Iterable<Item> allItems() {
-        return allItems(Item.class);
-    }
-
-    /**
      * Gets a list of simple top-level projects.
      * @deprecated This method will ignore Maven and matrix projects, as well as projects inside containers such as folders.
      * You may prefer to call {@link #getAllItems(Class)} on {@link AbstractProject},
