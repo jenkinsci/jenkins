@@ -158,14 +158,12 @@ import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
 import hudson.util.Iterators;
 import hudson.util.JenkinsReloadFailed;
-import hudson.util.Memoizer;
 import hudson.util.MultipartFormDataParser;
 import hudson.util.NamingThreadFactory;
 import hudson.util.PluginServletFilter;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.TextFile;
-import java.util.concurrent.TimeUnit;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
 import hudson.views.DefaultMyViewsTabBar;
@@ -461,20 +459,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * All {@link ExtensionList} keyed by their {@link ExtensionList#extensionType}.
      */
-    private transient final Memoizer<Class,ExtensionList> extensionLists = new Memoizer<Class,ExtensionList>() {
-        public ExtensionList compute(Class key) {
-            return ExtensionList.create(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, ExtensionList> extensionLists = new ConcurrentHashMap<>();
 
     /**
      * All {@link DescriptorExtensionList} keyed by their {@link DescriptorExtensionList#describableType}.
      */
-    private transient final Memoizer<Class,DescriptorExtensionList> descriptorLists = new Memoizer<Class,DescriptorExtensionList>() {
-        public DescriptorExtensionList compute(Class key) {
-            return DescriptorExtensionList.createDescriptorList(Jenkins.this,key);
-        }
-    };
+    @SuppressWarnings("rawtypes")
+    private transient final Map<Class, DescriptorExtensionList> descriptorLists = new ConcurrentHashMap<>();
 
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
@@ -854,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
 
             // doing this early allows InitStrategy to set environment upfront
@@ -1735,42 +1727,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     */
-    public <T extends Item> List<T> getAllItems(Class<T> type) {
-        return Items.getAllItems(this, type);
-    }
-
-    /**
-     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     *
-     * @since 2.37
-     */
-    public <T extends Item> Iterable<T> allItems(Class<T> type) {
-        return Items.allItems(this, type);
-    }
-
-    /**
-     * Gets all the items recursively.
-     *
-     * @since 1.402
-     */
-    public List<Item> getAllItems() {
-        return getAllItems(Item.class);
-    }
-
-    /**
-     * Gets all the items unordered, lazily and recursively.
-     *
-     * @since 2.37
-     */
-    public Iterable<Item> allItems() {
-        return allItems(Item.class);
-    }
-
-    /**
      * Gets a list of simple top-level projects.
      * @deprecated This method will ignore Maven and matrix projects, as well as projects inside containers such as folders.
      * You may prefer to call {@link #getAllItems(Class)} on {@link AbstractProject},
@@ -2636,7 +2592,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        return extensionLists.get(extensionType);
+        return extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
     }
 
     /**
@@ -2657,7 +2613,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T extends Describable<T>,D extends Descriptor<T>> DescriptorExtensionList<T,D> getDescriptorList(Class<T> type) {
-        return descriptorLists.get(type);
+        return descriptorLists.computeIfAbsent(type, key -> DescriptorExtensionList.createDescriptorList(this, key));
     }
 
     /**
@@ -3725,9 +3681,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             JSONObject json = req.getSubmittedForm();
 
-            MasterBuildConfiguration mbc = MasterBuildConfiguration.all().get(MasterBuildConfiguration.class);
-            if (mbc!=null)
-                mbc.configure(req,json);
+            ExtensionList.lookupSingleton(MasterBuildConfiguration.class).configure(req,json);
 
             getNodeProperties().rebuild(req, json.optJSONObject("nodeProperties"), NodeProperty.all());
         } finally {
@@ -4536,7 +4490,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RestrictedSince("2.37")
     @Deprecated
     public FormValidation doCheckURIEncoding(StaplerRequest request) throws IOException {
-        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).doCheckURIEncoding(request);
+        return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).doCheckURIEncoding(request);
     }
 
     /**
@@ -4546,7 +4500,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RestrictedSince("2.37")
     @Deprecated
     public static boolean isCheckURIEncodingEnabled() {
-        return ExtensionList.lookup(URICheckEncodingMonitor.class).get(0).isCheckEnabled();
+        return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
     /**

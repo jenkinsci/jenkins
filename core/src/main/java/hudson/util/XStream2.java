@@ -130,8 +130,8 @@ public class XStream2 extends XStream {
      * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
      * @param clazz a class which we expect to hold a non-{@code transient} field
      * @param field a field name in that class
+     * @since TODO
      */
-    @Restricted(NoExternalUse.class) // TODO could be opened up later
     public void addCriticalField(Class<?> clazz, String field) {
         reflectionConverter.addCriticalField(clazz, field);
     }

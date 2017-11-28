@@ -26,6 +26,7 @@ package hudson.model;
 
 import com.google.common.collect.ImmutableSet;
 import hudson.DescriptorExtensionList;
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
@@ -35,7 +36,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.Which;
-import hudson.slaves.CommandLauncher;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
@@ -229,6 +229,15 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
+        if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
+            try {
+                launcher = (ComputerLauncher) Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
+                agentCommand = null;
+                save();
+            } catch (Exception x) {
+                LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
+            }
+        }
         // Default launcher does not use Work Directory
         return launcher == null ? new JNLPLauncher(false) : launcher;
     }
@@ -544,12 +553,6 @@ public abstract class Slave extends Node implements Serializable {
      * Invoked by XStream when this object is read into memory.
      */
     protected Object readResolve() {
-        // convert the old format to the new one
-        if (launcher == null) {
-            launcher = (agentCommand == null || agentCommand.trim().length() == 0)
-                    ? new JNLPLauncher(false)
-                    : new CommandLauncher(agentCommand);
-        }
         if(nodeProperties==null)
             nodeProperties = new DescribableList<NodeProperty<?>,NodePropertyDescriptor>(Jenkins.getInstance().getNodesObject());
         return this;
