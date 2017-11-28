@@ -2402,7 +2402,7 @@ public final class FilePath implements Serializable {
      * Default bound for {@link #validateAntFileMask(String, int, boolean)}.
      * @since 1.592
      */
-    public static final int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+    public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
 
     /**
      * Like {@link #validateAntFileMask(String)} but performing only a bounded number of operations.
