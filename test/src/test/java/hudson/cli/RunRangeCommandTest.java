@@ -73,6 +73,8 @@ public class RunRangeCommandTest {
             project.getBuildByNumber(i).delete();
             assertThat(project.getBuildByNumber(i), equalTo(null));
         }
+
+        j.timeout = 3600;
     }
 
     @Test public void dummyRangeShouldFailWithoutJobReadPermission() throws Exception {
