@@ -508,7 +508,14 @@ public class SetupWizard extends PageDecorator {
         }
         return InstallState.valueOf(name);
     }
-    
+
+    /**
+     * Returns whether the setup wizard filter is currently registered.
+     */
+    public boolean hasSetupWizardFilter() {
+        return PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER);
+    }
+
     /**
      * This filter will validate that the security token is provided
      */

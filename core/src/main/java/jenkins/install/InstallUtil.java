@@ -92,7 +92,7 @@ public class InstallUtil {
      */
     public static void proceedToNextStateFrom(InstallState prior) {
         InstallState next = getNextInstallState(prior);
-        if (Main.isDevelopmentMode) LOGGER.info("Install state transitioning from: " + prior + " to: " + next);
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: " + prior + " to: " + next);
         if (next != null) {
             Jenkins.getInstance().setInstallState(next);
         }
