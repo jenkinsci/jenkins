@@ -77,6 +77,10 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Restricted(NoExternalUse.class)
 @Extension
 public class SetupWizard extends PageDecorator {
+    public SetupWizard() {
+        checkFilter();
+    }
+
     /**
      * The security token parameter name
      */
@@ -168,16 +172,10 @@ public class SetupWizard extends PageDecorator {
                         + "*************************************************************" + ls
                         + "*************************************************************" + ls);
             }
-            
-            try {
-                PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
-                // if we're not using security defaults, we should not show the security token screen
-                // users will likely be sent to a login screen instead
-                isUsingSecurityToken = isUsingSecurityDefaults();
-            } catch (ServletException e) {
-                throw new RuntimeException("Unable to add PluginServletFilter for the SetupWizard", e);
-            }
         }
+        // if we're not using security defaults, we should not show the security token screen
+        // users will likely be sent to a login screen instead
+        isUsingSecurityToken = isUsingSecurityDefaults();
         
         try {
             // Make sure plugin metadata is up to date
@@ -186,7 +184,17 @@ public class SetupWizard extends PageDecorator {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
+
+    private void setUpFilter() {
+        try {
+            if (!PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER)) {
+                PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
+            }
+        } catch (ServletException e) {
+            throw new RuntimeException("Unable to add PluginServletFilter for the SetupWizard", e);
+        }
+    }
+
     /**
      * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
      */
@@ -510,6 +518,14 @@ public class SetupWizard extends PageDecorator {
     }
 
     /**
+     * Called upon install state update.
+     * @param state the new install state.
+     */
+    public void onInstallStateUpdate(InstallState state) {
+        setUpFilter();
+    }
+
+    /**
      * Returns whether the setup wizard filter is currently registered.
      */
     public boolean hasSetupWizardFilter() {
@@ -551,4 +567,14 @@ public class SetupWizard extends PageDecorator {
         public void destroy() {
         }
     };
+
+    /**
+     * Sets up the Setup Wizard filter if the current state requires it.
+     */
+    private void checkFilter() {
+        if (!Jenkins.getInstance().getInstallState().isSetupComplete()) {
+            setUpFilter();
+            isUsingSecurityToken = isUsingSecurityDefaults();
+        }
+    }
 }

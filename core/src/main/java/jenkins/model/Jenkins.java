@@ -328,7 +328,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private transient InstallState installState = InstallState.UNKNOWN;
+    private InstallState installState;
     
     /**
      * If we're in the process of an initial setup, 
@@ -924,7 +924,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
 
             setupWizard = new SetupWizard();
-            InstallUtil.proceedToNextStateFrom(InstallState.UNKNOWN);
+            getInstallState().initializeState();
 
             launchTcpSlaveAgentListener();
 
@@ -1033,9 +1033,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setInstallState(@Nonnull InstallState newState) {
         InstallState prior = installState;
         installState = newState;
-        if (!prior.equals(newState)) {
+        LOGGER.info("setInstallState (Previous:" + prior + ", New: " + installState + ")");
+        if (!newState.equals(prior)) {
             newState.initializeState();
+            getSetupWizard().onInstallStateUpdate(newState);
         }
+        saveQuietly();
     }
 
     /**
