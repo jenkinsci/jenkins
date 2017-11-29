@@ -527,7 +527,7 @@ public class SetupWizard extends PageDecorator {
 
     /**
      * Returns whether the setup wizard filter is currently registered.
-     * @since XXX
+     * @since FIXME
      */
     public boolean hasSetupWizardFilter() {
         return PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER);

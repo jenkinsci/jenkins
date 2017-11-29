@@ -117,7 +117,7 @@ public class PluginServletFilter implements Filter, ExtensionPoint {
      * Checks whether the given filter is already registered in the chain.
      * @param filter the filter to check.
      * @return true if the filter is already registered in the chain.
-     * @since XXX
+     * @since FIXME
      */
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
