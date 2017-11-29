@@ -1,5 +1,6 @@
 package hudson.util;
 
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class AtomicFileWriterTest {
+    private static final String PREVIOUS = "previous value \n blah";
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
     File af;
@@ -30,6 +32,7 @@ public class AtomicFileWriterTest {
     @Before
     public void setUp() throws IOException {
         af = tmp.newFile();
+        FileUtils.writeStringToFile(af, PREVIOUS);
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
@@ -56,25 +59,29 @@ public class AtomicFileWriterTest {
     public void writeToAtomicFile() throws Exception {
         // Given
         afw.write(expectedContent, 0, expectedContent.length());
+        afw.write(expectedContent);
+        afw.write(' ');
 
         // When
         afw.flush();
 
         // Then
         assertEquals("File writer did not properly flush to temporary file",
-                expectedContent.length(), Files.size(afw.getTemporaryPath()));
+                expectedContent.length()*2+1, Files.size(afw.getTemporaryPath()));
     }
 
     @Test
     public void commitToFile() throws Exception {
         // Given
         afw.write(expectedContent, 0, expectedContent.length());
+        afw.write(new char[]{'h', 'e', 'y'}, 0, 3);
 
         // When
         afw.commit();
 
         // Then
-        assertEquals(expectedContent.length(), Files.size(af.toPath()));
+        assertEquals(expectedContent.length()+3, Files.size(af.toPath()));
+        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af));
     }
 
     @Test
@@ -87,8 +94,20 @@ public class AtomicFileWriterTest {
 
         // Then
         assertTrue(Files.notExists(afw.getTemporaryPath()));
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
     }
 
+    @Test
+    public void indexOutOfBoundsLeavesOriginalUntouched() throws Exception {
+        // Given
+        try {
+            afw.write(expectedContent, 0, expectedContent.length() + 10);
+            fail("exception expected");
+        } catch (IndexOutOfBoundsException e) {
+        }
+
+        assertEquals(PREVIOUS, FileUtils.readFileToString(af));
+    }
     @Test
     public void badPath() throws Exception {
         final File newFile = tmp.newFile();
