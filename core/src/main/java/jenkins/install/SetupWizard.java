@@ -520,6 +520,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Called upon install state update.
      * @param state the new install state.
+     * @since FIXME
      */
     public void onInstallStateUpdate(InstallState state) {
         setUpFilter();
