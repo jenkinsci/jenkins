@@ -112,7 +112,25 @@ public class ClientAuthenticationCacheTest {
         assertEquals(r.getURL().toString(), cache.getPropertyKey());
         JenkinsLocationConfiguration.get().setUrl(null);
         String key = cache.getPropertyKey();
-        assertTrue(key, Secret.decrypt(key) != null);
+        assertEquals(r.jenkins.getLegacyInstanceId(), key);
+    }
+    
+    @Test
+    @Issue("JENKINS-47426")
+    public void getPropertyKey_mustBeEquivalentOverTime() throws Exception {
+        ClientAuthenticationCache cache = new ClientAuthenticationCache(null);
+
+        String key1 = cache.getPropertyKey();
+        String key2 = cache.getPropertyKey();
+
+        assertEquals("Two calls to the getPropertyKey() must be equivalent over time, with rootUrl", key1, key2);
+
+        JenkinsLocationConfiguration.get().setUrl(null);
+
+        key1 = cache.getPropertyKey();
+        key2 = cache.getPropertyKey();
+
+        assertEquals("Two calls to the getPropertyKey() must be equivalent over time, without rootUrl", key1, key2);
     }
 
     private void assertCLI(int code, @CheckForNull String output, File jar, String... args) throws Exception {

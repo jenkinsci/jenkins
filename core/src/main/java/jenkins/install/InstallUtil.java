@@ -54,6 +54,7 @@ import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
@@ -256,6 +257,7 @@ public class InstallUtil {
                 try {
                     String lastVersion = XMLUtils.getValue("/hudson/version", configFile);
                     if (lastVersion.length() > 0) {
+                        LOGGER.log(Level.FINE, "discovered serialized lastVersion {0}", lastVersion);
                         return lastVersion;
                     }
                 } catch (Exception e) {

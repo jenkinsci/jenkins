@@ -23,49 +23,47 @@
  */
 package hudson.tasks;
 
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.EnvVars;
 import hudson.model.Build;
+import hudson.model.Cause.LegacyCodeCause;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.JDK;
+import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.PasswordParameterDefinition;
+import hudson.model.Result;
+import hudson.model.StringParameterDefinition;
+import hudson.model.StringParameterValue;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
+import hudson.tasks.Maven.MavenInstaller;
+import hudson.tools.InstallSourceProperty;
+import hudson.tools.ToolProperty;
+import hudson.tools.ToolPropertyDescriptor;
+import hudson.util.DescribableList;
 import jenkins.mvn.DefaultGlobalSettingsProvider;
 import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathGlobalSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
 import jenkins.mvn.GlobalMavenConfig;
-import hudson.model.JDK;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
-import hudson.model.StringParameterDefinition;
-import hudson.model.ParametersAction;
-import hudson.model.StringParameterValue;
-import hudson.model.Cause.LegacyCodeCause;
-import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.slaves.EnvironmentVariablesNodeProperty.Entry;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.tasks.Maven.MavenInstaller;
-import hudson.tasks.Maven.MavenInstallation.DescriptorImpl;
-import hudson.tools.ToolProperty;
-import hudson.tools.ToolPropertyDescriptor;
-import hudson.tools.InstallSourceProperty;
-import hudson.util.DescribableList;
-
-import java.util.Collections;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import hudson.EnvVars;
-import hudson.model.FreeStyleBuild;
-import hudson.model.PasswordParameterDefinition;
-import org.jvnet.hudson.test.Issue;
-import static org.junit.Assert.*;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import java.util.Collections;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -355,5 +353,21 @@ public class MavenTest {
         log = j.buildAndAssertSuccess(p).getLog();
         assertTrue("Properties should always be injected, even when build variables injection is enabled",
                 log.contains("-DTEST_PROP1=VAL1") && log.contains("-DTEST_PROP2=VAL2"));
+    }
+
+    @Issue("JENKINS-34138")
+    @Test public void checkMavenInstallationEquals() throws Exception {
+        MavenInstallation maven = ToolInstallations.configureMaven3();
+        MavenInstallation maven2 = ToolInstallations.configureMaven3();
+        assertEquals(maven.hashCode(), maven2.hashCode());
+        assertTrue(maven.equals(maven2));
+    }
+
+    @Issue("JENKINS-34138")
+    @Test public void checkMavenInstallationNotEquals() throws Exception {
+        MavenInstallation maven3 = ToolInstallations.configureMaven3();
+        MavenInstallation maven2 = ToolInstallations.configureDefaultMaven();
+        assertNotEquals(maven3.hashCode(), maven2.hashCode());
+        assertFalse(maven3.equals(maven2));
     }
 }

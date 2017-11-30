@@ -83,7 +83,7 @@ public final class UserDetailsCache {
      * @return the cache
      */
     public static UserDetailsCache get() {
-        return ExtensionList.lookup(UserDetailsCache.class).get(UserDetailsCache.class);
+        return ExtensionList.lookupSingleton(UserDetailsCache.class);
     }
 
     /**

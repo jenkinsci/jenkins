@@ -1443,14 +1443,14 @@ public class Fingerprint implements ModelObject, Saveable {
 
             // To get the item existence fact, a user needs Item.DISCOVER for the item
             // and Item.READ for all container folders.
-            boolean canDiscoverTheItem = itemBySystemUser.getACL().hasPermission(userAuth, Item.DISCOVER);
+            boolean canDiscoverTheItem = itemBySystemUser.hasPermission(userAuth, Item.DISCOVER);
             if (canDiscoverTheItem) {
                 ItemGroup<?> current = itemBySystemUser.getParent();
                 do {
                     if (current instanceof Item) {
                         final Item i = (Item) current;
                         current = i.getParent();
-                        if (!i.getACL().hasPermission(userAuth, Item.READ)) {
+                        if (!i.hasPermission(userAuth, Item.READ)) {
                             canDiscoverTheItem = false;
                         }
                     } else {

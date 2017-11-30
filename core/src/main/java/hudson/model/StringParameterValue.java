@@ -30,13 +30,16 @@ import org.kohsuke.stapler.export.Exported;
 import java.util.Locale;
 
 import hudson.util.VariableResolver;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link ParameterValue} created from {@link StringParameterDefinition}.
  */
 public class StringParameterValue extends ParameterValue {
     @Exported(visibility=4)
-    public final String value;
+    @Restricted(NoExternalUse.class)
+    public String value;
 
     @DataBoundConstructor
     public StringParameterValue(String name, String value) {
@@ -69,6 +72,16 @@ public class StringParameterValue extends ParameterValue {
     @Override
     public Object getValue() {
         return value;
+    }
+     
+    /**
+     * Trimming for value
+     * @since TODO
+     */
+    public void doTrim() {
+        if (value != null) {
+           value = value.trim(); 
+        } 
     }
 
     @Override
