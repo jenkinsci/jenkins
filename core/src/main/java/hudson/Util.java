@@ -297,11 +297,7 @@ public class Util {
      * Makes the file at the given path writable by any means possible.
      */
     private static void makeWritable(@Nonnull Path path) throws IOException {
-        if (Functions.isWindows()) {
-            if (!path.toFile().setWritable(true)) {
-                throw new IOException("Unable to make file writeable: " + path);
-            }
-        } else {
+        if (!Functions.isWindows()) {
             try {
                 PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
                 Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
@@ -310,12 +306,16 @@ public class Util {
             } catch (NoSuchFileException e) {
                 return;
             } catch (UnsupportedOperationException e) {
-                // PosixFileAttributes not supported, fall back to non-NIO.
-                if (!path.toFile().setWritable(true)) {
-                    throw new IOException("Unable to make file writeable: " + path);
-                }
+                // PosixFileAttributes not supported, fall back to old IO.
             }
         }
+
+        /**
+         * We intentionally do not check the return code of setWritable, because if it
+         * is false we prefer to rethrow the exception thrown by Files.deleteIfExists,
+         * which will have a more useful message than something we make up here.
+         */
+        path.toFile().setWritable(true);
     }
 
     /**

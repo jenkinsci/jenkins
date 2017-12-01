@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystemException;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -287,12 +288,6 @@ public class UtilTest {
     @Test
     public void testDeleteFile_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
-        Class<?> c;
-        try {
-            c = Class.forName("java.nio.file.FileSystemException");
-        } catch (ClassNotFoundException x) {
-            throw new AssumptionViolatedException("prior to JDK 7", x);
-        }
         final int defaultDeletionMax = Util.DELETION_MAX;
         try {
             File f = tmp.newFile();
@@ -304,7 +299,7 @@ public class UtilTest {
                 Util.deleteFile(f);
                 fail("should not have been deletable");
             } catch (IOException x) {
-                assertThat(calcExceptionHierarchy(x), hasItem(c));
+                assertThat(calcExceptionHierarchy(x), hasItem(FileSystemException.class));
                 assertThat(x.getMessage(), containsString(f.getPath()));
             }
         } finally {
