@@ -132,9 +132,10 @@ public class AgentProtocolTest {
         }
     }
     
-    public static void assertMonitorNotActive() {
+    public static void assertMonitorNotActive(JenkinsRule j) {
         DeprecatedAgentProtocolMonitor monitor = new DeprecatedAgentProtocolMonitor();
-        assertFalse("Deprecated Agent Protocol Monitor should not be activated", monitor.isActivated());
+        assertFalse("Deprecated Agent Protocol Monitor should not be activated. Current protocols: "
+                + StringUtils.join(j.jenkins.getAgentProtocols(), ","), monitor.isActivated());
     }
     
     public static void assertMonitorTriggered(String ... expectedProtocols) {

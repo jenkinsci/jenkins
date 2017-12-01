@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Implements {@link ViewGroup} to be used as a "mix-in".
@@ -66,27 +67,40 @@ public abstract class ViewGroupMixIn {
     private final ViewGroup owner;
 
     /**
-     * Returns all the views. This list must be concurrently iterable.
+     * Returns all views in the group. This list must be modifiable and concurrently iterable.
      */
+    @Nonnull
     protected abstract List<View> views();
+
+    /**
+     * Gets primary view of the mix-in.
+     * @return Name of the primary view, {@code null} if there is no primary one defined.
+     */
+    @CheckForNull
     protected abstract String primaryView();
+
+    /**
+     * Sets the primary view.
+     * @param newName Name of the primary view to be set.
+     *                {@code null} to make the primary view undefined.
+     */
     protected abstract void primaryView(String newName);
 
     protected ViewGroupMixIn(ViewGroup owner) {
         this.owner = owner;
     }
 
-    public void addView(View v) throws IOException {
+    public void addView(@Nonnull View v) throws IOException {
         v.owner = owner;
         views().add(v);
         owner.save();
     }
 
-    public boolean canDelete(View view) {
+    public boolean canDelete(@Nonnull View view) {
         return !view.isDefault();  // Cannot delete primary view
     }
 
-    public synchronized void deleteView(View view) throws IOException {
+    public synchronized void deleteView(@Nonnull View view) throws IOException {
         if (views().size() <= 1)
             throw new IllegalStateException("Cannot delete last view");
         views().remove(view);
@@ -101,11 +115,14 @@ public abstract class ViewGroupMixIn {
      */
     @CheckForNull
     public View getView(@CheckForNull String name) {
+        if (name == null) {
+            return null;
+        }
         for (View v : views()) {
             if(v.getViewName().equals(name))
                 return v;
         }
-        if (name != null && !name.equals(primaryView())) {
+        if (!name.equals(primaryView())) {
             // Fallback to subview of primary view if it is a ViewGroup
             View pv = getPrimaryView();
             if (pv instanceof ViewGroup)

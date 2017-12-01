@@ -33,6 +33,7 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 /**
@@ -287,6 +288,21 @@ public class MyViewsPropertyTest {
         assertTrue("User should control of himself.", property.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, "User2");
         assertTrue("User User2 should configure permission for user User",property.hasPermission(Permission.CONFIGURE));
+    }
+
+    @Test
+    @Issue("JENKINS-48157")
+    public void shouldNotFailWhenMigratingLegacyViewsWithoutPrimaryOne() throws IOException {
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+        User user = User.get("User");
+
+        // Emulates creation of a new object with Reflection in User#load() does.
+        MyViewsProperty property = new MyViewsProperty(null);
+        user.addProperty(property);
+
+        // At AllView with non-default to invoke NPE path in AllView.migrateLegacyPrimaryAllViewLocalizedName()
+        property.addView(new AllView("foobar"));
+        property.readResolve();
     }
     
 }

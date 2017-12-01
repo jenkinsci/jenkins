@@ -26,17 +26,13 @@ package jenkins.util;
 
 import hudson.console.ConsoleNote;
 import hudson.model.BuildListener;
-import hudson.model.Cause;
-import hudson.model.Result;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.List;
 
 /**
  * Wraps a {@link TaskListener} as a {@link BuildListener} for compatibility with APIs which historically expected the latter.
- * Does not support {@link BuildListener#started} or {@link BuildListener#finished}.
  *
  * @since 1.577
  */
@@ -46,14 +42,6 @@ public final class BuildListenerAdapter implements BuildListener {
 
     public BuildListenerAdapter(TaskListener delegate) {
         this.delegate = delegate;
-    }
-
-    @Override public void started(List<Cause> causes) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override public void finished(Result result) {
-        throw new UnsupportedOperationException();
     }
 
     @Override public PrintStream getLogger() {

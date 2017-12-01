@@ -387,6 +387,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the {@link User} object by its id or full name.
      *
+     * In order to resolve the user ID, the method invokes {@link CanonicalIdResolver} extension points.
+     * Note that it may cause significant performance degradation.
+     * If you are sure the passed value is a User ID, it is recommended to use {@link #getById(String, boolean)}.
+     *
      * @param create
      *      If true, this method will never return null for valid input
      *      (by creating a new {@link User} object if none exists.)
@@ -432,6 +436,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      {@code create} is false.
      */
     private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create) {
+        return getOrCreate(id, fullName, create, getUnsanitizedLegacyConfigFileFor(id));
+    }
+
+    private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create, File unsanitizedLegacyConfigFile) {
         String idkey = idStrategy().keyFor(id);
 
         byNameLock.readLock().lock();
@@ -442,49 +450,17 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (u == null && !configFile.isFile() && !configFile.getParentFile().isDirectory()) {
-            // check for legacy users and migrate if safe to do so.
-            File[] legacy = getLegacyConfigFilesFor(id);
-            if (legacy != null && legacy.length > 0) {
-                for (File legacyUserDir : legacy) {
-                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(legacyUserDir, "config.xml"));
-                    try {
-                        Object o = legacyXml.read();
-                        if (o instanceof User) {
-                            if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
-                                    .equals(legacyUserDir.getName())) {
-                                if (legacyUserDir.renameTo(configFile.getParentFile())) {
-                                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {legacyUserDir, configFile.getParentFile()});
-                                } else {
-                                    LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
-                                            new Object[]{legacyUserDir, configFile.getParentFile()});
-                                }
-                                break;
-                            }
-                        } else {
-                            LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
-                                    new Object[]{ legacyUserDir, o });
-                        }
-                    } catch (IOException e) {
-                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from %s: %s",
-                                new Object[]{ legacyUserDir, e.getMessage() }), e);
-                    }
-                }
-            }
-        }
-
-        File unsanitizedLegacyConfigFile = getUnsanitizedLegacyConfigFileFor(id);
         if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
             File ancestor = unsanitizedLegacyConfigFile.getParentFile();
             if (!configFile.exists()) {
                 try {
                     Files.createDirectory(configFile.getParentFile().toPath());
                     Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
-                    LOGGER.log(Level.INFO, "Migrated unsafe user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
+                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
                 } catch (IOException | InvalidPathException e) {
                     LOGGER.log(
                             Level.WARNING,
-                            String.format("Failed to migrate user record from %s to %s, see SECURITY-499 for more information", idStrategy().legacyFilenameOf(id), idStrategy().filenameOf(id)),
+                            String.format("Failed to migrate user record from %s to %s", unsanitizedLegacyConfigFile, configFile),
                             e);
                 }
             }
@@ -539,11 +515,44 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Gets the {@link User} object by its id or full name.
+     *
+     * Creates a user on-demand.
+     *
+     * <p>
      * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @deprecated This method is deprecated, because it causes unexpected {@link User} creation
+     *             by API usage code and causes performance degradation of used to retrieve users by ID.
+     *             Use {@link #getById} when you know you have an ID.
+     *             Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
+    @Deprecated
     public static @Nonnull User get(String idOrFullName) {
-        return get(idOrFullName,true);
+        return getOrCreateByIdOrFullName(idOrFullName);
     }
+
+    /**
+     * Get the user by ID or Full Name.
+     *
+     * If the user does not exist, creates a new one on-demand.
+     *
+     * <p>
+     * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @param idOrFullName User ID or full name
+     * @return User instance. It will be created on-demand.
+     * @since TODO
+     */
+    public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
+        return get(idOrFullName,true, Collections.emptyMap());
+    }
+
 
     /**
      * Gets the {@link User} object representing the currently logged-in user, or null
@@ -725,16 +734,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     private static final File getConfigFileFor(String id) {
         return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
-    }
-
-    private static final File[] getLegacyConfigFilesFor(final String id) {
-        return getRootDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && new File(pathname, "config.xml").isFile() && idStrategy().equals(
-                        pathname.getName(), id);
-            }
-        });
     }
 
     private static File getUnsanitizedLegacyConfigFileFor(String id) {
@@ -1057,9 +1056,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (subdirs != null) {
                 for (File subdir : subdirs) {
-                    if (new File(subdir, "config.xml").exists()) {
+                    File configFile = new File(subdir, "config.xml");
+                    if (configFile.exists()) {
                         String name = strategy.idFromFilename(subdir.getName());
-                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true);
+                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true, configFile);
                     }
                 }
             }
