@@ -288,7 +288,7 @@ public class Util {
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
                     throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files), e2);
-                throw new IOException("Unable to delete " + f.getPath(), e2);
+                throw e2;
             }
         }
     }
