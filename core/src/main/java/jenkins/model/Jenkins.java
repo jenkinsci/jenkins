@@ -1033,10 +1033,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setInstallState(@Nonnull InstallState newState) {
         InstallState prior = installState;
         installState = newState;
-        LOGGER.info("setInstallState (Previous:" + prior + ", New: " + installState + ")");
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installState });
         if (!newState.equals(prior)) {
-            newState.initializeState();
             getSetupWizard().onInstallStateUpdate(newState);
+            newState.initializeState();
         }
         saveQuietly();
     }

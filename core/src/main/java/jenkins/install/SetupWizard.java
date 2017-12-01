@@ -64,7 +64,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -88,11 +87,6 @@ public class SetupWizard extends PageDecorator {
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
     
-    /**
-     * Used to determine if this was a new install (vs. an upgrade, restart, or otherwise)
-     */
-    private static boolean isUsingSecurityToken = false;
-
     /**
      * Initialize the setup wizard, this will process any current state initializations
      */
@@ -173,10 +167,7 @@ public class SetupWizard extends PageDecorator {
                         + "*************************************************************" + ls);
             }
         }
-        // if we're not using security defaults, we should not show the security token screen
-        // users will likely be sent to a login screen instead
-        isUsingSecurityToken = isUsingSecurityDefaults();
-        
+
         try {
             // Make sure plugin metadata is up to date
             UpdateCenter.updateDefaultSite();
@@ -208,10 +199,10 @@ public class SetupWizard extends PageDecorator {
     /**
      * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
      */
+    @SuppressWarnings("unused") // used by jelly
     public boolean isUsingSecurityToken() {
         try {
-            return isUsingSecurityToken // only ever show the unlock page if using the security token
-                    && !Jenkins.getInstance().getInstallState().isSetupComplete()
+            return !Jenkins.getInstance().getInstallState().isSetupComplete()
                     && isUsingSecurityDefaults();
         } catch (Exception e) {
             // ignore
@@ -505,8 +496,6 @@ public class SetupWizard extends PageDecorator {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         InstallUtil.saveLastExecVersion();
         setCurrentLevel(Jenkins.getVersion());
-        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
-        isUsingSecurityToken = false; // this should not be considered new anymore
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_SETUP_COMPLETED);
     }
     
@@ -590,7 +579,6 @@ public class SetupWizard extends PageDecorator {
     private void checkFilter() {
         if (!Jenkins.getInstance().getInstallState().isSetupComplete()) {
             setUpFilter();
-            isUsingSecurityToken = isUsingSecurityDefaults();
         }
     }
 }
