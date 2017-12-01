@@ -25,6 +25,7 @@ package hudson;
 
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
+import hudson.os.PosixAPI;
 import hudson.remoting.VirtualChannel;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
@@ -245,7 +246,7 @@ public class FilePathTest {
                     throw x;
                 }
             } finally {
-                toF.chmod(700);
+                toF.chmod(0700);
             }
     }
 
@@ -469,6 +470,25 @@ public class FilePathTest {
                 copy = new FilePath(channels.british, tmp.getPath()).child("copy"+i);
                 childP.copyToWithPermission(copy);
             }
+    }
+
+    @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
+        assumeFalse("Test uses POSIX-specific features", Functions.isWindows());
+        File tmp = temp.getRoot();
+        File original = new File(tmp,"original");
+        FilePath originalP = new FilePath(channels.french, original.getPath());
+        originalP.touch(0);
+        PosixAPI.jnr().chmod(original.getAbsolutePath(), 02777); // Read/write/execute for everyone and setuid.
+
+        File sameChannelCopy = new File(tmp,"sameChannelCopy");
+        FilePath sameChannelCopyP = new FilePath(channels.french, sameChannelCopy.getPath());
+        originalP.copyToWithPermission(sameChannelCopyP);
+        assertEquals("Special permissions should be copied on the same machine", 02777, PosixAPI.jnr().stat(sameChannelCopy.getAbsolutePath()).mode() & 07777);
+
+        File diffChannelCopy = new File(tmp,"diffChannelCopy");
+        FilePath diffChannelCopyP = new FilePath(channels.british, diffChannelCopy.getPath());
+        originalP.copyToWithPermission(diffChannelCopyP);
+        assertEquals("Special permissions should not be copied across machines", 00777, PosixAPI.jnr().stat(diffChannelCopy.getAbsolutePath()).mode() & 07777);
     }
 
     @Test public void symlinkInTar() throws Exception {
@@ -739,7 +759,38 @@ public class FilePathTest {
         // and now fail when flush is bad!
         tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
     }
+    
+    @Test
+    public void chmod() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFile("file");
+        FilePath fp = new FilePath(f);
+        int prevMode = fp.mode();
+        assertEquals(0400, chmodAndMode(fp, 0400));
+        assertEquals(0412, chmodAndMode(fp, 0412));
+        assertEquals(0777, chmodAndMode(fp, 0777));
+        assertEquals(prevMode, chmodAndMode(fp, prevMode));
+    }
 
+    @Test
+    public void chmodInvalidPermissions() throws Exception {
+        assumeFalse(Functions.isWindows());
+        File f = temp.newFolder("folder");
+        FilePath fp = new FilePath(f);
+        int invalidMode = 01770; // Full permissions for owner and group plus sticky bit.
+        try {
+            chmodAndMode(fp, invalidMode);
+            fail("Setting sticky bit should fail");
+        } catch (IOException e) {
+            assertEquals("Invalid mode: " + invalidMode, e.getMessage());
+        }
+    }
+
+    private int chmodAndMode(FilePath path, int mode) throws Exception {
+        path.chmod(mode);
+        return path.mode();
+    }
+    
     @Test public void deleteRecursiveOnUnix() throws Exception {
         assumeFalse("Uses Unix-specific features", Functions.isWindows());
         Path targetDir = temp.newFolder("target").toPath();
