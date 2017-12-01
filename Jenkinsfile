@@ -58,7 +58,7 @@ for(i = 0; i < buildTypes.size(); i++) {
                     archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
                                 fingerprint: true
                     if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/TEST-*.xml'
+                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
                     }
                 }
             }
