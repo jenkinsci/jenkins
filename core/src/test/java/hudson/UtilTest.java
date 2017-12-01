@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.attribute.PosixFilePermissions;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -43,6 +44,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 
 import org.apache.commons.io.FileUtils;
@@ -722,6 +724,43 @@ public class UtilTest {
         assertTrue(Util.isDescendant(new File(root, "."), new File(root, "child")));
         //. on both
         assertTrue(Util.isDescendant(new File(root, "."), new File(new File(root, "child"), ".")));
+    }
+
+    @Test
+    public void testModeToPermissions() throws Exception {
+        assertEquals(PosixFilePermissions.fromString("rwxrwxrwx"), Util.modeToPermissions(0777));
+        assertEquals(PosixFilePermissions.fromString("rwxr-xrwx"), Util.modeToPermissions(0757));
+        assertEquals(PosixFilePermissions.fromString("rwxr-x---"), Util.modeToPermissions(0750));
+        assertEquals(PosixFilePermissions.fromString("r-xr-x---"), Util.modeToPermissions(0550));
+        assertEquals(PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0540));
+        assertEquals(PosixFilePermissions.fromString("--xr-----"), Util.modeToPermissions(0140));
+        assertEquals(PosixFilePermissions.fromString("--xr---w-"), Util.modeToPermissions(0142));
+        assertEquals(PosixFilePermissions.fromString("--xr--rw-"), Util.modeToPermissions(0146));
+        assertEquals(PosixFilePermissions.fromString("-wxr--rw-"), Util.modeToPermissions(0346));
+        assertEquals(PosixFilePermissions.fromString("---------"), Util.modeToPermissions(0000));
+
+        assertEquals("Non-permission bits should be ignored", PosixFilePermissions.fromString("r-xr-----"), Util.modeToPermissions(0100540));
+
+        try {
+            Util.modeToPermissions(01777);
+            fail("Did not detect invalid mode");
+        } catch (IOException e) {
+            assertThat(e.getMessage(), startsWith("Invalid mode"));
+        }
+    }
+
+    @Test
+    public void testPermissionsToMode() throws Exception {
+        assertEquals(0777, Util.permissionsToMode(PosixFilePermissions.fromString("rwxrwxrwx")));
+        assertEquals(0757, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-xrwx")));
+        assertEquals(0750, Util.permissionsToMode(PosixFilePermissions.fromString("rwxr-x---")));
+        assertEquals(0550, Util.permissionsToMode(PosixFilePermissions.fromString("r-xr-x---")));
+        assertEquals(0540, Util.permissionsToMode(PosixFilePermissions.fromString("r-xr-----")));
+        assertEquals(0140, Util.permissionsToMode(PosixFilePermissions.fromString("--xr-----")));
+        assertEquals(0142, Util.permissionsToMode(PosixFilePermissions.fromString("--xr---w-")));
+        assertEquals(0146, Util.permissionsToMode(PosixFilePermissions.fromString("--xr--rw-")));
+        assertEquals(0346, Util.permissionsToMode(PosixFilePermissions.fromString("-wxr--rw-")));
+        assertEquals(0000, Util.permissionsToMode(PosixFilePermissions.fromString("---------")));
     }
 
 }
