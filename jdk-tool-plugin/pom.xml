@@ -11,7 +11,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
-        <jenkins.version>2.91-SNAPSHOT</jenkins.version> <!-- TODO pending split -->
+        <jenkins.version>2.93-SNAPSHOT</jenkins.version> <!-- TODO pending split -->
         <java.level>8</java.level>
     </properties>
     <name>JDK Tool Plugin</name>
