@@ -195,6 +195,16 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
+    private void tearDownFilter() {
+        try {
+            if (PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER)) {
+                PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
+            }
+        } catch (ServletException e) {
+            throw new RuntimeException("Unable to remove PluginServletFilter for the SetupWizard", e);
+        }
+    }
+
     /**
      * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
      */
@@ -523,7 +533,11 @@ public class SetupWizard extends PageDecorator {
      * @since FIXME
      */
     public void onInstallStateUpdate(InstallState state) {
-        setUpFilter();
+        if (state.isSetupComplete()) {
+            tearDownFilter();
+        } else {
+            setUpFilter();
+        }
     }
 
     /**
