@@ -301,18 +301,19 @@ public class Util {
             if (!path.toFile().setWritable(true)) {
                 throw new IOException("Unable to make file writeable: " + path);
             }
-        }
-        try { 
-            PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
-            Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
-            newPermissions.add(PosixFilePermission.OWNER_WRITE);
-            Files.setPosixFilePermissions(path, newPermissions);
-        } catch (NoSuchFileException e) {
-            return;
-        } catch (UnsupportedOperationException e) {
-            // PosixFileAttributes not supported, fall back to non-NIO.
-            if (!path.toFile().setWritable(true)) {
-                throw new IOException("Unable to make file writeable: " + path);
+        } else {
+            try {
+                PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
+                Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
+                newPermissions.add(PosixFilePermission.OWNER_WRITE);
+                Files.setPosixFilePermissions(path, newPermissions);
+            } catch (NoSuchFileException e) {
+                return;
+            } catch (UnsupportedOperationException e) {
+                // PosixFileAttributes not supported, fall back to non-NIO.
+                if (!path.toFile().setWritable(true)) {
+                    throw new IOException("Unable to make file writeable: " + path);
+                }
             }
         }
     }
