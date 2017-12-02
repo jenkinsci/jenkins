@@ -68,6 +68,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
@@ -1597,6 +1598,51 @@ public class Util {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+         // Anything larger is a file type, not a permission.
+        int PERMISSIONS_MASK = 07777;
+        // setgid/setuid/sticky are not supported.
+        int MAX_SUPPORTED_MODE = 0777;
+        mode = mode & PERMISSIONS_MASK;
+        if ((mode & MAX_SUPPORTED_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
+    }
+
+    /**
+     * Converts a {@link File} into a {@link Path} and checks runtime exceptions.
+     * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -1664,4 +1710,15 @@ public class Util {
      */
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+
+    /**
+     * If this flag is true, native implementations of {@link FilePath#chmod}
+     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
+     * <p>
+     * This should only be enabled if the setgid/setuid/sticky bits are
+     * intentionally set on the Jenkins installation and they are being
+     * overwritten by Jenkins erroneously.
+     */
+    @Restricted(value = NoExternalUse.class)
+    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

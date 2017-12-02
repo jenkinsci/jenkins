@@ -79,6 +79,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
@@ -1613,6 +1614,11 @@ public final class FilePath implements Serializable {
      *      <p>
      *      please note mask is expected to be an octal if you use <a href="http://en.wikipedia.org/wiki/Chmod">chmod command line values</a>,
      *      so preceded by a '0' in java notation, ie <code>chmod(0644)</code>
+     *      <p>
+     *      Only supports setting read, write, or execute permissions for the
+     *      owner, group, or others, so the largest permissible value is 0777.
+     *      Attempting to set larger values (i.e. the setgid, setuid, or sticky
+     *      bits) will cause an IOException to be thrown.
      *
      * @since 1.303
      * @see #mode()
@@ -1622,7 +1628,6 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1631,14 +1636,18 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Run chmod via jnr-posix
+     * Change permissions via NIO.
      */
     private static void _chmod(File f, int mask) throws IOException {
         // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
+        if (Util.NATIVE_CHMOD_MODE) {
+            PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
+        } else {
+            Files.setPosixFilePermissions(Util.fileToPath(f), Util.modeToPermissions(mask));
+        }
     }
 
     private static boolean CHMOD_WARNED = false;
@@ -2039,6 +2048,21 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
+        // Use NIO copy with StandardCopyOption.COPY_ATTRIBUTES when copying on the same machine.
+        if (this.channel == target.channel) {
+            act(new SecureFileCallable<Void>() {
+                public Void invoke(File f, VirtualChannel channel) throws IOException {
+                    File targetFile = new File(target.remote);
+                    File targetDir = targetFile.getParentFile();
+                    filterNonNull().mkdirs(targetDir);
+                    Files.createDirectories(Util.fileToPath(targetDir));
+                    Files.copy(Util.fileToPath(reading(f)), Util.fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    return null;
+                }
+            });
+            return;
+        }
+
         copyTo(target);
         // copy file permission
         target.chmod(mode());
