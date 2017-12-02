@@ -1392,26 +1392,6 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Utility method to convert a file to a path with a wrapped exception
-     *
-     * @param file
-     *      The file to be converted to a Path
-     * @return
-     *      The new Path obtained from the file
-     *
-     *  @see File#toPath()
-     */
-    static Path toPath(File file) throws IOException {
-        Path path;
-        try {
-            path = file.toPath();
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
-        return path;
-    }
-
-    /**
      * Creates a temporary directory inside the directory represented by 'this'
      *
      * @param prefix
@@ -1437,7 +1417,7 @@ public final class FilePath implements Serializable {
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    Path tempPath = Files.createTempDirectory(toPath(dir), name,  new FileAttribute<?>[] {});
+                    Path tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,  new FileAttribute<?>[] {});
                     if (tempPath.toFile() == null) {
                         throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
                     }

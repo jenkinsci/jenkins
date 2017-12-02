@@ -791,15 +791,6 @@ public class FilePathTest {
 
     @Issue("JENKINS-48227")
     @Test
-    public void testToPath() throws IOException {
-        final File srcFolder = temp.newFolder("src");
-        final Path path = FilePath.toPath(srcFolder);
-
-        assertNotNull("Path should not be null", path);
-    }
-
-    @Issue("JENKINS-48227")
-    @Test
     public void testCreateTempDir() throws IOException, InterruptedException  {
         final File srcFolder = temp.newFolder("src");
         final FilePath filePath = new FilePath(srcFolder);
