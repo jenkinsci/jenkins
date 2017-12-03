@@ -117,7 +117,7 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
 
-        core = new FileChannelWriter(tmpPath, charset, StandardOpenOption.WRITE);
+        core = new FileChannelWriter(tmpPath, charset, false, StandardOpenOption.WRITE);
     }
 
     @Override

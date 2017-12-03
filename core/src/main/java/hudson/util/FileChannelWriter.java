@@ -11,6 +11,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 /**
  * This class has been created to help make {@link AtomicFileWriter} hopefully more reliable in some corner cases.
@@ -27,11 +28,34 @@ import java.nio.file.Path;
 @Restricted(NoExternalUse.class)
 public class FileChannelWriter extends Writer {
 
+    private static final Logger LOGGER = Logger.getLogger(FileChannelWriter.class.getName());
+
     private final Charset charset;
     private final FileChannel channel;
 
-    FileChannelWriter(Path filePath, Charset charset, OpenOption... options) throws IOException {
+    /**
+     * {@link FileChannel#force(boolean)} is a <strong>very</strong> costly operation. This flag has been introduced mostly to
+     * accommodate Jenkins' previous behaviour, when using a simple {@link java.io.BufferedWriter}.
+     *
+     * <p>Basically, {@link BufferedWriter#flush()} does nothing, so when existing code was rewired to use
+     * {@link FileChannelWriter#flush()} behind {@link AtomicFileWriter} and that method actually ends up calling
+     * {@link FileChannel#force(boolean)}, many things started timing out. The main reason is probably because XStream's
+     * {@link com.thoughtworks.xstream.core.util.QuickWriter} uses <code>flush()</code> a lot.
+     * So we introduced this field to be able to still get a better integrity for the use case of {@link AtomicFileWriter}.
+     * Because from there, we make sure to call {@link #close()} from {@link AtomicFileWriter#commit()} anyway.
+     */
+    private boolean forceOnFlush;
+
+    /**
+     * @param filePath     the path of the file to write to.
+     * @param charset      the charset to use when writing characters.
+     * @param forceOnFlush set to true if you want {@link FileChannel#force(boolean)} to be called on {@link #flush()}.
+     * @param options      the options for opening the file.
+     * @throws IOException if something went wrong.
+     */
+    FileChannelWriter(Path filePath, Charset charset, boolean forceOnFlush, OpenOption... options) throws IOException {
         this.charset = charset;
+        this.forceOnFlush = forceOnFlush;
         channel = FileChannel.open(filePath, options);
     }
 
@@ -44,7 +68,12 @@ public class FileChannelWriter extends Writer {
 
     @Override
     public void flush() throws IOException {
-        channel.force(true);
+        if (forceOnFlush) {
+            LOGGER.finest("Flush is forced");
+            channel.force(true);
+        } else {
+            LOGGER.finest("Force disabled on flush(), no-op");
+        }
     }
 
     @Override

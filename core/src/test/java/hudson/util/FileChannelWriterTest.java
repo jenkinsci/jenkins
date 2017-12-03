@@ -27,7 +27,7 @@ public class FileChannelWriterTest {
     @Before
     public void setUp() throws Exception {
         file = temporaryFolder.newFile();
-        writer = new FileChannelWriter(file.toPath(), StandardCharsets.UTF_8, StandardOpenOption.WRITE);
+        writer = new FileChannelWriter(file.toPath(), StandardCharsets.UTF_8, true, StandardOpenOption.WRITE);
     }
 
     @Test
