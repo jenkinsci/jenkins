@@ -318,10 +318,34 @@ public class ArtifactArchiverTest {
 
     private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
         @Override
-        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        public Object invoke(java.io.File f, VirtualChannel channel) throws IOException, InterruptedException {
             assertTrue(f.createNewFile());
             assertTrue(f.setReadable(false));
             return null;
         }
     }
+
+    @Test
+    public void setBuildResultWithEmptyArchive() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        ArtifactArchiver aa = new ArtifactArchiver("f");
+        aa.setSetBuildResult(false);
+        project.getPublishersList().replaceBy(Collections.singleton(aa));
+        assertEquals("(no artifacts)", Result.SUCCESS, build(project));
+
+        project = j.createFreeStyleProject();
+        aa = new ArtifactArchiver("f");
+        aa.setSetBuildResult(true);
+        aa.setAllowEmptyArchive(true);
+        project.getPublishersList().replaceBy(Collections.singleton(aa));
+        assertEquals("(no artifacts)", Result.SUCCESS, build(project));
+
+        project = j.createFreeStyleProject();
+        aa = new ArtifactArchiver("f");
+        aa.setSetBuildResult(true);
+        aa.setAllowEmptyArchive(false);
+        project.getPublishersList().replaceBy(Collections.singleton(aa));
+        assertEquals("(no artifacts)", Result.FAILURE, build(project));
+    }
+
 }
