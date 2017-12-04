@@ -25,7 +25,6 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -389,14 +388,6 @@ public class JenkinsTest {
 
     @TestExtension("testUnprotectedRootAction")
     public static class ProtectedRootActionImpl implements RootAction {
-        public String getIconFileName() {
-            return null;
-        }
-
-        public String getDisplayName() {
-            return null;
-        }
-
         public String getUrlName() {
             return "foobar-zot";
         }

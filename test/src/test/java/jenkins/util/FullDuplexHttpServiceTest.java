@@ -74,14 +74,6 @@ public class FullDuplexHttpServiceTest {
         public String getUrlName() {
             return "test";
         }
-        @Override
-        public String getIconFileName() {
-            return null;
-        }
-        @Override
-        public String getDisplayName() {
-            return null;
-        }
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {
                 @Override
