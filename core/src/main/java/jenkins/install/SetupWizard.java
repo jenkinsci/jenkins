@@ -383,7 +383,7 @@ public class SetupWizard extends PageDecorator {
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
                 } catch(IOException e) {
-                    throw new IOException("Invalid response code from URL: " + suggestedPluginUrl);
+                    throw new IOException("Invalid response code from URL: " + suggestedPluginUrl, e);
                 } catch(Exception e) {
                     // not found or otherwise unavailable
                     LOGGER.log(Level.FINE, e.getMessage(), e);
