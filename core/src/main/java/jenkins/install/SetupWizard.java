@@ -374,27 +374,16 @@ public class SetupWizard extends PageDecorator {
             String updateCenterJsonUrl = updateSite.getUrl();
             String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
             try {
-                URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
+                URLConnection connection;
                 
                 try {
-                    if (connection instanceof HttpURLConnection) {
-                        // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
-                        ((HttpURLConnection) connection).setInstanceFollowRedirects(true);
-                        int responseCode = ((HttpURLConnection)connection).getResponseCode();
-                        if (HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
-                            // In case of redirection, we have to connect to the new URL
-                            String redirection = ((HttpURLConnection) connection).getHeaderField("Location");
-                            connection = ProxyConfiguration.open(new URL(redirection));
-                            responseCode = ((HttpURLConnection) connection).getResponseCode();
-                        }
-                        if (HttpURLConnection.HTTP_OK != responseCode) {
-                            throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + suggestedPluginUrl, responseCode);
-                        }
-                    }
-                    
+                    connection  = ProxyConfiguration.openAllowsRedirection(new URL(suggestedPluginUrl));
+
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
                     initialPluginList = JSONArray.fromObject(initialPluginJson);
                     break updateSiteList;
+                } catch(IOException e) {
+                    throw new IOException("Invalid response code from URL: " + suggestedPluginUrl);
                 } catch(Exception e) {
                     // not found or otherwise unavailable
                     LOGGER.log(Level.FINE, e.getMessage(), e);

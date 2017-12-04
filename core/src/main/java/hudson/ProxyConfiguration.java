@@ -259,6 +259,37 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return con;
     }
 
+    /**
+     * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly and a redirection is possible.
+     */
+    public static URLConnection openAllowsRedirection(URL url) throws IOException {
+        URLConnection con = ProxyConfiguration.open(url);
+        // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
+        int responseCode = HttpURLConnection.HTTP_OK;
+        if (con instanceof HttpURLConnection) {
+            // prevent problems from misbehaving plugins disabling redirects by default
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+            responseCode = ((HttpURLConnection) con).getResponseCode();
+            if (HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
+                // No OK Status and no redirection
+                throw new IOException("Could not open " + url);
+            } else if (HttpURLConnection.HTTP_OK != responseCode) {
+                // In case of redirection, we have to connect to the new URL
+                String redirection = ((HttpURLConnection) con).getHeaderField("Location");
+                con = ProxyConfiguration.open(new URL(redirection));
+                if( con instanceof HttpURLConnection) {
+                    responseCode = ((HttpURLConnection) con).getResponseCode();
+                } else {
+                    responseCode = HttpURLConnection.HTTP_OK;
+                }
+            }
+        }
+        if (HttpURLConnection.HTTP_OK != responseCode) {
+            throw new IOException("Could not open " + url);
+        }
+        return con;
+    }
+
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null) 

@@ -1250,21 +1250,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                URLConnection connection = (URLConnection) ProxyConfiguration.open(url);
+                URLConnection connection = (URLConnection) ProxyConfiguration.openAllowsRedirection(url);
 
-                if (connection instanceof HttpURLConnection) {
-                    int responseCode = ((HttpURLConnection)connection).getResponseCode();
-                    // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
-                    if (HttpURLConnection.HTTP_MOVED_PERM == responseCode || HttpURLConnection.HTTP_MOVED_TEMP == responseCode || HttpURLConnection.HTTP_SEE_OTHER == responseCode) {
-                        // In case of redirection, we have to connect to the new URL
-                        String redirection = ((HttpURLConnection) connection).getHeaderField("Location");
-                        connection = ProxyConfiguration.open(new URL(redirection));
-                        responseCode = ((HttpURLConnection) connection).getResponseCode();
-                    }
-                    if (HttpURLConnection.HTTP_OK != responseCode) {
-                        throw new HttpRetryException("Invalid response code (" + responseCode + ") from URL: " + url, responseCode);
-                    }
-                } else {
+                if (!(connection instanceof HttpURLConnection)) {
                     try (InputStream is = connection.getInputStream()) {
                         IOUtils.copy(is, new NullOutputStream());
                     }
@@ -1273,6 +1261,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 if (e.getMessage().contains("PKIX path building failed"))
                    // fix up this crappy error message from JDK
                     throw new IOException("Failed to validate the SSL certificate of "+url,e);
+            } catch (IOException e) {
+                throw new IOException("Invalid response code from URL: " + url);
             }
         }
     }
