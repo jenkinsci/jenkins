@@ -605,7 +605,7 @@ public class JDKInstaller extends ToolInstaller {
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
                     Path tmp = fileToPath(new File(cache.getPath()+".tmp"));
                     try {
-                        Files.createDirectories(tmp);
+                        Files.createDirectories(tmp.getParent());
                         try (OutputStream out = Files.newOutputStream(tmp)) {
                             IOUtils.copy(response.getEntity().getContent(), out);
                         }
@@ -613,7 +613,7 @@ public class JDKInstaller extends ToolInstaller {
                         Files.move(tmp, fileToPath(cache), StandardCopyOption.REPLACE_EXISTING);
                         return cache.toURL();
                     } finally {
-                        Files.delete(tmp);
+                        Files.deleteIfExists(tmp);
                     }
                 }
                 }
