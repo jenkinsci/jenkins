@@ -26,6 +26,8 @@ package hudson.model;
 import hudson.ExtensionPoint;
 import hudson.Extension;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Marker interface for actions that are added to {@link jenkins.model.Jenkins}.
  *
@@ -37,4 +39,13 @@ import hudson.Extension;
  * @since 1.311
  */
 public interface RootAction extends Action, ExtensionPoint {
+    @Override
+    default @CheckForNull String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    default @CheckForNull String getDisplayName() {
+        return null;
+    }
 }
