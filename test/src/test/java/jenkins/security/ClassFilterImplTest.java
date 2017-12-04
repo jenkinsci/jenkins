@@ -146,18 +146,17 @@ public class ClassFilterImplTest {
     public void xstreamRequiresWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
         Config config = GlobalConfiguration.all().get(Config.class);
+        config.save();
         config.obj = LinkedListMultimap.create();
-        try {
-            config.save();
-            fail("should not have been accepted");
-        } catch (Exception x) {
-            x.printStackTrace();
-            // OK
-        }
+        config.save();
+        assertThat(config.xml(), not(containsString("LinkedListMultimap")));
     }
     @TestExtension("xstreamRequiresWhitelist")
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
+        String xml() throws IOException {
+            return getConfigFile().asString();
+        }
     }
 
 }
