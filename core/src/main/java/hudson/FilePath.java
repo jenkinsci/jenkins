@@ -588,11 +588,11 @@ public final class FilePath implements Serializable {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
                 if (e.isDirectory()) {
-                    mkdirs(f);
+                    Files.createDirectories(f.toPath());
                 } else {
                     File p = f.getParentFile();
                     if (p != null) {
-                        mkdirs(p);
+                        Files.createDirectories(p.toPath());
                     }
                     try (InputStream input = zip.getInputStream(e)) {
                         IOUtils.copy(input, writing(f));
@@ -1410,7 +1410,7 @@ public final class FilePath implements Serializable {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
                     File f = File.createTempFile(prefix, suffix, dir);
                     f.delete();
-                    f.mkdir();
+                    Files.createTempDirectory(f.toPath(), null);
                     return f.getName();
                 }
             }));
