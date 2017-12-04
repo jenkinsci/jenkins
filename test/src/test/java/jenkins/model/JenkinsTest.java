@@ -74,6 +74,7 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -682,19 +683,8 @@ public class JenkinsTest {
 
     @Issue("JENKINS-47406")
     @Test
+    @WithPlugin("jenkins-47406.hpi")
     public void jobCreatedByInitializerIsRetained() {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
-    }
-
-    public static class JobAdder {
-        private static final Logger LOGGER = Logger.getLogger(JobAdder.class.getName());
-
-        @Initializer(after = JOB_LOADED)
-        public void addJob() throws IOException {
-            LOGGER.info("[JENKINS-47406] Adding job");
-            Jenkins jenkins = Jenkins.getInstance();
-            jenkins.createProject(FreeStyleProject.class, "JENKINS-47406");
-            LOGGER.info("[JENKINS-47406] Added job");
-        }
     }
 }
