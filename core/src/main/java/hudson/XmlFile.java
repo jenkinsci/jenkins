@@ -24,10 +24,8 @@
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
@@ -148,7 +146,7 @@ public final class XmlFile {
         }
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
-        } catch (XStreamException | Error | InvalidPathException e) {
+        } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -165,7 +163,7 @@ public final class XmlFile {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
             return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
-        } catch (XStreamException | Error | InvalidPathException e) {
+        } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }
     }
@@ -184,7 +182,7 @@ public final class XmlFile {
                 writing.set(null);
             }
             w.commit();
-        } catch(StreamException e) {
+        } catch(RuntimeException e) {
             throw new IOException(e);
         } finally {
             w.abort();
