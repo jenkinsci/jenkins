@@ -1,9 +1,15 @@
 package jenkins.timemachine;
 
 import hudson.PluginManager;
+import hudson.util.HttpResponses;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.json.JsonHttpResponse;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -38,6 +44,55 @@ public class PluginManagerTimeMachine {
             }
         }
         snapshotManifests = new ArrayList<>();
+    }
+
+    List<PluginSnapshotManifest> getSnapshotManifests() {
+        return snapshotManifests;
+    }
+
+    public HttpResponse doSnapshots() {
+        JSONArray response = new JSONArray();
+        for (PluginSnapshotManifest snapshotManifest : snapshotManifests) {
+            response.add(snapshotManifest.getTakenAt());
+        }
+        return HttpResponses.okJSON(response);
+    }
+
+    public HttpResponse doSnapshotChanges(StaplerRequest request) {
+        long from;
+        long to;
+
+        try {
+            from = Long.parseLong(request.getParameter("from"));
+            to = Long.parseLong(request.getParameter("to"));
+        } catch (Exception e) {
+            return HttpResponses.errorJSON("'from' and 'to' request params should be long timestamps.");
+        }
+
+        PluginSnapshotManifest fromManifest = getManifest(from);
+        PluginSnapshotManifest toManifest = getManifest(to);
+        if (fromManifest == null) {
+            return HttpResponses.errorJSON("Unknown 'from' timestamp: " + from);
+        } else if (toManifest == null) {
+            return HttpResponses.errorJSON("Unknown 'to' timestamp: " + to);
+        }
+        List<PluginChanges> changes = PluginChanges.changes(fromManifest, toManifest);
+
+        JSONArray response = new JSONArray();
+        for (PluginChanges pluginChanges : changes) {
+            response.add(pluginChanges.toJSONObject());
+        }
+
+        return HttpResponses.okJSON(response);
+    }
+
+    private PluginSnapshotManifest getManifest(long timestamp) {
+        for (PluginSnapshotManifest snapshotManifest : snapshotManifests) {
+            if (snapshotManifest.getTakenAt() == timestamp) {
+                return snapshotManifest;
+            }
+        }
+        return null;
     }
 
     public void loadSnapshotManifests() {

@@ -1,6 +1,7 @@
 package jenkins.timemachine.pluginchange;
 
 import jenkins.timemachine.PluginSnapshot;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -17,5 +18,11 @@ public abstract class PluginChange {
 
     public PluginSnapshot getPlugin() {
         return plugin;
+    }
+
+    public JSONObject toJSONObject() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", getClass().getSimpleName().toLowerCase());
+        return jsonObject;
     }
 }

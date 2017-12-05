@@ -2,6 +2,7 @@ package jenkins.timemachine.pluginchange;
 
 import hudson.util.VersionNumber;
 import jenkins.timemachine.PluginSnapshot;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -26,5 +27,13 @@ public class Upgraded extends PluginChange {
 
     public VersionNumber getTo() {
         return to;
+    }
+
+    @Override
+    public JSONObject toJSONObject() {
+        JSONObject jsonObject = super.toJSONObject();
+        jsonObject.put("from", from.toString());
+        jsonObject.put("to", to.toString());
+        return jsonObject;
     }
 }

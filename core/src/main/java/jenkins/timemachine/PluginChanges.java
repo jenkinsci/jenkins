@@ -8,6 +8,8 @@ import jenkins.timemachine.pluginchange.PluginChange;
 import jenkins.timemachine.pluginchange.Installed;
 import jenkins.timemachine.pluginchange.Uninstalled;
 import jenkins.timemachine.pluginchange.Upgraded;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -23,11 +25,13 @@ import java.util.Set;
 @Restricted(NoExternalUse.class)
 public class PluginChanges {
 
+    private final String pluginId;
     private final PluginSnapshot fromPlugin;
     private final PluginSnapshot toPlugin;
     private final List<PluginChange> pluginChanges = new ArrayList<>();
 
     PluginChanges(@Nonnull String pluginId, @Nonnull PluginSnapshotManifest from, @Nonnull PluginSnapshotManifest to) {
+        this.pluginId = pluginId;
         this.fromPlugin = from.find(pluginId);
         this.toPlugin = to.find(pluginId);
         if (this.fromPlugin == null && this.toPlugin == null) {
@@ -85,5 +89,19 @@ public class PluginChanges {
         }
 
         return changes;
+    }
+
+    public JSONObject toJSONObject() {
+        JSONObject jsonObject = new JSONObject();
+        JSONArray changesArray = new JSONArray();
+
+        jsonObject.put("pluginId", pluginId);
+        for (PluginChange pluginChange : pluginChanges) {
+            JSONObject changeObject = pluginChange.toJSONObject();
+            changesArray.add(changeObject);
+        }
+        jsonObject.put("changes", changesArray);
+
+        return jsonObject;
     }
 }
