@@ -25,6 +25,7 @@ java.lang.StackTraceElement
 java.lang.String
 java.lang.reflect.Proxy
 java.net.URL
+java.security.KeyRep
 java.util.ArrayDeque
 java.util.ArrayList
 java.util.Arrays$ArrayList
@@ -81,3 +82,5 @@ org.jboss.marshalling.TraceInformation$ObjectInfo
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
 org.jvnet.localizer.ResourceBundleHolder
+sun.security.rsa.RSAPublicKeyImpl
+sun.security.x509.X509Key
