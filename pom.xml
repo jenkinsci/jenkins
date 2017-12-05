@@ -170,7 +170,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.15-20171128.150341-4</version> <!-- TODO https://github.com/jenkinsci/remoting/pull/204 -->
+        <version>3.15-SNAPSHOT</version> <!-- TODO https://github.com/jenkinsci/remoting/pull/204 -->
       </dependency>
 
       <dependency>
