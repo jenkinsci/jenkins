@@ -25,6 +25,7 @@
 package jenkins.security;
 
 import hudson.remoting.ClassFilter;
+import java.io.File;
 import java.util.logging.Level;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -32,10 +33,12 @@ import javax.script.SimpleBindings;
 import jenkins.util.BuildListenerAdapter;
 import jenkins.util.TreeString;
 import jenkins.util.TreeStringBuilder;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import static org.hamcrest.Matchers.*;
 import org.junit.Rule;
 import org.junit.rules.ErrorCollector;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
@@ -55,6 +58,9 @@ public class CustomClassFilterTest {
     @Rule
     public LoggerRule logging = new LoggerRule().record("jenkins.security", Level.FINER);
 
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
     @WithPlugin("custom-class-filter.jpi")
     @Test
     public void smokes() throws Exception {
@@ -64,6 +70,17 @@ public class CustomClassFilterTest {
         assertBlacklisted("part of Jenkins core, so why not?", BuildListenerAdapter.class, false);
         // As an aside, the following appear totally unused anyway!
         assertBlacklisted("disabled via system property", TreeString.class, true);
+        assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true);
+    }
+
+    @Test
+    public void dynamicLoad() throws Exception {
+        assertBlacklisted("not yet enabled via plugin", ScriptException.class, true);
+        assertBlacklisted("not yet disabled via plugin", TreeStringBuilder.class, false);
+        File jpi = tmp.newFile("custom-class-filter.jpi");
+        FileUtils.copyURLToFile(CustomClassFilterTest.class.getResource("/plugins/custom-class-filter.jpi"), jpi);
+        r.jenkins.pluginManager.dynamicLoad(jpi);
+        assertBlacklisted("enabled via plugin", ScriptException.class, false);
         assertBlacklisted("disabled via plugin", TreeStringBuilder.class, true);
     }
 
