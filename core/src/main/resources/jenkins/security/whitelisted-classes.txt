@@ -73,6 +73,7 @@ org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
 org.eclipse.jgit.lib.ObjectId
 org.eclipse.jgit.lib.ObjectIdOwnerMap$Entry
+org.eclipse.jgit.lib.PersonIdent
 org.eclipse.jgit.revwalk.RevCommit
 org.eclipse.jgit.revwalk.RevObject
 org.eclipse.jgit.revwalk.RevTree
