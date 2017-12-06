@@ -77,10 +77,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.LinkOption;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -588,11 +585,11 @@ public final class FilePath implements Serializable {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
                 if (e.isDirectory()) {
-                    Files.createDirectories(f.toPath());
+                    mkdirs(f);
                 } else {
                     File p = f.getParentFile();
                     if (p != null) {
-                        Files.createDirectories(p.toPath());
+                        mkdirs(p);
                     }
                     try (InputStream input = zip.getInputStream(e)) {
                         IOUtils.copy(input, writing(f));
@@ -2958,11 +2955,12 @@ public final class FilePath implements Serializable {
         return f;
     }
 
-    private boolean mkdirs(File dir) {
+    private boolean mkdirs(File dir) throws IOException {
         if (dir.exists())   return false;
 
         filterNonNull().mkdirs(dir);
-        return dir.mkdirs();
+        Path path = Files.createDirectories(dir.toPath());
+        return true;
     }
 
     private File mkdirsE(File dir) throws IOException {
