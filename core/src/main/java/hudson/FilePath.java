@@ -1410,7 +1410,7 @@ public final class FilePath implements Serializable {
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
                     File f = File.createTempFile(prefix, suffix, dir);
                     f.delete();
-                    Files.createTempDirectory(f.toPath(), null);
+                    f.mkdir();
                     return f.getName();
                 }
             }));
