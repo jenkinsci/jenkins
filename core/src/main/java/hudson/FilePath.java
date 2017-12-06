@@ -122,9 +122,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
-import static hudson.Util.deleteFile;
-import static hudson.Util.fixEmpty;
-import static hudson.Util.isSymlink;
+import static hudson.Util.*;
+
 import java.util.Collections;
         
 /**
@@ -1960,7 +1959,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                Files.move(reading(f).toPath(), creating(new File(target.remote)).toPath(), StandardCopyOption.COPY_ATTRIBUTES, LinkOption.NOFOLLOW_LINKS);
+                Files.move(fileToPath(reading(f)), fileToPath(creating(new File(target.remote))), LinkOption.NOFOLLOW_LINKS);
                 return null;
             }
         });
@@ -2959,7 +2958,7 @@ public final class FilePath implements Serializable {
         if (dir.exists())   return false;
 
         filterNonNull().mkdirs(dir);
-        Path path = Files.createDirectories(dir.toPath());
+        Files.createDirectories(fileToPath(dir));
         return true;
     }
 
