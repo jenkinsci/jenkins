@@ -324,6 +324,14 @@ public class UtilTest {
     }
 
     @Test
+    public void testDeleteFileDoesNotExist() throws Exception {
+        Path file = tmp.newFolder().toPath().resolve("file.tmp");
+        assertFalse(Files.exists(file));
+        // Should not throw an exception.
+        Util.deleteFile(file.toFile());
+    }
+
+    @Test
     public void testDeleteContentsRecursive() throws Exception {
         final File dir = tmp.newFolder();
         final File d1 = new File(dir, "d1");
