@@ -229,7 +229,8 @@ public class ClassFilterImpl extends ClassFilter {
 
     private static boolean isPluginManifest(Manifest mf) {
         Attributes attr = mf.getMainAttributes();
-        return attr.getValue("Short-Name") != null && (attr.getValue("Plugin-Version") != null || attr.getValue("Jenkins-Version") != null);
+        return attr.getValue("Short-Name") != null && (attr.getValue("Plugin-Version") != null || attr.getValue("Jenkins-Version") != null) ||
+               "true".equals(attr.getValue("Jenkins-ClassFilter-Whitelisted"));
     }
 
     @Override
