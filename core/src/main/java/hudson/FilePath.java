@@ -1119,7 +1119,7 @@ public final class FilePath implements Serializable {
         return act(new SecureFileCallable<URI>() {
             private static final long serialVersionUID = 1L;
             public URI invoke(File f, VirtualChannel channel) {
-                return f.toPath().toUri();
+                return f.toURI();
             }
         });
     }
