@@ -64,6 +64,9 @@ public abstract class ACL {
      */
     public final void checkPermission(@Nonnull Permission p) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if(!hasPermission(a,p))
             throw new AccessDeniedException2(a,p);
     }
@@ -75,7 +78,11 @@ public abstract class ACL {
      *      if the user doesn't have the permission.
      */
     public final boolean hasPermission(@Nonnull Permission p) {
-        return hasPermission(Jenkins.getAuthentication(),p);
+        Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return true;
+        }
+        return hasPermission(a, p);
     }
 
     /**
@@ -101,6 +108,9 @@ public abstract class ACL {
     public final void checkCreatePermission(@Nonnull ItemGroup c,
                                             @Nonnull TopLevelItemDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     Item.CREATE.group.title+"/"+Item.CREATE.name + Item.CREATE + "/" + d.getDisplayName()));
@@ -136,6 +146,9 @@ public abstract class ACL {
     public final void checkCreatePermission(@Nonnull ViewGroup c,
                                             @Nonnull ViewDescriptor d) {
         Authentication a = Jenkins.getAuthentication();
+        if (a == SYSTEM) {
+            return;
+        }
         if (!hasCreatePermission(a, c, d)) {
             throw new AccessDeniedException(Messages.AccessDeniedException2_MissingPermission(a.getName(),
                     View.CREATE.group.title + "/" + View.CREATE.name + View.CREATE + "/" + d.getDisplayName()));
