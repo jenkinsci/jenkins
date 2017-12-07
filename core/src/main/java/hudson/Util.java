@@ -303,6 +303,7 @@ public class Util {
                 Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
                 newPermissions.add(PosixFilePermission.OWNER_WRITE);
                 Files.setPosixFilePermissions(path, newPermissions);
+                return;
             } catch (NoSuchFileException e) {
                 return;
             } catch (UnsupportedOperationException e) {
