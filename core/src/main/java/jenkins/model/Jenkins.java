@@ -172,6 +172,11 @@ import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
 import hudson.widgets.Widget;
 
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
@@ -204,6 +209,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AbstractProcessingFilter;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jvnet.hudson.reactor.Executable;
 import org.jvnet.hudson.reactor.Milestone;
@@ -5114,6 +5120,47 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             // we have a known place to look at.
             LOGGER.log(SEVERE, "Failed to load Jenkins.class", e);
             throw e;
+        }
+    }
+
+    /**
+     * The default set of permissions for a new file on the platform (computed once at Jenkins startup).
+     * (provides for instance an indirect access to <code>umask</code> for Unices).
+     */
+    @Nullable
+    public static final Set<PosixFilePermission> DEFAULT_FILE_PERMISSIONS;
+
+    static {
+        LOGGER.log(Level.INFO, "Computing default file permissions");
+        boolean ok = false;
+        int maxAttempts = 10;
+        Set<PosixFilePermission> posixFilePermissions = null;
+        while (maxAttempts > 0) {
+            maxAttempts--;
+            try {
+                Path newFile = null;
+                try {
+                    newFile = Files.createFile(
+                            Paths.get("permission-getter-random-file" + RandomUtils.nextLong()));
+                    posixFilePermissions = Files.getPosixFilePermissions(newFile);
+                    break;
+                } finally {
+                    if (newFile != null) {
+                        Files.deleteIfExists(newFile);
+                    }
+                }
+            } catch (FileAlreadyExistsException e) {
+                LOGGER.log(Level.WARNING, "File already exists, trying again " + maxAttempts + " times.");
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING,
+                           "IOException while computing default file permissions, DEFAULT_FILE_PERMISSIONS will be null");
+                break;
+            }
+        }
+        if (posixFilePermissions == null) {
+            DEFAULT_FILE_PERMISSIONS = null;
+        } else {
+            DEFAULT_FILE_PERMISSIONS = Collections.unmodifiableSet(posixFilePermissions);
         }
     }
 
