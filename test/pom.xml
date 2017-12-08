@@ -322,35 +322,6 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
-      <id>cobertura</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.gmaven</groupId>
-            <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <!-- run unit test -->
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <scriptpath>
-                    <!-- load helpers from hg core -->
-                    <element>${project.basedir}/../core/src/build-script</element>
-                  </scriptpath>
-                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>    
-    <profile>
       <id>jacoco</id>
       <build>
         <plugins>
