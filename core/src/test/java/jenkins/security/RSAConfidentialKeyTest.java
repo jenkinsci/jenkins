@@ -21,28 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security
+package jenkins.security;
 
-import org.junit.Rule
-import org.junit.Test
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 
-/**
- *
- *
- * @author Kohsuke Kawaguchi
- */
-class RSAConfidentialKeyTest {
+public class RSAConfidentialKeyTest {
+
     @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule()
+    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
-    def key = new RSAConfidentialKey("test") {}
+    private RSAConfidentialKey key = new RSAConfidentialKey("test") {};
 
     @Test
-    void loadingExistingKey() {
+    public void loadingExistingKey() {
         // this second key of the same ID will cause it to load the key from the disk
-        def key2 = new RSAConfidentialKey("test") {}
+        RSAConfidentialKey key2 = new RSAConfidentialKey("test") {};
 
-        assert key.privateKey==key2.privateKey;
-        assert key.publicKey ==key2.publicKey;
+        assertEquals(key.getPrivateKey(), key2.getPrivateKey());
+        assertEquals(key.getPublicKey(), key2.getPublicKey());
     }
+
 }
