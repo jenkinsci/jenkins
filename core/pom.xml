@@ -870,41 +870,5 @@ THE SOFTWARE.
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
     </profile>
-    <profile>
-      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
-      <id>cobertura</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.gmaven</groupId>
-            <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <!-- run unit test -->
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <scriptpath>
-                    <element>${project.basedir}/src/build-script</element>
-                  </scriptpath>
-                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- unit tests are run by GMaven through Ant. -->
-            <artifactId>maven-surefire-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 </project>
