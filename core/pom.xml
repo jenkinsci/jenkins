@@ -241,6 +241,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
+        <groupId>net.sf.kxml</groupId>
+        <artifactId>kxml2</artifactId>
+        <version>2.3.0</version>
+    </dependency>
+    <dependency>
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
       <version>1.0.9</version>
@@ -445,11 +450,6 @@ THE SOFTWARE.
       <groupId>org.springframework</groupId>
       <artifactId>spring-aop</artifactId>
       <version>${spring.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>xpp3</groupId>
-      <artifactId>xpp3</artifactId>
-      <version>1.1.4c</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
