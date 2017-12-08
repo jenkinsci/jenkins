@@ -47,7 +47,7 @@ public class AbstractItemSecurityTest {
     @Issue("SECURITY-167")
     @Test()
     public void testUpdateByXmlDoesNotProcessForeignResources() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+        final String xml = "<?xml version='1.1' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
                 "  <!ENTITY foo SYSTEM \"file:///\">\n" +
                 "]>\n" +
@@ -73,7 +73,7 @@ public class AbstractItemSecurityTest {
     @Issue("SECURITY-167")
     @Test()
     public void testUpdateByXmlDoesNotFail() throws Exception {
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+        final String xml = "<?xml version='1.1' encoding='UTF-8'?>\n" +
                 "<project>\n" +
                 "  <description>&amp;</description>\n" +
                 "  <scm class=\"hudson.scm.NullSCM\"/>\n" +

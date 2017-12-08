@@ -185,7 +185,7 @@ public class ItemGroupMixInTest {
 
     @Test public void createProjectFromXMLShouldNoCreateEntities() throws IOException {
 
-        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+        final String xml = "<?xml version='1.1' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[\n" +
                 "  <!ENTITY foo SYSTEM \"file:///\">\n" +
                 "]>\n" +

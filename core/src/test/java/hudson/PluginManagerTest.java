@@ -64,7 +64,7 @@ public class PluginManagerTest {
     @Issue("SECURITY-167")
     @Test
     public void parseInvalidRequestedPlugins() throws Exception {
-        String evilXML = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+        String evilXML = "<?xml version='1.1' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE project[<!ENTITY foo SYSTEM \"file:///\">]>\n" +
                 "<root>\n" +
                 "  <stuff plugin='stuff@1.0'>\n" +

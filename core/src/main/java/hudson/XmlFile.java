@@ -26,7 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.xml.Xpp3Driver;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -39,7 +39,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 import org.xml.sax.helpers.DefaultHandler;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
@@ -172,7 +171,7 @@ public final class XmlFile {
         mkdirs();
         AtomicFileWriter w = new AtomicFileWriter(file);
         try {
-            w.write("<?xml version='1.0' encoding='UTF-8'?>\n");
+            w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
             writing.set(file);
             try {
@@ -343,7 +342,7 @@ public final class XmlFile {
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final Xpp3Driver DEFAULT_DRIVER = new Xpp3Driver();
+    private static final KXml2Driver DEFAULT_DRIVER = new KXml2Driver();
 
     static {
         JAXP.setNamespaceAware(true);

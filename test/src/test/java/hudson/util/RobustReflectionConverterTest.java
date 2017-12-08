@@ -168,7 +168,7 @@ public class RobustReflectionConverterTest {
     }
     
     private static final String CONFIGURATION_TEMPLATE =
-            "<?xml version='1.0' encoding='UTF-8'?>"
+            "<?xml version='1.1' encoding='UTF-8'?>"
             + "<project>"
             + "<properties>"
             +     "<hudson.util.RobustReflectionConverterTest_-KeywordProperty>"

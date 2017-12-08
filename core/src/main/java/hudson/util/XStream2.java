@@ -215,7 +215,7 @@ public class XStream2 extends XStream {
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
         Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }
 
