@@ -14,7 +14,7 @@ public class NewViewLink extends TransientViewActionFactory {
     @VisibleForTesting
     static final String ICON_FILE_NAME = "folder";
     @VisibleForTesting
-    public static final String URL_NAME = "newView";
+    public static final String URL_NAME = Jenkins.getInstance().getRootUrl() + "/newView";
 
     @Override
     public List<Action> createFor(View v) {
