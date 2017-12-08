@@ -77,7 +77,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1162,7 +1163,7 @@ public final class FilePath implements Serializable {
                 // following Ant <mkdir> task to avoid possible race condition.
                 Thread.sleep(10);
 
-                return f.mkdirs() || f.exists();
+                return mkdirs(f) || f.exists();
             }
         }))
             throw new IOException("Failed to mkdirs: "+remote);
