@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<?jelly escape-by-default='false'?>
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Send escaped value to output decorated to be safely broken into lines when necessary
@@ -30,6 +30,6 @@ THE SOFTWARE.
     <st:attribute name="value" use="required">
       Unescaped value to output
     </st:attribute>
-  </st:documentation>${
-    h.breakableString(h.escape(value))
-}</j:jelly>
+  </st:documentation>
+  <st:out value="${h.breakableString(h.escape(value))}"/>
+</j:jelly>
