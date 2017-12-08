@@ -9,11 +9,11 @@ import lib.JenkinsTagLib;
 
 /**
  * Base class for utility classes for Groovy view scripts
- * <p />
+ * <p>
  * Usage from script of a subclass, say ViewHelper:
- * <p />
+ * <p>
  * <tt>new ViewHelper(delegate).method();</tt>
- * <p />
+ * <p>
  * see <tt>ModularizeViewScript</tt> in ui-samples for an example how to use
  * this class.
  */
