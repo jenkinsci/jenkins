@@ -21,35 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.security
+package jenkins.security;
 
-import hudson.remoting.Base64
-import org.junit.Rule
-import org.junit.Test
+import hudson.remoting.Base64;
+import java.security.Signature;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 
-import java.security.Signature
+public class RSADigitalSignatureConfidentialKeyTest {
 
-/**
- *
- *
- * @author Kohsuke Kawaguchi
- */
-class RSADigitalSignatureConfidentialKeyTest {
     @Rule
-    public ConfidentialStoreRule store = new ConfidentialStoreRule()
+    public ConfidentialStoreRule store = new ConfidentialStoreRule();
 
-    def key = new RSADigitalSignatureConfidentialKey("test");
+    private final RSADigitalSignatureConfidentialKey key = new RSADigitalSignatureConfidentialKey("test");
 
     @Test
-    void dsigSignAndVerify() {
-        def plainText = "Hello world"
-        def msg = key.sign(plainText);
-        println msg;
+    public void dsigSignAndVerify() throws Exception {
+        String plainText = "Hello world";
+        String msg = key.sign(plainText);
+        System.out.println(msg);
 
-        def sig = Signature.getInstance("SHA256withRSA");
-        sig.initVerify(key.publicKey);
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initVerify(key.getPublicKey());
         sig.update(plainText.getBytes("UTF-8"));
 
-        assert sig.verify(Base64.decode(msg))
+        assertTrue(sig.verify(Base64.decode(msg)));
     }
+
 }
