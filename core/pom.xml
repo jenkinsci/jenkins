@@ -799,10 +799,10 @@ THE SOFTWARE.
       <plugin><!-- run unit test in src/test/java -->
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
         <executions>
           <execution>
             <goals>
+              <goal>generateTestStubs</goal>
               <goal>testCompile</goal>
             </goals>
           </execution>
