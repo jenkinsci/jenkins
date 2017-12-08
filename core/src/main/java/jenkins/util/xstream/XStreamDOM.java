@@ -34,8 +34,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.xml.AbstractXmlReader;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
 import com.thoughtworks.xstream.io.xml.DocumentReader;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyReplacer;
-import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import hudson.Util;
 import hudson.util.VariableResolver;
 
@@ -241,11 +241,11 @@ public class XStreamDOM {
      * Writes this {@link XStreamDOM} into {@link OutputStream}.
      */
     public void writeTo(OutputStream os) {
-        writeTo(new Xpp3Driver().createWriter(os));
+        writeTo(new KXml2Driver().createWriter(os));
     }
 
     public void writeTo(Writer w) {
-        writeTo(new Xpp3Driver().createWriter(w));
+        writeTo(new KXml2Driver().createWriter(w));
     }
 
     public void writeTo(HierarchicalStreamWriter w) {
@@ -262,11 +262,11 @@ public class XStreamDOM {
     }
 
     public static XStreamDOM from(InputStream in) {
-        return from(new Xpp3Driver().createReader(in));
+        return from(new KXml2Driver().createReader(in));
     }
 
     public static XStreamDOM from(Reader in) {
-        return from(new Xpp3Driver().createReader(in));
+        return from(new KXml2Driver().createReader(in));
     }
 
     public static XStreamDOM from(HierarchicalStreamReader in) {
