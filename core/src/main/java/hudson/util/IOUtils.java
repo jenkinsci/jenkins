@@ -51,20 +51,11 @@ public class IOUtils {
      *      This method returns the 'dir' parameter so that the method call flows better.
      */
     public static File mkdirs(File dir) throws IOException {
-        if(dir.mkdirs() || dir.exists())
-            return dir;
-
-        // following Ant <mkdir> task to avoid possible race condition.
         try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            // ignore
+            return Files.createDirectories(dir.toPath()).toFile();
+        } catch (UnsupportedOperationException e) {
+            throw new IOException(e);
         }
-
-        if (dir.mkdirs() || dir.exists())
-            return dir;
-
-        throw new IOException("Failed to create a directory at "+dir);
     }
 
     /**
