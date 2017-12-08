@@ -320,6 +320,7 @@ THE SOFTWARE.
       <properties>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
+        <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>
     <profile>
