@@ -340,34 +340,6 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>1.5-jenkins-3</version>
-          <dependencies>
-            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
-              <groupId>org.apache.ant</groupId>
-              <artifactId>ant-junit</artifactId>
-              <version>1.7.0</version>
-            </dependency>
-            <dependency>
-              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
-              <groupId>javax.servlet</groupId>
-              <artifactId>javax.servlet-api</artifactId>
-              <version>3.1.0</version>
-            </dependency>
-            <dependency>
-              <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-2.0</artifactId>
-              <version>1.5-jenkins-3</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <!-- 2.4 not yet supported by plugin but 2.0 works
-                 here so long as we provide explicit version -->
-            <providerSelection>2.0</providerSelection>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.7</version>
