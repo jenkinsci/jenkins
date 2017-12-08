@@ -21,51 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util
+
+package hudson.util;
 
 import com.trilead.ssh2.crypto.Base64;
-import jenkins.model.Jenkins
+import java.util.Random;
+import java.util.regex.Pattern;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import jenkins.model.Jenkins;
 import jenkins.security.ConfidentialStoreRule;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Rule
-import org.junit.Test
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 
-import java.util.Random;
-import javax.crypto.Cipher
-import java.util.regex.Pattern;
-
-/**
- * @author Kohsuke Kawaguchi
- */
 public class SecretTest {
-    @Rule
-    public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule()
 
     @Rule
-    public MockSecretRule mockSecretRule = new MockSecretRule()
+    public ConfidentialStoreRule confidentialStore = new ConfidentialStoreRule();
 
-    static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("\\{?[A-Za-z0-9+/]+={0,2}}?");
+    @Rule
+    public MockSecretRule mockSecretRule = new MockSecretRule();
+
+    private static final Pattern ENCRYPTED_VALUE_PATTERN = Pattern.compile("\\{?[A-Za-z0-9+/]+={0,2}}?");
 
     @Test
-    void testEncrypt() {
-        def secret = Secret.fromString("abc");
-        assert "abc"==secret.plainText;
+    public void encrypt() {
+        Secret secret = Secret.fromString("abc");
+        assertEquals("abc", secret.getPlainText());
 
         // make sure we got some encryption going
-        println secret.encryptedValue;
-        assert !"abc".equals(secret.encryptedValue);
+        assertNotEquals("abc", secret.getEncryptedValue());
 
         // can we round trip?
-        assert secret==Secret.fromString(secret.encryptedValue);
+        assertEquals(secret, Secret.fromString(secret.getEncryptedValue()));
 
         //Two consecutive encryption requests of the same object should result in the same encrypted value - SECURITY-304
-        assert secret.encryptedValue == secret.encryptedValue
+        assertEquals(secret.getEncryptedValue(), secret.getEncryptedValue());
         //Two consecutive encryption requests of different objects with the same value should not result in the same encrypted value - SECURITY-304
-        assert secret.encryptedValue != Secret.fromString(secret.plainText).encryptedValue
+        assertNotEquals(secret.getEncryptedValue(), Secret.fromString(secret.getPlainText()).getEncryptedValue());
     }
 
     @Test
-    void testEncryptedValuePattern() {
+    public void encryptedValuePattern() {
         for (int i = 1; i < 100; i++) {
             String plaintext = RandomStringUtils.random(new Random().nextInt(i));
             String ciphertext = Secret.fromString(plaintext).getEncryptedValue();
@@ -83,19 +83,20 @@ public class SecretTest {
     }
 
     @Test
-    void testDecrypt() {
-        assert "abc"==Secret.toString(Secret.fromString("abc"))
+    public void decrypt() {
+        assertEquals("abc", Secret.toString(Secret.fromString("abc")));
     }
 
     @Test
-    void testSerialization() {
-        def s = Secret.fromString("Mr.Jenkins");
-        def xml = Jenkins.XSTREAM.toXML(s);
-        assert !xml.contains(s.plainText)
-        assert xml ==~ /<hudson\.util\.Secret>\{[A-Za-z0-9+\/]+={0,2}}<\/hudson\.util\.Secret>/
+    public void serialization() {
+        Secret s = Secret.fromString("Mr.Jenkins");
+        String xml = Jenkins.XSTREAM.toXML(s);
+        assertThat(xml, not(containsString(s.getPlainText())));
+        // TODO MatchesPattern not available until Hamcrest 2.0
+        assertTrue(xml, xml.matches("<hudson[.]util[.]Secret>[{][A-Za-z0-9+/]+={0,2}[}]</hudson[.]util[.]Secret>"));
 
-        def o = Jenkins.XSTREAM.fromXML(xml);
-        assert o==s : xml;
+        Object o = Jenkins.XSTREAM.fromXML(xml);
+        assertEquals(xml, s, o);
     }
 
     public static class Foo {
@@ -106,27 +107,28 @@ public class SecretTest {
      * Makes sure the serialization form is backward compatible with String.
      */
     @Test
-    void testCompatibilityFromString() {
-        def tagName = Foo.class.name.replace("\$","_-");
-        def xml = "<$tagName><password>secret</password></$tagName>";
-        def foo = new Foo();
+    public void testCompatibilityFromString() {
+        String tagName = Foo.class.getName().replace("$", "_-");
+        String xml = "<" + tagName + "><password>secret</password></" + tagName + ">";
+        Foo foo = new Foo();
         Jenkins.XSTREAM.fromXML(xml, foo);
-        assert "secret"==Secret.toString(foo.password)
+        assertEquals("secret", Secret.toString(foo.password));
     }
 
     /**
      * Secret persisted with Jenkins.getSecretKey() should still decrypt OK.
      */
     @Test
-    void migrationFromLegacyKeyToConfidentialStore() {
-        def legacy = HistoricalSecrets.legacyKey
-        ["Hello world","","\u0000unprintable"].each { str ->
-            def cipher = Secret.getCipher("AES");
+    public void migrationFromLegacyKeyToConfidentialStore() throws Exception {
+        SecretKey legacy = HistoricalSecrets.getLegacyKey();
+        for (String str : new String[] {"Hello world", "", "\u0000unprintable"}) {
+            Cipher cipher = Secret.getCipher("AES");
             cipher.init(Cipher.ENCRYPT_MODE, legacy);
-            def old = new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))))
-            def s = Secret.fromString(old)
-            assert s.plainText==str : "secret by the old key should decrypt"
-            assert s.encryptedValue!=old : "but when encrypting, ConfidentialKey should be in use"
+            String old = new String(Base64.encode(cipher.doFinal((str + HistoricalSecrets.MAGIC).getBytes("UTF-8"))));
+            Secret s = Secret.fromString(old);
+            assertEquals("secret by the old key should decrypt", str, s.getPlainText());
+            assertNotEquals("but when encrypting, ConfidentialKey should be in use", old, s.getEncryptedValue());
         }
     }
+
 }
