@@ -83,8 +83,8 @@ public class ItemsTest {
         FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
         FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
-        assertEquals(Arrays.asList(dp, sub1p, sub1q, sub2ap, sub2alpha, sub2bp, sub2BRAVO, sub2cp, sub2charlie), Items.getAllItems(d, FreeStyleProject.class));
-        assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), Items.getAllItems(sub2, Item.class));
+        assertEquals(Arrays.asList(dp, sub1p, sub1q, sub2ap, sub2alpha, sub2bp, sub2BRAVO, sub2cp, sub2charlie), d.getAllItems(FreeStyleProject.class));
+        assertEquals(Arrays.<Item>asList(sub2a, sub2ap, sub2alpha, sub2b, sub2bp, sub2BRAVO, sub2c, sub2cp, sub2charlie), sub2.getAllItems(Item.class));
     }
 
     @Issue("JENKINS-40252")
@@ -106,9 +106,9 @@ public class ItemsTest {
         FreeStyleProject sub2alpha = sub2.createProject(FreeStyleProject.class, "alpha");
         FreeStyleProject sub2BRAVO = sub2.createProject(FreeStyleProject.class, "BRAVO");
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
-        assertThat(Items.allItems(d, FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
+        assertThat(d.allItems(FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
                 sub2bp, sub2BRAVO, sub2cp, sub2charlie));
-        assertThat(Items.allItems(sub2, Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
+        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 

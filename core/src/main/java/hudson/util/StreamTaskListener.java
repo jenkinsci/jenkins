@@ -24,8 +24,6 @@
 package hudson.util;
 
 import hudson.CloseProofOutputStream;
-import hudson.console.ConsoleNote;
-import hudson.console.HudsonExceptionNote;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import java.io.Closeable;
@@ -34,21 +32,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
+
+// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
+// The change needs API deprecation policy or external usages cleanup.
 
 /**
  * {@link TaskListener} that generates output into a single stream.
@@ -58,7 +55,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  * 
  * @author Kohsuke Kawaguchi
  */
-public class StreamTaskListener extends AbstractTaskListener implements Serializable, Closeable {
+public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     private PrintStream out;
     private Charset charset;
 
@@ -151,44 +148,14 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         return new StreamTaskListener(System.err,Charset.defaultCharset());
     }
 
+    @Override
     public PrintStream getLogger() {
         return out;
     }
 
-    private PrintWriter _error(String prefix, String msg) {
-        out.print(prefix);
-        out.println(msg);
-
-        // the idiom in Jenkins is to use the returned writer for writing stack trace,
-        // so put the marker here to indicate an exception. if the stack trace isn't actually written,
-        // HudsonExceptionNote.annotate recovers gracefully.
-        try {
-            annotate(new HudsonExceptionNote());
-        } catch (IOException e) {
-            // for signature compatibility, we have to swallow this error
-        }
-        return new PrintWriter(
-            charset!=null ? new OutputStreamWriter(out,charset) : new OutputStreamWriter(out),true);
-    }
-
-    public PrintWriter error(String msg) {
-        return _error("ERROR: ",msg);
-    }
-
-    public PrintWriter error(String format, Object... args) {
-        return error(String.format(format,args));
-    }
-
-    public PrintWriter fatalError(String msg) {
-        return _error("FATAL: ",msg);
-    }
-
-    public PrintWriter fatalError(String format, Object... args) {
-        return fatalError(String.format(format,args));
-    }
-
-    public void annotate(ConsoleNote ann) throws IOException {
-        ann.encodeTo(out);
+    @Override
+    public Charset getCharset() {
+        return charset;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -202,6 +169,7 @@ public class StreamTaskListener extends AbstractTaskListener implements Serializ
         charset = name==null ? null : Charset.forName(name);
     }
 
+    @Override
     public void close() throws IOException {
         out.close();
     }

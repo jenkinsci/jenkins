@@ -846,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
 
             // doing this early allows InitStrategy to set environment upfront
@@ -1724,42 +1724,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (type.isInstance(i))
                  r.add(type.cast(i));
         return r;
-    }
-
-    /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     */
-    public <T extends Item> List<T> getAllItems(Class<T> type) {
-        return Items.getAllItems(this, type);
-    }
-
-    /**
-     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     *
-     * @since 2.37
-     */
-    public <T extends Item> Iterable<T> allItems(Class<T> type) {
-        return Items.allItems(this, type);
-    }
-
-    /**
-     * Gets all the items recursively.
-     *
-     * @since 1.402
-     */
-    public List<Item> getAllItems() {
-        return getAllItems(Item.class);
-    }
-
-    /**
-     * Gets all the items unordered, lazily and recursively.
-     *
-     * @since 2.37
-     */
-    public Iterable<Item> allItems() {
-        return allItems(Item.class);
     }
 
     /**

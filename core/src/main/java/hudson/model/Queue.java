@@ -1691,6 +1691,17 @@ public class Queue extends ResourceController implements Saveable {
         //we double check if this is a flyweight task
         if (p.task instanceof FlyweightTask) {
             Jenkins h = Jenkins.getInstance();
+
+            Label lbl = p.getAssignedLabel();
+
+            if (lbl != null && lbl.equals(h.getSelfLabel())) {
+                if (h.canTake(p) == null) {
+                    return createFlyWeightTaskRunnable(p, h.toComputer());
+                } else {
+                    return null;
+                }
+            }
+
             Map<Node, Integer> hashSource = new HashMap<Node, Integer>(h.getNodes().size());
 
             // Even if master is configured with zero executors, we may need to run a flyweight task like MatrixProject on it.
@@ -1703,7 +1714,6 @@ public class Queue extends ResourceController implements Saveable {
             ConsistentHash<Node> hash = new ConsistentHash<Node>(NODE_HASH);
             hash.addAll(hashSource);
 
-            Label lbl = p.getAssignedLabel();
             String fullDisplayName = p.task.getFullDisplayName();
             for (Node n : hash.list(fullDisplayName)) {
                 final Computer c = n.toComputer();
@@ -1717,16 +1727,23 @@ public class Queue extends ResourceController implements Saveable {
                     continue;
                 }
 
-                LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}", new Object[]{fullDisplayName, c.getName()});
-                return new Runnable() {
-                    @Override public void run() {
-                        c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
-                        makePending(p);
-                    }
-                };
+                return createFlyWeightTaskRunnable(p, c);
             }
         }
         return null;
+    }
+
+    private Runnable createFlyWeightTaskRunnable(final BuildableItem p, final Computer c) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}",
+                    new Object[]{p.task.getFullDisplayName(), c.getName()});
+        }
+        return new Runnable() {
+            @Override public void run() {
+                c.startFlyWeightTask(new WorkUnitContext(p).createWorkUnit(p.task));
+                makePending(p);
+            }
+        };
     }
 
     private static Hash<Node> NODE_HASH = new Hash<Node>() {
@@ -2104,6 +2121,7 @@ public class Queue extends ResourceController implements Saveable {
          * <p>
          * This code takes {@link LabelAssignmentAction} into account, then fall back to {@link SubTask#getAssignedLabel()}
          */
+        @CheckForNull
         public Label getAssignedLabel() {
             for (LabelAssignmentAction laa : getActions(LabelAssignmentAction.class)) {
                 Label l = laa.getAssignedLabel(task);
