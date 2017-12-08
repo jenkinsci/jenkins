@@ -38,7 +38,7 @@ import java.io.IOException;
 /**
  * JENKINS-22474: Makes API Token calls bypass CSRF protection to ease usage
  */
-@Symbol("apiCrumbExclusion")
+@Symbol("apiToken")
 @Extension
 @Restricted(DoNotUse.class)
 public class ApiCrumbExclusion extends CrumbExclusion {

@@ -556,9 +556,8 @@ public class ProjectTest {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
-        j.jenkins.setSecurityRealm(realm); 
-        User user = realm.createAccount("John Smith", "password");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
             project.doDoDelete(null, null);
             fail("User should not have permission to build project");
@@ -572,8 +571,9 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.DELETE, user.getId());
 
+        // use Basic to speedup the test, normally it's pure UI testing
         JenkinsRule.WebClient wc = j.createWebClient();
-        wc.withBasicCredentials(user.getId(), "password");
+        wc.withBasicCredentials(user.getId());
         HtmlPage p = wc.goTo(project.getUrl() + "delete");
 
         List<HtmlForm> forms = p.getForms();

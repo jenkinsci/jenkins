@@ -20,6 +20,8 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -120,7 +122,7 @@ public class BasicHeaderProcessorTest {
         if (userAndPass==null) {
             return null;
         }
-        return prefix+" "+Scrambler.scramble(userAndPass);
+        return prefix + " " + Base64.getEncoder().encodeToString(userAndPass.getBytes(StandardCharsets.UTF_8));
     }
 
     private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException, SAXException {
@@ -129,7 +131,7 @@ public class BasicHeaderProcessorTest {
         if (authCode!=null)
             req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
-        assertEquals(expectedLogin, p.getWebResponse().getContentAsString().trim());
+        assertEquals(expectedLogin, p.getWebResponse().getContentAsString());
     }
 
     private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {

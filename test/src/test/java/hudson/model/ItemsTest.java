@@ -62,10 +62,6 @@ public class ItemsTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
-    @Before public void prepareAttackerUser(){
-        User.getById("attacker", true);
-    }
-
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
@@ -128,6 +124,8 @@ public class ItemsTest {
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
 
     private void overwriteTargetSetUp() throws Exception {
+        User.getById("attacker", true);
+
         // A fully visible item:
         r.createFreeStyleProject("visible").setDescription("visible");
         // An item known to exist but not visible:

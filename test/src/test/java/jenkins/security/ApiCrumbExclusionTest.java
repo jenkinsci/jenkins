@@ -100,7 +100,7 @@ public class ApiCrumbExclusionTest {
         req.setHttpMethod(HttpMethod.POST);
         req.setEncodingType(null);
         Page p = wc.getPage(req);
-        assertEquals(expected, p.getWebResponse().getContentAsString().trim());
+        assertEquals(expected, p.getWebResponse().getContentAsString());
     }
 
     private void makeRequestAndFail(int expectedCode) throws IOException, SAXException {
