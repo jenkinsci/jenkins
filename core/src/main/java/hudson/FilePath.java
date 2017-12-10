@@ -1396,7 +1396,6 @@ public final class FilePath implements Serializable {
      *      The new FilePath pointing to the temporary directory
      * @since 1.311
      * @see Files#createTempDirectory(Path, String, FileAttribute[])
-     * @see TempFileHelper#isPosix
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
