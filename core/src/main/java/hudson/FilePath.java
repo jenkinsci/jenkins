@@ -125,7 +125,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
-import static hudson.Util.*;
+import static hudson.Util.deleteFile;
+import static hudson.Util.fileToPath;
+import static hudson.Util.fixEmpty;
+import static hudson.Util.isSymlink;
 
 import java.util.Collections;
         
@@ -1615,7 +1618,7 @@ public final class FilePath implements Serializable {
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
         } else {
-            Files.setPosixFilePermissions(Util.fileToPath(f), Util.modeToPermissions(mask));
+            Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
         }
     }
 
@@ -2024,8 +2027,8 @@ public final class FilePath implements Serializable {
                     File targetFile = new File(target.remote);
                     File targetDir = targetFile.getParentFile();
                     filterNonNull().mkdirs(targetDir);
-                    Files.createDirectories(Util.fileToPath(targetDir));
-                    Files.copy(Util.fileToPath(reading(f)), Util.fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    Files.createDirectories(fileToPath(targetDir));
+                    Files.copy(fileToPath(reading(f)), fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                     return null;
                 }
             });
