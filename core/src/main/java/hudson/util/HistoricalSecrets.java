@@ -80,5 +80,5 @@ public class HistoricalSecrets {
         return Util.toAes128Key(secret);
     }
 
-    private static final String MAGIC = "::::MAGIC::::";
+    static final String MAGIC = "::::MAGIC::::";
 }
