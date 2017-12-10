@@ -8,6 +8,8 @@ package hudson.security.csrf;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -42,6 +44,12 @@ public class CrumbFilter implements Filter {
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
+        RequirePOST.Processor.registerErrorHandler(new RequirePOST.ErrorHandler() {
+            @Override
+            public ForwardToView getForwardView() {
+                return new ForwardToView(CrumbFilter.this, "retry");
+            }
+        });
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
