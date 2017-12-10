@@ -207,7 +207,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.objenesis</groupId>
       <artifactId>objenesis</artifactId>
-      <version>2.5.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
