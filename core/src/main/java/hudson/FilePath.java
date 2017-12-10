@@ -77,18 +77,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -130,8 +123,7 @@ import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
-import java.util.Collections;
-        
+
 /**
  * {@link File} like object with remoting support.
  *
@@ -1404,6 +1396,7 @@ public final class FilePath implements Serializable {
      *      The new FilePath pointing to the temporary directory
      * @since 1.311
      * @see Files#createTempDirectory(Path, String, FileAttribute[])
+     * @see TempFileHelper#isPosix
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
@@ -1417,7 +1410,17 @@ public final class FilePath implements Serializable {
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    Path tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,  new FileAttribute<?>[] {});
+
+                    Path tempPath;
+                    final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+
+                    if (isPosix) {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,
+                                PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+                    } else {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name, new FileAttribute<?>[] {});
+                    }
+
                     if (tempPath.toFile() == null) {
                         throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
                     }
