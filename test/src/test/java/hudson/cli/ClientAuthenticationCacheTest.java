@@ -25,6 +25,8 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
+
+import hudson.ExtensionList;
 import hudson.Launcher;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.Secret;
@@ -32,13 +34,17 @@ import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.annotation.CheckForNull;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import static org.hamcrest.Matchers.containsString;
+
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -58,6 +64,14 @@ public class ClientAuthenticationCacheTest {
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(ClientAuthenticationCache.class, Level.FINER);
+
+    @Before
+    public void setUp() {
+        jenkins.CLI.get().setEnabled(true);
+        Set<String> agentProtocols = new HashSet<>(r.jenkins.getAgentProtocols());
+        agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
+        r.jenkins.setAgentProtocols(agentProtocols);
+    }
 
     @Issue("SECURITY-466")
     @Test

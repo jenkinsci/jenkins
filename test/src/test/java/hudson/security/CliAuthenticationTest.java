@@ -5,11 +5,14 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import hudson.ExtensionList;
 import hudson.cli.CLI;
 import hudson.cli.CLICommand;
+import hudson.cli.CliProtocol2;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.apache.commons.io.input.NullInputStream;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -18,6 +21,8 @@ import org.jvnet.hudson.test.TestExtension;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -27,6 +32,14 @@ public class CliAuthenticationTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Before
+    public void setUp() {
+        jenkins.CLI.get().setEnabled(true);
+        Set<String> agentProtocols = new HashSet<>(j.jenkins.getAgentProtocols());
+        agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
+        j.jenkins.setAgentProtocols(agentProtocols);
+    }
 
     @Test
     public void test() throws Exception {

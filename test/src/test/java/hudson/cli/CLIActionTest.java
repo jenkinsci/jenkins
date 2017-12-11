@@ -1,6 +1,8 @@
 package hudson.cli;
 
 import com.google.common.collect.Lists;
+
+import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -21,7 +23,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +39,8 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.codehaus.groovy.runtime.Security218;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -60,6 +66,14 @@ public class CLIActionTest {
     public LoggerRule logging = new LoggerRule();
 
     private ExecutorService pool;
+
+    @Before
+    public void setUp() {
+        jenkins.CLI.get().setEnabled(true);
+        Set<String> agentProtocols = new HashSet<>(j.jenkins.getAgentProtocols());
+        agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
+        j.jenkins.setAgentProtocols(agentProtocols);
+    }
 
     /**
      * Makes sure that the /cli endpoint is functioning.
