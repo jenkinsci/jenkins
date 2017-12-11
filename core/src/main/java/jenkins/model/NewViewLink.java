@@ -13,8 +13,6 @@ public class NewViewLink extends TransientViewActionFactory {
 
     @VisibleForTesting
     static final String ICON_FILE_NAME = "folder";
-    @VisibleForTesting
-    public static final String URL_NAME = Jenkins.getInstance().getRootUrl() + "/newView";
 
     @Override
     public List<Action> createFor(View v) {
@@ -40,7 +38,8 @@ public class NewViewLink extends TransientViewActionFactory {
 
             @Override
             public String getUrlName() {
-                return URL_NAME;
+            	String urlName = Jenkins.getInstance().getRootUrl() + "newView";
+                return urlName;
             }
 
             private boolean hasPermission(View view) {
