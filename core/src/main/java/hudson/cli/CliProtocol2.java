@@ -35,7 +35,7 @@ public class CliProtocol2 extends CliProtocol {
      */
     @Override
     public boolean isOptIn() {
-        return false;
+        return true;
     }
 
     @Override
