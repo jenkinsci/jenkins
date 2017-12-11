@@ -67,7 +67,6 @@ public class ClientAuthenticationCacheTest {
 
     @Before
     public void setUp() {
-        jenkins.CLI.get().setEnabled(true);
         Set<String> agentProtocols = new HashSet<>(r.jenkins.getAgentProtocols());
         agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
         r.jenkins.setAgentProtocols(agentProtocols);

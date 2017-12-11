@@ -69,7 +69,6 @@ public class CLIActionTest {
 
     @Before
     public void setUp() {
-        jenkins.CLI.get().setEnabled(true);
         Set<String> agentProtocols = new HashSet<>(j.jenkins.getAgentProtocols());
         agentProtocols.add(ExtensionList.lookupSingleton(CliProtocol2.class).getName());
         j.jenkins.setAgentProtocols(agentProtocols);
