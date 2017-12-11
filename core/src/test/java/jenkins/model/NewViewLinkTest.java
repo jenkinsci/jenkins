@@ -9,13 +9,36 @@ import static org.mockito.Mockito.when;
 import hudson.model.Action;
 import hudson.model.View;
 import java.util.List;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({NewViewLink.class, Jenkins.class})
 public class NewViewLinkTest {
+	
+	@Mock
+	private Jenkins jenkins;
+	
+	@Mock
+	private final String rootUrl = "https://127.0.0.1:8080/";
 
-    private NewViewLink newViewLink = new NewViewLink();
+    private NewViewLink newViewLink;
 
     private View view = mock(View.class);
+    
+    @Before
+    public void initTests() throws Exception {
+    PowerMockito.mockStatic(Jenkins.class);
+    PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
+    PowerMockito.when(jenkins.getRootUrl()).thenReturn(rootUrl);
+    newViewLink = new NewViewLink();
+    }
 
     @Test
     public void getActionsHasPermission() throws Exception {
@@ -27,6 +50,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertEquals(Messages.NewViewLink_NewView(), action.getDisplayName());
         assertEquals(NewViewLink.ICON_FILE_NAME, action.getIconFileName());
+        assertEquals(rootUrl + NewViewLink.URL_NAME_SUFFIX, action.getUrlName());
     }
 
     @Test
@@ -39,6 +63,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertNull(action.getDisplayName());
         assertNull(action.getIconFileName());
+        assertEquals(rootUrl + NewViewLink.URL_NAME_SUFFIX, action.getUrlName());
     }
 
 }
