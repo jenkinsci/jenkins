@@ -22,11 +22,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({NewViewLink.class, Jenkins.class})
 public class NewViewLinkTest {
 	
-	@Mock
-	private Jenkins jenkins;
+    @Mock
+    private Jenkins jenkins;
 	
-	@Mock
-	private final String rootUrl = "https://127.0.0.1:8080/";
+    @Mock
+    private final String rootUrl = "https://127.0.0.1:8080/";
 
     private NewViewLink newViewLink;
 
