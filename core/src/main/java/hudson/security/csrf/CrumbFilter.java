@@ -8,6 +8,9 @@ package hudson.security.csrf;
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
@@ -43,13 +46,16 @@ public class CrumbFilter implements Filter {
         return h.getCrumbIssuer();
     }
 
+    @Restricted(NoExternalUse.class)
+    @MetaInfServices
+    public static class ErrorCustomizer implements RequirePOST.ErrorCustomizer {
+        @Override
+        public ForwardToView getForwardView() {
+            return new ForwardToView(CrumbFilter.class, "retry");
+        }
+    }
+
     public void init(FilterConfig filterConfig) throws ServletException {
-        RequirePOST.Processor.registerErrorHandler(new RequirePOST.ErrorHandler() {
-            @Override
-            public ForwardToView getForwardView() {
-                return new ForwardToView(CrumbFilter.this, "retry");
-            }
-        });
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
