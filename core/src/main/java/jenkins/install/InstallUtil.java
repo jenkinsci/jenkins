@@ -70,7 +70,7 @@ public class InstallUtil {
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
     // tests need this to be 1.0
-    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
+    public static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
     private static final VersionNumber FORCE_NEW_INSTALL_VERSION = new VersionNumber("0.0");
 
     /**
