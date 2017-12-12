@@ -62,6 +62,7 @@ public class LoadDetachedPluginsTest {
                     detachedPlugins.size(), greaterThan(4));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
                     getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            assertNoFailedPlugins(r);
         });
     }
 
@@ -76,6 +77,7 @@ public class LoadDetachedPluginsTest {
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
                     getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            assertNoFailedPlugins(r);
         });
     }
 
@@ -86,12 +88,14 @@ public class LoadDetachedPluginsTest {
             assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
             assertThat("Detached plugins should not be installed on a new instance",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
+            assertNoFailedPlugins(r);
         });
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins();
             assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
             assertThat("Detached plugins should not be installed after restarting",
                     getInstalledDetachedPlugins(r, detachedPlugins), empty());
+            assertNoFailedPlugins(r);
         });
     }
 
@@ -102,10 +106,16 @@ public class LoadDetachedPluginsTest {
             PluginWrapper wrapper = pluginManager.getPlugin(plugin.getShortName());
             if (wrapper != null) {
                 installedPlugins.add(wrapper);
-                assertTrue(wrapper.isActive());
+                assertTrue("Detached plugins should be active if installed", wrapper.isActive());
+                assertThat("Detached plugins should not have dependency errors", wrapper.getDependencyErrors(), empty());
             }
         }
         return installedPlugins;
+    }
+
+    private void assertNoFailedPlugins(JenkinsRule r) {
+        assertThat("Detached plugins and their dependencies should not fail to install",
+                r.jenkins.getPluginManager().getFailedPlugins(), empty());
     }
 
 }
