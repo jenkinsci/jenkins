@@ -38,10 +38,12 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -51,22 +53,45 @@ public class LoadDetachedPluginsTest {
 
     @Issue("JENKINS-48365")
     @Test
-    public void detachedPluginsInstalledAfterUpgrade() throws IOException {
-        VersionNumber since = new VersionNumber("1.1");
-        rr.then(r -> {
-            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
-            assertFalse("Many plugins have been detached since the given version", detachedPlugins.isEmpty());
-            assertTrue("Detached plugins should not be installed on a new instance",
-                    getInstalledDetachedPlugins(r, detachedPlugins).isEmpty());
-           // Trick PluginManager into thinking an upgrade happened when Jenkins restarts.
-           InstallUtil.saveLastExecVersion(since.toString());
-        });
+    @LocalData
+    public void upgradeFromJenkins1() throws IOException {
+        VersionNumber since = new VersionNumber("1.550");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
-                    detachedPlugins.size(), greaterThan(15));
+                    detachedPlugins.size(), greaterThan(4));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
                     getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+        });
+    }
+
+    @Issue("JENKINS-48365")
+    @Test
+    @LocalData
+    public void upgradeFromJenkins2() {
+        VersionNumber since = new VersionNumber("2.0");
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
+            assertThat("Plugins have been detached since the pre-upgrade version",
+                    detachedPlugins.size(), greaterThan(1));
+            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
+                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+        });
+    }
+
+    @Test
+    public void newInstallation() {
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins();
+            assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
+            assertThat("Detached plugins should not be installed on a new instance",
+                    getInstalledDetachedPlugins(r, detachedPlugins), empty());
+        });
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins();
+            assertThat("Detached plugins should exist", detachedPlugins, not(empty()));
+            assertThat("Detached plugins should not be installed after restarting",
+                    getInstalledDetachedPlugins(r, detachedPlugins), empty());
         });
     }
 
