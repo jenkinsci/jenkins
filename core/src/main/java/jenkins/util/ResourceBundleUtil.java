@@ -80,7 +80,7 @@ public class ResourceBundleUtil {
         ResourceBundle bundle = getBundle(baseName, locale, Jenkins.class.getClassLoader());
         if (bundle == null) {
             // Not in Jenkins core. Check the plugins.
-            Jenkins jenkins = Jenkins.getInstance(); // will never return null
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins != null) {
                 for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
                     bundle = getBundle(baseName, locale, plugin.classLoader);
