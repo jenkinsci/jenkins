@@ -683,7 +683,7 @@ public class JenkinsTest {
 
     @Issue("JENKINS-47406")
     @Test
-    @WithPlugin("jenkins-47406.hpi")
+    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
     public void jobCreatedByInitializerIsRetained() {
         assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
     }
