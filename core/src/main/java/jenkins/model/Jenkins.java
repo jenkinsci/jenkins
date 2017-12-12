@@ -781,7 +781,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static Jenkins getInstance() {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+            IllegalStateException ise = new IllegalStateException("Jenkins has not been started, or was already shut down");
+            if (Boolean.getBoolean(Jenkins.class.getName() + ".disableExceptionOnNullInstance")) { // TODO delete flag ~2.110
+                LOGGER.log(Level.WARNING, "Perhaps you meant to use Jenkins.getInstanceOrNull?", ise);
+            } else {
+                throw ise;
+            }
         }
         return instance;
     }
