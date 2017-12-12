@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
@@ -776,13 +777,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return The instance.
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
+    @SuppressFBWarnings(value="NP_NONNULL_RETURN_VIOLATION", justification="TODO delete kill switch ~2.110")
     @CLIResolver
     @Nonnull
     public static Jenkins getInstance() {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
             IllegalStateException ise = new IllegalStateException("Jenkins has not been started, or was already shut down");
-            if (Boolean.getBoolean(Jenkins.class.getName() + ".disableExceptionOnNullInstance")) { // TODO delete flag ~2.110
+            if (Boolean.getBoolean(Jenkins.class.getName() + ".disableExceptionOnNullInstance")) {
                 LOGGER.log(Level.WARNING, "Perhaps you meant to use Jenkins.getInstanceOrNull?", ise);
             } else {
                 throw ise;
