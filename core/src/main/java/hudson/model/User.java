@@ -50,6 +50,10 @@ import hudson.util.XStream2;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -383,6 +387,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     /**
      * Gets the {@link User} object by its id or full name.
      *
+     * In order to resolve the user ID, the method invokes {@link CanonicalIdResolver} extension points.
+     * Note that it may cause significant performance degradation.
+     * If you are sure the passed value is a User ID, it is recommended to use {@link #getById(String, boolean)}.
+     *
      * @param create
      *      If true, this method will never return null for valid input
      *      (by creating a new {@link User} object if none exists.)
@@ -397,23 +405,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      An existing or created user. May be {@code null} if a user does not exist and
      *      {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
 
         if(idOrFullName==null)
             return null;
 
-        // sort resolvers by priority
-        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(ExtensionList.lookup(CanonicalIdResolver.class));
-        Collections.sort(resolvers);
+        // TODO: In many cases the method should receive the canonical ID.
+        // Maybe it makes sense to try AllUsers.byName().get(idkey) before invoking all resolvers and other stuff
+        // oleg-nenashev: FullNameResolver with User.getAll() loading and iteration makes me think it's a good idea.
 
-        String id = null;
-        for (CanonicalIdResolver resolver : resolvers) {
-            id = resolver.resolveCanonicalId(idOrFullName, context);
-            if (id != null) {
-                LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
-                break;
-            }
-        }
+        String id = CanonicalIdResolver.resolve(idOrFullName, context);
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
         if (id == null) {
             throw new IllegalStateException("The user id should be always non-null thanks to DefaultUserCanonicalIdResolver");
@@ -428,6 +429,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      {@code create} is false.
      */
     private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create) {
+        return getOrCreate(id, fullName, create, getUnsanitizedLegacyConfigFileFor(id));
+    }
+
+    private static @Nullable User getOrCreate(@Nonnull String id, @Nonnull String fullName, boolean create, File unsanitizedLegacyConfigFile) {
         String idkey = idStrategy().keyFor(id);
 
         byNameLock.readLock().lock();
@@ -438,34 +443,43 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             byNameLock.readLock().unlock();
         }
         final File configFile = getConfigFileFor(id);
-        if (u == null && !configFile.isFile() && !configFile.getParentFile().isDirectory()) {
-            // check for legacy users and migrate if safe to do so.
-            File[] legacy = getLegacyConfigFilesFor(id);
-            if (legacy != null && legacy.length > 0) {
-                for (File legacyUserDir : legacy) {
-                    final XmlFile legacyXml = new XmlFile(XSTREAM, new File(legacyUserDir, "config.xml"));
-                    try {
-                        Object o = legacyXml.read();
-                        if (o instanceof User) {
-                            if (idStrategy().equals(id, legacyUserDir.getName()) && !idStrategy().filenameOf(legacyUserDir.getName())
-                                    .equals(legacyUserDir.getName())) {
-                                if (!legacyUserDir.renameTo(configFile.getParentFile())) {
-                                    LOGGER.log(Level.WARNING, "Failed to migrate user record from {0} to {1}",
-                                            new Object[]{legacyUserDir, configFile.getParentFile()});
-                                }
-                                break;
-                            }
+        if (unsanitizedLegacyConfigFile.exists() && !unsanitizedLegacyConfigFile.equals(configFile)) {
+            File ancestor = unsanitizedLegacyConfigFile.getParentFile();
+            if (!configFile.exists()) {
+                try {
+                    Files.createDirectory(configFile.getParentFile().toPath());
+                    Files.move(unsanitizedLegacyConfigFile.toPath(), configFile.toPath());
+                    LOGGER.log(Level.INFO, "Migrated user record from {0} to {1}", new Object[] {unsanitizedLegacyConfigFile, configFile});
+                } catch (IOException | InvalidPathException e) {
+                    LOGGER.log(
+                            Level.WARNING,
+                            String.format("Failed to migrate user record from %s to %s", unsanitizedLegacyConfigFile, configFile),
+                            e);
+                }
+            }
+
+            // Don't clean up ancestors with other children; the directories should be cleaned up when the last child
+            // is migrated
+            File tmp = ancestor;
+            try {
+                while (!ancestor.equals(getRootDir())) {
+                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(ancestor.toPath())) {
+                        if (!stream.iterator().hasNext()) {
+                            tmp = ancestor;
+                            ancestor = tmp.getParentFile();
+                            Files.deleteIfExists(tmp.toPath());
                         } else {
-                            LOGGER.log(Level.FINE, "Unexpected object loaded from {0}: {1}",
-                                    new Object[]{ legacyUserDir, o });
+                            break;
                         }
-                    } catch (IOException e) {
-                        LOGGER.log(Level.FINE, String.format("Exception trying to load user from %s: %s",
-                                new Object[]{ legacyUserDir, e.getMessage() }), e);
                     }
+                }
+            } catch (IOException | InvalidPathException e) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Could not delete " + tmp + " when cleaning up legacy user directories", e);
                 }
             }
         }
+
         if (u==null && (create || configFile.exists())) {
             User tmp = new User(id, fullName);
             User prev;
@@ -494,11 +508,44 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     /**
      * Gets the {@link User} object by its id or full name.
+     *
+     * Creates a user on-demand.
+     *
+     * <p>
      * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @deprecated This method is deprecated, because it causes unexpected {@link User} creation
+     *             by API usage code and causes performance degradation of used to retrieve users by ID.
+     *             Use {@link #getById} when you know you have an ID.
+     *             Otherwise use {@link #getOrCreateByIdOrFullName(String)} or {@link #get(String, boolean, Map)}.
      */
+    @Deprecated
     public static @Nonnull User get(String idOrFullName) {
-        return get(idOrFullName,true);
+        return getOrCreateByIdOrFullName(idOrFullName);
     }
+
+    /**
+     * Get the user by ID or Full Name.
+     *
+     * If the user does not exist, creates a new one on-demand.
+     *
+     * <p>
+     * Use {@link #getById} when you know you have an ID.
+     * In this method Jenkins will try to resolve the {@link User} by full name with help of various
+     * {@link hudson.tasks.UserNameResolver}.
+     * This is slow (see JENKINS-23281).
+     *
+     * @param idOrFullName User ID or full name
+     * @return User instance. It will be created on-demand.
+     * @since TODO
+     */
+    public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
+        return get(idOrFullName,true, Collections.emptyMap());
+    }
+
 
     /**
      * Gets the {@link User} object representing the currently logged-in user, or null
@@ -536,6 +583,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *            <code>null</code> if {@link User} object with the given id doesn't exist.
      * @return the a User whose id is <code>id</code>, or <code>null</code> if <code>create</code> is <code>false</code>
      *         and the user does not exist.
+     * @since 1.651.2 / 2.3
      */
     public static @Nullable User getById(String id, boolean create) {
         return getOrCreate(id, id, create);
@@ -681,14 +729,8 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         return new File(getRootDir(), idStrategy().filenameOf(id) +"/config.xml");
     }
 
-    private static final File[] getLegacyConfigFilesFor(final String id) {
-        return getRootDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && new File(pathname, "config.xml").isFile() && idStrategy().equals(
-                        pathname.getName(), id);
-            }
-        });
+    private static File getUnsanitizedLegacyConfigFileFor(String id) {
+        return new File(getRootDir(), idStrategy().legacyFilenameOf(id) + "/config.xml");
     }
 
     /**
@@ -1007,9 +1049,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             File[] subdirs = getRootDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (subdirs != null) {
                 for (File subdir : subdirs) {
-                    if (new File(subdir, "config.xml").exists()) {
+                    File configFile = new File(subdir, "config.xml");
+                    if (configFile.exists()) {
                         String name = strategy.idFromFilename(subdir.getName());
-                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true);
+                        getOrCreate(name, /* <init> calls load(), probably clobbering this anyway */name, true, configFile);
                     }
                 }
             }
@@ -1031,6 +1074,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     }
 
+    /**
+     * Resolves User IDs by ID, full names or other strings.
+     *
+     * This extension point may be useful to map SCM user names to Jenkins {@link User} IDs.
+     * Currently the extension point is used in {@link User#get(String, boolean, Map)}.
+     *
+     * @since 1.479
+     * @see jenkins.model.DefaultUserCanonicalIdResolver
+     * @see FullNameIdResolver
+     */
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
@@ -1040,6 +1093,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          */
         public static final String REALM = "realm";
 
+        @Override
         public int compareTo(CanonicalIdResolver o) {
             // reverse priority order
             int i = getPriority();
@@ -1051,12 +1105,56 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, @Nonnull Map<String, ?> context);
 
+        /**
+         * Gets priority of the resolver.
+         * Higher priority means that it will be checked earlier.
+         *
+         * Overriding methods must not use {@link Integer#MIN_VALUE}, because it will cause collisions
+         * with {@link jenkins.model.DefaultUserCanonicalIdResolver}.
+         *
+         * @return Priority of the resolver.
+         */
         public int getPriority() {
             return 1;
         }
 
+        //TODO: It is too late to use Extension Point ordinals, right?
+        //Such sorting and collection rebuild is not good for User#get(...) method performance.
+        /**
+         * Gets all extension points, sorted by priority.
+         * @return Sorted list of extension point implementations.
+         * @since TODO
+         */
+        public static List<CanonicalIdResolver> all() {
+            List<CanonicalIdResolver> resolvers = new ArrayList<>(ExtensionList.lookup(CanonicalIdResolver.class));
+            Collections.sort(resolvers);
+            return resolvers;
+        }
+
+        /**
+         * Resolves users using all available {@link CanonicalIdResolver}s.
+         * @param idOrFullName ID or full name of the user
+         * @param context Context
+         * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
+         * @since TODO
+         */
+        @CheckForNull
+        public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
+            for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
+                //TODO: add try/catch for Runtime exceptions? It should not happen now && it may cause performance degradation
+                String id = resolver.resolveCanonicalId(idOrFullName, context);
+                if (id != null) {
+                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
+                    return id;
+                }
+            }
+
+            // De-facto it is not going to happen OOTB, because the current DefaultUserCanonicalIdResolver
+            // always returns a value. But we still need to check nulls if somebody disables the extension point
+            return null;
+        }
     }
 
 

@@ -328,7 +328,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private transient InstallState installState = InstallState.UNKNOWN;
+    private InstallState installState;
     
     /**
      * If we're in the process of an initial setup, 
@@ -846,7 +846,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             if (!new File(root,"jobs").exists()) {
                 // if this is a fresh install, use more modern default layout that's consistent with agents
-                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULLNAME}";
+                workspaceDir = "${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}";
             }
 
             // doing this early allows InitStrategy to set environment upfront
@@ -924,7 +924,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
 
             setupWizard = new SetupWizard();
-            InstallUtil.proceedToNextStateFrom(InstallState.UNKNOWN);
+            getInstallState().initializeState();
 
             launchTcpSlaveAgentListener();
 
@@ -1033,9 +1033,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setInstallState(@Nonnull InstallState newState) {
         InstallState prior = installState;
         installState = newState;
-        if (!prior.equals(newState)) {
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installState });
+        if (!newState.equals(prior)) {
+            getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
         }
+        saveQuietly();
     }
 
     /**
@@ -1724,42 +1727,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (type.isInstance(i))
                  r.add(type.cast(i));
         return r;
-    }
-
-    /**
-     * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     */
-    public <T extends Item> List<T> getAllItems(Class<T> type) {
-        return Items.getAllItems(this, type);
-    }
-
-    /**
-     * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
-     * and filter them by the given type.
-     *
-     * @since 2.37
-     */
-    public <T extends Item> Iterable<T> allItems(Class<T> type) {
-        return Items.allItems(this, type);
-    }
-
-    /**
-     * Gets all the items recursively.
-     *
-     * @since 1.402
-     */
-    public List<Item> getAllItems() {
-        return getAllItems(Item.class);
-    }
-
-    /**
-     * Gets all the items unordered, lazily and recursively.
-     *
-     * @since 2.37
-     */
-    public Iterable<Item> allItems() {
-        return allItems(Item.class);
     }
 
     /**

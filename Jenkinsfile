@@ -51,14 +51,14 @@ for(i = 0; i < buildTypes.size(); i++) {
                 }
 
                 // Once we've built, archive the artifacts and the test results.
-                stage("${buildType} Archive Artifacts / Test Results") {
+                stage("${buildType} Publishing") {
                     def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
                     renameFiles(files, buildType.toLowerCase())
 
                     archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
                                 fingerprint: true
                     if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
                     }
                 }
             }

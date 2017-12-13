@@ -25,9 +25,12 @@
 package hudson.model;
 
 import hudson.Functions;
+import hudson.Util;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import hudson.security.PermissionScope;
 import jenkins.util.io.OnMaster;
+import jline.internal.Nullable;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -38,6 +41,9 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.AccessControlled;
 import hudson.util.Secret;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Basic configuration unit in Hudson.
@@ -131,18 +137,32 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
     /**
      * Gets the relative name to this item from the specified group.
      *
+     * @param g
+     *      The {@link ItemGroup} instance used as context to evaluate the relative name of this item
+     * @return
+     *      The name of the current item, relative to p. Nested {@link ItemGroup}s are separated by {@code /} character.
      * @since 1.419
      * @return
-     *      String like "../foo/bar"
+     *      String like "../foo/bar".
+     *      {@code null} if one of item parents is not an {@link Item}.
      */
-    String getRelativeNameFrom(ItemGroup g);
+    @Nullable
+    default String getRelativeNameFrom(@CheckForNull ItemGroup g) {
+        return Functions.getRelativeNameFrom(this, g);
+    }
 
     /**
      * Short for {@code getRelativeNameFrom(item.getParent())}
      *
+     * @return String like "../foo/bar".
+     *      {@code null} if one of item parents is not an {@link Item}.
      * @since 1.419
      */
-    String getRelativeNameFrom(Item item);
+    @Nullable
+    default String getRelativeNameFrom(@Nonnull Item item)  {
+        return getRelativeNameFrom(item.getParent());
+
+    }
 
     /**
      * Returns the URL of this item relative to the context root of the application.
@@ -180,7 +200,12 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *      (even this won't work for the same reason, which should be fixed.)
      */
     @Deprecated
-    String getAbsoluteUrl();
+    default String getAbsoluteUrl() {
+        String r = Jenkins.getInstance().getRootUrl();
+        if(r==null)
+            throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
+        return Util.encode(r+getUrl());
+    }
 
     /**
      * Called right after when a {@link Item} is loaded from disk.
@@ -207,7 +232,9 @@ public interface Item extends PersistenceRoot, SearchableModelObject, AccessCont
      *
      * @since 1.374
       */
-    default void onCreatedFromScratch() {}
+    default void onCreatedFromScratch() {
+        // do nothing by default
+    }
 
     /**
      * Save the settings to a file.

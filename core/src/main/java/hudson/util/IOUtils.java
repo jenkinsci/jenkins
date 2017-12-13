@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
 import java.nio.file.Files;
@@ -119,13 +120,27 @@ public class IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate.
+     * Gets the mode of a file/directory, if appropriate. Only includes read, write, and
+     * execute permissions for the owner, group, and others, i.e. the max return value
+     * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
+     * care about access permissions.
+     *
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
-        return PosixAPI.jnr().stat(f.getPath()).mode();
+        try {
+            if (Util.NATIVE_CHMOD_MODE) {
+                return PosixAPI.jnr().stat(f.getPath()).mode();
+            } else {
+                return Util.permissionsToMode(Files.getPosixFilePermissions(Util.fileToPath(f)));
+            }
+        } catch (IOException cause) {
+            PosixException e = new PosixException("Unable to get file permissions", null);
+            e.initCause(cause);
+            throw e;
+        }
     }
 
     /**

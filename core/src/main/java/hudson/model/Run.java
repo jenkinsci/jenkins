@@ -1710,11 +1710,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
                     Authentication auth = Jenkins.getAuthentication();
                     if (!auth.equals(ACL.SYSTEM)) {
-                        String name = auth.getName();
+                        String id = auth.getName();
                         if (!auth.equals(Jenkins.ANONYMOUS)) {
-                            name = ModelHyperlinkNote.encodeTo(User.get(name));
+                            final User usr = User.getById(id, false);
+                            if (usr != null) { // Encode user hyperlink for existing users
+                                id = ModelHyperlinkNote.encodeTo(usr);
+                            }
                         }
-                        listener.getLogger().println(Messages.Run_running_as_(name));
+                        listener.getLogger().println(Messages.Run_running_as_(id));
                     }
 
                     RunListener.fireStarted(this,listener);

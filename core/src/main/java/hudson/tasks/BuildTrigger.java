@@ -410,7 +410,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
                         return FormValidation.error(Messages.BuildTrigger_NotBuildable(projectName));
                     // check whether the supposed user is expected to be able to build
                     Authentication auth = Tasks.getAuthenticationOf(project);
-                    if (!item.getACL().hasPermission(auth, Item.BUILD)) {
+                    if (!item.hasPermission(auth, Item.BUILD)) {
                         return FormValidation.error(Messages.BuildTrigger_you_have_no_permission_to_build_(projectName));
                     }
                     hasProjects = true;
