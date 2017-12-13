@@ -1213,6 +1213,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // Do not allow overwriting view name as it might collide with another
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
+            ViewGroup oldOwner = owner; // oddly, this field is not transient
             Object o = Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
             if (!o.getClass().equals(getClass())) {
                 // ensure that we've got the same view type. extending this code to support updating
@@ -1222,6 +1223,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
                     "the view with the new view type.");
             }
             name = oldname;
+            owner = oldOwner;
         } catch (StreamException | ConversionException | Error e) {// mostly reflection errors
             throw new IOException("Unable to read",e);
         }

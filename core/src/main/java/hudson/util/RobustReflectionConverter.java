@@ -271,71 +271,8 @@ public class RobustReflectionConverter implements Converter {
         return serializationMethodInvoker.callReadResolve(result);
     }
 
-    private static final class FieldExpectation {
-        private final Class definingClass;
-        private final String name;
-
-        public FieldExpectation(Class definingClass, String name) {
-            this.definingClass = definingClass;
-            this.name = name;
-        }
-
-        public Class getDefiningClass() {
-            return definingClass;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            FieldExpectation that = (FieldExpectation) o;
-
-            if (definingClass != null ? !definingClass.equals(that.definingClass) : that.definingClass != null) {
-                return false;
-            }
-            return name.equals(that.name);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = definingClass != null ? definingClass.hashCode() : 0;
-            result = 31 * result + name.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "FieldExpectation{" +
-                    "definingClass=" + definingClass +
-                    ", name='" + name + '\'' +
-                    '}';
-        }
-
-
-    }
-
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         final SeenFields seenFields = new SeenFields();
-        final boolean existingObject = context.currentObject() != null;
-        final Map<FieldExpectation, Object> expectedFields = existingObject ? new HashMap<FieldExpectation, Object>() : null;
-        final Object cleanInstance = existingObject ? reflectionProvider.newInstance(result.getClass()) : null;
-        if (existingObject) {
-            reflectionProvider.visitSerializableFields(cleanInstance, new ReflectionProvider.Visitor() {
-                @Override
-                public void visit(String name, Class type, Class definedIn, Object value) {
-                    expectedFields.put(new FieldExpectation(definedIn, name), value);
-                }
-            });
-        }
         Iterator it = reader.getAttributeNames();
         // Remember outermost Saveable encountered, for reporting below
         if (result instanceof Saveable && context.get("Saveable") == null)
@@ -364,10 +301,6 @@ public class RobustReflectionConverter implements Converter {
                     }
                     reflectionProvider.writeField(result, attrName, value, classDefiningField);
                     seenFields.add(classDefiningField, attrName);
-                    if (existingObject) {
-                        expectedFields.remove(new FieldExpectation(
-                                classDefiningField == null ? result.getClass() : classDefiningField, attrName));
-                    }
                 }
             }
         }
@@ -409,10 +342,6 @@ public class RobustReflectionConverter implements Converter {
                     LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
                     // behave as if we didn't see this element
                 } else {
-                    if (existingObject) {
-                        expectedFields.remove(new FieldExpectation(
-                                classDefiningField == null ? result.getClass() : classDefiningField, fieldName));
-                    }
                     if (fieldExistsInClass) {
                         reflectionProvider.writeField(result, fieldName, value, classDefiningField);
                         seenFields.add(classDefiningField, fieldName);
@@ -441,12 +370,6 @@ public class RobustReflectionConverter implements Converter {
         if (context.get("ReadError") != null && context.get("Saveable") == result) {
             OldDataMonitor.report((Saveable)result, (ArrayList<Throwable>)context.get("ReadError"));
             context.put("ReadError", null);
-        }
-        if (existingObject) {
-            for (Map.Entry<FieldExpectation, Object> entry : expectedFields.entrySet()) {
-                reflectionProvider.writeField(result, entry.getKey().getName(), entry.getValue(),
-                        entry.getKey().getDefiningClass());
-            }
         }
         return result;
     }

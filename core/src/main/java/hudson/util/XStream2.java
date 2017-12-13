@@ -39,9 +39,11 @@ import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
 import com.thoughtworks.xstream.core.JVM;
+import com.thoughtworks.xstream.core.util.Fields;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.ReaderWrapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
@@ -63,19 +65,25 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
+
+    private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
+
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
     private final @CheckForNull ClassOwnership classOwnership;
@@ -111,7 +119,54 @@ public class XStream2 extends XStream {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
 
-        Object o = super.unmarshal(reader,root,dataHolder);
+        Object o;
+        if (root == null) {
+            o = super.unmarshal(reader, null, dataHolder);
+        } else {
+            Set<String> topLevelFields = new HashSet<>();
+            o = super.unmarshal(new ReaderWrapper(reader) {
+                int depth;
+                @Override
+                public void moveUp() {
+                    if (--depth == 0) {
+                        topLevelFields.add(getNodeName());
+                    }
+                    super.moveUp();
+                }
+                @Override
+                public void moveDown() {
+                    try {
+                        super.moveDown();
+                    } finally {
+                        depth++;
+                    }
+                }
+            }, root, dataHolder);
+            if (o == root && getConverterLookup().lookupConverterForType(o.getClass()) instanceof RobustReflectionConverter) {
+                getReflectionProvider().visitSerializableFields(o, (String name, Class type, Class definedIn, Object value) -> {
+                    if (topLevelFields.contains(name)) {
+                        return;
+                    }
+                    Field f = Fields.find(definedIn, name);
+                    Object v;
+                    if (type.isPrimitive()) {
+                        // oddly not in com.thoughtworks.xstream.core.util.Primitives
+                        v = ReflectionUtils.getVmDefaultValueForPrimitiveType(type);
+                        if (v.equals(value)) {
+                            return;
+                        }
+                    } else {
+                        if (value == null) {
+                            return;
+                        }
+                        v = null;
+                    }
+                    LOGGER.log(Level.FINE, "JENKINS-21017: nulling out {0} in {1}", new Object[] {f, o});
+                    Fields.write(f, o, v);
+                });
+            }
+        }
+
         if (oldData.get()!=null) {
             oldData.remove();
             if (o instanceof Saveable) OldDataMonitor.report((Saveable)o, "1.106");
