@@ -739,56 +739,47 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getInstanceOrNull()} provides the unchecked versions of the method.
      * @return {@link Jenkins} instance
-     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * @throws IllegalStateException for the reasons that {@link #getInstanceOrNull} might return null
      * @since 1.590
-     * @deprecated use {@link #getInstance()}
      */
-    @Deprecated
     @Nonnull
     public static Jenkins getActiveInstance() throws IllegalStateException {
-        Jenkins instance = HOLDER.getInstance();
+        Jenkins instance = getInstanceOrNull();
         if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+            throw new IllegalStateException("Jenkins.instance is missing. Read the documentation of Jenkins.getInstanceOrNull to see what you are doing wrong.");
         }
         return instance;
     }
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getActiveInstance()} provides the checked versions of the method.
-     * @return The instance. Null if the {@link Jenkins} instance has not been started,
-     * or was already shut down
+     * {@link #getActiveInstance()} is what you normally want.
+     * <p>In certain rare cases you may have code that is intended to run before Jenkins starts or while Jenkins is being shut down.
+     * For those rare cases use this method.
+     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master.
+     * For those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting channel
+     * it uses a {@code writeReplace} method or similar to ensure that the {@link Jenkins} class is not being loaded into the remote class loader;
+     * or simply gather any information you need on the master side before constructing the callable.
+     * If you must do a runtime check whether you are in the master or agent, use {@link JenkinsJVM} rather than this method.
+     * @return The instance. Null if the {@link Jenkins} instance has not been started, or was already shut down,
+     *         or we are running on an unrelated JVM, typically an agent.
      * @since 1.653
      */
+    @CLIResolver
     @CheckForNull
     public static Jenkins getInstanceOrNull() {
         return HOLDER.getInstance();
     }
 
     /**
-     * Gets the {@link Jenkins} singleton. In certain rare cases you may have code that is intended to run before
-     * Jenkins starts or while Jenkins is being shut-down. For those rare cases use {@link #getInstanceOrNull()}.
-     * In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master,
-     * for those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting
-     * channel it uses a {@code writeReplace} method or similar to ensure that the {@link Jenkins} class is not being
-     * loaded into the remote class loader
-     * @return The instance.
-     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * Gets the {@link Jenkins} singleton.
+     * @deprecated This is a historical alias for {@link #getInstanceOrNull} but with unclear semantics. Use {@link #getActiveInstance} in typical cases.
      */
-    @CLIResolver
-    @Nonnull
+    @Nullable
+    @Deprecated
     public static Jenkins getInstance() {
-        Jenkins instance = HOLDER.getInstance();
-        if (instance == null) {
-            if(SystemProperties.getBoolean(Jenkins.class.getName()+".enableExceptionOnNullInstance")) {
-                // TODO: remove that second block around 2.20 (that is: ~20 versions to battle test it)
-                // See https://github.com/jenkinsci/jenkins/pull/2297#issuecomment-216710150
-                throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-            }
-        }
-        return instance;
+        return getInstanceOrNull();
     }
 
     /**
