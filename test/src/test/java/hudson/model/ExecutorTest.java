@@ -1,6 +1,6 @@
 package hudson.model;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 
@@ -21,6 +21,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import jenkins.model.Jenkins;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 
 public class ExecutorTest {
@@ -117,6 +119,31 @@ public class ExecutorTest {
         assertThat(log, containsString("Disconnected by Johnny : Taking offline to break your buil"));
     }
 
+    @Issue("SECURITY-611")
+    @Test
+    public void apiPermissions() throws Exception {
+        DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
+        slave.setNumExecutors(2);
+        j.jenkins.addNode(slave);
+        FreeStyleProject publicProject = j.createFreeStyleProject("public-project");
+        publicProject.setAssignedNode(slave);
+        startBlockingBuild(publicProject);
+        FreeStyleProject secretProject = j.createFreeStyleProject("secret-project");
+        secretProject.setAssignedNode(slave);
+        startBlockingBuild(secretProject);
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.READ).everywhere().toEveryone().
+            grant(Item.READ).onItems(publicProject).toEveryone().
+            grant(Item.READ).onItems(secretProject).to("has-security-clearance"));
+        String api = j.createWebClient().login("has-security-clearance").goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+        System.out.println(api);
+        assertThat(api, allOf(containsString("public-project"), containsString("secret-project")));
+        api = j.createWebClient().login("regular-joe").goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+        System.out.println(api);
+        assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
+    }
+
     /**
      * Start a project with an infinite build step
      *
@@ -155,7 +182,7 @@ public class ExecutorTest {
                 Thread.sleep(100);
             }
         }
-        @TestExtension("disconnectCause")
+        @TestExtension
         public static class DescriptorImpl extends Descriptor<Builder> {}
     }
 }

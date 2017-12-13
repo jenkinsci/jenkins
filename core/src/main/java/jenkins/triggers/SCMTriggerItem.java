@@ -57,7 +57,7 @@ public interface SCMTriggerItem {
     /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#getQuietPeriod */
     int getQuietPeriod();
 
-    /** @see ParameterizedJobMixIn#scheduleBuild2 */
+    /** @see jenkins.model.ParameterizedJobMixIn.ParameterizedJob#scheduleBuild2 */
     @CheckForNull QueueTaskFuture<?> scheduleBuild2(int quietPeriod, Action... actions);
 
     /**
@@ -80,6 +80,21 @@ public interface SCMTriggerItem {
      * @return a possibly empty collection
      */
     @Nonnull Collection<? extends SCM> getSCMs();
+
+    /**
+     * Schedules a polling of this project.
+     */
+    default boolean schedulePolling() {
+        if (this instanceof ParameterizedJobMixIn.ParameterizedJob && ((ParameterizedJobMixIn.ParameterizedJob) this).isDisabled()) {
+            return false;
+        }
+        SCMTrigger scmt = getSCMTrigger();
+        if (scmt == null) {
+            return false;
+        }
+        scmt.run();
+        return true;
+    }
 
     /**
      * Utilities.

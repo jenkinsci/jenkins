@@ -1,8 +1,11 @@
 package hudson.util;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.os.PosixAPI;
 import hudson.os.PosixException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import org.apache.commons.io.LineIterator;
 
 import java.io.*;
@@ -26,20 +29,18 @@ public class IOUtils {
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
-        FileInputStream in = new FileInputStream(src);
-        try {
+        try (InputStream in = Files.newInputStream(src.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, out);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(in);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
     public static void copy(InputStream in, File out) throws IOException {
-        FileOutputStream fos = new FileOutputStream(out);
-        try {
+        try (OutputStream fos = Files.newOutputStream(out.toPath())) {
             org.apache.commons.io.IOUtils.copy(in, fos);
-        } finally {
-            org.apache.commons.io.IOUtils.closeQuietly(fos);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -71,7 +72,7 @@ public class IOUtils {
      *
      * <p>
      * {@link InputStream#skip(long)} has two problems. One is that
-     * it doesn't let us reliably differentiate "hit EOF" case vs "inpustream just returning 0 since there's no data
+     * it doesn't let us reliably differentiate "hit EOF" case vs "inputstream just returning 0 since there's no data
      * currently available at hand", and some subtypes (such as {@link FileInputStream#skip(long)} returning -1.
      *
      * <p>
@@ -119,13 +120,27 @@ public class IOUtils {
 
 
     /**
-     * Gets the mode of a file/directory, if appropriate.
+     * Gets the mode of a file/directory, if appropriate. Only includes read, write, and
+     * execute permissions for the owner, group, and others, i.e. the max return value
+     * is 0777. Consider using {@link Files#getPosixFilePermissions} instead if you only
+     * care about access permissions.
+     *
      * @return a file mode, or -1 if not on Unix
      * @throws PosixException if the file could not be statted, e.g. broken symlink
      */
     public static int mode(File f) throws PosixException {
         if(Functions.isWindows())   return -1;
-        return PosixAPI.jnr().stat(f.getPath()).mode();
+        try {
+            if (Util.NATIVE_CHMOD_MODE) {
+                return PosixAPI.jnr().stat(f.getPath()).mode();
+            } else {
+                return Util.permissionsToMode(Files.getPosixFilePermissions(Util.fileToPath(f)));
+            }
+        } catch (IOException cause) {
+            PosixException e = new PosixException("Unable to get file permissions", null);
+            e.initCause(cause);
+            throw e;
+        }
     }
 
     /**
@@ -188,7 +203,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Reader)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Reader input) {
@@ -196,7 +211,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.Writer)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(Writer output) {
@@ -204,7 +219,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.InputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(InputStream input) {
@@ -212,7 +227,7 @@ public class IOUtils {
     }
 
     /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#closeQuietly(java.io.OutputStream)}
+     * @deprecated Use Java 7 {@code try}-with-resources instead.
      */
     @Deprecated
     public static void closeQuietly(OutputStream output) {

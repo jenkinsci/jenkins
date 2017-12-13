@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import java.io.PrintStream;
 import java.util.List;
 
 /**
@@ -38,10 +39,23 @@ public interface BuildListener extends TaskListener {
      * @param causes
      *      Causes that started a build. See {@link Run#getCauses()}.
      */
-    void started(List<Cause> causes);
+    default void started(List<Cause> causes) {
+        PrintStream l = getLogger();
+        if (causes == null || causes.isEmpty()) {
+            l.println("Started");
+        } else {
+            for (Cause cause : causes) {
+                // TODO elide duplicates as per CauseAction.getCauseCounts (used in summary.jelly)
+                cause.print(this);
+            }
+        }
+    }
 
     /**
      * Called when a build is finished.
      */
-    void finished(Result result);
+    default void finished(Result result) {
+        getLogger().println("Finished: " + result);
+    }
+
 }

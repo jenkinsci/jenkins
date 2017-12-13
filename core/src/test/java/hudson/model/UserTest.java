@@ -45,7 +45,7 @@ public class UserTest {
     
     @Test
     @Issue("JENKINS-35967")
-    public void shoudNotAllowIllegalRestrictedNamesInWrongCase() {
+    public void shouldNotAllowIllegalRestrictedNamesInWrongCase() {
         assertIdOrFullNameNotAllowed("system");
         assertIdOrFullNameNotAllowed("System");
         assertIdOrFullNameNotAllowed("SYSTEM");
@@ -55,7 +55,7 @@ public class UserTest {
     
     @Test
     @Issue("JENKINS-35967")
-    public void shoudNotAllowIllegalRestrictedNamesEvenIfTrimmed() {
+    public void shouldNotAllowIllegalRestrictedNamesEvenIfTrimmed() {
         for (String username : User.getIllegalPersistedUsernames()) {
             assertIdOrFullNameNotAllowed(username);
             assertIdOrFullNameNotAllowed(" " + username);

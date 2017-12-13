@@ -25,7 +25,10 @@
 package hudson.cli;
 
 import hudson.Extension;
+import hudson.util.HudsonIsLoading;
+import hudson.util.JenkinsReloadFailed;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.WebApp;
 
 /**
  * Reload everything from the file system.
@@ -43,8 +46,26 @@ public class ReloadConfigurationCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        Jenkins.getActiveInstance().doReload();
-        return 0;
+        Jenkins j = Jenkins.getInstance();
+        // Or perhaps simpler to inline the thread body of doReload?
+        j.doReload();
+        Object app;
+        while ((app = WebApp.get(j.servletContext).getApp()) instanceof HudsonIsLoading) {
+            Thread.sleep(100);
+        }
+        if (app instanceof Jenkins) {
+            return 0;
+        } else if (app instanceof JenkinsReloadFailed) {
+            Throwable t = ((JenkinsReloadFailed) app).cause;
+            if (t instanceof Exception) {
+                throw (Exception) t;
+            } else {
+                throw new RuntimeException(t);
+            }
+        } else {
+            stderr.println("Unexpected status " + app);
+            return 1; // could throw JenkinsReloadFailed.cause if it were not deprecated
+        }
     }
 
 }

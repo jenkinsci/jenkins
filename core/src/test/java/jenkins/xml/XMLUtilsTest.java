@@ -42,7 +42,6 @@ import javax.xml.xpath.XPathExpressionException;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 import org.jvnet.hudson.test.Issue;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class XMLUtilsTest {
@@ -127,10 +126,10 @@ public class XMLUtilsTest {
                     "<foo>&xxe;</foo>";
 
             StringReader stringReader = new StringReader(xml);
-            Document doc = XMLUtils.parse(stringReader);
+            XMLUtils.parse(stringReader);
             Assert.fail("Expecting SAXException for XXE.");
         } catch (SAXException e) {
-            assertThat(e.getMessage(), containsString("DOCTYPE is disallowed"));
+            assertThat(e.getMessage(), containsString("\"http://apache.org/xml/features/disallow-doctype-decl\""));
         }
     }    
 }

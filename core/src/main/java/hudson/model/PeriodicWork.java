@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import java.util.Random;
 
 import static hudson.init.InitMilestone.JOB_LOADED;
+import hudson.triggers.Trigger;
 
 /**
  * Extension point to perform a periodic task in Hudson (through {@link Timer}.)

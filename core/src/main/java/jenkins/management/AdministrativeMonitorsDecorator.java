@@ -31,6 +31,7 @@ import hudson.model.PageDecorator;
 import hudson.util.HttpResponses;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
+import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.model.Jenkins;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
@@ -77,15 +78,16 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
     public Collection<AdministrativeMonitor> getActiveAdministrativeMonitors() {
         Collection<AdministrativeMonitor> active = new ArrayList<>();
-        Collection<AdministrativeMonitor> ams = new ArrayList<>(Jenkins.getInstance().administrativeMonitors);
-        for (AdministrativeMonitor am : ams) {
+        for (AdministrativeMonitor am : Jenkins.getInstance().getActiveAdministrativeMonitors()) {
             if (am instanceof ReverseProxySetupMonitor) {
                 // TODO make reverse proxy monitor work when shown on any URL
                 continue;
             }
-            if (am.isEnabled() && am.isActivated()) {
-                active.add(am);
+            if (am instanceof URICheckEncodingMonitor) {
+                // TODO make URI encoding monitor work when shown on any URL
+                continue;
             }
+            active.add(am);
         }
         return active;
     }

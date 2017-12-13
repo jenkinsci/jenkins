@@ -137,7 +137,7 @@
 <!ATTLIST package
     name CDATA #REQUIRED >
 
-<!-- The list of methodes to include/exclude from this test                 -->
+<!-- The list of methods to include/exclude from this test                 -->
 <!ELEMENT methods (include?,exclude?)* >
 
 

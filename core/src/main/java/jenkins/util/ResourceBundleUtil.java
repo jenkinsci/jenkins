@@ -114,7 +114,7 @@ public class ResourceBundleUtil {
             return ResourceBundle.getBundle(baseName, locale, classLoader);
         } catch (MissingResourceException e) {
             // fall through and return null.
-            logger.warning(e.getMessage());
+            logger.finer(e.getMessage());
         }
         return null;
     }

@@ -12,7 +12,7 @@ import org.jenkinsci.remoting.Role;
  * not have any role.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public class Roles {
     /**

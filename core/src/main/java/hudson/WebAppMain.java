@@ -24,10 +24,13 @@
 package hudson;
 
 import hudson.security.ACLContext;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardOpenOption;
 import jenkins.util.SystemProperties;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
 import com.thoughtworks.xstream.core.JVM;
-import com.trilead.ssh2.util.IOUtils;
 import hudson.model.Hudson;
 import hudson.security.ACL;
 import hudson.util.BootFailure;
@@ -58,7 +61,6 @@ import javax.servlet.ServletResponse;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -273,14 +275,10 @@ public class WebAppMain implements ServletContextListener {
      * @see BootFailure
      */
     private void recordBootAttempt(File home) {
-        FileOutputStream o=null;
-        try {
-            o = new FileOutputStream(BootFailure.getBootFailureFile(home), true);
+        try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             o.write((new Date().toString() + System.getProperty("line.separator", "\n")).toString().getBytes());
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
-        } finally {
-            IOUtils.closeQuietly(o);
         }
     }
 
@@ -375,10 +373,16 @@ public class WebAppMain implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent event) {
         try (ACLContext old = ACL.as(ACL.SYSTEM)) {
-            terminated = true;
             Jenkins instance = Jenkins.getInstanceOrNull();
-            if (instance != null)
-                instance.cleanUp();
+            try {
+                if (instance != null) {
+                    instance.cleanUp();
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
+            }
+
+            terminated = true;
             Thread t = initThread;
             if (t != null && t.isAlive()) {
                 LOGGER.log(Level.INFO, "Shutting down a Jenkins instance that was still starting up", new Throwable("reason"));
@@ -386,7 +390,7 @@ public class WebAppMain implements ServletContextListener {
             }
 
             // Logger is in the system classloader, so if we don't do this
-            // the whole web app will never be undepoyed.
+            // the whole web app will never be undeployed.
             Logger.getLogger("").removeHandler(handler);
         } finally {
             JenkinsJVMAccess._setJenkinsJVM(false);

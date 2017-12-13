@@ -5,8 +5,12 @@ import hudson.ExtensionPoint;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
+import jenkins.model.Jenkins;
 
 import java.util.Collection;
+import java.util.concurrent.Future;
+
+import javax.annotation.Nonnull;
 
 /**
  * Allows extensions to be notified of events in any {@link Cloud} and to prevent
@@ -53,6 +57,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
 
     /**
      * Called when the {@link NodeProvisioner.PlannedNode#future} completes.
+     *
      * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
      * @param node the node which has been provisioned by the cloud
      */
@@ -61,13 +66,39 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     }
 
     /**
-     * Called when {@link NodeProvisioner.PlannedNode#future#get()} throws an exception.
+     * Called when the <code>node</code>is fully connected in the Jenkins.
      *
-     * @param plannedNode the planned node which failed to launch
+     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param node the node which has been provisioned by the cloud
+     *
+     * @since 2.37
+     */
+    public void onCommit(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node) {
+        // Noop by default
+    }
+
+    /**
+     * Called when {@link NodeProvisioner.PlannedNode#future} {@link Future#get()} throws an exception.
+     *
+     * @param plannedNode the planned node which failed to provision
      * @param t the exception
      */
     public void onFailure(NodeProvisioner.PlannedNode plannedNode, Throwable t) {
 
+    }
+
+    /**
+     * Called when {@link Jenkins#addNode(Node)} throws an exception.
+     *
+     * @param plannedNode the plannedNode which resulted in the <code>node</code> being provisioned
+     * @param node the node which has been provisioned by the cloud
+     * @param t the exception
+     *
+     * @since 2.37
+     */
+    public void onRollback(@Nonnull NodeProvisioner.PlannedNode plannedNode, @Nonnull Node node,
+                           @Nonnull Throwable t) {
+        // Noop by default
     }
 
     /**
@@ -76,5 +107,6 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
     public static ExtensionList<CloudProvisioningListener> all() {
         return ExtensionList.lookup(CloudProvisioningListener.class);
     }
+
 }
 

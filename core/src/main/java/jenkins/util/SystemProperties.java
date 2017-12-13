@@ -39,7 +39,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Centralizes calls to {@link System#getProperty()} and related calls.
+ * Centralizes calls to {@link System#getProperty(String)} and related calls.
  * This allows us to get values not just from environment variables but also from
  * the {@link ServletContext}, so properties like {@code hudson.DNSMultiCast.disabled}
  * can be set in {@code context.xml} and the app server's boot script does not
@@ -140,31 +140,49 @@ public class SystemProperties implements ServletContextListener, OnMaster {
      * @param      key   the name of the system property.
      * @param      def   a default value.
      * @return     the string value of the system property,
-     *             or {@code null} if the the property is missing and the default value is {@code null}.
+     *             or {@code null} if the property is missing and the default value is {@code null}.
      *
      * @exception  NullPointerException if {@code key} is {@code null}.
      * @exception  IllegalArgumentException if {@code key} is empty.
      */
     public static String getString(String key, @CheckForNull String def) {
+        return getString(key, def, Level.CONFIG);
+    }
+
+    /**
+     * Gets the system property indicated by the specified key, or a default value.
+     * This behaves just like {@link System#getProperty(java.lang.String, java.lang.String)}, except
+     * that it also consults the {@link ServletContext}'s "init" parameters.
+     *
+     * @param      key   the name of the system property.
+     * @param      def   a default value.
+     * @param      logLevel the level of the log if the provided key is not found.
+     * @return     the string value of the system property,
+     *             or {@code null} if the property is missing and the default value is {@code null}.
+     *
+     * @exception  NullPointerException if {@code key} is {@code null}.
+     * @exception  IllegalArgumentException if {@code key} is empty.
+     */
+    public static String getString(String key, @CheckForNull String def, Level logLevel) {
         String value = System.getProperty(key); // keep passing on any exceptions
         if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (system): {0} => {1}", new Object[] {key, value});
+            if (LOGGER.isLoggable(logLevel)) {
+                LOGGER.log(logLevel, "Property (system): {0} => {1}", new Object[] {key, value});
             }
             return value;
         } 
         
         value = tryGetValueFromContext(key);
         if (value != null) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Property (context): {0} => {1}", new Object[]{key, value});
+            if (LOGGER.isLoggable(logLevel)) {
+                LOGGER.log(logLevel, "Property (context): {0} => {1}", new Object[]{key, value});
             }
             return value;
         }
         
         value = def;
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Property (default): {0} => {1}", new Object[] {key, value});
+        if (LOGGER.isLoggable(logLevel)) {
+            LOGGER.log(logLevel, "Property (default): {0} => {1}", new Object[] {key, value});
         }
         return value;
     }
@@ -241,6 +259,24 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     }
 
     /**
+     * Determines the integer value of the system property with the
+     * specified name, or a default value.
+     *
+     * This behaves just like <code>Integer.getInteger(String,Integer)</code>, except that it
+     * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+     * return the default value.
+     *
+     * @param   name property name.
+     * @param   def   a default value.
+     * @return  the {@code Integer} value of the property.
+     *          If the property is missing, return the default value.
+     *          Result may be {@code null} only if the default value is {@code null}.
+     */
+    public static Integer getInteger(String name, Integer def) {
+        return getInteger(name, def, Level.CONFIG);
+    }
+
+    /**
       * Determines the integer value of the system property with the
       * specified name, or a default value.
       * 
@@ -250,11 +286,12 @@ public class SystemProperties implements ServletContextListener, OnMaster {
       * 
       * @param   name property name.
       * @param   def   a default value.
+      * @param   logLevel the level of the log if the provided system property name cannot be decoded into Integer.
       * @return  the {@code Integer} value of the property.
       *          If the property is missing, return the default value.
       *          Result may be {@code null} only if the default value is {@code null}.
       */
-    public static Integer getInteger(String name, Integer def) {
+    public static Integer getInteger(String name, Integer def, Level logLevel) {
         String v = getString(name);
        
         if (v != null) {
@@ -262,8 +299,8 @@ public class SystemProperties implements ServletContextListener, OnMaster {
                 return Integer.decode(v);
             } catch (NumberFormatException e) {
                 // Ignore, fallback to default
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
+                if (LOGGER.isLoggable(logLevel)) {
+                    LOGGER.log(logLevel, "Property. Value is not integer: {0} => {1}", new Object[] {name, v});
                 }
             }
         }
@@ -284,7 +321,25 @@ public class SystemProperties implements ServletContextListener, OnMaster {
     public static Long getLong(String name) {
         return getLong(name, null);
     }
-    
+
+    /**
+     * Determines the integer value of the system property with the
+     * specified name, or a default value.
+     *
+     * This behaves just like <code>Long.getLong(String,Long)</code>, except that it
+     * also consults the <code>ServletContext</code>'s "init" parameters. If neither exist,
+     * return the default value.
+     *
+     * @param   name property name.
+     * @param   def   a default value.
+     * @return  the {@code Long} value of the property.
+     *          If the property is missing, return the default value.
+     *          Result may be {@code null} only if the default value is {@code null}.
+     */
+    public static Long getLong(String name, Long def) {
+        return getLong(name, def, Level.CONFIG);
+    }
+
     /**
       * Determines the integer value of the system property with the
       * specified name, or a default value.
@@ -295,11 +350,12 @@ public class SystemProperties implements ServletContextListener, OnMaster {
       * 
       * @param   name property name.
       * @param   def   a default value.
+      * @param   logLevel the level of the log if the provided system property name cannot be decoded into Long.
       * @return  the {@code Long} value of the property.
       *          If the property is missing, return the default value.
       *          Result may be {@code null} only if the default value is {@code null}.
       */
-    public static Long getLong(String name, Long def) {
+    public static Long getLong(String name, Long def, Level logLevel) {
         String v = getString(name);
        
         if (v != null) {
@@ -307,8 +363,8 @@ public class SystemProperties implements ServletContextListener, OnMaster {
                 return Long.decode(v);
             } catch (NumberFormatException e) {
                 // Ignore, fallback to default
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "Property. Value is not long: {0} => {1}", new Object[] {name, v});
+                if (LOGGER.isLoggable(logLevel)) {
+                    LOGGER.log(logLevel, "Property. Value is not long: {0} => {1}", new Object[] {name, v});
                 }
             }
         }

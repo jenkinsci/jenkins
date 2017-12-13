@@ -82,7 +82,7 @@ public enum InitMilestone implements Milestone {
      * By this milestone, all programmatically constructed extension point implementations
      * should be added.
      */
-    EXTENSIONS_AUGMENTED("Augmented all extensions"),
+    EXTENSIONS_AUGMENTED("Augmented all extensions"), // TODO nothing attains() this so when does it actually happen?
 
     /**
      * By this milestone, all jobs and their build records are loaded from disk.
