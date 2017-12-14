@@ -402,16 +402,35 @@ public abstract class Cause {
      */
     public static class UserIdCause extends Cause {
 
+        @CheckForNull
         private String userId;
 
+        /**
+         * Constructor, which uses the current {@link User}.
+         */
         public UserIdCause() {
             User user = User.current();
             this.userId = (user == null) ? null : user.getId();
         }
 
+        /**
+         * Constructor.
+         * @param userId User ID. {@code null} if the user is unknown.
+         * @since TODO
+         */
+        public UserIdCause(@CheckForNull String userId) {
+            this.userId = userId;
+        }
+
         @Exported(visibility = 3)
+        @CheckForNull
         public String getUserId() {
             return userId;
+        }
+        
+        @Nonnull
+        private String getUserIdOrUnknown() {
+            return  userId != null ? userId : User.getUnknown().getId();
         }
 
         @Exported(visibility = 3)
@@ -435,8 +454,8 @@ public abstract class Cause {
         @Override
         public void print(TaskListener listener) {
             listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
-                    // TODO better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
-                    ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
+                    // TODO JENKINS-48467 - better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
+                    ModelHyperlinkNote.encodeTo("/user/"+getUserIdOrUnknown(), getUserName())));
         }
 
         @Override
