@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONObject;
 import org.junit.Test;
-import org.junit.Rule;
-import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,9 +14,6 @@ import static org.junit.Assert.assertEquals;
  * @author Kohsuke Kawaguchi
  */
 public class DownloadServiceTest {
-
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
 
     @Test
     public void testReduceFunctionWithJDKJsons() throws Exception {
