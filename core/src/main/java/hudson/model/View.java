@@ -1214,7 +1214,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             // view in same ViewGroup and might not satisfy Jenkins.checkGoodName.
             String oldname = name;
             ViewGroup oldOwner = owner; // oddly, this field is not transient
-            Object o = Jenkins.XSTREAM.unmarshal(new Xpp3Driver().createReader(in), this);
+            Object o = Jenkins.XSTREAM2.unmarshal(new Xpp3Driver().createReader(in), this, null, true);
             if (!o.getClass().equals(getClass())) {
                 // ensure that we've got the same view type. extending this code to support updating
                 // to different view type requires destroying & creating a new view type

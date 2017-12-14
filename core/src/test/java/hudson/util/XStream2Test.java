@@ -29,11 +29,11 @@ import static org.junit.Assert.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import com.thoughtworks.xstream.security.ForbiddenClassException;
-import hudson.XmlFile;
 import hudson.model.Result;
 import hudson.model.Run;
-import java.io.File;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,9 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -352,9 +350,9 @@ public class XStream2Test {
 
         WithDefaults newInstance = new WithDefaults();
 
-        String xmlA = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(populatedXml, existingInstance));
-        String xmlB = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(populatedXml, newInstance));
-        String xmlC = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(populatedXml, null));
+        String xmlA = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, existingInstance));
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, null));
 
         assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
         assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
@@ -390,9 +388,9 @@ public class XStream2Test {
 
         WithDefaults newInstance = new WithDefaults();
 
-        String xmlA = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(defaultXml, existingInstance));
-        String xmlB = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(defaultXml, newInstance));
-        String xmlC = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(defaultXml, null));
+        String xmlA = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, existingInstance));
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, null));
 
         assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
         assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
@@ -416,12 +414,19 @@ public class XStream2Test {
 
         WithDefaults newInstance = new WithDefaults();
 
-        String xmlA = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(emptyXml, existingInstance));
-        String xmlB = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(emptyXml, newInstance));
-        String xmlC = Jenkins.XSTREAM2.toXML(Jenkins.XSTREAM2.fromXML(emptyXml, null));
+        Object reloaded = fromXMLNullingOut(emptyXml, existingInstance);
+        assertSame(existingInstance, reloaded);
+        String xmlA = Jenkins.XSTREAM2.toXML(reloaded);
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(emptyXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(emptyXml, null));
 
         assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
         assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
+    }
+
+    private Object fromXMLNullingOut(String xml, Object root) {
+        // Currently not offering a public convenience API for this:
+        return Jenkins.XSTREAM2.unmarshal(new Xpp3Driver().createReader(new StringReader(xml)), root, null, true);
     }
 
     public static class WithDefaults {

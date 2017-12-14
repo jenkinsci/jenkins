@@ -48,6 +48,7 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
@@ -75,6 +76,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
@@ -112,6 +114,26 @@ public class XStream2 extends XStream {
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
+        return unmarshal(reader, root, dataHolder, false);
+    }
+
+    /**
+     * Variant of {@link #unmarshal(HierarchicalStreamReader, Object, DataHolder)} that nulls out non-{@code transient} instance fields not defined in the source when unmarshaling into an existing object.
+     * <p>Typically useful when loading user-supplied XML files in place (non-null {@code root})
+     * where some reference-valued fields of the root object may have legitimate reasons for being null.
+     * Without this mode, it is impossible to clear such fields in an existing instance,
+     * since XStream has no notation for a null field value.
+     * Even for primitive-valued fields, it is useful to guarantee
+     * that unmarshaling will produce the same result as creating a new instance.
+     * <p>Do <em>not</em> use in cases where the root objects defines fields (typically {@code final})
+     * which it expects to be {@link Nonnull} unless you are prepared to restore default values for those fields.
+     * @param nullOut whether to perform this special behavior;
+     *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
+     * @see XmlFile#unmarshalNullingOut
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
+     * @since FIXME
+     */
+    public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
         Jenkins h = Jenkins.getInstanceOrNull();
@@ -120,8 +142,8 @@ public class XStream2 extends XStream {
         }
 
         Object o;
-        if (root == null) {
-            o = super.unmarshal(reader, null, dataHolder);
+        if (root == null || !nullOut) {
+            o = super.unmarshal(reader, root, dataHolder);
         } else {
             Set<String> topLevelFields = new HashSet<>();
             o = super.unmarshal(new ReaderWrapper(reader) {
