@@ -1240,9 +1240,9 @@ public abstract class Launcher {
 
     public static class IOTriplet implements Serializable {
         @Nonnull
-        InputStream stdout,stderr;
+        public InputStream stdout,stderr;
         @Nonnull
-        OutputStream stdin;
+        public OutputStream stdin;
         private static final long serialVersionUID = 1L;
     }
     /**
