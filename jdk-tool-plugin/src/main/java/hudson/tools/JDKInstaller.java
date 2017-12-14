@@ -558,7 +558,10 @@ public class JDKInstaller extends ToolInstaller {
                     // download to a temporary file and rename it in to handle concurrency and failure correctly,
                     Path tmp = fileToPath(new File(cache.getPath()+".tmp"));
                     try {
-                        Files.createDirectories(tmp.getParent());
+                        Path tmpParent = tmp.getParent();
+                        if (tmpParent != null) {
+                            Files.createDirectories(tmpParent);
+                        }
                         try (OutputStream out = Files.newOutputStream(tmp)) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
                         }
