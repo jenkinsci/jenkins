@@ -69,7 +69,7 @@ public class Hudson extends Jenkins {
     @Deprecated
     private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
-    /** @deprecated Here only for compatibility. Use {@link Jenkins#getActiveInstance} instead. */
+    /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated
     @CLIResolver
     @Nullable
