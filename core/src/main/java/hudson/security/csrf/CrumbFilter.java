@@ -10,6 +10,9 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +26,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.kohsuke.stapler.HttpResponseRenderer;
+import org.kohsuke.stapler.HttpResponses.HttpResponseException;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponseWrapper;
+import org.kohsuke.stapler.WebApp;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
  * protect against cross site request forgeries.
@@ -30,6 +41,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author dty
  */
 public class CrumbFilter implements Filter {
+    private static final String POST_PROCESSOR_EXCEPTION_CLASS_NAME = RequirePOST.Processor.class.getName() + "$1";
+
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
      * (and different implementations indeed do this differently --- See HUDSON-3878),
@@ -42,6 +55,68 @@ public class CrumbFilter implements Filter {
     }
 
     public void init(FilterConfig filterConfig) throws ServletException {
+        WebApp webApp = WebApp.get(filterConfig.getServletContext());
+        addRequirePostCrumbHandler(webApp);
+    }
+
+    private void addRequirePostCrumbHandler(WebApp webApp) {
+        webApp.getResponseRenderers().add(0, new HttpResponseRenderer() {
+            @Override
+            public boolean generateResponse(StaplerRequest req, StaplerResponse rsp, Object node, Object response) throws IOException, ServletException {
+                if (response instanceof HttpResponseException) {
+                    Class<?> c = response.getClass();
+                    // the post processor exception is the 'try post'
+                    // response, which needs to be modified to be crumb-aware
+                    if (POST_PROCESSOR_EXCEPTION_CLASS_NAME.equals(c.getName())) {
+                        CrumbIssuer crumbIssuer = getCrumbIssuer();
+                        if (crumbIssuer != null) {
+                            String crumbFieldName = crumbIssuer.getDescriptor().getCrumbRequestField();
+                            StringWriter output = new StringWriter();
+                            final PrintWriter resWriter = new PrintWriter(output);
+                            StaplerResponse res = new StaplerResponseWrapper(rsp) {
+                                public PrintWriter getWriter() throws IOException {
+                                    return resWriter;
+                                }
+                                // Need extra methods since Jenkins upgraded to Servlet API 3
+                                @Override
+                                public void setContentLengthLong(long len) {
+                                    getWrapped().setContentLengthLong(len);
+                                }
+                                @Override
+                                public void setCharacterEncoding(String charset) {
+                                    getWrapped().setCharacterEncoding(charset);
+                                }
+                                @Override
+                                public String getContentType() {
+                                    return getWrapped().getContentType();
+                                }
+                                @Override
+                                public int getStatus() {
+                                    return getWrapped().getStatus();
+                                }
+                                @Override
+                                public Collection<String> getHeaders(String name) {
+                                    return getWrapped().getHeaders(name);
+                                }
+                                @Override
+                                public Collection<String> getHeaderNames() {
+                                    return getWrapped().getHeaderNames();
+                                }
+                                @Override
+                                public String getHeader(String name) {
+                                    return getWrapped().getHeader(name);
+                                }
+                            };
+                            ((HttpResponseException)response).generateResponse(req, res, node);
+                            String crumbHiddenInput = "<input type=\"hidden\" name=\""+crumbFieldName+"\" value=\""+crumbIssuer.getCrumb(req)+"\"/>";
+                            rsp.getWriter().write(output.toString().replace("</form>",crumbHiddenInput+"</form>"));
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
