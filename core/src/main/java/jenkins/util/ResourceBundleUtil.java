@@ -77,16 +77,12 @@ public class ResourceBundleUtil {
             return bundleJSON;
         }
 
-        ResourceBundle bundle = getBundle(baseName, locale, Jenkins.class.getClassLoader());
-        if (bundle == null) {
-            // Not in Jenkins core. Check the plugins.
-            Jenkins jenkins = Jenkins.getInstance(); // will never return null
-            if (jenkins != null) {
-                for (PluginWrapper plugin : jenkins.getPluginManager().getPlugins()) {
-                    bundle = getBundle(baseName, locale, plugin.classLoader);
-                    if (bundle != null) {
-                        break;
-                    }
+        ResourceBundle bundle = getBundle(baseName, locale, ResourceBundleUtil.class.getClassLoader());
+        if (bundle == null && JenkinsJVM.isJenkinsJVM()) {  // Not in Jenkins core. Check the plugins.
+            for (PluginWrapper plugin : Jenkins.getInstance().getPluginManager().getPlugins()) {
+                bundle = getBundle(baseName, locale, plugin.classLoader);
+                if (bundle != null) {
+                    break;
                 }
             }
         }

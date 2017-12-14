@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.thoughtworks.xstream.XStream;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
 import jenkins.AgentProtocol;
@@ -179,7 +180,6 @@ import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
 import jenkins.install.InstallState;
-import jenkins.install.InstallUtil;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ConfidentialKey;
@@ -777,15 +777,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return The instance.
      * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
      */
+    @SuppressFBWarnings(value="NP_NONNULL_RETURN_VIOLATION", justification="TODO delete kill switch ~2.110")
     @CLIResolver
     @Nonnull
     public static Jenkins getInstance() {
         Jenkins instance = HOLDER.getInstance();
         if (instance == null) {
-            if(SystemProperties.getBoolean(Jenkins.class.getName()+".enableExceptionOnNullInstance")) {
-                // TODO: remove that second block around 2.20 (that is: ~20 versions to battle test it)
-                // See https://github.com/jenkinsci/jenkins/pull/2297#issuecomment-216710150
-                throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+            IllegalStateException ise = new IllegalStateException("Jenkins has not been started, or was already shut down");
+            if (Boolean.getBoolean(Jenkins.class.getName() + ".disableExceptionOnNullInstance")) {
+                LOGGER.log(Level.WARNING, "Use Jenkins.getInstanceOrNull if potentially running just before startup, or in asynchronous code just before shutdown; use JenkinsJVM.isJenkinsJVM if potentially running in an agent JVM.", ise);
+            } else {
+                throw ise;
             }
         }
         return instance;
