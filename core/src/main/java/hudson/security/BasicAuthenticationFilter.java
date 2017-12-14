@@ -27,7 +27,10 @@ import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.SecurityListener;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UserDetails;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -138,7 +141,12 @@ public class BasicAuthenticationFilter implements Filter {
             User u = User.getById(username, true);
             ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
             if (t!=null && t.matchesPassword(password)) {
-                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                Authentication auth = u.impersonate(userDetails);
+
+                SecurityListener.fireAuthenticated(userDetails);
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 try {
                     chain.doFilter(request,response);
                 } finally {

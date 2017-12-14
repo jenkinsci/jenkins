@@ -3,6 +3,7 @@ package hudson.cli;
 import hudson.Extension;
 import java.io.PrintStream;
 import jenkins.model.Jenkins;
+import jenkins.security.SecurityListener;
 import org.acegisecurity.Authentication;
 import org.kohsuke.args4j.CmdLineException;
 
@@ -44,6 +45,8 @@ public class LoginCommand extends CLICommand {
 
         ClientAuthenticationCache store = new ClientAuthenticationCache(checkChannel());
         store.set(a);
+
+        SecurityListener.fireLoggedIn(a.getName());
 
         return 0;
     }
