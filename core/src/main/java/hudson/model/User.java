@@ -326,23 +326,70 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.419
      */
     public @Nonnull Authentication impersonate() throws UsernameNotFoundException {
+        return this.impersonate(this.getUserDetailsForImpersonation());
+    }
+    
+    /**
+     * This method checks with {@link SecurityRealm} if the user is a valid user that can login to the security realm.
+     * If {@link SecurityRealm} is a kind that does not support querying information about other users, this will
+     * use {@link LastGrantedAuthoritiesProperty} to pick up the granted authorities as of the last time the user has
+     * logged in.
+     *
+     * @return userDetails for the user, in case he's not found but seems legitimate, we provide a userDetails with minimum access
+     *
+     * @throws UsernameNotFoundException
+     *      If this user is not a valid user in the backend {@link SecurityRealm}.
+     */
+    public @Nonnull UserDetails getUserDetailsForImpersonation() throws UsernameNotFoundException {
+        ImpersonatingUserDetailsService userDetailsService = new ImpersonatingUserDetailsService(
+                Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails
+        );
+        
         try {
-            UserDetails u = new ImpersonatingUserDetailsService(
-                    Jenkins.getInstance().getSecurityRealm().getSecurityComponents().userDetails).loadUserByUsername(id);
-            return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(id);
+            LOGGER.log(Level.FINE, "Impersonation of the user {0} was a success", new Object[]{ id });
+            return userDetails;
         } catch (UserMayOrMayNotExistException e) {
+            LOGGER.log(Level.FINE, "The user {0} may or may not exist in the SecurityRealm, so we provide minimum access", new Object[]{ id });
             // backend can't load information about other users. so use the stored information if available
         } catch (UsernameNotFoundException e) {
             // if the user no longer exists in the backend, we need to refuse impersonating this user
-            if (!ALLOW_NON_EXISTENT_USER_TO_LOGIN)
+            if(ALLOW_NON_EXISTENT_USER_TO_LOGIN){
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm but we are required to let it pass, due to ALLOW_NON_EXISTENT_USER_TO_LOGIN", new Object[]{ id });
+            }else{
+                LOGGER.log(Level.FINE, "The user {0} was not found in the SecurityRealm", new Object[]{ id });
                 throw e;
+            }
         } catch (DataAccessException e) {
             // seems like it's in the same boat as UserMayOrMayNotExistException
+            LOGGER.log(Level.FINE, "The user {0} retrieval just threw a DataAccess exception with msg = {1}, so we provide minimum access", new Object[]{ id, e.getMessage() });
         }
+        
+        return new LegitimateButUnknownUserDetails(id);
+    }
 
-        // seems like a legitimate user we have no idea about. proceed with minimum access
-        return new UsernamePasswordAuthenticationToken(id, "",
-            new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY});
+    /**
+     * Only used for a legitimate user we have no idea about. We give it only minimum access
+     */
+    private static class LegitimateButUnknownUserDetails extends org.acegisecurity.userdetails.User{
+        private LegitimateButUnknownUserDetails(String username) throws IllegalArgumentException {
+            super(
+                    username, "",
+                    true, true, true, true,
+                    new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY}
+            );
+        }
+    }
+
+    /**
+     * Creates an {@link Authentication} object that represents this user using the given userDetails
+     *
+     * @param userDetails Provided by {@link #getUserDetailsForImpersonation()}.
+     * @see #getUserDetailsForImpersonation()
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull Authentication impersonate(@Nonnull UserDetails userDetails) {
+        return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), "", userDetails.getAuthorities());
     }
 
     /**
@@ -405,23 +452,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *      An existing or created user. May be {@code null} if a user does not exist and
      *      {@code create} is false.
      */
-    public static @Nullable User get(String idOrFullName, boolean create, Map context) {
+    public static @Nullable User get(String idOrFullName, boolean create, @Nonnull Map context) {
 
         if(idOrFullName==null)
             return null;
 
-        // sort resolvers by priority
-        List<CanonicalIdResolver> resolvers = new ArrayList<CanonicalIdResolver>(ExtensionList.lookup(CanonicalIdResolver.class));
-        Collections.sort(resolvers);
+        // TODO: In many cases the method should receive the canonical ID.
+        // Maybe it makes sense to try AllUsers.byName().get(idkey) before invoking all resolvers and other stuff
+        // oleg-nenashev: FullNameResolver with User.getAll() loading and iteration makes me think it's a good idea.
 
-        String id = null;
-        for (CanonicalIdResolver resolver : resolvers) {
-            id = resolver.resolveCanonicalId(idOrFullName, context);
-            if (id != null) {
-                LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
-                break;
-            }
-        }
+        String id = CanonicalIdResolver.resolve(idOrFullName, context);
         // DefaultUserCanonicalIdResolver will always return a non-null id if all other CanonicalIdResolver failed
         if (id == null) {
             throw new IllegalStateException("The user id should be always non-null thanks to DefaultUserCanonicalIdResolver");
@@ -1081,6 +1121,16 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     }
 
+    /**
+     * Resolves User IDs by ID, full names or other strings.
+     *
+     * This extension point may be useful to map SCM user names to Jenkins {@link User} IDs.
+     * Currently the extension point is used in {@link User#get(String, boolean, Map)}.
+     *
+     * @since 1.479
+     * @see jenkins.model.DefaultUserCanonicalIdResolver
+     * @see FullNameIdResolver
+     */
     public static abstract class CanonicalIdResolver extends AbstractDescribableImpl<CanonicalIdResolver> implements ExtensionPoint, Comparable<CanonicalIdResolver> {
 
         /**
@@ -1090,6 +1140,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          */
         public static final String REALM = "realm";
 
+        @Override
         public int compareTo(CanonicalIdResolver o) {
             // reverse priority order
             int i = getPriority();
@@ -1101,12 +1152,56 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * extract user ID from idOrFullName with help from contextual infos.
          * can return <code>null</code> if no user ID matched the input
          */
-        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, Map<String, ?> context);
+        public abstract @CheckForNull String resolveCanonicalId(String idOrFullName, @Nonnull Map<String, ?> context);
 
+        /**
+         * Gets priority of the resolver.
+         * Higher priority means that it will be checked earlier.
+         *
+         * Overriding methods must not use {@link Integer#MIN_VALUE}, because it will cause collisions
+         * with {@link jenkins.model.DefaultUserCanonicalIdResolver}.
+         *
+         * @return Priority of the resolver.
+         */
         public int getPriority() {
             return 1;
         }
 
+        //TODO: It is too late to use Extension Point ordinals, right?
+        //Such sorting and collection rebuild is not good for User#get(...) method performance.
+        /**
+         * Gets all extension points, sorted by priority.
+         * @return Sorted list of extension point implementations.
+         * @since TODO
+         */
+        public static List<CanonicalIdResolver> all() {
+            List<CanonicalIdResolver> resolvers = new ArrayList<>(ExtensionList.lookup(CanonicalIdResolver.class));
+            Collections.sort(resolvers);
+            return resolvers;
+        }
+
+        /**
+         * Resolves users using all available {@link CanonicalIdResolver}s.
+         * @param idOrFullName ID or full name of the user
+         * @param context Context
+         * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
+         * @since TODO
+         */
+        @CheckForNull
+        public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
+            for (CanonicalIdResolver resolver : CanonicalIdResolver.all()) {
+                //TODO: add try/catch for Runtime exceptions? It should not happen now && it may cause performance degradation
+                String id = resolver.resolveCanonicalId(idOrFullName, context);
+                if (id != null) {
+                    LOGGER.log(Level.FINE, "{0} mapped {1} to {2}", new Object[] {resolver, idOrFullName, id});
+                    return id;
+                }
+            }
+
+            // De-facto it is not going to happen OOTB, because the current DefaultUserCanonicalIdResolver
+            // always returns a value. But we still need to check nulls if somebody disables the extension point
+            return null;
+        }
     }
 
 
