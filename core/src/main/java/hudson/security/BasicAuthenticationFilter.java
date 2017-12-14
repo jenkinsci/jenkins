@@ -41,6 +41,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import static java.util.logging.Level.WARNING;
+import java.util.logging.Logger;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 /**
  * Implements the dual authentication mechanism.
@@ -138,7 +142,16 @@ public class BasicAuthenticationFilter implements Filter {
             User u = User.getById(username, true);
             ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
             if (t!=null && t.matchesPassword(password)) {
-                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                Authentication auth;
+                try {
+                    auth = u.impersonate();
+                } catch (UsernameNotFoundException x) { // User is invalid in the context
+                    LOGGER.log(WARNING, "API token matched for user "+username+" but the impersonation failed",x);
+                    rsp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    rsp.setHeader("WWW-Authenticate","Basic realm=\"Jenkins user\"");
+                    return;
+                }
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 try {
                     chain.doFilter(request,response);
                 } finally {
@@ -180,4 +193,6 @@ public class BasicAuthenticationFilter implements Filter {
 
     public void destroy() {
     }
+    
+    private static final Logger LOGGER = Logger.getLogger(BasicAuthenticationFilter.class.getName());
 }
