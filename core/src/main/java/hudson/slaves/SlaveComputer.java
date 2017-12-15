@@ -542,16 +542,18 @@ public class SlaveComputer extends Computer {
             }
             @Override
             public void onWrite(Channel channel, Command cmd, long blockSize) {
-                logger.finest(() -> channel.getName() + " wrote " + blockSize + ": " + cmd);
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest(channel.getName() + " wrote " + blockSize + ": " + cmd);
+                }
             }
             @Override
             public void onRead(Channel channel, Command cmd, long blockSize) {
                 if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest(() -> channel.getName() + " read " + blockSize + ": " + cmd);
+                    logger.finest(channel.getName() + " read " + blockSize + ": " + cmd);
                     if (cmd instanceof Response) {
                         long totalTime = ((Response) cmd).getTotalTime();
                         if (totalTime != 0) {
-                            logger.finest(() -> "received response in " + totalTime / 1_000_000 + "ms");
+                            logger.finest("received response in " + totalTime / 1_000_000 + "ms");
                         }
                     }
                 }
