@@ -41,6 +41,7 @@ import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import jenkins.security.SecurityListener;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -257,6 +258,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
         a = this.getSecurityComponents().manager.authenticate(a);
         SecurityContextHolder.getContext().setAuthentication(a);
+
+        SecurityListener.fireLoggedIn(u.getId());
 
         // then back to top
         req.getView(this,"success.jelly").forward(req,rsp);

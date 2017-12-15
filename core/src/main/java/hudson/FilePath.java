@@ -81,6 +81,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
@@ -133,9 +134,12 @@ import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
+import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
 
+import java.util.Collections;
+        
 /**
  * {@link File} like object with remoting support.
  *
@@ -1172,7 +1176,7 @@ public final class FilePath implements Serializable {
                 // following Ant <mkdir> task to avoid possible race condition.
                 Thread.sleep(10);
 
-                return f.mkdirs() || f.exists();
+                return mkdirs(f) || f.exists();
             }
         }))
             throw new IOException("Failed to mkdirs: "+remote);
@@ -1640,7 +1644,7 @@ public final class FilePath implements Serializable {
         if (Util.NATIVE_CHMOD_MODE) {
             PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
         } else {
-            Files.setPosixFilePermissions(Util.fileToPath(f), Util.modeToPermissions(mask));
+            Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
         }
     }
 
@@ -1987,7 +1991,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-            	reading(f).renameTo(creating(new File(target.remote)));
+                Files.move(fileToPath(reading(f)), fileToPath(creating(new File(target.remote))), LinkOption.NOFOLLOW_LINKS);
                 return null;
             }
         });
@@ -2049,8 +2053,8 @@ public final class FilePath implements Serializable {
                     File targetFile = new File(target.remote);
                     File targetDir = targetFile.getParentFile();
                     filterNonNull().mkdirs(targetDir);
-                    Files.createDirectories(Util.fileToPath(targetDir));
-                    Files.copy(Util.fileToPath(reading(f)), Util.fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    Files.createDirectories(fileToPath(targetDir));
+                    Files.copy(fileToPath(reading(f)), fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
                     return null;
                 }
             });
@@ -2982,11 +2986,12 @@ public final class FilePath implements Serializable {
         return f;
     }
 
-    private boolean mkdirs(File dir) {
+    private boolean mkdirs(File dir) throws IOException {
         if (dir.exists())   return false;
 
         filterNonNull().mkdirs(dir);
-        return dir.mkdirs();
+        Files.createDirectories(fileToPath(dir));
+        return true;
     }
 
     private File mkdirsE(File dir) throws IOException {
