@@ -34,7 +34,7 @@ THE SOFTWARE.
             </p>
             <p><tt>${requestURL}</tt></p>
             <p><strong>${%warning}</strong></p>
-            <f:form method="post">
+            <f:form method="post" name="retry">
                 <f:submit value="${%Retry using POST}"/>
             </f:form>
         </l:main-panel>
