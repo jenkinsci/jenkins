@@ -27,4 +27,4 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-<st:contentType value="text/plain;charset=UTF-8" /><st:out value="${output}"/></st:compress>
+<st:contentType value="text/plain;charset=UTF-8" /><j:out value="${output}"/></st:compress>
