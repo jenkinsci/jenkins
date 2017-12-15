@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.94-SNAPSHOT</version>
+  <version>2.96-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -94,7 +94,7 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
-    <access-modifier.version>1.11</access-modifier.version>
+    <access-modifier.version>1.12</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
@@ -153,12 +153,17 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-module-junit4</artifactId>
-        <version>1.6.2</version>
+        <version>1.6.6</version>
       </dependency>
       <dependency>
         <groupId>org.powermock</groupId>
         <artifactId>powermock-api-mockito</artifactId>
-        <version>1.6.2</version>
+        <version>1.6.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.objenesis</groupId>
+        <artifactId>objenesis</artifactId>
+        <version>2.6</version>
       </dependency>
 
       <dependency>
@@ -340,39 +345,6 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>1.5-jenkins-3</version>
-          <dependencies>
-            <dependency><!-- this needs to be visible to Ant inside GMaven, so has to be a plugin dependency -->
-              <groupId>org.apache.ant</groupId>
-              <artifactId>ant-junit</artifactId>
-              <version>1.7.0</version>
-            </dependency>
-            <dependency>
-              <groupId>net.sourceforge.cobertura</groupId>
-              <artifactId>cobertura</artifactId>
-              <version>1.9</version>
-            </dependency>
-            <dependency>
-              <!-- this provided scope dependency doesn't get added to GMaven unless explicitly added here -->
-              <groupId>javax.servlet</groupId>
-              <artifactId>javax.servlet-api</artifactId>
-              <version>3.1.0</version>
-            </dependency>
-            <dependency>
-              <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-2.0</artifactId>
-              <version>1.5-jenkins-3</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <!-- 2.4 not yet supported by plugin but 2.0 works
-                 here so long as we provide explicit version -->
-            <providerSelection>2.0</providerSelection>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.7</version>
@@ -518,10 +490,6 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
-          <artifactId>cobertura-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
           <version>${findbugs-maven-plugin.version}</version>
           <configuration>
@@ -584,20 +552,6 @@ THE SOFTWARE.
         	<configuration>
         		<lifecycleMappingMetadata>
         			<pluginExecutions>
-        				<pluginExecution>
-        					<pluginExecutionFilter>
-        						<groupId>org.codehaus.gmaven</groupId>
-        						<artifactId>gmaven-plugin</artifactId>
-        						<versionRange>1.5-jenkins-1</versionRange>
-        						<goals>
-        							<goal>execute</goal>
-        							<goal>testCompile</goal>
-        						</goals>
-        					</pluginExecutionFilter>
-        					<action>
-        						<ignore />
-        					</action>
-        				</pluginExecution>
         				<pluginExecution>
         					<pluginExecutionFilter>
         						<groupId>org.apache.maven.plugins</groupId>
@@ -722,34 +676,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-jenkins-dev-plugin</artifactId>
       </plugin>
-
-      <!--<plugin>
-        <groupId>org.jvnet.fix1600</groupId>
-        <artifactId>fix1600</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>fix</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>-->
-      <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-
     </plugins>
 
     <extensions>

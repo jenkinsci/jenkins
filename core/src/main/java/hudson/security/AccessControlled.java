@@ -59,6 +59,9 @@ public interface AccessControlled {
      * @since FIXME
      */
     default boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        if (a == ACL.SYSTEM) {
+            return true;
+        }
         return getACL().hasPermission(a, permission);
     }
 

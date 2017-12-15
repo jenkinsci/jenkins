@@ -24,14 +24,10 @@
 package jenkins.slaves;
 
 import hudson.Extension;
-import hudson.init.InitMilestone;
-import hudson.init.Initializer;
 import hudson.model.AdministrativeMonitor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
@@ -53,8 +49,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
     
-    private static final Logger LOGGER = Logger.getLogger(DeprecatedAgentProtocolMonitor.class.getName());
-
     public DeprecatedAgentProtocolMonitor() {
         super();
     }
@@ -96,18 +90,5 @@ public class DeprecatedAgentProtocolMonitor extends AdministrativeMonitor {
             return null;
         }
         return StringUtils.join(deprecatedProtocols, ',');
-    }
-    
-    @Initializer(after = InitMilestone.JOB_LOADED)
-    @Restricted(NoExternalUse.class)
-    public static void initializerCheck() {
-        String protocols = getDeprecatedProtocolsString();
-        if(protocols != null) {
-            LOGGER.log(Level.WARNING, "This Jenkins instance uses deprecated Remoting protocols: {0}"
-                    + "It may impact stability of the instance. " 
-                    + "If newer protocol versions are supported by all system components "
-                    + "(agents, CLI and other clients), "
-                    + "it is highly recommended to disable the deprecated protocols.", protocols);
-        } 
     }
 }

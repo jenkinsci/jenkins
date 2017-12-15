@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.Lookup;
 import hudson.init.InitMilestone;
 import hudson.util.Secret;
-import hudson.util.Service;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 
@@ -12,7 +11,9 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.List;
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,10 +69,11 @@ public abstract class ConfidentialStore {
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
         if (cs==null) {
             try {
-                List<ConfidentialStore> r = (List) Service.loadInstances(ConfidentialStore.class.getClassLoader(), ConfidentialStore.class);
-                if (!r.isEmpty())
-                    cs = r.get(0);
-            } catch (IOException e) {
+                Iterator<ConfidentialStore> it = ServiceLoader.load(ConfidentialStore.class, ConfidentialStore.class.getClassLoader()).iterator();
+                if (it.hasNext()) {
+                    cs = it.next();
+                }
+            } catch (ServiceConfigurationError e) {
                 LOGGER.log(Level.WARNING, "Failed to list up ConfidentialStore implementations",e);
                 // fall through
             }
