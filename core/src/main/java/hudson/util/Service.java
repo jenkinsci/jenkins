@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Level.WARNING;
@@ -39,11 +40,10 @@ import static java.util.logging.Level.WARNING;
  * Load classes by looking up <tt>META-INF/services</tt>.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link ServiceLoader} instead.
  */
+@Deprecated
 public class Service {
-    /**
-     * Poorman's clone of JDK6 ServiceLoader.
-     */
     public static <T> List<T> loadInstances(ClassLoader classLoader, Class<T> type) throws IOException {
         List<T> result = new ArrayList<T>();
 

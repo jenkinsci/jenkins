@@ -3,6 +3,7 @@ package jenkins.security;
 import hudson.Extension;
 import hudson.model.User;
 import org.acegisecurity.Authentication;
+import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.springframework.dao.DataAccessException;
 
@@ -21,6 +22,10 @@ import static java.util.logging.Level.*;
  */
 @Extension
 public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
+    /**
+     * Note: if the token does not exist or does not match, we do not use {@link SecurityListener#fireFailedToAuthenticate(String)}
+     * because it will be done in the {@link BasicHeaderRealPasswordAuthenticator} in the case the password is not valid either
+     */
     @Override
     public Authentication authenticate(HttpServletRequest req, HttpServletResponse rsp, String username, String password) throws ServletException {
         // attempt to authenticate as API token
@@ -29,7 +34,10 @@ public class BasicHeaderApiTokenAuthenticator extends BasicHeaderAuthenticator {
         if (t!=null && t.matchesPassword(password)) {
             Authentication auth;
             try {
-                auth = u.impersonate();
+                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                auth = u.impersonate(userDetails);
+
+                SecurityListener.fireAuthenticated(userDetails);
             } catch (UsernameNotFoundException x) {
                 // The token was valid, but the impersonation failed. This token is clearly not his real password,
                 // so there's no point in continuing the request processing. Report this error and abort.

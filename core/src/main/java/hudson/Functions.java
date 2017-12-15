@@ -26,6 +26,7 @@
 package hudson;
 
 import hudson.model.Slave;
+import hudson.security.*;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -56,11 +57,6 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
-import hudson.security.AccessControlled;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.Permission;
-import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -137,6 +133,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -1582,7 +1579,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return ACL.isAnonymous(Jenkins.getAuthentication());
     }
 
     /**

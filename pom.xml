@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.94-SNAPSHOT</version>
+  <version>2.96-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -94,7 +94,7 @@ THE SOFTWARE.
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
-    <access-modifier.version>1.11</access-modifier.version>
+    <access-modifier.version>1.12</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
 
