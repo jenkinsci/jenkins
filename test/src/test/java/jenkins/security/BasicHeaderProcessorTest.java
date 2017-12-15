@@ -7,8 +7,6 @@ import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import hudson.util.HttpResponses;
-import hudson.util.Scrambler;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -110,15 +108,6 @@ public class BasicHeaderProcessorTest {
 
     private void makeRequestAndVerify(String expectedLogin) throws IOException, SAXException {
         makeRequestWithAuthCodeAndVerify(null, expectedLogin);
-    }
-
-    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
-        try {
-            makeRequestWithAuthCodeAndVerify(authCode, "-");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
     }
 
     @Test
