@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -191,7 +193,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                         .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
                 Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
                 return Collections.singletonList(constructor.newInstance(null, false));
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+            } catch (ClassNotFoundException e) {
+                return Collections.emptyList();
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+                LOGGER.log(Level.WARNING, "Unable to get default installer", e);
                 return Collections.emptyList();
             }
         }
@@ -220,4 +225,6 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
             return ((JDK)obj).javaHome;
         }
     }
+
+    private static final Logger LOGGER = Logger.getLogger(JDK.class.getName());
 }

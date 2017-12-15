@@ -16,11 +16,11 @@
     </properties>
     <name>JDK Tool Plugin</name>
     <description>Allows the JDK tool to be installed via download from Oracle's website.</description>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/JDK+Tool+Plugin</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/JDK+Tool+Plugin</url>
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>http://opensource.org/licenses/MIT</url>
+            <url>https://opensource.org/licenses/MIT</url>
         </license>
     </licenses>
     <!-- TODO after split
