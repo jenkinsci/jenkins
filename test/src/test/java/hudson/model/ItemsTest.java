@@ -45,6 +45,7 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -123,6 +124,8 @@ public class ItemsTest {
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
 
     private void overwriteTargetSetUp() throws Exception {
+        User.getById("attacker", true);
+
         // A fully visible item:
         r.createFreeStyleProject("visible").setDescription("visible");
         // An item known to exist but not visible:
@@ -185,7 +188,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r);
                 wc.getOptions().setRedirectEnabled(false);
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false); // redirect perversely counts as a failure
-                WebResponse webResponse = wc.getPage(new WebRequest(createCrumbedUrl(r, wc, "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
@@ -198,7 +201,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r);
                 wc.getOptions().setRedirectEnabled(false);
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(createCrumbedUrl(r, wc, "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
                 r.jenkins.getItem("dupe").delete();
                 if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
                     throw new FailingHttpStatusCodeException(webResponse);
@@ -209,7 +212,7 @@ public class ItemsTest {
         REST_CREATE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 JenkinsRule.WebClient wc = wc(r);
-                WebRequest req = new WebRequest(createCrumbedUrl(r, wc, "createItem?name=" + target), HttpMethod.POST);
+                WebRequest req = new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target), HttpMethod.POST);
                 req.setAdditionalHeader("Content-Type", "application/xml");
                 req.setRequestBody("<project/>");
                 wc.getPage(req);
@@ -222,7 +225,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r);
                 wc.getOptions().setRedirectEnabled(false);
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(createCrumbedUrl(r, wc, "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
                     r.jenkins.getItem("dupe").delete();
                     throw new FailingHttpStatusCodeException(webResponse);
@@ -275,14 +278,7 @@ public class ItemsTest {
         };
         abstract void run(JenkinsRule r, String target) throws Exception;
         private static final JenkinsRule.WebClient wc(JenkinsRule r) throws Exception {
-            return r.createWebClient().login("attacker");
-        }
-        // TODO replace with standard version once it is fixed to detect an existing query string
-        private static URL createCrumbedUrl(JenkinsRule r, JenkinsRule.WebClient wc, String relativePath) throws IOException {
-            CrumbIssuer issuer = r.jenkins.getCrumbIssuer();
-            String crumbName = issuer.getDescriptor().getCrumbRequestField();
-            String crumb = issuer.getCrumb(null);
-            return new URL(wc.getContextPath() + relativePath + (relativePath.contains("?") ? "&" : "?") + crumbName + "=" + crumb);
+            return r.createWebClient().withBasicApiToken("attacker");
         }
     }
 
