@@ -469,8 +469,16 @@ public class Functions {
         return new TreeMap<Object,Object>(System.getProperties());
     }
 
+    /**
+     * Gets the system property indicated by the specified key.
+     * 
+     * Delegates to {@link SystemProperties#getString(java.lang.String)}.
+     * 
+     * @since 2.96
+     */
+    @Restricted(NoExternalUse.class)
     public static String getSystemProperty(String key) {
-        return System.getProperty(key);
+        return SystemProperties.getString(key);
     }
 
     public static Map getEnvVars() {
