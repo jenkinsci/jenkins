@@ -469,6 +469,10 @@ public class Functions {
         return new TreeMap<Object,Object>(System.getProperties());
     }
 
+    public static String getSystemProperty(String key) {
+        return System.getProperty(key);
+    }
+
     public static Map getEnvVars() {
         return new TreeMap<String,String>(EnvVars.masterEnvVars);
     }
