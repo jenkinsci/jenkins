@@ -89,7 +89,7 @@ public class LoadDetachedPluginsTest {
     @LocalData
     public void upgradeFromJenkins2WithDependency() {
         VersionNumber since = new VersionNumber("2.0");
-        rr.then((JenkinsRule r) -> {
+        rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",
                     detachedPlugins.size(), greaterThan(1));
