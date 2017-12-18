@@ -31,6 +31,7 @@ import hudson.Proc;
 import hudson.cli.util.ScriptLoader;
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
+import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
@@ -86,7 +87,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     public void anonymousCanAlwaysLoadJARs() throws Exception {
         r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage p = wc.login("alice").goTo("computer/test/");
+        HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
 
         // this fresh WebClient doesn't have a login cookie and represent JNLP launcher
         JenkinsRule.WebClient jnlpAgent = r.createWebClient();

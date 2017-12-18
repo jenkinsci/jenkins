@@ -629,16 +629,16 @@ public class AbstractProjectTest {
                 grant(Item.READ).everywhere().to("alice").
                 grant(Item.READ).onItems(us).to("bob").
                 grant(Item.READ).onItems(ds).to("charlie"));
-        String api = j.createWebClient().login("alice").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+        String api = j.createWebClient().withBasicCredentials("alice").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, containsString("downstream-project"));
-        api = j.createWebClient().login("alice").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+        api = j.createWebClient().withBasicCredentials("alice").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, containsString("upstream-project"));
-        api = j.createWebClient().login("bob").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+        api = j.createWebClient().withBasicCredentials("bob").goTo(us.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, not(containsString("downstream-project")));
-        api = j.createWebClient().login("charlie").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
+        api = j.createWebClient().withBasicCredentials("charlie").goTo(ds.getUrl() + "api/json?pretty", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, not(containsString("upstream-project")));
     }

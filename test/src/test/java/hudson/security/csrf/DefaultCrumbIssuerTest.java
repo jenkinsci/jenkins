@@ -8,6 +8,8 @@ package hudson.security.csrf;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import jenkins.model.Jenkins;
+import junit.framework.Assert;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -133,6 +135,21 @@ public class DefaultCrumbIssuerTest {
         assertEquals(r.jenkins.getCrumbIssuer().getCrumbRequestField(),jsonObject.getString("crumbRequestField"));
         assertTrue(jsonObject.getString("crumb").matches("[0-9a-f]+"));
         wc.assertFails("crumbIssuer/api/json?jsonp=hack", HttpURLConnection.HTTP_FORBIDDEN);
+    }
+
+    @Issue("JENKINS-34254")
+    @Test public void testRequirePostErrorPageCrumb() throws Exception {
+        Jenkins.getInstance().setCrumbIssuer(new DefaultCrumbIssuer(false));
+        WebClient wc = r.createWebClient();
+        try {
+            wc.goTo("quietDown");
+            fail("expected failure");
+        } catch (FailingHttpStatusCodeException ex) {
+            Assert.assertEquals("expect HTTP 405 method not allowed", 405, ex.getStatusCode());
+        }
+        HtmlPage retry = (HtmlPage) wc.getCurrentWindow().getEnclosedPage();
+        HtmlPage success = r.submit(retry.getFormByName("retry"));
+        Assert.assertTrue("quieting down", r.jenkins.isQuietingDown());
     }
 
 }
