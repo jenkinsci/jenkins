@@ -656,7 +656,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                 PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
                 VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
-                if (installedVersion != null && installedVersion.isNewerThan(dependencyVersion)) {
+                if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
                     // Do not downgrade dependencies that are already installed.
                     continue;
                 }
