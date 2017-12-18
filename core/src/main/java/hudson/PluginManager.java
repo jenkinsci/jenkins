@@ -645,17 +645,23 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             ServletContext context = Jenkins.getActiveInstance().servletContext;
 
             for (String dependencyToken : dependencyTokens) {
-                if (dependencyToken.endsWith(";resolution:=optional")) {
-                    // ignore optional dependencies
-                    continue;
+                String optionalDepTokenSuffix = ";resolution:=optional";
+                boolean isOptional = dependencyToken.endsWith(optionalDepTokenSuffix);
+                if (isOptional) {
+                    dependencyToken = dependencyToken.substring(0, dependencyToken.length() - optionalDepTokenSuffix.length());
                 }
 
                 String[] artifactIdVersionPair = dependencyToken.split(":");
                 String artifactId = artifactIdVersionPair[0];
                 VersionNumber dependencyVersion = new VersionNumber(artifactIdVersionPair[1]);
-
-                PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
+                PluginManager manager = Jenkins.getInstance().getPluginManager();
                 VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
+
+                if (isOptional && installedVersion == null) {
+                    // Ignore uninstalled optional dependencies.
+                    continue;
+                }
+
                 if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
                     // Do not downgrade dependencies that are already installed.
                     continue;
