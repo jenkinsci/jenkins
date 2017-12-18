@@ -40,6 +40,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.Command;
 import hudson.remoting.Launcher;
+import hudson.remoting.Request;
 import hudson.remoting.Response;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -550,12 +551,12 @@ public class SlaveComputer extends Computer {
             public void onRead(Channel channel, Command cmd, long blockSize) {
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.finest(channel.getName() + " read " + blockSize + ": " + cmd);
-                    if (cmd instanceof Response) {
-                        long totalTime = ((Response) cmd).getTotalTime();
-                        if (totalTime != 0) {
-                            logger.finest("received response in " + totalTime / 1_000_000 + "ms");
-                        }
-                    }
+                }
+            }
+            @Override
+            public void onResponse(Channel channel, Request<?, ?> req, Response<?, ?> rsp, long totalTime) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest(channel.getName() + " received response in " + totalTime / 1_000_000 + "ms: " + req);
                 }
             }
         });
