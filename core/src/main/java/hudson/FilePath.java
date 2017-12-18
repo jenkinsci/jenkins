@@ -1159,19 +1159,22 @@ public final class FilePath implements Serializable {
      * Creates this directory.
      */
     public void mkdirs() throws IOException, InterruptedException {
-        if(!act(new SecureFileCallable<Boolean>() {
-            private static final long serialVersionUID = 1L;
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                if(mkdirs(f) || f.exists())
-                    return true;    // OK
+        if (!act(new Mkdirs())) {
+            throw new IOException("Failed to mkdirs: " + remote);
+        }
+    }
+    private class Mkdirs extends SecureFileCallable<Boolean> {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            if(mkdirs(f) || f.exists())
+                return true;    // OK
 
-                // following Ant <mkdir> task to avoid possible race condition.
-                Thread.sleep(10);
+            // following Ant <mkdir> task to avoid possible race condition.
+            Thread.sleep(10);
 
-                return mkdirs(f) || f.exists();
-            }
-        }))
-            throw new IOException("Failed to mkdirs: "+remote);
+            return mkdirs(f) || f.exists();
+        }
     }
 
     /**
