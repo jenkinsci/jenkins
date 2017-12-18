@@ -474,7 +474,7 @@ public class Functions {
      * 
      * Delegates to {@link SystemProperties#getString(java.lang.String)}.
      * 
-     * @since 2.96
+     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public static String getSystemProperty(String key) {
