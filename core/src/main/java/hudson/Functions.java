@@ -473,10 +473,8 @@ public class Functions {
      * Gets the system property indicated by the specified key.
      * 
      * Delegates to {@link SystemProperties#getString(java.lang.String)}.
-     * 
-     * @since TODO
      */
-    @Restricted(NoExternalUse.class)
+    @Restricted(DoNotUse.class)
     public static String getSystemProperty(String key) {
         return SystemProperties.getString(key);
     }
