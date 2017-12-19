@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -61,6 +62,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Tom Huybrechts
  */
 public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback {
+
+    /**
+     * Name of the primary view defined by the user.
+     * {@code null} means that the View is not defined.
+     */
+    @CheckForNull
     private String primaryViewName;
 
     /**
@@ -71,12 +78,13 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     private transient ViewGroupMixIn viewGroupMixIn;
 
     @DataBoundConstructor
-    public MyViewsProperty(String primaryViewName) {
+    public MyViewsProperty(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
+        readResolve(); // initialize fields
     }
 
     private MyViewsProperty() {
-        readResolve();
+        this(null);
     }
 
     public Object readResolve() {
@@ -88,7 +96,10 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
             // preserve the non-empty invariant
             views.add(new AllView(AllView.DEFAULT_VIEW_NAME, this));
         }
-        primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
+        if (primaryViewName != null) {
+            // It may happen when the default constructor is invoked
+            primaryViewName = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryViewName);
+        }
 
         viewGroupMixIn = new ViewGroupMixIn(this) {
             protected List<View> views() { return views; }
@@ -99,11 +110,17 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         return this;
     }
 
+    @CheckForNull
     public String getPrimaryViewName() {
         return primaryViewName;
     }
 
-    public void setPrimaryViewName(String primaryViewName) {
+    /**
+     * Sets the primary view.
+     * @param primaryViewName Name of the primary view to be set.
+     *                        {@code null} to make the primary view undefined.
+     */
+    public void setPrimaryViewName(@CheckForNull String primaryViewName) {
         this.primaryViewName = primaryViewName;
     }
 
@@ -183,14 +200,6 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     public ACL getACL() {
         return user.getACL();
-    }
-
-    public void checkPermission(Permission permission) throws AccessDeniedException {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     ///// Action methods /////

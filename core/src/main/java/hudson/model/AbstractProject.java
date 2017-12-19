@@ -75,7 +75,6 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.util.TimeUnit2;
 import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
@@ -92,6 +91,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -407,6 +407,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     /**
      * Gets the textual representation of the assigned label as it was entered by the user.
      */
+    @Exported(name="labelExpression")
     public String getAssignedLabelString() {
         if (canRoam || assignedNode==null)    return null;
         try {
@@ -1016,24 +1017,6 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>
-     * A project must be blocked if its own previous build is in progress,
-     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
-     * project is building, but derived classes can also check other conditions.
-     */
-    @Override
-    public boolean isBuildBlocked() {
-        return getCauseOfBlockage()!=null;
-    }
-
-    public String getWhyBlocked() {
-        CauseOfBlockage cb = getCauseOfBlockage();
-        return cb!=null ? cb.getShortDescription() : null;
-    }
-
-    /**
      * @deprecated use {@link BlockedBecauseOfBuildInProgress} instead.
      */
     @Deprecated
@@ -1075,6 +1058,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * A project must be blocked if its own previous build is in progress,
+     * or if the blockBuildWhenUpstreamBuilding option is true and an upstream
+     * project is building, but derived classes can also check other conditions.
+     */
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         // Block builds until they are done with post-production
@@ -1345,7 +1336,7 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
                 // However, first there are some conditions in which we do not want to do so.
                 // give time for agents to come online if we are right after reconnection (JENKINS-8408)
                 long running = Jenkins.getInstance().getInjector().getInstance(Uptime.class).getUptime();
-                long remaining = TimeUnit2.MINUTES.toMillis(10)-running;
+                long remaining = TimeUnit.MINUTES.toMillis(10)-running;
                 if (remaining>0 && /* this logic breaks tests of polling */!Functions.getIsUnitTest()) {
                     listener.getLogger().print(Messages.AbstractProject_AwaitingWorkspaceToComeOnline(remaining/1000));
                     listener.getLogger().println( " (" + workspaceOfflineReason.name() + ")");
@@ -1576,14 +1567,36 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      * Gets the other {@link AbstractProject}s that should be built
      * when a build of this project is completed.
      */
-    @Exported
     public final List<AbstractProject> getDownstreamProjects() {
         return Jenkins.getInstance().getDependencyGraph().getDownstream(this);
     }
 
-    @Exported
+    @Exported(name="downstreamProjects")
+    @Restricted(DoNotUse.class) // only for exporting
+    public List<AbstractProject> getDownstreamProjectsForApi() {
+        List<AbstractProject> r = new ArrayList<>();
+        for (AbstractProject p : getDownstreamProjects()) {
+            if (p.hasPermission(Item.READ)) {
+                r.add(p);
+            }
+        }
+        return r;
+    }
+
     public final List<AbstractProject> getUpstreamProjects() {
         return Jenkins.getInstance().getDependencyGraph().getUpstream(this);
+    }
+
+    @Exported(name="upstreamProjects")
+    @Restricted(DoNotUse.class) // only for exporting
+    public List<AbstractProject> getUpstreamProjectsForApi() {
+        List<AbstractProject> r = new ArrayList<>();
+        for (AbstractProject p : getUpstreamProjects()) {
+            if (p.hasPermission(Item.READ)) {
+                r.add(p);
+            }
+        }
+        return r;
     }
 
     /**

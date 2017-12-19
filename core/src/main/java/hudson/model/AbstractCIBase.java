@@ -39,6 +39,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Configuration;
 
@@ -125,7 +126,18 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
         } else {
             // we always need Computer for the master as a fallback in case there's no other Computer.
             if(n.getNumExecutors()>0 || n==Jenkins.getInstance()) {
-                computers.put(n, c = n.createComputer());
+                try {
+                    c = n.createComputer();
+                } catch(RuntimeException ex) { // Just in case there is a bogus extension
+                    LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
+                }
+                if (c == null) {
+                    LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node", 
+                            new Object[]{n.getNodeName(), n.getClass().getName()});
+                    return;
+                }
+                
+                computers.put(n, c);
                 if (!n.isHoldOffLaunchUntilSave() && automaticSlaveLaunch) {
                     RetentionStrategy retentionStrategy = c.getRetentionStrategy();
                     if (retentionStrategy != null) {
@@ -136,8 +148,11 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                         c.connect(true);
                     }
                 }
+                used.add(c);
+            } else {
+                // TODO: Maybe it should be allowed, but we would just get NPE in the original logic before JENKINS-43496
+                LOGGER.log(Level.WARNING, "Node {0} has no executors. Cannot update the Computer instance of it", n.getNodeName());
             }
-            used.add(c);
         }
     }
 
@@ -184,15 +199,16 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                     byName.put(node.getNodeName(),c);
                 }
 
-                Set<Computer> used = new HashSet<Computer>(old.size());
+                Set<Computer> used = new HashSet<>(old.size());
 
                 updateComputer(AbstractCIBase.this, byName, used, automaticSlaveLaunch);
                 for (Node s : getNodes()) {
                     long start = System.currentTimeMillis();
                     updateComputer(s, byName, used, automaticSlaveLaunch);
-                    if(LOG_STARTUP_PERFORMANCE)
-                        LOGGER.info(String.format("Took %dms to update node %s",
-                                System.currentTimeMillis()-start, s.getNodeName()));
+                    if (LOG_STARTUP_PERFORMANCE && LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("Took %dms to update node %s",
+                                System.currentTimeMillis() - start, s.getNodeName()));
+                    }
                 }
 
                 // find out what computers are removed, and kill off all executors.

@@ -26,8 +26,11 @@ package hudson;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
-import hudson.model.*;
+import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.UpdateSite;
+import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.FormValidation;
@@ -41,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -533,4 +538,20 @@ public class PluginManagerTest {
         fail("Cyclic dependency should be detected.");
     }
 
+
+    @Issue("JENKINS-44898")
+    @WithPlugin("plugin-first.hpi")
+    @Test
+    public void findResourceForPluginFirstClassLoader() throws Exception {
+        PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
+        assertNotNull(w);
+
+        URL fromPlugin = w.classLoader.getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+        assertNotNull(fromPlugin);
+
+        // This is how UberClassLoader.findResource functions.
+        URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+
+        assertEquals(fromPlugin, fromToolkit);
+    }
 }

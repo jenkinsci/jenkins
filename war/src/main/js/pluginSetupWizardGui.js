@@ -203,7 +203,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 
 	var getJenkinsVersion = function() {
-		return getJenkinsVersionFull().replace(/(\d[.]\d).*/,'$1');
+		return getJenkinsVersionFull().replace(/(\d[.][\d.]+).*/,'$1');
 	};
 
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
@@ -889,16 +889,17 @@ var createPluginSetupWizard = function(appendTarget) {
 			// ignore JSON parsing issues, this may be HTML
 		}
 		// we get 200 OK
-		var $page = $(data);
+		var responseText = data.responseText;
+		var $page = $(responseText);
 		var $errors = $page.find('.error');
 		if($errors.length > 0) {
 			var $main = $page.find('#main-panel').detach();
 			if($main.length > 0) {
-				data = data.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+				responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
 			}
 			var doc = $('iframe[src]').contents()[0];
 			doc.open();
-			doc.write(data);
+			doc.write(responseText);
 			doc.close();
 		}
 		else {

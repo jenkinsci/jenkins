@@ -15,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Kohsuke Kawaguchi
  * @see FilePath
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 class FilePathFilterAggregator extends FilePathFilter {
     private final CopyOnWriteArrayList<Entry> all = new CopyOnWriteArrayList<Entry>();

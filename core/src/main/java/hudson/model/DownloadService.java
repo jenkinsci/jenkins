@@ -35,12 +35,14 @@ import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.TextFile;
-import static hudson.util.TimeUnit2.DAYS;
+import static java.util.concurrent.TimeUnit.DAYS;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,18 +132,6 @@ public class DownloadService extends PageDecorator {
     }
 
     private String mapHttps(String url) {
-        /*
-            HACKISH:
-
-            Loading scripts in HTTP from HTTPS pages cause browsers to issue a warning dialog.
-            The elegant way to solve the problem is to always load update center from HTTPS,
-            but our backend mirroring scheme isn't ready for that. So this hack serves regular
-            traffic in HTTP server, and only use HTTPS update center for Jenkins in HTTPS.
-
-            We'll monitor the traffic to see if we can sustain this added traffic.
-         */
-        if (url.startsWith("http://updates.jenkins-ci.org/") && Jenkins.getInstance().isRootUrlSecure())
-            return "https"+url.substring(4);
         return url;
     }
 
@@ -169,7 +159,12 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSON(URL src) throws IOException {
-        try (InputStream is = ProxyConfiguration.open(src).getInputStream()) {
+        URLConnection con = ProxyConfiguration.open(src);
+        if (con instanceof HttpURLConnection) {
+            // prevent problems from misbehaving plugins disabling redirects by default
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+        }
+        try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             int start = jsonp.indexOf('{');
             int end = jsonp.lastIndexOf('}');
@@ -189,7 +184,12 @@ public class DownloadService extends PageDecorator {
      */
     @Restricted(NoExternalUse.class)
     public static String loadJSONHTML(URL src) throws IOException {
-        try (InputStream is = ProxyConfiguration.open(src).getInputStream()) {
+        URLConnection con = ProxyConfiguration.open(src);
+        if (con instanceof HttpURLConnection) {
+            // prevent problems from misbehaving plugins disabling redirects by default
+            ((HttpURLConnection) con).setInstanceFollowRedirects(true);
+        }
+        try (InputStream is = con.getInputStream()) {
             String jsonp = IOUtils.toString(is, "UTF-8");
             String preamble = "window.parent.postMessage(JSON.stringify(";
             int start = jsonp.indexOf(preamble);

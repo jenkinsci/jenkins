@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.FilePath;
 import jenkins.util.SystemProperties;
@@ -34,6 +35,7 @@ import hudson.remoting.PingThread;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.PingFailureAnalyzer;
 
+import javax.annotation.CheckForNull;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -86,28 +88,38 @@ public class ChannelPinger extends ComputerListener {
 
     @Override
     public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener)  {
-        install(channel);
+        SlaveComputer slaveComputer = null;
+        if (c instanceof SlaveComputer) {
+            slaveComputer = (SlaveComputer) c;
+        }
+        install(channel, slaveComputer);
     }
 
     public void install(Channel channel) {
+        install(channel, null);
+    }
+
+    @VisibleForTesting
+    /*package*/ void install(Channel channel, @CheckForNull SlaveComputer c) {
         if (pingTimeoutSeconds < 1 || pingIntervalSeconds < 1) {
             LOGGER.warning("Agent ping is disabled");
             return;
         }
 
+        // set up ping from both directions, so that in case of a router dropping a connection,
+        // both sides can notice it and take compensation actions.
         try {
             channel.call(new SetUpRemotePing(pingTimeoutSeconds, pingIntervalSeconds));
             LOGGER.fine("Set up a remote ping for " + channel.getName());
         } catch (Exception e) {
-            LOGGER.severe("Failed to set up a ping for " + channel.getName());
+            LOGGER.log(Level.SEVERE, "Failed to set up a ping for " + channel.getName(), e);
         }
 
-        // set up ping from both directions, so that in case of a router dropping a connection,
-        // both sides can notice it and take compensation actions.
-        setUpPingForChannel(channel, pingTimeoutSeconds, pingIntervalSeconds, true);
+        setUpPingForChannel(channel, c, pingTimeoutSeconds, pingIntervalSeconds, true);
     }
 
-    static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
+    @VisibleForTesting
+    /*package*/ static class SetUpRemotePing extends MasterToSlaveCallable<Void, IOException> {
         private static final long serialVersionUID = -2702219700841759872L;
         @Deprecated
         private transient int pingInterval;
@@ -121,7 +133,7 @@ public class ChannelPinger extends ComputerListener {
 
         @Override
         public Void call() throws IOException {
-            setUpPingForChannel(Channel.current(), pingTimeoutSeconds, pingIntervalSeconds, false);
+            setUpPingForChannel(Channel.current(), null, pingTimeoutSeconds, pingIntervalSeconds, false);
             return null;
         }
 
@@ -163,30 +175,36 @@ public class ChannelPinger extends ComputerListener {
         }
     }
 
-    static void setUpPingForChannel(final Channel channel, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
+    @VisibleForTesting
+    /*package*/ static void setUpPingForChannel(final Channel channel, final SlaveComputer computer, int timeoutSeconds, int intervalSeconds, final boolean analysis) {
         LOGGER.log(Level.FINE, "setting up ping on {0} with a {1} seconds interval and {2} seconds timeout", new Object[] {channel.getName(), intervalSeconds, timeoutSeconds});
         final AtomicBoolean isInClosed = new AtomicBoolean(false);
         final PingThread t = new PingThread(channel, timeoutSeconds * 1000L, intervalSeconds * 1000L) {
             @Override
             protected void onDead(Throwable cause) {
-                try {
                     if (analysis) {
                         analyze(cause);
                     }
-                    if (isInClosed.get()) {
+                    boolean inClosed = isInClosed.get();
+                    // Disassociate computer channel before closing it
+                    if (computer != null) {
+                        Exception exception = cause instanceof Exception ? (Exception) cause: new IOException(cause);
+                        computer.disconnect(new OfflineCause.ChannelTermination(exception));
+                    }
+                    if (inClosed) {
                         LOGGER.log(Level.FINE,"Ping failed after the channel "+channel.getName()+" is already partially closed.",cause);
                     } else {
                         LOGGER.log(Level.INFO,"Ping failed. Terminating the channel "+channel.getName()+".",cause);
-                        channel.close(cause);
                     }
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,"Failed to terminate the channel "+channel.getName(),e);
-                }
             }
             /** Keep in a separate method so we do not even try to do class loading on {@link PingFailureAnalyzer} from an agent JVM. */
-            private void analyze(Throwable cause) throws IOException {
+            private void analyze(Throwable cause) {
                 for (PingFailureAnalyzer pfa : PingFailureAnalyzer.all()) {
-                    pfa.onPingFailure(channel,cause);
+                    try {
+                        pfa.onPingFailure(channel, cause);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "Ping failure analyzer " + pfa.getClass().getName() + " failed for " + channel.getName(), ex);
+                    }
                 }
             }
             @Deprecated

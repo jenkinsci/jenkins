@@ -17,7 +17,8 @@ import hudson.PluginManager;
 import jenkins.util.SystemProperties;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
-import hudson.util.Service;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 
 /**
  * Strategy pattern of the various key decision making during the Jenkins initialization.
@@ -113,11 +114,12 @@ public class InitStrategy {
      * Obtains the instance to be used.
      */
     public static InitStrategy get(ClassLoader cl) throws IOException {
-        List<InitStrategy> r = Service.loadInstances(cl, InitStrategy.class);
-        if (r.isEmpty())    return new InitStrategy();      // default
-
-        InitStrategy s = r.get(0);
-        LOGGER.fine("Using "+s+" as InitStrategy");
+        Iterator<InitStrategy> it = ServiceLoader.load(InitStrategy.class, cl).iterator();
+        if (!it.hasNext()) {
+            return new InitStrategy(); // default
+        }
+        InitStrategy s = it.next();
+        LOGGER.log(Level.FINE, "Using {0} as InitStrategy", s);
         return s;
     }
 

@@ -25,29 +25,21 @@ package hudson;
 
 import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
-import com.sun.jna.Native;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.WinIOException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import jnr.posix.FileStat;
-import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -67,8 +59,14 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -80,9 +78,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import hudson.util.jna.Kernel32Utils;
-import static hudson.util.jna.GNUCLibrary.LIBC;
 
 import java.security.DigestInputStream;
 
@@ -258,16 +253,16 @@ public class Util {
      * 
      * @param f
      *            What to delete. If a directory, it'll need to be empty.
-     * @throws IOException if it exists but could not be successfully deleted
+     * @throws IOException if it exists but could not be successfully deleted,
+     * or if it represents an invalid {@link Path}.
      */
     private static void tryOnceDeleteFile(File f) throws IOException {
-        if (!f.delete()) {
-            if(!f.exists())
-                // we are trying to delete a file that no longer exists, so this is not an error
-                return;
-
+        Path path = fileToPath(f);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
             // perhaps this file is read-only?
-            makeWritable(f);
+            makeWritable(path);
             /*
              on Unix both the file and the directory that contains it has to be writable
              for a file deletion to be successful. (Confirmed on Solaris 9)
@@ -281,56 +276,47 @@ public class Util {
              $ rm x
              rm: x not removed: Permission denied
              */
-
-            makeWritable(f.getParentFile());
-
-            if(!f.delete() && f.exists()) {
-                // trouble-shooting.
-                try {
-                    Files.deleteIfExists(f.toPath());
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
-
+            Path parent = path.getParent();
+            if (parent != null) {
+                makeWritable(parent);
+            }
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e2) {
                 // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
-                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
-                throw new IOException("Unable to delete " + f.getPath());
+                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files), e2);
+                throw e2;
             }
         }
     }
 
     /**
-     * Makes the given file writable by any means possible.
+     * Makes the file at the given path writable by any means possible.
      */
-    private static void makeWritable(@Nonnull File f) {
-        if (f.setWritable(true)) {
-            return;
-        }
-        // TODO do we still need to try anything else?
-
-        // try chmod. this becomes no-op if this is not Unix.
-        try {
-            Chmod chmod = new Chmod();
-            chmod.setProject(new Project());
-            chmod.setFile(f);
-            chmod.setPerm("u+w");
-            chmod.execute();
-        } catch (BuildException e) {
-            LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
+    private static void makeWritable(@Nonnull Path path) throws IOException {
+        if (!Functions.isWindows()) {
+            try {
+                PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
+                Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
+                newPermissions.add(PosixFilePermission.OWNER_WRITE);
+                Files.setPosixFilePermissions(path, newPermissions);
+                return;
+            } catch (NoSuchFileException e) {
+                return;
+            } catch (UnsupportedOperationException e) {
+                // PosixFileAttributes not supported, fall back to old IO.
+            }
         }
 
-        try {// try libc chmod
-            POSIX posix = PosixAPI.jnr();
-            String path = f.getAbsolutePath();
-            FileStat stat = posix.stat(path);
-            posix.chmod(path, stat.mode()|0200); // u+w
-        } catch (Throwable t) {
-            LOGGER.log(Level.FINE,"Failed to chmod(2) "+f,t);
-        }
-
+        /**
+         * We intentionally do not check the return code of setWritable, because if it
+         * is false we prefer to rethrow the exception thrown by Files.deleteIfExists,
+         * which will have a more useful message than something we make up here.
+         */
+        path.toFile().setWritable(true);
     }
 
     /**
@@ -493,7 +479,6 @@ public class Util {
     /**
      * Checks if the given file represents a symlink.
      */
-    //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
@@ -502,44 +487,29 @@ public class Util {
          *  you have to go through BasicFileAttributes and do the following check:
          *     isSymbolicLink() || isOther()
          *  The isOther() call will include Windows reparse points, of which a directory junction is.
-         *
-         *  Since we already have a function that detects Windows junctions or symlinks and treats them
-         *  both as symlinks, let's use that function and always call it before calling down to the
-         *  NIO2 API.
-         *
+         *  It also includes includes devices, but reading the attributes of a device with NIO fails
+         *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
+         *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
+         *  calling readAttributes.
          */
-        if (Functions.isWindows()) {
-            try {
-                return Kernel32Utils.isJunctionOrSymlink(file);
-            } catch (UnsupportedOperationException | LinkageError e) {
-                // fall through
-            }
-        }
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
-        String name = file.getName();
-        if (name.equals(".") || name.equals(".."))
-            return false;
-
-        File fileInCanonicalParent;
-        File parentDir = file.getParentFile();
-        if ( parentDir == null ) {
-            fileInCanonicalParent = file;
-        } else {
-            fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
-        }
-        return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }
-
-    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
-    private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
             Path path = file.toPath();
-            return Files.isSymbolicLink(path);
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (attrs.isSymbolicLink()) {
+                return true;
+            } else if (attrs instanceof DosFileAttributes) {
+                /* Returns true for non-symbolic link reparse points and devices. We could call
+                 * WindowsFileAttributes#isReparsePoint with reflection instead to exclude devices,
+                 * but as mentioned in the above comment this does not appear to be an issue.
+                 */
+                return attrs.isOther();
+            } else {
+                return false;
+            }
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        } catch (NoSuchFileException e) {
+            return false;
         }
     }
 
@@ -565,6 +535,25 @@ public class Util {
             }
         }
         return true;
+    }
+
+    /**
+     * A check if a file path is a descendant of a parent path
+     * @param forParent the parent the child should be a descendant of
+     * @param potentialChild the path to check
+     * @return true if so
+     * @throws IOException for invalid paths
+     * @since 2.80
+     * @see InvalidPathException
+     */
+    public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
+        try {
+            Path child = potentialChild.getAbsoluteFile().toPath().normalize();
+            Path parent = forParent.getAbsoluteFile().toPath().normalize();
+            return child.startsWith(parent);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -1323,78 +1312,6 @@ public class Util {
     public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
-            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
-                return;
-            }
-            if (NO_SYMLINK) {
-                return;
-            }
-
-            File symlinkFile = new File(baseDir, symlinkPath);
-            if (Functions.isWindows()) {
-                if (symlinkFile.exists()) {
-                    symlinkFile.delete();
-                }
-                File dst = new File(symlinkFile,"..\\"+targetPath);
-                try {
-                    Kernel32Utils.createSymbolicLink(symlinkFile,targetPath,dst.isDirectory());
-                } catch (WinIOException e) {
-                    if (e.getErrorCode()==1314) {/* ERROR_PRIVILEGE_NOT_HELD */
-                        warnWindowsSymlink();
-                        return;
-                    }
-                    throw e;
-                } catch (UnsatisfiedLinkError e) {
-                    // not available on this Windows
-                    return;
-                }
-            } else {
-                String errmsg = "";
-                // if a file or a directory exists here, delete it first.
-                // try simple delete first (whether exists() or not, as it may be symlink pointing
-                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
-                if (!symlinkFile.delete() && symlinkFile.exists())
-                    // ignore a failure.
-                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
-
-                Integer r=null;
-                if (!SYMLINK_ESCAPEHATCH) {
-                    try {
-                        r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        if (r!=0) {
-                            r = Native.getLastError();
-                            errmsg = LIBC.strerror(r);
-                        }
-                    } catch (LinkageError e) {
-                        // if JNA is unavailable, fall back.
-                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        POSIX posix = PosixAPI.jnr();
-                        if (posix.isNative()) {
-                            // TODO should we rethrow PosixException as IOException here?
-                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        }
-                    }
-                }
-                if (r==null) {
-                    // if all else fail, fall back to the most expensive approach of forking a process
-                    // TODO is this really necessary? JavaPOSIX should do this automatically
-                    r = new LocalProc(new String[]{
-                        "ln","-s", targetPath, symlinkPath},
-                        new String[0],listener.getLogger(), baseDir).join();
-                }
-                if (r!=0)
-                    listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
-            }
-        } catch (IOException e) {
-            PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
-            Util.displayIOException(e,listener);
-            Functions.printStackTrace(e, log);
-        }
-    }
-
-    private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
-        try {
             Path path = new File(baseDir, symlinkPath).toPath();
             Path target = Paths.get(targetPath, new String[0]);
 
@@ -1414,19 +1331,18 @@ public class Util {
                     throw fileAlreadyExistsException;
                 }
             }
-            return true;
         } catch (UnsupportedOperationException e) {
-                return true; // no symlinks on this platform
-        } catch (FileSystemException e) {
-            if (Functions.isWindows()) {
+            PrintStream log = listener.getLogger();
+            log.print("Symbolic links are not supported on this platform");
+            Functions.printStackTrace(e, log);
+        } catch (InvalidPathException | IOException e) {
+            if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
-                return true;
+                return;
             }
-            return false;
-        } catch (IOException x) {
-            throw x;
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            PrintStream log = listener.getLogger();
+            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
+            Functions.printStackTrace(e, log);
         }
     }
 
@@ -1669,6 +1585,51 @@ public class Util {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+         // Anything larger is a file type, not a permission.
+        int PERMISSIONS_MASK = 07777;
+        // setgid/setuid/sticky are not supported.
+        int MAX_SUPPORTED_MODE = 0777;
+        mode = mode & PERMISSIONS_MASK;
+        if ((mode & MAX_SUPPORTED_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
+    }
+
+    /**
+     * Converts a {@link File} into a {@link Path} and checks runtime exceptions.
+     * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -1736,4 +1697,15 @@ public class Util {
      */
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+
+    /**
+     * If this flag is true, native implementations of {@link FilePath#chmod}
+     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
+     * <p>
+     * This should only be enabled if the setgid/setuid/sticky bits are
+     * intentionally set on the Jenkins installation and they are being
+     * overwritten by Jenkins erroneously.
+     */
+    @Restricted(value = NoExternalUse.class)
+    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

@@ -147,7 +147,7 @@ import static javax.servlet.http.HttpServletResponse.*;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<Executor>();
     // TODO:
@@ -330,14 +330,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public ACL getACL() {
         return Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
-    }
-
-    public void checkPermission(Permission permission) {
-        getACL().checkPermission(permission);
-    }
-
-    public boolean hasPermission(Permission permission) {
-        return getACL().hasPermission(permission);
     }
 
     /**
@@ -575,7 +567,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @since 1.624
      * @return
-     *      null if the computer is disconnected and therefore we don't know whether it is Unix or not.
+     *      {@code null} if the computer is disconnected and therefore we don't know whether it is Unix or not.
      */
     public abstract @CheckForNull Boolean isUnix();
 
@@ -784,6 +776,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return "computer/" + Util.rawEncode(getName()) + "/";
     }
 
+    @Exported
+    public Set<LabelAtom> getAssignedLabels() {
+        Node node = getNode();
+        return (node != null) ? node.getAssignedLabels() : Collections.EMPTY_SET;
+    }
+
     /**
      * Returns projects that are tied on this node.
      */
@@ -976,7 +974,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
      *
      * @return the read-only snapshot view of all {@link Executor} instances including {@linkplain OneOffExecutor}s.
-     * @since TODO
+     * @since 2.55
      */
     public List<Executor> getAllExecutors() {
         List<Executor> result = new ArrayList<>(executors.size() + oneOffExecutors.size());
@@ -1066,6 +1064,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
         return firstDemand;
     }
+
+    /**
+     * Returns the {@link Node} description for this computer
+     */
+    @Restricted(DoNotUse.class)
+    @Exported
+    public @Nonnull String getDescription() {
+        Node node = getNode();
+        return (node != null) ? node.getNodeDescription() : null;
+    }
+
 
     /**
      * Called by {@link Executor} to kill excessive executors from this computer.

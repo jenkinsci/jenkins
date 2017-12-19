@@ -39,26 +39,26 @@ for(i = 0; i < buildTypes.size(); i++) {
                                     "MAVEN_OPTS=-Xmx1536m -Xms512m"]) {
                             // Actually run Maven!
                             // -Dmaven.repo.local=… tells Maven to create a subdir in the temporary directory for the local Maven repository
-                            def mvnCmd = "mvn -Pdebug -U clean install javadoc:javadoc ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
+                            def mvnCmd = "mvn -Pdebug -U javadoc:javadoc clean install ${runTests ? '-Dmaven.test.failure.ignore' : '-DskipTests'} -V -B -Dmaven.repo.local=${pwd tmp: true}/m2repo -s settings-azure.xml -e"
                             if(isUnix()) {
                                 sh mvnCmd
                                 sh 'test `git status --short | tee /dev/stderr | wc --bytes` -eq 0'
                             } else {
-                                bat "$mvnCmd -Duser.name=yay" // INFRA-1032 workaround
+                                bat mvnCmd
                             }
                         }
                     }
                 }
 
                 // Once we've built, archive the artifacts and the test results.
-                stage("${buildType} Archive Artifacts / Test Results") {
+                stage("${buildType} Publishing") {
                     def files = findFiles(glob: '**/target/*.jar, **/target/*.war, **/target/*.hpi')
                     renameFiles(files, buildType.toLowerCase())
 
                     archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.hpi',
                                 fingerprint: true
                     if (runTests) {
-                        junit healthScaleFactor: 20.0, testResults: '**/target/surefire-reports/*.xml'
+                        junit healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml'
                     }
                 }
             }

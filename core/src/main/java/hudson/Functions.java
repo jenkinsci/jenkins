@@ -26,6 +26,7 @@
 package hudson;
 
 import hudson.model.Slave;
+import hudson.security.*;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -56,11 +57,6 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
-import hudson.security.AccessControlled;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.Permission;
-import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -125,6 +121,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -136,6 +133,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -1135,20 +1133,24 @@ public class Functions {
      * @since 1.512
      */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
-      return Items.getAllItems(root, TopLevelItem.class);
+      return root.getAllItems(TopLevelItem.class);
     }
     
     /**
      * Gets the relative name or display name to the given item from the specified group.
      *
      * @since 1.515
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, a {@code null} will be returned by the method
+     * @param g the ItemGroup used as point of reference for the item.
+     *          If the group is not specified, item's path will be used.
      * @param useDisplayName if true, returns a display name, otherwise returns a name
      * @return
-     *      String like "foo » bar"
+     *      String like "foo » bar".
+     *      {@code null} if item is null or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g, boolean useDisplayName) {
         if (p == null) return null;
         if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
         String separationString = useDisplayName ? " » " : "/";
@@ -1182,7 +1184,7 @@ public class Functions {
 
             if (gr instanceof Item)
                 i = (Item)gr;
-            else
+            else // Parent is a group, but not an item
                 return null;
         }
     }
@@ -1192,11 +1194,14 @@ public class Functions {
      *
      * @since 1.515
      * @param p the Item we want the relative display name
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo/bar"
+     *      String like "foo/bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
     }    
     
@@ -1205,12 +1210,15 @@ public class Functions {
      * Gets the relative display name to the given item from the specified group.
      *
      * @since 1.512
-     * @param p the Item we want the relative display name
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "Foo » Bar"
+     *      String like "Foo » Bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeDisplayNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
     }
 
@@ -1571,7 +1579,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return ACL.isAnonymous(Jenkins.getAuthentication());
     }
 
     /**
@@ -2024,7 +2032,7 @@ public class Functions {
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal !=null) {
+            if (tal != null) { // headers used only by deprecated Remoting-based CLI
                 int p = tal.getAdvertisedPort();
                 rsp.setIntHeader("X-Hudson-CLI-Port", p);
                 rsp.setIntHeader("X-Jenkins-CLI-Port", p);
@@ -2040,6 +2048,15 @@ public class Functions {
             return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
         } else {
             return true;
+        }
+    }
+
+    @Restricted(NoExternalUse.class) // for cc.xml.jelly
+    public static Collection<TopLevelItem> getCCItems(View v) {
+        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
+            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
+        } else {
+            return v.getItems();
         }
     }
 

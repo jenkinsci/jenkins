@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.test.Issue;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -53,11 +54,15 @@ import hudson.util.HudsonIsLoading;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -83,6 +88,26 @@ public class ViewTest {
     @Issue("JENKINS-7100")
     @Test public void xHudsonHeader() throws Exception {
         assertNotNull(j.createWebClient().goTo("").getWebResponse().getResponseHeaderValue("X-Hudson"));
+    }
+
+    @Issue("JENKINS-43848")
+    @Test public void testNoCacheHeadersAreSet() throws Exception {
+        List<NameValuePair> responseHeaders = j.createWebClient()
+                .goTo("view/all/itemCategories", "application/json")
+                .getWebResponse()
+                .getResponseHeaders();
+
+
+        final Map<String, String> values = new HashMap<>();
+
+        for(NameValuePair p : responseHeaders) {
+            values.put(p.getName(), p.getValue());
+        }
+
+        String resp = values.get("Cache-Control");
+        assertThat(resp, is("no-cache, no-store, must-revalidate"));
+        assertThat(values.get("Expires"), is("0"));
+        assertThat(values.get("Pragma"), is("no-cache"));
     }
 
     /**
@@ -504,7 +529,7 @@ public class ViewTest {
                 return null;
             }
         });
-        JenkinsRule.WebClient wc = j.createWebClient().login("admin");
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin");
         assertEquals("original ${rootURL}/checkJobName still supported", "<div/>", wc.goTo("checkJobName?value=stuff").getWebResponse().getContentAsString());
         assertEquals("but now possible on a view in a folder", "<div/>", wc.goTo("job/d1/view/All/checkJobName?value=stuff").getWebResponse().getContentAsString());
     }

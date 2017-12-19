@@ -52,6 +52,8 @@ import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import jenkins.CLI;
@@ -74,6 +76,10 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Restricted(NoExternalUse.class)
 @Extension
 public class SetupWizard extends PageDecorator {
+    public SetupWizard() {
+        checkFilter();
+    }
+
     /**
      * The security token parameter name
      */
@@ -81,11 +87,6 @@ public class SetupWizard extends PageDecorator {
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
     
-    /**
-     * Used to determine if this was a new install (vs. an upgrade, restart, or otherwise)
-     */
-    private static boolean isUsingSecurityToken = false;
-
     /**
      * Initialize the setup wizard, this will process any current state initializations
      */
@@ -127,6 +128,13 @@ public class SetupWizard extends PageDecorator {
                     // Disable CLI over Remoting
                     CLI.get().setEnabled(false);
 
+                    // Disable old Non-Encrypted protocols ()
+                    HashSet<String> newProtocols = new HashSet<>(jenkins.getAgentProtocols());
+                    newProtocols.removeAll(Arrays.asList(
+                            "JNLP2-connect", "JNLP-connect", "CLI-connect"   
+                    ));
+                    jenkins.setAgentProtocols(newProtocols);
+                    
                     // require a crumb issuer
                     jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
     
@@ -158,17 +166,8 @@ public class SetupWizard extends PageDecorator {
                         + "*************************************************************" + ls
                         + "*************************************************************" + ls);
             }
-            
-            try {
-                PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
-                // if we're not using security defaults, we should not show the security token screen
-                // users will likely be sent to a login screen instead
-                isUsingSecurityToken = isUsingSecurityDefaults();
-            } catch (ServletException e) {
-                throw new RuntimeException("Unable to add PluginServletFilter for the SetupWizard", e);
-            }
         }
-        
+
         try {
             // Make sure plugin metadata is up to date
             UpdateCenter.updateDefaultSite();
@@ -176,14 +175,34 @@ public class SetupWizard extends PageDecorator {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
+
+    private void setUpFilter() {
+        try {
+            if (!PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER)) {
+                PluginServletFilter.addFilter(FORCE_SETUP_WIZARD_FILTER);
+            }
+        } catch (ServletException e) {
+            throw new RuntimeException("Unable to add PluginServletFilter for the SetupWizard", e);
+        }
+    }
+
+    private void tearDownFilter() {
+        try {
+            if (PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER)) {
+                PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
+            }
+        } catch (ServletException e) {
+            throw new RuntimeException("Unable to remove PluginServletFilter for the SetupWizard", e);
+        }
+    }
+
     /**
      * Indicates a generated password should be used - e.g. this is a new install, no security realm set up
      */
+    @SuppressWarnings("unused") // used by jelly
     public boolean isUsingSecurityToken() {
         try {
-            return isUsingSecurityToken // only ever show the unlock page if using the security token
-                    && !Jenkins.getInstance().getInstallState().isSetupComplete()
+            return !Jenkins.getInstance().getInstallState().isSetupComplete()
                     && isUsingSecurityDefaults();
         } catch (Exception e) {
             // ignore
@@ -477,8 +496,6 @@ public class SetupWizard extends PageDecorator {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         InstallUtil.saveLastExecVersion();
         setCurrentLevel(Jenkins.getVersion());
-        PluginServletFilter.removeFilter(FORCE_SETUP_WIZARD_FILTER);
-        isUsingSecurityToken = false; // this should not be considered new anymore
         InstallUtil.proceedToNextStateFrom(InstallState.INITIAL_SETUP_COMPLETED);
     }
     
@@ -498,7 +515,28 @@ public class SetupWizard extends PageDecorator {
         }
         return InstallState.valueOf(name);
     }
-    
+
+    /**
+     * Called upon install state update.
+     * @param state the new install state.
+     * @since FIXME
+     */
+    public void onInstallStateUpdate(InstallState state) {
+        if (state.isSetupComplete()) {
+            tearDownFilter();
+        } else {
+            setUpFilter();
+        }
+    }
+
+    /**
+     * Returns whether the setup wizard filter is currently registered.
+     * @since FIXME
+     */
+    public boolean hasSetupWizardFilter() {
+        return PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER);
+    }
+
     /**
      * This filter will validate that the security token is provided
      */
@@ -534,4 +572,13 @@ public class SetupWizard extends PageDecorator {
         public void destroy() {
         }
     };
+
+    /**
+     * Sets up the Setup Wizard filter if the current state requires it.
+     */
+    private void checkFilter() {
+        if (!Jenkins.getInstance().getInstallState().isSetupComplete()) {
+            setUpFilter();
+        }
+    }
 }

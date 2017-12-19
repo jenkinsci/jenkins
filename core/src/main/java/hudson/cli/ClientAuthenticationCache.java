@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.HMACConfidentialKey;
 
+import javax.annotation.Nonnull;
+
 /**
  * Represents the authentication credential store of the CLI client.
  *
@@ -38,7 +40,7 @@ public class ClientAuthenticationCache implements Serializable {
 
     private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ClientAuthenticationCache.class, "MAC");
     private static final Logger LOGGER = Logger.getLogger(ClientAuthenticationCache.class.getName());
-
+    
     /**
      * Where the store should be placed.
      */
@@ -73,7 +75,7 @@ public class ClientAuthenticationCache implements Serializable {
      *
      * @return {@link jenkins.model.Jenkins#ANONYMOUS} if no such credential is found, or if the stored credential is invalid.
      */
-    public Authentication get() {
+    public @Nonnull Authentication get() {
         Jenkins h = Jenkins.getActiveInstance();
         String val = props.getProperty(getPropertyKey());
         if (val == null) {
@@ -100,6 +102,7 @@ public class ClientAuthenticationCache implements Serializable {
             LOGGER.log(Level.FINER, "Loaded stored CLI authentication for {0}", username);
             return new UsernamePasswordAuthenticationToken(u.getUsername(), "", u.getAuthorities());
         } catch (AuthenticationException | DataAccessException e) {
+            //TODO there is no check to be consistent with User.ALLOW_NON_EXISTENT_USER_TO_LOGIN
             LOGGER.log(Level.FINE, "Stored CLI authentication did not correspond to a valid user: " + username, e);
             return Jenkins.ANONYMOUS;
         }
@@ -110,9 +113,11 @@ public class ClientAuthenticationCache implements Serializable {
      */
     @VisibleForTesting
     String getPropertyKey() {
-        String url = Jenkins.getActiveInstance().getRootUrl();
+        Jenkins j = Jenkins.getActiveInstance();
+        String url = j.getRootUrl();
         if (url!=null)  return url;
-        return Secret.fromString("key").getEncryptedValue();
+        
+        return j.getLegacyInstanceId();
     }
 
     /**

@@ -47,9 +47,9 @@ import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.future.WaitableFuture;
-import org.apache.sshd.common.util.SecurityUtils;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
+import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
  * Implements SSH connection mode of {@link CLI}.
@@ -63,6 +63,7 @@ class SSHCLI {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
         URL url = new URL(jenkinsUrl + "login");
         URLConnection conn = url.openConnection();
+        CLI.verifyJenkinsConnection(conn);
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");
 
         if (endpointDescription == null) {

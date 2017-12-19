@@ -31,7 +31,7 @@ import hudson.model.queue.SubTask;
 import hudson.model.queue.WorkUnit;
 import hudson.security.ACL;
 import hudson.util.InterceptingProxy;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 
 import static hudson.model.queue.Executables.*;
 import hudson.security.ACLContext;
+import hudson.security.AccessControlled;
 import java.util.Collection;
 import static java.util.logging.Level.*;
 import javax.annotation.CheckForNull;
@@ -71,6 +72,7 @@ import jenkins.model.queue.AsynchronousExecution;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.QueueItemAuthenticatorDescriptor;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 
@@ -85,6 +87,7 @@ public class Executor extends Thread implements ModelObject {
     protected final @Nonnull Computer owner;
     private final Queue queue;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final int DEFAULT_ESTIMATED_DURATION = -1;
 
     @GuardedBy("lock")
     private long startTime;
@@ -102,6 +105,11 @@ public class Executor extends Thread implements ModelObject {
      */
     @GuardedBy("lock")
     private Queue.Executable executable;
+
+    /**
+     * Calculation of estimated duration needs some time, so, it's better to cache it once executable is known
+     */
+    private long executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
 
     /**
      * Used to mark that the execution is continuing asynchronously even though {@link Executor} as {@link Thread}
@@ -355,6 +363,10 @@ public class Executor extends Thread implements ModelObject {
                         LOGGER.log(FINE, getName()+" grabbed "+workUnit+" from queue");
                     SubTask task = workUnit.work;
                     Executable executable = task.createExecutable();
+                    if (executable == null) {
+                        String displayName = task instanceof Queue.Task ? ((Queue.Task) task).getFullDisplayName() : task.getDisplayName();
+                        LOGGER.log(WARNING, "{0} cannot be run (for example because it is disabled)", displayName);
+                    }
                     lock.writeLock().lock();
                     try {
                         Executor.this.executable = executable;
@@ -387,8 +399,10 @@ public class Executor extends Thread implements ModelObject {
                 // by tasks. In such case Jenkins starts the workUnit in order
                 // to report results to console outputs.
                 if (executable == null) {
-                    throw new Error("The null Executable has been created for "+workUnit+". The task cannot be executed");
+                    return;
                 }
+
+                executableEstimatedDuration = executable.getEstimatedDuration();
 
                 if (executable instanceof Actionable) {
                     if (LOGGER.isLoggable(Level.FINER)) {
@@ -440,11 +454,12 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(FINE, getName()+" interrupted",e);
             // die peacefully
         } catch(Exception | Error e) {
-            LOGGER.log(SEVERE, "Unexpected executor death", e);
+            LOGGER.log(SEVERE, getName()+": Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
                 finish2();
             }
+            executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         }
     }
 
@@ -494,7 +509,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     public @CheckForNull Queue.Executable getCurrentExecutable() {
         lock.readLock().lock();
         try {
@@ -502,6 +516,16 @@ public class Executor extends Thread implements ModelObject {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    /**
+     * Same as {@link #getCurrentExecutable} but checks {@link Item#READ}.
+     */
+    @Exported(name="currentExecutable")
+    @Restricted(DoNotUse.class) // for exporting only
+    public Queue.Executable getCurrentExecutableForApi() {
+        Executable candidate = getCurrentExecutable();
+        return candidate instanceof AccessControlled && ((AccessControlled) candidate).hasPermission(Item.READ) ? candidate : null;
     }
     
     /**
@@ -521,7 +545,6 @@ public class Executor extends Thread implements ModelObject {
      * @return
      *      null if the executor is idle.
      */
-    @Exported
     @CheckForNull
     public WorkUnit getCurrentWorkUnit() {
         lock.readLock().lock();
@@ -672,18 +695,9 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public int getProgress() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return -1;
-            }
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d <= 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         int num = (int) (getElapsedTime() * 100 / d);
@@ -702,25 +716,23 @@ public class Executor extends Thread implements ModelObject {
      */
     @Exported
     public boolean isLikelyStuck() {
-        long d;
-        long elapsed;
         lock.readLock().lock();
         try {
             if (executable == null) {
                 return false;
             }
-
-            elapsed = getElapsedTime();
-            d = executable.getEstimatedDuration();
         } finally {
             lock.readLock().unlock();
         }
+
+        long elapsed = getElapsedTime();
+        long d = executableEstimatedDuration;
         if (d >= 0) {
             // if it's taking 10 times longer than ETA, consider it stuck
             return d * 10 < elapsed;
         } else {
             // if no ETA is available, a build taking longer than a day is considered stuck
-            return TimeUnit2.MILLISECONDS.toHours(elapsed) > 24;
+            return TimeUnit.MILLISECONDS.toHours(elapsed) > 24;
         }
     }
 
@@ -762,17 +774,7 @@ public class Executor extends Thread implements ModelObject {
      * until the build completes.
      */
     public String getEstimatedRemainingTime() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return Messages.Executor_NotAvailable();
-            }
-
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d < 0) {
             return Messages.Executor_NotAvailable();
         }
@@ -790,24 +792,14 @@ public class Executor extends Thread implements ModelObject {
      * it as a number of milli-seconds.
      */
     public long getEstimatedRemainingTimeMillis() {
-        long d;
-        lock.readLock().lock();
-        try {
-            if (executable == null) {
-                return -1;
-            }
-
-            d = executable.getEstimatedDuration();
-        } finally {
-            lock.readLock().unlock();
-        }
+        long d = executableEstimatedDuration;
         if (d < 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         long eta = d - getElapsedTime();
         if (eta <= 0) {
-            return -1;
+            return DEFAULT_ESTIMATED_DURATION;
         }
 
         return eta;
@@ -892,16 +884,10 @@ public class Executor extends Thread implements ModelObject {
      * Returns when this executor started or should start being idle.
      */
     public long getIdleStartMilliseconds() {
-        lock.readLock().lock();
-        try {
-            if (isIdle())
-                return Math.max(creationTime, owner.getConnectTime());
-            else {
-                return Math.max(startTime + Math.max(0, executable == null ? -1 : executable.getEstimatedDuration()),
-                        System.currentTimeMillis() + 15000);
-            }
-        } finally {
-            lock.readLock().unlock();
+        if (isIdle())
+            return Math.max(creationTime, owner.getConnectTime());
+        else {
+            return Math.max(startTime + Math.max(0, executableEstimatedDuration), System.currentTimeMillis() + 15000);
         }
     }
 
@@ -967,7 +953,7 @@ public class Executor extends Thread implements ModelObject {
      */
     @Deprecated
     public static long getEstimatedDurationFor(Executable e) {
-        return e == null ? -1 : e.getEstimatedDuration();
+        return e == null ? DEFAULT_ESTIMATED_DURATION : e.getEstimatedDuration();
     }
 
     /**

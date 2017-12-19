@@ -29,6 +29,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FeedAdapter;
+import hudson.FilePath;
 import hudson.PermalinkList;
 import hudson.Util;
 import hudson.cli.declarative.CLIResolver;
@@ -68,6 +69,7 @@ import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -120,6 +122,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -374,13 +379,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *      (in which case none of the node specific properties would be reflected in the resulting override.)
      */
     public @Nonnull EnvVars getEnvironment(@CheckForNull Node node, @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        EnvVars env;
+        EnvVars env = new EnvVars();
 
-        if (node!=null) {
+        if (node != null) {
             final Computer computer = node.toComputer();
-            env = (computer != null) ? computer.buildEnvironment(listener) : new EnvVars();                
-        } else {
-            env = new EnvVars();
+            if (computer != null) {
+                // we need to get computer environment to inherit platform details 
+                env = computer.getEnvironment();
+                env.putAll(computer.buildEnvironment(listener));
+            }
         }
 
         env.putAll(getCharacteristicEnvVars());
@@ -673,6 +680,40 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override public void delete() throws IOException, InterruptedException {
         super.delete();
         Util.deleteRecursive(getBuildDir());
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Extension
+    public static class SubItemBuildsLocationImpl extends ItemListener {
+        @Override
+        public void onLocationChanged(Item item, String oldFullName, String newFullName) {
+            final Jenkins jenkins = Jenkins.getInstance();
+            if (!jenkins.isDefaultBuildDir() && item instanceof Job) {
+                File newBuildDir = ((Job)item).getBuildDir();
+                try {
+                    if (!Util.isDescendant(item.getRootDir(), newBuildDir)) {
+                        //OK builds are stored somewhere outside of the item's root, so none of the other move operations has probably moved it.
+                        //So let's try even though we lack some information
+                        String oldBuildsDir = Jenkins.expandVariablesForDirectory(jenkins.getRawBuildsDir(), oldFullName, "<NOPE>");
+                        if (oldBuildsDir.contains("<NOPE>")) {
+                            LOGGER.severe(String.format("Builds directory for job %1$s appears to be outside of item root," +
+                                    " but somehow still containing the item root path, which is unknown. Cannot move builds from %2$s to %1$s.", newFullName, oldFullName));
+                        } else {
+                            File oldDir = new File(oldBuildsDir);
+                            if (oldDir.isDirectory()) {
+                                try {
+                                    FileUtils.moveDirectory(oldDir, newBuildDir);
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.SEVERE, String.format("Failed to move %s to %s", oldBuildsDir, newBuildDir.getAbsolutePath()), e);
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to inspect " + item.getRootDir() + ". Builds might not be moved.", e);
+                }
+            }
+        }
     }
 
     /**
@@ -1051,7 +1092,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * RSS feed for changes in this project.
      *
-     * @since TODO
+     * @since 2.60
      */
     public void doRssChangelog(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         class FeedItem {
@@ -1604,4 +1645,58 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
+    
+    /**
+     * Check new name for job
+     * @param newName - New name for job
+     * @return {@code true} - if newName occupied and user has permissions for this job
+     *         {@code false} - if newName occupied and user hasn't permissions for this job
+     *         {@code null} - if newName didn't occupied
+     * 
+     * @throws Failure if the given name is not good
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public Boolean checkIfNameIsUsed(@Nonnull String newName) throws Failure{
+        
+        Item item = null;
+        Jenkins.checkGoodName(newName);
+        
+        try {
+            item = getParent().getItem(newName);
+        } catch(AccessDeniedException ex) {  
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                        "User {2} has {3} permission, but no {4} for existing job with the same name", 
+                        new Object[] {this.getFullName(), newName, User.current().getFullName(), Item.DISCOVER.name, Item.READ.name} );
+            }
+            return true;
+        }
+        
+        if (item != null) {
+            // User has Read permissions for existing job with the same name
+            return true;
+        } else {
+            SecurityContext initialContext = null;
+            try {
+                initialContext = hudson.security.ACL.impersonate(ACL.SYSTEM);
+                item = getParent().getItem(newName);
+
+                if (item != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                                "User {2} has no {3} permission for existing job with the same name", 
+                                new Object[] {this.getFullName(), newName, initialContext.getAuthentication().getName(), Item.DISCOVER.name} );
+                    }
+                    return false;
+                }
+
+            } finally {
+                if (initialContext != null) {
+                    SecurityContextHolder.setContext(initialContext);
+                }
+            }
+        }
+        return null;
+    }
 }

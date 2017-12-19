@@ -12,6 +12,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.ui.AuthenticationEntryPoint;
 import org.acegisecurity.ui.rememberme.NullRememberMeServices;
 import org.acegisecurity.ui.rememberme.RememberMeServices;
+import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -60,7 +61,7 @@ public class BasicHeaderProcessor implements Filter {
         HttpServletResponse rsp = (HttpServletResponse) response;
         String authorization = req.getHeader("Authorization");
 
-        if (authorization!=null && authorization.startsWith("Basic ")) {
+        if (StringUtils.startsWithIgnoreCase(authorization,"Basic ")) {
             // authenticate the user
             String uidpassword = Scrambler.descramble(authorization.substring(6));
             int idx = uidpassword.indexOf(':');
