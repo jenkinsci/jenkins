@@ -26,6 +26,7 @@ package jenkins.install;
 
 import hudson.ClassicPluginStrategy;
 import hudson.ClassicPluginStrategy.DetachedPlugin;
+import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -77,6 +79,43 @@ public class LoadDetachedPluginsTest {
                     detachedPlugins.size(), greaterThan(1));
             assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
                     getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            assertNoFailedPlugins(r);
+        });
+    }
+
+    @Issue("JENKINS-48604")
+    @Test
+    @LocalData
+    public void upgradeFromJenkins2WithNewerDependency() {
+        VersionNumber since = new VersionNumber("2.0");
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
+            assertThat("Plugins have been detached since the pre-upgrade version",
+                    detachedPlugins.size(), greaterThan(1));
+            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
+                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
+            assertThat("Script-security should be installed", scriptSecurity, notNullValue());
+            assertThat("Dependencies of detached plugins should not be downgraded",
+                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.34")));
+            assertNoFailedPlugins(r);
+        });
+    }
+
+    @Test
+    @LocalData
+    public void upgradeFromJenkins2WithOlderDependency() {
+        VersionNumber since = new VersionNumber("2.0");
+        rr.then(r -> {
+            List<DetachedPlugin> detachedPlugins = ClassicPluginStrategy.getDetachedPlugins(since);
+            assertThat("Plugins have been detached since the pre-upgrade version",
+                    detachedPlugins.size(), greaterThan(1));
+            assertThat("Plugins detached between the pre-upgrade version and the current version should be installed",
+                    getInstalledDetachedPlugins(r, detachedPlugins).size(), equalTo(detachedPlugins.size()));
+            Plugin scriptSecurity = r.jenkins.getPlugin("script-security");
+            assertThat("Script-security should be installed", scriptSecurity, notNullValue());
+            assertThat("Dependencies of detached plugins should be upgraded to the required version",
+                    scriptSecurity.getWrapper().getVersionNumber(), equalTo(new VersionNumber("1.18.1")));
             assertNoFailedPlugins(r);
         });
     }
