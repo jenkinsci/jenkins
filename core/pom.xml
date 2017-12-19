@@ -29,7 +29,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.94-SNAPSHOT</version>
+    <version>2.97-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-core</artifactId>
@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <staplerFork>true</staplerFork>
-    <stapler.version>1.253</stapler.version>
+    <stapler.version>1.254</stapler.version>
     <spring.version>2.5.6.SEC03</spring.version>
     <groovy.version>2.4.11</groovy.version>
     <!-- TODO: Actually many issues are being filtered by src/findbugs/findbugs-excludes.xml -->
@@ -796,25 +796,6 @@ THE SOFTWARE.
           </archive>
         </configuration>
       </plugin>
-      <plugin><!-- run unit test in src/test/java -->
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
@@ -888,42 +869,6 @@ THE SOFTWARE.
         <!-- In the default profile we always fail the build if there FindBugs errors -->
         <findbugs.failOnError>true</findbugs.failOnError>
       </properties>
-    </profile>
-    <profile>
-      <!-- Obtain code coverage report. This is done by running Unit tests on our own and suppressing surefire. -->
-      <id>cobertura</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.gmaven</groupId>
-            <artifactId>gmaven-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <!-- run unit test -->
-              <execution>
-                <phase>test</phase>
-                <goals>
-                  <goal>execute</goal>
-                </goals>
-                <configuration>
-                  <scriptpath>
-                    <element>${project.basedir}/src/build-script</element>
-                  </scriptpath>
-                  <source>${project.basedir}/src/build-script/unitTest.groovy</source>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- unit tests are run by GMaven through Ant. -->
-            <artifactId>maven-surefire-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <configuration>
-              <skipTests>true</skipTests>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

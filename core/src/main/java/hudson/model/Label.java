@@ -127,7 +127,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Alias for {@link #getDisplayName()}.
      */
-    @Exported
+    @Exported(visibility=2)
     public final String getName() {
         return getDisplayName();
     }

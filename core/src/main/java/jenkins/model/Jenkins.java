@@ -327,7 +327,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The Jenkins instance startup type i.e. NEW, UPGRADE etc
      */
-    private transient InstallState installState = InstallState.UNKNOWN;
+    private InstallState installState;
     
     /**
      * If we're in the process of an initial setup, 
@@ -919,7 +919,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
 
             setupWizard = new SetupWizard();
-            InstallUtil.proceedToNextStateFrom(InstallState.UNKNOWN);
+            getInstallState().initializeState();
 
             launchTcpSlaveAgentListener();
 
@@ -1028,9 +1028,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setInstallState(@Nonnull InstallState newState) {
         InstallState prior = installState;
         installState = newState;
-        if (!prior.equals(newState)) {
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installState });
+        if (!newState.equals(prior)) {
+            getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
         }
+        saveQuietly();
     }
 
     /**
@@ -2587,7 +2590,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        return extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
+        ExtensionList<T> extensionList = extensionLists.get(extensionType);
+        return extensionList != null ? extensionList : extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
     }
 
     /**
@@ -3064,7 +3068,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             });
         }
 
-        g.requires(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
+        g.requires(JOB_LOADED).attains(COMPLETED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
@@ -3079,7 +3083,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
-        g.requires(JOB_LOADED).add("Finalizing set up",new Executable() {
+        g.requires(JOB_LOADED).attains(COMPLETED).add("Finalizing set up",new Executable() {
             public void run(Reactor session) throws Exception {
                 rebuildDependencyGraph();
 

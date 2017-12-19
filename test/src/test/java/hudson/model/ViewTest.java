@@ -529,7 +529,7 @@ public class ViewTest {
                 return null;
             }
         });
-        JenkinsRule.WebClient wc = j.createWebClient().login("admin");
+        JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin");
         assertEquals("original ${rootURL}/checkJobName still supported", "<div/>", wc.goTo("checkJobName?value=stuff").getWebResponse().getContentAsString());
         assertEquals("but now possible on a view in a folder", "<div/>", wc.goTo("job/d1/view/All/checkJobName?value=stuff").getWebResponse().getContentAsString());
     }
