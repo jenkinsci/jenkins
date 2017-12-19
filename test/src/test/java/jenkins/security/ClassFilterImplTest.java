@@ -36,9 +36,11 @@ import hudson.tasks.Builder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import jenkins.model.GlobalConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -68,7 +70,7 @@ public class ClassFilterImplTest {
     @Test
     public void whitelistSanity() throws Exception {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
-            List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8);
+            List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toList());
             assertThat("whitelist is ordered", new TreeSet<>(lines), contains(lines.toArray(new String[0])));
             for (String line : lines) {
                 try {

@@ -10,7 +10,10 @@ com.google.common.collect.RegularImmutableSet
 com.google.common.collect.RegularImmutableSortedSet
 com.google.common.collect.SingletonImmutableList
 com.google.common.collect.SingletonImmutableSet
+
+# TODO move to maven-plugin
 hudson.maven.MavenInformation
+
 java.io.File
 java.lang.Boolean
 java.lang.Class
@@ -67,10 +70,15 @@ java.util.concurrent.atomic.AtomicBoolean
 java.util.logging.Level
 java.util.logging.LogRecord
 java.util.regex.Pattern
+
+# TODO move to job-dsl, or mark job-dsl-core with Jenkins-ClassFilter-Whitelisted: true
 javaposse.jobdsl.dsl.GeneratedJob
+
 org.acegisecurity.userdetails.User
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
+
+# TODO move to git-client
 org.eclipse.jgit.lib.ObjectId
 org.eclipse.jgit.lib.ObjectIdOwnerMap$Entry
 org.eclipse.jgit.lib.PersonIdent
@@ -78,8 +86,11 @@ org.eclipse.jgit.revwalk.RevCommit
 org.eclipse.jgit.revwalk.RevObject
 org.eclipse.jgit.revwalk.RevTree
 org.eclipse.jgit.transport.URIish
+
+# TODO move to workflow-support
 org.jboss.marshalling.TraceInformation$FieldInfo
 org.jboss.marshalling.TraceInformation$ObjectInfo
+
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
 org.jvnet.localizer.ResourceBundleHolder

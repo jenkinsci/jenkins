@@ -159,7 +159,9 @@ public interface CustomClassFilter extends ExtensionPoint {
             while (resources.hasMoreElements()) {
                 try (InputStream is = resources.nextElement().openStream()) {
                     for (String entry : IOUtils.readLines(is, StandardCharsets.UTF_8)) {
-                        if (entry.startsWith("!")) {
+                        if (entry.matches("#.*|\\s*")) {
+                            // skip
+                        } else if (entry.startsWith("!")) {
                             overrides.put(entry.substring(1), false);
                         } else {
                             overrides.put(entry, true);
