@@ -96,6 +96,12 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
      */
     private boolean onlyIfSuccessful;
 
+    /**
+     * Allow plugin to set build result.
+     */
+    @Nonnull
+    private boolean setBuildResult;
+
     private boolean fingerprint;
 
     /**
@@ -132,12 +138,17 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Deprecated
     public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful, Boolean defaultExcludes) {
+        this(artifacts, excludes, latestOnly, allowEmptyArchive, onlyIfSuccessful, defaultExcludes, true);
+    }
+
+    public ArtifactArchiver(String artifacts, String excludes, boolean latestOnly, boolean allowEmptyArchive, boolean onlyIfSuccessful, Boolean defaultExcludes, Boolean setBuildResult) {
         this(artifacts);
         setExcludes(excludes);
         this.latestOnly = latestOnly;
         setAllowEmptyArchive(allowEmptyArchive);
         setOnlyIfSuccessful(onlyIfSuccessful);
         setDefaultExcludes(defaultExcludes);
+        setSetBuildResult(setBuildResult);
     }
 
     // Backwards compatibility for older builds
@@ -214,6 +225,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
+    public boolean isSetBuildResult(){
+        return setBuildResult;
+    }
+
+    @DataBoundSetter public final void setSetBuildResult(boolean setBuildResult) {
+        this.setBuildResult = setBuildResult;
+    }
+
     private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
@@ -225,18 +244,18 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException, AbortException {
         if(artifacts.length()==0) {
-            listener.error(Messages.ArtifactArchiver_NoIncludes());
-            build.setResult(Result.FAILURE);
+            listener.error(hudson.tasks.Messages.ArtifactArchiver_NoIncludes());
+            updateBuildResult(build, Result.FAILURE);
             return;
         }
 
         Result result = build.getResult();
         if (onlyIfSuccessful && result != null && result.isWorseThan(Result.UNSTABLE)) {
-            listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
+            listener.getLogger().println(hudson.tasks.Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return;
         }
 
-        listener.getLogger().println(Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
+        listener.getLogger().println(hudson.tasks.Messages.ArtifactArchiver_ARCHIVING_ARTIFACTS());
         try {
             String artifacts = build.getEnvironment(listener).expand(this.artifacts);
 
@@ -251,7 +270,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
-                    listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
+                    listenerWarnOrError(listener, hudson.tasks.Messages.ArtifactArchiver_NoMatchFound(artifacts));
                     String msg = null;
                     try {
                     	msg = ws.validateAntFileMask(artifacts, FilePath.VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
@@ -262,7 +281,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                         listenerWarnOrError(listener, msg);
                 }
                 if (!allowEmptyArchive) {
-                	build.setResult(Result.FAILURE);
+                    updateBuildResult(build, Result.FAILURE);
                 }
             }
         } catch (java.nio.file.AccessDeniedException e) {
@@ -270,8 +289,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
             throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         } catch (IOException e) {
             Util.displayIOException(e,listener);
-            Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
-            build.setResult(Result.FAILURE);
+            Functions.printStackTrace(e, listener.error(hudson.tasks.Messages.ArtifactArchiver_FailedToArchive(artifacts)));
+            updateBuildResult(build, Result.FAILURE);
+        }
+    }
+
+    private void updateBuildResult(Run<?,?> build, Result result){
+        if (setBuildResult) {
+            build.setResult(result);
         }
     }
 
@@ -322,7 +347,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
 
         public String getDisplayName() {
-            return Messages.ArtifactArchiver_DisplayName();
+            return hudson.tasks.Messages.ArtifactArchiver_DisplayName();
         }
 
         /**
