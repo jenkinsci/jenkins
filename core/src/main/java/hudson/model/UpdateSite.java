@@ -32,12 +32,11 @@ import hudson.PluginWrapper;
 import hudson.Util;
 import hudson.lifecycle.Lifecycle;
 import hudson.model.UpdateCenter.UpdateCenterJob;
-import hudson.util.FormValidation;
+import hudson.util.*;
 import hudson.util.FormValidation.Kind;
-import hudson.util.HttpResponses;
-import hudson.util.TextFile;
+
 import static java.util.concurrent.TimeUnit.*;
-import hudson.util.VersionNumber;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -1259,7 +1258,7 @@ public class UpdateSite {
         }
 
         public void checkForTransientDependency() {
-            CyclicGraphDetector<UpdateSite.Plugin> cycleDetector = new CyclicGraphDetector<UpdateSite.Plugin>() {
+            CyclicGraphDetector<Plugin> cycleDetector = new CyclicGraphDetector<UpdateSite.Plugin>() {
 
                 @Override
                 protected List<UpdateSite.Plugin> getEdges(UpdateSite.Plugin p) {

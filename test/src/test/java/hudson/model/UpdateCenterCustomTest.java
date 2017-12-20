@@ -47,7 +47,7 @@ public class UpdateCenterCustomTest {
     }
 
     // TODO: move to Jenkins Test Harness
-    private static final class CustomUpdateCenterRule extends JenkinsRule {
+    protected static final class CustomUpdateCenterRule extends JenkinsRule {
         private final String updateCenterClassName;
         private String _oldValue = null;
         
