@@ -1,0 +1,16 @@
+<div>
+    Slave 通过JNLP启动时，其代理程序会尝试链接Jenkins特定的TCP连接点，来建立通信通道。
+    但是某些安全敏感的网络可能阻止您建立这个连接。
+    Jenkins在负载平衡器、
+    <a href="http://www.serverwatch.com/tutorials/article.php/3290851">反向代理</a>
+    到 <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>等环境中也可能无法建立连接.
+
+    <p>
+    Tunneling 选项可以让您把连接绕道其他主机或连接口，适用上述几种情景。
+    内容可以是 "<tt>HOST:PORT</tt>", "<tt>:PORT</tt>", 或 "<tt>HOST:</tt>". 第一种格式让JNLP Slave 代理程序连接到指定主机上的指定口，
+    假定您已经将该口的网络设定转到Jenkins JNLP Slave TCP 连接口。
+
+    <p>
+    在后两种格式中，不指定的部分就代表使用默认值（主机部分就是Jenkins执行的机器，TCP连接口就是Jenkins开启的那个）。
+     特殊的是 <tt>HOST:</tt> 这个格式是专门用于使用HTTP反向代理和Jenkins实际在另一个系统下运行的情况。
+</div>
