@@ -43,16 +43,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -1076,28 +1067,38 @@ public class UpdateSite {
          */
         public Set<Plugin> getAllDependencies(){
             //map of dependencies for plugin and its dependencies
-            Map<Plugin,List<Plugin>> allDependencies = new HashMap<Plugin,List<Plugin>>();
-            return addMissingDependencies(allDependencies);
+            Map<Plugin,List<Plugin>> dependencyMap = new HashMap<Plugin,List<Plugin>>();
+            addMissingDependencies(dependencyMap);
+            //since it is only for dependencies, remove this plugin from dependencies, if there is.
+            dependencyMap.remove(this);
+            return dependencyMap.keySet();
+
         }
 
-        private Set<Plugin> addMissingDependencies(Map<Plugin, List<Plugin>> plugins) {
-            if (!plugins.containsKey(this)) {
-                plugins.put(this, getNeededDependencies());
-            }
-            //add dependencies for each dependency which has not been already added
-            for (Plugin p : plugins.get(this)) {
-                if (plugins.get(p) == null) {
-                    p.addMissingDependencies(plugins);
+        private void addMissingDependencies(Map<Plugin, List<Plugin>> plugins) {
+            boolean alreadyAdded = false;
+            Optional<Plugin> plugin = plugins.keySet().stream().filter(item -> item.name.equals(this.name)).findFirst();
+
+            if (plugin.isPresent()) {
+                //only the highest version
+                if(new VersionNumber(plugin.get().version).isOlderThan(new VersionNumber(this.version))) {
+                    plugins.remove(plugin.get());
+                }
+                else {
+                    alreadyAdded = true;
                 }
             }
 
-            Set<Plugin> allDependencies = new HashSet<Plugin>();
-            for (List<Plugin> pluginDependencies : plugins.values()) {
-                allDependencies.addAll(pluginDependencies);
+            //add dependencies for each dependency which has not been already added
+            if(!alreadyAdded) {
+                plugins.put(this, getNeededDependencies());
+                for (Plugin p : plugins.get(this)) {
+                    Optional<Plugin>  old = plugins.keySet().stream().filter(item -> item.name.equals(p.name)).findFirst();
+                    if (!old.isPresent() || new VersionNumber(old.get().version).isOlderThan(new VersionNumber(p.version))) {
+                        p.addMissingDependencies(plugins);
+                    }
+                }
             }
-            //since it is only for dependencies, remove this plugin from dependencies, if there is.
-            allDependencies.remove(this);
-            return allDependencies;
         }
 
         public boolean isForNewerHudson() {
