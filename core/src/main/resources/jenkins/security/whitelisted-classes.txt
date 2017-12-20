@@ -11,7 +11,7 @@ com.google.common.collect.RegularImmutableSortedSet
 com.google.common.collect.SingletonImmutableList
 com.google.common.collect.SingletonImmutableSet
 
-# TODO move to maven-plugin
+# TODO remove when https://github.com/jenkinsci/lib-jenkins-maven-embedder/pull/15 is widely adopted in maven-plugin
 hudson.maven.MavenInformation
 
 java.io.File
