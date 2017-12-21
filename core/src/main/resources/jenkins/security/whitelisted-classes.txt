@@ -71,7 +71,7 @@ java.util.logging.Level
 java.util.logging.LogRecord
 java.util.regex.Pattern
 
-# TODO move to job-dsl, or mark job-dsl-core with Jenkins-ClassFilter-Whitelisted: true
+# TODO remove when https://github.com/jenkinsci/job-dsl-plugin/pull/1092 is widely adopted
 javaposse.jobdsl.dsl.GeneratedJob
 
 org.acegisecurity.userdetails.User
