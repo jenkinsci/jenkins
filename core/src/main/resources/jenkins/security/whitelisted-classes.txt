@@ -87,7 +87,7 @@ org.eclipse.jgit.revwalk.RevObject
 org.eclipse.jgit.revwalk.RevTree
 org.eclipse.jgit.transport.URIish
 
-# TODO move to workflow-support
+# TODO remove when https://github.com/jenkinsci/workflow-support-plugin/pull/50 is widely adopted
 org.jboss.marshalling.TraceInformation$FieldInfo
 org.jboss.marshalling.TraceInformation$ObjectInfo
 
