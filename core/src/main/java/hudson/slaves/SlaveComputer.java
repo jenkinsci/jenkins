@@ -559,6 +559,12 @@ public class SlaveComputer extends Computer {
                     logger.finest(channel.getName() + " received response in " + totalTime / 1_000_000 + "ms: " + req);
                 }
             }
+            @Override
+            public void onJar(Channel aThis, File jar) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest(channel.getName() + " sending " + jar + " of length " + jar.length());
+                }
+            }
         });
         if(listener!=null)
             channel.addListener(listener);
