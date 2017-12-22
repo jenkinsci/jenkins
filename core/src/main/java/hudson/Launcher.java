@@ -1307,12 +1307,12 @@ public abstract class Launcher {
                         // make sure I/O is delivered to the remote before we return
                         Channel taskChannel = null;
                         try {
-                            // Sync IO will fail automatically if the channel is being closed
+                            // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
                             taskChannel = Channel.currentOrFail();
                             taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc
-                            LOGGER.log(Level.INFO, "Failed to synchronize IO streams on the channel " + channel, t);
+                            LOGGER.log(Level.INFO, "Failed to synchronize IO streams on the channel " + taskChannel, t);
                         }
                     }
                 }
