@@ -59,7 +59,7 @@ public class GroovyCommand extends CLICommand {
      * Remaining arguments.
      */
     @Argument(metaVar="ARGUMENTS", index=1, usage="Command line arguments to pass into script.")
-    public List<String> remaining = new ArrayList<String>();
+    public List<String> remaining = new ArrayList<>();
 
     protected int run() throws Exception {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.

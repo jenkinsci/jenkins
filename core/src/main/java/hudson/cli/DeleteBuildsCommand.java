@@ -57,7 +57,7 @@ public class DeleteBuildsCommand extends RunRangeCommand {
     protected int act(List<Run<?, ?>> builds) throws IOException {
         job.checkPermission(Run.DELETE);
 
-        final HashSet<Integer> hsBuilds = new HashSet<Integer>();
+        final HashSet<Integer> hsBuilds = new HashSet<>();
 
         for (Run<?, ?> build : builds) {
             if (!hsBuilds.contains(build.number)) {

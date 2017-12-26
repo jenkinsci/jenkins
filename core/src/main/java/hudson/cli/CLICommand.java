@@ -618,9 +618,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * Key for {@link Channel#getProperty(Object)} that links to the {@link Authentication} object
      * which captures the identity of the client given by the transport layer.
      */
-    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<Authentication>(Authentication.class,"transportAuthentication");
+    public static final ChannelProperty<Authentication> TRANSPORT_AUTHENTICATION = new ChannelProperty<>(Authentication.class, "transportAuthentication");
 
-    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<CLICommand>();
+    private static final ThreadLocal<CLICommand> CURRENT_COMMAND = new ThreadLocal<>();
 
     /*package*/ static CLICommand setCurrent(CLICommand cmd) {
         CLICommand old = getCurrent();
@@ -638,7 +638,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     static {
         // register option handlers that are defined
         ClassLoaders cls = new ClassLoaders();
-        Jenkins j = Jenkins.getActiveInstance();
+        Jenkins j = Jenkins.getInstanceOrNull();
         if (j!=null) {// only when running on the master
             cls.put(j.getPluginManager().uberClassLoader);
 

@@ -35,7 +35,6 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashSet;
@@ -61,7 +60,7 @@ public class InstallPluginCommand extends CLICommand {
             "If it is the string ‘=’, the file will be read from standard input of the command, and ‘-name’ must be specified. " +
             "Otherwise the name is assumed to be the short name of the plugin in the existing update center (like ‘findbugs’), " +
             "and the plugin will be installed from the update center.")
-    public List<String> sources = new ArrayList<String>();
+    public List<String> sources = new ArrayList<>();
 
     @Option(name="-name",usage="If specified, the plugin will be installed as this short name (whereas normally the name is inferred from the source name automatically).")
     public String name; // TODO better to parse out Short-Name from the manifest and deprecate this option
@@ -152,7 +151,7 @@ public class InstallPluginCommand extends CLICommand {
                 if (h.getUpdateCenter().getSites().isEmpty()) {
                     stdout.println(Messages.InstallPluginCommand_NoUpdateCenterDefined());
                 } else {
-                    Set<String> candidates = new HashSet<String>();
+                    Set<String> candidates = new HashSet<>();
                     for (UpdateSite s : h.getUpdateCenter().getSites()) {
                         Data dt = s.getData();
                         if (dt==null)

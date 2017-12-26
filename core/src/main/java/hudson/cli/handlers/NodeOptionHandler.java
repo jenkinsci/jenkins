@@ -53,7 +53,7 @@ public class NodeOptionHandler extends OptionHandler<Node> {
 
         String nodeName = params.getParameter(0);
 
-        final Node node = Jenkins.getInstance().getNode(nodeName);
+        final Node node = Jenkins.get().getNode(nodeName);
         if (node == null) throw new IllegalArgumentException("No such node '" + nodeName + "'");
 
         setter.addValue(node);

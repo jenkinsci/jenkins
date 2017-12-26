@@ -32,7 +32,6 @@ import hudson.model.User;
 import jenkins.model.Jenkins;
 
 import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * @author ogondza

@@ -34,7 +34,6 @@ import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -60,8 +59,8 @@ public class OfflineNodeCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         boolean errorOccurred = false;
-        final Jenkins jenkins = Jenkins.getInstance();
-        final HashSet<String> hs = new HashSet<String>(nodes);
+        final Jenkins jenkins = Jenkins.get();
+        final HashSet<String> hs = new HashSet<>(nodes);
         List<String> names = null;
 
         for (String node_s : hs) {
