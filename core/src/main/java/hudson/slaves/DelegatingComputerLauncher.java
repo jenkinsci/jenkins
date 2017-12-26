@@ -100,7 +100,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
         public List<Descriptor<ComputerLauncher>> getApplicableDescriptors() {
             List<Descriptor<ComputerLauncher>> r = new ArrayList<Descriptor<ComputerLauncher>>();
             for (Descriptor<ComputerLauncher> d :
-                    Jenkins.getInstance().<ComputerLauncher, Descriptor<ComputerLauncher>>getDescriptorList(ComputerLauncher.class)) {
+                    Jenkins.get().getDescriptorList(ComputerLauncher.class)) {
                 if (DelegatingComputerLauncher.class.isAssignableFrom(d.getKlass().toJavaClass()))  continue;
                 r.add(d);
             }

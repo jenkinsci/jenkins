@@ -83,7 +83,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
     protected void setNode(N node) { this.node = node; }
 
     public NodePropertyDescriptor getDescriptor() {
-        return (NodePropertyDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (NodePropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
     /**
@@ -178,7 +178,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * Lists up all the registered {@link NodeDescriptor}s in the system.
      */
     public static DescriptorExtensionList<NodeProperty<?>,NodePropertyDescriptor> all() {
-        return (DescriptorExtensionList) Jenkins.getInstance().getDescriptorList(NodeProperty.class);
+        return (DescriptorExtensionList) Jenkins.get().getDescriptorList(NodeProperty.class);
     }
 
     /**

@@ -28,6 +28,6 @@ public abstract class PingFailureAnalyzer implements ExtensionPoint {
     public abstract void onPingFailure(Channel c, Throwable cause) throws IOException;
 
     public static ExtensionList<PingFailureAnalyzer> all() {
-        return Jenkins.getInstance().getExtensionList(PingFailureAnalyzer.class);
+        return Jenkins.get().getExtensionList(PingFailureAnalyzer.class);
     }
 }

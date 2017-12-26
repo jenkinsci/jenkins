@@ -67,7 +67,7 @@ public abstract class AbstractCloudSlave extends Slave {
             _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));
         } finally {
             try {
-                Jenkins.getInstance().removeNode(this);
+                Jenkins.get().removeNode(this);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to remove "+name,e);
             }

@@ -124,7 +124,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
 
     @Override
     public Descriptor<RemotingWorkDirSettings> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(RemotingWorkDirSettings.class);
+        return Jenkins.get().getDescriptor(RemotingWorkDirSettings.class);
     }
 
     /**
@@ -152,7 +152,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
         
         if (!DEFAULT_INTERNAL_DIR.equals(internalDir)) {
             args.add("-internalDir");
-            args.add(internalDir);;
+            args.add(internalDir);
         }
         
         if (failIfWorkDirIsMissing) {

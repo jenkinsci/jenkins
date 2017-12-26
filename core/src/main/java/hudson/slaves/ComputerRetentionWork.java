@@ -46,7 +46,7 @@ public class ComputerRetentionWork extends PeriodicWork {
     /**
      * Use weak hash map to avoid leaking {@link Computer}.
      */
-    private final Map<Computer, Long> nextCheck = new WeakHashMap<Computer, Long>();
+    private final Map<Computer, Long> nextCheck = new WeakHashMap<>();
 
     public long getRecurrencePeriod() {
         return MIN;
@@ -59,7 +59,7 @@ public class ComputerRetentionWork extends PeriodicWork {
     @Override
     protected void doRun() {
         final long startRun = System.currentTimeMillis();
-        for (final Computer c : Jenkins.getInstance().getComputers()) {
+        for (final Computer c : Jenkins.get().getComputers()) {
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {

@@ -45,7 +45,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
     private void install(Computer c, TaskListener listener) {
         try {
-            final List<SlaveRestarter> restarters = new ArrayList<SlaveRestarter>(SlaveRestarter.all());
+            final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
             VirtualChannel ch = c.getChannel();
             if (ch==null) return;  // defensive check

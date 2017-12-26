@@ -38,6 +38,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
@@ -127,7 +128,7 @@ public class NodeProvisioner {
     private final Label label;
 
     private final AtomicReference<List<PlannedNode>> pendingLaunches
-            = new AtomicReference<List<PlannedNode>>(new ArrayList<PlannedNode>());
+            = new AtomicReference<>(new ArrayList<>());
 
     private final Lock provisioningLock = new ReentrantLock();
 
@@ -159,7 +160,7 @@ public class NodeProvisioner {
      * @since 1.401
      */
     public List<PlannedNode> getPendingLaunches() {
-        return new ArrayList<PlannedNode>(pendingLaunches.get());
+        return new ArrayList<>(pendingLaunches.get());
     }
 
     /**
@@ -207,15 +208,14 @@ public class NodeProvisioner {
             Queue.withLock(new Runnable() {
                 @Override
                 public void run() {
-                    Jenkins jenkins = Jenkins.getInstance();
+                    Jenkins jenkins = Jenkins.get();
                     // clean up the cancelled launch activity, then count the # of executors that we are about to
                     // bring up.
 
                     int plannedCapacitySnapshot = 0;
 
-                    List<PlannedNode> snapPendingLaunches = new ArrayList<PlannedNode>(pendingLaunches.get());
-                    for (Iterator<PlannedNode> itr = snapPendingLaunches.iterator(); itr.hasNext(); ) {
-                        PlannedNode f = itr.next();
+                    List<PlannedNode> snapPendingLaunches = new ArrayList<>(pendingLaunches.get());
+                    for (PlannedNode f : snapPendingLaunches) {
                         if (f.future.isDone()) {
                             try {
                                 Node node = null;
@@ -263,7 +263,7 @@ public class NodeProvisioner {
                             } finally {
                                 while (true) {
                                     List<PlannedNode> orig = pendingLaunches.get();
-                                    List<PlannedNode> repl = new ArrayList<PlannedNode>(orig);
+                                    List<PlannedNode> repl = new ArrayList<>(orig);
                                     // the contract for List.remove(o) is that the first element i where
                                     // (o==null ? get(i)==null : o.equals(get(i)))
                                     // is true will be removed from the list
@@ -305,15 +305,15 @@ public class NodeProvisioner {
                                 new Object[]{queueLengthSnapshot, availableSnapshot});
                         provisioningState = null;
                     } else {
-                        provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);;
+                        provisioningState = new StrategyState(snapshot, label, plannedCapacitySnapshot);
                     }
                 }
             });
 
             if (provisioningState != null) {
-                List<Strategy> strategies = Jenkins.getInstance().getExtensionList(Strategy.class);
+                List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
                 for (Strategy strategy : strategies.isEmpty()
-                        ? Arrays.<Strategy>asList(new StandardStrategyImpl())
+                        ? Collections.<Strategy>singletonList(new StandardStrategyImpl())
                         : strategies) {
                     LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
                             new Object[]{strategy, provisioningState});
@@ -580,7 +580,7 @@ public class NodeProvisioner {
             }
             while (!plannedNodes.isEmpty()) {
                 List<PlannedNode> orig = pendingLaunches.get();
-                List<PlannedNode> repl = new ArrayList<PlannedNode>(orig);
+                List<PlannedNode> repl = new ArrayList<>(orig);
                 repl.addAll(plannedNodes);
                 if (pendingLaunches.compareAndSet(orig, repl)) {
                     if (additionalPlannedCapacity > 0) {
@@ -687,7 +687,7 @@ public class NodeProvisioner {
                             });
 
                     CLOUD:
-                    for (Cloud c : Jenkins.getInstance().clouds) {
+                    for (Cloud c : Jenkins.get().clouds) {
                         if (excessWorkload < 0) {
                             break;  // enough agents allocated
                         }
@@ -803,9 +803,9 @@ public class NodeProvisioner {
 
         @Override
         protected void doRun() {
-            Jenkins h = Jenkins.getInstance();
-            h.unlabeledNodeProvisioner.update();
-            for( Label l : h.getLabels() )
+            Jenkins j = Jenkins.get();
+            j.unlabeledNodeProvisioner.update();
+            for( Label l : j.getLabels() )
                 l.nodeProvisioner.update();
         }
     }

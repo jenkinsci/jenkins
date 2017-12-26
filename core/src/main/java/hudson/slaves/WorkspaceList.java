@@ -112,7 +112,9 @@ public final class WorkspaceList {
         public final @Nonnull FilePath path;
 
         protected Lease(@Nonnull FilePath path) {
-            path.getRemote(); // null check
+            if (path == null) { // Protection from old API
+                throw new NullPointerException("The specified FilePath is null");
+            }
             this.path = path;
         }
 
@@ -153,7 +155,7 @@ public final class WorkspaceList {
         }
     }
 
-    private final Map<FilePath,Entry> inUse = new HashMap<FilePath,Entry>();
+    private final Map<FilePath,Entry> inUse = new HashMap<>();
 
     public WorkspaceList() {
     }

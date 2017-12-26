@@ -55,6 +55,6 @@ public abstract class NodePropertyDescriptor extends PropertyDescriptor<NodeProp
         // preserve legacy behaviour, even if brain-dead stupid, where applying to Jenkins was the discriminator
         // note that it would be a mistake to assume Jenkins.getInstance().getClass() == Jenkins.class
         // the groovy code tested against app.class, so we replicate that exact logic.
-        return isApplicable(Jenkins.getInstance().getClass());
+        return isApplicable(Jenkins.get().getClass());
     }
 }

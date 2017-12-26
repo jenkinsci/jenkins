@@ -112,7 +112,7 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      * Returns all the registered {@link NodeDescriptor} descriptors.
      */
     public static DescriptorExtensionList<Node,NodeDescriptor> all() {
-        return Jenkins.getInstance().<Node,NodeDescriptor>getDescriptorList(Node.class);
+        return Jenkins.get().getDescriptorList(Node.class);
     }
 
     /**
@@ -121,10 +121,10 @@ public abstract class NodeDescriptor extends Descriptor<Node> {
      *      Use {@link #all()} for read access, and {@link Extension} for registration.
      */
     @Deprecated
-    public static final DescriptorList<Node> ALL = new DescriptorList<Node>(Node.class);
+    public static final DescriptorList<Node> ALL = new DescriptorList<>(Node.class);
 
     public static List<NodeDescriptor> allInstantiable() {
-        List<NodeDescriptor> r = new ArrayList<NodeDescriptor>();
+        List<NodeDescriptor> r = new ArrayList<>();
         for (NodeDescriptor d : all())
             if(d.isInstantiable())
                 r.add(d);

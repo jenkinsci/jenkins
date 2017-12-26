@@ -37,13 +37,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
             LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a","b","c"}));
 
             return true;
-        } catch (UnsupportedOperationException e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
-            return false;
-        } catch (LinkageError e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
-            return false;
-        } catch (IOException e) {
+        } catch (UnsupportedOperationException | LinkageError | IOException e) {
             LOGGER.log(FINE, getClass()+" unsuitable", e);
             return false;
         }

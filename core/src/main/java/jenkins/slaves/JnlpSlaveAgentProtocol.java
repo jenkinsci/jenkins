@@ -7,15 +7,12 @@ import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import jenkins.AgentProtocol;
 import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.remoting.engine.JnlpClientDatabase;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol1Handler;
 
@@ -111,7 +108,7 @@ public class JnlpSlaveAgentProtocol extends AgentProtocol {
     private static final boolean OPT_IN;
 
     static {
-        byte hash = Util.fromHexString(Jenkins.getInstance().getLegacyInstanceId())[0];
+        byte hash = Util.fromHexString(Jenkins.get().getLegacyInstanceId())[0];
         OPT_IN = (hash % 10) == 0;
     }
 }
