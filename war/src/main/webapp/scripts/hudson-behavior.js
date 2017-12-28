@@ -696,7 +696,7 @@ var jenkinsRules = {
 // validate form values to be an integer
     "INPUT.number" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
     "INPUT.non-negative-number" : function(e) {
-        registerRegexpValidator(e,/^(\d+)$/,"Not a non-negative number");
+        registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     },
     "INPUT.positive-number" : function(e) {
         registerRegexpValidator(e,/^(\d*[1-9]\d*)$/,"Not a positive integer");

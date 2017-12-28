@@ -1468,7 +1468,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
-        if (!nExecutors.matches("^(\\d*[1-9]\\d*)$")) {
+        if (Integer.parseInt(nExecutors)<=0) {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
