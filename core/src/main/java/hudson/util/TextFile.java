@@ -38,6 +38,7 @@ import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 /**
@@ -68,7 +69,7 @@ public class TextFile {
     public String read() throws IOException {
         StringWriter out = new StringWriter();
         PrintWriter w = new PrintWriter(out);
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(Files.newInputStream(file.toPath()), "UTF-8"))) {
+        try (BufferedReader in = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);

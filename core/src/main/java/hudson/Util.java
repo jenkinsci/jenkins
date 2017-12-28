@@ -193,7 +193,7 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(logfile.toPath()), charset))) {
+        try (BufferedReader r = Files.newBufferedReader(logfile.toPath(), charset)) {
             char[] buf = new char[1024];
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
