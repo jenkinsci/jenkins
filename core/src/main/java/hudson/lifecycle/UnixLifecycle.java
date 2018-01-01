@@ -30,10 +30,13 @@ import com.sun.jna.StringArray;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import static hudson.util.jna.GNUCLibrary.*;
 
 import hudson.Platform;
+import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
 
 /**
@@ -42,11 +45,16 @@ import jenkins.model.Jenkins;
  *
  * <p>
  * Restart by exec to self.
+ * The restartCommand configuration may override executable program instead of argv[0]
+ * that is being used.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.304
  */
 public class UnixLifecycle extends Lifecycle {
+    @Restricted(NoExternalUse.class)
+    private static final String RESTART_COMMAND = Configuration.getStringConfigParameter("restartCommand", null);
+
     private JavaVMArguments args;
     private Throwable failedToObtainArgs;
 
@@ -85,7 +93,7 @@ public class UnixLifecycle extends Lifecycle {
         }
 
         // exec to self
-        String exe = args.get(0);
+        String exe = RESTART_COMMAND != null ? RESTART_COMMAND : args.get(0);
         LIBC.execvp(exe, new StringArray(args.toArray(new String[args.size()])));
         throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
     }
