@@ -239,7 +239,7 @@ public class Security218CliTest {
             
             // Invoke backward call
             try {
-                Channel.current().call(new Callable<String, Exception>() {
+                getChannelOrFail().call(new Callable<String, Exception>() {
                     private static final long serialVersionUID = 1L;
 
                     @Override

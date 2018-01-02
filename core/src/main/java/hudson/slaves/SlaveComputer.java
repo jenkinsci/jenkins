@@ -893,7 +893,7 @@ public class SlaveComputer extends Computer {
                 // ignore this error.
             }
 
-            Channel.current().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            Channel.currentOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
 
             return null;
         }
