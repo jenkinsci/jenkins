@@ -38,10 +38,7 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.remoting.Command;
 import hudson.remoting.Launcher;
-import hudson.remoting.Request;
-import hudson.remoting.Response;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
@@ -88,6 +85,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
 /**
@@ -520,7 +518,7 @@ public class SlaveComputer extends Computer {
 
         channel.setProperty(SlaveComputer.class, this);
 
-        channel.addListener(new Channel.Listener() {
+        channel.addListener(new LoggingChannelListener(logger, Level.FINEST) {
             @Override
             public void onClosed(Channel c, IOException cause) {
                 // Orderly shutdown will have null exception
@@ -539,30 +537,6 @@ public class SlaveComputer extends Computer {
                     lr.setThrown(t);
                     lr.setParameters(new Object[]{launcher, SlaveComputer.this.getName(), t.getMessage()});
                     logger.log(lr);
-                }
-            }
-            @Override
-            public void onWrite(Channel channel, Command cmd, long blockSize) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest(channel.getName() + " wrote " + blockSize + ": " + cmd);
-                }
-            }
-            @Override
-            public void onRead(Channel channel, Command cmd, long blockSize) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest(channel.getName() + " read " + blockSize + ": " + cmd);
-                }
-            }
-            @Override
-            public void onResponse(Channel channel, Request<?, ?> req, Response<?, ?> rsp, long totalTime) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest(channel.getName() + " received response in " + totalTime / 1_000_000 + "ms: " + req);
-                }
-            }
-            @Override
-            public void onJar(Channel aThis, File jar) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest(channel.getName() + " sending " + jar + " of length " + jar.length());
                 }
             }
         });
