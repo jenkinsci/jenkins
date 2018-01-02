@@ -1426,7 +1426,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
-            final Channel ch = getChannelOrFail();
+            final Channel ch = _getChannelOrFail();
             StringWriter sw = new StringWriter();
             try (PrintWriter pw = new PrintWriter(sw)) {
                 ch.dumpExportTable(pw);

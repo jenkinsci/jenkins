@@ -1289,7 +1289,7 @@ public abstract class Launcher {
         }
 
         public RemoteProcess call() throws IOException {
-            final Channel channel = getOpenChannelOrFail();
+            final Channel channel = _getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
             ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
             if(workDir!=null)   ps.pwd(workDir);
@@ -1308,7 +1308,11 @@ public abstract class Launcher {
                         Channel taskChannel = null;
                         try {
                             // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
-                            taskChannel = Channel.currentOrFail();
+                            // TODOL Replace by Channel#currentOrFail() when Remoting version allows
+                            taskChannel = Channel.current();
+                            if (taskChannel == null) {
+                                throw new IOException("No Remoting channel associated with this thread");
+                            }
                             taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc
