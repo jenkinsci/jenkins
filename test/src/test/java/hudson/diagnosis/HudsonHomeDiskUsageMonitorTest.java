@@ -11,10 +11,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.model.User;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.security.HudsonPrivateSecurityRealm;
-import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.acegisecurity.context.SecurityContextHolder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -25,6 +22,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 
 /**
@@ -73,28 +71,33 @@ public class HudsonHomeDiskUsageMonitorTest {
         auth.add(Jenkins.READ, "users");
         j.jenkins.setAuthorizationStrategy(auth);
 
-        WebRequest request = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        User bob = User.getById("bob", true);
+        User administrator = User.getById("administrator", true);
+
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
         NameValuePair param = new NameValuePair("no", "true");
         request.setRequestParameters(Collections.singletonList(param));
 
         HudsonHomeDiskUsageMonitor mon = HudsonHomeDiskUsageMonitor.get();
 
+        wc.withBasicApiToken(bob);
         try {
-            wc.login("bob");
             wc.getPage(request);
+            fail();
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(403, e.getStatusCode());
         }
         assertTrue(mon.isEnabled());
 
+        WebRequest requestReadOnly = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull"), HttpMethod.GET);
         try {
-            WebRequest getIndex = new WebRequest(wc.createCrumbedUrl("administrativeMonitor/hudsonHomeIsFull"), HttpMethod.GET);
-            wc.getPage(getIndex);
+            wc.getPage(requestReadOnly);
+            fail();
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(403, e.getStatusCode());
         }
 
-        wc.login("administrator");
+        wc.withBasicApiToken(administrator);
         wc.getPage(request);
         assertFalse(mon.isEnabled());
 
