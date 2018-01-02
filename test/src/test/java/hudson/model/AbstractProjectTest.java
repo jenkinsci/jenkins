@@ -569,6 +569,18 @@ public class AbstractProjectTest {
         return con;
     }
 
+    @Issue("JENKINS-21017")
+    @Test public void doConfigDotXmlReset() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedLabel(Label.get("whatever"));
+        assertEquals("whatever", p.getAssignedLabelString());
+        assertThat(p.getConfigFile().asString(), containsString("<assignedNode>whatever</assignedNode>"));
+        assertEquals(200, postConfigDotXml(p, "<project/>").getResponseCode());
+        assertNull(p.getAssignedLabelString()); // did not work
+        assertThat(p.getConfigFile().asString(), not(containsString("<assignedNode>"))); // actually did work anyway
+    }
+
     @Test
     @Issue("JENKINS-27549")
     public void loadingWithNPEOnTriggerStart() throws Exception {

@@ -23,24 +23,26 @@
  */
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.io.xml.Xpp3Driver;
 import com.thoughtworks.xstream.security.ForbiddenClassException;
-import hudson.XmlFile;
 import hudson.model.Result;
 import hudson.model.Run;
-import java.io.File;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.FileUtils;
+import jenkins.model.Jenkins;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.Issue;
 
 /**
@@ -296,6 +298,227 @@ public class XStream2Test {
         assertEquals("3.2", XStream2.trimVersion("3.2"));
         assertEquals("3.2.1", XStream2.trimVersion("3.2.1"));
         assertEquals("3.2-SNAPSHOT", XStream2.trimVersion("3.2-SNAPSHOT (private-09/23/2012 12:26-jhacker)"));
+    }
+
+    @Issue("JENKINS-21017")
+    @Test
+    public void unmarshalToDefault_populated() {
+        String populatedXml = "<hudson.util.XStream2Test_-WithDefaults>\n"
+                + "  <stringDefaultValue>my string</stringDefaultValue>\n"
+                + "  <stringDefaultNull>not null</stringDefaultNull>\n"
+                + "  <arrayDefaultValue>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultValue>\n"
+                + "  <arrayDefaultEmpty>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultEmpty>\n"
+                + "  <arrayDefaultNull>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </arrayDefaultNull>\n"
+                + "  <listDefaultValue>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultValue>\n"
+                + "  <listDefaultEmpty>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultEmpty>\n"
+                + "  <listDefaultNull>\n"
+                + "    <string>1</string>\n"
+                + "    <string>2</string>\n"
+                + "    <string>3</string>\n"
+                + "  </listDefaultNull>\n"
+                + "</hudson.util.XStream2Test_-WithDefaults>";
+
+        WithDefaults existingInstance = new WithDefaults("foobar",
+                "foobar",
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu")
+        );
+
+        WithDefaults newInstance = new WithDefaults();
+
+        String xmlA = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, existingInstance));
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(populatedXml, null));
+
+        assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
+        assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
+    }
+
+
+    @Issue("JENKINS-21017")
+    @Test
+    public void unmarshalToDefault_default() {
+        String defaultXml = "<hudson.util.XStream2Test_-WithDefaults>\n"
+                + "  <stringDefaultValue>defaultValue</stringDefaultValue>\n"
+                + "  <arrayDefaultValue>\n"
+                + "    <string>first</string>\n"
+                + "    <string>second</string>\n"
+                + "  </arrayDefaultValue>\n"
+                + "  <arrayDefaultEmpty/>\n"
+                + "  <listDefaultValue>\n"
+                + "    <string>first</string>\n"
+                + "    <string>second</string>\n"
+                + "  </listDefaultValue>\n"
+                + "  <listDefaultEmpty/>\n"
+                + "</hudson.util.XStream2Test_-WithDefaults>";
+
+        WithDefaults existingInstance = new WithDefaults("foobar",
+                "foobar",
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu")
+        );
+
+        WithDefaults newInstance = new WithDefaults();
+
+        String xmlA = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, existingInstance));
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(defaultXml, null));
+
+        assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
+        assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
+    }
+
+
+    @Issue("JENKINS-21017")
+    @Test
+    public void unmarshalToDefault_empty() {
+        String emptyXml = "<hudson.util.XStream2Test_-WithDefaults/>";
+
+        WithDefaults existingInstance = new WithDefaults("foobar",
+                "foobar",
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                new String[]{"foobar", "barfoo", "fumanchu"},
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu"),
+                Arrays.asList("foobar", "barfoo", "fumanchu")
+        );
+
+        WithDefaults newInstance = new WithDefaults();
+
+        Object reloaded = fromXMLNullingOut(emptyXml, existingInstance);
+        assertSame(existingInstance, reloaded);
+        String xmlA = Jenkins.XSTREAM2.toXML(reloaded);
+        String xmlB = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(emptyXml, newInstance));
+        String xmlC = Jenkins.XSTREAM2.toXML(fromXMLNullingOut(emptyXml, null));
+
+        assertThat("Deserializing over an existing instance is the same as with no root", xmlA, is(xmlC));
+        assertThat("Deserializing over an new instance is the same as with no root", xmlB, is(xmlC));
+    }
+
+    private Object fromXMLNullingOut(String xml, Object root) {
+        // Currently not offering a public convenience API for this:
+        return Jenkins.XSTREAM2.unmarshal(new Xpp3Driver().createReader(new StringReader(xml)), root, null, true);
+    }
+
+    public static class WithDefaults {
+        private String stringDefaultValue = "defaultValue";
+        private String stringDefaultNull;
+        private String[] arrayDefaultValue = { "first", "second" };
+        private String[] arrayDefaultEmpty = new String[0];
+        private String[] arrayDefaultNull;
+        private List<String> listDefaultValue = new ArrayList<>(Arrays.asList("first", "second"));
+        private List<String> listDefaultEmpty = new ArrayList<>();
+        private List<String> listDefaultNull;
+
+        public WithDefaults() {
+        }
+
+        public WithDefaults(String stringDefaultValue, String stringDefaultNull, String[] arrayDefaultValue,
+                            String[] arrayDefaultEmpty, String[] arrayDefaultNull,
+                            List<String> listDefaultValue, List<String> listDefaultEmpty,
+                            List<String> listDefaultNull) {
+            this.stringDefaultValue = stringDefaultValue;
+            this.stringDefaultNull = stringDefaultNull;
+            this.arrayDefaultValue = arrayDefaultValue == null ? null : arrayDefaultValue.clone();
+            this.arrayDefaultEmpty = arrayDefaultEmpty == null ? null : arrayDefaultEmpty.clone();
+            this.arrayDefaultNull = arrayDefaultNull == null ? null : arrayDefaultNull.clone();
+            this.listDefaultValue = listDefaultValue == null ? null : new ArrayList<>(listDefaultValue);
+            this.listDefaultEmpty = listDefaultEmpty == null ? null : new ArrayList<>(listDefaultEmpty);
+            this.listDefaultNull = listDefaultNull == null ? null : new ArrayList<>(listDefaultNull);
+        }
+
+        public String getStringDefaultValue() {
+            return stringDefaultValue;
+        }
+
+        public void setStringDefaultValue(String stringDefaultValue) {
+            this.stringDefaultValue = stringDefaultValue;
+        }
+
+        public String getStringDefaultNull() {
+            return stringDefaultNull;
+        }
+
+        public void setStringDefaultNull(String stringDefaultNull) {
+            this.stringDefaultNull = stringDefaultNull;
+        }
+
+        public String[] getArrayDefaultValue() {
+            return arrayDefaultValue;
+        }
+
+        public void setArrayDefaultValue(String[] arrayDefaultValue) {
+            this.arrayDefaultValue = arrayDefaultValue;
+        }
+
+        public String[] getArrayDefaultEmpty() {
+            return arrayDefaultEmpty;
+        }
+
+        public void setArrayDefaultEmpty(String[] arrayDefaultEmpty) {
+            this.arrayDefaultEmpty = arrayDefaultEmpty;
+        }
+
+        public String[] getArrayDefaultNull() {
+            return arrayDefaultNull;
+        }
+
+        public void setArrayDefaultNull(String[] arrayDefaultNull) {
+            this.arrayDefaultNull = arrayDefaultNull;
+        }
+
+        public List<String> getListDefaultValue() {
+            return listDefaultValue;
+        }
+
+        public void setListDefaultValue(List<String> listDefaultValue) {
+            this.listDefaultValue = listDefaultValue;
+        }
+
+        public List<String> getListDefaultEmpty() {
+            return listDefaultEmpty;
+        }
+
+        public void setListDefaultEmpty(List<String> listDefaultEmpty) {
+            this.listDefaultEmpty = listDefaultEmpty;
+        }
+
+        public List<String> getListDefaultNull() {
+            return listDefaultNull;
+        }
+
+        public void setListDefaultNull(List<String> listDefaultNull) {
+            this.listDefaultNull = listDefaultNull;
+        }
     }
 
     @Issue("SECURITY-503")

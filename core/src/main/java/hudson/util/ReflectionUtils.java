@@ -37,6 +37,7 @@ import java.util.AbstractList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 
 /**
  * Utility code for reflection.
@@ -205,15 +206,23 @@ public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
 
     /**
      * Given the primitive type, returns the VM default value for that type in a boxed form.
+     * @return null unless {@link Class#isPrimitive}
      */
-    public static Object getVmDefaultValueForPrimitiveType(Class<?> type) {
+    public static @CheckForNull Object getVmDefaultValueForPrimitiveType(Class<?> type) {
         return defaultPrimitiveValue.get(type);
     }
 
-    private static final Map<Class,Object> defaultPrimitiveValue = new HashMap<Class, Object>();
+    // TODO the version in org.kohsuke.stapler is incomplete
+    private static final Map<Class<?>, Object> defaultPrimitiveValue = new HashMap<>();
     static {
-        defaultPrimitiveValue.put(boolean.class,false);
-        defaultPrimitiveValue.put(int.class,0);
-        defaultPrimitiveValue.put(long.class,0L);
+        defaultPrimitiveValue.put(boolean.class, false);
+        defaultPrimitiveValue.put(char.class, '\0');
+        defaultPrimitiveValue.put(byte.class, (byte) 0);
+        defaultPrimitiveValue.put(short.class, (short) 0);
+        defaultPrimitiveValue.put(int.class, 0);
+        defaultPrimitiveValue.put(long.class, 0L);
+        defaultPrimitiveValue.put(float.class, (float) 0);
+        defaultPrimitiveValue.put(double.class, (double) 0);
+        defaultPrimitiveValue.put(void.class, null); // FWIW
     }
 }
