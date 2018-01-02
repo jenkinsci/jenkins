@@ -44,6 +44,7 @@ import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.acegisecurity.acls.sid.Sid;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -319,4 +320,13 @@ public abstract class ACL {
         return as(user == null ? Jenkins.ANONYMOUS : user.impersonate());
     }
 
+    /**
+     * Checks if the given authentication is anonymous by checking its class.
+     * @see Jenkins#ANONYMOUS
+     * @see AnonymousAuthenticationToken
+     */
+    public static boolean isAnonymous(@Nonnull Authentication authentication) {
+        //TODO use AuthenticationTrustResolver instead to be consistent through the application
+        return authentication instanceof AnonymousAuthenticationToken;
+    }
 }

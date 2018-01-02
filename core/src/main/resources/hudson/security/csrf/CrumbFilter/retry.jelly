@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2010, InfraDNA, Inc.
+Copyright (c) 2017, Daniel Beck
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Config page
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Making sure the password field gets an encrypted value">
-  <l:main-panel>
-    <f:form method="post" name="config" action="thisFormWillNotBeSubmitted">
-      <j:set var="instance" value="${it}" />
-      <j:set var="descriptor" value="${it.descriptor}" />
-      <f:entry field="secret">
-        <f:password id="password" />
-      </f:entry>
-    </f:form>
-  </l:main-panel>
-</l:layout>
+    <st:statusCode value="405"/>
+    <l:layout norefresh="true" title="${%Method Not Allowed}">
+
+        <l:main-panel>
+            <h1>${%This URL requires POST}</h1>
+            <p>
+                ${%blurb}
+            </p>
+            <p><tt>${requestURL}</tt></p>
+            <p><strong>${%warning}</strong></p>
+            <f:form method="post" name="retry">
+                <f:submit value="${%Retry using POST}"/>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>

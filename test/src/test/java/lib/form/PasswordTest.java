@@ -27,16 +27,9 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import hudson.Extension;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.GetJobCommand;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.FreeStyleProject;
-import hudson.model.Item;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.User;
+import hudson.model.*;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import java.io.ByteArrayOutputStream;
@@ -51,8 +44,10 @@ import org.acegisecurity.Authentication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import org.jvnet.hudson.test.HudsonTestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -62,25 +57,43 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class PasswordTest extends HudsonTestCase implements Describable<PasswordTest> {
-    public Secret secret;
+public class PasswordTest {
 
-    public void test1() throws Exception {
-        secret = Secret.fromString("secret");
-        HtmlPage p = createWebClient().goTo("self/test1");
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void secretNotPlainText() throws Exception {
+        SecretNotPlainText.secret = Secret.fromString("secret");
+        HtmlPage p = j.createWebClient().goTo("secretNotPlainText");
         String value = ((HtmlInput)p.getElementById("password")).getValueAttribute();
         assertFalse("password shouldn't be plain text",value.equals("secret"));
         assertEquals("secret",Secret.fromString(value).getPlainText());
     }
 
-    public DescriptorImpl getDescriptor() {
-        return jenkins.getDescriptorByType(DescriptorImpl.class);
+    @TestExtension("secretNotPlainText")
+    public static class SecretNotPlainText implements RootAction {
+
+        public static Secret secret;
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return "secretNotPlainText";
+        }
     }
 
-    @Extension
-    public static final class DescriptorImpl extends Descriptor<PasswordTest> {}
-
     @Issue({"SECURITY-266", "SECURITY-304"})
+    @Test
     public void testExposedCiphertext() throws Exception {
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
@@ -93,24 +106,28 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             //Just a quick verification on what could be on the page and that the regexp is correctly set up
             assertThat(xml_regex_pattern.matcher(staticTest).find(), is(true));
 
-            jenkins.setSecurityRealm(new JenkinsRule().createDummySecurityRealm());
-            jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            j.jenkins.setSecurityRealm(new JenkinsRule().createDummySecurityRealm());
+            j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.ADMINISTER).everywhere().to("admin").
                 grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ,
                     Item.CREATE // so we can show CopyJobCommand would barf; more realistic would be to grant it only in a subfolder
                 ).everywhere().to("dev"));
             Secret s = Secret.fromString("s3cr3t");
             //String sEnc = s.getEncryptedValue();
-            FreeStyleProject p = createFreeStyleProject("p");
+            FreeStyleProject p = j.createFreeStyleProject("p");
             p.setDisplayName("Unicode here ←");
             p.setDescription("This+looks+like+Base64+but+is+not+a+secret");
             p.addProperty(new VulnerableProperty(s));
-            WebClient wc = createWebClient();
+
+            User admin = User.getById("admin", true);
+            User dev = User.getById("dev", true);
+
+            JenkinsRule.WebClient wc = j.createWebClient();
             // Control case: an administrator can read and write configuration freely.
-            wc.login("admin");
+            wc.withBasicApiToken(admin);
             HtmlPage configure = wc.getPage(p, "configure");
             assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(true));
-            submit(configure.getFormByName("config"));
+            j.submit(configure.getFormByName("config"));
             VulnerableProperty vp = p.getProperty(VulnerableProperty.class);
             assertNotNull(vp);
             assertEquals(s, vp.secret);
@@ -132,12 +149,13 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             copyJobCommand.setTransportAuth(adminAuth);
             String pAdminName = pName + "-admin";
             assertEquals(0, copyJobCommand.main(Arrays.asList(pName, pAdminName), Locale.ENGLISH, System.in, System.out, System.err));
-            FreeStyleProject pAdmin = jenkins.getItemByFullName(pAdminName, FreeStyleProject.class);
+            FreeStyleProject pAdmin = j.jenkins.getItemByFullName(pAdminName, FreeStyleProject.class);
             assertNotNull(pAdmin);
             pAdmin.setDisplayName(p.getDisplayName()); // counteract DisplayNameListener
             assertEquals(p.getConfigFile().asString(), pAdmin.getConfigFile().asString());
+
             // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
-            wc.login("dev");
+            wc.withBasicApiToken(dev);
             configure = wc.getPage(p, "configure");
             assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(false));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
@@ -154,18 +172,19 @@ public class PasswordTest extends HudsonTestCase implements Describable<Password
             copyJobCommand.setTransportAuth(devAuth);
             String pDevName = pName + "-dev";
             assertThat(copyJobCommand.main(Arrays.asList(pName, pDevName), Locale.ENGLISH, System.in, System.out, System.err), not(0));
-            assertNull(jenkins.getItemByFullName(pDevName, FreeStyleProject.class));
+            assertNull(j.jenkins.getItemByFullName(pDevName, FreeStyleProject.class));
 
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
         }
     }
 
+    @Test
     @Issue("SECURITY-616")
     public void testCheckMethod() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("p");
+        FreeStyleProject p = j.createFreeStyleProject("p");
         p.addProperty(new VulnerableProperty(Secret.fromString("")));
-        HtmlPasswordInput field = createWebClient().getPage(p, "configure").getFormByName("config").getInputByName("_.secret");
+        HtmlPasswordInput field = j.createWebClient().getPage(p, "configure").getFormByName("config").getInputByName("_.secret");
         while (VulnerableProperty.DescriptorImpl.incomingURL == null) { // waitForBackgroundJavaScript does not work well
             Thread.sleep(100); // form validation of saved value
         }
