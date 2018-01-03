@@ -225,6 +225,31 @@ THE SOFTWARE.
         <extensions>true</extensions>
       </plugin>
       <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>old-remoting-for-test</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <!-- we use copy as this is a dependency from outside the reactor -->
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>${remoting.minimum.supported.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
