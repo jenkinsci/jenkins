@@ -134,7 +134,7 @@ public class ChannelPinger extends ComputerListener {
         @Override
         public Void call() throws IOException {
             // No sense in setting up channel pinger if the channel is being closed
-            setUpPingForChannel(_getOpenChannelOrFail(), null, pingTimeoutSeconds, pingIntervalSeconds, false);
+            setUpPingForChannel(getOpenChannelOrFail(), null, pingTimeoutSeconds, pingIntervalSeconds, false);
             return null;
         }
 

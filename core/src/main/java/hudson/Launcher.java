@@ -44,7 +44,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1289,7 +1288,7 @@ public abstract class Launcher {
         }
 
         public RemoteProcess call() throws IOException {
-            final Channel channel = _getOpenChannelOrFail();
+            final Channel channel = getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
             ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
             if(workDir!=null)   ps.pwd(workDir);

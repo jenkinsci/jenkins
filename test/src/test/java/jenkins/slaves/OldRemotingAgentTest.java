@@ -44,7 +44,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SimpleCommandLauncher;
 
-import javax.annotation.CheckForNull;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -70,7 +69,7 @@ public class OldRemotingAgentTest {
     @Before
     public void extractAgent() throws Exception {
         agentJar = new File(tmpDir.getRoot(), "old-agent.jar");
-        FileUtils.copyURLToFile(getClass().getResource("/old-remoting/remoting-minimal-supported.jar"), agentJar);
+        FileUtils.copyURLToFile(OldRemotingAgentTest.class.getResource("/old-remoting/remoting-minimal-supported.jar"), agentJar);
     }
 
     @Test
@@ -81,7 +80,7 @@ public class OldRemotingAgentTest {
         boolean isUnix = agent.getComputer().isUnix();
         assertThat("Received wrong agent version. A minimal supported version is expected",
                 agent.getComputer().getSlaveVersion(),
-                equalTo(RemotingVersionInfo.getMinimalSupportedVersion().toString()));
+                equalTo(RemotingVersionInfo.getMinimumSupportedVersion().toString()));
 
         // Just ensure we are able to run something on the agent
         FreeStyleProject project = j.createFreeStyleProject("foo");
@@ -122,8 +121,8 @@ public class OldRemotingAgentTest {
             try {
                 monitorMethod = AbstractAsyncNodeMonitorDescriptor.class.getDeclaredMethod("monitor", Computer.class);
             } catch (NoSuchMethodException ex) {
-                System.out.println("Cannot invoke monitor " + monitor + ", no monitor(Computer.class) method in the Descriptor. It will be ignored. " + ex.getMessage());
-                return;
+                //TODO: make the API visible for testing?
+                throw new AssertionError("Cannot invoke monitor " + monitor + ", no monitor(Computer.class) method in the Descriptor. It will be ignored. ", ex);
             }
             try {
                 monitorMethod.setAccessible(true);

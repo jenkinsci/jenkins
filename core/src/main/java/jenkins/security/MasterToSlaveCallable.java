@@ -7,8 +7,6 @@ import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
-
 
 /**
  * Convenient {@link Callable} meant to be run on agent.
@@ -25,9 +23,9 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
         checker.check(this,Roles.SLAVE);
     }
 
-    //TODO: replace by Callable#getChannelOrFail() once Minimal supported Remoting version is 3.15 or above
-    @Restricted(NoExternalUse.class)
-    protected static Channel _getChannelOrFail() throws ChannelClosedException {
+    //TODO: remove once Minimum supported Remoting version is 3.15 or above
+    @Override
+    public Channel getChannelOrFail() throws ChannelClosedException {
         final Channel ch = Channel.current();
         if (ch == null) {
             throw new ChannelClosedException(new IllegalStateException("No channel associated with the thread"));
@@ -35,11 +33,11 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
         return ch;
     }
 
-    //TODO: replace by Callable#getOpenChannelOrFail() once Minimal supported Remoting version is 3.15 or above
-    @Restricted(NoExternalUse.class)
-    protected static Channel _getOpenChannelOrFail() throws ChannelClosedException {
-        final Channel ch = _getChannelOrFail();
-        if (ch.isClosingOrClosed()) { // TODO: Since Remoting 2.33, we still need to explicitly declare minimal Remoting version
+    //TODO: remove once Callable#getOpenChannelOrFail() once Minimaumsupported Remoting version is 3.15 or above
+    @Override
+    public Channel getOpenChannelOrFail() throws ChannelClosedException {
+        final Channel ch = getChannelOrFail();
+        if (ch.isClosingOrClosed()) { // TODO: Since Remoting 2.33, we still need to explicitly declare minimum Remoting version
             throw new ChannelClosedException(new IllegalStateException("The associated channel " + ch + " is closing down or has closed down", ch.getCloseRequestCause()));
         }
         return ch;

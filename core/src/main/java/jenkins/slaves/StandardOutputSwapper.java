@@ -39,7 +39,7 @@ public class StandardOutputSwapper extends ComputerListener {
     private static final class ChannelSwapper extends MasterToSlaveCallable<Boolean,Exception> {
         public Boolean call() throws Exception {
             if (File.pathSeparatorChar==';')    return false;   // Windows
-            Channel c = _getOpenChannelOrFail();
+            Channel c = getOpenChannelOrFail();
             StandardOutputStream sos = (StandardOutputStream) c.getProperty(StandardOutputStream.class);
             if (sos!=null) {
                 swap(sos);

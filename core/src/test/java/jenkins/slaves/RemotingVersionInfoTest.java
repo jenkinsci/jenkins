@@ -40,8 +40,8 @@ public class RemotingVersionInfoTest {
     }
 
     @Test
-    public void shouldLoadMinimalSupportedVersionByDefault() {
-        assertThat("Remoting Minimal supported version is not defined",
-                RemotingVersionInfo.getMinimalSupportedVersion(), notNullValue());
+    public void shouldLoadMinimumSupportedVersionByDefault() {
+        assertThat("Remoting Minimum supported version is not defined",
+                RemotingVersionInfo.getMinimumSupportedVersion(), notNullValue());
     }
 }

@@ -37,9 +37,8 @@ import java.util.logging.Logger;
 
 // TODO: Make the API public (JENKINS-48766)
 /**
- * Provides information about Remoting versions used withing the core.
+ * Provides information about Remoting versions used within the core.
  * @author Oleg Nenashev
- * @since TODO
  */
 @Restricted(NoExternalUse.class)
 public class RemotingVersionInfo {
@@ -51,7 +50,7 @@ public class RemotingVersionInfo {
     private static VersionNumber EMBEDDED_VERSION;
 
     @CheckForNull
-    private static VersionNumber MINIMAL_SUPPORTED_VERSION;
+    private static VersionNumber MINIMUM_SUPPORTED_VERSION;
 
     private RemotingVersionInfo() {}
 
@@ -66,7 +65,7 @@ public class RemotingVersionInfo {
         }
 
         EMBEDDED_VERSION = tryExtractVersion(props, "remoting.embedded.version");
-        MINIMAL_SUPPORTED_VERSION = tryExtractVersion(props, "remoting.minimal.supported.version");
+        MINIMUM_SUPPORTED_VERSION = tryExtractVersion(props, "remoting.minimum.supported.version");
     }
 
     @CheckForNull
@@ -98,7 +97,7 @@ public class RemotingVersionInfo {
     }
 
     @CheckForNull
-    public static VersionNumber getMinimalSupportedVersion() {
-        return MINIMAL_SUPPORTED_VERSION;
+    public static VersionNumber getMinimumSupportedVersion() {
+        return MINIMUM_SUPPORTED_VERSION;
     }
 }
