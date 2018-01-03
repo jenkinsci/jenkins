@@ -18,4 +18,4 @@ bouncycastle-api 2.16 2.16.0
 # JENKINS-47393
 command-launcher 2.86 1.0
 # JENKINS-22367 TODO: Update after split
-jdk-tool 2.96 1.0-SNAPSHOT
+jdk-tool 2.100 1.0-SNAPSHOT
