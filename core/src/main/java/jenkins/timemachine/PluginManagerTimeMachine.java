@@ -9,11 +9,12 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.json.JsonHttpResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -86,6 +87,82 @@ public class PluginManagerTimeMachine {
         return HttpResponses.okJSON(response);
     }
 
+    @RequirePOST
+    public void doSetRollback(StaplerRequest request) {
+        try {
+            String toSnapshotTakenAt = request.getParameter("toSnapshotTakenAt");
+            if (toSnapshotTakenAt != null) {
+                FileUtils.write(rollbackFile, toSnapshotTakenAt);
+            } else {
+                LOGGER.log(Level.WARNING, "No 'toSnapshotTakenAt' request parameter. No rollback configured.");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected error creating rollback marker file.");
+        }
+    }
+
+    public HttpResponse doResetRollback(StaplerRequest request) {
+        if (!"DELETE".equalsIgnoreCase(request.getMethod())) {
+            return HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "Wrong method.");
+        }
+        rollbackFile.delete();
+        return HttpResponses.okJSON();
+    }
+
+    public HttpResponse doRollbackConfig() {
+        try {
+            JSONObject responseObject = new JSONObject();
+            if (rollbackFile.exists()) {
+                responseObject.put("snapshotTakenAt", FileUtils.readFileToString(rollbackFile).trim());
+            }
+            return HttpResponses.okJSON(responseObject);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected error reading rollback marker file.");
+        }
+    }
+
+    public HttpResponse doRollback() throws IOException {
+        if (!rollbackFile.exists()) {
+            LOGGER.log(Level.INFO, "No plugins rollback registered. Continue using the current plugin set.");
+            return HttpResponses.error(HttpURLConnection.HTTP_BAD_REQUEST, "Rollback snapshot not configured.");
+        }
+
+        try {
+            String rollbackToSnapshotTakenAt = FileUtils.readFileToString(rollbackFile).trim();
+            File snapshotDir = new File(pluginsTimeMachineDir, rollbackToSnapshotTakenAt);
+
+            if (snapshotDir.exists()) {
+                File manifestFile = new File(snapshotDir, PluginSnapshotManifest.MANIFEST_FILE_NAME);
+                PluginSnapshotManifest snapshotManifest = PluginSnapshotManifest.load(manifestFile);
+                PluginSnapshotManifest latestSnapshotBackup = getLatestSnapshot();
+
+                if (!snapshotManifest.equals(latestSnapshotBackup)) {
+                    LOGGER.log(Level.INFO, "Rolling plugins back to " + rollbackToSnapshotTakenAt +
+                            " (taken " + new Date(snapshotManifest.getTakenAt()) + ").");
+
+                    FileUtils.deleteDirectory(pluginsDir);
+                    FileUtils.copyDirectory(snapshotDir, pluginsDir);
+                } else {
+                    LOGGER.log(Level.INFO, "Not rolling plugins back to " + rollbackToSnapshotTakenAt +
+                            " (taken " + new Date(snapshotManifest.getTakenAt()) +
+                            "). No difference i.e. same set of plugins.");
+                }
+
+                return HttpResponses.okJSON();
+            } else {
+                LOGGER.log(Level.WARNING, "Rollback marker file " + rollbackFile.getAbsolutePath()
+                        + " references an unknown snapshot '" + rollbackToSnapshotTakenAt + "'. Ignoring.");
+
+                return HttpResponses.error(HttpURLConnection.HTTP_BAD_REQUEST, "Unknown snapshot: " + rollbackToSnapshotTakenAt);
+            }
+        } finally {
+            // Rollback complete. Okay to delete the marker file now...
+            if (!rollbackFile.delete()) {
+                LOGGER.log(Level.SEVERE, "Failed to delete the rollback marker file: " + rollbackFile.getAbsolutePath());
+            }
+        }
+    }
+
     private PluginSnapshotManifest getManifest(long timestamp) {
         for (PluginSnapshotManifest snapshotManifest : snapshotManifests) {
             if (snapshotManifest.getTakenAt() == timestamp) {
@@ -137,50 +214,6 @@ public class PluginManagerTimeMachine {
             return null;
         }
         return snapshotManifests.get(0);
-    }
-
-    public void setRollback(String toVersion) {
-        try {
-            FileUtils.write(rollbackFile, toVersion);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unexpected error creating rollback marker file.");
-        }
-    }
-
-    public void doRollback() throws IOException {
-        if (!rollbackFile.exists()) {
-            LOGGER.log(Level.INFO, "No plugins rollback registered. Continue using the current plugin set.");
-            return;
-        }
-
-        String rollbackToVersion = FileUtils.readFileToString(rollbackFile).trim();
-        File snapshotDir = new File(pluginsTimeMachineDir, rollbackToVersion);
-
-        if (snapshotDir.exists()) {
-            File manifestFile = new File(snapshotDir, PluginSnapshotManifest.MANIFEST_FILE_NAME);
-            PluginSnapshotManifest snapshotManifest = PluginSnapshotManifest.load(manifestFile);
-            PluginSnapshotManifest latestSnapshotBackup = getLatestSnapshot();
-
-            if (!snapshotManifest.equals(latestSnapshotBackup)) {
-                LOGGER.log(Level.INFO, "Rolling plugins back to " + rollbackToVersion +
-                        " (taken " + new Date(snapshotManifest.getTakenAt()) + ").");
-
-                FileUtils.deleteDirectory(pluginsDir);
-                FileUtils.copyDirectory(snapshotDir, pluginsDir);
-            } else {
-                LOGGER.log(Level.INFO, "Not rolling plugins back to " + rollbackToVersion +
-                        " (taken " + new Date(snapshotManifest.getTakenAt()) +
-                        "). No difference i.e. same set of plugins.");
-            }
-        } else {
-            LOGGER.log(Level.WARNING, "Rollback marker file " + rollbackFile.getAbsolutePath()
-                    + " references an unknown snapshot '" + rollbackToVersion + "'. Ignoring.");
-        }
-
-        // Rollback worked. Okay to delete the marker file now...
-        if (!rollbackFile.delete()) {
-            LOGGER.log(Level.SEVERE, "Failed to delete the rollback marker file: " + rollbackFile.getAbsolutePath());
-        }
     }
 
     private synchronized void doNowBackup(@Nonnull PluginSnapshotManifest nowSnapshot) throws IOException {

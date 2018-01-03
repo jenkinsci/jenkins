@@ -1,5 +1,10 @@
 package jenkins.timemachine;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.PluginManagerUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -8,8 +13,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import javax.servlet.ServletRequest;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -95,5 +103,106 @@ public class PluginManagerTimeMachineTest {
         Assert.assertEquals("f", fChanges.getString("pluginId"));
         Assert.assertEquals(1, fChanges.getJSONArray("changes").size());
         Assert.assertEquals("installed", fChanges.getJSONArray("changes").getJSONObject(0).getString("type"));
+    }
+
+    @Test
+    public void test_Rollback() throws IOException {
+        // Should not be configured to start with.
+        assertRollbackConfig(null);
+
+        // Configure it ...
+        doSetRollback("1234");
+
+        // Check the configure ...
+        assertRollbackConfig("1234");
+
+        // Reset and check again...
+        doResetRollback();
+        assertRollbackConfig(null);
+
+        // Configure and check it again ...
+        doSetRollback("1234");
+        assertRollbackConfig("1234");
+
+        // Run the rollback. Yes ... not actually going to roll anything back
+        // in this test, but does test that the endpoint was executed.
+        doRollback();
+        // Once executed, the backend config should be reset.
+        assertRollbackConfig(null);
+    }
+
+    private void assertRollbackConfig(String expected) throws IOException {
+        JSONObject response = jenkinsRule.getJSON("pluginManager/timeMachine/rollbackConfig").getJSONObject();
+
+        //System.out.println(response);
+        Assert.assertEquals(expected, response.getJSONObject("data").optString("snapshotTakenAt", null));
+    }
+
+    private int doResetRollback() throws IOException {
+        JenkinsRule.WebClient wc = jenkinsRule.createWebClient();
+
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(
+                new URL(jenkinsRule.jenkins.getRootUrl() + "pluginManager/timeMachine/resetRollback"),
+                HttpMethod.DELETE
+        );
+
+        Page page = wc.getPage(req);
+        WebResponse response = page.getWebResponse();
+
+        return response.getStatusCode();
+    }
+
+    private int doRollback() throws IOException {
+        JenkinsRule.WebClient wc = jenkinsRule.createWebClient();
+
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        WebRequest req = new WebRequest(
+                new URL(jenkinsRule.jenkins.getRootUrl() + "pluginManager/timeMachine/rollback"),
+                HttpMethod.GET
+        );
+
+        Page page = wc.getPage(req);
+        WebResponse response = page.getWebResponse();
+
+        return response.getStatusCode();
+    }
+
+    private void doSetRollback(String toSnapshotTakenAt) throws IOException {
+        doPost("pluginManager/timeMachine/setRollback", new NameValuePair("toSnapshotTakenAt", toSnapshotTakenAt));
+    }
+
+    private int doPost(String url, NameValuePair... params) throws IOException {
+        return doPost(url, null, params);
+    }
+
+    private int doPost(String url, String data, NameValuePair... params) throws IOException {
+        JenkinsRule.WebClient wc = jenkinsRule.createWebClient();
+
+        WebRequest req = new WebRequest(
+                new URL(jenkinsRule.jenkins.getRootUrl() + url),
+                HttpMethod.POST
+        );
+
+        List<NameValuePair> requestParams  = new ArrayList<>();
+
+        requestParams.add(getCrumbHeaderNVP());
+        if (params != null && params.length > 0) {
+            requestParams.addAll(Arrays.asList(params));
+        }
+        req.setRequestParameters(requestParams);
+
+        if (data != null) {
+            req.setRequestBody(data);
+        }
+
+        Page page = wc.getPage(req);
+        WebResponse response = page.getWebResponse();
+
+        return response.getStatusCode();
+    }
+
+    private NameValuePair getCrumbHeaderNVP() {
+        return new NameValuePair(jenkinsRule.jenkins.getCrumbIssuer().getDescriptor().getCrumbRequestField(), jenkinsRule.jenkins.getCrumbIssuer().getCrumb((ServletRequest)null));
     }
 }
