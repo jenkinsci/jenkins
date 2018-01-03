@@ -44,7 +44,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1308,7 +1307,11 @@ public abstract class Launcher {
                         Channel taskChannel = null;
                         try {
                             // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
-                            taskChannel = Channel.currentOrFail();
+                            // TODOL Replace by Channel#currentOrFail() when Remoting version allows
+                            taskChannel = Channel.current();
+                            if (taskChannel == null) {
+                                throw new IOException("No Remoting channel associated with this thread");
+                            }
                             taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc
