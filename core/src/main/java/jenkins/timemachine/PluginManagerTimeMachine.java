@@ -89,6 +89,8 @@ public class PluginManagerTimeMachine {
 
     @RequirePOST
     public void doSetRollback(StaplerRequest request) {
+        // TODO: Enable jenkins security
+
         try {
             String toSnapshotTakenAt = request.getParameter("toSnapshotTakenAt");
             if (toSnapshotTakenAt != null) {
@@ -102,6 +104,8 @@ public class PluginManagerTimeMachine {
     }
 
     public HttpResponse doResetRollback(StaplerRequest request) {
+        // TODO: Enable jenkins security
+
         if (!"DELETE".equalsIgnoreCase(request.getMethod())) {
             return HttpResponses.error(HttpURLConnection.HTTP_BAD_METHOD, "Wrong method.");
         }
@@ -110,6 +114,8 @@ public class PluginManagerTimeMachine {
     }
 
     public HttpResponse doRollbackConfig() {
+        // TODO: Enable jenkins security
+
         try {
             JSONObject responseObject = new JSONObject();
             if (rollbackFile.exists()) {
@@ -122,6 +128,8 @@ public class PluginManagerTimeMachine {
     }
 
     public HttpResponse doRollback() throws IOException {
+        // TODO: Enable jenkins security
+
         if (!rollbackFile.exists()) {
             LOGGER.log(Level.INFO, "No plugins rollback registered. Continue using the current plugin set.");
             return HttpResponses.error(HttpURLConnection.HTTP_BAD_REQUEST, "Rollback snapshot not configured.");
