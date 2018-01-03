@@ -26,6 +26,8 @@ package hudson;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.junit.runner.Description;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
@@ -43,6 +45,15 @@ public class PluginManagerUtil {
             public void before() throws Throwable {
                 setPluginManager(null);
                 super.before();
+            }
+        };
+    }
+
+    public static RestartableJenkinsRule newRestartableJenkinsRule() {
+        return new RestartableJenkinsRule() {
+            @Override
+            public JenkinsRule createJenkinsRule(Description description) {
+                return newJenkinsRule();
             }
         };
     }

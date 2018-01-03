@@ -1,0 +1,2 @@
+jenkins.model.Jenkins.getInstance() => jenkins.model.Jenkins.get();;
+jenkins.model.Jenkins.getActiveInstance() => jenkins.model.Jenkins.get();;

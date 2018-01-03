@@ -136,10 +136,16 @@ public class ExecutorTest {
             grant(Jenkins.READ).everywhere().toEveryone().
             grant(Item.READ).onItems(publicProject).toEveryone().
             grant(Item.READ).onItems(secretProject).to("has-security-clearance"));
-        String api = j.createWebClient().login("has-security-clearance").goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials("has-security-clearance");
+        String api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), containsString("secret-project")));
-        api = j.createWebClient().login("regular-joe").goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+
+        wc = j.createWebClient();
+        wc.withBasicCredentials("regular-joe");
+        api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
     }
