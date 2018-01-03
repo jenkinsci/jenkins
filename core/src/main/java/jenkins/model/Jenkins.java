@@ -1988,7 +1988,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Replaces all JDK installations with those from the given collection.
      *
-     * Use {@link hudson.model.JDK.DescriptorImpl#setInstallations(JDK...)} to
+     * Use {@code org.jenkinsci.plugins.jdk_tool.JDKs#setInstallations(JDK...)} from the jdk-tool plugin to
      * set JDK installations from external code.
      */
     @Restricted(NoExternalUse.class)

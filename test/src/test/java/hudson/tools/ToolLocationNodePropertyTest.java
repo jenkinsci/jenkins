@@ -76,11 +76,8 @@ public class ToolLocationNodePropertyTest {
         mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", j.NO_PROPERTIES));
         AntInstallation.DescriptorImpl antDescriptor = j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class);
         antDescriptor.setInstallations(new AntInstallation("ant", "XXX", j.NO_PROPERTIES));
-        JDK.DescriptorImpl jdkDescriptor = j.jenkins.getDescriptorByType(JDK.DescriptorImpl.class);
-        jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
         ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(jdkDescriptor, "jdk", "foobar"),
                 new ToolLocationNodeProperty.ToolLocation(mavenDescriptor, "maven", "barzot"),
                 new ToolLocationNodeProperty.ToolLocation(antDescriptor, "ant", "zotfoo"));
         slave.getNodeProperties().add(property);
@@ -93,19 +90,14 @@ public class ToolLocationNodePropertyTest {
         assertEquals(1, slave.getNodeProperties().toList().size());
 
         ToolLocationNodeProperty prop = slave.getNodeProperties().get(ToolLocationNodeProperty.class);
-        assertEquals(3, prop.getLocations().size());
+        assertEquals(2, prop.getLocations().size());
 
         ToolLocationNodeProperty.ToolLocation location = prop.getLocations().get(0);
-        assertEquals(jdkDescriptor, location.getType());
-        assertEquals("jdk", location.getName());
-        assertEquals("foobar", location.getHome());
-
-        location = prop.getLocations().get(1);
         assertEquals(mavenDescriptor, location.getType());
         assertEquals("maven", location.getName());
         assertEquals("barzot", location.getHome());
 
-        location = prop.getLocations().get(2);
+        location = prop.getLocations().get(1);
         assertEquals(antDescriptor, location.getType());
         assertEquals("ant", location.getName());
         assertEquals("zotfoo", location.getHome());

@@ -41,7 +41,6 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Items;
-import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ModelObject;
@@ -287,8 +286,12 @@ public class Functions {
         }
     }
 
-    public JDK.DescriptorImpl getJDKDescriptor() {
-        return Jenkins.getInstance().getDescriptorByType(JDK.DescriptorImpl.class);
+    /**
+     * @deprecated Use {@code org.jenkinsci.plugins.jdk_tool.JDKs.getDescriptor()} from the jdk-tool plugin instead.
+     */
+    @Deprecated
+    public Descriptor getJDKDescriptor() {
+        return Jenkins.getInstance().getDescriptor("hudson.model.JDK$DescriptorImpl");
     }
 
     /**

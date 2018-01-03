@@ -25,30 +25,19 @@ package hudson.model;
 
 import hudson.util.StreamTaskListener;
 import hudson.util.NullStream;
-import hudson.util.FormValidation;
 import hudson.Launcher;
-import hudson.Extension;
 import hudson.EnvVars;
 import hudson.slaves.NodeSpecific;
 import hudson.tools.ToolInstallation;
-import hudson.tools.ToolDescriptor;
-import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.XStream2;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -171,60 +160,10 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
         }
     }
 
-    @Extension @Symbol("jdk")
-    public static class DescriptorImpl extends ToolDescriptor<JDK> {
-
-        public String getDisplayName() {
-            return "JDK"; // TODO I18N
-        }
-
-        public @Override JDK[] getInstallations() {
-            return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
-        }
-
-        public @Override void setInstallations(JDK... jdks) {
-            Jenkins.getInstance().setJDKs(Arrays.asList(jdks));
-        }
-
-        @Override
-        public List<? extends ToolInstaller> getDefaultInstallers() {
-            try {
-                Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.getInstance().getPluginManager()
-                        .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
-                Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
-                return Collections.singletonList(constructor.newInstance(null, false));
-            } catch (ClassNotFoundException e) {
-                return Collections.emptyList();
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
-                LOGGER.log(Level.WARNING, "Unable to get default installer", e);
-                return Collections.emptyList();
-            }
-        }
-
-        /**
-         * Checks if the JAVA_HOME is a valid JAVA_HOME path.
-         */
-        @Override protected FormValidation checkHomeDirectory(File value) {
-            File toolsJar = new File(value,"lib/tools.jar");
-            File mac = new File(value,"lib/dt.jar");
-
-            // JENKINS-25601: JDK 9+ no longer has tools.jar. Keep the existing dt.jar/tools.jar checks to be safe.
-            File javac = new File(value, "bin/javac");
-            File javacExe = new File(value, "bin/javac.exe");
-            if(!toolsJar.exists() && !mac.exists() && !javac.exists() && !javacExe.exists())
-                return FormValidation.error(Messages.Hudson_NotJDKDir(value));
-
-            return FormValidation.ok();
-        }
-
-    }
-
     public static class ConverterImpl extends ToolConverter {
         public ConverterImpl(XStream2 xstream) { super(xstream); }
         @Override protected String oldHomeField(ToolInstallation obj) {
             return ((JDK)obj).javaHome;
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(JDK.class.getName());
 }

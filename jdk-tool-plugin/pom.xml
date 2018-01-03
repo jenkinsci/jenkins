@@ -15,7 +15,7 @@
         <java.level>8</java.level>
     </properties>
     <name>JDK Tool Plugin</name>
-    <description>Allows the JDK tool to be installed via download from Oracle's website.</description>
+    <description>Provides installers for the JDK tool.</description>
     <url>https://wiki.jenkins.io/display/JENKINS/JDK+Tool+Plugin</url>
     <licenses>
         <license>
@@ -42,4 +42,18 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>apache-httpcomponents-client-4-api</artifactId>
+            <version>4.5.3-2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>ssh-slaves</artifactId>
+            <version>1.24</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
