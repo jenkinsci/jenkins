@@ -11,19 +11,32 @@ import hudson.model.labels.LabelAtom;
 import hudson.plugins.sshslaves.SSHLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.tools.ToolLocationNodeProperty;
+import java.util.Arrays;
 import java.util.List;
 import org.jenkinsci.plugins.jdk_tool.JDKs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
 public class JDK$DescriptorImplTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
+
+    @Test
+    public void setInstallationsWithReflection() throws Exception {
+        JDK jdkFoo = new JDK("foo", "fooHome");
+        JDK jdkBar = new JDK("bar", "barHome");
+        JDKs.getDescriptor().setInstallations(jdkFoo, jdkBar);
+        assertThat("Configured JDKs should be accessible through the descriptor",
+                Arrays.asList(JDKs.getDescriptor().getInstallations()), contains(jdkFoo, jdkBar));
+        assertThat("Configured JDKs should be accessible through Jenkins#getJDKs",
+                r.jenkins.getJDKs(), contains(jdkFoo, jdkBar));
+    }
 
     @Test
     public void binaryCompatibility() throws Exception {

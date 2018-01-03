@@ -60,14 +60,13 @@ public class JDK$DescriptorImpl extends ToolDescriptor<JDK> {
     }
 
     public @Override JDK[] getInstallations() {
-        return Jenkins.getInstance().getJDKs().toArray(new JDK[0]);
+        return Jenkins.get().getJDKs().toArray(new JDK[0]);
     }
 
-    @SuppressWarnings("deprecation") // Ideally Jenkins#setJDKs would be @Restricted to all callers other than this plugin, but there is no such access restriction.
     public @Override void setInstallations(JDK... jdks) {
         try {
             Method m = Jenkins.class.getMethod("setJDKs", Collection.class);
-            m.invoke(Jenkins.getInstance(), Arrays.asList(jdks));
+            m.invoke(Jenkins.get(), Arrays.asList(jdks));
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             LOGGER.log(Level.SEVERE, "Unable to set JDK configurations.", e);
         }
