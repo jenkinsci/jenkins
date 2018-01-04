@@ -38,7 +38,7 @@ var section = (function (){
             root = $(root||document.body);
 
             /**
-             * Recursively visit elements and find all section headers.
+             * Recursively visit elements and find all section headers that are not inside f:repeatable elements.
              *
              * @param {HTMLElement} dom
              *      Parent element
@@ -52,7 +52,7 @@ var section = (function (){
                             var child = new SectionNode(e);
                             parent.children.push(child);
                             visitor(e,child);
-                        } else {
+                        } else if (!e.classList.contains("repeated-container")) {
                             visitor(e,parent);
                         }
                     }
