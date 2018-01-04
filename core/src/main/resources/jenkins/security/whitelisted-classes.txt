@@ -1,4 +1,5 @@
 com.google.common.collect.AbstractSetMultimap
+com.google.common.collect.EmptyImmutableList
 com.google.common.collect.EmptyImmutableSet
 com.google.common.collect.EmptyImmutableSortedSet
 com.google.common.collect.HashMultimap
