@@ -50,7 +50,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertEquals(Messages.NewViewLink_NewView(), action.getDisplayName());
         assertEquals(NewViewLink.ICON_FILE_NAME, action.getIconFileName());
-        assertEquals(rootUrl + NewViewLink.URL_NAME_SUFFIX, action.getUrlName());
+        assertEquals(rootUrl + NewViewLink.URL_NAME, action.getUrlName());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class NewViewLinkTest {
         final Action action = actions.get(0);
         assertNull(action.getDisplayName());
         assertNull(action.getIconFileName());
-        assertEquals(rootUrl + NewViewLink.URL_NAME_SUFFIX, action.getUrlName());
+        assertEquals(rootUrl + NewViewLink.URL_NAME, action.getUrlName());
     }
 
 }

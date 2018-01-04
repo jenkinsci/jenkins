@@ -8,13 +8,17 @@ import hudson.model.View;
 import java.util.Collections;
 import java.util.List;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+
 @Extension
+@Restricted(DoNotUse.class)
 public class NewViewLink extends TransientViewActionFactory {
 
     @VisibleForTesting
     static final String ICON_FILE_NAME = "folder";
     @VisibleForTesting
-    static final String URL_NAME_SUFFIX = "newView";
+    public static final String URL_NAME = "newView";
 
     @Override
     public List<Action> createFor(View v) {
@@ -40,7 +44,7 @@ public class NewViewLink extends TransientViewActionFactory {
 
             @Override
             public String getUrlName() {
-                String urlName = Jenkins.getInstance().getRootUrl() + URL_NAME_SUFFIX;
+                String urlName = Jenkins.getInstance().getRootUrl() + URL_NAME;
                 return urlName;
             }
 
