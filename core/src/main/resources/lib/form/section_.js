@@ -47,7 +47,7 @@ var section = (function (){
              */
             function visitor(dom,parent) {
                 function isVisible(elem) {
-                    return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
+                    return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects && elem.getClientRects().length );
                 }
 
                 for (var e=dom.firstChild; e!=null; e=e.nextSibling) {
