@@ -47,15 +47,21 @@ public class FileChannelWriter extends Writer {
     private boolean forceOnFlush;
 
     /**
+     * See forceOnFlush. You probably never want to set forceOnClose to false.
+     */
+    private boolean forceOnClose;
+
+    /**
      * @param filePath     the path of the file to write to.
      * @param charset      the charset to use when writing characters.
      * @param forceOnFlush set to true if you want {@link FileChannel#force(boolean)} to be called on {@link #flush()}.
      * @param options      the options for opening the file.
      * @throws IOException if something went wrong.
      */
-    FileChannelWriter(Path filePath, Charset charset, boolean forceOnFlush, OpenOption... options) throws IOException {
+    FileChannelWriter(Path filePath, Charset charset, boolean forceOnFlush, boolean forceOnClose, OpenOption... options) throws IOException {
         this.charset = charset;
         this.forceOnFlush = forceOnFlush;
+        this.forceOnClose = forceOnClose;
         channel = FileChannel.open(filePath, options);
     }
 
@@ -79,7 +85,9 @@ public class FileChannelWriter extends Writer {
     @Override
     public void close() throws IOException {
         if(channel.isOpen()) {
-            channel.force(true);
+            if (forceOnClose) {
+                channel.force(true);
+            }
             channel.close();
         }
     }
