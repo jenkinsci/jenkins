@@ -78,7 +78,7 @@ org.acegisecurity.userdetails.User
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
 
-# TODO remove when https://github.com/jenkinsci/git-client-plugin/pull/290 is widely adopted
+# TODO remove when git-client 2.7.1+ is widely adopted
 org.eclipse.jgit.lib.ObjectId
 org.eclipse.jgit.lib.ObjectIdOwnerMap$Entry
 org.eclipse.jgit.lib.PersonIdent
