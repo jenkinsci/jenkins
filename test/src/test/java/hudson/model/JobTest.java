@@ -202,7 +202,7 @@ public class JobTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
-        wc.login("joe");  // Has Item.READ permission
+        wc.withBasicCredentials("joe");  // Has Item.READ permission
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
         wc.goTo("jobCaseInsensitive/TESTJOB/");
@@ -216,11 +216,14 @@ public class JobTest {
         Item.EXTENDED_READ.setEnabled(true);
         try {
             wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
-            wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("alice", true));  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
-            wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
+
+            wc.withBasicApiToken(User.getById("bob", true));  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
             tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
-            wc.login("charlie");  // Has only EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("charlie", true));  // Has only EXTENDED_READ permission
             tryConfigDotXml(wc, 403, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);

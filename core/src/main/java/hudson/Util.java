@@ -28,7 +28,6 @@ import jenkins.util.SystemProperties;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 
@@ -36,15 +35,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import jnr.posix.FileStat;
-import jnr.posix.POSIX;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -68,7 +63,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -256,16 +253,16 @@ public class Util {
      * 
      * @param f
      *            What to delete. If a directory, it'll need to be empty.
-     * @throws IOException if it exists but could not be successfully deleted
+     * @throws IOException if it exists but could not be successfully deleted,
+     * or if it represents an invalid {@link Path}.
      */
     private static void tryOnceDeleteFile(File f) throws IOException {
-        if (!f.delete()) {
-            if(!f.exists())
-                // we are trying to delete a file that no longer exists, so this is not an error
-                return;
-
+        Path path = fileToPath(f);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
             // perhaps this file is read-only?
-            makeWritable(f);
+            makeWritable(path);
             /*
              on Unix both the file and the directory that contains it has to be writable
              for a file deletion to be successful. (Confirmed on Solaris 9)
@@ -279,56 +276,47 @@ public class Util {
              $ rm x
              rm: x not removed: Permission denied
              */
-
-            makeWritable(f.getParentFile());
-
-            if(!f.delete() && f.exists()) {
-                // trouble-shooting.
-                try {
-                    Files.deleteIfExists(f.toPath());
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
-                }
-
+            Path parent = path.getParent();
+            if (parent != null) {
+                makeWritable(parent);
+            }
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e2) {
                 // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
-                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
-                throw new IOException("Unable to delete " + f.getPath());
+                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files), e2);
+                throw e2;
             }
         }
     }
 
     /**
-     * Makes the given file writable by any means possible.
+     * Makes the file at the given path writable by any means possible.
      */
-    private static void makeWritable(@Nonnull File f) {
-        if (f.setWritable(true)) {
-            return;
-        }
-        // TODO do we still need to try anything else?
-
-        // try chmod. this becomes no-op if this is not Unix.
-        try {
-            Chmod chmod = new Chmod();
-            chmod.setProject(new Project());
-            chmod.setFile(f);
-            chmod.setPerm("u+w");
-            chmod.execute();
-        } catch (BuildException e) {
-            LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
+    private static void makeWritable(@Nonnull Path path) throws IOException {
+        if (!Functions.isWindows()) {
+            try {
+                PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
+                Set<PosixFilePermission> newPermissions = ((PosixFileAttributes)attrs).permissions();
+                newPermissions.add(PosixFilePermission.OWNER_WRITE);
+                Files.setPosixFilePermissions(path, newPermissions);
+                return;
+            } catch (NoSuchFileException e) {
+                return;
+            } catch (UnsupportedOperationException e) {
+                // PosixFileAttributes not supported, fall back to old IO.
+            }
         }
 
-        try {// try libc chmod
-            POSIX posix = PosixAPI.jnr();
-            String path = f.getAbsolutePath();
-            FileStat stat = posix.stat(path);
-            posix.chmod(path, stat.mode()|0200); // u+w
-        } catch (Throwable t) {
-            LOGGER.log(Level.FINE,"Failed to chmod(2) "+f,t);
-        }
-
+        /**
+         * We intentionally do not check the return code of setWritable, because if it
+         * is false we prefer to rethrow the exception thrown by Files.deleteIfExists,
+         * which will have a more useful message than something we make up here.
+         */
+        path.toFile().setWritable(true);
     }
 
     /**
@@ -1597,6 +1585,51 @@ public class Util {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+         // Anything larger is a file type, not a permission.
+        int PERMISSIONS_MASK = 07777;
+        // setgid/setuid/sticky are not supported.
+        int MAX_SUPPORTED_MODE = 0777;
+        mode = mode & PERMISSIONS_MASK;
+        if ((mode & MAX_SUPPORTED_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
+    }
+
+    /**
+     * Converts a {@link File} into a {@link Path} and checks runtime exceptions.
+     * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'",new SimpleTimeZone(0,"GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -1664,4 +1697,15 @@ public class Util {
      */
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+
+    /**
+     * If this flag is true, native implementations of {@link FilePath#chmod}
+     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
+     * <p>
+     * This should only be enabled if the setgid/setuid/sticky bits are
+     * intentionally set on the Jenkins installation and they are being
+     * overwritten by Jenkins erroneously.
+     */
+    @Restricted(value = NoExternalUse.class)
+    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

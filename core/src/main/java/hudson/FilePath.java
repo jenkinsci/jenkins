@@ -77,11 +77,20 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.LinkOption;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +120,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -124,8 +134,10 @@ import org.kohsuke.stapler.Stapler;
 
 import static hudson.FilePath.TarCompression.GZIP;
 import static hudson.Util.deleteFile;
+import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
 import static hudson.Util.isSymlink;
+
 import java.util.Collections;
         
 /**
@@ -1164,7 +1176,7 @@ public final class FilePath implements Serializable {
                 // following Ant <mkdir> task to avoid possible race condition.
                 Thread.sleep(10);
 
-                return f.mkdirs() || f.exists();
+                return mkdirs(f) || f.exists();
             }
         }))
             throw new IOException("Failed to mkdirs: "+remote);
@@ -1399,17 +1411,35 @@ public final class FilePath implements Serializable {
      * @return
      *      The new FilePath pointing to the temporary directory
      * @since 1.311
-     * @see File#createTempFile(String, String)
+     * @see Files#createTempDirectory(Path, String, FileAttribute[])
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
+            String[] s;
+            if (StringUtils.isBlank(suffix)) {
+                s = new String[]{prefix, "tmp"}; // see File.createTempFile - tmp is used if suffix is null
+            } else {
+                s = new String[]{prefix, suffix};
+            }
+            String name = StringUtils.join(s, ".");
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    File f = File.createTempFile(prefix, suffix, dir);
-                    f.delete();
-                    f.mkdir();
-                    return f.getName();
+
+                    Path tempPath;
+                    final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+
+                    if (isPosix) {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,
+                                PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+                    } else {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name, new FileAttribute<?>[] {});
+                    }
+
+                    if (tempPath.toFile() == null) {
+                        throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
+                    }
+                    return tempPath.toFile().getName();
                 }
             }));
         } catch (IOException e) {
@@ -1582,6 +1612,11 @@ public final class FilePath implements Serializable {
      *      <p>
      *      please note mask is expected to be an octal if you use <a href="http://en.wikipedia.org/wiki/Chmod">chmod command line values</a>,
      *      so preceded by a '0' in java notation, ie <code>chmod(0644)</code>
+     *      <p>
+     *      Only supports setting read, write, or execute permissions for the
+     *      owner, group, or others, so the largest permissible value is 0777.
+     *      Attempting to set larger values (i.e. the setgid, setuid, or sticky
+     *      bits) will cause an IOException to be thrown.
      *
      * @since 1.303
      * @see #mode()
@@ -1591,7 +1626,6 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-                // TODO first check for Java 7+ and use PosixFileAttributeView
                 _chmod(writing(f), mask);
 
                 return null;
@@ -1600,14 +1634,18 @@ public final class FilePath implements Serializable {
     }
 
     /**
-     * Run chmod via jnr-posix
+     * Change permissions via NIO.
      */
     private static void _chmod(File f, int mask) throws IOException {
         // TODO WindowsPosix actually does something here (WindowsLibC._wchmod); should we let it?
         // Anyway the existing calls already skip this method if on Windows.
         if (File.pathSeparatorChar==';')  return; // noop
 
-        PosixAPI.jnr().chmod(f.getAbsolutePath(),mask);
+        if (Util.NATIVE_CHMOD_MODE) {
+            PosixAPI.jnr().chmod(f.getAbsolutePath(), mask);
+        } else {
+            Files.setPosixFilePermissions(fileToPath(f), Util.modeToPermissions(mask));
+        }
     }
 
     private static boolean CHMOD_WARNED = false;
@@ -1953,7 +1991,7 @@ public final class FilePath implements Serializable {
         act(new SecureFileCallable<Void>() {
             private static final long serialVersionUID = 1L;
             public Void invoke(File f, VirtualChannel channel) throws IOException {
-            	reading(f).renameTo(creating(new File(target.remote)));
+                Files.move(fileToPath(reading(f)), fileToPath(creating(new File(target.remote))), LinkOption.NOFOLLOW_LINKS);
                 return null;
             }
         });
@@ -2008,6 +2046,21 @@ public final class FilePath implements Serializable {
      * @since 1.311
      */
     public void copyToWithPermission(FilePath target) throws IOException, InterruptedException {
+        // Use NIO copy with StandardCopyOption.COPY_ATTRIBUTES when copying on the same machine.
+        if (this.channel == target.channel) {
+            act(new SecureFileCallable<Void>() {
+                public Void invoke(File f, VirtualChannel channel) throws IOException {
+                    File targetFile = new File(target.remote);
+                    File targetDir = targetFile.getParentFile();
+                    filterNonNull().mkdirs(targetDir);
+                    Files.createDirectories(fileToPath(targetDir));
+                    Files.copy(fileToPath(reading(f)), fileToPath(writing(targetFile)), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+                    return null;
+                }
+            });
+            return;
+        }
+
         copyTo(target);
         // copy file permission
         target.chmod(mode());
@@ -2933,11 +2986,12 @@ public final class FilePath implements Serializable {
         return f;
     }
 
-    private boolean mkdirs(File dir) {
+    private boolean mkdirs(File dir) throws IOException {
         if (dir.exists())   return false;
 
         filterNonNull().mkdirs(dir);
-        return dir.mkdirs();
+        Files.createDirectories(fileToPath(dir));
+        return true;
     }
 
     private File mkdirsE(File dir) throws IOException {

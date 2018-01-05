@@ -67,6 +67,7 @@ public class Security380Test {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         Page page = wc.goTo("listJobs", "text/plain");
+        // return "0\r\n"
         Assert.assertEquals("expect 0 items", "0", page.getWebResponse().getContentAsString().trim());
     }
 
