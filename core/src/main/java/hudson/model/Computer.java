@@ -32,7 +32,6 @@ import hudson.Launcher.ProcStarter;
 import hudson.slaves.Cloud;
 import jenkins.util.SystemProperties;
 import hudson.Util;
-import hudson.cli.declarative.CLIMethod;
 import hudson.cli.declarative.CLIResolver;
 import hudson.console.AnnotatedLargeText;
 import hudson.init.Initializer;
@@ -85,7 +84,6 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
-import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -1426,10 +1424,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     private static final class DumpExportTableTask extends MasterToSlaveCallable<String,IOException> {
         public String call() throws IOException {
+            final Channel ch = getChannelOrFail();
             StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            Channel.current().dumpExportTable(pw);
-            pw.close();
+            try (PrintWriter pw = new PrintWriter(sw)) {
+                ch.dumpExportTable(pw);
+            }
             return sw.toString();
         }
     }

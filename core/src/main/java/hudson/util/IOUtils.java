@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static hudson.Util.fileToPath;
+
 /**
  * Adds more to commons-io.
  *
@@ -51,20 +53,11 @@ public class IOUtils {
      *      This method returns the 'dir' parameter so that the method call flows better.
      */
     public static File mkdirs(File dir) throws IOException {
-        if(dir.mkdirs() || dir.exists())
-            return dir;
-
-        // following Ant <mkdir> task to avoid possible race condition.
         try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            // ignore
+            return Files.createDirectories(fileToPath(dir)).toFile();
+        } catch (UnsupportedOperationException e) {
+            throw new IOException(e);
         }
-
-        if (dir.mkdirs() || dir.exists())
-            return dir;
-
-        throw new IOException("Failed to create a directory at "+dir);
     }
 
     /**
@@ -134,7 +127,7 @@ public class IOUtils {
             if (Util.NATIVE_CHMOD_MODE) {
                 return PosixAPI.jnr().stat(f.getPath()).mode();
             } else {
-                return Util.permissionsToMode(Files.getPosixFilePermissions(Util.fileToPath(f)));
+                return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
             }
         } catch (IOException cause) {
             PosixException e = new PosixException("Unable to get file permissions", null);

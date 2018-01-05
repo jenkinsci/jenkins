@@ -11,6 +11,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 
+import hudson.model.User;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -56,7 +57,7 @@ public class LoginTest {
         WebClient wc = j.createWebClient();
         wc.assertFails("loginError", SC_UNAUTHORIZED);
         // but not once the user logs in.
-        verifyNotError(wc.login("alice"));
+        verifyNotError(wc.withBasicApiToken(User.getById("alice", true)));
     }
 
     private HtmlForm prepareLoginFormWithRememberMeChecked(WebClient wc) throws IOException, org.xml.sax.SAXException {
