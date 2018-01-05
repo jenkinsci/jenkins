@@ -28,6 +28,7 @@ java.lang.Object
 java.lang.StackTraceElement
 java.lang.String
 java.lang.reflect.Proxy
+java.net.URI
 java.net.URL
 java.security.KeyRep
 java.util.ArrayDeque
