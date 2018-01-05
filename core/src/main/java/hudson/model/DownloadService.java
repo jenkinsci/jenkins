@@ -161,7 +161,7 @@ public class DownloadService extends PageDecorator {
     public static String loadJSON(URL src) throws IOException {
         URLConnection con;
         try {
-            con = ProxyConfiguration.openAllowsRedirection(src);
+            con = ProxyConfiguration.openURLAndRedirect(src);
         } catch (IOException e) {
             throw new IOException("Could not find JSON in " + src, e);
         }
@@ -188,7 +188,7 @@ public class DownloadService extends PageDecorator {
     public static String loadJSONHTML(URL src) throws IOException {
         URLConnection con;
         try {
-            con = ProxyConfiguration.openAllowsRedirection(src);
+            con = ProxyConfiguration.openURLAndRedirect(src);
         } catch (IOException e) {
             throw new IOException("Could not find JSON in " + src, e);
         }

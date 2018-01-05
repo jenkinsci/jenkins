@@ -1250,7 +1250,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         private void testConnection(URL url) throws IOException {
             try {
-                URLConnection connection = (URLConnection) ProxyConfiguration.openAllowsRedirection(url);
+                URLConnection connection = (URLConnection) ProxyConfiguration.openURLAndRedirect(url);
 
                 if (!(connection instanceof HttpURLConnection)) {
                     try (InputStream is = connection.getInputStream()) {

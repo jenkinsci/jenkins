@@ -259,11 +259,11 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return con;
     }
 
-    /**
-     * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly and a redirection is possible.
+    /** This method invokes {@link ProxyConfiguration#open(URL)} setting {@link HttpURLConnection#setInstanceFollowRedirects(boolean)} to true if the opened connection is http.
+     * In case of a redirection it will be follow it, <b>even if the redirection changes the protocol (from http to https or vice versa) using the value in Location header</b>.
      * @since TODO
      */
-    public static URLConnection openAllowsRedirection(URL url) throws IOException {
+    public static URLConnection openURLAndRedirect(URL url) throws IOException {
         URLConnection con = ProxyConfiguration.open(url);
         // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
         int responseCode = HttpURLConnection.HTTP_OK;
@@ -275,7 +275,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             responseCode = httpCon.getResponseCode();
             if (HttpURLConnection.HTTP_OK != responseCode && HttpURLConnection.HTTP_MOVED_TEMP != responseCode && HttpURLConnection.HTTP_MOVED_PERM != responseCode && HttpURLConnection.HTTP_SEE_OTHER != responseCode) {
                 // No OK Status and no redirection
-                throw new IOException("Could not open " + url);
+                throw new IOException("Could not open " + url + ". Response code: " + responseCode);
             } else if (HttpURLConnection.HTTP_OK != responseCode) {
                 // In case of redirection, we have to connect to the new URL
                 String redirection = con.getHeaderField("Location");
@@ -288,7 +288,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
         }
         if (HttpURLConnection.HTTP_OK != responseCode) {
-            throw new IOException("Could not open " + url);
+            throw new IOException("Could not open " + url + ". Response code: " + responseCode);
         }
         return con;
     }
