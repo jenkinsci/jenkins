@@ -54,12 +54,12 @@ public class AtomicFileWriter extends Writer {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
 
-    private static /* final */ boolean LOSE_INTEGRITY = SystemProperties.getBoolean(
-            AtomicFileWriter.class.getName() + ".LOSE_DATA_INTEGRITY_FOR_PERFORMANCE");
+    private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
+            AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
 
     static {
-        if (LOSE_INTEGRITY) {
-            LOGGER.log(Level.SEVERE, "LOSE_DATA_INTEGRITY_FOR_PERFORMANCE flag used, YOU RISK LOSING DATA.");
+        if (DISABLE_FORCED_FLUSH) {
+            LOGGER.log(Level.WARNING, "DISABLE_FORCED_FLUSH flag used, this could result in dataloss if failures happen in your storage subsystem.");
         }
     }
 
@@ -143,10 +143,7 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
 
-        if (LOSE_INTEGRITY) {
-            // We should log it in WARN, but as this code is called often, this would create huge logs in prod system
-            // Hence why a similar log is logged once above in a static block.
-            LOGGER.log(Level.FINE, "WARNING: YOU SET A FLAG THAT COULD LEAD TO DATA LOSS.");
+        if (DISABLE_FORCED_FLUSH) {
             integrityOnFlush = false;
             integrityOnClose = false;
         }
