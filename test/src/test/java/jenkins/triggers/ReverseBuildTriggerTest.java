@@ -97,7 +97,7 @@ public class ReverseBuildTriggerTest {
                 .grant(Computer.BUILD).everywhere().to("alice", "bob")
                 .grant(Jenkins.ADMINISTER).everywhere().to("admin");
         r.jenkins.setAuthorizationStrategy(auth);
-        String upstreamName = "upstr3am"; // do not clash with English messages!
+        String upstreamName = "upstr3@m"; // do not clash with English messages!
         final FreeStyleProject upstream = r.createFreeStyleProject(upstreamName);
         String downstreamName = "d0wnstr3am";
         FreeStyleProject downstream = r.createFreeStyleProject(downstreamName);

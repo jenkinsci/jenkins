@@ -72,7 +72,6 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.WithoutJenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -683,42 +682,5 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber nullVersion = Jenkins.getStoredVersion();
         assertNull(nullVersion);
-    }
-
-    @Issue("JENKINS-46911")
-    @WithoutJenkins
-    @Test
-    public void testCheckGoodName() throws Exception{
-        String[] illegalNames = {"ab\\c", "abc/", "ab/c", " ", "   ", "", "..", ".", "?", "*", "6%",
-                "x!", "-@", "#", "$", "^", "&", "|", "<", ">", "[", "]", ":", ";", "../.", null};
-        String[] legalNames = {"abc", "a bc", "abc ", " abc", "a.bc", ". ."};
-        String msg = "checkGoodNameTest found a legal name. Please check.";
-        int exceptions = 0;
-        int goodNames = 0;
-
-        for (String name : illegalNames){
-            try {
-                Jenkins.checkGoodName(name);
-                goodNames++;
-            } catch (Failure e){
-                exceptions++;
-            }
-        }
-        assertEquals(msg, illegalNames.length, exceptions);
-        assertEquals(0, goodNames);
-
-        exceptions = 0;
-        goodNames = 0;
-        for (String name : legalNames){
-            try {
-                Jenkins.checkGoodName(name);
-                goodNames++;
-            } catch (Failure e){
-                exceptions++;
-            }
-        }
-        assertEquals(msg, 0, exceptions);
-        // TODO: store the name in an list and then assert the size of that list is zero and get a view of what failed. rather than 2 things failed.
-        assertEquals(legalNames.length, goodNames);
     }
 }
