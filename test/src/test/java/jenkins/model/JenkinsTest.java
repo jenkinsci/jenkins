@@ -652,6 +652,7 @@ public class JenkinsTest {
             }
         }
         assertEquals(msg, 0, exceptions);
+        // TODO: store the name in an list and then assert the size of that list is zero and get a view of what failed. rather than 2 things failed.
         assertEquals(legalNames.length, goodNames);
     }
 }
