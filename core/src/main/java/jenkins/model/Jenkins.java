@@ -3810,6 +3810,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Creates a new project from the given xml.
+     *
+     * @param name The name of new project.
+     * @param xml Projects xml.
+     *
+     * @throws IOException if the given name is not good or could not create project.
+     *
+     * @see #checkGoodName(String)
      * @since 1.319
      */
     public TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
@@ -3842,7 +3850,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      if the given name is not good
      */
     public static void checkGoodName(String name) throws Failure {
-        if(name==null || name.length()==0)
+        if(name==null || name.trim().length()==0)
             throw new Failure(Messages.Hudson_NoName());
 
         if(".".equals(name.trim()))
