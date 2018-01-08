@@ -3,6 +3,7 @@ package jenkins.security.s2m;
 import hudson.CopyOnWrite;
 import hudson.util.TextFile;
 import jenkins.model.Jenkins;
+import jenkins.util.io.LinesStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,15 +27,17 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
     protected abstract COL create();
     protected abstract COL readOnly(COL base);
 
-    public synchronized void load() {
+    public synchronized void load() throws IOException {
         COL result = create();
 
         if (exists()) {
-            for (String line : lines()) {
-                if (line.startsWith("#")) continue;   // comment
-                T r = parse(line);
-                if (r != null)
-                    result.add(r);
+            try (LinesStream stream = lines()) {
+                for (String line : stream) {
+                    if (line.startsWith("#")) continue;   // comment
+                    T r = parse(line);
+                    if (r != null)
+                        result.add(r);
+                }
             }
         }
 
@@ -79,8 +82,13 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
         // load upon the first use
         if (parsed==null) {
             synchronized (this) {
-                if (parsed==null)
-                    load();
+                if (parsed==null) {
+                    try {
+                        load();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
         return parsed;
