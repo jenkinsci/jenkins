@@ -164,7 +164,7 @@ public final class XmlFile {
 
     /**
      * Variant of {@link #unmarshal(Object)} applying {@link XStream2#unmarshal(HierarchicalStreamReader, Object, DataHolder, boolean)}.
-     * @since FIXME
+     * @since 2.99
      */
     public Object unmarshalNullingOut(Object o) throws IOException {
         return unmarshal(o, true);

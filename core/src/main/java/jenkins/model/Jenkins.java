@@ -740,7 +740,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link Jenkins} singleton.
      * @return {@link Jenkins} instance
      * @throws IllegalStateException for the reasons that {@link #getInstanceOrNull} might return null
-     * @since FIXME
+     * @since 2.98
      */
     @Nonnull
     public static Jenkins get() throws IllegalStateException {
