@@ -54,10 +54,11 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     private T[] installations;
 
-    protected ToolDescriptor() {
-        super();
-    }
+    protected ToolDescriptor() { }
 
+    /**
+     * @since FIXME
+     */
     protected ToolDescriptor(Class<T> clazz) {
         super(clazz);
     }
