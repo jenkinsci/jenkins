@@ -51,7 +51,7 @@ THE SOFTWARE.
 
             <j:if test="${!empty(app.itemMap)}">
               <div class="item-copy">
-                <p class="description">${%CopyOption.description}:</p>
+                <p class="description">${%CopyOption.description}</p>
                 <div class="add-item-copy">
                   <input type="radio" name="mode" value="copy" />
                   <div class="icon">
