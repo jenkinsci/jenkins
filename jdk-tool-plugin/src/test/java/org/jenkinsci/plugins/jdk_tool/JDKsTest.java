@@ -4,16 +4,17 @@
  * and open the template in the editor.
  */
 
-package hudson.model;
+package org.jenkinsci.plugins.jdk_tool;
 
 import hudson.ExtensionList;
+import hudson.model.JDK;
+import hudson.model.TaskListener;
 import hudson.model.labels.LabelAtom;
 import hudson.plugins.sshslaves.SSHLauncher;
 import hudson.slaves.DumbSlave;
 import hudson.tools.ToolLocationNodeProperty;
 import java.util.Arrays;
 import java.util.List;
-import org.jenkinsci.plugins.jdk_tool.JDKs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -22,7 +23,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-public class JDK$DescriptorImplTest {
+public class JDKsTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();

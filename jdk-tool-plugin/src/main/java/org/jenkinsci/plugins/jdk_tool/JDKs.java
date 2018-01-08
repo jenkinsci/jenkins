@@ -34,11 +34,15 @@ import jenkins.model.Jenkins;
  */
 public class JDKs {
 
+    private JDKs() {
+        // Class should not be instantiated.
+    }
+
     /**
      * @return the descriptor for the {@link JDK} tool.
      */
     public static ToolDescriptor<JDK> getDescriptor() {
-        return Jenkins.getInstance().getDescriptorByType(JDK$DescriptorImpl.class);
+        return Jenkins.get().getDescriptorByType(JDK$DescriptorImpl.class);
     }
 
 }
