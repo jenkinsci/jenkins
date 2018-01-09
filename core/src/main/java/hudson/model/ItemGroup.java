@@ -93,7 +93,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     /**
      * Gets all the {@link Item}s recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
-     * @since FIXME
+     * @since 2.93
      */
     default <T extends Item> List<T> getAllItems(Class<T> type) {
         return Items.getAllItems(this, type);
@@ -102,7 +102,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     /**
      * Gets all the {@link Item}s unordered, lazily and recursively in the {@link ItemGroup} tree
      * and filter them by the given type.
-     * @since FIXME
+     * @since 2.93
      */
     default <T extends Item> Iterable<T> allItems(Class<T> type) {
         return Items.allItems(this, type);
@@ -110,7 +110,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Gets all the items recursively.
-     * @since FIXME
+     * @since 2.93
      */
     default List<Item> getAllItems() {
         return getAllItems(Item.class);
@@ -118,7 +118,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
 
     /**
      * Gets all the items unordered, lazily and recursively.
-     * @since FIXME
+     * @since 2.93
      */
     default Iterable<Item> allItems() {
         return allItems(Item.class);

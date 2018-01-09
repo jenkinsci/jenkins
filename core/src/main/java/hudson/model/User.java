@@ -587,7 +587,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      *
      * @param idOrFullName User ID or full name
      * @return User instance. It will be created on-demand.
-     * @since TODO
+     * @since 2.91
      */
     public static @Nonnull User getOrCreateByIdOrFullName(@Nonnull String idOrFullName) {
         return get(idOrFullName,true, Collections.emptyMap());
@@ -1172,7 +1172,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         /**
          * Gets all extension points, sorted by priority.
          * @return Sorted list of extension point implementations.
-         * @since TODO
+         * @since 2.93
          */
         public static List<CanonicalIdResolver> all() {
             List<CanonicalIdResolver> resolvers = new ArrayList<>(ExtensionList.lookup(CanonicalIdResolver.class));
@@ -1185,7 +1185,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
          * @param idOrFullName ID or full name of the user
          * @param context Context
          * @return Resolved User ID or {@code null} if the user ID cannot be resolved.
-         * @since TODO
+         * @since 2.93
          */
         @CheckForNull
         public static String resolve(@Nonnull String idOrFullName, @Nonnull Map<String, ?> context) {
