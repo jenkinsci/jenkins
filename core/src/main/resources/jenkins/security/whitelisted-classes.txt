@@ -12,7 +12,7 @@ com.google.common.collect.RegularImmutableSortedSet
 com.google.common.collect.SingletonImmutableList
 com.google.common.collect.SingletonImmutableSet
 
-# TODO remove when https://github.com/jenkinsci/lib-jenkins-maven-embedder/pull/15 is widely adopted in maven-plugin
+# TODO remove when maven-plugin 3.1 is widely adopted
 hudson.maven.MavenInformation
 
 java.io.File
@@ -92,6 +92,10 @@ org.eclipse.jgit.transport.URIish
 # TODO remove when https://github.com/jenkinsci/workflow-support-plugin/pull/50 is widely adopted
 org.jboss.marshalling.TraceInformation$FieldInfo
 org.jboss.marshalling.TraceInformation$ObjectInfo
+
+# TODO remove when https://github.com/jenkinsci/xtrigger-lib/pull/9 is widely adopted in fstrigger-plugin, urltrigger-plugin, etc.
+org.jenkinsci.lib.xtrigger.XTriggerCause
+org.jenkinsci.lib.xtrigger.XTriggerCauseAction
 
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
