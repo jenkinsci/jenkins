@@ -3074,7 +3074,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }));
         }
 
-        g.requires(loadJobs.toArray(new Handle[loadJobs.size()])).attains(COMPLETED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
+        g.requires(loadJobs.toArray(new Handle[loadJobs.size()])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
