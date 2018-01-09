@@ -64,7 +64,6 @@ import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
@@ -377,15 +376,13 @@ public class Queue extends ResourceController implements Saveable {
             // first try the old format
             File queueFile = getQueueFile();
             if (queueFile.exists()) {
-                try (BufferedReader in = Files.newBufferedReader(queueFile.toPath(), Charset.defaultCharset())) {
+                try (BufferedReader in = Files.newBufferedReader(Util.fileToPath(queueFile), Charset.defaultCharset())) {
                     String line;
                     while ((line = in.readLine()) != null) {
                         AbstractProject j = Jenkins.getInstance().getItemByFullName(line, AbstractProject.class);
                         if (j != null)
                             j.scheduleBuild();
                     }
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
                 }
                 // discard the queue file now that we are done
                 queueFile.delete();

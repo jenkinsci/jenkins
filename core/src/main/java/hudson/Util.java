@@ -193,13 +193,11 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        try (BufferedReader r = Files.newBufferedReader(logfile.toPath(), charset)) {
+        try (BufferedReader r = Files.newBufferedReader(fileToPath(logfile), charset)) {
             char[] buf = new char[1024];
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
                 str.append(buf, 0, len);
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
         }
 
         return str.toString();
