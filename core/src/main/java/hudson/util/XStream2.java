@@ -131,7 +131,7 @@ public class XStream2 extends XStream {
      *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
      * @see XmlFile#unmarshalNullingOut
      * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
-     * @since FIXME
+     * @since 2.99
      */
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {
         // init() is too early to do this
@@ -207,7 +207,7 @@ public class XStream2 extends XStream {
      * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
      * @param clazz a class which we expect to hold a non-{@code transient} field
      * @param field a field name in that class
-     * @since TODO
+     * @since 2.85 this method can be used from outside core, before then it was restricted since initially added in 1.551 / 1.532.2
      */
     public void addCriticalField(Class<?> clazz, String field) {
         reflectionConverter.addCriticalField(clazz, field);

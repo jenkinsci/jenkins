@@ -216,7 +216,7 @@ public class AtomicFileWriter extends Writer {
     /**
      * Until the data is committed, this file captures
      * the written content.
-     * @since TODO
+     * @since 2.93
      */
     public Path getTemporaryPath() {
         return tmpPath;
