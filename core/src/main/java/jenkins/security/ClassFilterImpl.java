@@ -209,7 +209,7 @@ public class ClassFilterImpl extends ClassFilter {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
                 }
             }
-            if (Main.isUnitTest) {
+            if (Main.isUnitTest || Main.isDevelopmentMode) {
                 if (loc.endsWith("/target/classes/")) {
                     LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
                     return true;
