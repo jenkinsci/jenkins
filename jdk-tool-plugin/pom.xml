@@ -15,7 +15,7 @@
         <java.level>8</java.level>
     </properties>
     <name>JDK Tool Plugin</name>
-    <description>Provides installers for the JDK tool.</description>
+    <description>Provides a JDK tool integration for Jenkins.</description>
     <url>https://wiki.jenkins.io/display/JENKINS/JDK+Tool+Plugin</url>
     <licenses>
         <license>

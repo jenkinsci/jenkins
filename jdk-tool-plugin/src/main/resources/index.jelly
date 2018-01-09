@@ -20,5 +20,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <div>
-  Provides installers for the JDK tool.
+  Provides a JDK tool integration for Jenkins.
 </div>
