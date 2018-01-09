@@ -263,7 +263,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * In case of a redirection it will be follow it, <b>even if the redirection changes the protocol (from http to https or vice versa) using the value in Location header</b>.
      * @since TODO
      */
-    public static URLConnection openURLAndRedirect(URL url) throws IOException {
+    public static URLConnection openURLAllowingCrossProtocolRedirects(URL url) throws IOException {
         URLConnection con = ProxyConfiguration.open(url);
         // A redirection from http to https (or vise versa) returns a 302 response status. Force redirection
         int responseCode = HttpURLConnection.HTTP_OK;
@@ -279,7 +279,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             } else if (HttpURLConnection.HTTP_OK != responseCode) {
                 // In case of redirection, we have to connect to the new URL
                 String redirection = con.getHeaderField("Location");
-                con = ProxyConfiguration.open(new URL(redirection));
+                con = ProxyConfiguration.openURLAllowingCrossProtocolRedirects(new URL(redirection));
                 if( con instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) con).getResponseCode();
                 } else {

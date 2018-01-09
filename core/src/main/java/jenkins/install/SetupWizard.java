@@ -377,7 +377,7 @@ public class SetupWizard extends PageDecorator {
                 URLConnection connection;
                 
                 try {
-                    connection  = ProxyConfiguration.openURLAndRedirect(new URL(suggestedPluginUrl));
+                    connection  = ProxyConfiguration.openURLAllowingCrossProtocolRedirects(new URL(suggestedPluginUrl));
 
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), "utf-8");
                     initialPluginList = JSONArray.fromObject(initialPluginJson);

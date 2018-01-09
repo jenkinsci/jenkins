@@ -97,7 +97,7 @@ public class ZipExtractionInstaller extends ToolInstaller {
 
         public FormValidation doCheckUrl(@QueryParameter String value) {
             try {
-                ProxyConfiguration.openURLAndRedirect(new URL(value));
+                ProxyConfiguration.openURLAllowingCrossProtocolRedirects(new URL(value));
                 return FormValidation.ok();
             } catch (MalformedURLException x) {
                 return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
