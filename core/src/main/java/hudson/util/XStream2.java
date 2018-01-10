@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -86,7 +87,18 @@ public class XStream2 extends XStream {
      */
     private MapperInjectionPoint mapperInjectionPoint;
 
+    /**
+     * Convinience method so we only have to change the driver in one place
+     * if we switch to something new in the future
+     *
+     * @return a new instance of the HierarchicalStreamDriver we want to use
+     */
+    public static HierarchicalStreamDriver getDefaultDriver() {
+        return new KXml2Driver();
+    }
+
     public XStream2() {
+        super(getDefaultDriver());
         init();
         classOwnership = null;
     }
@@ -98,6 +110,7 @@ public class XStream2 extends XStream {
     }
 
     XStream2(ClassOwnership classOwnership) {
+        super(getDefaultDriver());
         init();
         this.classOwnership = classOwnership;
     }

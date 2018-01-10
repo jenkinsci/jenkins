@@ -26,7 +26,7 @@ package hudson;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
@@ -336,13 +336,14 @@ public final class XmlFile {
     /**
      * {@link XStream} instance is supposed to be thread-safe.
      */
-    private static final XStream DEFAULT_XSTREAM = new XStream2();
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
     private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
 
-    private static final KXml2Driver DEFAULT_DRIVER = new KXml2Driver();
+    private static final HierarchicalStreamDriver DEFAULT_DRIVER = XStream2.getDefaultDriver();
+
+    private static final XStream DEFAULT_XSTREAM = new XStream2(DEFAULT_DRIVER);
 
     static {
         JAXP.setNamespaceAware(true);

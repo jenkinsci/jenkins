@@ -70,7 +70,7 @@ public class XStream2EncodingTest {
         Thing t = (Thing) xs.fromXML(new ByteArrayInputStream(ambiguousXml));
         assertThat(t.field, not(msg));
         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-        baos2.write("<?xml version='1.1' encoding='UTF-8'?>\n".getBytes("UTF-8"));
+        baos2.write("<?xml version='1.0' encoding='UTF-8'?>\n".getBytes("UTF-8"));
         baos2.write(ambiguousXml);
         t = (Thing) xs.fromXML(new ByteArrayInputStream(ambiguousXml));
         assertThat(t.field, not(msg));

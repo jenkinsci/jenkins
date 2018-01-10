@@ -23,7 +23,6 @@
  */
 package jenkins.util.xstream;
 
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import hudson.util.XStream2;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -54,7 +53,7 @@ public class XStreamDOMTest {
 
     @Before
     public void setUp() throws Exception {
-        xs = new XStream2(new KXml2Driver());
+        xs = new XStream2();
         xs.alias("foo", Foo.class);
     }
 
