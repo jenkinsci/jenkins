@@ -32,6 +32,7 @@ import jenkins.util.SystemProperties;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -764,15 +765,15 @@ public class Util {
     public static String getDigestOf(@Nonnull InputStream source) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-
-            byte[] buffer = new byte[1024];
-            try (DigestInputStream in = new DigestInputStream(source, md5)) {
-                while (in.read(buffer) >= 0)
-                    ; // simply discard the input
-            }
+            DigestInputStream in = new DigestInputStream(source, md5);
+            // Note: IOUtils.copy() buffers the input internally, so there is no
+            // need to use a BufferedInputStream.
+            IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed",e);    // impossible
+        } finally {
+            source.close();
         }
         /* JENKINS-18178: confuses Maven 2 runner
         try {
@@ -802,7 +803,7 @@ public class Util {
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
         try (InputStream is = Files.newInputStream(fileToPath(file))) {
-            return getDigestOf(new BufferedInputStream(is));
+            return getDigestOf(is);
         }
     }
 
