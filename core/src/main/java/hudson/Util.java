@@ -23,14 +23,14 @@
  */
 package hudson;
 
-import java.nio.file.InvalidPathException;
-import jenkins.util.SystemProperties;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import hudson.model.TaskListener;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import jenkins.util.SystemProperties;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
@@ -40,9 +40,6 @@ import org.apache.tools.ant.types.FileSet;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -59,6 +56,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -67,6 +65,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -79,13 +78,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import java.security.DigestInputStream;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import org.apache.commons.codec.digest.DigestUtils;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Various utility methods that don't have more proper home.
