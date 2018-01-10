@@ -566,12 +566,8 @@ public class Util {
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {
-        File tmp = File.createTempFile("jenkins", "tmp");
-        if(!tmp.delete())
-            throw new IOException("Failed to delete "+tmp);
-        if(!tmp.mkdirs())
-            throw new IOException("Failed to create a new directory "+tmp);
-        return tmp;
+        // https://stackoverflow.com/questions/617414/how-to-create-a-temporary-directory-folder-in-java
+        return Files.createTempDirectory("jenkins").toFile();
     }
 
     private static final Pattern errorCodeParser = Pattern.compile(".*CreateProcess.*error=([0-9]+).*");
