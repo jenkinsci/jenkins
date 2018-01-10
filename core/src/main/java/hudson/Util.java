@@ -505,7 +505,7 @@ public class Util {
          *  calling readAttributes.
          */
         try {
-            Path path = file.toPath();
+            Path path = fileToPath(file);
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
             if (attrs.isSymbolicLink()) {
                 return true;
@@ -518,8 +518,6 @@ public class Util {
             } else {
                 return false;
             }
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
         } catch (NoSuchFileException e) {
             return false;
         }
@@ -559,13 +557,9 @@ public class Util {
      * @see InvalidPathException
      */
     public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
-        try {
-            Path child = potentialChild.getAbsoluteFile().toPath().normalize();
-            Path parent = forParent.getAbsoluteFile().toPath().normalize();
-            return child.startsWith(parent);
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
+        Path child = fileToPath(potentialChild.getAbsoluteFile()).normalize();
+        Path parent = fileToPath(forParent.getAbsoluteFile()).normalize();
+        return child.startsWith(parent);
     }
 
     /**
@@ -817,10 +811,8 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        try (InputStream is = Files.newInputStream(file.toPath())) {
+        try (InputStream is = Files.newInputStream(fileToPath(file))) {
             return getDigestOf(new BufferedInputStream(is));
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
         }
     }
 
@@ -1151,11 +1143,7 @@ public class Util {
      * Creates an empty file.
      */
     public static void touch(@Nonnull File file) throws IOException {
-        try {
-            Files.newOutputStream(file.toPath()).close();
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
+        Files.newOutputStream(fileToPath(file)).close();
     }
 
     /**
@@ -1322,7 +1310,7 @@ public class Util {
     public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
-            Path path = new File(baseDir, symlinkPath).toPath();
+            Path path = fileToPath(new File(baseDir, symlinkPath));
             Path target = Paths.get(targetPath, new String[0]);
 
             final int maxNumberOfTries = 4;
@@ -1345,7 +1333,7 @@ public class Util {
             PrintStream log = listener.getLogger();
             log.print("Symbolic links are not supported on this platform");
             Functions.printStackTrace(e, log);
-        } catch (InvalidPathException | IOException e) {
+        } catch (IOException e) {
             if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
                 return;
@@ -1402,7 +1390,7 @@ public class Util {
     @CheckForNull
     public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
         try {
-            Path path =  link.toPath();
+            Path path = fileToPath(link);
             return Files.readSymbolicLink(path).toString();
         } catch (UnsupportedOperationException | FileSystemException x) {
             // no symlinks on this platform (windows?),
