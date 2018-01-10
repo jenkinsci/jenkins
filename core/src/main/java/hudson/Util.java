@@ -647,10 +647,7 @@ public class Util {
      */
     @Deprecated
     public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
-        byte[] buf = new byte[8192];
-        int len;
-        while((len=in.read(buf))>=0)
-            out.write(buf,0,len);
+        IOUtils.copy(in, out);
     }
 
     /**
@@ -658,10 +655,7 @@ public class Util {
      */
     @Deprecated
     public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
-        char[] buf = new char[8192];
-        int len;
-        while((len=in.read(buf))>0)
-            out.write(buf,0,len);
+        IOUtils.copy(in, out);
     }
 
     /**
@@ -670,7 +664,7 @@ public class Util {
     @Deprecated
     public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
         try (InputStream _in = in; OutputStream _out = out) { // make sure both are closed, and use Throwable.addSuppressed
-            copyStream(in,out);
+            IOUtils.copy(_in, _out);
         }
     }
 
@@ -680,7 +674,7 @@ public class Util {
     @Deprecated
     public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
         try (Reader _in = in; Writer _out = out) {
-            copyStream(in,out);
+            IOUtils.copy(_in, _out);
         }
     }
 
