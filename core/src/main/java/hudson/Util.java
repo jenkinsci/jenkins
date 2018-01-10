@@ -75,6 +75,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1336,7 +1337,7 @@ public class Util {
                         TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
                         continue;
                     }
-                    LOGGER.warning("symlink FileAlreadyExistsException thrown " + maxNumberOfTries + " times => cannot createSymbolicLink");
+                    LOGGER.log(Level.WARNING, "symlink FileAlreadyExistsException thrown {0} times => cannot createSymbolicLink", maxNumberOfTries);
                     throw fileAlreadyExistsException;
                 }
             }
@@ -1432,7 +1433,7 @@ public class Util {
         try {
             return new URI(null,url,null).toASCIIString();
         } catch (URISyntaxException e) {
-            LOGGER.warning("Failed to encode "+url);    // could this ever happen?
+            LOGGER.log(Level.WARNING, "Failed to encode {0}", url);    // could this ever happen?
             return url;
         }
     }
@@ -1590,7 +1591,10 @@ public class Util {
         try {
             toClose.close();
         } catch(IOException ex) {
-            logger.log(Level.WARNING, String.format("Failed to close %s of %s", closeableName, closeableOwner), ex);
+            LogRecord record = new LogRecord(Level.WARNING, "Failed to close {0} of {1}");
+            record.setParameters(new Object[] { closeableName, closeableOwner });
+            record.setThrown(ex);
+            logger.log(record);
         }
     }
 
