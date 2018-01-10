@@ -1399,7 +1399,7 @@ public class Util {
         } catch (IOException x) {
             throw x;
         } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            throw new IOException(x);
         }
     }
 
