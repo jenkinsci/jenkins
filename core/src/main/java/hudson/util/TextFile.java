@@ -28,10 +28,7 @@ import edu.umd.cs.findbugs.annotations.CreatesObligation;
 import hudson.Util;
 import jenkins.util.io.LinesStream;
 
-import hudson.Util;
-
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
