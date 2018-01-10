@@ -843,6 +843,8 @@ public class Util {
 
     @Nonnull
     public static byte[] fromHexString(@Nonnull String data) {
+        if (data.length() % 2 != 0)
+            throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
         byte[] r = new byte[data.length() / 2];
         for (int i = 0; i < data.length(); i += 2)
             r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
