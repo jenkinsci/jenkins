@@ -1136,7 +1136,10 @@ public class Util {
     }
 
     /**
-     * Creates an empty file.
+     * Creates an empty file if nonexistent or truncates the existing file.
+     * Note: The behavior of this method in the case where the file already
+     * exists is unlike the POSIX <code>touch</code> utility which merely
+     * updates the file's access and/or modification time.
      */
     public static void touch(@Nonnull File file) throws IOException {
         Files.newOutputStream(fileToPath(file)).close();
