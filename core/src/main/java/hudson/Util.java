@@ -53,6 +53,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -800,7 +801,7 @@ public class Util {
     @Nonnull
     public static String getDigestOf(@Nonnull String text) {
         try {
-            return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
+            return getDigestOf(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new Error(e);
         }
@@ -832,13 +833,11 @@ public class Util {
             // turn secretKey into 256 bit hash
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.reset();
-            digest.update(s.getBytes("UTF-8"));
+            digest.update(s.getBytes(StandardCharsets.UTF_8));
 
             // Due to the stupid US export restriction JDK only ships 128bit version.
             return new SecretKeySpec(digest.digest(),0,128/8, "AES");
         } catch (NoSuchAlgorithmException e) {
-            throw new Error(e);
-        } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
     }
@@ -991,7 +990,7 @@ public class Util {
             StringBuilder out = new StringBuilder(s.length());
 
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            OutputStreamWriter w = new OutputStreamWriter(buf,"UTF-8");
+            OutputStreamWriter w = new OutputStreamWriter(buf, StandardCharsets.UTF_8);
 
             for (int i = 0; i < s.length(); i++) {
                 int c = s.charAt(i);
@@ -1054,7 +1053,7 @@ public class Util {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
                     out.append(s.substring(0, i));
-                    enc = Charset.forName("UTF-8").newEncoder();
+                    enc = StandardCharsets.UTF_8.newEncoder();
                     buf = CharBuffer.allocate(1);
                     escaped = true;
                 }
