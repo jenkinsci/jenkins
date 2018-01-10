@@ -802,9 +802,8 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        try (InputStream is = Files.newInputStream(fileToPath(file))) {
-            return getDigestOf(is);
-        }
+        // Note: getDigestOf() closes the input stream.
+        return getDigestOf(Files.newInputStream(fileToPath(file)));
     }
 
     /**
