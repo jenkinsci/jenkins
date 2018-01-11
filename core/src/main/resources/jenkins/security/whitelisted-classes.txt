@@ -10,6 +10,7 @@ com.google.common.collect.RegularImmutableList
 com.google.common.collect.RegularImmutableSet
 com.google.common.collect.RegularImmutableSortedSet
 com.google.common.collect.SingletonImmutableList
+com.google.common.collect.SingletonImmutableMap
 com.google.common.collect.SingletonImmutableSet
 
 # TODO remove when maven-plugin 3.1 is widely adopted
