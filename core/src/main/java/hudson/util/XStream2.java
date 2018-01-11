@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -534,13 +535,20 @@ public class XStream2 extends XStream {
             throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
 
+        /** TODO see comment in {@code whitelisted-classes.txt} */
+        private static final Pattern JRUBY_PROXY = Pattern.compile("org[.]jruby[.]proxy[.].+[$]Proxy\\d+");
+
         @Override
         public boolean canConvert(Class type) {
             if (type == null) {
                 return false;
             }
+            String name = type.getName();
+            if (JRUBY_PROXY.matcher(name).matches()) {
+                return false;
+            }
             // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
-            return ClassFilter.DEFAULT.isBlacklisted(type.getName()) || ClassFilter.DEFAULT.isBlacklisted(type);
+            return ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type);
         }
     }
 }

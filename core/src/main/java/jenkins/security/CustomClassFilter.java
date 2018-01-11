@@ -51,8 +51,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Allows extensions to adjust the behavior of {@link ClassFilter#DEFAULT}.
  * Custom filters can be called frequently, and return values are uncached, so implementations should be fast.
  * @see ClassFilterImpl
+ * @since FIXME
  */
-@Restricted(NoExternalUse.class) // until a use case is identified for a _dynamic_ extension from some plugin
 public interface CustomClassFilter extends ExtensionPoint {
 
     /**
