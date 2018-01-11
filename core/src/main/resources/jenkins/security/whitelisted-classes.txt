@@ -17,6 +17,8 @@ hudson.maven.MavenInformation
 
 java.io.File
 java.lang.Boolean
+java.lang.Byte
+java.lang.Character
 java.lang.Class
 java.lang.Double
 java.lang.Enum
@@ -25,6 +27,7 @@ java.lang.Integer
 java.lang.Long
 java.lang.Number
 java.lang.Object
+java.lang.Short
 java.lang.StackTraceElement
 java.lang.String
 java.lang.reflect.Proxy
