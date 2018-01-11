@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import jenkins.model.Jenkins;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
@@ -35,6 +37,9 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,7 +116,12 @@ public class AtomicFileWriter extends Writer {
         }
 
         try {
-            tmpPath = Files.createTempFile(dir, "atomic", "tmp");
+            Set<PosixFilePermission> permissions = Jenkins.DEFAULT_FILE_PERMISSIONS;
+            if (Files.exists(destinationPath)) {
+                permissions = Files.getPosixFilePermissions(destinationPath);
+            }
+            tmpPath = Files.createTempFile(dir, "atomic", "tmp", PosixFilePermissions.asFileAttribute(permissions));
+
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }

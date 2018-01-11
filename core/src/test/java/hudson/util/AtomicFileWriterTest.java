@@ -1,22 +1,39 @@
 package hudson.util;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.Issue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.hamcrest.core.StringContains.*;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_WRITE;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -108,6 +125,7 @@ public class AtomicFileWriterTest {
 
         assertEquals(PREVIOUS, FileUtils.readFileToString(af));
     }
+
     @Test
     public void badPath() throws Exception {
         final File newFile = tmp.newFile();
@@ -122,6 +140,74 @@ public class AtomicFileWriterTest {
         } catch (IOException e) {
             assertThat(e.getMessage(),
                        containsString("exists and is neither a directory nor a symlink to a directory"));
+        }
+    }
+
+    @Issue("JENKINS-48407")
+    @Test
+    public void preserveSpecificPermissions() throws IOException, InterruptedException {
+
+        // given
+        final Set<PosixFilePermission> givenPermissions = EnumSet.of(OWNER_READ,
+                                                                     OWNER_WRITE,
+                                                                     OWNER_EXECUTE,
+                                                                     GROUP_READ);
+
+        final Set<PosixFilePermission> notGivenPermissions = EnumSet.of(GROUP_WRITE,
+                                                                        GROUP_EXECUTE,
+                                                                        OTHERS_READ,
+                                                                        OTHERS_WRITE,
+                                                                        OTHERS_EXECUTE);
+
+        final File newFilePath = tmp.newFile();
+        Files.setPosixFilePermissions(newFilePath.toPath(), givenPermissions);
+        runAndCheckPermissions(newFilePath.toPath(), givenPermissions, notGivenPermissions);
+    }
+
+    /**
+     * We create a temporary dir, so that then we can use Files.createFile() instead of Files.createTempDir().
+     * Because createFile will create with default permissions, when NIO's createTempDir() will with 0600 on L
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Issue("JENKINS-48407")
+    @Test
+    public void defaultPermissionsOnNonExistingFile() throws IOException, InterruptedException {
+
+        assertNotNull(Jenkins.DEFAULT_FILE_PERMISSIONS);
+        // given
+        final File newFilePath = tmp.newFolder("temporary");
+        final Path newFile = Files.createFile(Paths.get(newFilePath.getAbsolutePath(), "newFile"));
+
+        final Set<PosixFilePermission> givenPermissions = Files.getPosixFilePermissions(newFile);
+        assertEquals(Jenkins.DEFAULT_FILE_PERMISSIONS, givenPermissions);
+
+        final Set<PosixFilePermission> notGivenPermissions =
+                Arrays.stream(PosixFilePermission.values())
+                        .filter(permission -> !givenPermissions.contains(permission))
+                        .collect(Collectors.toSet());
+        runAndCheckPermissions(newFile, givenPermissions, notGivenPermissions);
+    }
+
+    private void runAndCheckPermissions(Path newFilePath, Set<PosixFilePermission> givenPermissions, Set<PosixFilePermission> notPermissions) throws IOException {
+        // when
+        AtomicFileWriter w = new AtomicFileWriter(newFilePath, StandardCharsets.UTF_8);
+        w.write("whatever");
+        w.commit();
+
+        // then
+        assertFalse(w.getTemporaryPath().toFile().exists());
+        assertTrue(newFilePath.toFile().exists());
+
+        final Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(newFilePath);
+
+        for (PosixFilePermission perm : givenPermissions) {
+            assertTrue("missing: " + perm, posixFilePermissions.contains(perm));
+        }
+
+        for (PosixFilePermission perm : notPermissions) {
+            assertFalse("should not be allowed: " + perm, posixFilePermissions.contains(perm));
         }
     }
 }
