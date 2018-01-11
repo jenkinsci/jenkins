@@ -76,6 +76,19 @@ java.util.regex.Pattern
 # TODO remove when https://github.com/jenkinsci/job-dsl-plugin/pull/1092 is widely adopted
 javaposse.jobdsl.dsl.GeneratedJob
 
+# TODO remove when https://github.com/jenkinsci/monitoring-plugin/pull/6 is widely adopted
+net.bull.javamelody.internal.model.CacheInformations
+net.bull.javamelody.internal.model.HeapHistogram
+net.bull.javamelody.internal.model.HeapHistogram$ClassInfo
+net.bull.javamelody.internal.model.JavaInformations
+net.bull.javamelody.internal.model.JobInformations
+net.bull.javamelody.internal.model.MBeanNode
+net.bull.javamelody.internal.model.MBeanNode$MBeanAttribute
+net.bull.javamelody.internal.model.MemoryInformations
+net.bull.javamelody.internal.model.ProcessInformations
+net.bull.javamelody.internal.model.ThreadInformations
+net.bull.javamelody.internal.model.TomcatInformations
+
 org.acegisecurity.userdetails.User
 org.apache.commons.fileupload.disk.DiskFileItem
 org.apache.commons.fileupload.util.FileItemHeadersImpl
