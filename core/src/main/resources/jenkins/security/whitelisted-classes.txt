@@ -17,9 +17,9 @@ com.google.common.collect.SingletonImmutableSet
 hudson.maven.MavenInformation
 
 # TODO remove when https://github.com/jenkinsci/kubernetes-pipeline-plugin/pull/66 is widely adopted
-io.fabric8.docker.api.model.ImageInspect
 io.fabric8.docker.api.model.Config
 io.fabric8.docker.api.model.GraphDriverData
+io.fabric8.docker.api.model.ImageInspect
 
 java.io.File
 java.lang.Boolean
