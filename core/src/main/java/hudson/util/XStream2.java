@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
@@ -526,27 +527,28 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons");
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons");
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
+
+        /** TODO see comment in {@code whitelisted-classes.txt} */
+        private static final Pattern JRUBY_PROXY = Pattern.compile("org[.]jruby[.]proxy[.].+[$]Proxy\\d+");
 
         @Override
         public boolean canConvert(Class type) {
             if (type == null) {
                 return false;
             }
-            try {
-                ClassFilter.DEFAULT.check(type);
-                ClassFilter.DEFAULT.check(type.getName());
-            } catch (SecurityException se) {
-                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
-                return true;
+            String name = type.getName();
+            if (JRUBY_PROXY.matcher(name).matches()) {
+                return false;
             }
-            return false;
+            // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+            return ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type);
         }
     }
 }
