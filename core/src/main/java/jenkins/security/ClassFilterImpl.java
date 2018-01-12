@@ -50,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -67,6 +68,9 @@ public class ClassFilterImpl extends ClassFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ClassFilterImpl.class.getName());
 
+    private static /* not final */ boolean SUPPRESS_WHITELIST = SystemProperties.getBoolean("jenkins.security.ClassFilterImpl.SUPPRESS_WHITELIST");
+    private static /* not final */ boolean SUPPRESS_ALL = SystemProperties.getBoolean("jenkins.security.ClassFilterImpl.SUPPRESS_ALL");
+
     /**
      * Register this implementation as the default in the system.
      */
@@ -76,6 +80,11 @@ public class ClassFilterImpl extends ClassFilter {
             return;
         }
         ClassFilter.setDefault(new ClassFilterImpl());
+        if (SUPPRESS_ALL) {
+            LOGGER.warning("All class filtering suppressed. Your Jenkins installation is at risk from known attacks. See https://jenkins.io/redirect/class-filter/");
+        } else if (SUPPRESS_WHITELIST) {
+            LOGGER.warning("JEP-200 class filtering by whitelist suppressed. Your Jenkins installation may be at risk. See https://jenkins.io/redirect/class-filter/");
+        }
     }
 
     /**
@@ -153,6 +162,10 @@ public class ClassFilterImpl extends ClassFilter {
             }
             if (WHITELISTED_CLASSES.contains(name)) {
                 LOGGER.log(Level.FINE, "tolerating {0} by whitelist", name);
+                return false;
+            }
+            if (SUPPRESS_WHITELIST || SUPPRESS_ALL) {
+                LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so would normally be rejected; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
                 return false;
             }
             LOGGER.log(Level.WARNING, "{0} in {1} might be dangerous, so rejecting; see https://jenkins.io/redirect/class-filter/", new Object[] {name, location != null ? location : "JRE"});
@@ -249,6 +262,10 @@ public class ClassFilterImpl extends ClassFilter {
         }
         // could apply a cache if the pattern search turns out to be slow
         if (ClassFilter.STANDARD.isBlacklisted(name)) {
+            if (SUPPRESS_ALL) {
+                LOGGER.log(Level.WARNING, "would normally reject {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
+                return false;
+            }
             LOGGER.log(Level.WARNING, "rejecting {0} according to standard blacklist; see https://jenkins.io/redirect/class-filter/", name);
             return true;
         } else {
