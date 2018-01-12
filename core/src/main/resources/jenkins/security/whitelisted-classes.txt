@@ -118,6 +118,8 @@ org.jenkinsci.lib.xtrigger.XTriggerCauseAction
 org.jruby.RubyArray
 org.jruby.RubyBignum
 org.jruby.RubyBoolean
+org.jruby.RubyBoolean$False
+org.jruby.RubyBoolean$True
 org.jruby.RubyFixnum
 org.jruby.RubyHash
 org.jruby.RubyObject
