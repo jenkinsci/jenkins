@@ -128,5 +128,11 @@ org.jruby.java.proxies.ConcreteJavaProxy
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
 org.jvnet.localizer.ResourceBundleHolder
+
+# TODO remove when https://github.com/jenkinsci/dependency-check-plugin/pull/20 is widely adopted
+org.owasp.dependencycheck.dependency.Reference
+org.owasp.dependencycheck.dependency.Vulnerability
+org.owasp.dependencycheck.dependency.VulnerableSoftware
+
 sun.security.rsa.RSAPublicKeyImpl
 sun.security.x509.X509Key
