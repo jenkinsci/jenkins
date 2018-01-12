@@ -34,7 +34,7 @@ public class XMLFileTest {
     public void silentlyMigrateConfigsTest() throws Exception {
         j.jenkins.save();
         // verify that we did indeed load our test config.xml
-        assertThat(j.jenkins.getLabelString(), is("LESS_TERMCAP_mb=\u001B[01;31m"));
+        assertThat(j.jenkins.getLabelString(), is("I am a label"));
         //verify that the persisted top level config.xml is v1.1
         File configFile = new File(j.jenkins.getRootPath().getRemote() + File.separator + "config.xml");
         assertThat(configFile.exists(), is(true));

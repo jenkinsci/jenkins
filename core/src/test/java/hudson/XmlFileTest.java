@@ -8,6 +8,8 @@ import java.net.URL;
 
 import jenkins.model.Jenkins;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.xml.sax.SAXParseException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -17,6 +19,21 @@ public class XmlFileTest {
     @Test
     public void canReadXml1_0Test() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_0.xml");
+        File configFile = new File(configUrl.getFile());
+        XStream2  xs = new XStream2();
+        xs.alias("hudson", Jenkins.class);
+
+        XmlFile xmlFile =  new XmlFile(xs, configFile);
+        if (xmlFile.exists()) {
+            Node n = (Node) xmlFile.read();
+            assertThat(n.getNumExecutors(), is(2));
+            assertThat(n.getMode().toString(), is("NORMAL"));
+        }
+    }
+
+    @Test(expected = SAXParseException.class)
+    public void xml1_0_withSpecialCharsShouldFail() throws IOException {
+        URL configUrl = getClass().getResource("/hudson/config_1_0_with_special_chars.xml");
         File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
@@ -46,7 +63,7 @@ public class XmlFileTest {
     
     @Test
     public void canReadXmlWithControlCharsTest() throws IOException {
-        URL configUrl = getClass().getResource("/hudson/confg_1_1_with_special_chars.xml");
+        URL configUrl = getClass().getResource("/hudson/config_1_1_with_special_chars.xml");
         File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
