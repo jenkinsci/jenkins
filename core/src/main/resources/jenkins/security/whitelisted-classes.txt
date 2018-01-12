@@ -110,6 +110,9 @@ org.eclipse.jgit.transport.URIish
 org.jboss.marshalling.TraceInformation$FieldInfo
 org.jboss.marshalling.TraceInformation$ObjectInfo
 
+# TODO see main ruby-runtime section below
+org.jenkinsci.jruby.JRubyMapper$DynamicProxy
+
 # TODO remove when https://github.com/jenkinsci/xtrigger-lib/pull/9 is widely adopted in fstrigger-plugin, urltrigger-plugin, etc.
 org.jenkinsci.lib.xtrigger.XTriggerCause
 org.jenkinsci.lib.xtrigger.XTriggerCauseAction
@@ -126,6 +129,7 @@ org.jruby.RubyObject
 org.jruby.RubyString
 org.jruby.RubySymbol
 org.jruby.java.proxies.ConcreteJavaProxy
+org.jruby.runtime.builtin.IRubyObject
 
 org.jvnet.hudson.MemoryUsage
 org.jvnet.localizer.Localizable
