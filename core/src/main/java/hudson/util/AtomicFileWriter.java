@@ -23,6 +23,8 @@
  */
 package hudson.util;
 
+import jenkins.util.SystemProperties;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
@@ -35,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +53,15 @@ import java.util.logging.Logger;
 public class AtomicFileWriter extends Writer {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
+
+    private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
+            AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
+
+    static {
+        if (DISABLE_FORCED_FLUSH) {
+            LOGGER.log(Level.WARNING, "DISABLE_FORCED_FLUSH flag used, this could result in dataloss if failures happen in your storage subsystem.");
+        }
+    }
 
     private final Writer core;
     private final Path tmpPath;
@@ -93,6 +105,21 @@ public class AtomicFileWriter extends Writer {
      * @param charset File charset to write.
      */
     public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset) throws IOException {
+        // See FileChannelWriter docs to understand why we do not cause a force() call on flush() from AtomicFileWriter.
+        this(destinationPath, charset, false, true);
+    }
+
+    /**
+     * <strong>DO NOT USE THIS METHOD, OR YOU WILL LOSE DATA INTEGRITY.</strong>
+     *
+     * @param destinationPath the destination path where to write the content when committed.
+     * @param charset File charset to write.
+     * @param integrityOnFlush do not force writing to disk when flushing
+     * @param integrityOnClose do not force writing to disk when closing
+     * @deprecated use {@link AtomicFileWriter#AtomicFileWriter(Path, Charset)}
+     */
+    @Deprecated
+    public AtomicFileWriter(@Nonnull Path destinationPath, @Nonnull Charset charset, boolean integrityOnFlush, boolean integrityOnClose) throws IOException {
         if (charset == null) { // be extra-defensive if people don't care
             throw new IllegalArgumentException("charset is null");
         }
@@ -116,7 +143,12 @@ public class AtomicFileWriter extends Writer {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
 
-        core = Files.newBufferedWriter(tmpPath, charset);
+        if (DISABLE_FORCED_FLUSH) {
+            integrityOnFlush = false;
+            integrityOnClose = false;
+        }
+
+        core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE);
     }
 
     @Override
