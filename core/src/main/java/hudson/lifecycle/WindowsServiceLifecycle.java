@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -130,7 +131,7 @@ public class WindowsServiceLifecycle extends Lifecycle {
         File home = me.getParentFile();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener task = new StreamTaskListener(baos);
+        StreamTaskListener task = new StreamTaskListener(baos, StandardCharsets.UTF_8);
         task.getLogger().println("Restarting a service");
         String exe = System.getenv("WINSW_EXECUTABLE");
         File executable;

@@ -31,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.kohsuke.stapler.framework.io.LargeText;
 import org.kohsuke.stapler.framework.io.ByteBuffer;
 
@@ -187,8 +187,8 @@ public abstract class TaskThread extends Thread {
             ByteBuffer log = new ByteBuffer();
 
             return new ListenerAndText(
-                new StreamTaskListener(log),
-                new AnnotatedLargeText<TaskAction>(log,Charset.defaultCharset(),false,context)
+                new StreamTaskListener(log, StandardCharsets.UTF_8),
+                new AnnotatedLargeText<TaskAction>(log, StandardCharsets.UTF_8, false, context)
             );
         }
 
@@ -197,8 +197,8 @@ public abstract class TaskThread extends Thread {
          */
         public static ListenerAndText forFile(File f, TaskAction context) throws IOException {
             return new ListenerAndText(
-                new StreamTaskListener(f),
-                new AnnotatedLargeText<TaskAction>(f,Charset.defaultCharset(),false,context)
+                new StreamTaskListener(f, StandardCharsets.UTF_8),
+                new AnnotatedLargeText<TaskAction>(f, StandardCharsets.UTF_8, false, context)
             );
         }
     }

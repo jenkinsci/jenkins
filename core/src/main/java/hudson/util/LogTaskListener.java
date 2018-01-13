@@ -31,9 +31,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 // TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
 // The change needs API deprecation policy or external usages cleanup.
@@ -47,12 +50,17 @@ public class LogTaskListener extends AbstractTaskListener implements TaskListene
     private final TaskListener delegate;
 
     public LogTaskListener(Logger logger, Level level) {
-        delegate = new StreamTaskListener(new LogOutputStream(logger, level, new Throwable().getStackTrace()[1]));
+        delegate = new StreamTaskListener(new LogOutputStream(logger, level, new Throwable().getStackTrace()[1]), StandardCharsets.UTF_8);
     }
 
     @Override
     public PrintStream getLogger() {
         return delegate.getLogger();
+    }
+
+    @Override
+    public @Nonnull Charset getCharset() { // getCharset() in TaskListener is annotated @Nonnull
+        return delegate.getCharset();
     }
 
     @Override

@@ -10,8 +10,10 @@ import hudson.model.User;
 import hudson.tasks.Mailer;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,13 +129,13 @@ public class JenkinsReloadConfigurationTest {
 
         File configFile = new File(j.jenkins.getRootDir(), path);
         try {
-            String oldConfig = Util.loadFile(configFile);
+            String oldConfig = Util.loadFile(configFile, StandardCharsets.UTF_8);
 
             String newConfig = oldConfig.replaceAll(search, replace);
 
-            FileWriter fw = new FileWriter(configFile);
-            fw.write(newConfig);
-            fw.close();
+            try (Writer w = Files.newBufferedWriter(Util.fileToPath(configFile), StandardCharsets.UTF_8)) {
+                w.write(newConfig);
+            }
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }

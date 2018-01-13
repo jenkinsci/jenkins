@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import hudson.Util;
 import jenkins.util.SystemProperties;
 
 import javax.annotation.Nonnull;
@@ -32,9 +33,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -71,7 +72,7 @@ public class AtomicFileWriter extends Writer {
      * Writes with UTF-8 encoding.
      */
     public AtomicFileWriter(File f) throws IOException {
-        this(f,"UTF-8");
+        this(toPath(f), StandardCharsets.UTF_8);
     }
 
     /**
@@ -84,20 +85,8 @@ public class AtomicFileWriter extends Writer {
         this(toPath(f), encoding == null ? Charset.defaultCharset() : Charset.forName(encoding));
     }
 
-    /**
-     * Wraps potential {@link java.nio.file.InvalidPathException} thrown by {@link File#toPath()} in an
-     * {@link IOException} for backward compatibility.
-     *
-     * @param file
-     * @return the path for that file
-     * @see File#toPath()
-     */
     private static Path toPath(@Nonnull File file) throws IOException {
-        try {
-            return file.toPath();
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
+        return Util.fileToPath(file);
     }
 
     /**

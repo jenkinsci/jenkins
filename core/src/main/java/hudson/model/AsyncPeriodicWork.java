@@ -5,6 +5,7 @@ import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -173,7 +174,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
             }
         }
         try {
-            return new StreamTaskListener(f, true, null);
+            return new StreamTaskListener(f, true, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new Error(e);
         }

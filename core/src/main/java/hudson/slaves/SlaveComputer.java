@@ -75,6 +75,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,7 +97,6 @@ import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
 public class SlaveComputer extends Computer {
     private volatile Channel channel;
     private volatile transient boolean acceptingTasks = true;
-    private Charset defaultCharset;
     private Boolean isUnix;
     /**
      * Effective {@link ComputerLauncher} that hides the details of
@@ -139,7 +139,7 @@ public class SlaveComputer extends Computer {
     public SlaveComputer(Slave slave) {
         super(slave);
         this.log = new RewindableRotatingFileOutputStream(getLogFile(), 10);
-        this.taskListener = new StreamTaskListener(decorate(this.log));
+        this.taskListener = new StreamTaskListener(decorate(this.log), StandardCharsets.UTF_8);
         assert slave.getNumExecutors()!=0 : "Computer created with 0 executors";
     }
 
@@ -513,7 +513,7 @@ public class SlaveComputer extends Computer {
         if(this.channel!=null)
             throw new IllegalStateException("Already connected");
 
-        final TaskListener taskListener = new StreamTaskListener(launchLog);
+        final TaskListener taskListener = new StreamTaskListener(launchLog, StandardCharsets.UTF_8);
         PrintStream log = taskListener.getLogger();
 
         channel.setProperty(SlaveComputer.class, this);
@@ -548,8 +548,6 @@ public class SlaveComputer extends Computer {
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
-
-        String defaultCharsetName = channel.call(new DetectDefaultCharset());
 
         Slave node = getNode();
         if (node == null) { // Node has been disabled/removed during the connection
@@ -599,7 +597,6 @@ public class SlaveComputer extends Computer {
             numRetryAttempt = 0;
             this.channel = channel;
             this.absoluteRemoteFs = remoteFS;
-            defaultCharset = Charset.forName(defaultCharsetName);
 
             synchronized (statusChangeLock) {
                 statusChangeLock.notifyAll();
@@ -622,8 +619,9 @@ public class SlaveComputer extends Computer {
         return channel;
     }
 
+    @Override
     public Charset getDefaultCharset() {
-        return defaultCharset;
+        return StandardCharsets.UTF_8;
     }
 
     public List<LogRecord> getLogRecords() throws IOException, InterruptedException {
@@ -821,12 +819,6 @@ public class SlaveComputer extends Computer {
 
         public String call() throws IOException {
             return new File(relativePath).getAbsolutePath();
-        }
-    }
-
-    private static final class DetectDefaultCharset extends MasterToSlaveCallable<String,IOException> {
-        public String call() throws IOException {
-            return Charset.defaultCharset().name();
         }
     }
 

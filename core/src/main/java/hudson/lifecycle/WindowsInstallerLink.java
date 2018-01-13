@@ -54,8 +54,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URL;
@@ -141,7 +141,7 @@ public class WindowsInstallerLink extends ManagementLink {
 
             // install as a service
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            StreamTaskListener task = new StreamTaskListener(baos);
+            StreamTaskListener task = new StreamTaskListener(baos, StandardCharsets.UTF_8);
             task.getLogger().println("Installing a service");
             int r = runElevated(new File(dir, "jenkins.exe"), "install", task, dir);
             if(r!=0) {

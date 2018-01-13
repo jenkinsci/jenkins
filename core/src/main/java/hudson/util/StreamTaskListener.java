@@ -24,6 +24,7 @@
 package hudson.util;
 
 import hudson.CloseProofOutputStream;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
 import java.io.Closeable;
@@ -36,12 +37,13 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 // TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
@@ -57,7 +59,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  */
 public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     private PrintStream out;
-    private Charset charset;
+    private @Nonnull Charset charset;
 
     /**
      * @deprecated as of 1.349
@@ -70,16 +72,22 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         this(out,null);
     }
 
+    /**
+     * @deprecated use {@link #StreamTaskListener(java.io.OutputStream, java.nio.charset.Charset)} instead.
+     */
+    @Deprecated
     public StreamTaskListener(OutputStream out) {
         this(out,null);
     }
 
     public StreamTaskListener(OutputStream out, Charset charset) {
         try {
-            if (charset == null)
-                this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false);
-            else
+            if (charset == null) {
+                charset = Charset.defaultCharset();
+                this.out = (out instanceof PrintStream) ? (PrintStream)out : new PrintStream(out, false, charset.name());
+            } else {
                 this.out = new PrintStream(out, false, charset.name());
+            }
             this.charset = charset;
         } catch (UnsupportedEncodingException e) {
             // it's not very pretty to do this, but otherwise we'd have to touch too many call sites.
@@ -87,6 +95,10 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         }
     }
 
+    /**
+     * @deprecated use {@link #StreamTaskListener(java.io.File, java.nio.charset.Charset)} instead.
+     */
+    @Deprecated
     public StreamTaskListener(File out) throws IOException {
         this(out,null);
     }
@@ -99,11 +111,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     private static Path asPath(File out) throws IOException {
-        try {
-            return out.toPath();
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
-        }
+        return Util.fileToPath(out);
     }
 
     /**
@@ -128,7 +136,10 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     public StreamTaskListener(Writer w) throws IOException {
-        this(new WriterOutputStream(w));
+        // It's not possible to retrieve the charset that the writer is using;
+        // however, for all uses of this constructor, the writer is an instance
+        // of StringWriter, so it's okay to assume UTF-8.
+        this(new WriterOutputStream(w), StandardCharsets.UTF_8);
     }
 
     /**
@@ -141,11 +152,11 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     public static StreamTaskListener fromStdout() {
-        return new StreamTaskListener(System.out,Charset.defaultCharset());
+        return new StreamTaskListener(System.out);
     }
 
     public static StreamTaskListener fromStderr() {
-        return new StreamTaskListener(System.err,Charset.defaultCharset());
+        return new StreamTaskListener(System.err);
     }
 
     @Override
@@ -154,24 +165,25 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     @Override
-    public Charset getCharset() {
+    public @Nonnull Charset getCharset() { // getCharset() in TaskListener is annotated @Nonnull
         return charset;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
-        out.writeObject(charset==null? null : charset.name());
+        out.writeObject(charset.name());
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         out = new PrintStream((OutputStream)in.readObject(),true);
         String name = (String)in.readObject();
-        charset = name==null ? null : Charset.forName(name);
+        charset = name==null ? Charset.defaultCharset() : Charset.forName(name);
     }
 
     @Override
     public void close() throws IOException {
-        out.close();
+        if (out != System.out && out != System.err)
+            out.close();
     }
 
     /**

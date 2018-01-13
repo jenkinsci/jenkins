@@ -64,7 +64,7 @@ public abstract class AbstractCloudSlave extends Slave {
         }
         try {
             // TODO: send the output to somewhere real
-            _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));
+            _terminate(StreamTaskListener.fromStdout());
         } finally {
             try {
                 Jenkins.getInstance().removeNode(this);

@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,7 +61,6 @@ import org.jvnet.hudson.test.Issue;
 import hudson.util.StreamTaskListener;
 
 import org.junit.Rule;
-import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.TemporaryFolder;
 
 import com.google.common.collect.Lists;
@@ -192,7 +192,7 @@ public class UtilTest {
         Assume.assumeTrue(!Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener l = new StreamTaskListener(baos);
+        StreamTaskListener l = new StreamTaskListener(baos, StandardCharsets.UTF_8);
         File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "a")).touch(0);
@@ -240,7 +240,7 @@ public class UtilTest {
         Assume.assumeTrue(!Functions.isWindows());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StreamTaskListener l = new StreamTaskListener(baos);
+        StreamTaskListener l = new StreamTaskListener(baos, StandardCharsets.UTF_8);
         File d = tmp.getRoot();
         try {
             new FilePath(new File(d, "original")).touch(0);

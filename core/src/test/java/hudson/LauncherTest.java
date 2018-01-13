@@ -31,6 +31,7 @@ import hudson.util.ProcessTree;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.io.FileUtils;
 import static org.junit.Assert.*;
@@ -85,7 +86,7 @@ public class LauncherTest {
     @Issue("JENKINS-15733")
     @Test public void decorateByEnv() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        TaskListener l = new StreamBuildListener(baos);
+        TaskListener l = new StreamBuildListener(baos, StandardCharsets.UTF_8);
         Launcher base = new Launcher.LocalLauncher(l);
         EnvVars env = new EnvVars("key1", "val1");
         Launcher decorated = base.decorateByEnv(env);
@@ -98,7 +99,7 @@ public class LauncherTest {
     @Issue("JENKINS-18368")
     @Test public void decoratedByEnvMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        TaskListener listener = new StreamBuildListener(output);
+        TaskListener listener = new StreamBuildListener(output, StandardCharsets.UTF_8);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByEnv(new EnvVars());
         assertEquals(false, decorated.isUnix());
@@ -110,7 +111,7 @@ public class LauncherTest {
     @Issue("JENKINS-18368")
     @Test public void decoratedByPrefixMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        TaskListener listener = new StreamBuildListener(output);
+        TaskListener listener = new StreamBuildListener(output, StandardCharsets.UTF_8);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
         Launcher decorated = remoteLauncher.decorateByPrefix("test");
         assertEquals(false, decorated.isUnix());

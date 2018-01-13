@@ -2,21 +2,20 @@ package hudson.util;
 
 import com.trilead.ssh2.crypto.Base64;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.TaskListener;
 
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.util.HashSet;
@@ -82,39 +81,36 @@ public class SecretRewriter {
 
     public boolean rewrite(File f) throws InvalidKeyException, IOException {
 
-        AtomicFileWriter w = new AtomicFileWriter(f, "UTF-8");
+        Path path = Util.fileToPath(f);
+        AtomicFileWriter w = new AtomicFileWriter(path, StandardCharsets.UTF_8);
         try {
 
             boolean modified = false; // did we actually change anything?
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(w))) {
-                try (InputStream fin = Files.newInputStream(f.toPath())) {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(fin, "UTF-8"));
-                    String line;
-                    StringBuilder buf = new StringBuilder();
+            try (PrintWriter out = new PrintWriter(new BufferedWriter(w));
+                 BufferedReader r = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+                String line;
+                StringBuilder buf = new StringBuilder();
 
-                    while ((line = r.readLine()) != null) {
-                        int copied = 0;
-                        buf.setLength(0);
-                        while (true) {
-                            int sidx = line.indexOf('>', copied);
-                            if (sidx < 0) break;
-                            int eidx = line.indexOf('<', sidx);
-                            if (eidx < 0) break;
+                while ((line = r.readLine()) != null) {
+                    int copied = 0;
+                    buf.setLength(0);
+                    while (true) {
+                        int sidx = line.indexOf('>', copied);
+                        if (sidx < 0) break;
+                        int eidx = line.indexOf('<', sidx);
+                        if (eidx < 0) break;
 
-                            String elementText = line.substring(sidx + 1, eidx);
-                            String replacement = tryRewrite(elementText);
-                            if (!replacement.equals(elementText))
-                                modified = true;
+                        String elementText = line.substring(sidx + 1, eidx);
+                        String replacement = tryRewrite(elementText);
+                        if (!replacement.equals(elementText))
+                            modified = true;
 
-                            buf.append(line.substring(copied, sidx + 1));
-                            buf.append(replacement);
-                            copied = eidx;
-                        }
-                        buf.append(line.substring(copied));
-                        out.println(buf.toString());
+                        buf.append(line.substring(copied, sidx + 1));
+                        buf.append(replacement);
+                        copied = eidx;
                     }
-                } catch (InvalidPathException e) {
-                    throw new IOException(e);
+                    buf.append(line.substring(copied));
+                    out.println(buf.toString());
                 }
             }
 
@@ -143,8 +139,8 @@ public class SecretRewriter {
     private int rewriteRecursive(File dir, String relative, TaskListener listener) throws InvalidKeyException {
         String canonical;
         try {
-            canonical = dir.toPath().toRealPath(new LinkOption[0]).toString();
-        } catch (IOException | InvalidPathException e) {
+            canonical = Util.fileToPath(dir).toRealPath(new LinkOption[0]).toString();
+        } catch (IOException e) {
             canonical = dir.getAbsolutePath(); //
         }
         if (!callstack.add(canonical)) {

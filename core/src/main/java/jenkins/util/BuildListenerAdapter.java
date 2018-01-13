@@ -30,6 +30,8 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import javax.annotation.Nonnull;
 
 /**
  * Wraps a {@link TaskListener} as a {@link BuildListener} for compatibility with APIs which historically expected the latter.
@@ -46,6 +48,10 @@ public final class BuildListenerAdapter implements BuildListener {
 
     @Override public PrintStream getLogger() {
         return delegate.getLogger();
+    }
+
+    @Override public @Nonnull Charset getCharset() { // getCharset() in TaskListener is annotated @Nonnull
+        return delegate.getCharset();
     }
 
     @SuppressWarnings("rawtypes")

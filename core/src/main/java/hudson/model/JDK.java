@@ -23,8 +23,6 @@
  */
 package hudson.model;
 
-import hudson.util.StreamTaskListener;
-import hudson.util.NullStream;
 import hudson.util.FormValidation;
 import hudson.Launcher;
 import hudson.Extension;
@@ -157,7 +155,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     public static boolean isDefaultJDKValid(Node n) {
         try {
-            TaskListener listener = new StreamTaskListener(new NullStream());
+            TaskListener listener = TaskListener.NULL;
             Launcher launcher = n.createLauncher(listener);
             return launcher.launch().cmds("java","-fullversion").stdout(listener).join()==0;
         } catch (IOException e) {

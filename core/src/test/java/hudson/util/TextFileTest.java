@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import static org.junit.Assert.*;
@@ -44,7 +45,7 @@ public class TextFileTest {
         TextFile t = new TextFile(f);
         String tailStr = "la, vitae interdum quam rutrum id." + System.lineSeparator();
         assertEquals(34 + System.lineSeparator().length(), tailStr.length());
-        assertEquals(tailStr, t.fastTail(tailStr.length()));
+        assertEquals(tailStr, t.fastTail(tailStr.length(), StandardCharsets.UTF_8));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class TextFileTest {
         FileUtils.write(f, "hello");
 
         TextFile t = new TextFile(f);
-        assertEquals("hello", t.fastTail(35));
+        assertEquals("hello", t.fastTail(35, StandardCharsets.UTF_8));
     }
 
     /**

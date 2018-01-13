@@ -39,16 +39,21 @@ import java.nio.charset.Charset;
  * @author Kohsuke Kawaguchi
  */
 public class StreamBuildListener extends StreamTaskListener implements BuildListener {
+
+    /**
+     * @deprecated use {@link #StreamBuildListener(java.io.OutputStream, java.nio.charset.Charset)} instead.
+     */
+    @Deprecated
+    public StreamBuildListener(OutputStream out) {
+        super(out);
+    }
+
     public StreamBuildListener(OutputStream out, Charset charset) {
         super(out, charset);
     }
 
     public StreamBuildListener(File out, Charset charset) throws IOException {
         super(out, charset);
-    }
-
-    public StreamBuildListener(OutputStream w) {
-        super(w);
     }
 
     /**

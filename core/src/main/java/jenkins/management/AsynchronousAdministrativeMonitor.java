@@ -12,7 +12,7 @@ import jenkins.security.RekeySecretAdminMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -46,9 +46,9 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
     /**
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
-    public AnnotatedLargeText getLogText() {
+    public AnnotatedLargeText<AsynchronousAdministrativeMonitor> getLogText() {
         return new AnnotatedLargeText<AsynchronousAdministrativeMonitor>(
-                getLogFile(), Charset.defaultCharset(),
+                getLogFile(), StandardCharsets.UTF_8,
                 !isFixingActive(), this);
     }
 
@@ -100,7 +100,7 @@ public abstract class AsynchronousAdministrativeMonitor extends AdministrativeMo
             ACL.impersonate(ACL.SYSTEM);
             StreamTaskListener listener = null;
             try {
-                listener = new StreamTaskListener(getLogFile());
+                listener = new StreamTaskListener(getLogFile(), StandardCharsets.UTF_8);
                 try {
                     doRun(listener);
                 } finally {

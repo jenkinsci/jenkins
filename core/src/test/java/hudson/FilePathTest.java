@@ -41,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -659,7 +660,7 @@ public class FilePathTest {
         when(con.getInputStream()).thenThrow(new ConnectException());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, StandardCharsets.UTF_8), message));
         verify(con).setIfModifiedSince(123000);
         String log = baos.toString();
         assertFalse(log, log.contains(message));
@@ -685,7 +686,7 @@ public class FilePathTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         String message = "going ahead";
-        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos), message));
+        assertTrue(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, StandardCharsets.UTF_8), message));
     }
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {

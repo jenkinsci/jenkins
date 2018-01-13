@@ -32,12 +32,9 @@ import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
-import java.io.Closeable;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
-import hudson.util.Scrambler;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
@@ -76,7 +73,7 @@ import org.jvnet.hudson.test.TestExtension;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import org.junit.Rule;
 import org.junit.Test;
@@ -444,7 +441,7 @@ public class ProjectTest {
         assertNotNull(ws);
         FilePath path = slave.toComputer().getWorkspaceList().allocate(ws, build).path;
         build.setWorkspace(path);
-        BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), Charset.defaultCharset());
+        BuildListener listener = new StreamBuildListener(BuildListener.NULL.getLogger(), StandardCharsets.UTF_8);
         assertTrue("Project with null smc should perform checkout without problems.", p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));
         p.setScm(scm);
         assertTrue("Project should perform checkout without problems.",p.checkout(build, new RemoteLauncher(listener, slave.getChannel(), true), listener, new File(build.getRootDir(),"changelog.xml")));

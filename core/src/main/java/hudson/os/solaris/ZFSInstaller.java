@@ -61,6 +61,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -225,7 +227,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
 
         final String datasetName;
         ByteArrayOutputStream log = new ByteArrayOutputStream();
-        StreamTaskListener listener = new StreamTaskListener(log);
+        StreamTaskListener listener = new StreamTaskListener(log, StandardCharsets.UTF_8);
         try {
             datasetName = createZfsFileSystem(listener,username,password);
         } catch (Exception e) {
@@ -285,7 +287,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         String migrationTarget = SystemProperties.getString(ZFSInstaller.class.getName() + ".migrate");
         if(migrationTarget!=null) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            StreamTaskListener listener = new StreamTaskListener(new ForkOutputStream(System.out, out));
+            StreamTaskListener listener = new StreamTaskListener(new ForkOutputStream(System.out, out), Charset.defaultCharset());
             try {
                 if(migrate(listener,migrationTarget)) {
                     // completed successfully

@@ -99,14 +99,14 @@ public class ProcTest {
     @Test
     public void ioPumpingWithLocalLaunch() throws Exception {
         assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
-        doIoPumpingTest(new LocalLauncher(new StreamTaskListener(System.out, Charset.defaultCharset())));
+        doIoPumpingTest(new LocalLauncher(StreamTaskListener.fromStdout()));
     }
 
     @Test
     public void ioPumpingWithRemoteLaunch() throws Exception {
         assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         doIoPumpingTest(new RemoteLauncher(
-                new StreamTaskListener(System.out, Charset.defaultCharset()),
+                StreamTaskListener.fromStdout(),
                 createSlaveChannel(), true));
     }
 

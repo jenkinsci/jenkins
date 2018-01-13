@@ -46,7 +46,7 @@ import com.google.common.base.Joiner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.StringWriter;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -104,7 +104,7 @@ public class ArgumentListBuilder2Test {
                 .toWindowsCommand();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final StreamTaskListener listener = new StreamTaskListener(out);
+        final StreamTaskListener listener = new StreamTaskListener(out, StandardCharsets.UTF_8);
         Proc p = new LocalLauncher(listener)
                 .launch()
                 .stderr(System.err)

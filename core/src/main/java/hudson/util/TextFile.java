@@ -194,7 +194,9 @@ public class TextFile {
 
     /**
      * Uses the platform default encoding.
+     * @deprecated use {@link #fastTail(int, java.nio.charset.Charset)} instead.
      */
+    @Deprecated
     public @Nonnull String fastTail(int numChars) throws IOException {
         return fastTail(numChars,Charset.defaultCharset());
     }

@@ -252,6 +252,7 @@ import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -4810,7 +4811,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public Charset getDefaultCharset() {
-            return Charset.defaultCharset();
+            return StandardCharsets.UTF_8;
         }
 
         public List<LogRecord> getLogRecords() throws IOException, InterruptedException {

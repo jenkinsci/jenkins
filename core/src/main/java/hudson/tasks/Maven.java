@@ -51,8 +51,6 @@ import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.NullStream;
-import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
 import hudson.util.VariableResolver.ByMap;
 import hudson.util.VariableResolver.Union;
@@ -646,7 +644,7 @@ public class Maven extends Builder {
          */
         public boolean getExists() {
             try {
-                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream())))!=null;
+                return getExecutable(new LocalLauncher(TaskListener.NULL))!=null;
             } catch (IOException | InterruptedException e) {
                 return false;
             }

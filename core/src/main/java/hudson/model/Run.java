@@ -74,6 +74,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -267,6 +268,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.257
      */
     protected String charset;
+    private transient Charset charsetInstance;
 
     /**
      * Keeps this log entries.
@@ -551,8 +553,18 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * @since 1.257
      */   
     public final @Nonnull Charset getCharset() {
-        if(charset==null)   return Charset.defaultCharset();
-        return Charset.forName(charset);
+        if (charsetInstance==null)
+            return StandardCharsets.UTF_8;
+        return charsetInstance;
+    }
+
+    /**
+     * Sets the charset in which the log file is written.
+     * @since TODO
+     */
+    public final void setCharset(Charset charset) {
+        this.charsetInstance = charset;
+        this.charset = (charset==null ? null : charset.name());
     }
 
     /**
@@ -1111,7 +1123,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private int addArtifacts(@Nonnull VirtualFile dir, 
             @Nonnull String path, @Nonnull String pathHref, 
-            @Nonnull ArtifactList r, @Nonnull Artifact parent, int upTo) throws IOException {
+            @Nonnull ArtifactList r, Artifact parent, int upTo) throws IOException {
         VirtualFile[] kids = dir.list();
         Arrays.sort(kids);
 
@@ -1124,6 +1136,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             boolean collapsed = (kids.length==1 && parent!=null);
             Artifact a;
             if (collapsed) {
+                assert parent!=null;
                 // Collapse single items into parent node where possible:
                 a = new Artifact(parent.getFileName() + '/' + child, childPath,
                                  sub.isDirectory() ? null : childHref, length,
@@ -1378,12 +1391,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     	}
     	
         String message = "No such file: " + logFile;
-    	return new ByteArrayInputStream(charset != null ? message.getBytes(charset) : message.getBytes());
+    	return new ByteArrayInputStream(message.getBytes(getCharset()));
     }
    
     public @Nonnull Reader getLogReader() throws IOException {
-        if (charset==null)  return new InputStreamReader(getLogInputStream());
-        else                return new InputStreamReader(getLogInputStream(),charset);
+        return new InputStreamReader(getLogInputStream(), getCharset());
     }
 
     /**
@@ -1414,7 +1426,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      */
     public void writeWholeLogTo(@Nonnull OutputStream out) throws IOException, InterruptedException {
         long pos = 0;
-        AnnotatedLargeText logText;
+        AnnotatedLargeText<Run<JobT, RunT>> logText;
         logText = getLogText();
         pos = logText.writeLogTo(pos, out);
 
@@ -1431,8 +1443,8 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Used to URL-bind {@link AnnotatedLargeText}.
      * @return A {@link Run} log with annotations
      */   
-    public @Nonnull AnnotatedLargeText getLogText() {
-        return new AnnotatedLargeText(getLogFile(),getCharset(),!isLogUpdated(),this);
+    public @Nonnull AnnotatedLargeText<Run<JobT, RunT>> getLogText() {
+        return new AnnotatedLargeText<>(getLogFile(), getCharset(), !isLogUpdated(), this);
     }
 
     @Override
@@ -1697,15 +1709,14 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
             long start = System.currentTimeMillis();
 
             try {
+                Computer computer = Computer.currentComputer();
+                if (computer != null) {
+                    setCharset(computer.getDefaultCharset());
+                }
+                logger = createLogger();
+                listener = createBuildListener(job, logger, getCharset());
+
                 try {
-                    Computer computer = Computer.currentComputer();
-                    Charset charset = null;
-                    if (computer != null) {
-                        charset = computer.getDefaultCharset();
-                        this.charset = charset.name();
-                    }
-                    logger = createLogger();
-                    listener = createBuildListener(job, logger, charset);
                     listener.started(getCauses());
 
                     Authentication auth = Jenkins.getAuthentication();
@@ -1869,7 +1880,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
     /**
      * Handles a fatal build problem (exception) that occurred during the build.
      */
-    private void handleFatalBuildProblem(@Nonnull BuildListener listener, @Nonnull Throwable e) {
+    private void handleFatalBuildProblem(BuildListener listener, @Nonnull Throwable e) {
         if(listener!=null) {
             LOGGER.log(FINE, getDisplayName()+" failed to build",e);
 
@@ -2127,8 +2138,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Returns the build time stamp in the body.
      */
     public void doBuildTimestamp( StaplerRequest req, StaplerResponse rsp, @QueryParameter String format) throws IOException {
-        rsp.setContentType("text/plain");
-        rsp.setCharacterEncoding("US-ASCII");
+        rsp.setContentType("text/plain;charset=UTF-8");
         rsp.setStatus(HttpServletResponse.SC_OK);
         DateFormat df = format==null ?
                 DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, Locale.ENGLISH) :
@@ -2140,7 +2150,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
      * Sends out the raw console output.
      */
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        rsp.setContentType("text/plain;charset=UTF-8");
+        rsp.setContentType("text/plain;charset=" + getCharset().name());
         try (InputStream input = getLogInputStream();
              OutputStream os = rsp.getCompressedOutputStream(req);
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {

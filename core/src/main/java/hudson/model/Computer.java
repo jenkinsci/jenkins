@@ -316,14 +316,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Gets the string representation of the agent log.
      */
     public String getLog() throws IOException {
-        return Util.loadFile(getLogFile());
+        return Util.loadFile(getLogFile(), getDefaultCharset());
     }
 
     /**
      * Used to URL-bind {@link AnnotatedLargeText}.
      */
     public AnnotatedLargeText<Computer> getLogText() {
-        return new AnnotatedLargeText<Computer>(getLogFile(), Charset.defaultCharset(), false, this);
+        return new AnnotatedLargeText<Computer>(getLogFile(), getDefaultCharset(), false, this);
     }
 
     public ACL getACL() {

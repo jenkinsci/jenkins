@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -457,8 +458,8 @@ public class SCMTrigger extends Trigger<Item> {
             }
         }
 
-        public AnnotatedLargeText getPollingLogText() {
-            return new AnnotatedLargeText<BuildAction>(getPollingLogFile(), Charset.defaultCharset(), true, this);
+        public AnnotatedLargeText<BuildAction> getPollingLogText() {
+            return new AnnotatedLargeText<BuildAction>(getPollingLogFile(), StandardCharsets.UTF_8, true, this);
         }
         
         /**
@@ -512,7 +513,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         public String getLog() throws IOException {
-            return Util.loadFile(getLogFile());
+            return Util.loadFile(getLogFile(), StandardCharsets.UTF_8);
         }
 
         /**
@@ -520,7 +521,7 @@ public class SCMTrigger extends Trigger<Item> {
          * @since 1.350
          */
         public void writeLogTo(XMLOutput out) throws IOException {
-            new AnnotatedLargeText<SCMAction>(getLogFile(),Charset.defaultCharset(),true,this).writeHtmlTo(0,out.asWriter());
+            new AnnotatedLargeText<SCMAction>(getLogFile(), StandardCharsets.UTF_8, true, this).writeHtmlTo(0, out.asWriter());
         }
     }
 
@@ -585,7 +586,7 @@ public class SCMTrigger extends Trigger<Item> {
             try {
                 // to make sure that the log file contains up-to-date text,
                 // don't do buffering.
-                StreamTaskListener listener = new StreamTaskListener(getLogFile());
+                StreamTaskListener listener = new StreamTaskListener(getLogFile(), StandardCharsets.UTF_8);
 
                 try {
                     PrintStream logger = listener.getLogger();
@@ -619,7 +620,7 @@ public class SCMTrigger extends Trigger<Item> {
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {
-                try (StreamTaskListener listener = new StreamTaskListener(getLogFile())) {
+                try (StreamTaskListener listener = new StreamTaskListener(getLogFile(), StandardCharsets.UTF_8)) {
                     listener.getLogger().println(
                             "Skipping polling on " + DateFormat.getDateTimeInstance().format(new Date())
                                     + " due to veto from " + veto);

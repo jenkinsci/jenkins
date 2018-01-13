@@ -58,7 +58,7 @@ public class InstallerTranslatorTest {
         r.jenkins.getJDKs().add(jdk);
         FreeStyleProject p = r.createFreeStyleProject();
         p.setJDK(jdk);
-        StreamTaskListener listener = new StreamTaskListener(System.out, Charset.defaultCharset());
+        StreamTaskListener listener = StreamTaskListener.fromStdout();
         String javaHomeProp = "JAVA_HOME"; // cf. JDK.buildEnvVars
         assertEquals(globalDefaultLocation, p.getEnvironment(slave, listener).get(javaHomeProp));
         String slaveDefaultLocation = "/System/JDK";

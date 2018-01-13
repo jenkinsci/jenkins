@@ -29,7 +29,6 @@ import hudson.Util;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
@@ -165,7 +164,7 @@ public class RunIdMigratorTest {
     }
 
     private void link(String symlink, String dest) throws Exception {
-        Util.createSymlink(dir, dest, symlink, new StreamTaskListener(System.out, Charset.defaultCharset()));
+        Util.createSymlink(dir, dest, symlink, StreamTaskListener.fromStdout());
     }
 
     private String summarize() throws Exception {

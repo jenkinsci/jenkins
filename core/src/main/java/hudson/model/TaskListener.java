@@ -89,7 +89,7 @@ public interface TaskListener extends Serializable {
 
         // annotate(new HudsonExceptionNote()) if and when this is made to do something
         Charset charset = getCharset();
-        return new PrintWriter(charset != null ? new OutputStreamWriter(out, charset) : new OutputStreamWriter(out), true);
+        return new PrintWriter(new OutputStreamWriter(out, charset), true);
     }
 
     /**
@@ -154,5 +154,5 @@ public interface TaskListener extends Serializable {
     /**
      * {@link TaskListener} that discards the output.
      */
-    TaskListener NULL = new StreamTaskListener(new NullStream());
+    TaskListener NULL = new StreamTaskListener(new NullStream(), StandardCharsets.UTF_8);
 }

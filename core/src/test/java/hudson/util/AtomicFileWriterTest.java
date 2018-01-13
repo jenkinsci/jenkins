@@ -1,7 +1,6 @@
 package hudson.util;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,7 +8,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +32,7 @@ public class AtomicFileWriterTest {
     public void setUp() throws IOException {
         af = tmp.newFile();
         FileUtils.writeStringToFile(af, PREVIOUS);
-        afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
+        afw = new AtomicFileWriter(af.toPath(), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -46,7 +45,7 @@ public class AtomicFileWriterTest {
 
         final Path childFileInSymlinkToDir = Paths.get(zeSymlink.toString(), "childFileInSymlinkToDir");
 
-        new AtomicFileWriter(childFileInSymlinkToDir, Charset.forName("UTF-8"));
+        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -117,7 +116,7 @@ public class AtomicFileWriterTest {
         assertFalse(parentExistsAndIsAFile.exists());
 
         try {
-            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), Charset.forName("UTF-8"));
+            new AtomicFileWriter(parentExistsAndIsAFile.toPath(), StandardCharsets.UTF_8);
             fail("Expected a failure");
         } catch (IOException e) {
             assertThat(e.getMessage(),
