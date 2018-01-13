@@ -36,8 +36,8 @@ java.lang.Object
 java.lang.Short
 java.lang.StackTraceElement
 java.lang.String
-java.lang.StringBuilder
 java.lang.StringBuffer
+java.lang.StringBuilder
 java.lang.reflect.Proxy
 java.net.URI
 java.net.URL
