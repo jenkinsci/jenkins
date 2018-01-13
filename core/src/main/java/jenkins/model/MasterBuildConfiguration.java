@@ -52,7 +52,7 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         try {
             // for compatibility reasons, this value is stored in Jenkins
             String num = json.getString("numExecutors");
-            if (!num.matches("^(\\d+)")) {
+            if (!num.matches("\\d+")) {
                 throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(),"numExecutors");
             }
             
