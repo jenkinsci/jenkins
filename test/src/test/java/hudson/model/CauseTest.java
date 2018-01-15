@@ -25,14 +25,20 @@
 package hudson.model;
 
 import hudson.XmlFile;
-import java.io.File;
+
+import java.io.*;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.apache.tools.ant.taskdefs.Parallel;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+
+import javax.annotation.Nonnull;
 
 public class CauseTest {
 
@@ -79,4 +85,22 @@ public class CauseTest {
         //j.interactiveBreak();
     }
 
+
+    @Issue("JENKINS-48467")
+    @Test public void userIdCause() throws Exception {
+        TaskListener mockListener = mock(TaskListener.class);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        when(mockListener.getLogger()).thenReturn(new PrintStream(baos));
+
+        Cause.UserIdCause userIdCauseWithNullId = new Cause.UserIdCause(null);
+        Cause.UserIdCause userIdCause = new Cause.UserIdCause("123321");
+
+        userIdCauseWithNullId.print(mockListener);
+        userIdCause.print(mockListener);
+
+        assertTrue(new String(baos.toByteArray()).contains("unknown"));
+        assertTrue(new String(baos.toByteArray()).contains("123321"));
+
+    }
 }
