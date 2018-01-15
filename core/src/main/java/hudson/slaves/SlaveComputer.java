@@ -28,14 +28,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.Computer;
-import hudson.model.Executor;
-import hudson.model.ExecutorListener;
-import hudson.model.Node;
-import hudson.model.Queue;
-import hudson.model.Slave;
-import hudson.model.TaskListener;
-import hudson.model.User;
+import hudson.model.*;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
@@ -58,25 +51,17 @@ import jenkins.slaves.JnlpSlaveAgentProtocol;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
+import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.security.Security;
 import java.util.ArrayList;
@@ -470,9 +455,23 @@ public class SlaveComputer extends Computer {
      * @since 1.606
      */
     @CheckForNull
-    @Exported
     public String getAbsoluteRemoteFs() {
         return channel == null ? null : absoluteRemoteFs;
+    }
+
+    /**
+     * Just for restFul api
+     * @see #getAbsoluteRemoteFs()
+     * @return
+     */
+    @Exported
+    public String getAbsoluteRemotePath() {
+        try {
+            return getAbsoluteRemoteFs();
+        } catch (AccessDeniedException e) {
+        }
+
+        return null;
     }
 
     static class LoadingCount extends MasterToSlaveCallable<Integer,RuntimeException> {
