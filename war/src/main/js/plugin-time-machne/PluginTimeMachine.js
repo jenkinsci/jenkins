@@ -6,16 +6,31 @@ function PluginTimeMachine(target, snapshotIds) {
     this.snapshotList = toSnapshotList(snapshotIds);
 }
 PluginTimeMachine.prototype = {
+
     render: function() {
         this.target.empty();
         this.target.append(snapshotListTemplate({snapshots: this.snapshotList}));
 
-        $('#snapshot-list').collapse();
-
         this.collapseAll();
+        this.onSelect();
     },
+
     collapseAll: function() {
+        $('#snapshot-list').collapse();
         $('#snapshot-list .panel-collapse.in').collapse('hide');
+    },
+
+    onSelect: function() {
+        $("#snapshot-list").on('show.bs.collapse', function(e) {
+            var panel = $(e.target);
+            var snapshotId = panel.attr('data-snapshot-id');
+            var isLatest = (panel.attr('data-snapshot-latest') === 'true');
+            var previousSnapshotId = panel.attr('data-snapshot-previous');
+            var panelBody = $('.panel-body', panel);
+
+            panelBody.empty();
+            panelBody.text('snapshotId: ' + snapshotId);
+        });
     }
 };
 
