@@ -1,0 +1,25 @@
+<div>
+    <h3>Plugin Time Machine</h3>
+    {{#if snapshots}}
+        <div class="panel-group" id="snapshot-list">
+            {{#each snapshots}}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#snapshot-list" href="#collapse{{this.idx}}">
+                                {{this.takenAt}}
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="collapse{{this.idx}}" class="panel-collapse collapse in">
+                        <div class="panel-body">
+
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        No saved plugin changes. Entries will appear once plugin changes are made and Jenkins is restarted.
+    {{/if}}
+</div>
