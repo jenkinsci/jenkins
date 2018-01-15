@@ -66,22 +66,6 @@ public class ClassFilterImplTest {
     @Rule
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
-    @WithoutJenkins
-    @Test
-    public void whitelistSanity() throws Exception {
-        try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
-            List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toList());
-            assertThat("whitelist is ordered", new TreeSet<>(lines), contains(lines.toArray(new String[0])));
-            for (String line : lines) {
-                try {
-                    Class.forName(line);
-                } catch (ClassNotFoundException x) {
-                    System.err.println("skipping checks of unknown class " + line);
-                }
-            }
-        }
-    }
-
     @Test
     public void masterToSlaveBypassesWhitelist() throws Exception {
         assumeThat(ClassFilterImpl.WHITELISTED_CLASSES, not(contains(LinkedListMultimap.class.getName())));
