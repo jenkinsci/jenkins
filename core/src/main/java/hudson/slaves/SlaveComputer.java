@@ -54,6 +54,8 @@ import jenkins.util.SystemProperties;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -465,6 +467,7 @@ public class SlaveComputer extends Computer {
      * @return
      */
     @Exported
+    @Restricted(DoNotUse.class)
     public String getAbsoluteRemotePath() {
         try {
             return getAbsoluteRemoteFs();
