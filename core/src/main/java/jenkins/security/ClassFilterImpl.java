@@ -130,7 +130,7 @@ public class ClassFilterImpl extends ClassFilter {
                 return true;
             }
             String name = c.getName();
-            if (Main.isUnitTest && name.contains("$$EnhancerByMockitoWithCGLIB$$")) {
+            if (Main.isUnitTest && (name.contains("$$EnhancerByMockitoWithCGLIB$$") || name.contains("$$FastClassByMockitoWithCGLIB$$") || name.startsWith("org.mockito."))) {
                 mockOff();
                 return false;
             }
@@ -222,11 +222,11 @@ public class ClassFilterImpl extends ClassFilter {
                     LOGGER.log(Level.WARNING, "problem checking " + loc, x);
                 }
             }
-            if (Main.isUnitTest || Main.isDevelopmentMode) {
-                if (loc.endsWith("/target/classes/")) {
-                    LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
-                    return true;
-                }
+            if (loc.endsWith("/target/classes/")) {
+                LOGGER.log(Level.FINE, "{0} seems to be current plugin classes, OK", loc);
+                return true;
+            }
+            if (Main.isUnitTest) {
                 if (loc.endsWith("/target/test-classes/") || loc.endsWith("-tests.jar")) {
                     LOGGER.log(Level.FINE, "{0} seems to be test classes, OK", loc);
                     return true;
