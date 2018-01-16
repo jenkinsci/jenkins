@@ -23,30 +23,28 @@
  */
 package jenkins.security;
 
-import hudson.util.CopyOnWriteMap;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertThat;
+import org.apache.commons.io.IOUtils;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import org.junit.Test;
+import org.jvnet.hudson.test.For;
 
 /**
  * Tests for {@link ClassFilterImpl}.
- * More tests are available in the &quot;test&quot; module.
+ * More tests are available in the {@code test} module.
  */
+@For(ClassFilterImpl.class)
 public class ClassFilterImplSanityTest {
 
     @Test
     public void whitelistSanity() throws Exception {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
             List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toList());
-            TreeSet<String> set = new TreeSet<>(lines);
             assertThat("whitelist is NOT ordered", new TreeSet<>(lines), contains(lines.toArray(new String[0])));
             for (String line : lines) {
                 try {
