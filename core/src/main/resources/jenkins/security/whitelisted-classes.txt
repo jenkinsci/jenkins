@@ -92,6 +92,7 @@ java.util.LinkedHashMap
 java.util.LinkedHashSet
 java.util.LinkedList
 java.util.Locale
+java.util.Optional
 java.util.Properties
 java.util.RegularEnumSet
 java.util.Stack
