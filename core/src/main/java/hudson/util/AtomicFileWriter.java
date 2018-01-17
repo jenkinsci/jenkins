@@ -138,7 +138,8 @@ public class AtomicFileWriter extends Writer {
         }
 
         try {
-            tmpPath = Files.createTempFile(dir, "atomic", "tmp");
+            // JENKINS-48407: NIO's createTempFile creates file with 0600 permissions, so we use pre-NIO for this...
+            tmpPath = File.createTempFile("atomic", "tmp", dir.toFile()).toPath();
         } catch (IOException e) {
             throw new IOException("Failed to create a temporary file in "+ dir,e);
         }
