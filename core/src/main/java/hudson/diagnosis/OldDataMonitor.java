@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
@@ -78,8 +79,22 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
     private ConcurrentMap<SaveableReference,VersionRange> data = new ConcurrentHashMap<SaveableReference,VersionRange>();
 
-    static OldDataMonitor get(Jenkins j) {
-        return (OldDataMonitor) j.getAdministrativeMonitor("OldData");
+    /**
+     * Gets instance of the monitor.
+     * @param j Jenkins instance
+     * @return Monitor instance
+     * @throws IllegalStateException Monitor not found.
+     *              It should never happen since the monitor is located in the core.
+     */
+    @Nonnull
+    static OldDataMonitor get(Jenkins j) throws IllegalStateException {
+        AdministrativeMonitor monitor = j.getAdministrativeMonitor("OldData");
+        if (monitor == null) {
+            throw new IllegalStateException("Cannot find OldData administrative monitor");
+        } else if (!(monitor instanceof OldDataMonitor)) {
+            throw new IllegalStateException("Wrong type of the OldData administrative monitor. Got: " + monitor.getClass());
+        }
+        return (OldDataMonitor)monitor;
     }
 
     public OldDataMonitor() {

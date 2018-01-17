@@ -2103,7 +2103,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Binds {@link AdministrativeMonitor}s to URL.
+     * @param id Monitor ID
+     * @return The requested monitor or {@code null} if it does not exist
      */
+    @CheckForNull
     public AdministrativeMonitor getAdministrativeMonitor(String id) {
         for (AdministrativeMonitor m : administrativeMonitors)
             if(m.id.equals(id))
