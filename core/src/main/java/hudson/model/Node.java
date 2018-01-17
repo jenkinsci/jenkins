@@ -383,12 +383,19 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             return CauseOfBlockage.fromMessage(Messages._Node_LabelMissing(getDisplayName(), l));   // the task needs to be executed on label that this node doesn't have.
 
         if(l==null && getMode()== Mode.EXCLUSIVE) {
-            // flyweight tasks need to get executed somewhere, if every node
-            if (!(item.task instanceof Queue.FlyweightTask && (
-                    this instanceof Jenkins
-                            || Jenkins.getInstance().getNumExecutors() < 1
-                            || Jenkins.getInstance().getMode() == Mode.EXCLUSIVE)
-            )) {
+            // In the unlikely event that every single node including master is
+            // marked exclusive, flyweight tasks would never get executed. To
+            // avoid this, allow the flyweight tasks to execute on the master
+            // node in this case.
+            if (this instanceof Jenkins && item.task instanceof Queue.FlyweightTask) {
+                // Check every other node, and report a blockage if at
+                // least one of them isn't exclusive, since the flyweight
+                // task could run on that node.
+                for (Node node: Jenkins.getInstance().getNodes()) {
+                    if (node.getMode() != Mode.EXCLUSIVE)
+                        return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName())); // this flyweight task could run on another node
+                }
+            } else {
                 return CauseOfBlockage.fromMessage(Messages._Node_BecauseNodeIsReserved(getDisplayName()));   // this node is reserved for tasks that are tied to it
             }
         }
