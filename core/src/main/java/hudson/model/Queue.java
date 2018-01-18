@@ -24,10 +24,12 @@
  */
 package hudson.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import hudson.BulkChange;
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -65,6 +67,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
 import jenkins.security.QueueItemAuthenticatorProvider;
+import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
 import hudson.triggers.SafeTimerTask;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +96,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -3008,5 +3010,60 @@ public class Queue extends ResourceController implements Saveable {
     @Initializer(after=JOB_LOADED)
     public static void init(Jenkins h) {
         h.getQueue().load();
+    }
+
+    /**
+     * Schedule <tt>Queue.save()</tt> call for near future once items change. Ignore all changes until the time the save
+     * takes place.
+     *
+     * Once queue is restored after a crash, items stages might not be accurate until the next #maintain() - this is not
+     * a problem as the items will be reshuffled first and then scheduled during the next maintainance cycle.
+     *
+     * Implementation note: Queue.load() calls QueueListener hooks for every item deserialized that can hammer the persistance
+     * on load. The problem is avoided by delaying the actual save for the time long enough for queue to load so the save
+     * operations will collapse into one. Also, items are persisted as buildable or blocked in vast majority of cases and
+     * those stages does not trigger the save here.
+     */
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static final class Saver extends QueueListener implements Runnable {
+
+        /**
+         * All negative values will disable periodic saving.
+         */
+        @VisibleForTesting
+        /*package*/ static /*final*/ int DELAY_SECONDS = SystemProperties.getInteger("hudson.model.Queue.Saver.DELAY_SECONDS", 60);
+
+        private volatile Future<?> nextSave;
+
+        @Override
+        public void onEnterWaiting(WaitingItem wi) {
+            push();
+        }
+
+        @Override
+        public void onLeft(Queue.LeftItem li) {
+            push();
+        }
+
+        private void push() {
+            if (DELAY_SECONDS < 0) return;
+
+            // Can be done or canceled in case of a bug or external intervention - do not allow it to hang there forever
+            if (nextSave != null && !(nextSave.isDone() || nextSave.isCancelled())) return;
+            nextSave = Timer.get().schedule(this, DELAY_SECONDS, TimeUnit.SECONDS);
+        }
+
+        @Override
+        public void run() {
+            try {
+                Jenkins j = Jenkins.getInstanceOrNull();
+                if (j != null) {
+                    j.getQueue().save();
+                }
+            } finally {
+                nextSave = null;
+            }
+        }
     }
 }
