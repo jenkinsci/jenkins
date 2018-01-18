@@ -33,7 +33,7 @@ THE SOFTWARE.
 
   <groupId>org.jenkins-ci.main</groupId>
   <artifactId>pom</artifactId>
-  <version>2.100-SNAPSHOT</version>
+  <version>2.103-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Jenkins main module</name>
@@ -104,6 +104,10 @@ THE SOFTWARE.
     <changelog.url>https://jenkins.io/changelog</changelog.url>
 
     <maven-war-plugin.version>3.0.0</maven-war-plugin.version> <!-- JENKINS-47127 bump when 3.2.0 is out. Cf. MWAR-407 -->
+
+    <!-- Minimum Remoting version, which is tested for API compatibility -->
+    <remoting.version>3.16</remoting.version>
+    <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
   </properties>
 
@@ -176,7 +180,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
-        <version>3.15</version>
+        <version>${remoting.version}</version>
       </dependency>
 
       <dependency>

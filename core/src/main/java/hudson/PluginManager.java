@@ -150,6 +150,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.CustomClassFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -866,6 +867,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             synchronized (((UberClassLoader) uberClassLoader).loaded) {
                 ((UberClassLoader) uberClassLoader).loaded.clear();
             }
+
+            // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
+            CustomClassFilter.Contributed.load();
 
             try {
                 p.resolvePluginDependencies();
