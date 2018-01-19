@@ -8,13 +8,22 @@ import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.*;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.Extension;
+import hudson.security.ACL;
+import hudson.security.AuthorizationStrategy;
+import hudson.security.SecurityRealm;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.xml.sax.SAXException;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
@@ -41,6 +50,67 @@ public class DescriptorVisibilityFilterTest {
         }
 
         assertThat(page.getWebResponse().getContentAsString(), containsString("descriptors found: .")); // No output written from expression
+    }
+
+    @Test @Issue("JENKINS-49044")
+    public void securityRealmAndAuthStrategyHidden() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(AuthorizationStrategy.UNSECURED);
+        HtmlPage page = j.createWebClient().goTo("configureSecurity");
+        String response = page.getWebResponse().getContentAsString();
+        assertThat(response, not(containsString("TestSecurityRealm")));
+        assertThat(response, not(containsString("TestAuthStrategy")));
+    }
+
+    public static final class TestSecurityRealm extends SecurityRealm {
+
+        @Override
+        public SecurityComponents createSecurityComponents() { return null; }
+
+        @TestExtension
+        public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
+            @Nonnull
+            @Override
+            public String getDisplayName() {
+                return "TestSecurityRealm";
+            }
+        }
+
+        @TestExtension
+        public static final class HideDescriptor extends DescriptorVisibilityFilter {
+            @Override
+            public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+                return !(descriptor instanceof DescriptorImpl);
+            }
+        }
+    }
+
+    public static final class TestAuthStrategy extends AuthorizationStrategy {
+
+        @Nonnull
+        @Override
+        public ACL getRootACL() { return null; }
+
+        @Nonnull
+        @Override
+        public Collection<String> getGroups() { return null; }
+
+        @TestExtension
+        public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+            @Nonnull
+            @Override
+            public String getDisplayName() {
+                return "TestAuthStrategy";
+            }
+        }
+
+        @TestExtension
+        public static final class HideDescriptor extends DescriptorVisibilityFilter {
+            @Override
+            public boolean filter(@CheckForNull Object context, @Nonnull Descriptor descriptor) {
+                return !(descriptor instanceof DescriptorImpl);
+            }
+        }
     }
 
     @TestExtension("jenkins40545")
