@@ -6,7 +6,7 @@ import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * Convenient {@link Callable} that are meant to run on the master (sent by agent/CLI/etc).
- *
+ * Note that any serializable fields must either be defined in your plugin or included in the stock JEP-200 whitelist.
  * @author Kohsuke Kawaguchi
  * @since 1.587 / 1.580.1
  */

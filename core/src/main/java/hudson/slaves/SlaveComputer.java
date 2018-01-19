@@ -38,6 +38,7 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChannelClosedException;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -867,7 +868,11 @@ public class SlaveComputer extends Computer {
                 // ignore this error.
             }
 
-            Channel.currentOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            try {
+                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            } catch (ChannelClosedException e) {
+                throw new IllegalStateException(e);
+            }
 
             return null;
         }
