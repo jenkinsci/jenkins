@@ -1,5 +1,5 @@
 <div class="snapshot-diff">
-    <button type="button" class="btn btn-warning rollback">Rollback</button>
+    <button type="button" class="btn btn-warning rollback" data-snapshot-id="{{this.snapshotId}}">Rollback</button>
     <div class="alert alert-warning">
         Rolling back to this Snapshot will result in the following plugin changes.
     </div>
@@ -11,7 +11,7 @@
             </tr>
         </thead>
         <tbody>
-            {{#each this}}
+            {{#each this.changes}}
             <tr>
                 <td>{{this.pluginId}}</td>
                 <td>

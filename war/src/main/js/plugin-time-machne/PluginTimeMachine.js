@@ -39,6 +39,14 @@ PluginTimeMachine.prototype = {
 
             timeMachine.loadSnapshotDiff(snapshotId, panelBody);
         });
+
+        $("#snapshot-list").click(function(e) {
+            var target = $(e.target);
+            if (target.hasClass('rollback')) {
+                var snapshotId = target.attr('data-snapshot-id');
+                console.log('Rollback to ' + snapshotId);
+            }
+        });
     },
 
     loadSnapshotDiff: function(snapshotId, panelBody) {
@@ -49,7 +57,10 @@ PluginTimeMachine.prototype = {
                 if (data.length === 0) {
                     panelBody.append('<div class="same-as-latest">This snapshot matches the current plugin state. Rolling back to this snapshot will have no effect.</div>');
                 } else {
-                    panelBody.append(snapshotDiffTemplate(data));
+                    panelBody.append(snapshotDiffTemplate({
+                        snapshotId: snapshotId,
+                        changes: data
+                    }));
                 }
             } else {
                 panelBody.text('Error loading snapshot diff: ' + JSON.stringify(data, undefined, 4));
