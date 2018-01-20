@@ -40,12 +40,10 @@ PluginTimeMachine.prototype = {
             timeMachine.loadSnapshotDiff(snapshotId, panelBody);
         });
 
-        $("#snapshot-list").click(function(e) {
-            var target = $(e.target);
-            if (target.hasClass('rollback')) {
-                var snapshotId = target.attr('data-snapshot-id');
-                console.log('Rollback to ' + snapshotId);
-            }
+        $("#snapshot-list").on('click', '.rollback', function(e) {
+            var rollbackButton = $(e.target);
+            var snapshotId = rollbackButton.attr('data-snapshot-id');
+            console.log('Rollback to ' + snapshotId);
         });
     },
 
