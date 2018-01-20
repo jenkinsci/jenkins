@@ -2,6 +2,8 @@ var $ = require('bootstrap-detached').getBootstrap();
 var api = require('../api/pluginTimeMachine');
 var snapshotListTemplate = require('./snapshotList.hbs');
 var snapshotDiffTemplate = require('./snapshotDiff.hbs');
+var doRollbackTemplate = require('./doRollback.hbs');
+var Modal = require('../widgets/Modal');
 
 function PluginTimeMachine(target, snapshotIds) {
     this.target = target;
@@ -42,8 +44,14 @@ PluginTimeMachine.prototype = {
 
         $("#snapshot-list").on('click', '.rollback', function(e) {
             var rollbackButton = $(e.target);
-            var snapshotId = rollbackButton.attr('data-snapshot-id');
-            console.log('Rollback to ' + snapshotId);
+            var snapshotId = parseInt(rollbackButton.attr('data-snapshot-id'));
+
+            var modal = new Modal('Plugin Rollback');
+            modal.body(doRollbackTemplate({takenAt: new Date(snapshotId)}));
+            modal.yes(function() {
+                console.log('*** do rollback');
+            });
+            modal.render();
         });
     },
 
