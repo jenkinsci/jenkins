@@ -29,16 +29,15 @@ import hudson.XmlFile;
 import java.io.*;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
-import org.apache.tools.ant.taskdefs.Parallel;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.*;
+
+import hudson.util.StreamTaskListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import javax.annotation.Nonnull;
 
 public class CauseTest {
 
@@ -87,20 +86,29 @@ public class CauseTest {
 
 
     @Issue("JENKINS-48467")
-    @Test public void userIdCause() throws Exception {
-        TaskListener mockListener = mock(TaskListener.class);
-
+    @Test public void userIdCausePrintTest() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        when(mockListener.getLogger()).thenReturn(new PrintStream(baos));
+        TaskListener listener = new StreamTaskListener(baos);
 
-        Cause.UserIdCause userIdCauseWithNullId = new Cause.UserIdCause(null);
-        Cause.UserIdCause userIdCause = new Cause.UserIdCause("123321");
+        //null userId - dont print anything
+        Cause causeA = new Cause.UserIdCause(null);
+        causeA.print(listener);
 
-        userIdCauseWithNullId.print(mockListener);
-        userIdCause.print(mockListener);
+        assertTrue(baos.toString().isEmpty());
+        baos.reset();
 
-        assertTrue(new String(baos.toByteArray()).contains("unknown"));
-        assertTrue(new String(baos.toByteArray()).contains("123321"));
+        //SYSTEM userid  - getDisplayName() should be SYSTEM
+        Cause causeB = new Cause.UserIdCause();
+        causeB.print(listener);
 
+        assertThat(baos.toString(), containsString("SYSTEM"));
+        baos.reset();
+
+        //unknown userid - dont print anything
+        Cause causeC = new Cause.UserIdCause("abc123");
+        causeC.print(listener);
+
+        assertTrue(baos.toString().isEmpty());
+        baos.reset();
     }
 }
