@@ -1,5 +1,7 @@
 var $ = require('bootstrap-detached').getBootstrap();
+var api = require('../api/pluginTimeMachine');
 var snapshotListTemplate = require('./snapshotList.hbs');
+var snapshotDiffTemplate = require('./snapshotDiff.hbs');
 
 function PluginTimeMachine(target, snapshotIds) {
     this.target = target;
@@ -9,7 +11,11 @@ PluginTimeMachine.prototype = {
 
     render: function() {
         this.target.empty();
-        this.target.append(snapshotListTemplate({snapshots: this.snapshotList}));
+        if (this.snapshotList.length > 0) {
+            // Remove the first entry for the template. It's the latest/current, so
+            // nothing to change for it and so don't display it.
+            this.target.append(snapshotListTemplate({snapshots: this.snapshotList.slice(1)}));
+        }
 
         this.collapseAll();
         this.onSelect();
@@ -21,15 +27,33 @@ PluginTimeMachine.prototype = {
     },
 
     onSelect: function() {
+        var timeMachine = this;
+
         $("#snapshot-list").on('show.bs.collapse', function(e) {
             var panel = $(e.target);
             var snapshotId = panel.attr('data-snapshot-id');
-            var isLatest = (panel.attr('data-snapshot-latest') === 'true');
-            var previousSnapshotId = panel.attr('data-snapshot-previous');
             var panelBody = $('.panel-body', panel);
 
             panelBody.empty();
-            panelBody.text('snapshotId: ' + snapshotId);
+            panelBody.text('Loading ...');
+
+            timeMachine.loadSnapshotDiff(snapshotId, panelBody);
+        });
+    },
+
+    loadSnapshotDiff: function(snapshotId, panelBody) {
+        var latestSnapshotId = this.snapshotList[0].id;
+        api.getSnapshotDiff(latestSnapshotId, snapshotId, function(data) {
+            panelBody.empty();
+            if (!this.isError) {
+                if (data.length === 0) {
+                    panelBody.append('<div class="same-as-latest">This snapshot matches the current plugin state. Rolling back to this snapshot will have no effect.</div>');
+                } else {
+                    panelBody.append(snapshotDiffTemplate(data));
+                }
+            } else {
+                panelBody.text('Error loading snapshot diff: ' + JSON.stringify(data, undefined, 4));
+            }
         });
     }
 };
@@ -37,21 +61,15 @@ PluginTimeMachine.prototype = {
 function toSnapshotList(snapshotIds) {
     var snapshotList = [];
     for (var i = 0; i < snapshotIds.length; i++) {
-        var previousIdx = i + 1;
+        var snapshot = {};
 
-        if (previousIdx < snapshotIds.length) {
-            var snapshot = {};
+        snapshotList.push(snapshot);
 
-            snapshotList.push(snapshot);
-
-            snapshot.idx = i;
-            snapshot.id = snapshotIds[i];
-            snapshot.takenAt = new Date(snapshot.id).toLocaleDateString();
-
-            snapshot.latest = (i === 0);
-            snapshot.previous = snapshotIds[previousIdx];
-            snapshot.previousTakenAt = new Date(snapshot.previous).toLocaleDateString();
-        }
+        snapshot.idx = i;
+        snapshot.id = snapshotIds[i];
+        snapshot.takenAt = new Date(snapshot.id).toString();
+        snapshot.takenAtShort = new Date(snapshot.id).toLocaleDateString();
+        snapshot.latest = (i === 0);
     }
     return snapshotList;
 }

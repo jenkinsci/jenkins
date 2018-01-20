@@ -7,5 +7,30 @@
     .panel-title {
       font-weight: bold;
     }
+
+    .snapshot-diff {
+      button.rollback {
+        margin-bottom: 10px;
+      }
+
+      td:first-child {
+        white-space: nowrap;
+        width: 2%;
+      }
+
+      .change {
+        margin-right: 3px;
+        padding: 3px 5px;
+        border-radius: 2px;
+
+        &.installed, &.enabled {
+          background-color: #00f100;
+        }
+        &.uninstalled, &.disabled {
+          background-color: #ff5a00;
+          color: #ffffff;
+        }
+      }
+    }
   }
 }
