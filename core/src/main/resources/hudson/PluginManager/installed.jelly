@@ -167,8 +167,6 @@ THE SOFTWARE.
         </form>
       </div>
 
-      <st:include page="timemachine.jelly"/>
-
       <script>
         <!-- function to toggle the enable/disable state -->
         function flip(o) {
