@@ -18,10 +18,10 @@
                     {{#each this.changes}}
                         <span class="change {{this.type}}" title="Rolling back will result in this plugin being {{this.type}}.">{{this.type}}
                             {{#if this.from}}
-                                <span class="from">{{this.from}}</span>
+                                (<span class="from">{{this.from}}</span> <span class="glyphicon glyphicon-arrow-right"></span>
                             {{/if}}
                             {{#if this.to}}
-                                <span class="to">{{this.to}}</span>
+                                <span class="to">{{this.to}}</span>)
                             {{/if}}
                         </span>
                     {{/each}}
