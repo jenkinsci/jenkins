@@ -1,11 +1,25 @@
+com.google.common.collect.AbstractListMultimap
+com.google.common.collect.AbstractMultimap
 com.google.common.collect.AbstractSetMultimap
+# Artifactory - https://issues.jenkins-ci.org/browse/JENKINS-48991
+com.google.common.collect.ArrayListMultimap
 com.google.common.collect.EmptyImmutableList
 com.google.common.collect.EmptyImmutableSet
 com.google.common.collect.EmptyImmutableSortedSet
 com.google.common.collect.HashMultimap
+# First hit: https://github.com/jenkinsci/pitmutation-plugin/
+com.google.common.collect.HashMultiset
 com.google.common.collect.ImmutableList
+# Registered in XStream2 converters
+com.google.common.collect.ImmutableMap
+# Registered in XStream2 converters
+com.google.common.collect.ImmutableSet
 com.google.common.collect.ImmutableSet$SerializedForm
 com.google.common.collect.ImmutableSortedSet
+# https://issues.jenkins-ci.org/browse/JENKINS-48989
+com.google.common.collect.Maps$TransformedEntriesMap
+# https://github.com/jenkinsci/sonar-gerrit-plugin
+com.google.common.collect.Multimap
 com.google.common.collect.RegularImmutableList
 com.google.common.collect.RegularImmutableSet
 com.google.common.collect.RegularImmutableSortedSet
