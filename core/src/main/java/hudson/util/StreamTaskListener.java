@@ -139,7 +139,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         // It's not possible to retrieve the charset that the writer is using;
         // however, for all uses of this constructor, the writer is an instance
         // of StringWriter, so it's okay to assume UTF-8.
-        this(new WriterOutputStream(w), StandardCharsets.UTF_8);
+        this(new WriterOutputStream(w, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 
     /**
