@@ -706,13 +706,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
                     if (ClassicPluginStrategy.isDetachedPlugin(name)) {
-                        // If it's already installed and the installed version is older
-                        // than the bundled version, then we upgrade. The bundled version is the min required version
-                        // for "this" version of Jenkins, so we must upgrade.
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
-                            return true;
+                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                        if (installedVersion != null && bundledVersion != null) {
+                            // If the installed version is older than the bundled version, then it MUST be upgraded.
+                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                            // If the versions are equal we just keep the installed version.
+                            return installedVersion.isOlderThan(bundledVersion);
                         }
                     }
 
