@@ -209,7 +209,7 @@ public class Queue extends ResourceController implements Saveable {
      *
      * This map is forgetful, since we can't remember everything that executed in the past.
      */
-    private final Cache<Long,LeftItem> leftItems = CacheBuilder.newBuilder().expireAfterWrite(5*60, TimeUnit.SECONDS).build();
+    private final Cache<Long,LeftItem> leftItems = CacheBuilder.newBuilder().maximumSize(200).expireAfterWrite(5*60, TimeUnit.SECONDS).build();
 
     /**
      * Data structure created for each idle {@link Executor}.
