@@ -49,7 +49,7 @@ PluginTimeMachine.prototype = {
             var modal = new Modal('Plugin Rollback');
             modal.body(doRollbackTemplate({takenAt: new Date(snapshotId)}));
             modal.yes(function() {
-                console.log('*** do rollback');
+                api.setSnapshotRollback(snapshotId);
             });
             modal.render();
         });
