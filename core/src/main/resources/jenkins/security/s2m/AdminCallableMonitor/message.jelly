@@ -24,13 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="warning" style="padding-top:1em; padding-bottom:1em">
+  <div class="alert alert-warning">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <div style="float:right">
-        <f:submit name="examine" value="${%Examine}"/>
-        <f:submit name="dismiss" value="${%Dismiss}"/>
-      </div>
-      ${%blurb}
+      <f:submit name="examine" value="${%Examine}"/>
+      <f:submit name="dismiss" value="${%Dismiss}"/>
     </form>
+  ${%blurb}
   </div>
 </j:jelly>
