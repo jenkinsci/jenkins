@@ -56,9 +56,12 @@ public interface AccessControlled {
 
     /**
      * Convenient short-cut for {@code getACL().hasPermission(a, permission)}
-     * @since FIXME
+     * @since 2.92
      */
     default boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        if (a == ACL.SYSTEM) {
+            return true;
+        }
         return getACL().hasPermission(a, permission);
     }
 

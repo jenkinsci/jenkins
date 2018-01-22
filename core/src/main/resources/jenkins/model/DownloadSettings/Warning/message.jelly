@@ -25,10 +25,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <div class="warning">
-        <form method="post" action="${rootURL}/${it.url}/disable">
-            <j:out value="${%blurb(rootURL)}"/>
-            <f:submit value="${%Dismiss}"/>
-        </form>
-    </div>
+  <div class="alert alert-warning">
+    <form method="post" action="${rootURL}/${it.url}/disable">
+      <f:submit value="${%Dismiss}"/>
+    </form>
+    <j:out value="${%blurb(rootURL)}"/>
+  </div>
 </j:jelly>

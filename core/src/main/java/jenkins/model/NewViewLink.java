@@ -8,7 +8,11 @@ import hudson.model.View;
 import java.util.Collections;
 import java.util.List;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+
 @Extension
+@Restricted(DoNotUse.class)
 public class NewViewLink extends TransientViewActionFactory {
 
     @VisibleForTesting
@@ -40,7 +44,8 @@ public class NewViewLink extends TransientViewActionFactory {
 
             @Override
             public String getUrlName() {
-                return URL_NAME;
+                String urlName = Jenkins.getInstance().getRootUrl() + URL_NAME;
+                return urlName;
             }
 
             private boolean hasPermission(View view) {

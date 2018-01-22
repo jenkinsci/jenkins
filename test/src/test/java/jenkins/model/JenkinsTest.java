@@ -23,6 +23,7 @@
  */
 package jenkins.model;
 
+import static hudson.init.InitMilestone.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
@@ -44,6 +45,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
+import hudson.init.Initializer;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
@@ -72,6 +74,7 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.kohsuke.stapler.HttpResponse;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -83,6 +86,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import javax.annotation.CheckForNull;
@@ -314,20 +318,23 @@ public class JenkinsTest {
             grant(Jenkins.READ).everywhere().to("bob").
             grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
         WebClient wc = j.createWebClient();
-        wc.login("alice");
+
+        wc.withBasicApiToken(User.getById("alice", true));
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
         WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
+        wc.getPage(req);
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(req));
+        wc.getPage(req);
         assertEquals("you", System.getProperty("huck"));
-        wc.login("bob");
+
+        wc.withBasicApiToken(User.getById("bob", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
-        wc.login("charlie");
+
+        wc.withBasicApiToken(User.getById("charlie", true));
         wc.assertFails("script", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
@@ -338,18 +345,22 @@ public class JenkinsTest {
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
             grant(Jenkins.READ).everywhere().to("bob").
             grantWithoutImplication(Jenkins.ADMINISTER, Jenkins.READ).everywhere().to("charlie"));
+
         WebClient wc = j.createWebClient();
-        wc.login("alice");
+
+        wc.withBasicApiToken(User.getById("alice", true));
         wc.assertFails("eval", HttpURLConnection.HTTP_BAD_METHOD);
         assertEquals("3", eval(wc));
-        wc.login("bob");
+
+        wc.withBasicApiToken(User.getById("bob", true));
         try {
             eval(wc);
             fail("bob has only READ");
         } catch (FailingHttpStatusCodeException e) {
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, e.getStatusCode());
         }
-        wc.login("charlie");
+
+        wc.withBasicApiToken(User.getById("charlie", true));
         try {
             eval(wc);
             fail("charlie has ADMINISTER but not RUN_SCRIPTS");
@@ -358,7 +369,7 @@ public class JenkinsTest {
         }
     }
     private String eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req).getWebResponse().getContentAsString();
@@ -675,5 +686,12 @@ public class JenkinsTest {
         j.jenkins.save();
         VersionNumber nullVersion = Jenkins.getStoredVersion();
         assertNull(nullVersion);
+    }
+
+    @Issue("JENKINS-47406")
+    @Test
+    @WithPlugin("jenkins-47406.hpi") // Sources: https://github.com/Vlatombe/jenkins-47406
+    public void jobCreatedByInitializerIsRetained() {
+        assertNotNull("JENKINS-47406 should exist", j.jenkins.getItem("JENKINS-47406"));
     }
 }

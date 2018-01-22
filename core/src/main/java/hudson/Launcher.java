@@ -44,7 +44,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.concurrent.GuardedBy;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1289,6 +1288,7 @@ public abstract class Launcher {
         }
 
         public RemoteProcess call() throws IOException {
+            final Channel channel = getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
             ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
             if(workDir!=null)   ps.pwd(workDir);
@@ -1298,16 +1298,24 @@ public abstract class Launcher {
 
             final Proc p = ps.start();
 
-            return Channel.current().export(RemoteProcess.class,new RemoteProcess() {
+            return channel.export(RemoteProcess.class,new RemoteProcess() {
                 public int join() throws InterruptedException, IOException {
                     try {
                         return p.join();
                     } finally {
                         // make sure I/O is delivered to the remote before we return
+                        Channel taskChannel = null;
                         try {
-                            Channel.current().syncIO();
+                            // Sync IO will fail automatically if the channel is being closed, no need to use getOpenChannelOrFail()
+                            // TODOL Replace by Channel#currentOrFail() when Remoting version allows
+                            taskChannel = Channel.current();
+                            if (taskChannel == null) {
+                                throw new IOException("No Remoting channel associated with this thread");
+                            }
+                            taskChannel.syncIO();
                         } catch (Throwable t) {
                             // this includes a failure to sync, agent.jar too old, etc
+                            LOGGER.log(Level.INFO, "Failed to synchronize IO streams on the channel " + taskChannel, t);
                         }
                     }
                 }

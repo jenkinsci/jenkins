@@ -115,7 +115,7 @@ public class JNLPLauncher extends ComputerLauncher {
     /**
      * Returns work directory settings.
      * 
-     * @since TODO
+     * @since 2.72
      */
     @Nonnull
     public RemotingWorkDirSettings getWorkDirSettings() {
@@ -172,7 +172,7 @@ public class JNLPLauncher extends ComputerLauncher {
          * By default the configuration is displayed only for {@link JNLPLauncher},
          * but the implementation can be overridden.
          * @return {@code true} if work directories are supported by the launcher type.
-         * @since TODO
+         * @since 2.73
          */
         public boolean isWorkDirSupported() {
             // This property is included only for JNLPLauncher by default. 
