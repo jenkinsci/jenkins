@@ -781,6 +781,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
+     * Returns labels that are assigned to this node.
+     */
+    @Exported
+    public Set<LabelAtom> getLabels() {
+    	return getNode().getAssignedLabels();
+    }
+    
+    /**
      * Returns projects that are tied on this node.
      */
     public List<AbstractProject> getTiedJobs() {
