@@ -394,7 +394,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
 
         Authentication identity = item.authenticate();
-        if (!hasPermission(identity,Computer.BUILD)) {
+        if (!(item.task instanceof Queue.FlyweightTask) && !hasPermission(identity, Computer.BUILD)) {
             // doesn't have a permission
             return CauseOfBlockage.fromMessage(Messages._Node_LackingBuildPermission(identity.getName(), getDisplayName()));
         }
