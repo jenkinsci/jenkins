@@ -85,6 +85,7 @@ java.util.Collections$SynchronizedMap
 java.util.Collections$SynchronizedNavigableMap
 java.util.Collections$SynchronizedNavigableSet
 java.util.Collections$SynchronizedRandomAccessList
+java.util.Collections$SynchronizedSet
 java.util.Collections$SynchronizedSortedMap
 java.util.Collections$SynchronizedSortedSet
 java.util.Collections$UnmodifiableCollection
