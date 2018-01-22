@@ -284,6 +284,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         boolean view = rest.equals("*view*");
+        boolean tail = rest.equals("*tail*");
 
         if(rest.equals("*fingerprint*")) {
             InputStream fingerprintInput = baseFile.open();
@@ -308,6 +309,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
             // pseudo file name to let the Stapler set text/plain
             rsp.serveFile(req, in, lastModified, -1, length, "plain.txt");
+            return;
+        } else if (tail) {
+            // serve the end of the file -- useful with programs logging to a file in the workspace
+            int tailLength = Integer.getInteger(this.getClass().getName() + ".tailKB", 4).intValue() * 1024;
+            long skip = Math.max(0, length - tailLength);
+            in.skip(skip);
+            rsp.serveFile(req, in, lastModified, -1, length - skip, "tail.txt");
         } else {
             String csp = SystemProperties.getString(DirectoryBrowserSupport.class.getName() + ".CSP", DEFAULT_CSP_VALUE);
             if (!csp.trim().equals("")) {
