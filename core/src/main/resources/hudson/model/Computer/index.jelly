@@ -51,6 +51,8 @@ THE SOFTWARE.
         </j:choose>
       </div>
 
+      <t:actionFloatingBox />
+
       <h1>
         <l:icon class="${it.iconClassName} icon-xlg" />
         ${it.caption}
