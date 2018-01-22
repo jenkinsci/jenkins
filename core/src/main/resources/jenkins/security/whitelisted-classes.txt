@@ -54,6 +54,8 @@ java.lang.String$CaseInsensitiveComparator
 java.lang.StringBuffer
 java.lang.StringBuilder
 java.lang.reflect.Proxy
+java.math.BigDecimal
+java.math.BigInteger
 java.net.URI
 java.net.URL
 java.security.KeyRep
