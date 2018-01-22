@@ -1,5 +1,7 @@
 package jenkins.util;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.trilead.ssh2.crypto.Base64;
 import hudson.util.FormValidation;
 import java.nio.file.Files;
@@ -75,7 +77,17 @@ public class JSONSignatureValidator {
                     certs.add(c);
                 }
 
-                CertificateUtil.validatePath(certs, loadTrustAnchors(cf));
+                try {
+                    CertificateUtil.validatePath(certs, loadTrustAnchors(cf));
+                } catch (GeneralSecurityException e) {
+                    Iterable<Object> certSubjectDNs = Iterables.transform(certs, new Function<X509Certificate, Object>() {
+                        @Override
+                        public Object apply(X509Certificate cert) {
+                            return cert == null ? null : cert.getSubjectDN();
+                        }
+                    });
+                    return FormValidation.warning(e,String.format("Certificate validation failed with certs %s for %s: %s", certSubjectDNs.toString(), name, e.toString()));
+                }
             }
 
             // this is for computing a digest to check sanity
