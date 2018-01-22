@@ -47,6 +47,7 @@ import hudson.util.Futures;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
+import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
@@ -54,6 +55,7 @@ import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
@@ -545,6 +547,12 @@ public class SlaveComputer extends Computer {
 
         String slaveVersion = channel.call(new SlaveVersion());
         log.println("Remoting version: " + slaveVersion);
+        VersionNumber agentVersion = new VersionNumber(slaveVersion);
+        if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
+            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
+                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
+                    RemotingVersionInfo.getMinimumSupportedVersion()));
+        }
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
