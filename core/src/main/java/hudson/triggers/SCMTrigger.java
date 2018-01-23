@@ -237,11 +237,17 @@ public class SCMTrigger extends Trigger<Item> {
          * Max number of threads for SCM polling.
          * 0 for unbounded.
          */
-        private int maximumThreads;
+        private int maximumThreads = 10;
 
         public DescriptorImpl() {
             load();
             resizeThreadPool();
+        }
+
+        private void readResolve() {
+            if (maximumThreads == 0) {
+                maximumThreads = 10;
+            }
         }
 
         public boolean isApplicable(Item item) {
@@ -299,11 +305,11 @@ public class SCMTrigger extends Trigger<Item> {
 
         /**
          * Sets the number of concurrent threads used for SCM polling and resizes the thread pool accordingly
-         * @param n number of concurrent threads, zero or less means unlimited, maximum is 100
+         * @param n number of concurrent threads in the range 10..100, outside values will set the to the nearest bound
          */
         public void setPollingThreadCount(int n) {
             // fool proof
-            if(n<0)     n=0;
+            if(n<10)     n=10;
             if(n>100)   n=100;
 
             maximumThreads = n;
@@ -313,7 +319,7 @@ public class SCMTrigger extends Trigger<Item> {
 
         @Restricted(NoExternalUse.class)
         public boolean isPollingThreadCountOptionVisible() {
-            if (getPollingThreadCount() != 0) {
+            if (getPollingThreadCount() != 10) {
                 // this is a user who already configured the option
                 return true;
             }
@@ -337,8 +343,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Update the {@link ExecutorService} instance.
          */
         /*package*/ synchronized void resizeThreadPool() {
-            queue.setExecutors(
-                    (maximumThreads==0 ? Executors.newCachedThreadPool(threadFactory()) : Executors.newFixedThreadPool(maximumThreads, threadFactory())));
+            queue.setExecutors(Executors.newFixedThreadPool(maximumThreads, threadFactory()));
         }
 
         @Override
