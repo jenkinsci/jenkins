@@ -191,7 +191,7 @@ public class Util {
         if(!logfile.exists())
             return "";
 
-        StringWriter out = new StringWriter((int)logfile.length());
+        StringBuilder str = new StringBuilder((int)logfile.length());
 
         // We're not using Files.newBufferedReader() here because there is a
         // difference in how an InputStreamReader constructed from a Charset and
@@ -206,13 +206,16 @@ public class Util {
         // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), malformed
         // bytes will need to be tolerated.
         try (InputStream rawIn = Files.newInputStream(fileToPath(logfile));
-             Reader in = new InputStreamReader(rawIn, charset)) {
-            IOUtils.copy(in, out);
+             Reader r = new BufferedReader(new InputStreamReader(rawIn, charset))) {
+            char[] buf = new char[1024];
+            int len;
+            while ((len = r.read(buf, 0, buf.length)) > 0)
+                str.append(buf, 0, len);
         } catch (Exception e) {
             throw new IOException("Failed to fully read " + logfile + " using charset " + charset.name(), e);
         }
 
-        return out.toString();
+        return str.toString();
     }
 
     /**
