@@ -200,7 +200,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     private static class NodeSorter implements Comparator<Node> {
         @Override
         public int compare(Node o1, Node o2) {
-            return o1.getNodeName().compareTo(o2.getNodeName());
+            return o1 == Jenkins.get() ? -1 : (o2 == Jenkins.get() ? 1 : o1.getNodeName().compareTo(o2.getNodeName()));
         }
     }
 
