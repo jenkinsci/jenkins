@@ -110,5 +110,14 @@ public class CauseTest {
 
         assertTrue(baos.toString().isEmpty());
         baos.reset();
+
+        //Standard operation
+        //user userid  - getDisplayName() should be user
+        User user = User.getById("user", true);
+        Cause causeD = new Cause.UserIdCause(user.getId());
+        causeD.print(listener);
+
+        assertThat(baos.toString(), containsString(user.getDisplayName()));
+        baos.reset();
     }
 }
