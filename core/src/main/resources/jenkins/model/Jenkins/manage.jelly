@@ -53,10 +53,11 @@ THE SOFTWARE.
         <j:set var="icon" value="${m.iconClassName != null ? m.iconClassName : m.iconFileName}" />
         <j:if test="${icon!=null}">
           <div class="manage-option">
+          <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
+          ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconUrl, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
           <j:choose>
             <j:when test="${m.requiresConfirmation}">
               <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
                 <img class="icon" src="${iconUrl}" />
                 <dl>
                   <dt>${m.displayName}</dt>
@@ -67,7 +68,6 @@ THE SOFTWARE.
             </j:when>
             <j:when test="${m.requiresPOST}">
               <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
                 <img class="icon" src="${iconUrl}" alt="manage-option"/>
                 <dl>
                   <dt>${m.displayName}</dt>
@@ -78,7 +78,6 @@ THE SOFTWARE.
             </j:when>
             <j:otherwise>
               <a href="${m.urlName}" title="${m.displayName}">
-                <j:set var="iconUrl" value="${icon.startsWith('/') ? resURL+icon : imagesURL + '/48x48/' + icon}" />
                 <img class="icon" src="${iconUrl}" alt="manage-option"/>
                 <dl>
                   <dt>${m.displayName}</dt>
