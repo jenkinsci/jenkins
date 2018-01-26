@@ -699,7 +699,7 @@ var jenkinsRules = {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     },
     "INPUT.positive-number" : function(e) {
-        registerRegexpValidator(e,/[1-9]\d*/,"Not a positive integer");
+        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     },
 
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
