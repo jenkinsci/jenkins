@@ -31,6 +31,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
+import hudson.util.VersionNumber;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import jenkins.util.SystemProperties;
@@ -610,6 +611,19 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     public @CheckForNull Plugin getPlugin(String artifactId) {
         for (UpdateSite s : sites) {
             Plugin p = s.getPlugin(artifactId);
+            if (p!=null) return p;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the plugin with the given name from the first {@link UpdateSite} to contain it.
+     * @return Discovered {@link Plugin}. {@code null} if it cannot be found
+     */
+    public @CheckForNull Plugin getPlugin(String artifactId, VersionNumber minVersion) {
+        for (UpdateSite s : sites) {
+            Plugin p = s.getPlugin(artifactId);
+            if (minVersion.isNewerThan(new VersionNumber(p.version))) continue;
             if (p!=null) return p;
         }
         return null;
@@ -2159,7 +2173,36 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public int compareTo(PluginEntry o) {
             int r = category.compareTo(o.category);
             if (r==0) r = plugin.name.compareToIgnoreCase(o.plugin.name);
+            if (r==0) r = new VersionNumber(plugin.version).compareTo(new VersionNumber(o.plugin.version));
             return r;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            PluginEntry that = (PluginEntry) o;
+
+            if (!category.equals(that.category)) {
+                return false;
+            }
+            if (!plugin.name.equals(that.plugin.name)) {
+                return false;
+            }
+            return plugin.version.equals(that.plugin.version);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = category.hashCode();
+            result = 31 * result + plugin.name.hashCode();
+            result = 31 * result + plugin.version.hashCode();
+            return result;
         }
     }
 

@@ -641,7 +641,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public UpdateSite.Plugin getUpdateInfo() {
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
-        UpdateSite.Plugin p = uc.getPlugin(getShortName());
+        UpdateSite.Plugin p = uc.getPlugin(getShortName(), getVersionNumber());
         if(p!=null && p.isNewerThan(getVersion())) return p;
         return null;
     }
@@ -651,6 +651,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public UpdateSite.Plugin getInfo() {
         UpdateCenter uc = Jenkins.getInstance().getUpdateCenter();
+        UpdateSite.Plugin p = uc.getPlugin(getShortName(), getVersionNumber());
+        if (p != null) return p;
         return uc.getPlugin(getShortName());
     }
 

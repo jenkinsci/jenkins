@@ -1700,7 +1700,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (Map.Entry<String,VersionNumber> requestedPlugin : parseRequestedPlugins(configXml).entrySet()) {
             PluginWrapper pw = getPlugin(requestedPlugin.getKey());
             if (pw == null) { // install new
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to install", requestedPlugin.getKey());
                     continue;
@@ -1713,7 +1713,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
                 jobs.add(toInstall.deploy(true));
             } else if (pw.isOlderThan(requestedPlugin.getValue())) { // upgrade
-                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey());
+                UpdateSite.Plugin toInstall = uc.getPlugin(requestedPlugin.getKey(), requestedPlugin.getValue());
                 if (toInstall == null) {
                     LOGGER.log(WARNING, "No such plugin {0} to upgrade", requestedPlugin.getKey());
                     continue;

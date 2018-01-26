@@ -1,15 +1,15 @@
 function showhideCategories(hdr,on) {
   var table = hdr.parentNode.parentNode.parentNode,
       newDisplay = on ? '' : 'none',
-      nameList = new Array(), name;
+      nameList = new Array(), id;
   for (var i = 1; i < table.rows.length; i++) {
     if (on || table.rows[i].cells.length == 1)
       table.rows[i].style.display = newDisplay;
      else {
-      // Hide duplicate rows for a plugin when not viewing by-category
-      name = table.rows[i].cells[1].getAttribute('data');
-      if (nameList[name] == 1) table.rows[i].style.display = 'none';
-      nameList[name] = 1;
+      // Hide duplicate rows for a plugin:version when not viewing by-category
+      id = table.rows[i].cells[1].getAttribute('data-id');
+      if (nameList[id] == 1) table.rows[i].style.display = 'none';
+      nameList[id] = 1;
     }
   }
 }
@@ -28,8 +28,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             var items = document.getElementsBySelector(clz);
             for (var i=0; i<items.length; i++) {
                 var visible = (filter=="" || items[i].innerHTML.toLowerCase().indexOf(filter)>=0);
-                var name = items[i].getAttribute("name");
+                var name = items[i].cells && items[i].cells.length > 1
+                        ? items[i].cells[1].getAttribute('data-id')
+                        : items[i].getAttribute("name");
                 if (visible && name != null) {
+                    console.log(name);
                     if (encountered[name]) {
                         visible = false;
                     }

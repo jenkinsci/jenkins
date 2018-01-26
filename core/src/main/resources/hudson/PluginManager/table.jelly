@@ -92,7 +92,7 @@ THE SOFTWARE.
                              checked="${installedOk ? 'checked' : null}"
                              disabled="${installedOk ? 'disabled' : null}" onClick="flip(this);"/>
                     </td>
-                    <td class="pane" data="${h.xmlEscape(p.displayName)}">
+                    <td class="pane" data="${h.xmlEscape(p.displayName)}" data-id="${h.xmlEscape(p.name+':'+p.version)}">
                       <div>
                         <a href="${p.wiki}"><st:out value="${p.displayName}"/></a>
                       </div>
