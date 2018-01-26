@@ -33,6 +33,8 @@ import hudson.ProxyConfiguration;
 import hudson.security.ACLContext;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+
+import hudson.util.VersionNumber;
 import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.XmlFile;
@@ -2159,6 +2161,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         public int compareTo(PluginEntry o) {
             int r = category.compareTo(o.category);
             if (r==0) r = plugin.name.compareToIgnoreCase(o.plugin.name);
+            if (r==0) r = new VersionNumber(plugin.version).compareTo(new VersionNumber(o.plugin.version));
             return r;
         }
     }
