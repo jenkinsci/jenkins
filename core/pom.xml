@@ -247,6 +247,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c</version>
+    </dependency>
+    <dependency>
         <groupId>net.sf.kxml</groupId>
         <artifactId>kxml2</artifactId>
         <version>2.3.0</version>
