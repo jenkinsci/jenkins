@@ -1,6 +1,7 @@
 package jenkins.util;
 
 import hudson.security.ACL;
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
 import javax.annotation.Nonnull;
@@ -32,17 +33,6 @@ public class Timer {
     static ScheduledExecutorService executorService;
 
 
-    /** Avoids issues where the Timer threads are initialized in a context where they can receive a bogus contextClassLoader.
-     *  @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-49206">JENKINS-49206</>
-     */
-    static class ClassloaderSanityDaemonThreadFactory extends DaemonThreadFactory {
-        public Thread newThread(Runnable r) {
-            Thread t = super.newThread(r);
-            t.setContextClassLoader(Timer.class.getClassLoader());
-            return t;
-        }
-    }
-
     /**
      * Returns the scheduled executor service used by all timed tasks in Jenkins.
      *
@@ -54,7 +44,7 @@ public class Timer {
             // corePoolSize is set to 10, but will only be created if needed.
             // ScheduledThreadPoolExecutor "acts as a fixed-sized pool using corePoolSize threads"
             // TODO consider also wrapping in ContextResettingExecutorService
-             executorService = new ImpersonatingScheduledExecutorService(new ErrorLoggingScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassloaderSanityDaemonThreadFactory(), "jenkins.util.Timer")), ACL.SYSTEM);
+             executorService = new ImpersonatingScheduledExecutorService(new ErrorLoggingScheduledThreadPoolExecutor(10, new NamingThreadFactory(new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()), "jenkins.util.Timer")), ACL.SYSTEM);
         }
         return executorService;
     }
