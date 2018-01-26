@@ -46,11 +46,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.Date;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * Remembers the API token for this user, that can be used like a password to login.
@@ -72,6 +74,12 @@ public class ApiTokenProperty extends UserProperty {
     private static final boolean SHOW_TOKEN_TO_ADMINS = 
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
     
+    /**
+     * Determine the (log of) number of rounds we need to apply when hashing the token
+     * default value corresponds to BCrypt#GENSALT_DEFAULT_LOG2_ROUNDS
+     */
+    private static final int BCRYPT_LOG_ROUND =
+            SystemProperties.getInteger(ApiTokenProperty.class.getName() + ".bcryptLogRound", 10);
     
     @DataBoundConstructor
     public ApiTokenProperty() {
@@ -168,6 +176,12 @@ public class ApiTokenProperty extends UserProperty {
         }
 
         /**
+         * New approach:
+         * API Token are generated only when a user request a new one. The value is randomly generated
+         * without any link to the user and only displayed to him the first time. 
+         * We only store the hash for future comparisons.
+         * 
+         * Legacy approach:
          * When we are creating a default {@link ApiTokenProperty} for User,
          * we need to make sure it yields the same value for the same user,
          * because there's no guarantee that the property is saved.
@@ -176,6 +190,11 @@ public class ApiTokenProperty extends UserProperty {
          * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
         public ApiTokenProperty newInstance(User user) {
+            if(ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationDisabled()){
+                // recommended way
+                return null;
+            }
+
             return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
@@ -201,4 +220,46 @@ public class ApiTokenProperty extends UserProperty {
      * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
      */
     private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
+
+    private class HashedToken {
+        private String name;
+        // serve as an optimizer to avoid hashing all the token
+        private String prefix;
+        private String hash;
+        private Date creationDate;
+
+        private Date lastUseDate;
+        private Integer useCounter;
+
+        private boolean revoked;
+        private Date revokationDate;
+        private String revokedBy;
+
+        public HashedToken(String tokenValue){
+            this.creationDate = new Date();
+            this.hash = BCrypt.hashpw(tokenValue, BCrypt.gensalt(BCRYPT_LOG_ROUND));
+        }
+
+        public synchronized void incrementUse(){
+            if(revoked){
+                throw new RuntimeException("A revoked token cannot be used");
+            }
+            this.useCounter = useCounter == null ? 1 : useCounter + 1;
+            this.lastUseDate = new Date();
+        }
+
+        public void setName(String name){
+            this.name = name;
+        }
+
+        public synchronized void revoke(){
+            if(revoked){
+                throw new RuntimeException("The token is already revoked");
+            }
+            
+            this.revoked = true;
+            this.revokationDate = new Date();
+            this.revokedBy = Jenkins.getAuthentication().getName();
+        }
+    }
 }
