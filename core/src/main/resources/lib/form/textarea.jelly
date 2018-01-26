@@ -43,6 +43,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="default">
       The default value of the text box, in case both @value is and 'instance[field]' is null.
+      If not set, will look for instance's {{field}}_default public constant.
     </st:attribute>
     <st:attribute name="checkUrl">
       If specified, the value entered in this input field will be checked (via AJAX)
@@ -70,7 +71,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <f:prepareDatabinding />
-  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="default" value="${attrs.default ?: instance[attrs.field+'_default'] ?: ''}"/>
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}" />
   <j:if test="${attrs['previewEndpoint']!=null || attrs['codemirror-mode']!=null}">
     <st:adjunct includes="lib.form.textarea.textarea"/>

@@ -82,7 +82,8 @@ THE SOFTWARE.
       The item collection to loop over. Required unless @field is given. 
     </st:attribute>
     <st:attribute name="default">
-      Use this collection for items if items or @field is null 
+      Use this collection for items if items or @field is null
+      If not set, will look for instance's {{field}}_default public constant.
     </st:attribute>
     <st:attribute name="noAddButton">
       true if the default 'add' button (that adds a new copy) shouldn't be displayed.
@@ -111,7 +112,8 @@ THE SOFTWARE.
     <j:when test="${attrs.field!=null}">
       <j:set var="name" value="${field}"/>
       <j:set var="var" value="instance"/>
-      <j:set var="items" value="${instance[name] ?: attrs.default}"/>
+      <j:set var="default" value="${attrs.default ?: instance[attrs.field+'_default'] ?: ''}"/>
+      <j:set var="items" value="${instance[name] ?: default}"/>
 
       <!-- and expose update descriptor to the body of this tag -->
       <j:set var="descriptor" value="${descriptor.getPropertyType(instance,field).itemTypeDescriptorOrDie}" />
