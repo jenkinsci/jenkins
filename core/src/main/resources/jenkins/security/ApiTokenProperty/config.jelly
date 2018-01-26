@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The MIT License
+
+Copyright 2018 CloudBees, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
+    <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
+    
+    <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('apiToken')}">
+        <ul class="token-list">
+            <j:forEach var="token" items="${instance.tokenList}">
+                <li class="token-list-item" name="tokenStore">
+                    <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
+                    <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
+    
+                    <j:set var="daysOld" value="${token.numDaysCreation}" />
+                    <j:set var="oldClazz" value="age-ok" />
+                    <j:if test="${daysOld > 180}">
+                        <j:set var="oldClazz" value="age-mmmh" />
+                        <j:if test="${daysOld > 360}">
+                            <j:set var="oldClazz" value="age-argh" />
+                        </j:if>
+                    </j:if>
+                    <span class="token-creation ${oldClazz}">${%TokenCreation(daysOld)}</span>
+
+                    <span class="to-right">
+                        <j:set var="useCounter" value="${token.useCounter}" />
+                        <j:choose>
+                            <j:when test="${useCounter > 0}">
+                                <span class="token-use-counter">
+                                    ${%TokenLastUse(useCounter, token.numDaysUse)}
+                                </span>
+                            </j:when>
+                            <j:otherwise>
+                                <span class="token-use-counter">
+                                    <b title="${%TokenNeverUsed.Title}">
+                                        <l:icon class="icon-warning icon-sm"/>
+                                        ${%TokenNeverUsed}
+                                    </b>
+                                </span>
+                            </j:otherwise>
+                        </j:choose>
+                        <a href="#" onclick="return revokeToken(this)" class="token-revoke"
+                                    data-confirm="${%ConfirmRevokeSingle}"
+                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
+                            <l:icon class="icon-text-error icon-sm"/>
+                        </a>
+                    </span>
+                </li>
+            </j:forEach>
+            <li class="token-list-item list-empty">
+                <div class="list-empty-message">${%NoTokenYet}</div>
+            </li>
+        </ul>
+    </f:entry>
+
+    <j:if test="${instance.hasCurrentUserPermissionToGenerateTokenForThisUser()}">
+        <f:advanced title="${%Generate new API Token}" align="left">
+            <f:entry title="New Token">
+                <f:textbox name="newTokenName" placeholder="${%Default name}" style="width: 40%; display: inline-block"/>
+                <f:textbox id="newTokenValue" value="token-value-will-be-displayed-here" clazz="fixed-width" readonly="readonly" style="width: 40%; display: none" />
+                <span class="yui-button token-save" style="vertical-align: baseline;">
+                    <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">Save</button>
+                </span>
+                <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
+                <div class="warning" style="margin-top: 5px;">${%TokenDisplayedOnce}</div>
+            </f:entry>
+        </f:advanced>
+    </j:if>
+</j:jelly>

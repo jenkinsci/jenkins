@@ -1,5 +1,12 @@
 <div>
-    This API token can be used for authenticating yourself in the REST API call.
-    See <a href="https://jenkins.io/redirect/api-token">our wiki</a> for more details.
-    The API token should be protected like your password, as it allows other people to access Jenkins as you.
+    The API tokens can be used for authenticating yourself in the REST API call.
+    See <a href="https://jenkins.io/redirect/api-token">our wiki</a> for more details.<br/>
+    The associated username with the tokens is the regular one of your account.<br/>
+    <br/>
+    The best practices in terms of tokens are:
+    <ul>
+        <li>Use a different token for each application (if one application is compromised, you do not loose data from other)</li>
+        <li>Regenerate the tokens every x weeks/months. We put an indicator concerning the age of the token.</li>
+        <li>Protect it like your password, as it allows other people to access Jenkins as you.</li>
+    </ul>
 </div>

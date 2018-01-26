@@ -23,9 +23,11 @@
  */
 package jenkins.security;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.Extension;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.util.XStream2;
 import jenkins.util.SystemProperties;
-import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
@@ -34,25 +36,30 @@ import hudson.security.ACL;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * Remembers the API token for this user, that can be used like a password to login.
@@ -63,113 +70,182 @@ import org.mindrot.jbcrypt.BCrypt;
  * @since 1.426
  */
 public class ApiTokenProperty extends UserProperty {
-    private volatile Secret apiToken;
-
-    /**
-     * If enabled, shows API tokens to users with {@link Jenkins#ADMINISTER) permissions.
-     * Disabled by default due to the security reasons.
-     * If enabled, it restores the original Jenkins behavior (SECURITY-200).
-     * @since 1.638
-     */
-    private static final boolean SHOW_TOKEN_TO_ADMINS = 
-            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
+    private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
+    
+    private transient volatile Secret apiToken;
+    private ApiTokenStore tokenStore;
     
     /**
-     * Determine the (log of) number of rounds we need to apply when hashing the token
-     * default value corresponds to BCrypt#GENSALT_DEFAULT_LOG2_ROUNDS
+     * If enabled, the users with {@link Jenkins#ADMINISTER) permissions can generate new tokens for
+     * other users. Normally only a user can generate tokens for himself.
+     * Disabled by default due to the security reasons.
+     * If enabled, it restores the original Jenkins behavior (SECURITY-200).
+     * 
+     * @since 1.638
      */
-    private static final int BCRYPT_LOG_ROUND =
-            SystemProperties.getInteger(ApiTokenProperty.class.getName() + ".bcryptLogRound", 10);
+    private static final boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
+            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
     
     @DataBoundConstructor
     public ApiTokenProperty() {
-        _changeApiToken();
+        this.init();
     }
-
+    
+    public ApiTokenProperty readResolve() {
+        this.init();
+        return this;
+    }
+    
+    private void init() {
+        if (this.tokenStore == null) {
+            this.tokenStore = new ApiTokenStore();
+        }
+    }
+    
     /**
      * We don't let the external code set the API token,
      * but for the initial value of the token we need to compute the seed by ourselves.
      */
     /*package*/ ApiTokenProperty(String seed) {
         apiToken = Secret.fromString(seed);
+        this.init();
     }
-
+    
     /**
      * Gets the API token.
      * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
-     * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_TOKEN_TO_ADMINS}.
-     * 
+     * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #ADMIN_CAN_GENERATE_NEW_TOKENS}.
+     *
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
      * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
+    @Deprecated
     public String getApiToken() {
-        return hasPermissionToSeeToken() ? getApiTokenInsecure() 
-                : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
+        LOGGER.log(Level.WARNING, "Deprecated usage of getApiToken");
+        return "deprecated";
     }
     
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    /*package*/ String getApiTokenInsecure() {
-        String p = apiToken.getPlainText();
-        if (p.equals(Util.getDigestOf(Jenkins.getInstance().getSecretKey()+":"+user.getId()))) {
-            // if the current token is the initial value created by pre SECURITY-49 Jenkins, we can't use that.
-            // force using the newer value
-            apiToken = Secret.fromString(p=API_KEY_SEED.mac(user.getId()));
+    public boolean matchesPassword(String token) {
+        if(StringUtils.isBlank(token)){
+            return false;
         }
-        return Util.getDigestOf(p);
-    }
 
-    public boolean matchesPassword(String password) {
-        String token = getApiTokenInsecure();
-        // String.equals isn't constant time, but this is
-        return MessageDigest.isEqual(password.getBytes(Charset.forName("US-ASCII")),
-                token.getBytes(Charset.forName("US-ASCII")));
+        boolean matchFound = tokenStore.doesContainToken(token);
+        if (matchFound) {
+            try {
+                user.save();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Error saving the user after token match", e);
+            }
+        }
+        
+        return matchFound;
     }
     
-    private boolean hasPermissionToSeeToken() {
-        final Jenkins jenkins = Jenkins.getInstance();
+    /**
+     * @deprecated Each token can be revoked now and new tokens can be requested without altering existing ones.
+     */
+    @Deprecated
+    public void changeApiToken() throws IOException {
+        // just to keep the same level of security
+        user.checkPermission(Jenkins.ADMINISTER);
+        
+        LOGGER.log(Level.WARNING, "Deprecated usage of changeApiToken");
+    }
+    
+    // only for Jelly
+    @Restricted(NoExternalUse.class)
+    public List<ApiTokenStore.HashedToken> getTokenList() {
+        return tokenStore.getTokenListSortedByName();
+    }
+    
+    @Override
+    public UserProperty reconfigure(StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
+        if(form == null){
+            return this;
+        }
 
-        // Administrators can do whatever they want
-        if (SHOW_TOKEN_TO_ADMINS && jenkins.hasPermission(Jenkins.ADMINISTER)) {
+        Object tokenStoreData = form.get("tokenStore");
+        Map<String, JSONObject> tokenStoreTypedData = convertToTokenMap(tokenStoreData);
+        this.tokenStore.reconfigure(tokenStoreTypedData);
+        return this;
+    }
+    
+    private Map<String, JSONObject> convertToTokenMap(Object tokenStoreData) {
+        if (tokenStoreData == null) {
+            // in case there are no token
+            return Collections.emptyMap();
+        } else if (tokenStoreData instanceof JSONObject) {
+            // in case there is only one token
+            JSONObject singleTokenData = (JSONObject) tokenStoreData;
+            Map<String, JSONObject> result = new HashMap<>();
+            addJSONTokenIntoMap(result, singleTokenData);
+            return result;
+        } else if (tokenStoreData instanceof JSONArray) {
+            // in case there are multiple tokens
+            JSONArray tokenArray = ((JSONArray) tokenStoreData);
+            Map<String, JSONObject> result = new HashMap<>();
+            for (int i = 0; i < tokenArray.size(); i++) {
+                JSONObject tokenData = tokenArray.getJSONObject(i);
+                addJSONTokenIntoMap(result, tokenData);
+            }
+            return result;
+        }
+        
+        throw HttpResponses.error(400, "Unexpected class received for the token store information");
+    }
+    
+    private void addJSONTokenIntoMap(Map<String, JSONObject> tokenMap, JSONObject tokenData) {
+        String uuid = tokenData.getString("tokenUuid");
+        tokenMap.put(uuid, tokenData);
+    }
+    
+    // for Jelly view
+    @Restricted(NoExternalUse.class)
+    public boolean hasCurrentUserPermissionToGenerateTokenForThisUser() {
+        return hasPermissionToGenerateTokenForUser(user);
+    }
+
+    private static boolean hasPermissionToGenerateTokenForUser(User currentOwner) {
+        if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
             return true;
         }
         
-        
-        final User current = User.current();
-        if (current == null) { // Anonymous
+        User currentUser = User.current();
+        if (currentUser == null) { 
+            // Anonymous
             return false;
         }
         
-        // SYSTEM user is always eligible to see tokens
         if (Jenkins.getAuthentication() == ACL.SYSTEM) {
+            // SYSTEM user is always eligible to see tokens
             return true;
         }
-             
-        //TODO: replace by IdStrategy in newer Jenkins versions
-        //return User.idStrategy().equals(user.getId(), current.getId());
-        return StringUtils.equals(user.getId(), current.getId());
+
+        return User.idStrategy().equals(currentOwner.getId(), currentUser.getId());
     }
 
-    public void changeApiToken() throws IOException {
-        user.checkPermission(Jenkins.ADMINISTER);
-        _changeApiToken();
-        user.save();
+    public static class ConverterImpl extends XStream2.PassthruConverter<ApiTokenProperty> {
+        public ConverterImpl(XStream2 xstream) {
+            super(xstream);
+        }
+        
+        @Override
+        protected void callback(ApiTokenProperty apiTokenProperty, UnmarshallingContext context) {
+            // support legacy configuration
+            if (apiTokenProperty.apiToken != null) {
+                apiTokenProperty.tokenStore.generateTokenFromLegacy(apiTokenProperty.apiToken);
+                OldDataMonitor.report(context, "@since TODO");
+            }
+            
+            apiTokenProperty.tokenStore.optimize();
+        }
     }
 
-    private void _changeApiToken() {
-        byte[] random = new byte[16];   // 16x8=128bit worth of randomness, since we use md5 digest as the API token
-        RANDOM.nextBytes(random);
-        apiToken = Secret.fromString(Util.toHexString(random));
-    }
-
-    @Override
-    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return this;
-    }
-
-    @Extension @Symbol("apiToken")
+    @Extension
+    @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
@@ -190,76 +266,117 @@ public class ApiTokenProperty extends UserProperty {
          * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
         public ApiTokenProperty newInstance(User user) {
-            if(ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationDisabled()){
+            if (ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationDisabled()) {
                 // recommended way
                 return null;
             }
 
+            return forceNewInstance(user);
+        }
+        
+        private ApiTokenProperty forceNewInstance(User user) {
             return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
+        /**
+         * @deprecated use {@link #doGenerateNewToken(User, StaplerResponse, String)} instead
+         */
+        @Deprecated
         @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
+            LOGGER.log(Level.WARNING, "Deprecated action /changeToken used, consider using /generateNewToken instead");
+
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
-            if (p==null) {
-                p = newInstance(u);
+            if (p == null) {
+                p = forceNewInstance(u);
                 u.addProperty(p);
-            } else {
-                p.changeApiToken();
-            }
-            rsp.setHeader("script","document.getElementById('apiToken').value='"+p.getApiToken()+"'");
-            return HttpResponses.html(p.hasPermissionToSeeToken() 
-                    ? Messages.ApiTokenProperty_ChangeToken_Success() 
-                    : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
-        }
-    }
-
-    private static final SecureRandom RANDOM = new SecureRandom();
-
-    /**
-     * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
-     */
-    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class,"seed",16);
-
-    private class HashedToken {
-        private String name;
-        // serve as an optimizer to avoid hashing all the token
-        private String prefix;
-        private String hash;
-        private Date creationDate;
-
-        private Date lastUseDate;
-        private Integer useCounter;
-
-        private boolean revoked;
-        private Date revokationDate;
-        private String revokedBy;
-
-        public HashedToken(String tokenValue){
-            this.creationDate = new Date();
-            this.hash = BCrypt.hashpw(tokenValue, BCrypt.gensalt(BCRYPT_LOG_ROUND));
-        }
-
-        public synchronized void incrementUse(){
-            if(revoked){
-                throw new RuntimeException("A revoked token cannot be used");
-            }
-            this.useCounter = useCounter == null ? 1 : useCounter + 1;
-            this.lastUseDate = new Date();
-        }
-
-        public void setName(String name){
-            this.name = name;
-        }
-
-        public synchronized void revoke(){
-            if(revoked){
-                throw new RuntimeException("The token is already revoked");
             }
             
-            this.revoked = true;
-            this.revokationDate = new Date();
-            this.revokedBy = Jenkins.getAuthentication().getName();
+            String newValue = p.tokenStore.generateNewTokenAndReturnHiddenValue("Created using deprecated method");
+            
+            rsp.setHeader("script","document.getElementById('apiToken').value='"+newValue+"'");
+            return HttpResponses.html(p.hasCurrentUserPermissionToGenerateTokenForThisUser()
+                    ? Messages.ApiTokenProperty_ChangeToken_Success()
+                    : Messages.ApiTokenProperty_ChangeToken_SuccessHidden());
+    
+        }
+
+        @RequirePOST
+        public HttpResponse doGenerateNewToken(@AncestorInPath User u, StaplerResponse rsp, @QueryParameter String newTokenName) throws IOException {
+            if(!hasPermissionToGenerateTokenForUser(u)){
+                return HttpResponses.forbidden();
+            }
+            
+            if (StringUtils.isBlank(newTokenName)) {
+                return HttpResponses.errorJSON("The name cannot be empty");
+            }
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                p = forceNewInstance(u);
+                u.addProperty(p);
+            }
+            
+            String valueToDisplayOnce = p.tokenStore.generateNewTokenAndReturnHiddenValue(newTokenName);
+            u.save();
+            
+            return HttpResponses.okJSON(new HashMap<String, String>() {{ 
+                put("tokenValue", valueToDisplayOnce); 
+            }});
+        }
+        
+        @RequirePOST
+        public HttpResponse doRename(@AncestorInPath User u,
+                                     @QueryParameter String tokenId, @QueryParameter String newName) throws IOException {
+            // only current user + administrator can rename token
+            u.checkPermission(Jenkins.ADMINISTER);
+    
+            if (StringUtils.isBlank(newName)) {
+                return HttpResponses.errorJSON("The name cannot be empty");
+            }
+            if(StringUtils.isBlank(tokenId)){
+                // using the web UI this should not occur
+                return HttpResponses.errorWithoutStack(400, "The tokenId cannot be empty");
+            }
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+            }
+            
+            p.tokenStore.renameToken(tokenId, newName);
+            u.save();
+            
+            return HttpResponses.ok();
+        }
+        
+        @RequirePOST
+        public HttpResponse doRevoke(@AncestorInPath User u,
+                                     @QueryParameter String tokenId) throws IOException {
+            // only current user + administrator can revoke token
+            u.checkPermission(Jenkins.ADMINISTER);
+            
+            if(StringUtils.isBlank(tokenId)){
+                // using the web UI this should not occur
+                return HttpResponses.errorWithoutStack(400, "The tokenId cannot be empty");
+            }
+            
+            ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
+            if (p == null) {
+                return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
+            }
+            
+            p.tokenStore.revokeToken(tokenId);
+            u.save();
+            
+            return HttpResponses.ok();
         }
     }
+    
+    /**
+     * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
+     * @deprecated only used for the migration of data from previous save
+     */
+    @Deprecated
+    private static final HMACConfidentialKey API_KEY_SEED = new HMACConfidentialKey(ApiTokenProperty.class, "seed", 16);
 }
