@@ -270,11 +270,32 @@ pre.console {
 
 .setting-name {
   white-space: nowrap;
+  padding: 10px 10px 0 0;
 }
 
 .setting-main {
   width: 100%; /* try to make this column as big as possible. */
+  vertical-align: middle;
 }
+
+.setting-main select{
+  padding: 6px;
+}
+
+.setting-main input[type="checkbox"] {
+    margin-top: 10px;
+}
+
+.radio-block-start input[type="radio"] {
+    margin-left: 6px;
+    vertical-align: bottom;
+    margin-bottom: 2px;
+}
+
+.optional-block-start input[type="checkbox"] {
+    margin-left: 6px;
+}
+
 .setting-help {
   width: 16px;
   vertical-align: middle;
