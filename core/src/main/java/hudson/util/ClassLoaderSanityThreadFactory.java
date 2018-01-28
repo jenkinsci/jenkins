@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  *   in a context where they would receive a customized {@link Thread#contextClassLoader} that was never meant to be used.
  *
  *  Commonly this is a problem for Groovy use, where this may result in memory leaks.
- *  @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-49206">JENKINS-49206</>
+ *  @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-49206">JENKINS-49206</a>
  */
 public class ClassLoaderSanityThreadFactory implements ThreadFactory {
     private final ThreadFactory delegate;
