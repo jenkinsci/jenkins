@@ -982,23 +982,28 @@ public abstract class View extends AbstractModelObject implements AccessControll
      * Subtypes should override the {@link #submit(StaplerRequest)} method.
      */
     @RequirePOST
-    public final synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
-        checkPermission(CONFIGURE);
-
-        submit(req);
-
-        description = Util.nullify(req.getParameter("description"));
-        filterExecutors = req.getParameter("filterExecutors") != null;
-        filterQueue = req.getParameter("filterQueue") != null;
-
-        rename(req.getParameter("name"));
-
-        getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
-        updateTransientActions();  
-
-        save();
-
-        FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
+    public final void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException, FormException {
+        final ItemGroup parent = Jenkins.getInstance();
+        synchronized (parent) {
+            synchronized (this) {
+                checkPermission(CONFIGURE);
+		
+                submit(req);
+		
+                description = Util.nullify(req.getParameter("description"));
+                filterExecutors = req.getParameter("filterExecutors") != null;
+                filterQueue = req.getParameter("filterQueue") != null;
+		
+                rename(req.getParameter("name"));
+		
+                getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+                updateTransientActions();  
+		
+                save();
+		
+                FormApply.success("../" + Util.rawEncode(name)).generateResponse(req,rsp,this);
+            }
+        }
     }
 
     /**
