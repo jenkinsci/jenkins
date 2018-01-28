@@ -416,7 +416,7 @@ public abstract class Cause {
         /**
          * Constructor.
          * @param userId User ID. {@code null} if the user is unknown.
-         * @since TODO
+         * @since 2.96
          */
         public UserIdCause(@CheckForNull String userId) {
             this.userId = userId;

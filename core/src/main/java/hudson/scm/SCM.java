@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +87,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(SCM.class.getName());
 
     /** JENKINS-35098: discouraged */
     @SuppressWarnings("FieldMayBeFinal")
@@ -143,7 +147,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             }
             return autoBrowserHolder.get();
         } else {
-            return guessBrowser();
+            try {
+                return guessBrowser();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return null;
+            }
         }
     }
 

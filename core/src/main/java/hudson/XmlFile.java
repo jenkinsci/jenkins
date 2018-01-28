@@ -159,10 +159,25 @@ public final class XmlFile {
      *      if the XML representation is completely new.
      */
     public Object unmarshal( Object o ) throws IOException {
+        return unmarshal(o, false);
+    }
 
+    /**
+     * Variant of {@link #unmarshal(Object)} applying {@link XStream2#unmarshal(HierarchicalStreamReader, Object, DataHolder, boolean)}.
+     * @since 2.99
+     */
+    public Object unmarshalNullingOut(Object o) throws IOException {
+        return unmarshal(o, true);
+    }
+
+    private Object unmarshal(Object o, boolean nullOut) throws IOException {
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             // TODO: expose XStream the driver from XStream
-            return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
+            if (nullOut) {
+                return ((XStream2) xs).unmarshal(DEFAULT_DRIVER.createReader(in), o, null, true);
+            } else {
+                return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
+            }
         } catch (RuntimeException | Error e) {
             throw new IOException("Unable to read "+file,e);
         }

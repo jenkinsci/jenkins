@@ -519,7 +519,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * Called upon install state update.
      * @param state the new install state.
-     * @since FIXME
+     * @since 2.94
      */
     public void onInstallStateUpdate(InstallState state) {
         if (state.isSetupComplete()) {
@@ -531,7 +531,7 @@ public class SetupWizard extends PageDecorator {
 
     /**
      * Returns whether the setup wizard filter is currently registered.
-     * @since FIXME
+     * @since 2.94
      */
     public boolean hasSetupWizardFilter() {
         return PluginServletFilter.hasFilter(FORCE_SETUP_WIZARD_FILTER);

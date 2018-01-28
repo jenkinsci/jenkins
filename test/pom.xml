@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.98-SNAPSHOT</version>
+    <version>2.104-SNAPSHOT</version>
   </parent>
 
   <artifactId>test</artifactId>
@@ -223,6 +223,31 @@ THE SOFTWARE.
         <artifactId>maven-stapler-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>old-remoting-for-test</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <!-- we use copy as this is a dependency from outside the reactor -->
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>${remoting.minimum.supported.version}</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

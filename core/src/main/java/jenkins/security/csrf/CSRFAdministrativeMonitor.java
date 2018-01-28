@@ -33,7 +33,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * Monitor that the CSRF protection is enabled on the application.
  *
- * @since TODO
+ * @since 2.85
  */
 @Extension
 @Symbol("csrf")
