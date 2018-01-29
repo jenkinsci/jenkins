@@ -24,6 +24,7 @@
 package jenkins.security;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -74,15 +75,12 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class ApiTokenProperty extends UserProperty {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
     
-    private volatile Secret apiToken;
-    private ApiTokenStore tokenStore;
-    
     /**
      * If enabled, the users with {@link Jenkins#ADMINISTER) permissions can generate new tokens for
      * other users. Normally only a user can generate tokens for himself.
      * Disabled by default due to the security reasons.
      * If enabled, it restores the original Jenkins behavior (SECURITY-200).
-     * 
+     *
      * @since 1.638
      */
     private static final boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
@@ -90,6 +88,9 @@ public class ApiTokenProperty extends UserProperty {
     
     private static final boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
+
+    private volatile Secret apiToken;
+    private ApiTokenStore tokenStore;
     
     @DataBoundConstructor
     public ApiTokenProperty() {
@@ -130,13 +131,16 @@ public class ApiTokenProperty extends UserProperty {
      * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
+    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
         LOGGER.log(Level.WARNING, "Deprecated usage of getApiToken");
         if(this.apiToken == null){
             return "deprecated";
         }
-    
-        return hasPermissionToSeeToken() ? getApiTokenInsecure() : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
+        
+        return hasPermissionToSeeToken()
+                ? getApiTokenInsecure()
+                : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
     }
     
     @Nonnull

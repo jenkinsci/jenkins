@@ -23,6 +23,7 @@
  */
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.Secret;
@@ -34,10 +35,15 @@ import org.mindrot.jbcrypt.BCrypt;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,12 +66,14 @@ public class ApiTokenStore {
      * default value corresponds to 
      * BCrypt#GENSALT_DEFAULT_LOG2_ROUNDS is 10 which is way too small in 2018
      */
-    private static final int BCRYPT_LOG_ROUND =
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static int BCRYPT_LOG_ROUND =
             SystemProperties.getInteger(ApiTokenStore.class.getName() + ".bcryptLogRound", 13);
     /**
      * Determine the number of attempt to generate an unique prefix (over 4096 possibilities) that is not currently used
      */
-    private static final int MAX_ATTEMPTS =
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static final int MAX_ATTEMPTS =
             SystemProperties.getInteger(ApiTokenStore.class.getName() + ".maxAttempt", 100);
     
     private static final int TOKEN_LENGTH_V2 = 36;
@@ -74,6 +82,12 @@ public class ApiTokenStore {
     private static final String HASH_VERSION = "2";
     
     private static final String LEGACY_PREFIX = "";
+
+    /**
+     * Cache the computation of hash in order to speed up API call that were already verified some times ago
+     * Does not keep deleted data alive, just optimize the computation of the hashes.
+     */
+    private static final HashCache HASH_CACHE = new HashCache();
     
     private List<HashedToken> tokenList;
     private transient Map<String, Node<HashedToken>> prefixToTokenList;
@@ -94,6 +108,7 @@ public class ApiTokenStore {
         this.prefixToTokenList = new HashMap<>();
     }
     
+    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public synchronized @Nonnull List<HashedToken> getTokenListSortedByName() {
         List<ApiTokenStore.HashedToken> sortedTokenList = tokenList.stream()
                 .sorted(SORT_BY_LOWERCASED_NAME)
@@ -212,8 +227,10 @@ public class ApiTokenStore {
         return tokenTheUserWillUse;
     }
     
+    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     private @Nonnull String hashSecret(@Nonnull String secretValue) {
-        return BCrypt.hashpw(secretValue, BCrypt.gensalt(BCRYPT_LOG_ROUND, RANDOM));
+        String salt = BCrypt.gensalt(BCRYPT_LOG_ROUND, RANDOM);
+        return BCrypt.hashpw(secretValue, salt);
     }
     
     private @Nonnull String generatePrefix() {
@@ -239,8 +256,10 @@ public class ApiTokenStore {
     /**
      * Generate random 3-hex-character
      */
+    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     private @Nonnull String generateRandomPrefix() {
         int prefixInteger = RANDOM.nextInt(4096);
+
         String prefixString = Integer.toHexString(prefixInteger);
         return StringUtils.leftPad(prefixString, 3, '0');
     }
@@ -289,11 +308,27 @@ public class ApiTokenStore {
     }
     
     private boolean searchMatchUsingPrefix(String prefix, String plainToken) {
+        String plainTokenCacheKey = HASH_CACHE.getCorrespondingCacheKey(plainToken);
+        String uuidFromCache = HASH_CACHE.getCachedUuid(plainTokenCacheKey);
+        if(uuidFromCache != null){
+            for (HashedToken token : tokenList) {
+                if (token.uuid.equals(uuidFromCache)) {
+                    LOGGER.log(Level.FINER, "Cache hit for prefix = ", prefix);
+                    token.incrementUse();
+                    HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, token.uuid);
+                    return true;
+                }
+            }
+        }
+        LOGGER.log(Level.FINER, "Cache miss for prefix = ", prefix);
+        
         Node<HashedToken> node = this.prefixToTokenList.get(prefix);
         while (node != null) {
             boolean matchFound = node.value.match(plainToken);
             if (matchFound) {
                 node.value.incrementUse();
+    
+                HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, node.value.uuid);
                 return true;
             } else {
                 node = node.next;
@@ -421,7 +456,10 @@ public class ApiTokenStore {
         public void rename(String newName) {
             this.name = newName;
         }
-        
+    
+        /**
+         * This operation should take some time (between 100ms and 1s)
+         */
         public boolean match(String plainToken) {
             return BCrypt.checkpw(plainToken, value.hash);
         }
@@ -464,6 +502,133 @@ public class ApiTokenStore {
         
         public void setName(String name) {
             this.name = name;
+        }
+    }
+    
+    public static class HashCache {
+        /**
+         * A "session" duration, meaning we do not compute the long hash each time but use a weak hash instead after the first success
+         */
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        public static long HASH_CACHE_TIMEOUT_IN_MS =
+                SystemProperties.getLong(ApiTokenStore.class.getName() + ".hashCacheTimeout", (long)(5 * 60 * 1000));
+        
+        /**
+         * At minimum we compute the long hash every 30 minutes
+         */
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        public static long HASH_CACHE_MAX_LIVETIME_IN_MS =
+                SystemProperties.getLong(ApiTokenStore.class.getName() + ".hashCacheMaxLivetime", (long)(30 * 60 * 1000));
+    
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        public static boolean HASH_CACHE_DISABLED =
+                SystemProperties.getBoolean(ApiTokenStore.class.getName() + ".hashCacheDisabled", false);
+    
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        public static int HASH_CACHE_MIN_SIZE_FOR_CLEANUP =
+                SystemProperties.getInteger(ApiTokenStore.class.getName() + ".hashCacheMinSizeForCleanup", 20);
+    
+        private static final byte[] HASH_CACHE_SALT;
+        static {
+            // no requirement to keep it between restart since the cache is temporary
+            SecureRandom random = new SecureRandom();
+            HASH_CACHE_SALT = new byte[16];
+            random.nextBytes(HASH_CACHE_SALT);
+        }
+    
+        private static final String HASH_ALGORITHM = "SHA-256";
+        
+        private final Map<String, CacheEntry> cache = new HashMap<>();
+    
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
+        public @Nonnull String getCorrespondingCacheKey(String plainToken){
+            if(HASH_CACHE_DISABLED){
+                return "cache-disabled";
+            }
+            byte[] hashedTokenBytes = hashWithSalt(plainToken.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashedTokenBytes);
+        }
+    
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
+        private @Nonnull byte[] hashWithSalt(byte[] tokenBytes){
+            MessageDigest digest;
+            try {
+                digest = MessageDigest.getInstance(HASH_ALGORITHM);
+            } catch (NoSuchAlgorithmException e) {
+                throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
+            }
+            digest.update(HASH_CACHE_SALT);
+            return digest.digest(tokenBytes);
+        }
+    
+        public synchronized @CheckForNull String getCachedUuid(String cacheKey){
+            if(HASH_CACHE_DISABLED){
+                return null;
+            }
+            
+            cleanup();
+            
+            if(cache.containsKey(cacheKey)){
+                CacheEntry entry = cache.get(cacheKey);
+                if(entry != null){
+                    if(entry.hasExpired()){
+                        cache.remove(cacheKey);
+                    }else{
+                        return entry.data;
+                    }
+                }
+            }
+
+            return null;
+        }
+    
+        private void cleanup(){
+            if(cache.size() < HASH_CACHE_MIN_SIZE_FOR_CLEANUP){
+                return;
+            }
+    
+            cache.entrySet().removeIf(entry -> entry.getValue().hasExpired());
+        }
+        
+        public synchronized void insertOrRefreshCache(String cacheKey, String uuid){
+            if(HASH_CACHE_DISABLED){
+                return;
+            }
+
+            CacheEntry entry = cache.get(cacheKey);
+            if(entry == null){
+                cache.put(cacheKey, new CacheEntry(uuid));
+            }else{
+                entry.touch();
+            }
+        }
+        
+        private static class CacheEntry {
+            LocalDateTime firstCheck;
+            LocalDateTime lastCheck;
+            String data;
+    
+            CacheEntry(String data){
+                this.data = data;
+                this.firstCheck = this.lastCheck = LocalDateTime.now();
+            }
+            
+            public void touch(){
+                this.lastCheck = LocalDateTime.now();
+            }
+            
+            public boolean hasExpired(){
+                LocalDateTime now = LocalDateTime.now();
+                if(now.isAfter(lastCheck.plus(HASH_CACHE_TIMEOUT_IN_MS, ChronoUnit.MILLIS))){
+                    // not recently used
+                    return true;
+                }
+                if(now.isAfter(firstCheck.plus(HASH_CACHE_MAX_LIVETIME_IN_MS, ChronoUnit.MILLIS))){
+                    // full check required after a certain time
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
