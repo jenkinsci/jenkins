@@ -27,7 +27,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="${%API Token}">
         <f:entry field="tokenGenerationOnCreationDisabled">
-            <f:checkbox title="${%Disable generation of API Token on user creation}"/>
+            <f:checkbox title="${%Disable generation of Legacy API Token on user creation}"/>
+        </f:entry>
+        <f:entry field="creationOfLegacyTokenDisabled">
+            <f:checkbox title="${%Disable capability of user without Legacy API Token to create new one}"/>
         </f:entry>
     </f:section>
 </j:jelly>

@@ -24,39 +24,12 @@
 package jenkins.security;
 
 import hudson.Extension;
-import hudson.Util;
-import hudson.model.AdministrativeMonitor;
-import hudson.model.Descriptor.FormException;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
-import hudson.security.ACL;
-import hudson.util.HttpResponses;
-import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.mindrot.jbcrypt.BCrypt;
-
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-import java.util.Date;
 
 /**
  * Configuration for the new token generation when a user is created
@@ -68,6 +41,7 @@ import java.util.Date;
 @Restricted(NoExternalUse.class)
 public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
     private boolean tokenGenerationOnCreationDisabled = false;
+    private boolean creationOfLegacyTokenDisabled = false;
     
     public static ApiTokenPropertyConfiguration get() {
         return Jenkins.get().getInjector().getInstance(ApiTokenPropertyConfiguration.class);
@@ -83,6 +57,15 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
 
     public void setTokenGenerationOnCreationDisabled(boolean tokenGenerationOnCreationDisabled) {
         this.tokenGenerationOnCreationDisabled = tokenGenerationOnCreationDisabled;
+        save();
+    }
+
+    public boolean isCreationOfLegacyTokenDisabled() {
+        return creationOfLegacyTokenDisabled;
+    }
+
+    public void setCreationOfLegacyTokenDisabled(boolean creationOfLegacyTokenDisabled) {
+        this.creationOfLegacyTokenDisabled = creationOfLegacyTokenDisabled;
         save();
     }
 

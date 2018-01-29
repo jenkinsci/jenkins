@@ -45,7 +45,6 @@ public class BasicHeaderProcessorTest {
      * Tests various ways to send the Basic auth.
      */
     @Test
-    @Ignore //TODO need to be fixed
     public void testVariousWaysToCall() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getById("foo", true);
@@ -113,7 +112,6 @@ public class BasicHeaderProcessorTest {
     }
 
     @Test
-    @Ignore //TODO need to be fixed
     public void testAuthHeaderCaseInSensitive() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");

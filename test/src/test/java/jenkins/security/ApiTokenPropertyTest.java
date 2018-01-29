@@ -37,7 +37,6 @@ public class ApiTokenPropertyTest {
      * Tests the UI interaction and authentication.
      */
     @Test
-    @Ignore //TODO need to be fixed
     public void basics() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.getById("foo", true);
@@ -68,7 +67,6 @@ public class ApiTokenPropertyTest {
     }
 
     @Test
-    @Ignore //TODO need to be fixed
     public void security49Upgrade() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
@@ -93,7 +91,6 @@ public class ApiTokenPropertyTest {
     
     @Issue("SECURITY-200")
     @Test
-    @Ignore //TODO need to be fixed
     public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.get("foo");
@@ -109,7 +106,6 @@ public class ApiTokenPropertyTest {
     
     @Issue("SECURITY-200")
     @Test
-    @Ignore //TODO need to be fixed
     public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import jenkins.security.ApiTokenPropertyConfiguration;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -122,6 +123,10 @@ public class SetupWizard extends PageDecorator {
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
     
+                    // Disable the legacy system of API Token
+                    ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenDisabled(true);
+                    ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationDisabled(true);
+
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 

@@ -27,13 +27,21 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout">
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
     
-    <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('apiToken')}">
+    <f:entry title="${%CurrentTokens(instance.tokenList.size())}" help="${descriptor.getHelpFile('tokenStore')}">
         <ul class="token-list">
             <j:forEach var="token" items="${instance.tokenList}">
-                <li class="token-list-item" name="tokenStore">
+                <j:set var="legacyClazz" value="" />
+                <j:if test="${token.isLegacy()}">
+                    <j:set var="legacyClazz" value="legacy-token" />
+                </j:if>
+                <li class="token-list-item ${legacyClazz}" name="tokenStore">
                     <input type="hidden" class="token-uuid-input" name="tokenUuid" value="${token.uuid}" />
                     <f:textbox clazz="token-name" name="tokenName" value="${token.name}" />
     
+                    <j:if test="${token.isLegacy()}">
+                        <l:icon class="icon-warning icon-sm" title="${%LegacyToken}"/>
+                    </j:if>
+                    
                     <j:set var="daysOld" value="${token.numDaysCreation}" />
                     <j:set var="oldClazz" value="age-ok" />
                     <j:if test="${daysOld > 180}">
@@ -43,7 +51,7 @@ THE SOFTWARE.
                         </j:if>
                     </j:if>
                     <span class="token-creation ${oldClazz}">${%TokenCreation(daysOld)}</span>
-
+                    
                     <span class="to-right">
                         <j:set var="useCounter" value="${token.useCounter}" />
                         <j:choose>
@@ -54,10 +62,10 @@ THE SOFTWARE.
                             </j:when>
                             <j:otherwise>
                                 <span class="token-use-counter">
-                                    <b title="${%TokenNeverUsed.Title}">
+                                    <strong title="${%TokenNeverUsed.Title}">
                                         <l:icon class="icon-warning icon-sm"/>
                                         ${%TokenNeverUsed}
-                                    </b>
+                                    </strong>
                                 </span>
                             </j:otherwise>
                         </j:choose>
@@ -75,7 +83,8 @@ THE SOFTWARE.
         </ul>
     </f:entry>
 
-    <j:if test="${instance.hasCurrentUserPermissionToGenerateTokenForThisUser()}">
+    <j:if test="${descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
+    <!--<j:if test="${instance == null || instance.hasCurrentUserPermissionToGenerateTokenForThisUser()}">-->
         <f:advanced title="${%Generate new API Token}" align="left">
             <f:entry title="New Token">
                 <f:textbox name="newTokenName" placeholder="${%Default name}" style="width: 40%; display: inline-block"/>
@@ -86,6 +95,16 @@ THE SOFTWARE.
                 <div class="error" style="margin-top: 5px; display: none;"><!-- filled in case of error --></div>
                 <div class="warning" style="margin-top: 5px;">${%TokenDisplayedOnce}</div>
             </f:entry>
+        </f:advanced>
+    </j:if>
+    
+    <!--TODO add if on apiToken non-nullability -->
+    <j:if test="${instance.mustDisplayLegacyApiToken()}">
+        <f:advanced title="${%Show Legacy API Token}" align="left">
+            <f:entry title="${%Legacy API Token}" field="apiToken">
+                <f:readOnlyTextbox id="apiToken" />
+            </f:entry>
+            <f:validateButton title="${%Change API Token}" method="changeToken" />
         </f:advanced>
     </j:if>
 </j:jelly>

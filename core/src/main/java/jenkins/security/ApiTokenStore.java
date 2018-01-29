@@ -31,6 +31,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.mindrot.jbcrypt.BCrypt;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.security.SecureRandom;
@@ -164,14 +165,31 @@ public class ApiTokenStore {
         }
     }
     
-    public synchronized void generateTokenFromLegacy(@Nonnull Secret apiToken) {
-        String tokenUserUseNormally = Util.getDigestOf(apiToken.getPlainText());
-        
+    public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken){
+        deleteAllLegacyTokens();
+        addLegacyToken(newLegacyApiToken);
+    }
+    
+    private void deleteAllLegacyTokens(){
+        // normally there is only one, but just in case
+        for (int i = tokenList.size() - 1; i >= 0; i--) {
+            HashedToken token = tokenList.get(i);
+            if (token.isLegacy()) {
+                tokenList.remove(i);
+            
+                removeTokenFromPrefixMap(token);
+            }
+        }
+    }
+    
+    private void addLegacyToken(@Nonnull Secret legacyToken){
+        String tokenUserUseNormally = Util.getDigestOf(legacyToken.getPlainText());
+    
         String secretValueHashed = this.hashSecret(tokenUserUseNormally);
-        
+    
         HashValue hashValue = new HashValue(LEGACY_VERSION, LEGACY_PREFIX, secretValueHashed);
         HashedToken token = HashedToken.buildNew(Messages.ApiTokenProperty_LegacyTokenName(), hashValue);
-        
+    
         this.addToken(token);
     }
     
@@ -285,15 +303,18 @@ public class ApiTokenStore {
         return false;
     }
     
-    public synchronized void revokeToken(@Nonnull String tokenId) {
+    public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenId) {
         for (int i = 0; i < tokenList.size(); i++) {
             HashedToken token = tokenList.get(i);
             if (token.uuid.equals(tokenId)) {
                 tokenList.remove(i);
                 
                 removeTokenFromPrefixMap(token);
+                return token;
             }
         }
+        
+        return null;
     }
     
     private void removeTokenFromPrefixMap(HashedToken token) {

@@ -38,6 +38,12 @@ ul.token-list li.token-list-item {
     font-size: 13px;
     line-height: 26px;
 }
+ul.token-list li.token-list-item.legacy-token {
+    padding: 8px 5px 8px 5px;
+    border: 2px solid #ffe262;
+    border-left-width: 5px;
+    border-right-width: 5px;
+}
 ul.token-list li.token-list-item.list-empty {
     display: none;
 }
@@ -60,7 +66,7 @@ ul.token-list li.token-list-item .token-creation{
     font-size: 90%;
 }
 ul.token-list li.token-list-item .token-creation.age-ok{
-    color: #487ba0;
+    color: #6d7680;
 }
 ul.token-list li.token-list-item .token-creation.age-mmmh{
     color: #e09307;
@@ -76,7 +82,7 @@ ul.token-list li.token-list-item .to-right{
 }
 ul.token-list li.token-list-item .token-use-counter{
     font-size: 90%;
-    color: #586069;
+    color: #6d7680;
 }
 ul.token-list li.token-list-item .token-revoke{
     margin-left: 10px;

@@ -127,7 +127,6 @@ public class CLIActionTest {
 
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
-    @Ignore //TODO need to be fixed
     public void authentication() throws Exception {
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
