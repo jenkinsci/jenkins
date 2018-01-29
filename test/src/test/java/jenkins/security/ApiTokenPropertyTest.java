@@ -14,6 +14,8 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.net.URL;
+
+import hudson.util.Scrambler;
 import jenkins.model.Jenkins;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -107,6 +109,7 @@ public class ApiTokenPropertyTest {
     @Issue("SECURITY-200")
     @Test
     public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");
         User bar = User.get("bar");
@@ -131,16 +134,14 @@ public class ApiTokenPropertyTest {
     
     @Nonnull
     private WebClient createClientForUser(final String id) throws Exception {
-        User u = User.getById(id, false);
+        User u = User.getById(id, true);
         
-        //TODO to be fixed
-//        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
-//        // Yes, we use the insecure call in the test stuff
-//        final String token = t.getApiTokenInsecure();
-        
+        final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        // Yes, we use the insecure call in the test stuff
+        final String token = t.getApiTokenInsecure();
         
         WebClient wc = j.createWebClient();
-//        wc.addRequestHeader("Authorization", "Basic " + Scrambler.scramble(id + ":" + token));
+        wc.addRequestHeader("Authorization", "Basic " + Scrambler.scramble(id + ":" + token));
         return wc;
     }
 
