@@ -35,6 +35,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.File;
 
@@ -42,10 +43,9 @@ import net.sf.json.JSONObject;
 import com.thoughtworks.xstream.XStream;
 import hudson.init.Initializer;
 import hudson.init.Terminator;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
-import org.kohsuke.stapler.HttpResponses;
 
 /**
  * Base class of Hudson plugin.
@@ -80,6 +80,8 @@ import org.kohsuke.stapler.HttpResponses;
  * @since 1.42
  */
 public abstract class Plugin implements Saveable {
+
+    private static final Logger LOGGER = Logger.getLogger(Plugin.class.getName());
 
     /**
      * You do not need to create custom subtypes:
@@ -224,12 +226,11 @@ public abstract class Plugin implements Saveable {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
-        if (path.startsWith("/META-INF/") || path.startsWith("/WEB-INF/")) {
-            throw HttpResponses.notFound();
+        if (path.isEmpty() || path.contains("..") || path.contains("%") || path.contains("META-INF") || path.contains("WEB-INF")) {
+            LOGGER.warning("rejecting possibly malicious " + req.getRequestURIWithQueryString());
+            rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         }
-
-        if(path.length()==0)
-            path = "/";
 
         // Stapler routes requests like the "/static/.../foo/bar/zot" to be treated like "/foo/bar/zot"
         // and this is used to serve long expiration header, by using Jenkins.VERSION_HASH as "..."
@@ -240,11 +241,7 @@ public abstract class Plugin implements Saveable {
         long expires = staticLink ? TimeUnit.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        try {
-            rsp.serveLocalizedFile(req, wrapper.baseResourceURL.toURI().resolve(new URI(null, '.' + path, null)).toURL(), expires);
-        } catch (URISyntaxException x) {
-            throw new IOException(x);
-        }
+        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL, '.' + path), expires);
     }
 
 //
