@@ -46,7 +46,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * See <a href="https://github.com/jenkinsci/remoting/blob/master/docs/workDir.md">Remoting Work Dir Documentation</a>.
  * 
  * @author Oleg Nenashev
- * @since TODO
+ * @since 2.72
  */
 public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSettings> {
     
