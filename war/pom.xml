@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci.main</groupId>
     <artifactId>pom</artifactId>
-    <version>2.100-SNAPSHOT</version>
+    <version>2.105-SNAPSHOT</version>
   </parent>
 
   <artifactId>jenkins-war</artifactId>
@@ -199,6 +199,8 @@ THE SOFTWARE.
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
+              <Remoting-Embedded-Version>${remoting.version}</Remoting-Embedded-Version>
+              <Remoting-Minimum-Supported-Version>${remoting.minimum.supported.version}</Remoting-Minimum-Supported-Version>
             </manifestEntries>
           </archive>
           <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->

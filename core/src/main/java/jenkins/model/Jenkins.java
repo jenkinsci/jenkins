@@ -106,7 +106,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
-import hudson.remoting.ClassFilter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -181,6 +180,7 @@ import jenkins.InitReactorRunner;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
@@ -283,7 +283,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static hudson.Util.*;
@@ -740,7 +739,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link Jenkins} singleton.
      * @return {@link Jenkins} instance
      * @throws IllegalStateException for the reasons that {@link #getInstanceOrNull} might return null
-     * @since FIXME
+     * @since 2.98
      */
     @Nonnull
     public static Jenkins get() throws IllegalStateException {
@@ -894,11 +893,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
-            try {
-                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
-            } catch (ClassFilter.ClassFilterException ex) {
-                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
-            }
+            ClassFilterImpl.register();
 
             // initialization consists of ...
             executeReactor( is,
@@ -3059,8 +3054,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
+        List<Handle> loadJobs = new ArrayList<>();
         for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
+            loadJobs.add(g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 public void run(Reactor session) throws Exception {
                     if(!Items.getConfigFile(subdir).exists()) {
                         //Does not have job config file, so it is not a jenkins job hence skip it
@@ -3070,10 +3066,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     items.put(item.getName(), item);
                     loadedNames.add(item.getName());
                 }
-            });
+            }));
         }
 
-        g.requires(JOB_LOADED).attains(COMPLETED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
+        g.requires(loadJobs.toArray(new Handle[loadJobs.size()])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
@@ -3246,6 +3242,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (JenkinsJVM.isJenkinsJVM()) {
                 JenkinsJVMAccess._setJenkinsJVM(oldJenkinsJVM);
             }
+            ClassFilterImpl.unregister();
         }
     }
 

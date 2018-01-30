@@ -193,13 +193,26 @@ public class Util {
 
         StringBuilder str = new StringBuilder((int)logfile.length());
 
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(logfile.toPath()), charset))) {
+        // We're not using Files.newBufferedReader() here because there is a
+        // difference in how an InputStreamReader constructed from a Charset and
+        // the reader returned by Files.newBufferedReader() handle malformed and
+        // unmappable byte sequences for the specified encoding; the latter is
+        // more picky and will throw a CharacterCodingException. See:
+        // https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
+        //
+        // As reported at https://issues.jenkins-ci.org/browse/JENKINS-49112
+        // Run.getLog() calls loadFile() to fully read the generated log file.
+        // Until charset handling is resolved (e.g. by implementing
+        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), malformed
+        // bytes will need to be tolerated.
+        try (InputStream rawIn = Files.newInputStream(fileToPath(logfile));
+             Reader r = new BufferedReader(new InputStreamReader(rawIn, charset))) {
             char[] buf = new char[1024];
             int len;
             while ((len = r.read(buf, 0, buf.length)) > 0)
                 str.append(buf, 0, len);
-        } catch (InvalidPathException e) {
-            throw new IOException(e);
+        } catch (Exception e) {
+            throw new IOException("Failed to fully read " + logfile + " using charset " + charset.name(), e);
         }
 
         return str.toString();
