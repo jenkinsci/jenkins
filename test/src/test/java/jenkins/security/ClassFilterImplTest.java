@@ -25,24 +25,25 @@
 package jenkins.security;
 
 import com.google.common.collect.LinkedListMultimap;
+import com.thoughtworks.xstream.XStream;
+import hudson.ExtensionList;
 import hudson.Launcher;
+import hudson.XmlFile;
+import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.model.Saveable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import jenkins.model.GlobalConfiguration;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -53,7 +54,6 @@ import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.WithoutJenkins;
 
 public class ClassFilterImplTest {
 
@@ -136,13 +136,26 @@ public class ClassFilterImplTest {
         config.save();
         config.obj = LinkedListMultimap.create();
         config.save();
-        assertThat(config.xml(), not(containsString("LinkedListMultimap")));
+        assertThat(config.getConfigFile().asString(), not(containsString("LinkedListMultimap")));
+        config.unrelated = "modified";
+        FileUtils.write(config.getConfigFile().getFile(), new XStream().toXML(config));
+        assertThat(config.getConfigFile().asString(), allOf(containsString("LinkedListMultimap"), containsString("modified")));
+        config.obj = null;
+        config.unrelated = null;
+        config.load();
+        assertNull(config.obj);
+        assertEquals("modified", config.unrelated);
+        Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
+        assertEquals(Collections.singleton(config), data.keySet());
+        assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://jenkins.io/redirect/class-filter/")));
     }
     @TestExtension("xstreamRequiresWhitelist")
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
-        String xml() throws IOException {
-            return getConfigFile().asString();
+        String unrelated;
+        @Override
+        protected XmlFile getConfigFile() {
+            return super.getConfigFile();
         }
     }
 

@@ -290,6 +290,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
+import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -2713,7 +2714,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return initLevel;
     }
 
-    public void setNumExecutors(int n) throws IOException {
+    /**
+     * Sets a number of executors.
+     * @param n Number of executors
+     * @throws IOException Failed to save the configuration
+     * @throws IllegalArgumentException Negative value has been passed
+     */
+    public void setNumExecutors(@Nonnegative int n) throws IOException, IllegalArgumentException {
+        if (n < 0) {
+            throw new IllegalArgumentException("Incorrect field \"# of executors\": " + n +". It should be a non-negative number.");
+        }
         if (this.numExecutors != n) {
             this.numExecutors = n;
             updateComputerList();
@@ -3054,8 +3064,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
+        List<Handle> loadJobs = new ArrayList<>();
         for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
+            loadJobs.add(g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 public void run(Reactor session) throws Exception {
                     if(!Items.getConfigFile(subdir).exists()) {
                         //Does not have job config file, so it is not a jenkins job hence skip it
@@ -3065,10 +3076,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     items.put(item.getName(), item);
                     loadedNames.add(item.getName());
                 }
-            });
+            }));
         }
 
-        g.requires(JOB_LOADED).attains(COMPLETED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
+        g.requires(loadJobs.toArray(new Handle[loadJobs.size()])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items

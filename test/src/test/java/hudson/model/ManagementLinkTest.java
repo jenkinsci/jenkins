@@ -55,7 +55,7 @@ public class ManagementLinkTest {
 
         for (int i=0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "id('management-links')//*[@class='link']/a[not(@onclick)]");
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[@class='manage-option']/a[not(@onclick)]");
             assertTrue(anchors.size()>=8);
             if (i==anchors.size())  return; // done
 
