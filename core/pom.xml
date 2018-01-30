@@ -246,15 +246,19 @@ THE SOFTWARE.
         </exclusion>
       </exclusions>
     </dependency>
+    <!--
+    still including the xpp3 driver to ensure backwards compatibilty
+    for other plugins that may be depending on it
+    -->
     <dependency>
       <groupId>xpp3</groupId>
       <artifactId>xpp3</artifactId>
       <version>1.1.4c</version>
     </dependency>
     <dependency>
-        <groupId>net.sf.kxml</groupId>
-        <artifactId>kxml2</artifactId>
-        <version>2.3.0</version>
+      <groupId>net.sf.kxml</groupId>
+      <artifactId>kxml2</artifactId>
+      <version>2.3.0</version>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>

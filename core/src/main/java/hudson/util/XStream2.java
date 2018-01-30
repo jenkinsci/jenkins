@@ -99,7 +99,7 @@ public class XStream2 extends XStream {
     private MapperInjectionPoint mapperInjectionPoint;
 
     /**
-     * Convinience method so we only have to change the driver in one place
+     * Convenience method so we only have to change the driver in one place
      * if we switch to something new in the future
      *
      * @return a new instance of the HierarchicalStreamDriver we want to use

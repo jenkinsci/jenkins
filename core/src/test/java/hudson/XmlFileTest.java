@@ -20,11 +20,10 @@ public class XmlFileTest {
     @Test
     public void canReadXml1_0Test() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_0.xml");
-        File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, configFile);
+        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -38,11 +37,10 @@ public class XmlFileTest {
     @Test(expected = SAXParseException.class)
     public void xml1_0_withSpecialCharsShouldFail() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_0_with_special_chars.xml");
-        File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, configFile);
+        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -53,11 +51,10 @@ public class XmlFileTest {
     @Test
     public void canReadXml1_1Test() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_1.xml");
-        File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, configFile);
+        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
@@ -68,11 +65,10 @@ public class XmlFileTest {
     @Test
     public void canReadXmlWithControlCharsTest() throws IOException {
         URL configUrl = getClass().getResource("/hudson/config_1_1_with_special_chars.xml");
-        File configFile = new File(configUrl.getFile());
         XStream2  xs = new XStream2();
         xs.alias("hudson", Jenkins.class);
 
-        XmlFile xmlFile =  new XmlFile(xs, configFile);
+        XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
             Node n = (Node) xmlFile.read();
             assertThat(n.getNumExecutors(), is(2));
