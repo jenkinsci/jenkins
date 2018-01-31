@@ -25,6 +25,7 @@ import static java.nio.file.attribute.PosixFilePermission.GROUP_WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
@@ -187,10 +188,6 @@ public class AtomicFileWriterTest {
         assertFalse(w.getTemporaryPath().toFile().exists());
         assertTrue(filePath.toFile().exists());
 
-        final Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(filePath);
-
-        for (PosixFilePermission perm : DEFAULT_GIVEN_PERMISSIONS) {
-            assertTrue("missing expected permission: " + perm, posixFilePermissions.contains(perm));
-        }
+        assertThat(Files.getPosixFilePermissions(filePath), equalTo(DEFAULT_GIVEN_PERMISSIONS));
     }
 }
