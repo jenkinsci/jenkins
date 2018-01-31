@@ -3,6 +3,7 @@ package hudson.util;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,15 +38,15 @@ public class AtomicFileWriterTest {
      */
     @Nullable
     private static Set<PosixFilePermission> DEFAULT_GIVEN_PERMISSIONS;
-    @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    @ClassRule
+    public static TemporaryFolder tmp = new TemporaryFolder();
     File af;
     AtomicFileWriter afw;
     String expectedContent = "hello world";
 
     @BeforeClass
     public static void computePermissions() throws IOException {
-        final File tempDir = com.google.common.io.Files.createTempDir();
+        final File tempDir = tmp.newFolder();
         final File newFile = new File(tempDir, "blah");
         assertThat(newFile.createNewFile(), is(true));
         if (!isPosixSupported(newFile)) {
