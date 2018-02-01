@@ -96,6 +96,12 @@ public abstract class ACL {
      */
     public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
 
+    /**
+     * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
+     * @param impl the implementation of {@link ACL#hasPermission(Authentication, Permission)}
+     * @return an adapter to that lambda
+     * @since FIXME
+     */
     public static ACL lambda(final BiFunction<Authentication, Permission, Boolean> impl) {
         return new ACL() {
             @Override
