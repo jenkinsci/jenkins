@@ -1472,6 +1472,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
         }
 
+        String nExecutors = req.getSubmittedForm().getString("numExecutors");
+        if (Integer.parseInt(nExecutors)<=0) {
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
+        }
+
         Node result = node.reconfigure(req, req.getSubmittedForm());
         Jenkins.getInstance().getNodesObject().replaceNode(this.getNode(), result);
 

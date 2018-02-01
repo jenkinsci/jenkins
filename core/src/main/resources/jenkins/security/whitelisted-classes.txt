@@ -112,8 +112,10 @@ java.util.LinkedList
 java.util.Locale
 java.util.Optional
 java.util.Properties
+java.util.RandomAccessSublist
 java.util.RegularEnumSet
 java.util.Stack
+java.util.Sublist
 java.util.TreeMap
 java.util.TreeMap$KeySet
 java.util.TreeSet
