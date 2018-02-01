@@ -4,14 +4,31 @@
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="correct" value="${%Correct}"/>
     </form>
-    ${%Dependency errors}
+    <p><strong>${%Dependency errors}:</strong></p>
+    <p>${%blurbOriginal}</p>
     <j:forEach items="${it.plugins}" var="plugin">
-    <dl>
-      <dt>${plugin.longName} v${plugin.version}</dt>
-      <j:forEach items="${plugin.dependencyErrors}" var="d">
-        <dd>${d}</dd>
-      </j:forEach>
-    </dl>
+      <j:if test="${plugin.hasOriginalDependencyErrors()}">
+        <dl>
+          <dt>${plugin.longName} version ${plugin.version}</dt>
+          <j:forEach items="${plugin.originalDependencyErrors}" var="d">
+            <dd>${d}</dd>
+          </j:forEach>
+        </dl>
+      </j:if>
     </j:forEach>
+    <j:if test="${it.hasAnyDerivedDependencyErrors()}">
+      <p><strong>${%Downstream dependency errors}:</strong></p>
+      <p>${%blurbDerived}</p>
+      <dl>
+        <j:forEach items="${it.plugins}" var="plugin">
+          <j:if test="${plugin.hasDerivedDependencyErrors()}">
+            <dt>${plugin.displayName} version ${plugin.version}</dt>
+            <j:forEach items="${plugin.derivedDependencyErrors}" var="d">
+              <dd>${d}</dd>
+            </j:forEach>
+          </j:if>
+        </j:forEach>
+      </dl>
+    </j:if>
   </div>
 </j:jelly>
