@@ -31,7 +31,6 @@ import javax.annotation.CheckForNull;
 import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents a unit of hand-over to {@link Executor} from {@link Queue}.
@@ -39,7 +38,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  * @since 1.377
  */
-@ExportedBean
 public final class WorkUnit {
     /**
      * Task to be executed.
@@ -79,6 +77,7 @@ public final class WorkUnit {
     /**
      * If the execution has already started, return the executable that was created.
      */
+    @CheckForNull
     public Executable getExecutable() {
         return executable;
     }

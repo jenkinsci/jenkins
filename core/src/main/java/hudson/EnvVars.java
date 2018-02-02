@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Environment variables.
@@ -88,7 +89,7 @@ public class EnvVars extends TreeMap<String,String> {
         super(CaseInsensitiveComparator.INSTANCE);
     }
 
-    public EnvVars(Map<String,String> m) {
+    public EnvVars(@Nonnull Map<String,String> m) {
         this();
         putAll(m);
 
@@ -100,7 +101,7 @@ public class EnvVars extends TreeMap<String,String> {
         }
     }
 
-    public EnvVars(EnvVars m) {
+    public EnvVars(@Nonnull EnvVars m) {
         // this constructor is so that in future we can get rid of the downcasting.
         this((Map)m);
     }
@@ -210,13 +211,15 @@ public class EnvVars extends TreeMap<String,String> {
         
         private final Comparator<? super String> comparator;
         
+        @Nonnull
         private final EnvVars target;
+        @Nonnull
         private final Map<String,String> overrides;
         
         private Map<String, Set<String>> refereeSetMap;
         private List<String> orderedVariableNames;
         
-        public OverrideOrderCalculator(EnvVars target, Map<String,String> overrides) {
+        public OverrideOrderCalculator(@Nonnull EnvVars target, @Nonnull Map<String,String> overrides) {
             comparator = target.comparator();
             this.target = target;
             this.overrides = overrides;
@@ -323,9 +326,9 @@ public class EnvVars extends TreeMap<String,String> {
     /**
      * Overrides all values in the map by the given map. Expressions in values will be expanded.
      * See {@link #override(String, String)}.
-     * @return this
+     * @return {@code this}
      */
-    public EnvVars overrideExpandingAll(Map<String,String> all) {
+    public EnvVars overrideExpandingAll(@Nonnull Map<String,String> all) {
         for (String key : new OverrideOrderCalculator(this, all).getOrderedVariableNames()) {
             override(key, expand(all.get(key)));
         }

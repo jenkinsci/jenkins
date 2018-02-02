@@ -28,6 +28,7 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -47,13 +48,14 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.tasks.Builder;
-import hudson.util.IOUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +87,8 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 @ExportedBean
 public abstract class SCM implements Describable<SCM>, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(SCM.class.getName());
 
     /** JENKINS-35098: discouraged */
     @SuppressWarnings("FieldMayBeFinal")
@@ -143,7 +147,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             }
             return autoBrowserHolder.get();
         } else {
-            return guessBrowser();
+            try {
+                return guessBrowser();
+            } catch (RuntimeException x) {
+                LOGGER.log(Level.WARNING, null, x);
+                return null;
+            }
         }
     }
 
@@ -296,7 +305,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *
      * <p>
      * This method is called after source code is checked out for the given build (that is, after
-     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File)} has finished successfully.)
+     * {@link SCM#checkout(Run, Launcher, FilePath, TaskListener, File, SCMRevisionState)} has finished successfully.)
      *
      * <p>
      * The obtained object is added to the build as an {@link Action} for later retrieval. As an optimization,
@@ -522,13 +531,27 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * (for example, SVN revision number.)
      *
      * <p>
-     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, which
-     * can be before/after your checkout method is invoked. So if you are going to provide information about
-     * check out (like SVN revision number that was checked out), be prepared for the possibility that the
-     * check out hasn't happened yet.
+     * This method is invoked whenever someone does {@link AbstractBuild#getEnvironment(TaskListener)}, via
+     * {@link #buildEnvVars(AbstractBuild, Map)}, which can be before/after your checkout method is invoked. So if you
+     * are going to provide information about check out (like SVN revision number that was checked out), be prepared
+     * for the possibility that the check out hasn't happened yet.
+     *
+     * @since 2.60
      */
-    // TODO is an equivalent for Run needed?
+    public void buildEnvironment(@Nonnull Run<?,?> build, @Nonnull Map<String,String> env) {
+        if (build instanceof AbstractBuild) {
+            buildEnvVars((AbstractBuild)build, env);
+        }
+    }
+
+    /**
+     * @deprecated in favor of {@link #buildEnvironment(Run, Map)}.
+     */
+    @Deprecated
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+        if (Util.isOverridden(SCM.class, getClass(), "buildEnvironment", Run.class, Map.class)) {
+            buildEnvironment(build, env);
+        }
         // default implementation is noop.
     }
 
@@ -539,12 +562,12 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Often SCMs have to create a directory inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- CVS
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * <p>
      * Many builders, like Ant or Maven, works off the specific user file
@@ -605,7 +628,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * Some SCMs support checking out multiple modules inside a workspace, which
      * creates directory layout like this:
      *
-     * <pre>
+     * <pre>{@code
      * workspace  <- workspace root
      *  +- xyz    <- directory checked out by SCM
      *      +- .svn
@@ -613,7 +636,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      *  +- abc    <- second module from different SCM root
      *      +- .svn
      *      +- build.xml  <- user file
-     * </pre>
+     * }</pre>
      *
      * This method takes the workspace root as a parameter, and is expected to return
      * all the module roots that were checked out from SCM.
@@ -673,7 +696,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
             createEmptyChangeLog(changelogFile, (TaskListener) listener, rootTag);
             return true;
         } catch (IOException e) {
-            e.printStackTrace(listener.error(e.getMessage()));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
             return false;
         }
     }
@@ -682,13 +705,8 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
      * @since 1.568
      */
     protected final void createEmptyChangeLog(@Nonnull File changelogFile, @Nonnull TaskListener listener, @Nonnull String rootTag) throws IOException {
-        FileWriter w = null;
-        try {
-            w = new FileWriter(changelogFile);
+        try (FileWriter w = new FileWriter(changelogFile)) {
             w.write("<"+rootTag +"/>");
-            w.close();
-        } finally {
-            IOUtils.closeQuietly(w);
         }
     }
 

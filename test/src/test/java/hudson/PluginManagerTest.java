@@ -30,7 +30,9 @@ import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
-import hudson.scm.SubversionSCM;
+import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
@@ -41,18 +43,22 @@ import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.filters.StringInputStream;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.Url;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 import org.jvnet.hudson.test.recipes.WithPluginManager;
@@ -162,7 +168,6 @@ public class PluginManagerTest {
                     // plugins should be already visible in the UberClassLoader
                     assertTrue(!activePlugins.isEmpty());
 
-                    uberClassLoader.loadClass(SubversionSCM.class.getName());
                     uberClassLoader.loadClass("hudson.plugins.tasks.Messages");
 
                     super.startPlugin(plugin);
@@ -209,6 +214,7 @@ public class PluginManagerTest {
     }
 
     @Test public void prevalidateConfig() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/tasks-update-center.json");
@@ -444,6 +450,16 @@ public class PluginManagerTest {
         assertTrue(pluginInfo.getString("dependencies") != null);
     }
 
+    @Issue("JENKINS-41684")
+    @Test
+    public void requireSystemDuringLoad() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
+        try (ACLContext context = ACL.as(User.get("underprivileged").impersonate())) {
+            dynamicLoad("require-system-during-load.hpi");
+        }
+    }
+
     private void dynamicLoad(String plugin) throws IOException, InterruptedException, RestartRequiredException {
         PluginManagerUtil.dynamicLoad(plugin, r.jenkins);
     }
@@ -453,6 +469,7 @@ public class PluginManagerTest {
     }
 
     @Test public void uploadDependencyResolution() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
         sites.clear();
         URL url = PluginManagerTest.class.getResource("/plugins/upload-test-update-center.json");
@@ -499,5 +516,21 @@ public class PluginManagerTest {
         // now the other plugins should have been found as dependencies and downloaded
         assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
         assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+    }
+
+    @Issue("JENKINS-44898")
+    @WithPlugin("plugin-first.hpi")
+    @Test
+    public void findResourceForPluginFirstClassLoader() throws Exception {
+        PluginWrapper w = r.jenkins.getPluginManager().getPlugin("plugin-first");
+        assertNotNull(w);
+
+        URL fromPlugin = w.classLoader.getResource("org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+        assertNotNull(fromPlugin);
+
+        // This is how UberClassLoader.findResource functions.
+        URL fromToolkit = ClassLoaderReflectionToolkit._findResource(w.classLoader, "org/jenkinsci/plugins/pluginfirst/HelloWorldBuilder/config.jelly");
+
+        assertEquals(fromPlugin, fromToolkit);
     }
 }

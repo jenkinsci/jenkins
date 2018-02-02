@@ -48,14 +48,22 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
     public GrantedAuthority[] getAuthorities() {
         String[] roles = this.roles;    // capture to a variable for immutability
 
-        GrantedAuthority[] r = new GrantedAuthority[roles==null ? 1 : roles.length+1];
-        r[0] = SecurityRealm.AUTHENTICATED_AUTHORITY;
-        if (roles != null) {
-            for (int i = 1; i < r.length; i++) {
-                r[i] = new GrantedAuthorityImpl(roles[i - 1]);
+        if(roles == null){
+            return new GrantedAuthority[]{SecurityRealm.AUTHENTICATED_AUTHORITY};
+        }
+
+        String authenticatedRole = SecurityRealm.AUTHENTICATED_AUTHORITY.getAuthority();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>(roles.length + 1);
+        grantedAuthorities.add(new GrantedAuthorityImpl(authenticatedRole));
+
+        for (int i = 0; i < roles.length; i++){
+            // to avoid having twice that role
+            if(!authenticatedRole.equals(roles[i])){
+                grantedAuthorities.add(new GrantedAuthorityImpl(roles[i]));
             }
         }
-        return r;
+
+        return grantedAuthorities.toArray(new GrantedAuthority[grantedAuthorities.size()]);
     }
 
     /**
@@ -90,14 +98,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
      */
     @Extension
     public static class SecurityListenerImpl extends SecurityListener {
-        @Override
-        protected void authenticated(@Nonnull UserDetails details) {
-        }
-
-        @Override
-        protected void failedToAuthenticate(@Nonnull String username) {
-        }
-
         @Override
         protected void loggedIn(@Nonnull String username) {
             try {
@@ -142,10 +142,6 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
 //            } catch (IOException e) {
 //                LOGGER.log(Level.WARNING, "Failed to record granted authorities",e);
 //            }
-        }
-
-        @Override
-        protected void loggedOut(@Nonnull String username) {
         }
     }
 

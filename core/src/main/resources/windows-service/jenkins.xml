@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2017, Sun Microsystems, Inc., Kohsuke Kawaguchi, Oleg Nenashev, and other Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  Windows service definition for Jenkins
+  Windows service definition for Jenkins.
 
   To uninstall, run "jenkins.exe stop" to stop the service, then "jenkins.exe uninstall" to uninstall the service.
   Both commands don't produce any output if the execution is successful. 
@@ -31,7 +31,7 @@ THE SOFTWARE.
 <service>
   <id>jenkins</id>
   <name>Jenkins</name>
-  <description>This service runs Jenkins continuous integration system.</description>
+  <description>This service runs Jenkins automation server.</description>
   <env name="JENKINS_HOME" value="%BASE%"/>
   <!--
     if you'd like to run Jenkins with a specific version of Java, specify a full path to java.exe.
@@ -47,4 +47,23 @@ THE SOFTWARE.
   <logmode>rotate</logmode>
 
   <onfailure action="restart" />
+  
+  <!-- 
+    In the case WinSW gets terminated and leaks the process, we want to abort
+    these runaway JAR processes on startup to prevent corruption of JENKINS_HOME.
+    So this extension is enabled by default.
+  -->
+  <extensions>
+    <!-- This is a sample configuration for the RunawayProcessKiller extension. -->
+    <extension enabled="true" 
+               className="winsw.Plugins.RunawayProcessKiller.RunawayProcessKillerExtension"
+               id="killOnStartup">
+      <pidfile>%BASE%\jenkins.pid</pidfile>
+      <stopTimeout>10000</stopTimeout>
+      <stopParentFirst>false</stopParentFirst>
+    </extension>
+  </extensions>
+  
+  <!-- See the referenced examples for more options -->
+  
 </service>

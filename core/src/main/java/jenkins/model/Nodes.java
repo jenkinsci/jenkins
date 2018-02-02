@@ -204,7 +204,7 @@ public class Nodes implements Saveable {
      * Replace node of given name.
      *
      * @return {@code true} if node was replaced.
-     * @since TODO
+     * @since 2.8
      */
     public boolean replaceNode(final Node oldOne, final @Nonnull Node newOne) throws IOException {
         if (oldOne == nodes.get(oldOne.getNodeName())) {

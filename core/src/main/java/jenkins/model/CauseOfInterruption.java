@@ -33,6 +33,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 import java.io.Serializable;
 import java.util.Collections;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Records why an {@linkplain Executor#interrupt() executor is interrupted}.
@@ -74,18 +75,46 @@ public abstract class CauseOfInterruption implements Serializable {
      * Indicates that the build was interrupted from UI.
      */
     public static final class UserInterruption extends CauseOfInterruption {
+        
+        @Nonnull
         private final String user;
 
-        public UserInterruption(User user) {
+        public UserInterruption(@Nonnull User user) {
             this.user = user.getId();
         }
 
-        public UserInterruption(String userId) {
+        public UserInterruption(@Nonnull String userId) {
             this.user = userId;
         }
 
-        @CheckForNull
+        /**
+         * Gets ID of the user, who interrupted the build.
+         * @return User ID
+         * @since 2.31
+         */
+        @Nonnull
+        public String getUserId() {
+            return user;
+        }
+        
+        /**
+         * Gets user, who caused the interruption.
+         * @return User instance if it can be located.
+         *         Result of {@link User#getUnknown()} otherwise
+         */
+        @Nonnull
         public User getUser() {
+            final User userInstance = getUserOrNull();
+            return userInstance != null ? userInstance : User.getUnknown();
+        }
+        
+        /**
+         * Gets user, who caused the interruption.
+         * @return User or {@code null} if it has not been found
+         * @since 2.31
+         */
+        @CheckForNull
+        public User getUserOrNull() {
             return User.get(user, false, Collections.emptyMap());
         }
 

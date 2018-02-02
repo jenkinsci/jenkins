@@ -26,7 +26,7 @@ THE SOFTWARE.
   This view is used to render the project change list like /job/<jobname>/changes
 
   While this default implementation can work with any SCM,
-  subclass may provide diffent implementation to present implementation-specific
+  subclass may provide different implementation to present implementation-specific
   information.
 
   The 'builds' variable contains the collection of AbstractBuild objects

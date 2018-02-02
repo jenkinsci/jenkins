@@ -138,6 +138,11 @@ public final class DownloadSettings extends GlobalConfiguration {
 
     @Extension public static final class Warning extends AdministrativeMonitor {
 
+        @Override
+        public String getDisplayName() {
+            return Messages.DownloadSettings_Warning_DisplayName();
+        }
+
         @Override public boolean isActivated() {
             return DownloadSettings.get().isUseBrowser();
         }

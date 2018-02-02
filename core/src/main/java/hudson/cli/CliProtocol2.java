@@ -20,12 +20,14 @@ import java.security.Signature;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
+ * @deprecated Implementing Remoting-based protocol.
  */
+@Deprecated
 @Extension @Symbol("cli2")
 public class CliProtocol2 extends CliProtocol {
     @Override
     public String getName() {
-        return "CLI2-connect";
+        return jenkins.CLI.get().isEnabled() ? "CLI2-connect" : null;
     }
 
     /**
@@ -36,12 +38,18 @@ public class CliProtocol2 extends CliProtocol {
         return false;
     }
 
+    @Override
+    public boolean isDeprecated() {
+        // We do not recommend it though it may be required for Remoting CLI
+        return true;
+    }
+    
     /**
      * {@inheritDoc}
      */
     @Override
     public String getDisplayName() {
-        return "Jenkins CLI Protocol/2";
+        return "Jenkins CLI Protocol/2 (deprecated)";
     }
 
     @Override

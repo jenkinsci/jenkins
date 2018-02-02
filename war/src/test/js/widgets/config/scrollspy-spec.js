@@ -68,7 +68,7 @@ describe("scrollspy-spec tests", function () {
             // to 'scrollToLog' (see above).
             manualScroller.scrollTo(100);
 
-            // Now, manually activate the the "General" section i.e. "activate" it.
+            // Now, manually activate the "General" section i.e. "activate" it.
             // This should result in 'config__build' being added to 'scrollToLog',
             // which is not what happens if you try scrolling to this last section
             // (see above).

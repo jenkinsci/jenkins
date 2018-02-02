@@ -68,6 +68,11 @@ public abstract class DescriptorVisibilityFilter implements ExtensionPoint {
         List<T> r = new ArrayList<T>();
         Class<?> contextClass = context == null ? null : context.getClass();
 
+        if (source == null) {
+            // JENKINS-40545: throwing instead of logging so jelly can amend the actual jelly expression that failed.
+            throw new NullPointerException("Descriptor list is null for context '" + contextClass + "' in thread '" + Thread.currentThread().getName() + "'");
+        }
+
         OUTER:
         for (T d : source) {
             if (LOGGER.isLoggable(Level.FINE)) {

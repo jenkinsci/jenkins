@@ -31,6 +31,7 @@ import com.sun.jna.Memory;
 import com.sun.jna.NativeLong;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.ptr.IntByReference;
+import hudson.os.PosixAPI;
 import jnr.posix.POSIX;
 import org.jvnet.libpam.impl.CLibrary.passwd;
 

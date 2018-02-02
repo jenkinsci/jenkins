@@ -7,6 +7,12 @@ package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
 import jenkins.model.Jenkins;
+import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
+import org.kohsuke.MetaInfServices;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.ForwardToView;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -40,6 +46,15 @@ public class CrumbFilter implements Filter {
         return h.getCrumbIssuer();
     }
 
+    @Restricted(NoExternalUse.class)
+    @MetaInfServices
+    public static class ErrorCustomizer implements RequirePOST.ErrorCustomizer {
+        @Override
+        public ForwardToView getForwardView() {
+            return new ForwardToView(CrumbFilter.class, "retry");
+        }
+    }
+
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
@@ -68,18 +83,22 @@ public class CrumbFilter implements Filter {
                 // compatibility for clients that hard-code the default crumb name up to Jenkins 1.TODO
                 extractCrumbFromRequest(httpRequest, ".crumb");
             }
+
+            // JENKINS-40344: Don't spam the log just because a session is expired
+            Level level = Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken ? Level.FINE : Level.WARNING;
+
             if (crumb != null) {
                 if (crumbIssuer.validateCrumb(httpRequest, crumbSalt, crumb)) {
                     valid = true;
                 } else {
-                    LOGGER.log(Level.WARNING, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
+                    LOGGER.log(level, "Found invalid crumb {0}.  Will check remaining parameters for a valid one...", crumb);
                 }
             }
 
             if (valid) {
                 chain.doFilter(request, response);
             } else {
-                LOGGER.log(Level.WARNING, "No valid crumb was included in request for {0}. Returning {1}.", new Object[] {httpRequest.getRequestURI(), HttpServletResponse.SC_FORBIDDEN});
+                LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication().getName(), HttpServletResponse.SC_FORBIDDEN});
                 httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
             }
         } else {

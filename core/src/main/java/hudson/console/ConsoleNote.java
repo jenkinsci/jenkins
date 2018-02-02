@@ -51,6 +51,9 @@ import java.util.Collection;
 import java.util.List;
 import com.jcraft.jzlib.GZIPInputStream;
 import com.jcraft.jzlib.GZIPOutputStream;
+import hudson.remoting.ClassFilter;
+import jenkins.security.HMACConfidentialKey;
+import jenkins.util.SystemProperties;
 
 /**
  * Data that hangs off from a console output.
@@ -94,8 +97,6 @@ import com.jcraft.jzlib.GZIPOutputStream;
  * {@link ConsoleNote} always sticks to a particular point in the console output.
  *
  * <p>
- * This design allows descendant processes of Hudson to emit {@link ConsoleNote}s. For example, Ant forked
- * by a shell forked by Hudson can put an encoded note in its stdout, and Hudson will correctly understands that.
  * The preamble and postamble includes a certain ANSI escape sequence designed in such a way to minimize garbage
  * if this output is observed by a human being directly.
  *
@@ -121,6 +122,15 @@ import com.jcraft.jzlib.GZIPOutputStream;
  * @since 1.349
  */
 public abstract class ConsoleNote<T> implements Serializable, Describable<ConsoleNote<?>>, ExtensionPoint {
+
+    private static final HMACConfidentialKey MAC = new HMACConfidentialKey(ConsoleNote.class, "MAC");
+    /**
+     * Allows historical build records with unsigned console notes to be displayed, at the expense of any security.
+     * Disables checking of {@link #MAC} so do not set this flag unless you completely trust all users capable of affecting build output,
+     * which in practice means that all SCM committers as well as all Jenkins users with any non-read-only access are consider administrators.
+     */
+    static /* nonfinal for tests & script console */ boolean INSECURE = SystemProperties.getBoolean(ConsoleNote.class.getName() + ".INSECURE");
+
     /**
      * When the line of a console output that this annotation is attached is read by someone,
      * a new {@link ConsoleNote} is de-serialized and this method is invoked to annotate that line.
@@ -170,11 +180,8 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
 
     private ByteArrayOutputStream encodeToBytes() throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf));
-        try {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(buf))) {
             oos.writeObject(this);
-        } finally {
-            oos.close();
         }
 
         ByteArrayOutputStream buf2 = new ByteArrayOutputStream();
@@ -182,6 +189,11 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         DataOutputStream dos = new DataOutputStream(new Base64OutputStream(buf2,true,-1,null));
         try {
             buf2.write(PREAMBLE);
+            if (Jenkins.getInstanceOrNull() != null) { // else we are in another JVM and cannot sign; result will be ignored unless INSECURE
+                byte[] mac = MAC.mac(buf.toByteArray());
+                dos.writeInt(- mac.length); // negative to differentiate from older form
+                dos.write(mac);
+            }
             dos.writeInt(buf.size());
             buf.writeTo(dos);
         } finally {
@@ -214,7 +226,17 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
                 return null;    // not a valid preamble
 
             DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
-            int sz = decoded.readInt();
+            int macSz = - decoded.readInt();
+            byte[] mac;
+            int sz;
+            if (macSz > 0) { // new format
+                mac = new byte[macSz];
+                decoded.readFully(mac);
+                sz = decoded.readInt();
+            } else {
+                mac = null;
+                sz = - macSz;
+            }
             byte[] buf = new byte[sz];
             decoded.readFully(buf);
 
@@ -223,12 +245,19 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             if (!Arrays.equals(postamble,POSTAMBLE))
                 return null;    // not a valid postamble
 
-            ObjectInputStream ois = new ObjectInputStreamEx(
-                    new GZIPInputStream(new ByteArrayInputStream(buf)), Jenkins.getInstance().pluginManager.uberClassLoader);
-            try {
+            if (mac == null) {
+                if (!INSECURE) {
+                    throw new IOException("Refusing to deserialize unsigned note from an old log.");
+                }
+            } else if (!MAC.checkMac(buf, mac)) {
+                throw new IOException("MAC mismatch");
+            }
+
+            Jenkins jenkins = Jenkins.getInstance();
+            try (ObjectInputStream ois = new ObjectInputStreamEx(new GZIPInputStream(new ByteArrayInputStream(buf)),
+                    jenkins != null ? jenkins.pluginManager.uberClassLoader : ConsoleNote.class.getClassLoader(),
+                    ClassFilter.DEFAULT)) {
                 return (ConsoleNote) ois.readObject();
-            } finally {
-                ois.close();
             }
         } catch (Error e) {
             // for example, bogus 'sz' can result in OutOfMemoryError.
@@ -247,8 +276,15 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
             return;    // not a valid preamble
 
         DataInputStream decoded = new DataInputStream(new UnbufferedBase64InputStream(in));
-        int sz = decoded.readInt();
-        IOUtils.skip(decoded,sz);
+        int macSz = - decoded.readInt();
+        if (macSz > 0) { // new format
+            IOUtils.skip(decoded, macSz);
+            int sz = decoded.readInt();
+            IOUtils.skip(decoded, sz);
+        } else { // old format
+            int sz = -macSz;
+            IOUtils.skip(decoded, sz);
+        }
 
         byte[] postamble = new byte[POSTAMBLE.length];
         in.readFully(postamble);

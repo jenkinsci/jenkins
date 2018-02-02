@@ -26,6 +26,7 @@
 package hudson;
 
 import hudson.model.Slave;
+import hudson.security.*;
 import jenkins.util.SystemProperties;
 import hudson.cli.CLICommand;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -56,11 +57,6 @@ import hudson.model.View;
 import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.search.SearchableModelObject;
-import hudson.security.AccessControlled;
-import hudson.security.AuthorizationStrategy;
-import hudson.security.GlobalSecurityConfiguration;
-import hudson.security.Permission;
-import hudson.security.SecurityRealm;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.security.csrf.CrumbIssuer;
 import hudson.slaves.Cloud;
@@ -125,6 +121,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -136,6 +133,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 
+import org.acegisecurity.Authentication;
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
@@ -156,8 +154,13 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import hudson.model.PasswordParameterDefinition;
 import hudson.util.RunList;
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -464,6 +467,16 @@ public class Functions {
 
     public static Map getSystemProperties() {
         return new TreeMap<Object,Object>(System.getProperties());
+    }
+
+    /**
+     * Gets the system property indicated by the specified key.
+     * 
+     * Delegates to {@link SystemProperties#getString(java.lang.String)}.
+     */
+    @Restricted(DoNotUse.class)
+    public static String getSystemProperty(String key) {
+        return SystemProperties.getString(key);
     }
 
     public static Map getEnvVars() {
@@ -853,7 +866,7 @@ public class Functions {
         if(footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
             if(StringUtils.isBlank(footerURL)) {
-                footerURL = "http://jenkins-ci.org/";
+                footerURL = "https://jenkins.io/";
             }
         }
         return footerURL;
@@ -1098,7 +1111,7 @@ public class Functions {
             ItemGroup ig = i.getParent();
             url = i.getShortUrl()+url;
 
-            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwnerItemGroup())) {
+            if(ig== Jenkins.getInstance() || (view != null && ig == view.getOwner().getItemGroup())) {
                 assert i instanceof TopLevelItem;
                 if (view != null) {
                     // assume p and the current page belong to the same view, so return a relative path
@@ -1130,20 +1143,24 @@ public class Functions {
      * @since 1.512
      */
     public static List<TopLevelItem> getAllTopLevelItems(ItemGroup root) {
-      return Items.getAllItems(root, TopLevelItem.class);
+      return root.getAllItems(TopLevelItem.class);
     }
     
     /**
      * Gets the relative name or display name to the given item from the specified group.
      *
      * @since 1.515
-     * @param p the Item we want the relative display name
-     * @param g the ItemGroup used as point of reference for the item
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, a {@code null} will be returned by the method
+     * @param g the ItemGroup used as point of reference for the item.
+     *          If the group is not specified, item's path will be used.
      * @param useDisplayName if true, returns a display name, otherwise returns a name
      * @return
-     *      String like "foo » bar"
+     *      String like "foo » bar".
+     *      {@code null} if item is null or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g, boolean useDisplayName) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g, boolean useDisplayName) {
         if (p == null) return null;
         if (g == null) return useDisplayName ? p.getFullDisplayName() : p.getFullName();
         String separationString = useDisplayName ? " » " : "/";
@@ -1177,7 +1194,7 @@ public class Functions {
 
             if (gr instanceof Item)
                 i = (Item)gr;
-            else
+            else // Parent is a group, but not an item
                 return null;
         }
     }
@@ -1187,11 +1204,14 @@ public class Functions {
      *
      * @since 1.515
      * @param p the Item we want the relative display name
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "foo/bar"
+     *      String like "foo/bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, false);
     }    
     
@@ -1200,12 +1220,15 @@ public class Functions {
      * Gets the relative display name to the given item from the specified group.
      *
      * @since 1.512
-     * @param p the Item we want the relative display name
+     * @param p the Item we want the relative display name.
+     *          If {@code null}, the method will immediately return {@code null}.
      * @param g the ItemGroup used as point of reference for the item
      * @return
-     *      String like "Foo » Bar"
+     *      String like "Foo » Bar".
+     *      {@code null} if the item is {@code null} or if one of its parents is not an {@link Item}.
      */
-    public static String getRelativeDisplayNameFrom(Item p, ItemGroup g) {
+    @Nullable
+    public static String getRelativeDisplayNameFrom(@CheckForNull Item p, @CheckForNull ItemGroup g) {
         return getRelativeNameFrom(p, g, true);
     }
 
@@ -1389,7 +1412,7 @@ public class Functions {
     }
 
     /**
-     * Resoruce path prefix.
+     * Resource path prefix.
      */
     public static String getResourcePath() {
         return Jenkins.RESOURCE_PATH;
@@ -1438,19 +1461,87 @@ public class Functions {
     }
 
     /**
-     * Gets info about the specified {@link Throwable}.
+     * Prints a stack trace from an exception into a readable form.
+     * Unlike {@link Throwable#printStackTrace(PrintWriter)}, this implementation follows the suggestion of JDK-6507809
+     * to produce a linear trace even when {@link Throwable#getCause} is used.
      * @param t Input {@link Throwable}
-     * @return If {@link Throwable} is not null, a summary info with the 
-     *      stacktrace will be returned. Otherwise, the method returns a default
+     * @return If {@code t} is not null, generally a multiline string ending in a (platform-specific) newline;
+     *      otherwise, the method returns a default
      *      &quot;No exception details&quot; string.
      */
-    public static String printThrowable(@CheckForNull Throwable t) {
+    public static @Nonnull String printThrowable(@CheckForNull Throwable t) {
         if (t == null) {
             return Messages.Functions_NoExceptionDetails();
         }
-        StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
+        StringBuilder s = new StringBuilder();
+        doPrintStackTrace(s, t, null, "", new HashSet<Throwable>());
+        return s.toString();
+    }
+    private static void doPrintStackTrace(@Nonnull StringBuilder s, @Nonnull Throwable t, @CheckForNull Throwable higher, @Nonnull String prefix, @Nonnull Set<Throwable> encountered) {
+        if (!encountered.add(t)) {
+            s.append("<cycle to ").append(t).append(">\n");
+            return;
+        }
+        if (Util.isOverridden(Throwable.class, t.getClass(), "printStackTrace", PrintWriter.class)) {
+            StringWriter sw = new StringWriter();
+            t.printStackTrace(new PrintWriter(sw));
+            s.append(sw.toString());
+            return;
+        }
+        Throwable lower = t.getCause();
+        if (lower != null) {
+            doPrintStackTrace(s, lower, t, prefix, encountered);
+        }
+        for (Throwable suppressed : t.getSuppressed()) {
+            s.append(prefix).append("Also:   ");
+            doPrintStackTrace(s, suppressed, t, prefix + "\t", encountered);
+        }
+        if (lower != null) {
+            s.append(prefix).append("Caused: ");
+        }
+        String summary = t.toString();
+        if (lower != null) {
+            String suffix = ": " + lower;
+            if (summary.endsWith(suffix)) {
+                summary = summary.substring(0, summary.length() - suffix.length());
+            }
+        }
+        s.append(summary).append(IOUtils.LINE_SEPARATOR);
+        StackTraceElement[] trace = t.getStackTrace();
+        int end = trace.length;
+        if (higher != null) {
+            StackTraceElement[] higherTrace = higher.getStackTrace();
+            while (end > 0) {
+                int higherEnd = end + higherTrace.length - trace.length;
+                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
+                    break;
+                }
+                end--;
+            }
+        }
+        for (int i = 0; i < end; i++) {
+            s.append(prefix).append("\tat ").append(trace[i]).append(IOUtils.LINE_SEPARATOR);
+        }
+    }
+
+    /**
+     * Like {@link Throwable#printStackTrace(PrintWriter)} but using {@link #printThrowable} format.
+     * @param t an exception to print
+     * @param pw the log
+     * @since 2.43
+     */
+    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintWriter pw) {
+        pw.println(printThrowable(t).trim());
+    }
+
+    /**
+     * Like {@link Throwable#printStackTrace(PrintStream)} but using {@link #printThrowable} format.
+     * @param t an exception to print
+     * @param ps the log
+     * @since 2.43
+     */
+    public static void printStackTrace(@CheckForNull Throwable t, @Nonnull PrintStream ps) {
+        ps.println(printThrowable(t).trim());
     }
 
     /**
@@ -1498,7 +1589,7 @@ public class Functions {
      * Checks if the current user is anonymous.
      */
     public static boolean isAnonymous() {
-        return Jenkins.getAuthentication() instanceof AnonymousAuthenticationToken;
+        return ACL.isAnonymous(Jenkins.getAuthentication());
     }
 
     /**
@@ -1725,7 +1816,7 @@ public class Functions {
     }
 
     /**
-     * Generate a series of &lt;script> tags to include <tt>script.js</tt>
+     * Generate a series of {@code <script>} tags to include {@code script.js}
      * from {@link ConsoleAnnotatorFactory}s and {@link ConsoleAnnotationDescriptor}s.
      */
     public static String generateConsoleAnnotationScriptAndStylesheet() {
@@ -1766,7 +1857,7 @@ public class Functions {
     }
 
     /**
-     * Used by &lt;f:password/> so that we send an encrypted value to the client.
+     * Used by {@code <f:password/>} so that we send an encrypted value to the client.
      */
     public String getPasswordValue(Object o) {
         if (o==null)    return null;
@@ -1924,7 +2015,7 @@ public class Functions {
     /**
      * Get a string that can be safely broken to several lines when necessary.
      *
-     * This implementation inserts &lt;wbr> tags into string. It allows browsers
+     * This implementation inserts {@code <wbr>} tags into string. It allows browsers
      * to wrap line before any sequence of punctuation characters or anywhere
      * in the middle of prolonged sequences of word characters.
      *
@@ -1951,7 +2042,7 @@ public class Functions {
             rsp.setHeader("X-Jenkins-Session", Jenkins.SESSION_HASH);
 
             TcpSlaveAgentListener tal = j.tcpSlaveAgentListener;
-            if (tal !=null) {
+            if (tal != null) { // headers used only by deprecated Remoting-based CLI
                 int p = tal.getAdvertisedPort();
                 rsp.setIntHeader("X-Hudson-CLI-Port", p);
                 rsp.setIntHeader("X-Jenkins-CLI-Port", p);
@@ -1967,6 +2058,15 @@ public class Functions {
             return ((ModelObjectWithContextMenu.ContextMenuVisibility) a).isVisible();
         } else {
             return true;
+        }
+    }
+
+    @Restricted(NoExternalUse.class) // for cc.xml.jelly
+    public static Collection<TopLevelItem> getCCItems(View v) {
+        if (Stapler.getCurrentRequest().getParameter("recursive") != null) {
+            return v.getOwner().getItemGroup().getAllItems(TopLevelItem.class);
+        } else {
+            return v.getItems();
         }
     }
 

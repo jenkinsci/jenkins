@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * Inspects {@link Callable}s that run on the master.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 @Restricted(NoExternalUse.class) // used implicitly via listener
 public class CallableDirectionChecker extends RoleChecker {
@@ -60,7 +60,7 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee http://jenkins-ci.org/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to master is prohibited.\nSee https://jenkins.io/redirect/security-144 for more details");
     }
 
     /**

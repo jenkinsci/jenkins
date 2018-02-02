@@ -34,13 +34,13 @@ import hudson.model.listeners.ItemListener;
 import hudson.slaves.ComputerListener;
 import hudson.util.CopyOnWriteList;
 import hudson.util.FormValidation;
-import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -51,7 +51,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import static hudson.Util.fixEmpty;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 public class Hudson extends Jenkins {
 
@@ -69,10 +69,10 @@ public class Hudson extends Jenkins {
     @Deprecated
     private transient final CopyOnWriteList<ComputerListener> computerListeners = ExtensionListView.createCopyOnWriteList(ComputerListener.class);
 
-    /** @deprecated Here only for compatibility. Use {@link Jenkins#getInstance} instead. */
+    /** @deprecated Here only for compatibility. Use {@link Jenkins#get} instead. */
     @Deprecated
     @CLIResolver
-    @Nonnull
+    @Nullable
     public static Hudson getInstance() {
         return (Hudson)Jenkins.getInstance();
     }
@@ -171,6 +171,7 @@ public class Hudson extends Jenkins {
      *      Use {@link #doQuietDown()} instead.
      */
     @Deprecated
+    @RequirePOST
     public synchronized void doQuietDown(StaplerResponse rsp) throws IOException, ServletException {
         doQuietDown().generateResponse(null, rsp, this);
     }

@@ -29,12 +29,17 @@ import hudson.PluginManager.PluginInstanceStore;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
 import hudson.model.ModelObject;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.util.VersionNumber;
 import org.jvnet.localizer.ResourceBundleHolder;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
@@ -64,10 +69,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.util.logging.Level.WARNING;
 import static org.apache.commons.io.FilenameUtils.getBaseName;
@@ -157,10 +164,34 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final List<Dependency> optionalDependencies;
 
     public List<String> getDependencyErrors() {
-        return Collections.unmodifiableList(dependencyErrors);
+        return Collections.unmodifiableList(new ArrayList<>(dependencyErrors.keySet()));
     }
 
-    private final transient List<String> dependencyErrors = new ArrayList<>();
+    @Restricted(NoExternalUse.class) // Jelly use
+    public List<String> getOriginalDependencyErrors() {
+        Predicate<Map.Entry<String, Boolean>> p = Map.Entry::getValue;
+        return dependencyErrors.entrySet().stream().filter(p.negate()).map(Map.Entry::getKey).collect(Collectors.toList());
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public boolean hasOriginalDependencyErrors() {
+        return !getOriginalDependencyErrors().isEmpty();
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public List<String> getDerivedDependencyErrors() {
+        return dependencyErrors.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).collect(Collectors.toList());
+    }
+
+    @Restricted(NoExternalUse.class) // Jelly use
+    public boolean hasDerivedDependencyErrors() {
+        return !getDerivedDependencyErrors().isEmpty();
+    }
+
+    /**
+     * A String error message, and a boolean indicating whether it's an original error (false) or downstream from an original one (true)
+     */
+    private final transient Map<String, Boolean> dependencyErrors = new HashMap<>();
 
     /**
      * Is this plugin bundled in jenkins.war?
@@ -417,7 +448,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     /**
      * Returns the required Jenkins core version of this plugin.
      * @return the required Jenkins core version of this plugin.
-     * @since XXX
+     * @since 2.16
      */
     @Exported
     public @CheckForNull String getRequiredCoreVersion() {
@@ -495,8 +526,11 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     public void disable() throws IOException {
         // creates an empty file
-        OutputStream os = new FileOutputStream(disableFile);
-        os.close();
+        try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
+            os.close();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
@@ -566,7 +600,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             } else {
                 VersionNumber actualVersion = Jenkins.getVersion();
                 if (actualVersion.isOlderThan(new VersionNumber(requiredCoreVersion))) {
-                    dependencyErrors.add(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion));
+                    dependencyErrors.put(Messages.PluginWrapper_obsoleteCore(Jenkins.getVersion().toString(), requiredCoreVersion), false);
                 }
             }
         }
@@ -576,21 +610,21 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             if (dependency == null) {
                 PluginWrapper failedDependency = NOTICE.getPlugin(d.shortName);
                 if (failedDependency != null) {
-                    dependencyErrors.add(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), d.version));
+                    dependencyErrors.put(Messages.PluginWrapper_failed_to_load_dependency(failedDependency.getLongName(), failedDependency.getVersion()), true);
                     break;
                 } else {
-                    dependencyErrors.add(Messages.PluginWrapper_missing(d.shortName, d.version));
+                    dependencyErrors.put(Messages.PluginWrapper_missing(d.shortName, d.version), false);
                 }
             } else {
                 if (dependency.isActive()) {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                        dependencyErrors.put(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
                     }
                 } else {
                     if (isDependencyObsolete(d, dependency)) {
-                        dependencyErrors.add(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                        dependencyErrors.put(Messages.PluginWrapper_disabledAndObsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
                     } else {
-                        dependencyErrors.add(Messages.PluginWrapper_disabled(dependency.getLongName()));
+                        dependencyErrors.put(Messages.PluginWrapper_disabled(dependency.getLongName()), false);
                     }
                 }
 
@@ -601,7 +635,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             PluginWrapper dependency = parent.getPlugin(d.shortName);
             if (dependency != null && dependency.isActive()) {
                 if (isDependencyObsolete(d, dependency)) {
-                    dependencyErrors.add(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version));
+                    dependencyErrors.put(Messages.PluginWrapper_obsolete(dependency.getLongName(), dependency.getVersion(), d.version), false);
                 } else {
                     dependencies.add(d);
                 }
@@ -611,7 +645,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             NOTICE.addPlugin(this);
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Messages.PluginWrapper_failed_to_load_plugin(getLongName(), getVersion())).append(System.lineSeparator());
-            for (Iterator<String> iterator = dependencyErrors.iterator(); iterator.hasNext(); ) {
+            for (Iterator<String> iterator = dependencyErrors.keySet().iterator(); iterator.hasNext(); ) {
                 String dependencyError = iterator.next();
                 messageBuilder.append(" - ").append(dependencyError);
                 if (iterator.hasNext()) {
@@ -708,11 +742,8 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         File backup = getBackupFile();
         if (backup.exists()) {
             try {
-                JarFile backupPlugin = new JarFile(backup);
-                try {
+                try (JarFile backupPlugin = new JarFile(backup)) {
                     return backupPlugin.getManifest().getMainAttributes().getValue("Plugin-Version");
-                } finally {
-                    backupPlugin.close();
                 }
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to get backup version from " + backup, e);
@@ -746,6 +777,16 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         public boolean isActivated() {
             return !plugins.isEmpty();
+        }
+
+        @Restricted(DoNotUse.class) // Jelly
+        public boolean hasAnyDerivedDependencyErrors() {
+            return plugins.values().stream().anyMatch(PluginWrapper::hasDerivedDependencyErrors);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginWrapper_PluginWrapperAdministrativeMonitor_DisplayName();
         }
 
         public Collection<PluginWrapper> getPlugins() {

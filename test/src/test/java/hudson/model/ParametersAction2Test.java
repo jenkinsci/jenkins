@@ -1,6 +1,9 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Launcher;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Builder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,8 +12,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -67,7 +72,8 @@ public class ParametersAction2Test {
     public void backwardCompatibility() throws Exception {
         // Local data contains a parameterized job with two parameters (FOO and BAR) and one build
         // with pre-fix format (generated with 1.609.3) with FOO, BAR and UNDEF.
-        FreeStyleProject p = j.jenkins.getItemByFullName("parameterized", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "parameterized-windows" : "parameterized", FreeStyleProject.class);
+
         FreeStyleBuild b1 = p.getBuildByNumber(1);
         ParametersAction pa = b1.getAction(ParametersAction.class);
         hasParameterWithName(pa, "FOO");
@@ -278,6 +284,29 @@ public class ParametersAction2Test {
         } finally {
             System.clearProperty(ParametersAction.SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         }
+    }
+
+    @Test
+    @Issue("JENKINS-45472")
+    public void ensureNoListReuse() throws Exception {
+        FreeStyleProject p1 = j.createFreeStyleProject();
+        p1.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
+        FreeStyleProject p2 = j.createFreeStyleProject();
+        p2.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("foo", "")));
+
+        List<ParameterValue> params = new ArrayList<>();
+        params.add(new StringParameterValue("foo", "for p1"));
+        p1.scheduleBuild2(1, new ParametersAction(params));
+        params.clear();
+        params.add(new StringParameterValue("foo", "for p2"));
+        p2.scheduleBuild2(0, new ParametersAction(params));
+
+        j.waitUntilNoActivity();
+
+        assertEquals(1, p1.getLastBuild().getAction(ParametersAction.class).getParameters().size());
+        assertEquals(1, p2.getLastBuild().getAction(ParametersAction.class).getParameters().size());
+        assertEquals(p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p1");
+        assertEquals(p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p2");
     }
 
     public static boolean hasParameterWithName(Iterable<ParameterValue> values, String name) {

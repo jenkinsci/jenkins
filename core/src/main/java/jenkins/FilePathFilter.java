@@ -13,7 +13,7 @@ import java.io.File;
  *
  * <p>
  * Returning {@code true} indicates that the access is accepted. No other {@link FilePathFilter}
- * will be consulted to reject the execution, and the access will go through. Returning {@link false}
+ * will be consulted to reject the execution, and the access will go through. Returning {@code false}
  * indicates "I don't know". Other {@link FilePathFilter}s get to inspect the access, and they might
  * accept/reject access. And finally, throwing {@link SecurityException} is to reject the access.
  *
@@ -23,7 +23,7 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  * @see FilePath
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class FilePathFilter {
     /**
@@ -102,7 +102,7 @@ public abstract class FilePathFilter {
 
     /**
      * Returns an {@link FilePathFilter} object that represents all the in-scope filters,
-     * or null if none is needed.
+     * or {@code null} if none is needed.
      */
     public static @CheckForNull FilePathFilter current() {
         Channel ch = Channel.current();

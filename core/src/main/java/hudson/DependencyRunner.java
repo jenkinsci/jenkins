@@ -59,7 +59,7 @@ public class DependencyRunner implements Runnable {
             Set<AbstractProject> topLevelProjects = new HashSet<AbstractProject>();
             // Get all top-level projects
             LOGGER.fine("assembling top level projects");
-            for (AbstractProject p : Jenkins.getInstance().getAllItems(AbstractProject.class))
+            for (AbstractProject p : Jenkins.getInstance().allItems(AbstractProject.class))
                 if (p.getUpstreamProjects().size() == 0) {
                     LOGGER.fine("adding top level project " + p.getName());
                     topLevelProjects.add(p);

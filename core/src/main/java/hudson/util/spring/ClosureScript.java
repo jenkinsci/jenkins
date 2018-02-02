@@ -39,7 +39,7 @@ import groovy.lang.Script;
  * <pre>
  * a = 1;
  * b(2);
- * <pre>
+ * </pre>
  *
  * <p>
  * Using {@link ClosureScript} as the base class would run it as:

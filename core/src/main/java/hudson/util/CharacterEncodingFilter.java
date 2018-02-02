@@ -90,7 +90,7 @@ public class CharacterEncodingFilter implements Filter {
 
         // containers often implement RFCs incorrectly in that it doesn't interpret query parameter
         // decoding with UTF-8. This will ensure we get it right.
-        // but doing this for config.xml submission could potentiall overwrite valid
+        // but doing this for config.xml submission could potentially overwrite valid
         // "text/xml;charset=xxx"
         String contentType = req.getContentType();
         if (contentType != null) {

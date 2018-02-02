@@ -49,10 +49,15 @@ public class InstallState implements ExtensionPoint {
      * Need InstallState != NEW for tests by default
      */
     @Extension
-    public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true);
+    public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true) {
+        @Override
+        public void initializeState() {
+            InstallUtil.proceedToNextStateFrom(this);
+        }
+    };
     
     /**
-     * After any setup / restart / etc. hooks are done, states hould be running
+     * After any setup / restart / etc. hooks are done, states should be running
      */
     @Extension
     public static final InstallState RUNNING = new InstallState("RUNNING", true);
@@ -94,7 +99,7 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState INITIAL_PLUGINS_INSTALLING = new InstallState("INITIAL_PLUGINS_INSTALLING", false);
-    
+
     /**
      * Security setup for a new Jenkins install.
      */
@@ -106,7 +111,7 @@ public class InstallState implements ExtensionPoint {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
+
             InstallUtil.proceedToNextStateFrom(INITIAL_SECURITY_SETUP);
         }
     };
@@ -116,7 +121,7 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState NEW = new InstallState("NEW", false);
-    
+
     /**
      * Restart of an existing Jenkins install.
      */
@@ -151,7 +156,7 @@ public class InstallState implements ExtensionPoint {
     public static final InstallState TEST = new InstallState("TEST", true);
     
     /**
-     * Jenkins started in development mode: Bolean.getBoolean("hudson.Main.development").
+     * Jenkins started in development mode: Boolean.getBoolean("hudson.Main.development").
      * Can be run normally with the -Djenkins.install.runSetupWizard=true
      */
     public static final InstallState DEVELOPMENT = new InstallState("DEVELOPMENT", true);

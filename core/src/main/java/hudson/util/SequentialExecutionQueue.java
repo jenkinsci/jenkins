@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class SequentialExecutionQueue implements Executor {
     /**
-     * Access is sycnhronized by {@code Queue.this}
+     * Access is synchronized by {@code Queue.this}
      */
     private final Map<Runnable,QueueEntry> entries = new HashMap<Runnable,QueueEntry>();
     private ExecutorService executors;

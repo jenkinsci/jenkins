@@ -30,6 +30,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -127,15 +130,13 @@ public class PrivateKeyProvider {
     }
 
     private static String readPemFile(File f) throws IOException{
-        FileInputStream is = new FileInputStream(f);
-        try {
-            DataInputStream dis = new DataInputStream(is);
+        try (InputStream is = Files.newInputStream(f.toPath());
+             DataInputStream dis = new DataInputStream(is)) {
             byte[] bytes = new byte[(int) f.length()];
             dis.readFully(bytes);
-            dis.close();
             return new String(bytes);
-        } finally {
-            is.close();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 

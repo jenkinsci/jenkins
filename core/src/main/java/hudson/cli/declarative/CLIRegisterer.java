@@ -27,6 +27,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
 import hudson.ExtensionFinder;
+import hudson.Functions;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.cli.CloneableCLICommand;
@@ -57,6 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Stack;
 import static java.util.logging.Level.SEVERE;
 
@@ -269,7 +271,7 @@ public class CLIRegisterer extends ExtensionFinder {
                                 stderr.println("");
                                 stderr.println("ERROR: " + errorMsg);
                                 LOGGER.log(Level.WARNING, errorMsg, e);
-                                e.printStackTrace(stderr);
+                                Functions.printStackTrace(e, stderr);
                                 return 1;
                             }
                         }
@@ -278,7 +280,7 @@ public class CLIRegisterer extends ExtensionFinder {
                             throw new UnsupportedOperationException();
                         }
                     }));
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | MissingResourceException e) {
                     LOGGER.log(SEVERE,"Failed to process @CLIMethod: "+m,e);
                 }
             }

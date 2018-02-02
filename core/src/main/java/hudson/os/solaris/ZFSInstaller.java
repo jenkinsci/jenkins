@@ -28,6 +28,7 @@ import com.sun.akuma.JavaVMArguments;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.Extension;
+import hudson.Functions;
 import jenkins.util.SystemProperties;
 import hudson.os.SU;
 import hudson.model.AdministrativeMonitor;
@@ -228,7 +229,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
         try {
             datasetName = createZfsFileSystem(listener,username,password);
         } catch (Exception e) {
-            e.printStackTrace(listener.error(e.getMessage()));
+            Functions.printStackTrace(e, listener.error(e.getMessage()));
 
             if (e instanceof ZFSException) {
                 ZFSException ze = (ZFSException) e;
@@ -292,7 +293,7 @@ public class ZFSInstaller extends AdministrativeMonitor implements Serializable 
                 }
             } catch (Exception e) {
                 // if we let any exception from here, it will prevent Hudson from starting.
-                e.printStackTrace(listener.error("Migration failed"));
+                Functions.printStackTrace(e, listener.error("Migration failed"));
             }
             // migration failed
             return new MigrationFailedNotice(out);

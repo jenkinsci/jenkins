@@ -62,7 +62,7 @@ public enum Platform {
     }
 
     /**
-     * Returns true if we run on Mac OS X >= 10.6
+     * Returns true if we run on Mac OS X ≥ 10.6
      */
     public static boolean isSnowLeopardOrLater() {
         try {
