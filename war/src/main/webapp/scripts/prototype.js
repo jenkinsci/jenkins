@@ -1,4 +1,4 @@
-/*  Prototype JavaScript framework, version 1.7
+/*  Prototype JavaScript framework, version 1.7.3
  *  (c) 2005-2010 Sam Stephenson
  *
  *  Prototype is freely distributable under the terms of an MIT-style license.
@@ -8,7 +8,7 @@
 
 var Prototype = {
 
-  Version: '1.7',
+  Version: '1.7.3',
 
   Browser: (function(){
     var ua = navigator.userAgent;
@@ -49,7 +49,7 @@ var Prototype = {
     })()
   },
 
-  ScriptFragment: '<script[^>]*>([\\S\\s]*?)<\/script>',
+  ScriptFragment: '<script[^>]*>([\\S\\s]*?)<\/script\\s*>',
   JSONFilter: /^\/\*-secure-([\s\S]*)\*\/\s*$/,
 
   emptyFunction: function() { },
@@ -59,27 +59,6 @@ var Prototype = {
 
 if (Prototype.Browser.MobileSafari)
   Prototype.BrowserFeatures.SpecificElementExtensions = false;
-
-
-var Abstract = { };
-
-
-var Try = {
-  these: function() {
-    var returnValue;
-
-    for (var i = 0, length = arguments.length; i < length; i++) {
-      var lambda = arguments[i];
-      try {
-        returnValue = lambda();
-        break;
-      } catch (e) { }
-    }
-
-    return returnValue;
-  }
-};
-
 /* Based on Alex Arnell's inheritance implementation. */
 
 var Class = (function() {
@@ -141,8 +120,13 @@ var Class = (function() {
           return function() { return ancestor[m].apply(this, arguments); };
         })(property).wrap(method);
 
-        value.valueOf = method.valueOf.bind(method);
-        value.toString = method.toString.bind(method);
+        value.valueOf = (function(method) {
+          return function() { return method.valueOf.call(method); };
+        })(method);
+
+        value.toString = (function(method) {
+          return function() { return method.toString.call(method); };
+        })(method);
       }
       this.prototype[property] = value;
     }
@@ -160,6 +144,7 @@ var Class = (function() {
 (function() {
 
   var _toString = Object.prototype.toString,
+      _hasOwnProperty = Object.prototype.hasOwnProperty,
       NULL_TYPE = 'Null',
       UNDEFINED_TYPE = 'Undefined',
       BOOLEAN_TYPE = 'Boolean',
@@ -176,6 +161,18 @@ var Class = (function() {
         typeof JSON.stringify === 'function' &&
         JSON.stringify(0) === '0' &&
         typeof JSON.stringify(Prototype.K) === 'undefined';
+
+
+
+  var DONT_ENUMS = ['toString', 'toLocaleString', 'valueOf',
+   'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'constructor'];
+
+  var IS_DONTENUM_BUGGY = (function(){
+    for (var p in { toString: 1 }) {
+      if (p === 'toString') return false;
+    }
+    return true;
+  })();
 
   function Type(o) {
     switch(o) {
@@ -213,9 +210,7 @@ var Class = (function() {
   }
 
   function Str(key, holder, stack) {
-    var value = holder[key],
-        type = typeof value;
-
+    var value = holder[key];
     if (Type(value) === OBJECT_TYPE && typeof value.toJSON === 'function') {
       value = value.toJSON(key);
     }
@@ -235,7 +230,7 @@ var Class = (function() {
       case false: return 'false';
     }
 
-    type = typeof value;
+    var type = typeof value;
     switch (type) {
       case 'string':
         return value.inspect(true);
@@ -244,7 +239,9 @@ var Class = (function() {
       case 'object':
 
         for (var i = 0, length = stack.length; i < length; i++) {
-          if (stack[i] === value) { throw new TypeError(); }
+          if (stack[i] === value) {
+            throw new TypeError("Cyclic reference to '" + value + "' in object");
+          }
         }
         stack.push(value);
 
@@ -286,10 +283,17 @@ var Class = (function() {
     if (Type(object) !== OBJECT_TYPE) { throw new TypeError(); }
     var results = [];
     for (var property in object) {
-      if (object.hasOwnProperty(property)) {
+      if (_hasOwnProperty.call(object, property))
         results.push(property);
+    }
+
+    if (IS_DONTENUM_BUGGY) {
+      for (var i = 0; property = DONT_ENUMS[i]; i++) {
+        if (_hasOwnProperty.call(object, property))
+          results.push(property);
       }
     }
+
     return results;
   }
 
@@ -383,13 +387,27 @@ Object.extend(Function.prototype, (function() {
     return names.length == 1 && !names[0] ? [] : names;
   }
 
+
   function bind(context) {
-    if (arguments.length < 2 && Object.isUndefined(arguments[0])) return this;
+    if (arguments.length < 2 && Object.isUndefined(arguments[0]))
+      return this;
+
+    if (!Object.isFunction(this))
+      throw new TypeError("The object is not callable.");
+
+    var nop = function() {};
     var __method = this, args = slice.call(arguments, 1);
-    return function() {
+
+    var bound = function() {
       var a = merge(args, arguments);
-      return __method.apply(context, a);
-    }
+      var c = this instanceof bound ? this : context;
+      return __method.apply(c, a);
+    };
+
+    nop.prototype   = this.prototype;
+    bound.prototype = new nop();
+
+    return bound;
   }
 
   function bindAsEventListener(context) {
@@ -439,16 +457,20 @@ Object.extend(Function.prototype, (function() {
     };
   }
 
-  return {
+  var extensions = {
     argumentNames:       argumentNames,
-    bind:                bind,
     bindAsEventListener: bindAsEventListener,
     curry:               curry,
     delay:               delay,
     defer:               defer,
     wrap:                wrap,
     methodize:           methodize
-  }
+  };
+
+  if (!Function.prototype.bind)
+    extensions.bind = bind;
+
+  return extensions;
 })());
 
 
@@ -542,6 +564,11 @@ Object.extend(String.prototype, (function() {
     return function(match) { return template.evaluate(match) };
   }
 
+  function isNonEmptyRegExp(regexp) {
+    return regexp.source && regexp.source !== '(?:)';
+  }
+
+
   function gsub(pattern, replacement) {
     var result = '', source = this, match;
     replacement = prepareReplacement(replacement);
@@ -549,13 +576,14 @@ Object.extend(String.prototype, (function() {
     if (Object.isString(pattern))
       pattern = RegExp.escape(pattern);
 
-    if (!(pattern.length || pattern.source)) {
+    if (!(pattern.length || isNonEmptyRegExp(pattern))) {
       replacement = replacement('');
       return replacement + source.split('').join(replacement) + replacement;
     }
 
     while (source.length > 0) {
-      if (match = source.match(pattern)) {
+      match = source.match(pattern)
+      if (match && match[0].length > 0) {
         result += source.slice(0, match.index);
         result += String.interpret(replacement(match));
         source  = source.slice(match.index + match[0].length);
@@ -593,7 +621,7 @@ Object.extend(String.prototype, (function() {
   }
 
   function stripTags() {
-    return this.replace(/<\w+(\s+("[^"]*"|'[^']*'|[^>])+)?>|<\/\w+>/gi, '');
+    return this.replace(/<\w+(\s+("[^"]*"|'[^']*'|[^>])+)?(\/)?>|<\/\w+>/gi, '');
   }
 
   function stripScripts() {
@@ -609,7 +637,7 @@ Object.extend(String.prototype, (function() {
   }
 
   function evalScripts() {
-    return this.extractScripts().map(function(script) { return eval(script) });
+    return this.extractScripts().map(function(script) { return eval(script); });
   }
 
   function escapeHTML() {
@@ -630,7 +658,10 @@ Object.extend(String.prototype, (function() {
         var key = decodeURIComponent(pair.shift()),
             value = pair.length > 1 ? pair.join('=') : pair[0];
 
-        if (value != undefined) value = decodeURIComponent(value);
+        if (value != undefined) {
+          value = value.gsub('+', ' ');
+          value = decodeURIComponent(value);
+        }
 
         if (key in hash) {
           if (!Object.isArray(hash[key])) hash[key] = [hash[key]];
@@ -703,7 +734,7 @@ Object.extend(String.prototype, (function() {
 
   function evalJSON(sanitize) {
     var json = this.unfilterJSON(),
-        cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+        cx = /[\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff\u0000]/g;
     if (cx.test(json)) {
       json = json.replace(cx, function (a) {
         return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
@@ -724,12 +755,17 @@ Object.extend(String.prototype, (function() {
     return this.indexOf(pattern) > -1;
   }
 
-  function startsWith(pattern) {
-    return this.lastIndexOf(pattern, 0) === 0;
+  function startsWith(pattern, position) {
+    position = Object.isNumber(position) ? position : 0;
+    return this.lastIndexOf(pattern, position) === position;
   }
 
-  function endsWith(pattern) {
-    var d = this.length - pattern.length;
+  function endsWith(pattern, position) {
+    pattern = String(pattern);
+    position = Object.isNumber(position) ? position : this.length;
+    if (position < 0) position = 0;
+    if (position > this.length) position = this.length;
+    var d = position - pattern.length;
     return d >= 0 && this.indexOf(pattern, d) === d;
   }
 
@@ -771,8 +807,8 @@ Object.extend(String.prototype, (function() {
     isJSON:         isJSON,
     evalJSON:       NATIVE_JSON_PARSE_SUPPORT ? parseJSON : evalJSON,
     include:        include,
-    startsWith:     startsWith,
-    endsWith:       endsWith,
+    startsWith:     String.prototype.startsWith || startsWith,
+    endsWith:       String.prototype.endsWith || endsWith,
     empty:          empty,
     blank:          blank,
     interpolate:    interpolate
@@ -819,11 +855,8 @@ var $break = { };
 
 var Enumerable = (function() {
   function each(iterator, context) {
-    var index = 0;
     try {
-      this._each(function(value) {
-        iterator.call(context, value, index++);
-      });
+      this._each(iterator, context);
     } catch (e) {
       if (e != $break) throw e;
     }
@@ -842,9 +875,9 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var result = true;
     this.each(function(value, index) {
-      result = result && !!iterator.call(context, value, index);
+      result = result && !!iterator.call(context, value, index, this);
       if (!result) throw $break;
-    });
+    }, this);
     return result;
   }
 
@@ -852,9 +885,9 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var result = false;
     this.each(function(value, index) {
-      if (result = !!iterator.call(context, value, index))
+      if (result = !!iterator.call(context, value, index, this))
         throw $break;
-    });
+    }, this);
     return result;
   }
 
@@ -862,28 +895,28 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var results = [];
     this.each(function(value, index) {
-      results.push(iterator.call(context, value, index));
-    });
+      results.push(iterator.call(context, value, index, this));
+    }, this);
     return results;
   }
 
   function detect(iterator, context) {
     var result;
     this.each(function(value, index) {
-      if (iterator.call(context, value, index)) {
+      if (iterator.call(context, value, index, this)) {
         result = value;
         throw $break;
       }
-    });
+    }, this);
     return result;
   }
 
   function findAll(iterator, context) {
     var results = [];
     this.each(function(value, index) {
-      if (iterator.call(context, value, index))
+      if (iterator.call(context, value, index, this))
         results.push(value);
-    });
+    }, this);
     return results;
   }
 
@@ -896,14 +929,14 @@ var Enumerable = (function() {
 
     this.each(function(value, index) {
       if (filter.match(value))
-        results.push(iterator.call(context, value, index));
-    });
+        results.push(iterator.call(context, value, index, this));
+    }, this);
     return results;
   }
 
   function include(object) {
-    if (Object.isFunction(this.indexOf))
-      if (this.indexOf(object) != -1) return true;
+    if (Object.isFunction(this.indexOf) && this.indexOf(object) != -1)
+      return true;
 
     var found = false;
     this.each(function(value) {
@@ -925,8 +958,8 @@ var Enumerable = (function() {
 
   function inject(memo, iterator, context) {
     this.each(function(value, index) {
-      memo = iterator.call(context, memo, value, index);
-    });
+      memo = iterator.call(context, memo, value, index, this);
+    }, this);
     return memo;
   }
 
@@ -941,10 +974,10 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var result;
     this.each(function(value, index) {
-      value = iterator.call(context, value, index);
+      value = iterator.call(context, value, index, this);
       if (result == null || value >= result)
         result = value;
-    });
+    }, this);
     return result;
   }
 
@@ -952,10 +985,10 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var result;
     this.each(function(value, index) {
-      value = iterator.call(context, value, index);
+      value = iterator.call(context, value, index, this);
       if (result == null || value < result)
         result = value;
-    });
+    }, this);
     return result;
   }
 
@@ -963,9 +996,9 @@ var Enumerable = (function() {
     iterator = iterator || Prototype.K;
     var trues = [], falses = [];
     this.each(function(value, index) {
-      (iterator.call(context, value, index) ?
+      (iterator.call(context, value, index, this) ?
         trues : falses).push(value);
-    });
+    }, this);
     return [trues, falses];
   }
 
@@ -980,9 +1013,9 @@ var Enumerable = (function() {
   function reject(iterator, context) {
     var results = [];
     this.each(function(value, index) {
-      if (!iterator.call(context, value, index))
+      if (!iterator.call(context, value, index, this))
         results.push(value);
-    });
+    }, this);
     return results;
   }
 
@@ -990,9 +1023,9 @@ var Enumerable = (function() {
     return this.map(function(value, index) {
       return {
         value: value,
-        criteria: iterator.call(context, value, index)
+        criteria: iterator.call(context, value, index, this)
       };
-    }).sort(function(left, right) {
+    }, this).sort(function(left, right) {
       var a = left.criteria, b = right.criteria;
       return a < b ? -1 : a > b ? 1 : 0;
     }).pluck('value');
@@ -1142,7 +1175,7 @@ Array.from = $A;
 
   function intersect(array) {
     return this.uniq().findAll(function(item) {
-      return array.detect(function(value) { return item === value });
+      return array.indexOf(item) !== -1;
     });
   }
 
@@ -1160,41 +1193,190 @@ Array.from = $A;
   }
 
   function indexOf(item, i) {
-    i || (i = 0);
-    var length = this.length;
-    if (i < 0) i = length + i;
-    for (; i < length; i++)
-      if (this[i] === item) return i;
+    if (this == null) throw new TypeError();
+
+    var array = Object(this), length = array.length >>> 0;
+    if (length === 0) return -1;
+
+    i = Number(i);
+    if (isNaN(i)) {
+      i = 0;
+    } else if (i !== 0 && isFinite(i)) {
+      i = (i > 0 ? 1 : -1) * Math.floor(Math.abs(i));
+    }
+
+    if (i > length) return -1;
+
+    var k = i >= 0 ? i : Math.max(length - Math.abs(i), 0);
+    for (; k < length; k++)
+      if (k in array && array[k] === item) return k;
     return -1;
   }
 
+
   function lastIndexOf(item, i) {
-    i = isNaN(i) ? this.length : (i < 0 ? this.length + i : i) + 1;
-    var n = this.slice(0, i).reverse().indexOf(item);
-    return (n < 0) ? n : i - n - 1;
+    if (this == null) throw new TypeError();
+
+    var array = Object(this), length = array.length >>> 0;
+    if (length === 0) return -1;
+
+    if (!Object.isUndefined(i)) {
+      i = Number(i);
+      if (isNaN(i)) {
+        i = 0;
+      } else if (i !== 0 && isFinite(i)) {
+        i = (i > 0 ? 1 : -1) * Math.floor(Math.abs(i));
+      }
+    } else {
+      i = length;
+    }
+
+    var k = i >= 0 ? Math.min(i, length - 1) :
+     length - Math.abs(i);
+
+    for (; k >= 0; k--)
+      if (k in array && array[k] === item) return k;
+    return -1;
   }
 
-  function concat() {
-    var array = slice.call(this, 0), item;
-    for (var i = 0, length = arguments.length; i < length; i++) {
-      item = arguments[i];
+  function concat(_) {
+    var array = [], items = slice.call(arguments, 0), item, n = 0;
+    items.unshift(this);
+    for (var i = 0, length = items.length; i < length; i++) {
+      item = items[i];
       if (Object.isArray(item) && !('callee' in item)) {
-        for (var j = 0, arrayLength = item.length; j < arrayLength; j++)
-          array.push(item[j]);
+        for (var j = 0, arrayLength = item.length; j < arrayLength; j++) {
+          if (j in item) array[n] = item[j];
+          n++;
+        }
       } else {
-        array.push(item);
+        array[n++] = item;
       }
     }
+    array.length = n;
     return array;
   }
 
+
+  function wrapNative(method) {
+    return function() {
+      if (arguments.length === 0) {
+        return method.call(this, Prototype.K);
+      } else if (arguments[0] === undefined) {
+        var args = slice.call(arguments, 1);
+        args.unshift(Prototype.K);
+        return method.apply(this, args);
+      } else {
+        return method.apply(this, arguments);
+      }
+    };
+  }
+
+
+  function map(iterator) {
+    if (this == null) throw new TypeError();
+    iterator = iterator || Prototype.K;
+
+    var object = Object(this);
+    var results = [], context = arguments[1], n = 0;
+
+    for (var i = 0, length = object.length >>> 0; i < length; i++) {
+      if (i in object) {
+        results[n] = iterator.call(context, object[i], i, object);
+      }
+      n++;
+    }
+    results.length = n;
+    return results;
+  }
+
+  if (arrayProto.map) {
+    map = wrapNative(Array.prototype.map);
+  }
+
+  function filter(iterator) {
+    if (this == null || !Object.isFunction(iterator))
+      throw new TypeError();
+
+    var object = Object(this);
+    var results = [], context = arguments[1], value;
+
+    for (var i = 0, length = object.length >>> 0; i < length; i++) {
+      if (i in object) {
+        value = object[i];
+        if (iterator.call(context, value, i, object)) {
+          results.push(value);
+        }
+      }
+    }
+    return results;
+  }
+
+  if (arrayProto.filter) {
+    filter = Array.prototype.filter;
+  }
+
+  function some(iterator) {
+    if (this == null) throw new TypeError();
+    iterator = iterator || Prototype.K;
+    var context = arguments[1];
+
+    var object = Object(this);
+    for (var i = 0, length = object.length >>> 0; i < length; i++) {
+      if (i in object && iterator.call(context, object[i], i, object)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  if (arrayProto.some) {
+    some = wrapNative(Array.prototype.some);
+  }
+
+  function every(iterator) {
+    if (this == null) throw new TypeError();
+    iterator = iterator || Prototype.K;
+    var context = arguments[1];
+
+    var object = Object(this);
+    for (var i = 0, length = object.length >>> 0; i < length; i++) {
+      if (i in object && !iterator.call(context, object[i], i, object)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (arrayProto.every) {
+    every = wrapNative(Array.prototype.every);
+  }
+
+
   Object.extend(arrayProto, Enumerable);
+
+  if (arrayProto.entries === Enumerable.entries) {
+    delete arrayProto.entries;
+  }
 
   if (!arrayProto._reverse)
     arrayProto._reverse = arrayProto.reverse;
 
   Object.extend(arrayProto, {
     _each:     _each,
+
+    map:       map,
+    collect:   map,
+    select:    filter,
+    filter:    filter,
+    findAll:   filter,
+    some:      some,
+    any:       some,
+    every:     every,
+    all:       every,
+
     clear:     clear,
     first:     first,
     last:      last,
@@ -1212,7 +1394,7 @@ Array.from = $A;
 
   var CONCAT_ARGUMENTS_BUGGY = (function() {
     return [].concat(arguments)[0][0] !== 1;
-  })(1,2)
+  })(1,2);
 
   if (CONCAT_ARGUMENTS_BUGGY) arrayProto.concat = concat;
 
@@ -1229,12 +1411,14 @@ var Hash = Class.create(Enumerable, (function() {
   }
 
 
-  function _each(iterator) {
+  function _each(iterator, context) {
+    var i = 0;
     for (var key in this._object) {
       var value = this._object[key], pair = [key, value];
       pair.key = key;
       pair.value = value;
-      iterator(pair);
+      iterator.call(context, pair, i);
+      i++;
     }
   }
 
@@ -1287,7 +1471,13 @@ var Hash = Class.create(Enumerable, (function() {
 
   function toQueryPair(key, value) {
     if (Object.isUndefined(value)) return key;
-    return key + '=' + encodeURIComponent(String.interpret(value));
+
+    value = String.interpret(value);
+
+    value = value.gsub(/(\r)?\n/, '\r\n');
+    value = encodeURIComponent(value);
+    value = value.gsub(/%20/, '+');
+    return key + '=' + value;
   }
 
   function toQueryString() {
@@ -1397,10 +1587,10 @@ var ObjectRange = Class.create(Enumerable, (function() {
     this.exclusive = exclusive;
   }
 
-  function _each(iterator) {
-    var value = this.start;
-    while (this.include(value)) {
-      iterator(value);
+  function _each(iterator, context) {
+    var value = this.start, i;
+    for (i = 0; this.include(value); i++) {
+      iterator.call(context, value, i);
       value = value.succ();
     }
   }
@@ -1422,6 +1612,25 @@ var ObjectRange = Class.create(Enumerable, (function() {
 
 
 
+var Abstract = { };
+
+
+var Try = {
+  these: function() {
+    var returnValue;
+
+    for (var i = 0, length = arguments.length; i < length; i++) {
+      var lambda = arguments[i];
+      try {
+        returnValue = lambda();
+        break;
+      } catch (e) { }
+    }
+
+    return returnValue;
+  }
+};
+
 var Ajax = {
   getTransport: function() {
     return Try.these(
@@ -1437,8 +1646,8 @@ var Ajax = {
 Ajax.Responders = {
   responders: [],
 
-  _each: function(iterator) {
-    this.responders._each(iterator);
+  _each: function(iterator, context) {
+    this.responders._each(iterator, context);
   },
 
   register: function(responder) {
@@ -1576,7 +1785,8 @@ Ajax.Request = Class.create(Ajax.Base, {
     }
 
     for (var name in headers)
-      this.transport.setRequestHeader(name, headers[name]);
+      if (headers[name] != null)
+        this.transport.setRequestHeader(name, headers[name]);
   },
 
   success: function() {
@@ -1713,7 +1923,12 @@ Ajax.Response = Class.create({
   _getHeaderJSON: function() {
     var json = this.getHeader('X-JSON');
     if (!json) return null;
-    json = decodeURIComponent(escape(json));
+
+    try {
+      json = decodeURIComponent(escape(json));
+    } catch(e) {
+    }
+
     try {
       return json.evalJSON(this.request.options.sanitizeJSON ||
         !this.request.isSameOrigin());
@@ -1814,54 +2029,51 @@ Ajax.PeriodicalUpdater = Class.create(Ajax.Base, {
   }
 });
 
+(function(GLOBAL) {
 
-function $(element) {
-  if (arguments.length > 1) {
-    for (var i = 0, elements = [], length = arguments.length; i < length; i++)
-      elements.push($(arguments[i]));
-    return elements;
+  var UNDEFINED;
+  var SLICE = Array.prototype.slice;
+
+  var DIV = document.createElement('div');
+
+
+  function $(element) {
+    if (arguments.length > 1) {
+      for (var i = 0, elements = [], length = arguments.length; i < length; i++)
+        elements.push($(arguments[i]));
+      return elements;
+    }
+
+    if (Object.isString(element))
+      element = document.getElementById(element);
+    return Element.extend(element);
   }
-  if (Object.isString(element))
-    element = document.getElementById(element);
-  return Element.extend(element);
-}
 
-if (Prototype.BrowserFeatures.XPath) {
-  document._getElementsByXPath = function(expression, parentElement) {
-    var results = [];
-    var query = document.evaluate(expression, $(parentElement) || document,
-      null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    for (var i = 0, length = query.snapshotLength; i < length; i++)
-      results.push(Element.extend(query.snapshotItem(i)));
-    return results;
-  };
-}
-
-/*--------------------------------------------------------------------------*/
-
-if (!Node) var Node = { };
-
-if (!Node.ELEMENT_NODE) {
-  Object.extend(Node, {
-    ELEMENT_NODE: 1,
-    ATTRIBUTE_NODE: 2,
-    TEXT_NODE: 3,
-    CDATA_SECTION_NODE: 4,
-    ENTITY_REFERENCE_NODE: 5,
-    ENTITY_NODE: 6,
-    PROCESSING_INSTRUCTION_NODE: 7,
-    COMMENT_NODE: 8,
-    DOCUMENT_NODE: 9,
-    DOCUMENT_TYPE_NODE: 10,
-    DOCUMENT_FRAGMENT_NODE: 11,
-    NOTATION_NODE: 12
-  });
-}
+  GLOBAL.$ = $;
 
 
+  if (!GLOBAL.Node) GLOBAL.Node = {};
 
-(function(global) {
-  function shouldUseCache(tagName, attributes) {
+  if (!GLOBAL.Node.ELEMENT_NODE) {
+    Object.extend(GLOBAL.Node, {
+      ELEMENT_NODE:                1,
+      ATTRIBUTE_NODE:              2,
+      TEXT_NODE:                   3,
+      CDATA_SECTION_NODE:          4,
+      ENTITY_REFERENCE_NODE:       5,
+      ENTITY_NODE:                 6,
+      PROCESSING_INSTRUCTION_NODE: 7,
+      COMMENT_NODE:                8,
+      DOCUMENT_NODE:               9,
+      DOCUMENT_TYPE_NODE:         10,
+      DOCUMENT_FRAGMENT_NODE:     11,
+      NOTATION_NODE:              12
+    });
+  }
+
+  var ELEMENT_CACHE = {};
+
+  function shouldUseCreationCache(tagName, attributes) {
     if (tagName === 'select') return false;
     if ('type' in attributes) return false;
     return true;
@@ -1877,12 +2089,11 @@ if (!Node.ELEMENT_NODE) {
     }
   })();
 
-  var element = global.Element;
 
-  global.Element = function(tagName, attributes) {
-    attributes = attributes || { };
+  var oldElement = GLOBAL.Element;
+  function Element(tagName, attributes) {
+    attributes = attributes || {};
     tagName = tagName.toLowerCase();
-    var cache = Element.cache;
 
     if (HAS_EXTENDED_CREATE_ELEMENT_SYNTAX && attributes.name) {
       tagName = '<' + tagName + ' name="' + attributes.name + '">';
@@ -1890,887 +2101,239 @@ if (!Node.ELEMENT_NODE) {
       return Element.writeAttribute(document.createElement(tagName), attributes);
     }
 
-    if (!cache[tagName]) cache[tagName] = Element.extend(document.createElement(tagName));
+    if (!ELEMENT_CACHE[tagName])
+      ELEMENT_CACHE[tagName] = Element.extend(document.createElement(tagName));
 
-    var node = shouldUseCache(tagName, attributes) ?
-     cache[tagName].cloneNode(false) : document.createElement(tagName);
+    var node = shouldUseCreationCache(tagName, attributes) ?
+     ELEMENT_CACHE[tagName].cloneNode(false) : document.createElement(tagName);
 
     return Element.writeAttribute(node, attributes);
-  };
-
-  Object.extend(global.Element, element || { });
-  if (element) global.Element.prototype = element.prototype;
-
-})(this);
-
-Element.idCounter = 1;
-Element.cache = { };
-
-Element._purgeElement = function(element) {
-  var uid = element._prototypeUID;
-  if (uid) {
-    Element.stopObserving(element);
-    element._prototypeUID = void 0;
-    delete Element.Storage[uid];
   }
-}
 
-Element.Methods = {
-  visible: function(element) {
-    return $(element).style.display != 'none';
-  },
+  GLOBAL.Element = Element;
 
-  toggle: function(element) {
+  Object.extend(GLOBAL.Element, oldElement || {});
+  if (oldElement) GLOBAL.Element.prototype = oldElement.prototype;
+
+  Element.Methods = { ByTag: {}, Simulated: {} };
+
+  var methods = {};
+
+  var INSPECT_ATTRIBUTES = { id: 'id', className: 'class' };
+  function inspect(element) {
     element = $(element);
-    Element[Element.visible(element) ? 'hide' : 'show'](element);
-    return element;
-  },
+    var result = '<' + element.tagName.toLowerCase();
 
-  hide: function(element) {
+    var attribute, value;
+    for (var property in INSPECT_ATTRIBUTES) {
+      attribute = INSPECT_ATTRIBUTES[property];
+      value = (element[property] || '').toString();
+      if (value) result += ' ' + attribute + '=' + value.inspect(true);
+    }
+
+    return result + '>';
+  }
+
+  methods.inspect = inspect;
+
+
+  function visible(element) {
+    return $(element).getStyle('display') !== 'none';
+  }
+
+  function toggle(element, bool) {
+    element = $(element);
+    if (typeof bool !== 'boolean')
+      bool = !Element.visible(element);
+    Element[bool ? 'show' : 'hide'](element);
+
+    return element;
+  }
+
+  function hide(element) {
     element = $(element);
     element.style.display = 'none';
     return element;
-  },
+  }
 
-  show: function(element) {
+  function show(element) {
     element = $(element);
     element.style.display = '';
     return element;
-  },
+  }
 
-  remove: function(element) {
+
+  Object.extend(methods, {
+    visible: visible,
+    toggle:  toggle,
+    hide:    hide,
+    show:    show
+  });
+
+
+  function remove(element) {
     element = $(element);
     element.parentNode.removeChild(element);
     return element;
-  },
+  }
 
-  update: (function(){
+  var SELECT_ELEMENT_INNERHTML_BUGGY = (function(){
+    var el = document.createElement("select"),
+        isBuggy = true;
+    el.innerHTML = "<option value=\"test\">test</option>";
+    if (el.options && el.options[0]) {
+      isBuggy = el.options[0].nodeName.toUpperCase() !== "OPTION";
+    }
+    el = null;
+    return isBuggy;
+  })();
 
-    var SELECT_ELEMENT_INNERHTML_BUGGY = (function(){
-      var el = document.createElement("select"),
-          isBuggy = true;
-      el.innerHTML = "<option value=\"test\">test</option>";
-      if (el.options && el.options[0]) {
-        isBuggy = el.options[0].nodeName.toUpperCase() !== "OPTION";
-      }
-      el = null;
-      return isBuggy;
-    })();
-
-    var TABLE_ELEMENT_INNERHTML_BUGGY = (function(){
-      try {
-        var el = document.createElement("table");
-        if (el && el.tBodies) {
-          el.innerHTML = "<tbody><tr><td>test</td></tr></tbody>";
-          var isBuggy = typeof el.tBodies[0] == "undefined";
-          el = null;
-          return isBuggy;
-        }
-      } catch (e) {
-        return true;
-      }
-    })();
-
-    var LINK_ELEMENT_INNERHTML_BUGGY = (function() {
-      try {
-        var el = document.createElement('div');
-        el.innerHTML = "<link>";
-        var isBuggy = (el.childNodes.length === 0);
+  var TABLE_ELEMENT_INNERHTML_BUGGY = (function(){
+    try {
+      var el = document.createElement("table");
+      if (el && el.tBodies) {
+        el.innerHTML = "<tbody><tr><td>test</td></tr></tbody>";
+        var isBuggy = typeof el.tBodies[0] == "undefined";
         el = null;
         return isBuggy;
-      } catch(e) {
-        return true;
       }
-    })();
+    } catch (e) {
+      return true;
+    }
+  })();
 
-    var ANY_INNERHTML_BUGGY = SELECT_ELEMENT_INNERHTML_BUGGY ||
-     TABLE_ELEMENT_INNERHTML_BUGGY || LINK_ELEMENT_INNERHTML_BUGGY;
-
-    var SCRIPT_ELEMENT_REJECTS_TEXTNODE_APPENDING = (function () {
-      var s = document.createElement("script"),
-          isBuggy = false;
-      try {
-        s.appendChild(document.createTextNode(""));
-        isBuggy = !s.firstChild ||
-          s.firstChild && s.firstChild.nodeType !== 3;
-      } catch (e) {
-        isBuggy = true;
-      }
-      s = null;
+  var LINK_ELEMENT_INNERHTML_BUGGY = (function() {
+    try {
+      var el = document.createElement('div');
+      el.innerHTML = "<link />";
+      var isBuggy = (el.childNodes.length === 0);
+      el = null;
       return isBuggy;
-    })();
+    } catch(e) {
+      return true;
+    }
+  })();
+
+  var ANY_INNERHTML_BUGGY = SELECT_ELEMENT_INNERHTML_BUGGY ||
+   TABLE_ELEMENT_INNERHTML_BUGGY || LINK_ELEMENT_INNERHTML_BUGGY;
+
+  var SCRIPT_ELEMENT_REJECTS_TEXTNODE_APPENDING = (function () {
+    var s = document.createElement("script"),
+        isBuggy = false;
+    try {
+      s.appendChild(document.createTextNode(""));
+      isBuggy = !s.firstChild ||
+        s.firstChild && s.firstChild.nodeType !== 3;
+    } catch (e) {
+      isBuggy = true;
+    }
+    s = null;
+    return isBuggy;
+  })();
+
+  function update(element, content) {
+    element = $(element);
+
+    var descendants = element.getElementsByTagName('*'),
+     i = descendants.length;
+    while (i--) purgeElement(descendants[i]);
+
+    if (content && content.toElement)
+      content = content.toElement();
+
+    if (Object.isElement(content))
+      return element.update().insert(content);
 
 
-    function update(element, content) {
-      element = $(element);
-      var purgeElement = Element._purgeElement;
+    content = Object.toHTML(content);
+    var tagName = element.tagName.toUpperCase();
 
-      var descendants = element.getElementsByTagName('*'),
-       i = descendants.length;
-      while (i--) purgeElement(descendants[i]);
-
-      if (content && content.toElement)
-        content = content.toElement();
-
-      if (Object.isElement(content))
-        return element.update().insert(content);
-
-      content = Object.toHTML(content);
-
-      var tagName = element.tagName.toUpperCase();
-
-      if (tagName === 'SCRIPT' && SCRIPT_ELEMENT_REJECTS_TEXTNODE_APPENDING) {
-        element.text = content;
-        return element;
-      }
-
-      if (ANY_INNERHTML_BUGGY) {
-        if (tagName in Element._insertionTranslations.tags) {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
-          Element._getContentFromAnonymousElement(tagName, content.stripScripts())
-            .each(function(node) {
-              element.appendChild(node)
-            });
-        } else if (LINK_ELEMENT_INNERHTML_BUGGY && Object.isString(content) && content.indexOf('<link') > -1) {
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
-          var nodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts(), true);
-          nodes.each(function(node) { element.appendChild(node) });
-        }
-        else {
-          element.innerHTML = content.stripScripts();
-        }
-      }
-      else {
-        element.innerHTML = content.stripScripts();
-      }
-
-      content.evalScripts.bind(content).defer();
+    if (tagName === 'SCRIPT' && SCRIPT_ELEMENT_REJECTS_TEXTNODE_APPENDING) {
+      element.text = content;
       return element;
     }
 
-    return update;
-  })(),
+    if (ANY_INNERHTML_BUGGY) {
+      if (tagName in INSERTION_TRANSLATIONS.tags) {
+        while (element.firstChild)
+          element.removeChild(element.firstChild);
 
-  replace: function(element, content) {
+        var nodes = getContentFromAnonymousElement(tagName, content.stripScripts());
+        for (var i = 0, node; node = nodes[i]; i++)
+          element.appendChild(node);
+
+      } else if (LINK_ELEMENT_INNERHTML_BUGGY && Object.isString(content) && content.indexOf('<link') > -1) {
+        while (element.firstChild)
+          element.removeChild(element.firstChild);
+
+        var nodes = getContentFromAnonymousElement(tagName,
+         content.stripScripts(), true);
+
+        for (var i = 0, node; node = nodes[i]; i++)
+          element.appendChild(node);
+      } else {
+        element.innerHTML = content.stripScripts();
+      }
+    } else {
+      element.innerHTML = content.stripScripts();
+    }
+
+    content.evalScripts.bind(content).defer();
+    return element;
+  }
+
+  function replace(element, content) {
     element = $(element);
-    if (content && content.toElement) content = content.toElement();
-    else if (!Object.isElement(content)) {
+
+    if (content && content.toElement) {
+      content = content.toElement();
+    } else if (!Object.isElement(content)) {
       content = Object.toHTML(content);
       var range = element.ownerDocument.createRange();
       range.selectNode(element);
       content.evalScripts.bind(content).defer();
       content = range.createContextualFragment(content.stripScripts());
     }
+
     element.parentNode.replaceChild(content, element);
     return element;
-  },
-
-  insert: function(element, insertions) {
-    element = $(element);
-
-    if (Object.isString(insertions) || Object.isNumber(insertions) ||
-        Object.isElement(insertions) || (insertions && (insertions.toElement || insertions.toHTML)))
-          insertions = {bottom:insertions};
-
-    var content, insert, tagName, childNodes;
-
-    for (var position in insertions) {
-      content  = insertions[position];
-      position = position.toLowerCase();
-      insert = Element._insertionTranslations[position];
-
-      if (content && content.toElement) content = content.toElement();
-      if (Object.isElement(content)) {
-        insert(element, content);
-        continue;
-      }
-
-      content = Object.toHTML(content);
-
-      tagName = ((position == 'before' || position == 'after')
-        ? element.parentNode : element).tagName.toUpperCase();
-
-      childNodes = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
-
-      if (position == 'top' || position == 'after') childNodes.reverse();
-      childNodes.each(insert.curry(element));
-
-      content.evalScripts.bind(content).defer();
-    }
-
-    return element;
-  },
-
-  wrap: function(element, wrapper, attributes) {
-    element = $(element);
-    if (Object.isElement(wrapper))
-      $(wrapper).writeAttribute(attributes || { });
-    else if (Object.isString(wrapper)) wrapper = new Element(wrapper, attributes);
-    else wrapper = new Element('div', wrapper);
-    if (element.parentNode)
-      element.parentNode.replaceChild(wrapper, element);
-    wrapper.appendChild(element);
-    return wrapper;
-  },
-
-  inspect: function(element) {
-    element = $(element);
-    var result = '<' + element.tagName.toLowerCase();
-    $H({'id': 'id', 'className': 'class'}).each(function(pair) {
-      var property = pair.first(),
-          attribute = pair.last(),
-          value = (element[property] || '').toString();
-      if (value) result += ' ' + attribute + '=' + value.inspect(true);
-    });
-    return result + '>';
-  },
-
-  recursivelyCollect: function(element, property, maximumLength) {
-    element = $(element);
-    maximumLength = maximumLength || -1;
-    var elements = [];
-
-    while (element = element[property]) {
-      if (element.nodeType == 1)
-        elements.push(Element.extend(element));
-      if (elements.length == maximumLength)
-        break;
-    }
-
-    return elements;
-  },
-
-  ancestors: function(element) {
-    return Element.recursivelyCollect(element, 'parentNode');
-  },
-
-  descendants: function(element) {
-    return Element.select(element, "*");
-  },
-
-  firstDescendant: function(element) {
-    element = $(element).firstChild;
-    while (element && element.nodeType != 1) element = element.nextSibling;
-    return $(element);
-  },
-
-  immediateDescendants: function(element) {
-    var results = [], child = $(element).firstChild;
-    while (child) {
-      if (child.nodeType === 1) {
-        results.push(Element.extend(child));
-      }
-      child = child.nextSibling;
-    }
-    return results;
-  },
-
-  previousSiblings: function(element, maximumLength) {
-    return Element.recursivelyCollect(element, 'previousSibling');
-  },
-
-  nextSiblings: function(element) {
-    return Element.recursivelyCollect(element, 'nextSibling');
-  },
-
-  siblings: function(element) {
-    element = $(element);
-    return Element.previousSiblings(element).reverse()
-      .concat(Element.nextSiblings(element));
-  },
-
-  match: function(element, selector) {
-    element = $(element);
-    if (Object.isString(selector))
-      return Prototype.Selector.match(element, selector);
-    return selector.match(element);
-  },
-
-  up: function(element, expression, index) {
-    element = $(element);
-    if (arguments.length == 1) return $(element.parentNode);
-    var ancestors = Element.ancestors(element);
-    return Object.isNumber(expression) ? ancestors[expression] :
-      Prototype.Selector.find(ancestors, expression, index);
-  },
-
-  down: function(element, expression, index) {
-    element = $(element);
-    if (arguments.length == 1) return Element.firstDescendant(element);
-    return Object.isNumber(expression) ? Element.descendants(element)[expression] :
-      Element.select(element, expression)[index || 0];
-  },
-
-  previous: function(element, expression, index) {
-    element = $(element);
-    if (Object.isNumber(expression)) index = expression, expression = false;
-    if (!Object.isNumber(index)) index = 0;
-
-    if (expression) {
-      return Prototype.Selector.find(element.previousSiblings(), expression, index);
-    } else {
-      return element.recursivelyCollect("previousSibling", index + 1)[index];
-    }
-  },
-
-  next: function(element, expression, index) {
-    element = $(element);
-    if (Object.isNumber(expression)) index = expression, expression = false;
-    if (!Object.isNumber(index)) index = 0;
-
-    if (expression) {
-      return Prototype.Selector.find(element.nextSiblings(), expression, index);
-    } else {
-      var maximumLength = Object.isNumber(index) ? index + 1 : 1;
-      return element.recursivelyCollect("nextSibling", index + 1)[index];
-    }
-  },
-
-
-  select: function(element) {
-    element = $(element);
-    var expressions = Array.prototype.slice.call(arguments, 1).join(', ');
-    return Prototype.Selector.select(expressions, element);
-  },
-
-  adjacent: function(element) {
-    element = $(element);
-    var expressions = Array.prototype.slice.call(arguments, 1).join(', ');
-    return Prototype.Selector.select(expressions, element.parentNode).without(element);
-  },
-
-  identify: function(element) {
-    element = $(element);
-    var id = Element.readAttribute(element, 'id');
-    if (id) return id;
-    do { id = 'anonymous_element_' + Element.idCounter++ } while ($(id));
-    Element.writeAttribute(element, 'id', id);
-    return id;
-  },
-
-  readAttribute: function(element, name) {
-    element = $(element);
-    if (Prototype.Browser.IE) {
-      var t = Element._attributeTranslations.read;
-      if (t.values[name]) return t.values[name](element, name);
-      if (t.names[name]) name = t.names[name];
-      if (name.include(':')) {
-        return (!element.attributes || !element.attributes[name]) ? null :
-         element.attributes[name].value;
-      }
-    }
-    return element.getAttribute(name);
-  },
-
-  writeAttribute: function(element, name, value) {
-    element = $(element);
-    var attributes = { }, t = Element._attributeTranslations.write;
-
-    if (typeof name == 'object') attributes = name;
-    else attributes[name] = Object.isUndefined(value) ? true : value;
-
-    for (var attr in attributes) {
-      name = t.names[attr] || attr;
-      value = attributes[attr];
-      if (t.values[attr]) name = t.values[attr](element, value);
-      if (value === false || value === null)
-        element.removeAttribute(name);
-      else if (value === true)
-        element.setAttribute(name, name);
-      else element.setAttribute(name, value);
-    }
-    return element;
-  },
-
-  getHeight: function(element) {
-    return Element.getDimensions(element).height;
-  },
-
-  getWidth: function(element) {
-    return Element.getDimensions(element).width;
-  },
-
-  classNames: function(element) {
-    return new Element.ClassNames(element);
-  },
-
-  hasClassName: function(element, className) {
-    if (!(element = $(element))) return;
-    var elementClassName = element.className;
-    return (elementClassName.length > 0 && (elementClassName == className ||
-      new RegExp("(^|\\s)" + className + "(\\s|$)").test(elementClassName)));
-  },
-
-  addClassName: function(element, className) {
-    if (!(element = $(element))) return;
-    if (!Element.hasClassName(element, className))
-      element.className += (element.className ? ' ' : '') + className;
-    return element;
-  },
-
-  removeClassName: function(element, className) {
-    if (!(element = $(element))) return;
-    element.className = element.className.replace(
-      new RegExp("(^|\\s+)" + className + "(\\s+|$)"), ' ').strip();
-    return element;
-  },
-
-  toggleClassName: function(element, className) {
-    if (!(element = $(element))) return;
-    return Element[Element.hasClassName(element, className) ?
-      'removeClassName' : 'addClassName'](element, className);
-  },
-
-  cleanWhitespace: function(element) {
-    element = $(element);
-    var node = element.firstChild;
-    while (node) {
-      var nextNode = node.nextSibling;
-      if (node.nodeType == 3 && !/\S/.test(node.nodeValue))
-        element.removeChild(node);
-      node = nextNode;
-    }
-    return element;
-  },
-
-  empty: function(element) {
-    return $(element).innerHTML.blank();
-  },
-
-  descendantOf: function(element, ancestor) {
-    element = $(element), ancestor = $(ancestor);
-
-    if (element.compareDocumentPosition)
-      return (element.compareDocumentPosition(ancestor) & 8) === 8;
-
-    if (ancestor.contains)
-      return ancestor.contains(element) && ancestor !== element;
-
-    while (element = element.parentNode)
-      if (element == ancestor) return true;
-
-    return false;
-  },
-
-  scrollTo: function(element) {
-    element = $(element);
-    var pos = Element.cumulativeOffset(element);
-    window.scrollTo(pos[0], pos[1]);
-    return element;
-  },
-
-  getStyle: function(element, style) {
-    element = $(element);
-    style = style == 'float' ? 'cssFloat' : style.camelize();
-    var value = element.style[style];
-    if (!value || value == 'auto') {
-      var css = document.defaultView.getComputedStyle(element, null);
-      value = css ? css[style] : null;
-    }
-    if (style == 'opacity') return value ? parseFloat(value) : 1.0;
-    return value == 'auto' ? null : value;
-  },
-
-  getOpacity: function(element) {
-    return $(element).getStyle('opacity');
-  },
-
-  setStyle: function(element, styles) {
-    element = $(element);
-    var elementStyle = element.style, match;
-    if (Object.isString(styles)) {
-      element.style.cssText += ';' + styles;
-      return styles.include('opacity') ?
-        element.setOpacity(styles.match(/opacity:\s*(\d?\.?\d*)/)[1]) : element;
-    }
-    for (var property in styles)
-      if (property == 'opacity') element.setOpacity(styles[property]);
-      else
-        elementStyle[(property == 'float' || property == 'cssFloat') ?
-          (Object.isUndefined(elementStyle.styleFloat) ? 'cssFloat' : 'styleFloat') :
-            property] = styles[property];
-
-    return element;
-  },
-
-  setOpacity: function(element, value) {
-    element = $(element);
-    element.style.opacity = (value == 1 || value === '') ? '' :
-      (value < 0.00001) ? 0 : value;
-    return element;
-  },
-
-  makePositioned: function(element) {
-    element = $(element);
-    var pos = Element.getStyle(element, 'position');
-    if (pos == 'static' || !pos) {
-      element._madePositioned = true;
-      element.style.position = 'relative';
-      if (Prototype.Browser.Opera) {
-        element.style.top = 0;
-        element.style.left = 0;
-      }
-    }
-    return element;
-  },
-
-  undoPositioned: function(element) {
-    element = $(element);
-    if (element._madePositioned) {
-      element._madePositioned = undefined;
-      element.style.position =
-        element.style.top =
-        element.style.left =
-        element.style.bottom =
-        element.style.right = '';
-    }
-    return element;
-  },
-
-  makeClipping: function(element) {
-    element = $(element);
-    if (element._overflow) return element;
-    element._overflow = Element.getStyle(element, 'overflow') || 'auto';
-    if (element._overflow !== 'hidden')
-      element.style.overflow = 'hidden';
-    return element;
-  },
-
-  undoClipping: function(element) {
-    element = $(element);
-    if (!element._overflow) return element;
-    element.style.overflow = element._overflow == 'auto' ? '' : element._overflow;
-    element._overflow = null;
-    return element;
-  },
-
-  clonePosition: function(element, source) {
-    var options = Object.extend({
-      setLeft:    true,
-      setTop:     true,
-      setWidth:   true,
-      setHeight:  true,
-      offsetTop:  0,
-      offsetLeft: 0
-    }, arguments[2] || { });
-
-    source = $(source);
-    var p = Element.viewportOffset(source), delta = [0, 0], parent = null;
-
-    element = $(element);
-
-    if (Element.getStyle(element, 'position') == 'absolute') {
-      parent = Element.getOffsetParent(element);
-      delta = Element.viewportOffset(parent);
-    }
-
-    if (parent == document.body) {
-      delta[0] -= document.body.offsetLeft;
-      delta[1] -= document.body.offsetTop;
-    }
-
-    if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
-    if (options.setTop)    element.style.top   = (p[1] - delta[1] + options.offsetTop) + 'px';
-    if (options.setWidth)  element.style.width = source.offsetWidth + 'px';
-    if (options.setHeight) element.style.height = source.offsetHeight + 'px';
-    return element;
   }
-};
 
-Object.extend(Element.Methods, {
-  getElementsBySelector: Element.Methods.select,
-
-  childElements: Element.Methods.immediateDescendants
-});
-
-Element._attributeTranslations = {
-  write: {
-    names: {
-      className: 'class',
-      htmlFor:   'for'
+  var INSERTION_TRANSLATIONS = {
+    before: function(element, node) {
+      element.parentNode.insertBefore(node, element);
     },
-    values: { }
-  }
-};
+    top: function(element, node) {
+      element.insertBefore(node, element.firstChild);
+    },
+    bottom: function(element, node) {
+      element.appendChild(node);
+    },
+    after: function(element, node) {
+      element.parentNode.insertBefore(node, element.nextSibling);
+    },
 
-if (Prototype.Browser.Opera) {
-  Element.Methods.getStyle = Element.Methods.getStyle.wrap(
-    function(proceed, element, style) {
-      switch (style) {
-        case 'height': case 'width':
-          if (!Element.visible(element)) return null;
-
-          var dim = parseInt(proceed(element, style), 10);
-
-          if (dim !== element['offset' + style.capitalize()])
-            return dim + 'px';
-
-          var properties;
-          if (style === 'height') {
-            properties = ['border-top-width', 'padding-top',
-             'padding-bottom', 'border-bottom-width'];
-          }
-          else {
-            properties = ['border-left-width', 'padding-left',
-             'padding-right', 'border-right-width'];
-          }
-          return properties.inject(dim, function(memo, property) {
-            var val = proceed(element, property);
-            return val === null ? memo : memo - parseInt(val, 10);
-          }) + 'px';
-        default: return proceed(element, style);
-      }
-    }
-  );
-
-  Element.Methods.readAttribute = Element.Methods.readAttribute.wrap(
-    function(proceed, element, attribute) {
-      if (attribute === 'title') return element.title;
-      return proceed(element, attribute);
-    }
-  );
-}
-
-else if (Prototype.Browser.IE) {
-  Element.Methods.getStyle = function(element, style) {
-    element = $(element);
-    style = (style == 'float' || style == 'cssFloat') ? 'styleFloat' : style.camelize();
-    var value = element.style[style];
-    if (!value && element.currentStyle) value = element.currentStyle[style];
-
-    if (style == 'opacity') {
-      if (value = (element.getStyle('filter') || '').match(/alpha\(opacity=(.*)\)/))
-        if (value[1]) return parseFloat(value[1]) / 100;
-      return 1.0;
-    }
-
-    if (value == 'auto') {
-      if ((style == 'width' || style == 'height') && (element.getStyle('display') != 'none'))
-        return element['offset' + style.capitalize()] + 'px';
-      return null;
-    }
-    return value;
-  };
-
-  Element.Methods.setOpacity = function(element, value) {
-    function stripAlpha(filter){
-      return filter.replace(/alpha\([^\)]*\)/gi,'');
-    }
-    element = $(element);
-    var currentStyle = element.currentStyle;
-    if ((currentStyle && !currentStyle.hasLayout) ||
-      (!currentStyle && element.style.zoom == 'normal'))
-        element.style.zoom = 1;
-
-    var filter = element.getStyle('filter'), style = element.style;
-    if (value == 1 || value === '') {
-      (filter = stripAlpha(filter)) ?
-        style.filter = filter : style.removeAttribute('filter');
-      return element;
-    } else if (value < 0.00001) value = 0;
-    style.filter = stripAlpha(filter) +
-      'alpha(opacity=' + (value * 100) + ')';
-    return element;
-  };
-
-  Element._attributeTranslations = (function(){
-
-    var classProp = 'className',
-        forProp = 'for',
-        el = document.createElement('div');
-
-    el.setAttribute(classProp, 'x');
-
-    if (el.className !== 'x') {
-      el.setAttribute('class', 'x');
-      if (el.className === 'x') {
-        classProp = 'class';
-      }
-    }
-    el = null;
-
-    el = document.createElement('label');
-    el.setAttribute(forProp, 'x');
-    if (el.htmlFor !== 'x') {
-      el.setAttribute('htmlFor', 'x');
-      if (el.htmlFor === 'x') {
-        forProp = 'htmlFor';
-      }
-    }
-    el = null;
-
-    return {
-      read: {
-        names: {
-          'class':      classProp,
-          'className':  classProp,
-          'for':        forProp,
-          'htmlFor':    forProp
-        },
-        values: {
-          _getAttr: function(element, attribute) {
-            return element.getAttribute(attribute);
-          },
-          _getAttr2: function(element, attribute) {
-            return element.getAttribute(attribute, 2);
-          },
-          _getAttrNode: function(element, attribute) {
-            var node = element.getAttributeNode(attribute);
-            return node ? node.value : "";
-          },
-          _getEv: (function(){
-
-            var el = document.createElement('div'), f;
-            el.onclick = Prototype.emptyFunction;
-            var value = el.getAttribute('onclick');
-
-            if (String(value).indexOf('{') > -1) {
-              f = function(element, attribute) {
-                attribute = element.getAttribute(attribute);
-                if (!attribute) return null;
-                attribute = attribute.toString();
-                attribute = attribute.split('{')[1];
-                attribute = attribute.split('}')[0];
-                return attribute.strip();
-              };
-            }
-            else if (value === '') {
-              f = function(element, attribute) {
-                attribute = element.getAttribute(attribute);
-                if (!attribute) return null;
-                return attribute.strip();
-              };
-            }
-            el = null;
-            return f;
-          })(),
-          _flag: function(element, attribute) {
-            return $(element).hasAttribute(attribute) ? attribute : null;
-          },
-          style: function(element) {
-            return element.style.cssText.toLowerCase();
-          },
-          title: function(element) {
-            return element.title;
-          }
-        }
-      }
-    }
-  })();
-
-  Element._attributeTranslations.write = {
-    names: Object.extend({
-      cellpadding: 'cellPadding',
-      cellspacing: 'cellSpacing'
-    }, Element._attributeTranslations.read.names),
-    values: {
-      checked: function(element, value) {
-        element.checked = !!value;
-      },
-
-      style: function(element, value) {
-        element.style.cssText = value ? value : '';
-      }
+    tags: {
+      TABLE:  ['<table>',                '</table>',                   1],
+      TBODY:  ['<table><tbody>',         '</tbody></table>',           2],
+      TR:     ['<table><tbody><tr>',     '</tr></tbody></table>',      3],
+      TD:     ['<table><tbody><tr><td>', '</td></tr></tbody></table>', 4],
+      SELECT: ['<select>',               '</select>',                  1]
     }
   };
 
-  Element._attributeTranslations.has = {};
+  var tags = INSERTION_TRANSLATIONS.tags;
 
-  $w('colSpan rowSpan vAlign dateTime accessKey tabIndex ' +
-      'encType maxLength readOnly longDesc frameBorder').each(function(attr) {
-    Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
-    Element._attributeTranslations.has[attr.toLowerCase()] = attr;
+  Object.extend(tags, {
+    THEAD: tags.TBODY,
+    TFOOT: tags.TBODY,
+    TH:    tags.TD
   });
 
-  (function(v) {
-    Object.extend(v, {
-      href:        v._getAttr2,
-      src:         v._getAttr2,
-      type:        v._getAttr,
-      action:      v._getAttrNode,
-      disabled:    v._flag,
-      checked:     v._flag,
-      readonly:    v._flag,
-      multiple:    v._flag,
-      onload:      v._getEv,
-      onunload:    v._getEv,
-      onclick:     v._getEv,
-      ondblclick:  v._getEv,
-      onmousedown: v._getEv,
-      onmouseup:   v._getEv,
-      onmouseover: v._getEv,
-      onmousemove: v._getEv,
-      onmouseout:  v._getEv,
-      onfocus:     v._getEv,
-      onblur:      v._getEv,
-      onkeypress:  v._getEv,
-      onkeydown:   v._getEv,
-      onkeyup:     v._getEv,
-      onsubmit:    v._getEv,
-      onreset:     v._getEv,
-      onselect:    v._getEv,
-      onchange:    v._getEv
-    });
-  })(Element._attributeTranslations.read.values);
-
-  if (Prototype.BrowserFeatures.ElementExtensions) {
-    (function() {
-      function _descendants(element) {
-        var nodes = element.getElementsByTagName('*'), results = [];
-        for (var i = 0, node; node = nodes[i]; i++)
-          if (node.tagName !== "!") // Filter out comment nodes.
-            results.push(node);
-        return results;
-      }
-
-      Element.Methods.down = function(element, expression, index) {
-        element = $(element);
-        if (arguments.length == 1) return element.firstDescendant();
-        return Object.isNumber(expression) ? _descendants(element)[expression] :
-          Element.select(element, expression)[index || 0];
-      }
-    })();
-  }
-
-}
-
-else if (Prototype.Browser.Gecko && /rv:1\.8\.0/.test(navigator.userAgent)) {
-  Element.Methods.setOpacity = function(element, value) {
+  function replace_IE(element, content) {
     element = $(element);
-    element.style.opacity = (value == 1) ? 0.999999 :
-      (value === '') ? '' : (value < 0.00001) ? 0 : value;
-    return element;
-  };
-}
-
-else if (Prototype.Browser.WebKit) {
-  Element.Methods.setOpacity = function(element, value) {
-    element = $(element);
-    element.style.opacity = (value == 1 || value === '') ? '' :
-      (value < 0.00001) ? 0 : value;
-
-    if (value == 1)
-      if (element.tagName.toUpperCase() == 'IMG' && element.width) {
-        element.width++; element.width--;
-      } else try {
-        var n = document.createTextNode(' ');
-        element.appendChild(n);
-        element.removeChild(n);
-      } catch (e) { }
-
-    return element;
-  };
-}
-
-if ('outerHTML' in document.documentElement) {
-  Element.Methods.replace = function(element, content) {
-    element = $(element);
-
-    if (content && content.toElement) content = content.toElement();
+    if (content && content.toElement)
+      content = content.toElement();
     if (Object.isElement(content)) {
       element.parentNode.replaceChild(content, element);
       return element;
@@ -2779,125 +2342,970 @@ if ('outerHTML' in document.documentElement) {
     content = Object.toHTML(content);
     var parent = element.parentNode, tagName = parent.tagName.toUpperCase();
 
-    if (Element._insertionTranslations.tags[tagName]) {
-      var nextSibling = element.next(),
-          fragments = Element._getContentFromAnonymousElement(tagName, content.stripScripts());
+    if (tagName in INSERTION_TRANSLATIONS.tags) {
+      var nextSibling = Element.next(element);
+      var fragments = getContentFromAnonymousElement(
+       tagName, content.stripScripts());
+
       parent.removeChild(element);
+
+      var iterator;
       if (nextSibling)
-        fragments.each(function(node) { parent.insertBefore(node, nextSibling) });
+        iterator = function(node) { parent.insertBefore(node, nextSibling) };
       else
-        fragments.each(function(node) { parent.appendChild(node) });
+        iterator = function(node) { parent.appendChild(node); }
+
+      fragments.each(iterator);
+    } else {
+      element.outerHTML = content.stripScripts();
     }
-    else element.outerHTML = content.stripScripts();
 
     content.evalScripts.bind(content).defer();
     return element;
-  };
-}
-
-Element._returnOffset = function(l, t) {
-  var result = [l, t];
-  result.left = l;
-  result.top = t;
-  return result;
-};
-
-Element._getContentFromAnonymousElement = function(tagName, html, force) {
-  var div = new Element('div'),
-      t = Element._insertionTranslations.tags[tagName];
-
-  var workaround = false;
-  if (t) workaround = true;
-  else if (force) {
-    workaround = true;
-    t = ['', '', 0];
   }
 
-  if (workaround) {
-    div.innerHTML = '&nbsp;' + t[0] + html + t[1];
-    div.removeChild(div.firstChild);
-    for (var i = t[2]; i--; ) {
-      div = div.firstChild;
+  if ('outerHTML' in document.documentElement)
+    replace = replace_IE;
+
+  function isContent(content) {
+    if (Object.isUndefined(content) || content === null) return false;
+
+    if (Object.isString(content) || Object.isNumber(content)) return true;
+    if (Object.isElement(content)) return true;
+    if (content.toElement || content.toHTML) return true;
+
+    return false;
+  }
+
+  function insertContentAt(element, content, position) {
+    position   = position.toLowerCase();
+    var method = INSERTION_TRANSLATIONS[position];
+
+    if (content && content.toElement) content = content.toElement();
+    if (Object.isElement(content)) {
+      method(element, content);
+      return element;
+    }
+
+    content = Object.toHTML(content);
+    var tagName = ((position === 'before' || position === 'after') ?
+     element.parentNode : element).tagName.toUpperCase();
+
+    var childNodes = getContentFromAnonymousElement(tagName, content.stripScripts());
+
+    if (position === 'top' || position === 'after') childNodes.reverse();
+
+    for (var i = 0, node; node = childNodes[i]; i++)
+      method(element, node);
+
+    content.evalScripts.bind(content).defer();
+  }
+
+  function insert(element, insertions) {
+    element = $(element);
+
+    if (isContent(insertions))
+      insertions = { bottom: insertions };
+
+    for (var position in insertions)
+      insertContentAt(element, insertions[position], position);
+
+    return element;
+  }
+
+  function wrap(element, wrapper, attributes) {
+    element = $(element);
+
+    if (Object.isElement(wrapper)) {
+      $(wrapper).writeAttribute(attributes || {});
+    } else if (Object.isString(wrapper)) {
+      wrapper = new Element(wrapper, attributes);
+    } else {
+      wrapper = new Element('div', wrapper);
+    }
+
+    if (element.parentNode)
+      element.parentNode.replaceChild(wrapper, element);
+
+    wrapper.appendChild(element);
+
+    return wrapper;
+  }
+
+  function cleanWhitespace(element) {
+    element = $(element);
+    var node = element.firstChild;
+
+    while (node) {
+      var nextNode = node.nextSibling;
+      if (node.nodeType === Node.TEXT_NODE && !/\S/.test(node.nodeValue))
+        element.removeChild(node);
+      node = nextNode;
+    }
+    return element;
+  }
+
+  function empty(element) {
+    return $(element).innerHTML.blank();
+  }
+
+  function getContentFromAnonymousElement(tagName, html, force) {
+    var t = INSERTION_TRANSLATIONS.tags[tagName], div = DIV;
+
+    var workaround = !!t;
+    if (!workaround && force) {
+      workaround = true;
+      t = ['', '', 0];
+    }
+
+    if (workaround) {
+      div.innerHTML = '&#160;' + t[0] + html + t[1];
+      div.removeChild(div.firstChild);
+      for (var i = t[2]; i--; )
+        div = div.firstChild;
+    } else {
+      div.innerHTML = html;
+    }
+
+    return $A(div.childNodes);
+  }
+
+  function clone(element, deep) {
+    if (!(element = $(element))) return;
+    var clone = element.cloneNode(deep);
+    if (!HAS_UNIQUE_ID_PROPERTY) {
+      clone._prototypeUID = UNDEFINED;
+      if (deep) {
+        var descendants = Element.select(clone, '*'),
+         i = descendants.length;
+        while (i--)
+          descendants[i]._prototypeUID = UNDEFINED;
+      }
+    }
+    return Element.extend(clone);
+  }
+
+  function purgeElement(element) {
+    var uid = getUniqueElementID(element);
+    if (uid) {
+      Element.stopObserving(element);
+      if (!HAS_UNIQUE_ID_PROPERTY)
+        element._prototypeUID = UNDEFINED;
+      delete Element.Storage[uid];
     }
   }
-  else {
-    div.innerHTML = html;
-  }
-  return $A(div.childNodes);
-};
 
-Element._insertionTranslations = {
-  before: function(element, node) {
-    element.parentNode.insertBefore(node, element);
-  },
-  top: function(element, node) {
-    element.insertBefore(node, element.firstChild);
-  },
-  bottom: function(element, node) {
-    element.appendChild(node);
-  },
-  after: function(element, node) {
-    element.parentNode.insertBefore(node, element.nextSibling);
-  },
-  tags: {
-    TABLE:  ['<table>',                '</table>',                   1],
-    TBODY:  ['<table><tbody>',         '</tbody></table>',           2],
-    TR:     ['<table><tbody><tr>',     '</tr></tbody></table>',      3],
-    TD:     ['<table><tbody><tr><td>', '</td></tr></tbody></table>', 4],
-    SELECT: ['<select>',               '</select>',                  1]
+  function purgeCollection(elements) {
+    var i = elements.length;
+    while (i--)
+      purgeElement(elements[i]);
   }
-};
 
-(function() {
-  var tags = Element._insertionTranslations.tags;
-  Object.extend(tags, {
-    THEAD: tags.TBODY,
-    TFOOT: tags.TBODY,
-    TH:    tags.TD
+  function purgeCollection_IE(elements) {
+    var i = elements.length, element, uid;
+    while (i--) {
+      element = elements[i];
+      uid = getUniqueElementID(element);
+      delete Element.Storage[uid];
+      delete Event.cache[uid];
+    }
+  }
+
+  if (HAS_UNIQUE_ID_PROPERTY) {
+    purgeCollection = purgeCollection_IE;
+  }
+
+
+  function purge(element) {
+    if (!(element = $(element))) return;
+    purgeElement(element);
+
+    var descendants = element.getElementsByTagName('*'),
+     i = descendants.length;
+
+    while (i--) purgeElement(descendants[i]);
+
+    return null;
+  }
+
+  Object.extend(methods, {
+    remove:  remove,
+    update:  update,
+    replace: replace,
+    insert:  insert,
+    wrap:    wrap,
+    cleanWhitespace: cleanWhitespace,
+    empty:   empty,
+    clone:   clone,
+    purge:   purge
   });
-})();
 
-Element.Methods.Simulated = {
-  hasAttribute: function(element, attribute) {
-    attribute = Element._attributeTranslations.has[attribute] || attribute;
+
+
+  function recursivelyCollect(element, property, maximumLength) {
+    element = $(element);
+    maximumLength = maximumLength || -1;
+    var elements = [];
+
+    while (element = element[property]) {
+      if (element.nodeType === Node.ELEMENT_NODE)
+        elements.push(Element.extend(element));
+
+      if (elements.length === maximumLength) break;
+    }
+
+    return elements;
+  }
+
+
+  function ancestors(element) {
+    return recursivelyCollect(element, 'parentNode');
+  }
+
+  function descendants(element) {
+    return Element.select(element, '*');
+  }
+
+  function firstDescendant(element) {
+    element = $(element).firstChild;
+    while (element && element.nodeType !== Node.ELEMENT_NODE)
+      element = element.nextSibling;
+
+    return $(element);
+  }
+
+  function immediateDescendants(element) {
+    var results = [], child = $(element).firstChild;
+
+    while (child) {
+      if (child.nodeType === Node.ELEMENT_NODE)
+        results.push(Element.extend(child));
+
+      child = child.nextSibling;
+    }
+
+    return results;
+  }
+
+  function previousSiblings(element) {
+    return recursivelyCollect(element, 'previousSibling');
+  }
+
+  function nextSiblings(element) {
+    return recursivelyCollect(element, 'nextSibling');
+  }
+
+  function siblings(element) {
+    element = $(element);
+    var previous = previousSiblings(element),
+     next = nextSiblings(element);
+    return previous.reverse().concat(next);
+  }
+
+  function match(element, selector) {
+    element = $(element);
+
+    if (Object.isString(selector))
+      return Prototype.Selector.match(element, selector);
+
+    return selector.match(element);
+  }
+
+
+  function _recursivelyFind(element, property, expression, index) {
+    element = $(element), expression = expression || 0, index = index || 0;
+    if (Object.isNumber(expression)) {
+      index = expression, expression = null;
+    }
+
+    while (element = element[property]) {
+      if (element.nodeType !== 1) continue;
+      if (expression && !Prototype.Selector.match(element, expression))
+        continue;
+      if (--index >= 0) continue;
+
+      return Element.extend(element);
+    }
+  }
+
+
+  function up(element, expression, index) {
+    element = $(element);
+
+    if (arguments.length === 1) return $(element.parentNode);
+    return _recursivelyFind(element, 'parentNode', expression, index);
+  }
+
+  function down(element, expression, index) {
+    if (arguments.length === 1) return firstDescendant(element);
+    element = $(element), expression = expression || 0, index = index || 0;
+
+    if (Object.isNumber(expression))
+      index = expression, expression = '*';
+
+    var node = Prototype.Selector.select(expression, element)[index];
+    return Element.extend(node);
+  }
+
+  function previous(element, expression, index) {
+    return _recursivelyFind(element, 'previousSibling', expression, index);
+  }
+
+  function next(element, expression, index) {
+    return _recursivelyFind(element, 'nextSibling', expression, index);
+  }
+
+  function select(element) {
+    element = $(element);
+    var expressions = SLICE.call(arguments, 1).join(', ');
+    return Prototype.Selector.select(expressions, element);
+  }
+
+  function adjacent(element) {
+    element = $(element);
+    var expressions = SLICE.call(arguments, 1).join(', ');
+    var siblings = Element.siblings(element), results = [];
+    for (var i = 0, sibling; sibling = siblings[i]; i++) {
+      if (Prototype.Selector.match(sibling, expressions))
+        results.push(sibling);
+    }
+
+    return results;
+  }
+
+  function descendantOf_DOM(element, ancestor) {
+    element = $(element), ancestor = $(ancestor);
+    if (!element || !ancestor) return false;
+    while (element = element.parentNode)
+      if (element === ancestor) return true;
+    return false;
+  }
+
+  function descendantOf_contains(element, ancestor) {
+    element = $(element), ancestor = $(ancestor);
+    if (!element || !ancestor) return false;
+    if (!ancestor.contains) return descendantOf_DOM(element, ancestor);
+    return ancestor.contains(element) && ancestor !== element;
+  }
+
+  function descendantOf_compareDocumentPosition(element, ancestor) {
+    element = $(element), ancestor = $(ancestor);
+    if (!element || !ancestor) return false;
+    return (element.compareDocumentPosition(ancestor) & 8) === 8;
+  }
+
+  var descendantOf;
+  if (DIV.compareDocumentPosition) {
+    descendantOf = descendantOf_compareDocumentPosition;
+  } else if (DIV.contains) {
+    descendantOf = descendantOf_contains;
+  } else {
+    descendantOf = descendantOf_DOM;
+  }
+
+
+  Object.extend(methods, {
+    recursivelyCollect:   recursivelyCollect,
+    ancestors:            ancestors,
+    descendants:          descendants,
+    firstDescendant:      firstDescendant,
+    immediateDescendants: immediateDescendants,
+    previousSiblings:     previousSiblings,
+    nextSiblings:         nextSiblings,
+    siblings:             siblings,
+    match:                match,
+    up:                   up,
+    down:                 down,
+    previous:             previous,
+    next:                 next,
+    select:               select,
+    adjacent:             adjacent,
+    descendantOf:         descendantOf,
+
+    getElementsBySelector: select,
+
+    childElements:         immediateDescendants
+  });
+
+
+  var idCounter = 1;
+  function identify(element) {
+    element = $(element);
+    var id = Element.readAttribute(element, 'id');
+    if (id) return id;
+
+    do { id = 'anonymous_element_' + idCounter++ } while ($(id));
+
+    Element.writeAttribute(element, 'id', id);
+    return id;
+  }
+
+
+  function readAttribute(element, name) {
+    return $(element).getAttribute(name);
+  }
+
+  function readAttribute_IE(element, name) {
+    element = $(element);
+
+    var table = ATTRIBUTE_TRANSLATIONS.read;
+    if (table.values[name])
+      return table.values[name](element, name);
+
+    if (table.names[name]) name = table.names[name];
+
+    if (name.include(':')) {
+      if (!element.attributes || !element.attributes[name]) return null;
+      return element.attributes[name].value;
+    }
+
+    return element.getAttribute(name);
+  }
+
+  function readAttribute_Opera(element, name) {
+    if (name === 'title') return element.title;
+    return element.getAttribute(name);
+  }
+
+  var PROBLEMATIC_ATTRIBUTE_READING = (function() {
+    DIV.setAttribute('onclick', []);
+    var value = DIV.getAttribute('onclick');
+    var isFunction = Object.isArray(value);
+    DIV.removeAttribute('onclick');
+    return isFunction;
+  })();
+
+  if (PROBLEMATIC_ATTRIBUTE_READING) {
+    readAttribute = readAttribute_IE;
+  } else if (Prototype.Browser.Opera) {
+    readAttribute = readAttribute_Opera;
+  }
+
+
+  function writeAttribute(element, name, value) {
+    element = $(element);
+    var attributes = {}, table = ATTRIBUTE_TRANSLATIONS.write;
+
+    if (typeof name === 'object') {
+      attributes = name;
+    } else {
+      attributes[name] = Object.isUndefined(value) ? true : value;
+    }
+
+    for (var attr in attributes) {
+      name = table.names[attr] || attr;
+      value = attributes[attr];
+      if (table.values[attr]) {
+        value = table.values[attr](element, value);
+        if (Object.isUndefined(value)) continue;
+      }
+      if (value === false || value === null)
+        element.removeAttribute(name);
+      else if (value === true)
+        element.setAttribute(name, name);
+      else element.setAttribute(name, value);
+    }
+
+    return element;
+  }
+
+  var PROBLEMATIC_HAS_ATTRIBUTE_WITH_CHECKBOXES = (function () {
+    if (!HAS_EXTENDED_CREATE_ELEMENT_SYNTAX) {
+      return false;
+    }
+    var checkbox = document.createElement('<input type="checkbox">');
+    checkbox.checked = true;
+    var node = checkbox.getAttributeNode('checked');
+    return !node || !node.specified;
+  })();
+
+  function hasAttribute(element, attribute) {
+    attribute = ATTRIBUTE_TRANSLATIONS.has[attribute] || attribute;
     var node = $(element).getAttributeNode(attribute);
     return !!(node && node.specified);
   }
-};
 
-Element.Methods.ByTag = { };
-
-Object.extend(Element, Element.Methods);
-
-(function(div) {
-
-  if (!Prototype.BrowserFeatures.ElementExtensions && div['__proto__']) {
-    window.HTMLElement = { };
-    window.HTMLElement.prototype = div['__proto__'];
-    Prototype.BrowserFeatures.ElementExtensions = true;
+  function hasAttribute_IE(element, attribute) {
+    if (attribute === 'checked') {
+      return element.checked;
+    }
+    return hasAttribute(element, attribute);
   }
 
-  div = null;
+  GLOBAL.Element.Methods.Simulated.hasAttribute =
+   PROBLEMATIC_HAS_ATTRIBUTE_WITH_CHECKBOXES ?
+   hasAttribute_IE : hasAttribute;
 
-})(document.createElement('div'));
+  function classNames(element) {
+    return new Element.ClassNames(element);
+  }
 
-Element.extend = (function() {
+  var regExpCache = {};
+  function getRegExpForClassName(className) {
+    if (regExpCache[className]) return regExpCache[className];
 
-  function checkDeficiency(tagName) {
-    if (typeof window.Element != 'undefined') {
-      var proto = window.Element.prototype;
-      if (proto) {
-        var id = '_' + (Math.random()+'').slice(2),
-            el = document.createElement(tagName);
-        proto[id] = 'x';
-        var isBuggy = (el[id] !== 'x');
-        delete proto[id];
-        el = null;
-        return isBuggy;
+    var re = new RegExp("(^|\\s+)" + className + "(\\s+|$)");
+    regExpCache[className] = re;
+    return re;
+  }
+
+  function hasClassName(element, className) {
+    if (!(element = $(element))) return;
+
+    var elementClassName = element.className;
+
+    if (elementClassName.length === 0) return false;
+    if (elementClassName === className) return true;
+
+    return getRegExpForClassName(className).test(elementClassName);
+  }
+
+  function addClassName(element, className) {
+    if (!(element = $(element))) return;
+
+    if (!hasClassName(element, className))
+      element.className += (element.className ? ' ' : '') + className;
+
+    return element;
+  }
+
+  function removeClassName(element, className) {
+    if (!(element = $(element))) return;
+
+    element.className = element.className.replace(
+     getRegExpForClassName(className), ' ').strip();
+
+    return element;
+  }
+
+  function toggleClassName(element, className, bool) {
+    if (!(element = $(element))) return;
+
+    if (Object.isUndefined(bool))
+      bool = !hasClassName(element, className);
+
+    var method = Element[bool ? 'addClassName' : 'removeClassName'];
+    return method(element, className);
+  }
+
+  var ATTRIBUTE_TRANSLATIONS = {};
+
+  var classProp = 'className', forProp = 'for';
+
+  DIV.setAttribute(classProp, 'x');
+  if (DIV.className !== 'x') {
+    DIV.setAttribute('class', 'x');
+    if (DIV.className === 'x')
+      classProp = 'class';
+  }
+
+  var LABEL = document.createElement('label');
+  LABEL.setAttribute(forProp, 'x');
+  if (LABEL.htmlFor !== 'x') {
+    LABEL.setAttribute('htmlFor', 'x');
+    if (LABEL.htmlFor === 'x')
+      forProp = 'htmlFor';
+  }
+  LABEL = null;
+
+  function _getAttr(element, attribute) {
+    return element.getAttribute(attribute);
+  }
+
+  function _getAttr2(element, attribute) {
+    return element.getAttribute(attribute, 2);
+  }
+
+  function _getAttrNode(element, attribute) {
+    var node = element.getAttributeNode(attribute);
+    return node ? node.value : '';
+  }
+
+  function _getFlag(element, attribute) {
+    return $(element).hasAttribute(attribute) ? attribute : null;
+  }
+
+  DIV.onclick = Prototype.emptyFunction;
+  var onclickValue = DIV.getAttribute('onclick');
+
+  var _getEv;
+
+  if (String(onclickValue).indexOf('{') > -1) {
+    _getEv = function(element, attribute) {
+      var value = element.getAttribute(attribute);
+      if (!value) return null;
+      value = value.toString();
+      value = value.split('{')[1];
+      value = value.split('}')[0];
+      return value.strip();
+    };
+  }
+  else if (onclickValue === '') {
+    _getEv = function(element, attribute) {
+      var value = element.getAttribute(attribute);
+      if (!value) return null;
+      return value.strip();
+    };
+  }
+
+  ATTRIBUTE_TRANSLATIONS.read = {
+    names: {
+      'class':     classProp,
+      'className': classProp,
+      'for':       forProp,
+      'htmlFor':   forProp
+    },
+
+    values: {
+      style: function(element) {
+        return element.style.cssText.toLowerCase();
+      },
+      title: function(element) {
+        return element.title;
       }
     }
+  };
+
+  ATTRIBUTE_TRANSLATIONS.write = {
+    names: {
+      className:   'class',
+      htmlFor:     'for',
+      cellpadding: 'cellPadding',
+      cellspacing: 'cellSpacing'
+    },
+
+    values: {
+      checked: function(element, value) {
+        value = !!value;
+        element.checked = value;
+        return value ? 'checked' : null;
+      },
+
+      style: function(element, value) {
+        element.style.cssText = value ? value : '';
+      }
+    }
+  };
+
+  ATTRIBUTE_TRANSLATIONS.has = { names: {} };
+
+  Object.extend(ATTRIBUTE_TRANSLATIONS.write.names,
+   ATTRIBUTE_TRANSLATIONS.read.names);
+
+  var CAMEL_CASED_ATTRIBUTE_NAMES = $w('colSpan rowSpan vAlign dateTime ' +
+   'accessKey tabIndex encType maxLength readOnly longDesc frameBorder');
+
+  for (var i = 0, attr; attr = CAMEL_CASED_ATTRIBUTE_NAMES[i]; i++) {
+    ATTRIBUTE_TRANSLATIONS.write.names[attr.toLowerCase()] = attr;
+    ATTRIBUTE_TRANSLATIONS.has.names[attr.toLowerCase()]   = attr;
+  }
+
+  Object.extend(ATTRIBUTE_TRANSLATIONS.read.values, {
+    href:        _getAttr2,
+    src:         _getAttr2,
+    type:        _getAttr,
+    action:      _getAttrNode,
+    disabled:    _getFlag,
+    checked:     _getFlag,
+    readonly:    _getFlag,
+    multiple:    _getFlag,
+    onload:      _getEv,
+    onunload:    _getEv,
+    onclick:     _getEv,
+    ondblclick:  _getEv,
+    onmousedown: _getEv,
+    onmouseup:   _getEv,
+    onmouseover: _getEv,
+    onmousemove: _getEv,
+    onmouseout:  _getEv,
+    onfocus:     _getEv,
+    onblur:      _getEv,
+    onkeypress:  _getEv,
+    onkeydown:   _getEv,
+    onkeyup:     _getEv,
+    onsubmit:    _getEv,
+    onreset:     _getEv,
+    onselect:    _getEv,
+    onchange:    _getEv
+  });
+
+
+  Object.extend(methods, {
+    identify:        identify,
+    readAttribute:   readAttribute,
+    writeAttribute:  writeAttribute,
+    classNames:      classNames,
+    hasClassName:    hasClassName,
+    addClassName:    addClassName,
+    removeClassName: removeClassName,
+    toggleClassName: toggleClassName
+  });
+
+
+  function normalizeStyleName(style) {
+    if (style === 'float' || style === 'styleFloat')
+      return 'cssFloat';
+    return style.camelize();
+  }
+
+  function normalizeStyleName_IE(style) {
+    if (style === 'float' || style === 'cssFloat')
+      return 'styleFloat';
+    return style.camelize();
+  }
+
+  function setStyle(element, styles) {
+    element = $(element);
+    var elementStyle = element.style, match;
+
+    if (Object.isString(styles)) {
+      elementStyle.cssText += ';' + styles;
+      if (styles.include('opacity')) {
+        var opacity = styles.match(/opacity:\s*(\d?\.?\d*)/)[1];
+        Element.setOpacity(element, opacity);
+      }
+      return element;
+    }
+
+    for (var property in styles) {
+      if (property === 'opacity') {
+        Element.setOpacity(element, styles[property]);
+      } else {
+        var value = styles[property];
+        if (property === 'float' || property === 'cssFloat') {
+          property = Object.isUndefined(elementStyle.styleFloat) ?
+           'cssFloat' : 'styleFloat';
+        }
+        elementStyle[property] = value;
+      }
+    }
+
+    return element;
+  }
+
+
+  function getStyle(element, style) {
+    element = $(element);
+    style = normalizeStyleName(style);
+
+    var value = element.style[style];
+    if (!value || value === 'auto') {
+      var css = document.defaultView.getComputedStyle(element, null);
+      value = css ? css[style] : null;
+    }
+
+    if (style === 'opacity') return value ? parseFloat(value) : 1.0;
+    return value === 'auto' ? null : value;
+  }
+
+  function getStyle_Opera(element, style) {
+    switch (style) {
+      case 'height': case 'width':
+        if (!Element.visible(element)) return null;
+
+        var dim = parseInt(getStyle(element, style), 10);
+
+        if (dim !== element['offset' + style.capitalize()])
+          return dim + 'px';
+
+        return Element.measure(element, style);
+
+      default: return getStyle(element, style);
+    }
+  }
+
+  function getStyle_IE(element, style) {
+    element = $(element);
+    style = normalizeStyleName_IE(style);
+
+    var value = element.style[style];
+    if (!value && element.currentStyle) {
+      value = element.currentStyle[style];
+    }
+
+    if (style === 'opacity') {
+      if (!STANDARD_CSS_OPACITY_SUPPORTED)
+        return getOpacity_IE(element);
+      else return value ? parseFloat(value) : 1.0;
+    }
+
+    if (value === 'auto') {
+      if ((style === 'width' || style === 'height') && Element.visible(element))
+        return Element.measure(element, style) + 'px';
+      return null;
+    }
+
+    return value;
+  }
+
+  function stripAlphaFromFilter_IE(filter) {
+    return (filter || '').replace(/alpha\([^\)]*\)/gi, '');
+  }
+
+  function hasLayout_IE(element) {
+    if (!element.currentStyle || !element.currentStyle.hasLayout)
+      element.style.zoom = 1;
+    return element;
+  }
+
+  var STANDARD_CSS_OPACITY_SUPPORTED = (function() {
+    DIV.style.cssText = "opacity:.55";
+    return /^0.55/.test(DIV.style.opacity);
+  })();
+
+  function setOpacity(element, value) {
+    element = $(element);
+    if (value == 1 || value === '') value = '';
+    else if (value < 0.00001) value = 0;
+    element.style.opacity = value;
+    return element;
+  }
+
+  function setOpacity_IE(element, value) {
+    if (STANDARD_CSS_OPACITY_SUPPORTED)
+      return setOpacity(element, value);
+
+    element = hasLayout_IE($(element));
+    var filter = Element.getStyle(element, 'filter'),
+     style = element.style;
+
+    if (value == 1 || value === '') {
+      filter = stripAlphaFromFilter_IE(filter);
+      if (filter) style.filter = filter;
+      else style.removeAttribute('filter');
+      return element;
+    }
+
+    if (value < 0.00001) value = 0;
+
+    style.filter = stripAlphaFromFilter_IE(filter) +
+     ' alpha(opacity=' + (value * 100) + ')';
+
+    return element;
+  }
+
+
+  function getOpacity(element) {
+    return Element.getStyle(element, 'opacity');
+  }
+
+  function getOpacity_IE(element) {
+    if (STANDARD_CSS_OPACITY_SUPPORTED)
+      return getOpacity(element);
+
+    var filter = Element.getStyle(element, 'filter');
+    if (filter.length === 0) return 1.0;
+    var match = (filter || '').match(/alpha\(opacity=(.*)\)/i);
+    if (match && match[1]) return parseFloat(match[1]) / 100;
+    return 1.0;
+  }
+
+
+  Object.extend(methods, {
+    setStyle:   setStyle,
+    getStyle:   getStyle,
+    setOpacity: setOpacity,
+    getOpacity: getOpacity
+  });
+
+  if ('styleFloat' in DIV.style) {
+    methods.getStyle = getStyle_IE;
+    methods.setOpacity = setOpacity_IE;
+    methods.getOpacity = getOpacity_IE;
+  }
+
+  var UID = 0;
+
+  GLOBAL.Element.Storage = { UID: 1 };
+
+  function getUniqueElementID(element) {
+    if (element === window) return 0;
+
+    if (typeof element._prototypeUID === 'undefined')
+      element._prototypeUID = Element.Storage.UID++;
+    return element._prototypeUID;
+  }
+
+  function getUniqueElementID_IE(element) {
+    if (element === window) return 0;
+    if (element == document) return 1;
+    return element.uniqueID;
+  }
+
+  var HAS_UNIQUE_ID_PROPERTY = ('uniqueID' in DIV);
+  if (HAS_UNIQUE_ID_PROPERTY)
+    getUniqueElementID = getUniqueElementID_IE;
+
+  function getStorage(element) {
+    if (!(element = $(element))) return;
+
+    var uid = getUniqueElementID(element);
+
+    if (!Element.Storage[uid])
+      Element.Storage[uid] = $H();
+
+    return Element.Storage[uid];
+  }
+
+  function store(element, key, value) {
+    if (!(element = $(element))) return;
+    var storage = getStorage(element);
+    if (arguments.length === 2) {
+      storage.update(key);
+    } else {
+      storage.set(key, value);
+    }
+    return element;
+  }
+
+  function retrieve(element, key, defaultValue) {
+    if (!(element = $(element))) return;
+    var storage = getStorage(element), value = storage.get(key);
+
+    if (Object.isUndefined(value)) {
+      storage.set(key, defaultValue);
+      value = defaultValue;
+    }
+
+    return value;
+  }
+
+
+  Object.extend(methods, {
+    getStorage: getStorage,
+    store:      store,
+    retrieve:   retrieve
+  });
+
+
+  var Methods = {}, ByTag = Element.Methods.ByTag,
+   F = Prototype.BrowserFeatures;
+
+  if (!F.ElementExtensions && ('__proto__' in DIV)) {
+    GLOBAL.HTMLElement = {};
+    GLOBAL.HTMLElement.prototype = DIV['__proto__'];
+    F.ElementExtensions = true;
+  }
+
+  function checkElementPrototypeDeficiency(tagName) {
+    if (typeof window.Element === 'undefined') return false;
+    if (!HAS_EXTENDED_CREATE_ELEMENT_SYNTAX) return false;
+    var proto = window.Element.prototype;
+    if (proto) {
+      var id = '_' + (Math.random() + '').slice(2),
+       el = document.createElement(tagName);
+      proto[id] = 'x';
+      var isBuggy = (el[id] !== 'x');
+      delete proto[id];
+      el = null;
+      return isBuggy;
+    }
+
     return false;
   }
+
+  var HTMLOBJECTELEMENT_PROTOTYPE_BUGGY =
+   checkElementPrototypeDeficiency('object');
 
   function extendElementWith(element, methods) {
     for (var property in methods) {
@@ -2907,98 +3315,52 @@ Element.extend = (function() {
     }
   }
 
-  var HTMLOBJECTELEMENT_PROTOTYPE_BUGGY = checkDeficiency('object');
-
-  if (Prototype.BrowserFeatures.SpecificElementExtensions) {
-    if (HTMLOBJECTELEMENT_PROTOTYPE_BUGGY) {
-      return function(element) {
-        if (element && typeof element._extendedByPrototype == 'undefined') {
-          var t = element.tagName;
-          if (t && (/^(?:object|applet|embed)$/i.test(t))) {
-            extendElementWith(element, Element.Methods);
-            extendElementWith(element, Element.Methods.Simulated);
-            extendElementWith(element, Element.Methods.ByTag[t.toUpperCase()]);
-          }
-        }
-        return element;
-      }
-    }
-    return Prototype.K;
+  var EXTENDED = {};
+  function elementIsExtended(element) {
+    var uid = getUniqueElementID(element);
+    return (uid in EXTENDED);
   }
 
-  var Methods = { }, ByTag = Element.Methods.ByTag;
-
-  var extend = Object.extend(function(element) {
-    if (!element || typeof element._extendedByPrototype != 'undefined' ||
-        element.nodeType != 1 || element == window) return element;
+  function extend(element) {
+    if (!element || elementIsExtended(element)) return element;
+    if (element.nodeType !== Node.ELEMENT_NODE || element == window)
+      return element;
 
     var methods = Object.clone(Methods),
-        tagName = element.tagName.toUpperCase();
+     tagName = element.tagName.toUpperCase();
 
     if (ByTag[tagName]) Object.extend(methods, ByTag[tagName]);
 
     extendElementWith(element, methods);
-
-    element._extendedByPrototype = Prototype.emptyFunction;
+    EXTENDED[getUniqueElementID(element)] = true;
     return element;
+  }
 
-  }, {
-    refresh: function() {
-      if (!Prototype.BrowserFeatures.ElementExtensions) {
-        Object.extend(Methods, Element.Methods);
-        Object.extend(Methods, Element.Methods.Simulated);
-      }
+  function extend_IE8(element) {
+    if (!element || elementIsExtended(element)) return element;
+
+    var t = element.tagName;
+    if (t && (/^(?:object|applet|embed)$/i.test(t))) {
+      extendElementWith(element, Element.Methods);
+      extendElementWith(element, Element.Methods.Simulated);
+      extendElementWith(element, Element.Methods.ByTag[t.toUpperCase()]);
     }
-  });
 
-  extend.refresh();
-  return extend;
-})();
-
-if (document.documentElement.hasAttribute) {
-  Element.hasAttribute = function(element, attribute) {
-    return element.hasAttribute(attribute);
-  };
-}
-else {
-  Element.hasAttribute = Element.Methods.Simulated.hasAttribute;
-}
-
-Element.addMethods = function(methods) {
-  var F = Prototype.BrowserFeatures, T = Element.Methods.ByTag;
-
-  if (!methods) {
-    Object.extend(Form, Form.Methods);
-    Object.extend(Form.Element, Form.Element.Methods);
-    Object.extend(Element.Methods.ByTag, {
-      "FORM":     Object.clone(Form.Methods),
-      "INPUT":    Object.clone(Form.Element.Methods),
-      "SELECT":   Object.clone(Form.Element.Methods),
-      "TEXTAREA": Object.clone(Form.Element.Methods),
-      "BUTTON":   Object.clone(Form.Element.Methods)
-    });
+    return element;
   }
 
-  if (arguments.length == 2) {
-    var tagName = methods;
-    methods = arguments[1];
+  if (F.SpecificElementExtensions) {
+    extend = HTMLOBJECTELEMENT_PROTOTYPE_BUGGY ? extend_IE8 : Prototype.K;
   }
 
-  if (!tagName) Object.extend(Element.Methods, methods || { });
-  else {
-    if (Object.isArray(tagName)) tagName.each(extend);
-    else extend(tagName);
-  }
-
-  function extend(tagName) {
+  function addMethodsToTagName(tagName, methods) {
     tagName = tagName.toUpperCase();
-    if (!Element.Methods.ByTag[tagName])
-      Element.Methods.ByTag[tagName] = { };
-    Object.extend(Element.Methods.ByTag[tagName], methods);
+    if (!ByTag[tagName]) ByTag[tagName] = {};
+    Object.extend(ByTag[tagName], methods);
   }
 
-  function copy(methods, destination, onlyIfAbsent) {
-    onlyIfAbsent = onlyIfAbsent || false;
+  function mergeMethods(destination, methods, onlyIfAbsent) {
+    if (Object.isUndefined(onlyIfAbsent)) onlyIfAbsent = false;
     for (var property in methods) {
       var value = methods[property];
       if (!Object.isFunction(value)) continue;
@@ -3028,153 +3390,97 @@ Element.addMethods = function(methods) {
     if (window[klass]) return window[klass];
 
     var element = document.createElement(tagName),
-        proto = element['__proto__'] || element.constructor.prototype;
+     proto = element['__proto__'] || element.constructor.prototype;
 
     element = null;
     return proto;
   }
 
-  var elementPrototype = window.HTMLElement ? HTMLElement.prototype :
-   Element.prototype;
-
-  if (F.ElementExtensions) {
-    copy(Element.Methods, elementPrototype);
-    copy(Element.Methods.Simulated, elementPrototype, true);
-  }
-
-  if (F.SpecificElementExtensions) {
-    for (var tag in Element.Methods.ByTag) {
-      var klass = findDOMClass(tag);
-      if (Object.isUndefined(klass)) continue;
-      copy(T[tag], klass.prototype);
-    }
-  }
-
-  Object.extend(Element, Element.Methods);
-  delete Element.ByTag;
-
-  if (Element.extend.refresh) Element.extend.refresh();
-  Element.cache = { };
-};
-
-
-document.viewport = {
-
-  getDimensions: function() {
-    return { width: this.getWidth(), height: this.getHeight() };
-  },
-
-  getScrollOffsets: function() {
-    return Element._returnOffset(
-      window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
-      window.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop);
-  }
-};
-
-(function(viewport) {
-  var B = Prototype.Browser, doc = document, element, property = {};
-
-  function getRootElement() {
-    if (B.WebKit && !doc.evaluate)
-      return document;
-
-    if (B.Opera && window.parseFloat(window.opera.version()) < 9.5)
-      return document.body;
-
-    return document.documentElement;
-  }
-
-  function define(D) {
-    if (!element) element = getRootElement();
-
-    property[D] = 'client' + D;
-
-    viewport['get' + D] = function() { return element[property[D]] };
-    return viewport['get' + D]();
-  }
-
-  viewport.getWidth  = define.curry('Width');
-
-  viewport.getHeight = define.curry('Height');
-})(document.viewport);
-
-
-Element.Storage = {
-  UID: 1
-};
-
-Element.addMethods({
-  getStorage: function(element) {
-    if (!(element = $(element))) return;
-
-    var uid;
-    if (element === window) {
-      uid = 0;
-    } else {
-      if (typeof element._prototypeUID === "undefined")
-        element._prototypeUID = Element.Storage.UID++;
-      uid = element._prototypeUID;
-    }
-
-    if (!Element.Storage[uid])
-      Element.Storage[uid] = $H();
-
-    return Element.Storage[uid];
-  },
-
-  store: function(element, key, value) {
-    if (!(element = $(element))) return;
+  function addMethods(methods) {
+    if (arguments.length === 0) addFormMethods();
 
     if (arguments.length === 2) {
-      Element.getStorage(element).update(key);
+      var tagName = methods;
+      methods = arguments[1];
+    }
+
+    if (!tagName) {
+      Object.extend(Element.Methods, methods || {});
     } else {
-      Element.getStorage(element).set(key, value);
-    }
-
-    return element;
-  },
-
-  retrieve: function(element, key, defaultValue) {
-    if (!(element = $(element))) return;
-    var hash = Element.getStorage(element), value = hash.get(key);
-
-    if (Object.isUndefined(value)) {
-      hash.set(key, defaultValue);
-      value = defaultValue;
-    }
-
-    return value;
-  },
-
-  clone: function(element, deep) {
-    if (!(element = $(element))) return;
-    var clone = element.cloneNode(deep);
-    clone._prototypeUID = void 0;
-    if (deep) {
-      var descendants = Element.select(clone, '*'),
-          i = descendants.length;
-      while (i--) {
-        descendants[i]._prototypeUID = void 0;
+      if (Object.isArray(tagName)) {
+        for (var i = 0, tag; tag = tagName[i]; i++)
+          addMethodsToTagName(tag, methods);
+      } else {
+        addMethodsToTagName(tagName, methods);
       }
     }
-    return Element.extend(clone);
-  },
 
-  purge: function(element) {
-    if (!(element = $(element))) return;
-    var purgeElement = Element._purgeElement;
+    var ELEMENT_PROTOTYPE = window.HTMLElement ? HTMLElement.prototype :
+     Element.prototype;
 
-    purgeElement(element);
+    if (F.ElementExtensions) {
+      mergeMethods(ELEMENT_PROTOTYPE, Element.Methods);
+      mergeMethods(ELEMENT_PROTOTYPE, Element.Methods.Simulated, true);
+    }
 
-    var descendants = element.getElementsByTagName('*'),
-     i = descendants.length;
+    if (F.SpecificElementExtensions) {
+      for (var tag in Element.Methods.ByTag) {
+        var klass = findDOMClass(tag);
+        if (Object.isUndefined(klass)) continue;
+        mergeMethods(klass.prototype, ByTag[tag]);
+      }
+    }
 
-    while (i--) purgeElement(descendants[i]);
+    Object.extend(Element, Element.Methods);
+    Object.extend(Element, Element.Methods.Simulated);
+    delete Element.ByTag;
+    delete Element.Simulated;
 
-    return null;
+    Element.extend.refresh();
+
+    ELEMENT_CACHE = {};
   }
-});
 
+  Object.extend(GLOBAL.Element, {
+    extend:     extend,
+    addMethods: addMethods
+  });
+
+  if (extend === Prototype.K) {
+    GLOBAL.Element.extend.refresh = Prototype.emptyFunction;
+  } else {
+    GLOBAL.Element.extend.refresh = function() {
+      if (Prototype.BrowserFeatures.ElementExtensions) return;
+      Object.extend(Methods, Element.Methods);
+      Object.extend(Methods, Element.Methods.Simulated);
+
+      EXTENDED = {};
+    };
+  }
+
+  function addFormMethods() {
+    Object.extend(Form, Form.Methods);
+    Object.extend(Form.Element, Form.Element.Methods);
+    Object.extend(Element.Methods.ByTag, {
+      "FORM":     Object.clone(Form.Methods),
+      "INPUT":    Object.clone(Form.Element.Methods),
+      "SELECT":   Object.clone(Form.Element.Methods),
+      "TEXTAREA": Object.clone(Form.Element.Methods),
+      "BUTTON":   Object.clone(Form.Element.Methods)
+    });
+  }
+
+  Element.addMethods(methods);
+
+  function destroyCache_IE() {
+    DIV = null;
+    ELEMENT_CACHE = null;
+  }
+
+  if (window.attachEvent)
+    window.attachEvent('onunload', destroyCache_IE);
+
+})(this);
 (function() {
 
   function toDecimal(pctString) {
@@ -3183,14 +3489,51 @@ Element.addMethods({
     return (Number(match[1]) / 100);
   }
 
+  function getRawStyle(element, style) {
+    element = $(element);
+
+    var value = element.style[style];
+    if (!value || value === 'auto') {
+      var css = document.defaultView.getComputedStyle(element, null);
+      value = css ? css[style] : null;
+    }
+
+    if (style === 'opacity') return value ? parseFloat(value) : 1.0;
+    return value === 'auto' ? null : value;
+  }
+
+  function getRawStyle_IE(element, style) {
+    var value = element.style[style];
+    if (!value && element.currentStyle) {
+      value = element.currentStyle[style];
+    }
+    return value;
+  }
+
+  function getContentWidth(element, context) {
+    var boxWidth = element.offsetWidth;
+
+    var bl = getPixelValue(element, 'borderLeftWidth',  context) || 0;
+    var br = getPixelValue(element, 'borderRightWidth', context) || 0;
+    var pl = getPixelValue(element, 'paddingLeft',      context) || 0;
+    var pr = getPixelValue(element, 'paddingRight',     context) || 0;
+
+    return boxWidth - bl - br - pl - pr;
+  }
+
+  if (!Object.isUndefined(document.documentElement.currentStyle) && !Prototype.Browser.Opera) {
+    getRawStyle = getRawStyle_IE;
+  }
+
+
   function getPixelValue(value, property, context) {
     var element = null;
     if (Object.isElement(value)) {
       element = value;
-      value = element.getStyle(property);
+      value = getRawStyle(element, property);
     }
 
-    if (value === null) {
+    if (value === null || Object.isUndefined(value)) {
       return null;
     }
 
@@ -3213,14 +3556,12 @@ Element.addMethods({
 
     if (element && isPercentage) {
       context = context || element.parentNode;
-      var decimal = toDecimal(value);
-      var whole = null;
-      var position = element.getStyle('position');
+      var decimal = toDecimal(value), whole = null;
 
       var isHorizontal = property.include('left') || property.include('right') ||
        property.include('width');
 
-      var isVertical =  property.include('top') || property.include('bottom') ||
+      var isVertical   = property.include('top') || property.include('bottom') ||
         property.include('height');
 
       if (context === document.viewport) {
@@ -3244,14 +3585,12 @@ Element.addMethods({
   }
 
   function toCSSPixels(number) {
-    if (Object.isString(number) && number.endsWith('px')) {
+    if (Object.isString(number) && number.endsWith('px'))
       return number;
-    }
     return number + 'px';
   }
 
   function isDisplayed(element) {
-    var originalElement = element;
     while (element && element.parentNode) {
       var display = element.getStyle('display');
       if (display === 'none') {
@@ -3309,13 +3648,14 @@ Element.addMethods({
     },
 
     _begin: function() {
-      if (this._prepared) return;
+      if (this._isPrepared()) return;
 
       var element = this.element;
       if (isDisplayed(element)) {
-        this._prepared = true;
+        this._setPrepared(true);
         return;
       }
+
 
       var originalStyles = {
         position:   element.style.position   || '',
@@ -3326,30 +3666,30 @@ Element.addMethods({
 
       element.store('prototype_original_styles', originalStyles);
 
-      var position = element.getStyle('position'),
-       width = element.getStyle('width');
+      var position = getRawStyle(element, 'position'), width = element.offsetWidth;
 
-      if (width === "0px" || width === null) {
+      if (width === 0 || width === null) {
         element.style.display = 'block';
-        width = element.getStyle('width');
+        width = element.offsetWidth;
       }
 
       var context = (position === 'fixed') ? document.viewport :
        element.parentNode;
 
-      element.setStyle({
-        position:   'absolute',
+      var tempStyles = {
         visibility: 'hidden',
         display:    'block'
-      });
+      };
 
-      var positionedWidth = element.getStyle('width');
+      if (position !== 'fixed') tempStyles.position = 'absolute';
 
-      var newWidth;
+      element.setStyle(tempStyles);
+
+      var positionedWidth = element.offsetWidth, newWidth;
       if (width && (positionedWidth === width)) {
-        newWidth = getPixelValue(element, 'width', context);
+        newWidth = getContentWidth(element, context);
       } else if (position === 'absolute' || position === 'fixed') {
-        newWidth = getPixelValue(element, 'width', context);
+        newWidth = getContentWidth(element, context);
       } else {
         var parent = element.parentNode, pLayout = $(parent).getLayout();
 
@@ -3364,7 +3704,7 @@ Element.addMethods({
 
       element.setStyle({ width: newWidth + 'px' });
 
-      this._prepared = true;
+      this._setPrepared(true);
     },
 
     _end: function() {
@@ -3372,7 +3712,7 @@ Element.addMethods({
       var originalStyles = element.retrieve('prototype_original_styles');
       element.store('prototype_original_styles', null);
       element.setStyle(originalStyles);
-      this._prepared = false;
+      this._setPrepared(false);
     },
 
     _compute: function(property) {
@@ -3382,6 +3722,14 @@ Element.addMethods({
       }
 
       return this._set(property, COMPUTATIONS[property].call(this, this.element));
+    },
+
+    _isPrepared: function() {
+      return this.element.retrieve('prototype_element_layout_prepared', false);
+    },
+
+    _setPrepared: function(bool) {
+      return this.element.store('prototype_element_layout_prepared', bool);
     },
 
     toObject: function() {
@@ -3465,7 +3813,6 @@ Element.addMethods({
          pRight = this.get('padding-right');
 
         if (!this._preComputing) this._end();
-
         return bWidth - bLeft - bRight - pLeft - pRight;
       },
 
@@ -3656,6 +4003,14 @@ Element.addMethods({
     return $(element).getLayout().get(property);
   }
 
+  function getHeight(element) {
+    return Element.getDimensions(element).height;
+  }
+
+  function getWidth(element) {
+    return Element.getDimensions(element).width;
+  }
+
   function getDimensions(element) {
     element = $(element);
     var display = Element.getStyle(element, 'display');
@@ -3694,15 +4049,19 @@ Element.addMethods({
   function getOffsetParent(element) {
     element = $(element);
 
+    function selfOrBody(element) {
+      return isHtml(element) ? $(document.body) : $(element);
+    }
+
     if (isDocument(element) || isDetached(element) || isBody(element) || isHtml(element))
       return $(document.body);
 
     var isInline = (Element.getStyle(element, 'display') === 'inline');
-    if (!isInline && element.offsetParent) return $(element.offsetParent);
+    if (!isInline && element.offsetParent) return selfOrBody(element.offsetParent);
 
     while ((element = element.parentNode) && element !== document.body) {
       if (Element.getStyle(element, 'position') !== 'static') {
-        return isHtml(element) ? $(document.body) : $(element);
+        return selfOrBody(element);
       }
     }
 
@@ -3740,8 +4099,8 @@ Element.addMethods({
       }
     } while (element);
 
-    valueL -= layout.get('margin-top');
-    valueT -= layout.get('margin-left');
+    valueL -= layout.get('margin-left');
+    valueT -= layout.get('margin-top');
 
     return new Element.Offset(valueL, valueT);
   }
@@ -3749,17 +4108,24 @@ Element.addMethods({
   function cumulativeScrollOffset(element) {
     var valueT = 0, valueL = 0;
     do {
-      valueT += element.scrollTop  || 0;
-      valueL += element.scrollLeft || 0;
-      element = element.parentNode;
+      if (element === document.body) {
+        var bodyScrollNode = document.documentElement || document.body.parentNode || document.body;
+        valueT += !Object.isUndefined(window.pageYOffset) ? window.pageYOffset : bodyScrollNode.scrollTop || 0;
+        valueL += !Object.isUndefined(window.pageXOffset) ? window.pageXOffset : bodyScrollNode.scrollLeft || 0;
+        break;
+      } else {
+        valueT += element.scrollTop  || 0;
+        valueL += element.scrollLeft || 0;
+        element = element.parentNode;
+      }
     } while (element);
     return new Element.Offset(valueL, valueT);
   }
 
   function viewportOffset(forElement) {
-    element = $(element);
     var valueT = 0, valueL = 0, docBody = document.body;
 
+    forElement = $(forElement);
     var element = forElement;
     do {
       valueT += element.offsetTop  || 0;
@@ -3793,10 +4159,11 @@ Element.addMethods({
     var layout = element.getLayout();
 
     element.store('prototype_absolutize_original_styles', {
-      left:   element.getStyle('left'),
-      top:    element.getStyle('top'),
-      width:  element.getStyle('width'),
-      height: element.getStyle('height')
+      position: element.getStyle('position'),
+      left:     element.getStyle('left'),
+      top:      element.getStyle('top'),
+      width:    element.getStyle('width'),
+      height:   element.getStyle('height')
     });
 
     element.setStyle({
@@ -3822,6 +4189,142 @@ Element.addMethods({
     if (originalStyles) element.setStyle(originalStyles);
     return element;
   }
+
+
+  function scrollTo(element) {
+    element = $(element);
+    var pos = Element.cumulativeOffset(element);
+    window.scrollTo(pos.left, pos.top);
+    return element;
+  }
+
+
+  function makePositioned(element) {
+    element = $(element);
+    var position = Element.getStyle(element, 'position'), styles = {};
+    if (position === 'static' || !position) {
+      styles.position = 'relative';
+      if (Prototype.Browser.Opera) {
+        styles.top  = 0;
+        styles.left = 0;
+      }
+      Element.setStyle(element, styles);
+      Element.store(element, 'prototype_made_positioned', true);
+    }
+    return element;
+  }
+
+  function undoPositioned(element) {
+    element = $(element);
+    var storage = Element.getStorage(element),
+     madePositioned = storage.get('prototype_made_positioned');
+
+    if (madePositioned) {
+      storage.unset('prototype_made_positioned');
+      Element.setStyle(element, {
+        position: '',
+        top:      '',
+        bottom:   '',
+        left:     '',
+        right:    ''
+      });
+    }
+    return element;
+  }
+
+  function makeClipping(element) {
+    element = $(element);
+
+    var storage = Element.getStorage(element),
+     madeClipping = storage.get('prototype_made_clipping');
+
+    if (Object.isUndefined(madeClipping)) {
+      var overflow = Element.getStyle(element, 'overflow');
+      storage.set('prototype_made_clipping', overflow);
+      if (overflow !== 'hidden')
+        element.style.overflow = 'hidden';
+    }
+
+    return element;
+  }
+
+  function undoClipping(element) {
+    element = $(element);
+    var storage = Element.getStorage(element),
+     overflow = storage.get('prototype_made_clipping');
+
+    if (!Object.isUndefined(overflow)) {
+      storage.unset('prototype_made_clipping');
+      element.style.overflow = overflow || '';
+    }
+
+    return element;
+  }
+
+  function clonePosition(element, source, options) {
+    options = Object.extend({
+      setLeft:    true,
+      setTop:     true,
+      setWidth:   true,
+      setHeight:  true,
+      offsetTop:  0,
+      offsetLeft: 0
+    }, options || {});
+
+    var docEl = document.documentElement;
+
+    source  = $(source);
+    element = $(element);
+    var p, delta, layout, styles = {};
+
+    if (options.setLeft || options.setTop) {
+      p = Element.viewportOffset(source);
+      delta = [0, 0];
+      if (Element.getStyle(element, 'position') === 'absolute') {
+        var parent = Element.getOffsetParent(element);
+        if (parent !== document.body) delta = Element.viewportOffset(parent);
+      }
+    }
+
+    function pageScrollXY() {
+      var x = 0, y = 0;
+      if (Object.isNumber(window.pageXOffset)) {
+        x = window.pageXOffset;
+        y = window.pageYOffset;
+      } else if (document.body && (document.body.scrollLeft || document.body.scrollTop)) {
+        x = document.body.scrollLeft;
+        y = document.body.scrollTop;
+      } else if (docEl && (docEl.scrollLeft || docEl.scrollTop)) {
+        x = docEl.scrollLeft;
+        y = docEl.scrollTop;
+      }
+      return { x: x, y: y };
+    }
+
+    var pageXY = pageScrollXY();
+
+
+    if (options.setWidth || options.setHeight) {
+      layout = Element.getLayout(source);
+    }
+
+    if (options.setLeft)
+      styles.left = (p[0] + pageXY.x - delta[0] + options.offsetLeft) + 'px';
+    if (options.setTop)
+      styles.top  = (p[1] + pageXY.y - delta[1] + options.offsetTop)  + 'px';
+
+    var currentLayout = element.getLayout();
+
+    if (options.setWidth) {
+      styles.width = layout.get('width')  + 'px';
+    }
+    if (options.setHeight) {
+      styles.height = layout.get('height') + 'px';
+    }
+
+    return Element.setStyle(element, styles);
+  }
+
 
   if (Prototype.Browser.IE) {
     getOffsetParent = getOffsetParent.wrap(
@@ -3863,8 +4366,9 @@ Element.addMethods({
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-        if (element.offsetParent == document.body)
+        if (element.offsetParent == document.body) {
           if (Element.getStyle(element, 'position') == 'absolute') break;
+        }
 
         element = element.offsetParent;
       } while (element);
@@ -3877,6 +4381,8 @@ Element.addMethods({
   Element.addMethods({
     getLayout:              getLayout,
     measure:                measure,
+    getWidth:               getWidth,
+    getHeight:              getHeight,
     getDimensions:          getDimensions,
     getOffsetParent:        getOffsetParent,
     cumulativeOffset:       cumulativeOffset,
@@ -3884,7 +4390,13 @@ Element.addMethods({
     cumulativeScrollOffset: cumulativeScrollOffset,
     viewportOffset:         viewportOffset,
     absolutize:             absolutize,
-    relativize:             relativize
+    relativize:             relativize,
+    scrollTo:               scrollTo,
+    makePositioned:         makePositioned,
+    undoPositioned:         undoPositioned,
+    makeClipping:           makeClipping,
+    undoClipping:           undoClipping,
+    clonePosition:          clonePosition
   });
 
   function isBody(element) {
@@ -3917,6 +4429,49 @@ Element.addMethods({
       }
     });
   }
+
+
+})();
+
+(function() {
+
+  var IS_OLD_OPERA = Prototype.Browser.Opera &&
+   (window.parseFloat(window.opera.version()) < 9.5);
+  var ROOT = null;
+  function getRootElement() {
+    if (ROOT) return ROOT;
+    ROOT = IS_OLD_OPERA ? document.body : document.documentElement;
+    return ROOT;
+  }
+
+  function getDimensions() {
+    return { width: this.getWidth(), height: this.getHeight() };
+  }
+
+  function getWidth() {
+    return getRootElement().clientWidth;
+  }
+
+  function getHeight() {
+    return getRootElement().clientHeight;
+  }
+
+  function getScrollOffsets() {
+    var x = window.pageXOffset || document.documentElement.scrollLeft ||
+     document.body.scrollLeft;
+    var y = window.pageYOffset || document.documentElement.scrollTop ||
+     document.body.scrollTop;
+
+    return new Element.Offset(x, y);
+  }
+
+  document.viewport = {
+    getDimensions:    getDimensions,
+    getWidth:         getWidth,
+    getHeight:        getHeight,
+    getScrollOffsets: getScrollOffsets
+  };
+
 })();
 window.$$ = function() {
   var expression = $A(arguments).join(', ');
@@ -3963,982 +4518,1775 @@ Prototype.Selector = (function() {
   };
 })();
 Prototype._original_property = window.Sizzle;
+
+;(function () {
+  function fakeDefine(fn) {
+    Prototype._actual_sizzle = fn();
+  }
+  fakeDefine.amd = true;
+
+  if (typeof define !== 'undefined' && define.amd) {
+    Prototype._original_define = define;
+    Prototype._actual_sizzle = null;
+    window.define = fakeDefine;
+  }
+})();
+
 /*!
- * Sizzle CSS Selector Engine - v1.0
- *  Copyright 2009, The Dojo Foundation
- *  Released under the MIT, BSD, and GPL Licenses.
- *  More information: http://sizzlejs.com/
+ * Sizzle CSS Selector Engine v1.10.18
+ * http://sizzlejs.com/
+ *
+ * Copyright 2013 jQuery Foundation, Inc. and other contributors
+ * Released under the MIT license
+ * http://jquery.org/license
+ *
+ * Date: 2014-02-05
  */
-(function(){
+(function( window ) {
 
-var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^[\]]*\]|['"][^'"]*['"]|[^[\]'"]+)+\]|\\.|[^ >+~,(\[\\]+)+|[>+~])(\s*,\s*)?((?:.|\r|\n)*)/g,
+var i,
+	support,
+	Expr,
+	getText,
+	isXML,
+	compile,
+	select,
+	outermostContext,
+	sortInput,
+	hasDuplicate,
+
+	setDocument,
+	document,
+	docElem,
+	documentIsHTML,
+	rbuggyQSA,
+	rbuggyMatches,
+	matches,
+	contains,
+
+	expando = "sizzle" + -(new Date()),
+	preferredDoc = window.document,
+	dirruns = 0,
 	done = 0,
-	toString = Object.prototype.toString,
-	hasDuplicate = false,
-	baseHasDuplicate = true;
+	classCache = createCache(),
+	tokenCache = createCache(),
+	compilerCache = createCache(),
+	sortOrder = function( a, b ) {
+		if ( a === b ) {
+			hasDuplicate = true;
+		}
+		return 0;
+	},
 
-[0, 0].sort(function(){
-	baseHasDuplicate = false;
-	return 0;
-});
+	strundefined = typeof undefined,
+	MAX_NEGATIVE = 1 << 31,
 
-var Sizzle = function(selector, context, results, seed) {
-	results = results || [];
-	var origContext = context = context || document;
+	hasOwn = ({}).hasOwnProperty,
+	arr = [],
+	pop = arr.pop,
+	push_native = arr.push,
+	push = arr.push,
+	slice = arr.slice,
+	indexOf = arr.indexOf || function( elem ) {
+		var i = 0,
+			len = this.length;
+		for ( ; i < len; i++ ) {
+			if ( this[i] === elem ) {
+				return i;
+			}
+		}
+		return -1;
+	},
 
-	if ( context.nodeType !== 1 && context.nodeType !== 9 ) {
-		return [];
+	booleans = "checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",
+
+
+	whitespace = "[\\x20\\t\\r\\n\\f]",
+	characterEncoding = "(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",
+
+	identifier = characterEncoding.replace( "w", "w#" ),
+
+	attributes = "\\[" + whitespace + "*(" + characterEncoding + ")" + whitespace +
+		"*(?:([*^$|!~]?=)" + whitespace + "*(?:(['\"])((?:\\\\.|[^\\\\])*?)\\3|(" + identifier + ")|)|)" + whitespace + "*\\]",
+
+	pseudos = ":(" + characterEncoding + ")(?:\\(((['\"])((?:\\\\.|[^\\\\])*?)\\3|((?:\\\\.|[^\\\\()[\\]]|" + attributes.replace( 3, 8 ) + ")*)|.*)\\)|)",
+
+	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" ),
+
+	rcomma = new RegExp( "^" + whitespace + "*," + whitespace + "*" ),
+	rcombinators = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" + whitespace + "*" ),
+
+	rattributeQuotes = new RegExp( "=" + whitespace + "*([^\\]'\"]*?)" + whitespace + "*\\]", "g" ),
+
+	rpseudo = new RegExp( pseudos ),
+	ridentifier = new RegExp( "^" + identifier + "$" ),
+
+	matchExpr = {
+		"ID": new RegExp( "^#(" + characterEncoding + ")" ),
+		"CLASS": new RegExp( "^\\.(" + characterEncoding + ")" ),
+		"TAG": new RegExp( "^(" + characterEncoding.replace( "w", "w*" ) + ")" ),
+		"ATTR": new RegExp( "^" + attributes ),
+		"PSEUDO": new RegExp( "^" + pseudos ),
+		"CHILD": new RegExp( "^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\(" + whitespace +
+			"*(even|odd|(([+-]|)(\\d*)n|)" + whitespace + "*(?:([+-]|)" + whitespace +
+			"*(\\d+)|))" + whitespace + "*\\)|)", "i" ),
+		"bool": new RegExp( "^(?:" + booleans + ")$", "i" ),
+		"needsContext": new RegExp( "^" + whitespace + "*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\(" +
+			whitespace + "*((?:-\\d)?\\d*)" + whitespace + "*\\)|)(?=[^-]|$)", "i" )
+	},
+
+	rinputs = /^(?:input|select|textarea|button)$/i,
+	rheader = /^h\d$/i,
+
+	rnative = /^[^{]+\{\s*\[native \w/,
+
+	rquickExpr = /^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,
+
+	rsibling = /[+~]/,
+	rescape = /'|\\/g,
+
+	runescape = new RegExp( "\\\\([\\da-f]{1,6}" + whitespace + "?|(" + whitespace + ")|.)", "ig" ),
+	funescape = function( _, escaped, escapedWhitespace ) {
+		var high = "0x" + escaped - 0x10000;
+		return high !== high || escapedWhitespace ?
+			escaped :
+			high < 0 ?
+				String.fromCharCode( high + 0x10000 ) :
+				String.fromCharCode( high >> 10 | 0xD800, high & 0x3FF | 0xDC00 );
+	};
+
+try {
+	push.apply(
+		(arr = slice.call( preferredDoc.childNodes )),
+		preferredDoc.childNodes
+	);
+	arr[ preferredDoc.childNodes.length ].nodeType;
+} catch ( e ) {
+	push = { apply: arr.length ?
+
+		function( target, els ) {
+			push_native.apply( target, slice.call(els) );
+		} :
+
+		function( target, els ) {
+			var j = target.length,
+				i = 0;
+			while ( (target[j++] = els[i++]) ) {}
+			target.length = j - 1;
+		}
+	};
+}
+
+function Sizzle( selector, context, results, seed ) {
+	var match, elem, m, nodeType,
+		i, groups, old, nid, newContext, newSelector;
+
+	if ( ( context ? context.ownerDocument || context : preferredDoc ) !== document ) {
+		setDocument( context );
 	}
+
+	context = context || document;
+	results = results || [];
 
 	if ( !selector || typeof selector !== "string" ) {
 		return results;
 	}
 
-	var parts = [], m, set, checkSet, check, mode, extra, prune = true, contextXML = isXML(context),
-		soFar = selector;
+	if ( (nodeType = context.nodeType) !== 1 && nodeType !== 9 ) {
+		return [];
+	}
 
-	while ( (chunker.exec(""), m = chunker.exec(soFar)) !== null ) {
-		soFar = m[3];
+	if ( documentIsHTML && !seed ) {
 
-		parts.push( m[1] );
+		if ( (match = rquickExpr.exec( selector )) ) {
+			if ( (m = match[1]) ) {
+				if ( nodeType === 9 ) {
+					elem = context.getElementById( m );
+					if ( elem && elem.parentNode ) {
+						if ( elem.id === m ) {
+							results.push( elem );
+							return results;
+						}
+					} else {
+						return results;
+					}
+				} else {
+					if ( context.ownerDocument && (elem = context.ownerDocument.getElementById( m )) &&
+						contains( context, elem ) && elem.id === m ) {
+						results.push( elem );
+						return results;
+					}
+				}
 
-		if ( m[2] ) {
-			extra = m[3];
+			} else if ( match[2] ) {
+				push.apply( results, context.getElementsByTagName( selector ) );
+				return results;
+
+			} else if ( (m = match[3]) && support.getElementsByClassName && context.getElementsByClassName ) {
+				push.apply( results, context.getElementsByClassName( m ) );
+				return results;
+			}
+		}
+
+		if ( support.qsa && (!rbuggyQSA || !rbuggyQSA.test( selector )) ) {
+			nid = old = expando;
+			newContext = context;
+			newSelector = nodeType === 9 && selector;
+
+			if ( nodeType === 1 && context.nodeName.toLowerCase() !== "object" ) {
+				groups = tokenize( selector );
+
+				if ( (old = context.getAttribute("id")) ) {
+					nid = old.replace( rescape, "\\$&" );
+				} else {
+					context.setAttribute( "id", nid );
+				}
+				nid = "[id='" + nid + "'] ";
+
+				i = groups.length;
+				while ( i-- ) {
+					groups[i] = nid + toSelector( groups[i] );
+				}
+				newContext = rsibling.test( selector ) && testContext( context.parentNode ) || context;
+				newSelector = groups.join(",");
+			}
+
+			if ( newSelector ) {
+				try {
+					push.apply( results,
+						newContext.querySelectorAll( newSelector )
+					);
+					return results;
+				} catch(qsaError) {
+				} finally {
+					if ( !old ) {
+						context.removeAttribute("id");
+					}
+				}
+			}
+		}
+	}
+
+	return select( selector.replace( rtrim, "$1" ), context, results, seed );
+}
+
+/**
+ * Create key-value caches of limited size
+ * @returns {Function(string, Object)} Returns the Object data after storing it on itself with
+ *	property name the (space-suffixed) string and (if the cache is larger than Expr.cacheLength)
+ *	deleting the oldest entry
+ */
+function createCache() {
+	var keys = [];
+
+	function cache( key, value ) {
+		if ( keys.push( key + " " ) > Expr.cacheLength ) {
+			delete cache[ keys.shift() ];
+		}
+		return (cache[ key + " " ] = value);
+	}
+	return cache;
+}
+
+/**
+ * Mark a function for special use by Sizzle
+ * @param {Function} fn The function to mark
+ */
+function markFunction( fn ) {
+	fn[ expando ] = true;
+	return fn;
+}
+
+/**
+ * Support testing using an element
+ * @param {Function} fn Passed the created div and expects a boolean result
+ */
+function assert( fn ) {
+	var div = document.createElement("div");
+
+	try {
+		return !!fn( div );
+	} catch (e) {
+		return false;
+	} finally {
+		if ( div.parentNode ) {
+			div.parentNode.removeChild( div );
+		}
+		div = null;
+	}
+}
+
+/**
+ * Adds the same handler for all of the specified attrs
+ * @param {String} attrs Pipe-separated list of attributes
+ * @param {Function} handler The method that will be applied
+ */
+function addHandle( attrs, handler ) {
+	var arr = attrs.split("|"),
+		i = attrs.length;
+
+	while ( i-- ) {
+		Expr.attrHandle[ arr[i] ] = handler;
+	}
+}
+
+/**
+ * Checks document order of two siblings
+ * @param {Element} a
+ * @param {Element} b
+ * @returns {Number} Returns less than 0 if a precedes b, greater than 0 if a follows b
+ */
+function siblingCheck( a, b ) {
+	var cur = b && a,
+		diff = cur && a.nodeType === 1 && b.nodeType === 1 &&
+			( ~b.sourceIndex || MAX_NEGATIVE ) -
+			( ~a.sourceIndex || MAX_NEGATIVE );
+
+	if ( diff ) {
+		return diff;
+	}
+
+	if ( cur ) {
+		while ( (cur = cur.nextSibling) ) {
+			if ( cur === b ) {
+				return -1;
+			}
+		}
+	}
+
+	return a ? 1 : -1;
+}
+
+/**
+ * Returns a function to use in pseudos for input types
+ * @param {String} type
+ */
+function createInputPseudo( type ) {
+	return function( elem ) {
+		var name = elem.nodeName.toLowerCase();
+		return name === "input" && elem.type === type;
+	};
+}
+
+/**
+ * Returns a function to use in pseudos for buttons
+ * @param {String} type
+ */
+function createButtonPseudo( type ) {
+	return function( elem ) {
+		var name = elem.nodeName.toLowerCase();
+		return (name === "input" || name === "button") && elem.type === type;
+	};
+}
+
+/**
+ * Returns a function to use in pseudos for positionals
+ * @param {Function} fn
+ */
+function createPositionalPseudo( fn ) {
+	return markFunction(function( argument ) {
+		argument = +argument;
+		return markFunction(function( seed, matches ) {
+			var j,
+				matchIndexes = fn( [], seed.length, argument ),
+				i = matchIndexes.length;
+
+			while ( i-- ) {
+				if ( seed[ (j = matchIndexes[i]) ] ) {
+					seed[j] = !(matches[j] = seed[j]);
+				}
+			}
+		});
+	});
+}
+
+/**
+ * Checks a node for validity as a Sizzle context
+ * @param {Element|Object=} context
+ * @returns {Element|Object|Boolean} The input node if acceptable, otherwise a falsy value
+ */
+function testContext( context ) {
+	return context && typeof context.getElementsByTagName !== strundefined && context;
+}
+
+support = Sizzle.support = {};
+
+/**
+ * Detects XML nodes
+ * @param {Element|Object} elem An element or a document
+ * @returns {Boolean} True iff elem is a non-HTML XML node
+ */
+isXML = Sizzle.isXML = function( elem ) {
+	var documentElement = elem && (elem.ownerDocument || elem).documentElement;
+	return documentElement ? documentElement.nodeName !== "HTML" : false;
+};
+
+/**
+ * Sets document-related variables once based on the current document
+ * @param {Element|Object} [doc] An element or document object to use to set the document
+ * @returns {Object} Returns the current document
+ */
+setDocument = Sizzle.setDocument = function( node ) {
+	var hasCompare,
+		doc = node ? node.ownerDocument || node : preferredDoc,
+		parent = doc.defaultView;
+
+	if ( doc === document || doc.nodeType !== 9 || !doc.documentElement ) {
+		return document;
+	}
+
+	document = doc;
+	docElem = doc.documentElement;
+
+	documentIsHTML = !isXML( doc );
+
+	if ( parent && parent !== parent.top ) {
+		if ( parent.addEventListener ) {
+			parent.addEventListener( "unload", function() {
+				setDocument();
+			}, false );
+		} else if ( parent.attachEvent ) {
+			parent.attachEvent( "onunload", function() {
+				setDocument();
+			});
+		}
+	}
+
+	/* Attributes
+	---------------------------------------------------------------------- */
+
+	support.attributes = assert(function( div ) {
+		div.className = "i";
+		return !div.getAttribute("className");
+	});
+
+	/* getElement(s)By*
+	---------------------------------------------------------------------- */
+
+	support.getElementsByTagName = assert(function( div ) {
+		div.appendChild( doc.createComment("") );
+		return !div.getElementsByTagName("*").length;
+	});
+
+	support.getElementsByClassName = rnative.test( doc.getElementsByClassName ) && assert(function( div ) {
+		div.innerHTML = "<div class='a'></div><div class='a i'></div>";
+
+		div.firstChild.className = "i";
+		return div.getElementsByClassName("i").length === 2;
+	});
+
+	support.getById = assert(function( div ) {
+		docElem.appendChild( div ).id = expando;
+		return !doc.getElementsByName || !doc.getElementsByName( expando ).length;
+	});
+
+	if ( support.getById ) {
+		Expr.find["ID"] = function( id, context ) {
+			if ( typeof context.getElementById !== strundefined && documentIsHTML ) {
+				var m = context.getElementById( id );
+				return m && m.parentNode ? [m] : [];
+			}
+		};
+		Expr.filter["ID"] = function( id ) {
+			var attrId = id.replace( runescape, funescape );
+			return function( elem ) {
+				return elem.getAttribute("id") === attrId;
+			};
+		};
+	} else {
+		delete Expr.find["ID"];
+
+		Expr.filter["ID"] =  function( id ) {
+			var attrId = id.replace( runescape, funescape );
+			return function( elem ) {
+				var node = typeof elem.getAttributeNode !== strundefined && elem.getAttributeNode("id");
+				return node && node.value === attrId;
+			};
+		};
+	}
+
+	Expr.find["TAG"] = support.getElementsByTagName ?
+		function( tag, context ) {
+			if ( typeof context.getElementsByTagName !== strundefined ) {
+				return context.getElementsByTagName( tag );
+			}
+		} :
+		function( tag, context ) {
+			var elem,
+				tmp = [],
+				i = 0,
+				results = context.getElementsByTagName( tag );
+
+			if ( tag === "*" ) {
+				while ( (elem = results[i++]) ) {
+					if ( elem.nodeType === 1 ) {
+						tmp.push( elem );
+					}
+				}
+
+				return tmp;
+			}
+			return results;
+		};
+
+	Expr.find["CLASS"] = support.getElementsByClassName && function( className, context ) {
+		if ( typeof context.getElementsByClassName !== strundefined && documentIsHTML ) {
+			return context.getElementsByClassName( className );
+		}
+	};
+
+	/* QSA/matchesSelector
+	---------------------------------------------------------------------- */
+
+
+	rbuggyMatches = [];
+
+	rbuggyQSA = [];
+
+	if ( (support.qsa = rnative.test( doc.querySelectorAll )) ) {
+		assert(function( div ) {
+			div.innerHTML = "<select t=''><option selected=''></option></select>";
+
+			if ( div.querySelectorAll("[t^='']").length ) {
+				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
+			}
+
+			if ( !div.querySelectorAll("[selected]").length ) {
+				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
+			}
+
+			if ( !div.querySelectorAll(":checked").length ) {
+				rbuggyQSA.push(":checked");
+			}
+		});
+
+		assert(function( div ) {
+			var input = doc.createElement("input");
+			input.setAttribute( "type", "hidden" );
+			div.appendChild( input ).setAttribute( "name", "D" );
+
+			if ( div.querySelectorAll("[name=d]").length ) {
+				rbuggyQSA.push( "name" + whitespace + "*[*^$|!~]?=" );
+			}
+
+			if ( !div.querySelectorAll(":enabled").length ) {
+				rbuggyQSA.push( ":enabled", ":disabled" );
+			}
+
+			div.querySelectorAll("*,:x");
+			rbuggyQSA.push(",.*:");
+		});
+	}
+
+	if ( (support.matchesSelector = rnative.test( (matches = docElem.webkitMatchesSelector ||
+		docElem.mozMatchesSelector ||
+		docElem.oMatchesSelector ||
+		docElem.msMatchesSelector) )) ) {
+
+		assert(function( div ) {
+			support.disconnectedMatch = matches.call( div, "div" );
+
+			matches.call( div, "[s!='']:x" );
+			rbuggyMatches.push( "!=", pseudos );
+		});
+	}
+
+	rbuggyQSA = rbuggyQSA.length && new RegExp( rbuggyQSA.join("|") );
+	rbuggyMatches = rbuggyMatches.length && new RegExp( rbuggyMatches.join("|") );
+
+	/* Contains
+	---------------------------------------------------------------------- */
+	hasCompare = rnative.test( docElem.compareDocumentPosition );
+
+	contains = hasCompare || rnative.test( docElem.contains ) ?
+		function( a, b ) {
+			var adown = a.nodeType === 9 ? a.documentElement : a,
+				bup = b && b.parentNode;
+			return a === bup || !!( bup && bup.nodeType === 1 && (
+				adown.contains ?
+					adown.contains( bup ) :
+					a.compareDocumentPosition && a.compareDocumentPosition( bup ) & 16
+			));
+		} :
+		function( a, b ) {
+			if ( b ) {
+				while ( (b = b.parentNode) ) {
+					if ( b === a ) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
+
+	/* Sorting
+	---------------------------------------------------------------------- */
+
+	sortOrder = hasCompare ?
+	function( a, b ) {
+
+		if ( a === b ) {
+			hasDuplicate = true;
+			return 0;
+		}
+
+		var compare = !a.compareDocumentPosition - !b.compareDocumentPosition;
+		if ( compare ) {
+			return compare;
+		}
+
+		compare = ( a.ownerDocument || a ) === ( b.ownerDocument || b ) ?
+			a.compareDocumentPosition( b ) :
+
+			1;
+
+		if ( compare & 1 ||
+			(!support.sortDetached && b.compareDocumentPosition( a ) === compare) ) {
+
+			if ( a === doc || a.ownerDocument === preferredDoc && contains(preferredDoc, a) ) {
+				return -1;
+			}
+			if ( b === doc || b.ownerDocument === preferredDoc && contains(preferredDoc, b) ) {
+				return 1;
+			}
+
+			return sortInput ?
+				( indexOf.call( sortInput, a ) - indexOf.call( sortInput, b ) ) :
+				0;
+		}
+
+		return compare & 4 ? -1 : 1;
+	} :
+	function( a, b ) {
+		if ( a === b ) {
+			hasDuplicate = true;
+			return 0;
+		}
+
+		var cur,
+			i = 0,
+			aup = a.parentNode,
+			bup = b.parentNode,
+			ap = [ a ],
+			bp = [ b ];
+
+		if ( !aup || !bup ) {
+			return a === doc ? -1 :
+				b === doc ? 1 :
+				aup ? -1 :
+				bup ? 1 :
+				sortInput ?
+				( indexOf.call( sortInput, a ) - indexOf.call( sortInput, b ) ) :
+				0;
+
+		} else if ( aup === bup ) {
+			return siblingCheck( a, b );
+		}
+
+		cur = a;
+		while ( (cur = cur.parentNode) ) {
+			ap.unshift( cur );
+		}
+		cur = b;
+		while ( (cur = cur.parentNode) ) {
+			bp.unshift( cur );
+		}
+
+		while ( ap[i] === bp[i] ) {
+			i++;
+		}
+
+		return i ?
+			siblingCheck( ap[i], bp[i] ) :
+
+			ap[i] === preferredDoc ? -1 :
+			bp[i] === preferredDoc ? 1 :
+			0;
+	};
+
+	return doc;
+};
+
+Sizzle.matches = function( expr, elements ) {
+	return Sizzle( expr, null, null, elements );
+};
+
+Sizzle.matchesSelector = function( elem, expr ) {
+	if ( ( elem.ownerDocument || elem ) !== document ) {
+		setDocument( elem );
+	}
+
+	expr = expr.replace( rattributeQuotes, "='$1']" );
+
+	if ( support.matchesSelector && documentIsHTML &&
+		( !rbuggyMatches || !rbuggyMatches.test( expr ) ) &&
+		( !rbuggyQSA     || !rbuggyQSA.test( expr ) ) ) {
+
+		try {
+			var ret = matches.call( elem, expr );
+
+			if ( ret || support.disconnectedMatch ||
+					elem.document && elem.document.nodeType !== 11 ) {
+				return ret;
+			}
+		} catch(e) {}
+	}
+
+	return Sizzle( expr, document, null, [elem] ).length > 0;
+};
+
+Sizzle.contains = function( context, elem ) {
+	if ( ( context.ownerDocument || context ) !== document ) {
+		setDocument( context );
+	}
+	return contains( context, elem );
+};
+
+Sizzle.attr = function( elem, name ) {
+	if ( ( elem.ownerDocument || elem ) !== document ) {
+		setDocument( elem );
+	}
+
+	var fn = Expr.attrHandle[ name.toLowerCase() ],
+		val = fn && hasOwn.call( Expr.attrHandle, name.toLowerCase() ) ?
+			fn( elem, name, !documentIsHTML ) :
+			undefined;
+
+	return val !== undefined ?
+		val :
+		support.attributes || !documentIsHTML ?
+			elem.getAttribute( name ) :
+			(val = elem.getAttributeNode(name)) && val.specified ?
+				val.value :
+				null;
+};
+
+Sizzle.error = function( msg ) {
+	throw new Error( "Syntax error, unrecognized expression: " + msg );
+};
+
+/**
+ * Document sorting and removing duplicates
+ * @param {ArrayLike} results
+ */
+Sizzle.uniqueSort = function( results ) {
+	var elem,
+		duplicates = [],
+		j = 0,
+		i = 0;
+
+	hasDuplicate = !support.detectDuplicates;
+	sortInput = !support.sortStable && results.slice( 0 );
+	results.sort( sortOrder );
+
+	if ( hasDuplicate ) {
+		while ( (elem = results[i++]) ) {
+			if ( elem === results[ i ] ) {
+				j = duplicates.push( i );
+			}
+		}
+		while ( j-- ) {
+			results.splice( duplicates[ j ], 1 );
+		}
+	}
+
+	sortInput = null;
+
+	return results;
+};
+
+/**
+ * Utility function for retrieving the text value of an array of DOM nodes
+ * @param {Array|Element} elem
+ */
+getText = Sizzle.getText = function( elem ) {
+	var node,
+		ret = "",
+		i = 0,
+		nodeType = elem.nodeType;
+
+	if ( !nodeType ) {
+		while ( (node = elem[i++]) ) {
+			ret += getText( node );
+		}
+	} else if ( nodeType === 1 || nodeType === 9 || nodeType === 11 ) {
+		if ( typeof elem.textContent === "string" ) {
+			return elem.textContent;
+		} else {
+			for ( elem = elem.firstChild; elem; elem = elem.nextSibling ) {
+				ret += getText( elem );
+			}
+		}
+	} else if ( nodeType === 3 || nodeType === 4 ) {
+		return elem.nodeValue;
+	}
+
+	return ret;
+};
+
+Expr = Sizzle.selectors = {
+
+	cacheLength: 50,
+
+	createPseudo: markFunction,
+
+	match: matchExpr,
+
+	attrHandle: {},
+
+	find: {},
+
+	relative: {
+		">": { dir: "parentNode", first: true },
+		" ": { dir: "parentNode" },
+		"+": { dir: "previousSibling", first: true },
+		"~": { dir: "previousSibling" }
+	},
+
+	preFilter: {
+		"ATTR": function( match ) {
+			match[1] = match[1].replace( runescape, funescape );
+
+			match[3] = ( match[4] || match[5] || "" ).replace( runescape, funescape );
+
+			if ( match[2] === "~=" ) {
+				match[3] = " " + match[3] + " ";
+			}
+
+			return match.slice( 0, 4 );
+		},
+
+		"CHILD": function( match ) {
+			/* matches from matchExpr["CHILD"]
+				1 type (only|nth|...)
+				2 what (child|of-type)
+				3 argument (even|odd|\d*|\d*n([+-]\d+)?|...)
+				4 xn-component of xn+y argument ([+-]?\d*n|)
+				5 sign of xn-component
+				6 x of xn-component
+				7 sign of y-component
+				8 y of y-component
+			*/
+			match[1] = match[1].toLowerCase();
+
+			if ( match[1].slice( 0, 3 ) === "nth" ) {
+				if ( !match[3] ) {
+					Sizzle.error( match[0] );
+				}
+
+				match[4] = +( match[4] ? match[5] + (match[6] || 1) : 2 * ( match[3] === "even" || match[3] === "odd" ) );
+				match[5] = +( ( match[7] + match[8] ) || match[3] === "odd" );
+
+			} else if ( match[3] ) {
+				Sizzle.error( match[0] );
+			}
+
+			return match;
+		},
+
+		"PSEUDO": function( match ) {
+			var excess,
+				unquoted = !match[5] && match[2];
+
+			if ( matchExpr["CHILD"].test( match[0] ) ) {
+				return null;
+			}
+
+			if ( match[3] && match[4] !== undefined ) {
+				match[2] = match[4];
+
+			} else if ( unquoted && rpseudo.test( unquoted ) &&
+				(excess = tokenize( unquoted, true )) &&
+				(excess = unquoted.indexOf( ")", unquoted.length - excess ) - unquoted.length) ) {
+
+				match[0] = match[0].slice( 0, excess );
+				match[2] = unquoted.slice( 0, excess );
+			}
+
+			return match.slice( 0, 3 );
+		}
+	},
+
+	filter: {
+
+		"TAG": function( nodeNameSelector ) {
+			var nodeName = nodeNameSelector.replace( runescape, funescape ).toLowerCase();
+			return nodeNameSelector === "*" ?
+				function() { return true; } :
+				function( elem ) {
+					return elem.nodeName && elem.nodeName.toLowerCase() === nodeName;
+				};
+		},
+
+		"CLASS": function( className ) {
+			var pattern = classCache[ className + " " ];
+
+			return pattern ||
+				(pattern = new RegExp( "(^|" + whitespace + ")" + className + "(" + whitespace + "|$)" )) &&
+				classCache( className, function( elem ) {
+					return pattern.test( typeof elem.className === "string" && elem.className || typeof elem.getAttribute !== strundefined && elem.getAttribute("class") || "" );
+				});
+		},
+
+		"ATTR": function( name, operator, check ) {
+			return function( elem ) {
+				var result = Sizzle.attr( elem, name );
+
+				if ( result == null ) {
+					return operator === "!=";
+				}
+				if ( !operator ) {
+					return true;
+				}
+
+				result += "";
+
+				return operator === "=" ? result === check :
+					operator === "!=" ? result !== check :
+					operator === "^=" ? check && result.indexOf( check ) === 0 :
+					operator === "*=" ? check && result.indexOf( check ) > -1 :
+					operator === "$=" ? check && result.slice( -check.length ) === check :
+					operator === "~=" ? ( " " + result + " " ).indexOf( check ) > -1 :
+					operator === "|=" ? result === check || result.slice( 0, check.length + 1 ) === check + "-" :
+					false;
+			};
+		},
+
+		"CHILD": function( type, what, argument, first, last ) {
+			var simple = type.slice( 0, 3 ) !== "nth",
+				forward = type.slice( -4 ) !== "last",
+				ofType = what === "of-type";
+
+			return first === 1 && last === 0 ?
+
+				function( elem ) {
+					return !!elem.parentNode;
+				} :
+
+				function( elem, context, xml ) {
+					var cache, outerCache, node, diff, nodeIndex, start,
+						dir = simple !== forward ? "nextSibling" : "previousSibling",
+						parent = elem.parentNode,
+						name = ofType && elem.nodeName.toLowerCase(),
+						useCache = !xml && !ofType;
+
+					if ( parent ) {
+
+						if ( simple ) {
+							while ( dir ) {
+								node = elem;
+								while ( (node = node[ dir ]) ) {
+									if ( ofType ? node.nodeName.toLowerCase() === name : node.nodeType === 1 ) {
+										return false;
+									}
+								}
+								start = dir = type === "only" && !start && "nextSibling";
+							}
+							return true;
+						}
+
+						start = [ forward ? parent.firstChild : parent.lastChild ];
+
+						if ( forward && useCache ) {
+							outerCache = parent[ expando ] || (parent[ expando ] = {});
+							cache = outerCache[ type ] || [];
+							nodeIndex = cache[0] === dirruns && cache[1];
+							diff = cache[0] === dirruns && cache[2];
+							node = nodeIndex && parent.childNodes[ nodeIndex ];
+
+							while ( (node = ++nodeIndex && node && node[ dir ] ||
+
+								(diff = nodeIndex = 0) || start.pop()) ) {
+
+								if ( node.nodeType === 1 && ++diff && node === elem ) {
+									outerCache[ type ] = [ dirruns, nodeIndex, diff ];
+									break;
+								}
+							}
+
+						} else if ( useCache && (cache = (elem[ expando ] || (elem[ expando ] = {}))[ type ]) && cache[0] === dirruns ) {
+							diff = cache[1];
+
+						} else {
+							while ( (node = ++nodeIndex && node && node[ dir ] ||
+								(diff = nodeIndex = 0) || start.pop()) ) {
+
+								if ( ( ofType ? node.nodeName.toLowerCase() === name : node.nodeType === 1 ) && ++diff ) {
+									if ( useCache ) {
+										(node[ expando ] || (node[ expando ] = {}))[ type ] = [ dirruns, diff ];
+									}
+
+									if ( node === elem ) {
+										break;
+									}
+								}
+							}
+						}
+
+						diff -= last;
+						return diff === first || ( diff % first === 0 && diff / first >= 0 );
+					}
+				};
+		},
+
+		"PSEUDO": function( pseudo, argument ) {
+			var args,
+				fn = Expr.pseudos[ pseudo ] || Expr.setFilters[ pseudo.toLowerCase() ] ||
+					Sizzle.error( "unsupported pseudo: " + pseudo );
+
+			if ( fn[ expando ] ) {
+				return fn( argument );
+			}
+
+			if ( fn.length > 1 ) {
+				args = [ pseudo, pseudo, "", argument ];
+				return Expr.setFilters.hasOwnProperty( pseudo.toLowerCase() ) ?
+					markFunction(function( seed, matches ) {
+						var idx,
+							matched = fn( seed, argument ),
+							i = matched.length;
+						while ( i-- ) {
+							idx = indexOf.call( seed, matched[i] );
+							seed[ idx ] = !( matches[ idx ] = matched[i] );
+						}
+					}) :
+					function( elem ) {
+						return fn( elem, 0, args );
+					};
+			}
+
+			return fn;
+		}
+	},
+
+	pseudos: {
+		"not": markFunction(function( selector ) {
+			var input = [],
+				results = [],
+				matcher = compile( selector.replace( rtrim, "$1" ) );
+
+			return matcher[ expando ] ?
+				markFunction(function( seed, matches, context, xml ) {
+					var elem,
+						unmatched = matcher( seed, null, xml, [] ),
+						i = seed.length;
+
+					while ( i-- ) {
+						if ( (elem = unmatched[i]) ) {
+							seed[i] = !(matches[i] = elem);
+						}
+					}
+				}) :
+				function( elem, context, xml ) {
+					input[0] = elem;
+					matcher( input, null, xml, results );
+					return !results.pop();
+				};
+		}),
+
+		"has": markFunction(function( selector ) {
+			return function( elem ) {
+				return Sizzle( selector, elem ).length > 0;
+			};
+		}),
+
+		"contains": markFunction(function( text ) {
+			return function( elem ) {
+				return ( elem.textContent || elem.innerText || getText( elem ) ).indexOf( text ) > -1;
+			};
+		}),
+
+		"lang": markFunction( function( lang ) {
+			if ( !ridentifier.test(lang || "") ) {
+				Sizzle.error( "unsupported lang: " + lang );
+			}
+			lang = lang.replace( runescape, funescape ).toLowerCase();
+			return function( elem ) {
+				var elemLang;
+				do {
+					if ( (elemLang = documentIsHTML ?
+						elem.lang :
+						elem.getAttribute("xml:lang") || elem.getAttribute("lang")) ) {
+
+						elemLang = elemLang.toLowerCase();
+						return elemLang === lang || elemLang.indexOf( lang + "-" ) === 0;
+					}
+				} while ( (elem = elem.parentNode) && elem.nodeType === 1 );
+				return false;
+			};
+		}),
+
+		"target": function( elem ) {
+			var hash = window.location && window.location.hash;
+			return hash && hash.slice( 1 ) === elem.id;
+		},
+
+		"root": function( elem ) {
+			return elem === docElem;
+		},
+
+		"focus": function( elem ) {
+			return elem === document.activeElement && (!document.hasFocus || document.hasFocus()) && !!(elem.type || elem.href || ~elem.tabIndex);
+		},
+
+		"enabled": function( elem ) {
+			return elem.disabled === false;
+		},
+
+		"disabled": function( elem ) {
+			return elem.disabled === true;
+		},
+
+		"checked": function( elem ) {
+			var nodeName = elem.nodeName.toLowerCase();
+			return (nodeName === "input" && !!elem.checked) || (nodeName === "option" && !!elem.selected);
+		},
+
+		"selected": function( elem ) {
+			if ( elem.parentNode ) {
+				elem.parentNode.selectedIndex;
+			}
+
+			return elem.selected === true;
+		},
+
+		"empty": function( elem ) {
+			for ( elem = elem.firstChild; elem; elem = elem.nextSibling ) {
+				if ( elem.nodeType < 6 ) {
+					return false;
+				}
+			}
+			return true;
+		},
+
+		"parent": function( elem ) {
+			return !Expr.pseudos["empty"]( elem );
+		},
+
+		"header": function( elem ) {
+			return rheader.test( elem.nodeName );
+		},
+
+		"input": function( elem ) {
+			return rinputs.test( elem.nodeName );
+		},
+
+		"button": function( elem ) {
+			var name = elem.nodeName.toLowerCase();
+			return name === "input" && elem.type === "button" || name === "button";
+		},
+
+		"text": function( elem ) {
+			var attr;
+			return elem.nodeName.toLowerCase() === "input" &&
+				elem.type === "text" &&
+
+				( (attr = elem.getAttribute("type")) == null || attr.toLowerCase() === "text" );
+		},
+
+		"first": createPositionalPseudo(function() {
+			return [ 0 ];
+		}),
+
+		"last": createPositionalPseudo(function( matchIndexes, length ) {
+			return [ length - 1 ];
+		}),
+
+		"eq": createPositionalPseudo(function( matchIndexes, length, argument ) {
+			return [ argument < 0 ? argument + length : argument ];
+		}),
+
+		"even": createPositionalPseudo(function( matchIndexes, length ) {
+			var i = 0;
+			for ( ; i < length; i += 2 ) {
+				matchIndexes.push( i );
+			}
+			return matchIndexes;
+		}),
+
+		"odd": createPositionalPseudo(function( matchIndexes, length ) {
+			var i = 1;
+			for ( ; i < length; i += 2 ) {
+				matchIndexes.push( i );
+			}
+			return matchIndexes;
+		}),
+
+		"lt": createPositionalPseudo(function( matchIndexes, length, argument ) {
+			var i = argument < 0 ? argument + length : argument;
+			for ( ; --i >= 0; ) {
+				matchIndexes.push( i );
+			}
+			return matchIndexes;
+		}),
+
+		"gt": createPositionalPseudo(function( matchIndexes, length, argument ) {
+			var i = argument < 0 ? argument + length : argument;
+			for ( ; ++i < length; ) {
+				matchIndexes.push( i );
+			}
+			return matchIndexes;
+		})
+	}
+};
+
+Expr.pseudos["nth"] = Expr.pseudos["eq"];
+
+for ( i in { radio: true, checkbox: true, file: true, password: true, image: true } ) {
+	Expr.pseudos[ i ] = createInputPseudo( i );
+}
+for ( i in { submit: true, reset: true } ) {
+	Expr.pseudos[ i ] = createButtonPseudo( i );
+}
+
+function setFilters() {}
+setFilters.prototype = Expr.filters = Expr.pseudos;
+Expr.setFilters = new setFilters();
+
+function tokenize( selector, parseOnly ) {
+	var matched, match, tokens, type,
+		soFar, groups, preFilters,
+		cached = tokenCache[ selector + " " ];
+
+	if ( cached ) {
+		return parseOnly ? 0 : cached.slice( 0 );
+	}
+
+	soFar = selector;
+	groups = [];
+	preFilters = Expr.preFilter;
+
+	while ( soFar ) {
+
+		if ( !matched || (match = rcomma.exec( soFar )) ) {
+			if ( match ) {
+				soFar = soFar.slice( match[0].length ) || soFar;
+			}
+			groups.push( (tokens = []) );
+		}
+
+		matched = false;
+
+		if ( (match = rcombinators.exec( soFar )) ) {
+			matched = match.shift();
+			tokens.push({
+				value: matched,
+				type: match[0].replace( rtrim, " " )
+			});
+			soFar = soFar.slice( matched.length );
+		}
+
+		for ( type in Expr.filter ) {
+			if ( (match = matchExpr[ type ].exec( soFar )) && (!preFilters[ type ] ||
+				(match = preFilters[ type ]( match ))) ) {
+				matched = match.shift();
+				tokens.push({
+					value: matched,
+					type: type,
+					matches: match
+				});
+				soFar = soFar.slice( matched.length );
+			}
+		}
+
+		if ( !matched ) {
 			break;
 		}
 	}
 
-	if ( parts.length > 1 && origPOS.exec( selector ) ) {
-		if ( parts.length === 2 && Expr.relative[ parts[0] ] ) {
-			set = posProcess( parts[0] + parts[1], context );
-		} else {
-			set = Expr.relative[ parts[0] ] ?
-				[ context ] :
-				Sizzle( parts.shift(), context );
+	return parseOnly ?
+		soFar.length :
+		soFar ?
+			Sizzle.error( selector ) :
+			tokenCache( selector, groups ).slice( 0 );
+}
 
-			while ( parts.length ) {
-				selector = parts.shift();
-
-				if ( Expr.relative[ selector ] )
-					selector += parts.shift();
-
-				set = posProcess( selector, set );
-			}
-		}
-	} else {
-		if ( !seed && parts.length > 1 && context.nodeType === 9 && !contextXML &&
-				Expr.match.ID.test(parts[0]) && !Expr.match.ID.test(parts[parts.length - 1]) ) {
-			var ret = Sizzle.find( parts.shift(), context, contextXML );
-			context = ret.expr ? Sizzle.filter( ret.expr, ret.set )[0] : ret.set[0];
-		}
-
-		if ( context ) {
-			var ret = seed ?
-				{ expr: parts.pop(), set: makeArray(seed) } :
-				Sizzle.find( parts.pop(), parts.length === 1 && (parts[0] === "~" || parts[0] === "+") && context.parentNode ? context.parentNode : context, contextXML );
-			set = ret.expr ? Sizzle.filter( ret.expr, ret.set ) : ret.set;
-
-			if ( parts.length > 0 ) {
-				checkSet = makeArray(set);
-			} else {
-				prune = false;
-			}
-
-			while ( parts.length ) {
-				var cur = parts.pop(), pop = cur;
-
-				if ( !Expr.relative[ cur ] ) {
-					cur = "";
-				} else {
-					pop = parts.pop();
-				}
-
-				if ( pop == null ) {
-					pop = context;
-				}
-
-				Expr.relative[ cur ]( checkSet, pop, contextXML );
-			}
-		} else {
-			checkSet = parts = [];
-		}
+function toSelector( tokens ) {
+	var i = 0,
+		len = tokens.length,
+		selector = "";
+	for ( ; i < len; i++ ) {
+		selector += tokens[i].value;
 	}
+	return selector;
+}
 
-	if ( !checkSet ) {
-		checkSet = set;
-	}
+function addCombinator( matcher, combinator, base ) {
+	var dir = combinator.dir,
+		checkNonElements = base && dir === "parentNode",
+		doneName = done++;
 
-	if ( !checkSet ) {
-		throw "Syntax error, unrecognized expression: " + (cur || selector);
-	}
-
-	if ( toString.call(checkSet) === "[object Array]" ) {
-		if ( !prune ) {
-			results.push.apply( results, checkSet );
-		} else if ( context && context.nodeType === 1 ) {
-			for ( var i = 0; checkSet[i] != null; i++ ) {
-				if ( checkSet[i] && (checkSet[i] === true || checkSet[i].nodeType === 1 && contains(context, checkSet[i])) ) {
-					results.push( set[i] );
+	return combinator.first ?
+		function( elem, context, xml ) {
+			while ( (elem = elem[ dir ]) ) {
+				if ( elem.nodeType === 1 || checkNonElements ) {
+					return matcher( elem, context, xml );
 				}
 			}
-		} else {
-			for ( var i = 0; checkSet[i] != null; i++ ) {
-				if ( checkSet[i] && checkSet[i].nodeType === 1 ) {
-					results.push( set[i] );
-				}
-			}
-		}
-	} else {
-		makeArray( checkSet, results );
-	}
+		} :
 
-	if ( extra ) {
-		Sizzle( extra, origContext, results, seed );
-		Sizzle.uniqueSort( results );
-	}
+		function( elem, context, xml ) {
+			var oldCache, outerCache,
+				newCache = [ dirruns, doneName ];
 
-	return results;
-};
-
-Sizzle.uniqueSort = function(results){
-	if ( sortOrder ) {
-		hasDuplicate = baseHasDuplicate;
-		results.sort(sortOrder);
-
-		if ( hasDuplicate ) {
-			for ( var i = 1; i < results.length; i++ ) {
-				if ( results[i] === results[i-1] ) {
-					results.splice(i--, 1);
-				}
-			}
-		}
-	}
-
-	return results;
-};
-
-Sizzle.matches = function(expr, set){
-	return Sizzle(expr, null, null, set);
-};
-
-Sizzle.find = function(expr, context, isXML){
-	var set, match;
-
-	if ( !expr ) {
-		return [];
-	}
-
-	for ( var i = 0, l = Expr.order.length; i < l; i++ ) {
-		var type = Expr.order[i], match;
-
-		if ( (match = Expr.leftMatch[ type ].exec( expr )) ) {
-			var left = match[1];
-			match.splice(1,1);
-
-			if ( left.substr( left.length - 1 ) !== "\\" ) {
-				match[1] = (match[1] || "").replace(/\\/g, "");
-				set = Expr.find[ type ]( match, context, isXML );
-				if ( set != null ) {
-					expr = expr.replace( Expr.match[ type ], "" );
-					break;
-				}
-			}
-		}
-	}
-
-	if ( !set ) {
-		set = context.getElementsByTagName("*");
-	}
-
-	return {set: set, expr: expr};
-};
-
-Sizzle.filter = function(expr, set, inplace, not){
-	var old = expr, result = [], curLoop = set, match, anyFound,
-		isXMLFilter = set && set[0] && isXML(set[0]);
-
-	while ( expr && set.length ) {
-		for ( var type in Expr.filter ) {
-			if ( (match = Expr.match[ type ].exec( expr )) != null ) {
-				var filter = Expr.filter[ type ], found, item;
-				anyFound = false;
-
-				if ( curLoop == result ) {
-					result = [];
-				}
-
-				if ( Expr.preFilter[ type ] ) {
-					match = Expr.preFilter[ type ]( match, curLoop, inplace, result, not, isXMLFilter );
-
-					if ( !match ) {
-						anyFound = found = true;
-					} else if ( match === true ) {
-						continue;
+			if ( xml ) {
+				while ( (elem = elem[ dir ]) ) {
+					if ( elem.nodeType === 1 || checkNonElements ) {
+						if ( matcher( elem, context, xml ) ) {
+							return true;
+						}
 					}
 				}
+			} else {
+				while ( (elem = elem[ dir ]) ) {
+					if ( elem.nodeType === 1 || checkNonElements ) {
+						outerCache = elem[ expando ] || (elem[ expando ] = {});
+						if ( (oldCache = outerCache[ dir ]) &&
+							oldCache[ 0 ] === dirruns && oldCache[ 1 ] === doneName ) {
 
-				if ( match ) {
-					for ( var i = 0; (item = curLoop[i]) != null; i++ ) {
-						if ( item ) {
-							found = filter( item, match, i, curLoop );
-							var pass = not ^ !!found;
+							return (newCache[ 2 ] = oldCache[ 2 ]);
+						} else {
+							outerCache[ dir ] = newCache;
 
-							if ( inplace && found != null ) {
-								if ( pass ) {
-									anyFound = true;
-								} else {
-									curLoop[i] = false;
-								}
-							} else if ( pass ) {
-								result.push( item );
-								anyFound = true;
+							if ( (newCache[ 2 ] = matcher( elem, context, xml )) ) {
+								return true;
 							}
 						}
 					}
 				}
-
-				if ( found !== undefined ) {
-					if ( !inplace ) {
-						curLoop = result;
-					}
-
-					expr = expr.replace( Expr.match[ type ], "" );
-
-					if ( !anyFound ) {
-						return [];
-					}
-
-					break;
-				}
 			}
-		}
+		};
+}
 
-		if ( expr == old ) {
-			if ( anyFound == null ) {
-				throw "Syntax error, unrecognized expression: " + expr;
-			} else {
-				break;
-			}
-		}
-
-		old = expr;
-	}
-
-	return curLoop;
-};
-
-var Expr = Sizzle.selectors = {
-	order: [ "ID", "NAME", "TAG" ],
-	match: {
-		ID: /#((?:[\w\u00c0-\uFFFF-]|\\.)+)/,
-		CLASS: /\.((?:[\w\u00c0-\uFFFF-]|\\.)+)/,
-		NAME: /\[name=['"]*((?:[\w\u00c0-\uFFFF-]|\\.)+)['"]*\]/,
-		ATTR: /\[\s*((?:[\w\u00c0-\uFFFF-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/,
-		TAG: /^((?:[\w\u00c0-\uFFFF\*-]|\\.)+)/,
-		CHILD: /:(only|nth|last|first)-child(?:\((even|odd|[\dn+-]*)\))?/,
-		POS: /:(nth|eq|gt|lt|first|last|even|odd)(?:\((\d*)\))?(?=[^-]|$)/,
-		PSEUDO: /:((?:[\w\u00c0-\uFFFF-]|\\.)+)(?:\((['"]*)((?:\([^\)]+\)|[^\2\(\)]*)+)\2\))?/
-	},
-	leftMatch: {},
-	attrMap: {
-		"class": "className",
-		"for": "htmlFor"
-	},
-	attrHandle: {
-		href: function(elem){
-			return elem.getAttribute("href");
-		}
-	},
-	relative: {
-		"+": function(checkSet, part, isXML){
-			var isPartStr = typeof part === "string",
-				isTag = isPartStr && !/\W/.test(part),
-				isPartStrNotTag = isPartStr && !isTag;
-
-			if ( isTag && !isXML ) {
-				part = part.toUpperCase();
-			}
-
-			for ( var i = 0, l = checkSet.length, elem; i < l; i++ ) {
-				if ( (elem = checkSet[i]) ) {
-					while ( (elem = elem.previousSibling) && elem.nodeType !== 1 ) {}
-
-					checkSet[i] = isPartStrNotTag || elem && elem.nodeName === part ?
-						elem || false :
-						elem === part;
-				}
-			}
-
-			if ( isPartStrNotTag ) {
-				Sizzle.filter( part, checkSet, true );
-			}
-		},
-		">": function(checkSet, part, isXML){
-			var isPartStr = typeof part === "string";
-
-			if ( isPartStr && !/\W/.test(part) ) {
-				part = isXML ? part : part.toUpperCase();
-
-				for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-					var elem = checkSet[i];
-					if ( elem ) {
-						var parent = elem.parentNode;
-						checkSet[i] = parent.nodeName === part ? parent : false;
-					}
-				}
-			} else {
-				for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-					var elem = checkSet[i];
-					if ( elem ) {
-						checkSet[i] = isPartStr ?
-							elem.parentNode :
-							elem.parentNode === part;
-					}
-				}
-
-				if ( isPartStr ) {
-					Sizzle.filter( part, checkSet, true );
-				}
-			}
-		},
-		"": function(checkSet, part, isXML){
-			var doneName = done++, checkFn = dirCheck;
-
-			if ( !/\W/.test(part) ) {
-				var nodeCheck = part = isXML ? part : part.toUpperCase();
-				checkFn = dirNodeCheck;
-			}
-
-			checkFn("parentNode", part, doneName, checkSet, nodeCheck, isXML);
-		},
-		"~": function(checkSet, part, isXML){
-			var doneName = done++, checkFn = dirCheck;
-
-			if ( typeof part === "string" && !/\W/.test(part) ) {
-				var nodeCheck = part = isXML ? part : part.toUpperCase();
-				checkFn = dirNodeCheck;
-			}
-
-			checkFn("previousSibling", part, doneName, checkSet, nodeCheck, isXML);
-		}
-	},
-	find: {
-		ID: function(match, context, isXML){
-			if ( typeof context.getElementById !== "undefined" && !isXML ) {
-				var m = context.getElementById(match[1]);
-				return m ? [m] : [];
-			}
-		},
-		NAME: function(match, context, isXML){
-			if ( typeof context.getElementsByName !== "undefined" ) {
-				var ret = [], results = context.getElementsByName(match[1]);
-
-				for ( var i = 0, l = results.length; i < l; i++ ) {
-					if ( results[i].getAttribute("name") === match[1] ) {
-						ret.push( results[i] );
-					}
-				}
-
-				return ret.length === 0 ? null : ret;
-			}
-		},
-		TAG: function(match, context){
-			return context.getElementsByTagName(match[1]);
-		}
-	},
-	preFilter: {
-		CLASS: function(match, curLoop, inplace, result, not, isXML){
-			match = " " + match[1].replace(/\\/g, "") + " ";
-
-			if ( isXML ) {
-				return match;
-			}
-
-			for ( var i = 0, elem; (elem = curLoop[i]) != null; i++ ) {
-				if ( elem ) {
-					if ( not ^ (elem.className && (" " + elem.className + " ").indexOf(match) >= 0) ) {
-						if ( !inplace )
-							result.push( elem );
-					} else if ( inplace ) {
-						curLoop[i] = false;
-					}
-				}
-			}
-
-			return false;
-		},
-		ID: function(match){
-			return match[1].replace(/\\/g, "");
-		},
-		TAG: function(match, curLoop){
-			for ( var i = 0; curLoop[i] === false; i++ ){}
-			return curLoop[i] && isXML(curLoop[i]) ? match[1] : match[1].toUpperCase();
-		},
-		CHILD: function(match){
-			if ( match[1] == "nth" ) {
-				var test = /(-?)(\d*)n((?:\+|-)?\d*)/.exec(
-					match[2] == "even" && "2n" || match[2] == "odd" && "2n+1" ||
-					!/\D/.test( match[2] ) && "0n+" + match[2] || match[2]);
-
-				match[2] = (test[1] + (test[2] || 1)) - 0;
-				match[3] = test[3] - 0;
-			}
-
-			match[0] = done++;
-
-			return match;
-		},
-		ATTR: function(match, curLoop, inplace, result, not, isXML){
-			var name = match[1].replace(/\\/g, "");
-
-			if ( !isXML && Expr.attrMap[name] ) {
-				match[1] = Expr.attrMap[name];
-			}
-
-			if ( match[2] === "~=" ) {
-				match[4] = " " + match[4] + " ";
-			}
-
-			return match;
-		},
-		PSEUDO: function(match, curLoop, inplace, result, not){
-			if ( match[1] === "not" ) {
-				if ( ( chunker.exec(match[3]) || "" ).length > 1 || /^\w/.test(match[3]) ) {
-					match[3] = Sizzle(match[3], null, null, curLoop);
-				} else {
-					var ret = Sizzle.filter(match[3], curLoop, inplace, true ^ not);
-					if ( !inplace ) {
-						result.push.apply( result, ret );
-					}
+function elementMatcher( matchers ) {
+	return matchers.length > 1 ?
+		function( elem, context, xml ) {
+			var i = matchers.length;
+			while ( i-- ) {
+				if ( !matchers[i]( elem, context, xml ) ) {
 					return false;
 				}
-			} else if ( Expr.match.POS.test( match[0] ) || Expr.match.CHILD.test( match[0] ) ) {
-				return true;
 			}
-
-			return match;
-		},
-		POS: function(match){
-			match.unshift( true );
-			return match;
-		}
-	},
-	filters: {
-		enabled: function(elem){
-			return elem.disabled === false && elem.type !== "hidden";
-		},
-		disabled: function(elem){
-			return elem.disabled === true;
-		},
-		checked: function(elem){
-			return elem.checked === true;
-		},
-		selected: function(elem){
-			elem.parentNode.selectedIndex;
-			return elem.selected === true;
-		},
-		parent: function(elem){
-			return !!elem.firstChild;
-		},
-		empty: function(elem){
-			return !elem.firstChild;
-		},
-		has: function(elem, i, match){
-			return !!Sizzle( match[3], elem ).length;
-		},
-		header: function(elem){
-			return /h\d/i.test( elem.nodeName );
-		},
-		text: function(elem){
-			return "text" === elem.type;
-		},
-		radio: function(elem){
-			return "radio" === elem.type;
-		},
-		checkbox: function(elem){
-			return "checkbox" === elem.type;
-		},
-		file: function(elem){
-			return "file" === elem.type;
-		},
-		password: function(elem){
-			return "password" === elem.type;
-		},
-		submit: function(elem){
-			return "submit" === elem.type;
-		},
-		image: function(elem){
-			return "image" === elem.type;
-		},
-		reset: function(elem){
-			return "reset" === elem.type;
-		},
-		button: function(elem){
-			return "button" === elem.type || elem.nodeName.toUpperCase() === "BUTTON";
-		},
-		input: function(elem){
-			return /input|select|textarea|button/i.test(elem.nodeName);
-		}
-	},
-	setFilters: {
-		first: function(elem, i){
-			return i === 0;
-		},
-		last: function(elem, i, match, array){
-			return i === array.length - 1;
-		},
-		even: function(elem, i){
-			return i % 2 === 0;
-		},
-		odd: function(elem, i){
-			return i % 2 === 1;
-		},
-		lt: function(elem, i, match){
-			return i < match[3] - 0;
-		},
-		gt: function(elem, i, match){
-			return i > match[3] - 0;
-		},
-		nth: function(elem, i, match){
-			return match[3] - 0 == i;
-		},
-		eq: function(elem, i, match){
-			return match[3] - 0 == i;
-		}
-	},
-	filter: {
-		PSEUDO: function(elem, match, i, array){
-			var name = match[1], filter = Expr.filters[ name ];
-
-			if ( filter ) {
-				return filter( elem, i, match, array );
-			} else if ( name === "contains" ) {
-				return (elem.textContent || elem.innerText || "").indexOf(match[3]) >= 0;
-			} else if ( name === "not" ) {
-				var not = match[3];
-
-				for ( var i = 0, l = not.length; i < l; i++ ) {
-					if ( not[i] === elem ) {
-						return false;
-					}
-				}
-
-				return true;
-			}
-		},
-		CHILD: function(elem, match){
-			var type = match[1], node = elem;
-			switch (type) {
-				case 'only':
-				case 'first':
-					while ( (node = node.previousSibling) )  {
-						if ( node.nodeType === 1 ) return false;
-					}
-					if ( type == 'first') return true;
-					node = elem;
-				case 'last':
-					while ( (node = node.nextSibling) )  {
-						if ( node.nodeType === 1 ) return false;
-					}
-					return true;
-				case 'nth':
-					var first = match[2], last = match[3];
-
-					if ( first == 1 && last == 0 ) {
-						return true;
-					}
-
-					var doneName = match[0],
-						parent = elem.parentNode;
-
-					if ( parent && (parent.sizcache !== doneName || !elem.nodeIndex) ) {
-						var count = 0;
-						for ( node = parent.firstChild; node; node = node.nextSibling ) {
-							if ( node.nodeType === 1 ) {
-								node.nodeIndex = ++count;
-							}
-						}
-						parent.sizcache = doneName;
-					}
-
-					var diff = elem.nodeIndex - last;
-					if ( first == 0 ) {
-						return diff == 0;
-					} else {
-						return ( diff % first == 0 && diff / first >= 0 );
-					}
-			}
-		},
-		ID: function(elem, match){
-			return elem.nodeType === 1 && elem.getAttribute("id") === match;
-		},
-		TAG: function(elem, match){
-			return (match === "*" && elem.nodeType === 1) || elem.nodeName === match;
-		},
-		CLASS: function(elem, match){
-			return (" " + (elem.className || elem.getAttribute("class")) + " ")
-				.indexOf( match ) > -1;
-		},
-		ATTR: function(elem, match){
-			var name = match[1],
-				result = Expr.attrHandle[ name ] ?
-					Expr.attrHandle[ name ]( elem ) :
-					elem[ name ] != null ?
-						elem[ name ] :
-						elem.getAttribute( name ),
-				value = result + "",
-				type = match[2],
-				check = match[4];
-
-			return result == null ?
-				type === "!=" :
-				type === "=" ?
-				value === check :
-				type === "*=" ?
-				value.indexOf(check) >= 0 :
-				type === "~=" ?
-				(" " + value + " ").indexOf(check) >= 0 :
-				!check ?
-				value && result !== false :
-				type === "!=" ?
-				value != check :
-				type === "^=" ?
-				value.indexOf(check) === 0 :
-				type === "$=" ?
-				value.substr(value.length - check.length) === check :
-				type === "|=" ?
-				value === check || value.substr(0, check.length + 1) === check + "-" :
-				false;
-		},
-		POS: function(elem, match, i, array){
-			var name = match[2], filter = Expr.setFilters[ name ];
-
-			if ( filter ) {
-				return filter( elem, i, match, array );
-			}
-		}
-	}
-};
-
-var origPOS = Expr.match.POS;
-
-for ( var type in Expr.match ) {
-	Expr.match[ type ] = new RegExp( Expr.match[ type ].source + /(?![^\[]*\])(?![^\(]*\))/.source );
-	Expr.leftMatch[ type ] = new RegExp( /(^(?:.|\r|\n)*?)/.source + Expr.match[ type ].source );
+			return true;
+		} :
+		matchers[0];
 }
 
-var makeArray = function(array, results) {
-	array = Array.prototype.slice.call( array, 0 );
+function multipleContexts( selector, contexts, results ) {
+	var i = 0,
+		len = contexts.length;
+	for ( ; i < len; i++ ) {
+		Sizzle( selector, contexts[i], results );
+	}
+	return results;
+}
 
-	if ( results ) {
-		results.push.apply( results, array );
-		return results;
+function condense( unmatched, map, filter, context, xml ) {
+	var elem,
+		newUnmatched = [],
+		i = 0,
+		len = unmatched.length,
+		mapped = map != null;
+
+	for ( ; i < len; i++ ) {
+		if ( (elem = unmatched[i]) ) {
+			if ( !filter || filter( elem, context, xml ) ) {
+				newUnmatched.push( elem );
+				if ( mapped ) {
+					map.push( i );
+				}
+			}
+		}
 	}
 
-	return array;
-};
+	return newUnmatched;
+}
 
-try {
-	Array.prototype.slice.call( document.documentElement.childNodes, 0 );
+function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postSelector ) {
+	if ( postFilter && !postFilter[ expando ] ) {
+		postFilter = setMatcher( postFilter );
+	}
+	if ( postFinder && !postFinder[ expando ] ) {
+		postFinder = setMatcher( postFinder, postSelector );
+	}
+	return markFunction(function( seed, results, context, xml ) {
+		var temp, i, elem,
+			preMap = [],
+			postMap = [],
+			preexisting = results.length,
 
-} catch(e){
-	makeArray = function(array, results) {
-		var ret = results || [];
+			elems = seed || multipleContexts( selector || "*", context.nodeType ? [ context ] : context, [] ),
 
-		if ( toString.call(array) === "[object Array]" ) {
-			Array.prototype.push.apply( ret, array );
+			matcherIn = preFilter && ( seed || !selector ) ?
+				condense( elems, preMap, preFilter, context, xml ) :
+				elems,
+
+			matcherOut = matcher ?
+				postFinder || ( seed ? preFilter : preexisting || postFilter ) ?
+
+					[] :
+
+					results :
+				matcherIn;
+
+		if ( matcher ) {
+			matcher( matcherIn, matcherOut, context, xml );
+		}
+
+		if ( postFilter ) {
+			temp = condense( matcherOut, postMap );
+			postFilter( temp, [], context, xml );
+
+			i = temp.length;
+			while ( i-- ) {
+				if ( (elem = temp[i]) ) {
+					matcherOut[ postMap[i] ] = !(matcherIn[ postMap[i] ] = elem);
+				}
+			}
+		}
+
+		if ( seed ) {
+			if ( postFinder || preFilter ) {
+				if ( postFinder ) {
+					temp = [];
+					i = matcherOut.length;
+					while ( i-- ) {
+						if ( (elem = matcherOut[i]) ) {
+							temp.push( (matcherIn[i] = elem) );
+						}
+					}
+					postFinder( null, (matcherOut = []), temp, xml );
+				}
+
+				i = matcherOut.length;
+				while ( i-- ) {
+					if ( (elem = matcherOut[i]) &&
+						(temp = postFinder ? indexOf.call( seed, elem ) : preMap[i]) > -1 ) {
+
+						seed[temp] = !(results[temp] = elem);
+					}
+				}
+			}
+
 		} else {
-			if ( typeof array.length === "number" ) {
-				for ( var i = 0, l = array.length; i < l; i++ ) {
-					ret.push( array[i] );
-				}
+			matcherOut = condense(
+				matcherOut === results ?
+					matcherOut.splice( preexisting, matcherOut.length ) :
+					matcherOut
+			);
+			if ( postFinder ) {
+				postFinder( null, results, matcherOut, xml );
 			} else {
-				for ( var i = 0; array[i]; i++ ) {
-					ret.push( array[i] );
-				}
+				push.apply( results, matcherOut );
 			}
 		}
-
-		return ret;
-	};
+	});
 }
 
-var sortOrder;
+function matcherFromTokens( tokens ) {
+	var checkContext, matcher, j,
+		len = tokens.length,
+		leadingRelative = Expr.relative[ tokens[0].type ],
+		implicitRelative = leadingRelative || Expr.relative[" "],
+		i = leadingRelative ? 1 : 0,
 
-if ( document.documentElement.compareDocumentPosition ) {
-	sortOrder = function( a, b ) {
-		if ( !a.compareDocumentPosition || !b.compareDocumentPosition ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
-			return 0;
-		}
+		matchContext = addCombinator( function( elem ) {
+			return elem === checkContext;
+		}, implicitRelative, true ),
+		matchAnyContext = addCombinator( function( elem ) {
+			return indexOf.call( checkContext, elem ) > -1;
+		}, implicitRelative, true ),
+		matchers = [ function( elem, context, xml ) {
+			return ( !leadingRelative && ( xml || context !== outermostContext ) ) || (
+				(checkContext = context).nodeType ?
+					matchContext( elem, context, xml ) :
+					matchAnyContext( elem, context, xml ) );
+		} ];
 
-		var ret = a.compareDocumentPosition(b) & 4 ? -1 : a === b ? 0 : 1;
-		if ( ret === 0 ) {
-			hasDuplicate = true;
-		}
-		return ret;
-	};
-} else if ( "sourceIndex" in document.documentElement ) {
-	sortOrder = function( a, b ) {
-		if ( !a.sourceIndex || !b.sourceIndex ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
-			return 0;
-		}
+	for ( ; i < len; i++ ) {
+		if ( (matcher = Expr.relative[ tokens[i].type ]) ) {
+			matchers = [ addCombinator(elementMatcher( matchers ), matcher) ];
+		} else {
+			matcher = Expr.filter[ tokens[i].type ].apply( null, tokens[i].matches );
 
-		var ret = a.sourceIndex - b.sourceIndex;
-		if ( ret === 0 ) {
-			hasDuplicate = true;
-		}
-		return ret;
-	};
-} else if ( document.createRange ) {
-	sortOrder = function( a, b ) {
-		if ( !a.ownerDocument || !b.ownerDocument ) {
-			if ( a == b ) {
-				hasDuplicate = true;
-			}
-			return 0;
-		}
-
-		var aRange = a.ownerDocument.createRange(), bRange = b.ownerDocument.createRange();
-		aRange.setStart(a, 0);
-		aRange.setEnd(a, 0);
-		bRange.setStart(b, 0);
-		bRange.setEnd(b, 0);
-		var ret = aRange.compareBoundaryPoints(Range.START_TO_END, bRange);
-		if ( ret === 0 ) {
-			hasDuplicate = true;
-		}
-		return ret;
-	};
-}
-
-(function(){
-	var form = document.createElement("div"),
-		id = "script" + (new Date).getTime();
-	form.innerHTML = "<a name='" + id + "'/>";
-
-	var root = document.documentElement;
-	root.insertBefore( form, root.firstChild );
-
-	if ( !!document.getElementById( id ) ) {
-		Expr.find.ID = function(match, context, isXML){
-			if ( typeof context.getElementById !== "undefined" && !isXML ) {
-				var m = context.getElementById(match[1]);
-				return m ? m.id === match[1] || typeof m.getAttributeNode !== "undefined" && m.getAttributeNode("id").nodeValue === match[1] ? [m] : undefined : [];
-			}
-		};
-
-		Expr.filter.ID = function(elem, match){
-			var node = typeof elem.getAttributeNode !== "undefined" && elem.getAttributeNode("id");
-			return elem.nodeType === 1 && node && node.nodeValue === match;
-		};
-	}
-
-	root.removeChild( form );
-	root = form = null; // release memory in IE
-})();
-
-(function(){
-
-	var div = document.createElement("div");
-	div.appendChild( document.createComment("") );
-
-	if ( div.getElementsByTagName("*").length > 0 ) {
-		Expr.find.TAG = function(match, context){
-			var results = context.getElementsByTagName(match[1]);
-
-			if ( match[1] === "*" ) {
-				var tmp = [];
-
-				for ( var i = 0; results[i]; i++ ) {
-					if ( results[i].nodeType === 1 ) {
-						tmp.push( results[i] );
-					}
-				}
-
-				results = tmp;
-			}
-
-			return results;
-		};
-	}
-
-	div.innerHTML = "<a href='#'></a>";
-	if ( div.firstChild && typeof div.firstChild.getAttribute !== "undefined" &&
-			div.firstChild.getAttribute("href") !== "#" ) {
-		Expr.attrHandle.href = function(elem){
-			return elem.getAttribute("href", 2);
-		};
-	}
-
-	div = null; // release memory in IE
-})();
-
-if ( document.querySelectorAll ) (function(){
-	var oldSizzle = Sizzle, div = document.createElement("div");
-	div.innerHTML = "<p class='TEST'></p>";
-
-	if ( div.querySelectorAll && div.querySelectorAll(".TEST").length === 0 ) {
-		return;
-	}
-
-	Sizzle = function(query, context, extra, seed){
-		context = context || document;
-
-		if ( !seed && context.nodeType === 9 && !isXML(context) ) {
-			try {
-				return makeArray( context.querySelectorAll(query), extra );
-			} catch(e){}
-		}
-
-		return oldSizzle(query, context, extra, seed);
-	};
-
-	for ( var prop in oldSizzle ) {
-		Sizzle[ prop ] = oldSizzle[ prop ];
-	}
-
-	div = null; // release memory in IE
-})();
-
-if ( document.getElementsByClassName && document.documentElement.getElementsByClassName ) (function(){
-	var div = document.createElement("div");
-	div.innerHTML = "<div class='test e'></div><div class='test'></div>";
-
-	if ( div.getElementsByClassName("e").length === 0 )
-		return;
-
-	div.lastChild.className = "e";
-
-	if ( div.getElementsByClassName("e").length === 1 )
-		return;
-
-	Expr.order.splice(1, 0, "CLASS");
-	Expr.find.CLASS = function(match, context, isXML) {
-		if ( typeof context.getElementsByClassName !== "undefined" && !isXML ) {
-			return context.getElementsByClassName(match[1]);
-		}
-	};
-
-	div = null; // release memory in IE
-})();
-
-function dirNodeCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
-	var sibDir = dir == "previousSibling" && !isXML;
-	for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-		var elem = checkSet[i];
-		if ( elem ) {
-			if ( sibDir && elem.nodeType === 1 ){
-				elem.sizcache = doneName;
-				elem.sizset = i;
-			}
-			elem = elem[dir];
-			var match = false;
-
-			while ( elem ) {
-				if ( elem.sizcache === doneName ) {
-					match = checkSet[elem.sizset];
-					break;
-				}
-
-				if ( elem.nodeType === 1 && !isXML ){
-					elem.sizcache = doneName;
-					elem.sizset = i;
-				}
-
-				if ( elem.nodeName === cur ) {
-					match = elem;
-					break;
-				}
-
-				elem = elem[dir];
-			}
-
-			checkSet[i] = match;
-		}
-	}
-}
-
-function dirCheck( dir, cur, doneName, checkSet, nodeCheck, isXML ) {
-	var sibDir = dir == "previousSibling" && !isXML;
-	for ( var i = 0, l = checkSet.length; i < l; i++ ) {
-		var elem = checkSet[i];
-		if ( elem ) {
-			if ( sibDir && elem.nodeType === 1 ) {
-				elem.sizcache = doneName;
-				elem.sizset = i;
-			}
-			elem = elem[dir];
-			var match = false;
-
-			while ( elem ) {
-				if ( elem.sizcache === doneName ) {
-					match = checkSet[elem.sizset];
-					break;
-				}
-
-				if ( elem.nodeType === 1 ) {
-					if ( !isXML ) {
-						elem.sizcache = doneName;
-						elem.sizset = i;
-					}
-					if ( typeof cur !== "string" ) {
-						if ( elem === cur ) {
-							match = true;
-							break;
-						}
-
-					} else if ( Sizzle.filter( cur, [elem] ).length > 0 ) {
-						match = elem;
+			if ( matcher[ expando ] ) {
+				j = ++i;
+				for ( ; j < len; j++ ) {
+					if ( Expr.relative[ tokens[j].type ] ) {
 						break;
 					}
 				}
-
-				elem = elem[dir];
+				return setMatcher(
+					i > 1 && elementMatcher( matchers ),
+					i > 1 && toSelector(
+						tokens.slice( 0, i - 1 ).concat({ value: tokens[ i - 2 ].type === " " ? "*" : "" })
+					).replace( rtrim, "$1" ),
+					matcher,
+					i < j && matcherFromTokens( tokens.slice( i, j ) ),
+					j < len && matcherFromTokens( (tokens = tokens.slice( j )) ),
+					j < len && toSelector( tokens )
+				);
 			}
-
-			checkSet[i] = match;
+			matchers.push( matcher );
 		}
 	}
+
+	return elementMatcher( matchers );
 }
 
-var contains = document.compareDocumentPosition ?  function(a, b){
-	return a.compareDocumentPosition(b) & 16;
-} : function(a, b){
-	return a !== b && (a.contains ? a.contains(b) : true);
+function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
+	var bySet = setMatchers.length > 0,
+		byElement = elementMatchers.length > 0,
+		superMatcher = function( seed, context, xml, results, outermost ) {
+			var elem, j, matcher,
+				matchedCount = 0,
+				i = "0",
+				unmatched = seed && [],
+				setMatched = [],
+				contextBackup = outermostContext,
+				elems = seed || byElement && Expr.find["TAG"]( "*", outermost ),
+				dirrunsUnique = (dirruns += contextBackup == null ? 1 : Math.random() || 0.1),
+				len = elems.length;
+
+			if ( outermost ) {
+				outermostContext = context !== document && context;
+			}
+
+			for ( ; i !== len && (elem = elems[i]) != null; i++ ) {
+				if ( byElement && elem ) {
+					j = 0;
+					while ( (matcher = elementMatchers[j++]) ) {
+						if ( matcher( elem, context, xml ) ) {
+							results.push( elem );
+							break;
+						}
+					}
+					if ( outermost ) {
+						dirruns = dirrunsUnique;
+					}
+				}
+
+				if ( bySet ) {
+					if ( (elem = !matcher && elem) ) {
+						matchedCount--;
+					}
+
+					if ( seed ) {
+						unmatched.push( elem );
+					}
+				}
+			}
+
+			matchedCount += i;
+			if ( bySet && i !== matchedCount ) {
+				j = 0;
+				while ( (matcher = setMatchers[j++]) ) {
+					matcher( unmatched, setMatched, context, xml );
+				}
+
+				if ( seed ) {
+					if ( matchedCount > 0 ) {
+						while ( i-- ) {
+							if ( !(unmatched[i] || setMatched[i]) ) {
+								setMatched[i] = pop.call( results );
+							}
+						}
+					}
+
+					setMatched = condense( setMatched );
+				}
+
+				push.apply( results, setMatched );
+
+				if ( outermost && !seed && setMatched.length > 0 &&
+					( matchedCount + setMatchers.length ) > 1 ) {
+
+					Sizzle.uniqueSort( results );
+				}
+			}
+
+			if ( outermost ) {
+				dirruns = dirrunsUnique;
+				outermostContext = contextBackup;
+			}
+
+			return unmatched;
+		};
+
+	return bySet ?
+		markFunction( superMatcher ) :
+		superMatcher;
+}
+
+compile = Sizzle.compile = function( selector, match /* Internal Use Only */ ) {
+	var i,
+		setMatchers = [],
+		elementMatchers = [],
+		cached = compilerCache[ selector + " " ];
+
+	if ( !cached ) {
+		if ( !match ) {
+			match = tokenize( selector );
+		}
+		i = match.length;
+		while ( i-- ) {
+			cached = matcherFromTokens( match[i] );
+			if ( cached[ expando ] ) {
+				setMatchers.push( cached );
+			} else {
+				elementMatchers.push( cached );
+			}
+		}
+
+		cached = compilerCache( selector, matcherFromGroupMatchers( elementMatchers, setMatchers ) );
+
+		cached.selector = selector;
+	}
+	return cached;
 };
 
-var isXML = function(elem){
-	return elem.nodeType === 9 && elem.documentElement.nodeName !== "HTML" ||
-		!!elem.ownerDocument && elem.ownerDocument.documentElement.nodeName !== "HTML";
-};
+/**
+ * A low-level selection function that works with Sizzle's compiled
+ *  selector functions
+ * @param {String|Function} selector A selector or a pre-compiled
+ *  selector function built with Sizzle.compile
+ * @param {Element} context
+ * @param {Array} [results]
+ * @param {Array} [seed] A set of elements to match against
+ */
+select = Sizzle.select = function( selector, context, results, seed ) {
+	var i, tokens, token, type, find,
+		compiled = typeof selector === "function" && selector,
+		match = !seed && tokenize( (selector = compiled.selector || selector) );
 
-var posProcess = function(selector, context){
-	var tmpSet = [], later = "", match,
-		root = context.nodeType ? [context] : context;
+	results = results || [];
 
-	while ( (match = Expr.match.PSEUDO.exec( selector )) ) {
-		later += match[0];
-		selector = selector.replace( Expr.match.PSEUDO, "" );
+	if ( match.length === 1 ) {
+
+		tokens = match[0] = match[0].slice( 0 );
+		if ( tokens.length > 2 && (token = tokens[0]).type === "ID" &&
+				support.getById && context.nodeType === 9 && documentIsHTML &&
+				Expr.relative[ tokens[1].type ] ) {
+
+			context = ( Expr.find["ID"]( token.matches[0].replace(runescape, funescape), context ) || [] )[0];
+			if ( !context ) {
+				return results;
+
+			} else if ( compiled ) {
+				context = context.parentNode;
+			}
+
+			selector = selector.slice( tokens.shift().value.length );
+		}
+
+		i = matchExpr["needsContext"].test( selector ) ? 0 : tokens.length;
+		while ( i-- ) {
+			token = tokens[i];
+
+			if ( Expr.relative[ (type = token.type) ] ) {
+				break;
+			}
+			if ( (find = Expr.find[ type ]) ) {
+				if ( (seed = find(
+					token.matches[0].replace( runescape, funescape ),
+					rsibling.test( tokens[0].type ) && testContext( context.parentNode ) || context
+				)) ) {
+
+					tokens.splice( i, 1 );
+					selector = seed.length && toSelector( tokens );
+					if ( !selector ) {
+						push.apply( results, seed );
+						return results;
+					}
+
+					break;
+				}
+			}
+		}
 	}
 
-	selector = Expr.relative[selector] ? selector + "*" : selector;
-
-	for ( var i = 0, l = root.length; i < l; i++ ) {
-		Sizzle( selector, root[i], tmpSet );
-	}
-
-	return Sizzle.filter( later, tmpSet );
+	( compiled || compile( selector, match ) )(
+		seed,
+		context,
+		!documentIsHTML,
+		results,
+		rsibling.test( selector ) && testContext( context.parentNode ) || context
+	);
+	return results;
 };
 
 
-window.Sizzle = Sizzle;
+support.sortStable = expando.split("").sort( sortOrder ).join("") === expando;
 
+support.detectDuplicates = !!hasDuplicate;
+
+setDocument();
+
+support.sortDetached = assert(function( div1 ) {
+	return div1.compareDocumentPosition( document.createElement("div") ) & 1;
+});
+
+if ( !assert(function( div ) {
+	div.innerHTML = "<a href='#'></a>";
+	return div.firstChild.getAttribute("href") === "#" ;
+}) ) {
+	addHandle( "type|href|height|width", function( elem, name, isXML ) {
+		if ( !isXML ) {
+			return elem.getAttribute( name, name.toLowerCase() === "type" ? 1 : 2 );
+		}
+	});
+}
+
+if ( !support.attributes || !assert(function( div ) {
+	div.innerHTML = "<input/>";
+	div.firstChild.setAttribute( "value", "" );
+	return div.firstChild.getAttribute( "value" ) === "";
+}) ) {
+	addHandle( "value", function( elem, name, isXML ) {
+		if ( !isXML && elem.nodeName.toLowerCase() === "input" ) {
+			return elem.defaultValue;
+		}
+	});
+}
+
+if ( !assert(function( div ) {
+	return div.getAttribute("disabled") == null;
+}) ) {
+	addHandle( booleans, function( elem, name, isXML ) {
+		var val;
+		if ( !isXML ) {
+			return elem[ name ] === true ? name.toLowerCase() :
+					(val = elem.getAttributeNode( name )) && val.specified ?
+					val.value :
+				null;
+		}
+	});
+}
+
+if ( typeof define === "function" && define.amd ) {
+	define(function() { return Sizzle; });
+} else if ( typeof module !== "undefined" && module.exports ) {
+	module.exports = Sizzle;
+} else {
+	window.Sizzle = Sizzle;
+}
+
+})( window );
+
+;(function() {
+  if (typeof Sizzle !== 'undefined') {
+    return;
+  }
+
+  if (typeof define !== 'undefined' && define.amd) {
+    window.Sizzle = Prototype._actual_sizzle;
+    window.define = Prototype._original_define;
+    delete Prototype._actual_sizzle;
+    delete Prototype._original_define;
+  } else if (typeof module !== 'undefined' && module.exports) {
+    window.Sizzle = module.exports;
+    module.exports = {};
+  }
 })();
 
 ;(function(engine) {
@@ -4977,15 +6325,23 @@ var Form = {
       accumulator = function(result, key, value) {
         if (key in result) {
           if (!Object.isArray(result[key])) result[key] = [result[key]];
-          result[key].push(value);
+          result[key] = result[key].concat(value);
         } else result[key] = value;
         return result;
       };
     } else {
       initial = '';
-      accumulator = function(result, key, value) {
-        return result + (result ? '&' : '') + encodeURIComponent(key) + '=' + encodeURIComponent(value);
-      }
+      accumulator = function(result, key, values) {
+        if (!Object.isArray(values)) {values = [values];}
+        if (!values.length) {return result;}
+        var encodedKey = encodeURIComponent(key).gsub(/%20/, '+');
+        return result + (result ? "&" : "") + values.map(function (value) {
+          value = value.gsub(/(\r)?\n/, '\r\n');
+          value = encodeURIComponent(value);
+          value = value.gsub(/%20/, '+');
+          return encodedKey + "=" + value;
+        }).join("&");
+      };
     }
 
     return elements.inject(initial, function(result, element) {
@@ -5006,19 +6362,16 @@ Form.Methods = {
     return Form.serializeElements(Form.getElements(form), options);
   },
 
+
   getElements: function(form) {
-    var elements = $(form).getElementsByTagName('*'),
-        element,
-        arr = [ ],
-        serializers = Form.Element.Serializers;
+    var elements = $(form).getElementsByTagName('*');
+    var element, results = [], serializers = Form.Element.Serializers;
+
     for (var i = 0; element = elements[i]; i++) {
-      arr.push(element);
+      if (serializers[element.tagName.toLowerCase()])
+        results.push(Element.extend(element));
     }
-    return arr.inject([], function(elements, child) {
-      if (serializers[child.tagName.toLowerCase()])
-        elements.push(Element.extend(child));
-      return elements;
-    })
+    return results;
   },
 
   getInputs: function(form, typeName, name) {
@@ -5328,7 +6681,11 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
     return Form.serialize(this.element);
   }
 });
-(function() {
+(function(GLOBAL) {
+  var DIV = document.createElement('div');
+  var docEl = document.documentElement;
+  var MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED = 'onmouseenter' in docEl
+   && 'onmouseleave' in docEl;
 
   var Event = {
     KEY_BACKSPACE: 8,
@@ -5344,15 +6701,8 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
     KEY_END:      35,
     KEY_PAGEUP:   33,
     KEY_PAGEDOWN: 34,
-    KEY_INSERT:   45,
-
-    cache: {}
+    KEY_INSERT:   45
   };
-
-  var docEl = document.documentElement;
-  var MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED = 'onmouseenter' in docEl
-    && 'onmouseleave' in docEl;
-
 
 
   var isIELegacyEvent = function(event) { return false; };
@@ -5409,6 +6759,10 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
   function isRightClick(event)  { return _isButton(event, 2) }
 
   function element(event) {
+    return Element.extend(_element(event));
+  }
+
+  function _element(event) {
     event = Event.extend(event);
 
     var node = event.target, type = event.type,
@@ -5421,20 +6775,15 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
             node = currentTarget;
     }
 
-    if (node.nodeType == Node.TEXT_NODE)
-      node = node.parentNode;
-
-    return Element.extend(node);
+    return node.nodeType == Node.TEXT_NODE ? node.parentNode : node;
   }
 
   function findElement(event, expression) {
-    var element = Event.element(event);
-
-    if (!expression) return element;
+    var element = _element(event), selector = Prototype.Selector;
+    if (!expression) return Element.extend(element);
     while (element) {
-      if (Object.isElement(element) && Prototype.Selector.match(element, expression)) {
+      if (Object.isElement(element) && selector.match(element, expression))
         return Element.extend(element);
-      }
       element = element.parentNode;
     }
   }
@@ -5546,197 +6895,267 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
     Object.extend(Event.prototype, methods);
   }
 
-  function _createResponder(element, eventName, handler) {
-    var registry = Element.retrieve(element, 'prototype_event_registry');
+  var EVENT_TRANSLATIONS = {
+    mouseenter: 'mouseover',
+    mouseleave: 'mouseout'
+  };
 
-    if (Object.isUndefined(registry)) {
-      CACHE.push(element);
-      registry = Element.retrieve(element, 'prototype_event_registry', $H());
-    }
+  function getDOMEventName(eventName) {
+    return EVENT_TRANSLATIONS[eventName] || eventName;
+  }
 
-    var respondersForEvent = registry.get(eventName);
-    if (Object.isUndefined(respondersForEvent)) {
-      respondersForEvent = [];
-      registry.set(eventName, respondersForEvent);
-    }
+  if (MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED)
+    getDOMEventName = Prototype.K;
 
-    if (respondersForEvent.pluck('handler').include(handler)) return false;
+  function getUniqueElementID(element) {
+    if (element === window) return 0;
 
-    var responder;
-    if (eventName.include(":")) {
-      responder = function(event) {
-        if (Object.isUndefined(event.eventName))
-          return false;
+    if (typeof element._prototypeUID === 'undefined')
+      element._prototypeUID = Element.Storage.UID++;
+    return element._prototypeUID;
+  }
 
-        if (event.eventName !== eventName)
-          return false;
+  function getUniqueElementID_IE(element) {
+    if (element === window) return 0;
+    if (element == document) return 1;
+    return element.uniqueID;
+  }
 
-        Event.extend(event, element);
-        handler.call(element, event);
-      };
-    } else {
-      if (!MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED &&
-       (eventName === "mouseenter" || eventName === "mouseleave")) {
-        if (eventName === "mouseenter" || eventName === "mouseleave") {
-          responder = function(event) {
-            Event.extend(event, element);
+  if ('uniqueID' in DIV)
+    getUniqueElementID = getUniqueElementID_IE;
 
-            var parent = event.relatedTarget;
-            while (parent && parent !== element) {
-              try { parent = parent.parentNode; }
-              catch(e) { parent = element; }
-            }
+  function isCustomEvent(eventName) {
+    return eventName.include(':');
+  }
 
-            if (parent === element) return;
+  Event._isCustomEvent = isCustomEvent;
 
-            handler.call(element, event);
-          };
-        }
-      } else {
-        responder = function(event) {
-          Event.extend(event, element);
-          handler.call(element, event);
-        };
+  function getOrCreateRegistryFor(element, uid) {
+    var CACHE = GLOBAL.Event.cache;
+    if (Object.isUndefined(uid))
+      uid = getUniqueElementID(element);
+    if (!CACHE[uid]) CACHE[uid] = { element: element };
+    return CACHE[uid];
+  }
+
+  function destroyRegistryForElement(element, uid) {
+    if (Object.isUndefined(uid))
+      uid = getUniqueElementID(element);
+    delete GLOBAL.Event.cache[uid];
+  }
+
+
+  function register(element, eventName, handler) {
+    var registry = getOrCreateRegistryFor(element);
+    if (!registry[eventName]) registry[eventName] = [];
+    var entries = registry[eventName];
+
+    var i = entries.length;
+    while (i--)
+      if (entries[i].handler === handler) return null;
+
+    var uid = getUniqueElementID(element);
+    var responder = GLOBAL.Event._createResponder(uid, eventName, handler);
+    var entry = {
+      responder: responder,
+      handler:   handler
+    };
+
+    entries.push(entry);
+    return entry;
+  }
+
+  function unregister(element, eventName, handler) {
+    var registry = getOrCreateRegistryFor(element);
+    var entries = registry[eventName] || [];
+
+    var i = entries.length, entry;
+    while (i--) {
+      if (entries[i].handler === handler) {
+        entry = entries[i];
+        break;
       }
     }
 
-    responder.handler = handler;
-    respondersForEvent.push(responder);
-    return responder;
-  }
-
-  function _destroyCache() {
-    for (var i = 0, length = CACHE.length; i < length; i++) {
-      Event.stopObserving(CACHE[i]);
-      CACHE[i] = null;
+    if (entry) {
+      var index = entries.indexOf(entry);
+      entries.splice(index, 1);
     }
+
+    if (entries.length === 0) {
+      delete registry[eventName];
+      if (Object.keys(registry).length === 1 && ('element' in registry))
+        destroyRegistryForElement(element);
+    }
+
+    return entry;
   }
 
-  var CACHE = [];
-
-  if (Prototype.Browser.IE)
-    window.attachEvent('onunload', _destroyCache);
-
-  if (Prototype.Browser.WebKit)
-    window.addEventListener('unload', Prototype.emptyFunction, false);
-
-
-  var _getDOMEventName = Prototype.K,
-      translations = { mouseenter: "mouseover", mouseleave: "mouseout" };
-
-  if (!MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED) {
-    _getDOMEventName = function(eventName) {
-      return (translations[eventName] || eventName);
-    };
-  }
 
   function observe(element, eventName, handler) {
     element = $(element);
+    var entry = register(element, eventName, handler);
 
-    var responder = _createResponder(element, eventName, handler);
+    if (entry === null) return element;
 
-    if (!responder) return element;
-
-    if (eventName.include(':')) {
-      if (element.addEventListener)
-        element.addEventListener("dataavailable", responder, false);
-      else {
-        element.attachEvent("ondataavailable", responder);
-        element.attachEvent("onlosecapture", responder);
-      }
-    } else {
-      var actualEventName = _getDOMEventName(eventName);
-
-      if (element.addEventListener)
-        element.addEventListener(actualEventName, responder, false);
-      else
-        element.attachEvent("on" + actualEventName, responder);
-    }
+    var responder = entry.responder;
+    if (isCustomEvent(eventName))
+      observeCustomEvent(element, eventName, responder);
+    else
+      observeStandardEvent(element, eventName, responder);
 
     return element;
+  }
+
+  function observeStandardEvent(element, eventName, responder) {
+    var actualEventName = getDOMEventName(eventName);
+    if (element.addEventListener) {
+      element.addEventListener(actualEventName, responder, false);
+    } else {
+      element.attachEvent('on' + actualEventName, responder);
+    }
+  }
+
+  function observeCustomEvent(element, eventName, responder) {
+    if (element.addEventListener) {
+      element.addEventListener('dataavailable', responder, false);
+    } else {
+      element.attachEvent('ondataavailable', responder);
+      element.attachEvent('onlosecapture',   responder);
+    }
   }
 
   function stopObserving(element, eventName, handler) {
     element = $(element);
+    var handlerGiven = !Object.isUndefined(handler),
+     eventNameGiven = !Object.isUndefined(eventName);
 
-    var registry = Element.retrieve(element, 'prototype_event_registry');
-    if (!registry) return element;
-
-    if (!eventName) {
-      registry.each( function(pair) {
-        var eventName = pair.key;
-        stopObserving(element, eventName);
-      });
+    if (!eventNameGiven && !handlerGiven) {
+      stopObservingElement(element);
       return element;
     }
 
-    var responders = registry.get(eventName);
-    if (!responders) return element;
-
-    if (!handler) {
-      responders.each(function(r) {
-        stopObserving(element, eventName, r.handler);
-      });
+    if (!handlerGiven) {
+      stopObservingEventName(element, eventName);
       return element;
     }
 
-    var i = responders.length, responder;
-    while (i--) {
-      if (responders[i].handler === handler) {
-        responder = responders[i];
-        break;
-      }
-    }
-    if (!responder) return element;
+    var entry = unregister(element, eventName, handler);
 
-    if (eventName.include(':')) {
-      if (element.removeEventListener)
-        element.removeEventListener("dataavailable", responder, false);
-      else {
-        element.detachEvent("ondataavailable", responder);
-        element.detachEvent("onlosecapture", responder);
-      }
+    if (!entry) return element;
+    removeEvent(element, eventName, entry.responder);
+    return element;
+  }
+
+  function stopObservingStandardEvent(element, eventName, responder) {
+    var actualEventName = getDOMEventName(eventName);
+    if (element.removeEventListener) {
+      element.removeEventListener(actualEventName, responder, false);
     } else {
-      var actualEventName = _getDOMEventName(eventName);
-      if (element.removeEventListener)
-        element.removeEventListener(actualEventName, responder, false);
-      else
-        element.detachEvent('on' + actualEventName, responder);
+      element.detachEvent('on' + actualEventName, responder);
+    }
+  }
+
+  function stopObservingCustomEvent(element, eventName, responder) {
+    if (element.removeEventListener) {
+      element.removeEventListener('dataavailable', responder, false);
+    } else {
+      element.detachEvent('ondataavailable', responder);
+      element.detachEvent('onlosecapture',   responder);
+    }
+  }
+
+
+
+  function stopObservingElement(element) {
+    var uid = getUniqueElementID(element), registry = GLOBAL.Event.cache[uid];
+    if (!registry) return;
+
+    destroyRegistryForElement(element, uid);
+
+    var entries, i;
+    for (var eventName in registry) {
+      if (eventName === 'element') continue;
+
+      entries = registry[eventName];
+      i = entries.length;
+      while (i--)
+        removeEvent(element, eventName, entries[i].responder);
+    }
+  }
+
+  function stopObservingEventName(element, eventName) {
+    var registry = getOrCreateRegistryFor(element);
+    var entries = registry[eventName];
+    if (entries) {
+      delete registry[eventName];
     }
 
-    registry.set(eventName, responders.without(responder));
+    entries = entries || [];
 
+    var i = entries.length;
+    while (i--)
+      removeEvent(element, eventName, entries[i].responder);
+
+    for (var name in registry) {
+      if (name === 'element') continue;
+      return; // There is another registered event
+    }
+
+    destroyRegistryForElement(element);
+  }
+
+
+  function removeEvent(element, eventName, handler) {
+    if (isCustomEvent(eventName))
+      stopObservingCustomEvent(element, eventName, handler);
+    else
+      stopObservingStandardEvent(element, eventName, handler);
+  }
+
+
+
+  function getFireTarget(element) {
+    if (element !== document) return element;
+    if (document.createEvent && !element.dispatchEvent)
+      return document.documentElement;
     return element;
   }
 
   function fire(element, eventName, memo, bubble) {
-    element = $(element);
+    element = getFireTarget($(element));
+    if (Object.isUndefined(bubble)) bubble = true;
+    memo = memo || {};
 
-    if (Object.isUndefined(bubble))
-      bubble = true;
-
-    if (element == document && document.createEvent && !element.dispatchEvent)
-      element = document.documentElement;
-
-    var event;
-    if (document.createEvent) {
-      event = document.createEvent('HTMLEvents');
-      event.initEvent('dataavailable', bubble, true);
-    } else {
-      event = document.createEventObject();
-      event.eventType = bubble ? 'ondataavailable' : 'onlosecapture';
-    }
-
-    event.eventName = eventName;
-    event.memo = memo || { };
-
-    if (document.createEvent)
-      element.dispatchEvent(event);
-    else
-      element.fireEvent(event.eventType, event);
-
+    var event = fireEvent(element, eventName, memo, bubble);
     return Event.extend(event);
   }
+
+  function fireEvent_DOM(element, eventName, memo, bubble) {
+    var event = document.createEvent('HTMLEvents');
+    event.initEvent('dataavailable', bubble, true);
+
+    event.eventName = eventName;
+    event.memo = memo;
+
+    element.dispatchEvent(event);
+    return event;
+  }
+
+  function fireEvent_IE(element, eventName, memo, bubble) {
+    var event = document.createEventObject();
+    event.eventType = bubble ? 'ondataavailable' : 'onlosecapture';
+
+    event.eventName = eventName;
+    event.memo = memo;
+
+    element.fireEvent(event.eventType, event);
+    return event;
+  }
+
+  var fireEvent = document.createEvent ? fireEvent_DOM : fireEvent_IE;
+
+
 
   Event.Handler = Class.create({
     initialize: function(element, eventName, selector, callback) {
@@ -5746,6 +7165,7 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
       this.callback  = callback;
       this.handler   = this.handleEvent.bind(this);
     },
+
 
     start: function() {
       Event.observe(this.element, this.eventName, this.handler);
@@ -5803,59 +7223,145 @@ Form.EventObserver = Class.create(Abstract.EventObserver, {
     loaded:        false
   });
 
-  if (window.Event) Object.extend(window.Event, Event);
-  else window.Event = Event;
-})();
+  if (GLOBAL.Event) Object.extend(window.Event, Event);
+  else GLOBAL.Event = Event;
 
-(function() {
+  GLOBAL.Event.cache = {};
+
+  function destroyCache_IE() {
+    GLOBAL.Event.cache = null;
+  }
+
+  if (window.attachEvent)
+    window.attachEvent('onunload', destroyCache_IE);
+
+  DIV = null;
+  docEl = null;
+})(this);
+
+(function(GLOBAL) {
+  /* Code for creating leak-free event responders is based on work by
+   John-David Dalton. */
+
+  var docEl = document.documentElement;
+  var MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED = 'onmouseenter' in docEl
+    && 'onmouseleave' in docEl;
+
+  function isSimulatedMouseEnterLeaveEvent(eventName) {
+    return !MOUSEENTER_MOUSELEAVE_EVENTS_SUPPORTED &&
+     (eventName === 'mouseenter' || eventName === 'mouseleave');
+  }
+
+  function createResponder(uid, eventName, handler) {
+    if (Event._isCustomEvent(eventName))
+      return createResponderForCustomEvent(uid, eventName, handler);
+    if (isSimulatedMouseEnterLeaveEvent(eventName))
+      return createMouseEnterLeaveResponder(uid, eventName, handler);
+
+    return function(event) {
+      if (!Event.cache) return;
+
+      var element = Event.cache[uid].element;
+      Event.extend(event, element);
+      handler.call(element, event);
+    };
+  }
+
+  function createResponderForCustomEvent(uid, eventName, handler) {
+    return function(event) {
+      var cache = Event.cache[uid];
+      var element =  cache && cache.element;
+
+      if (Object.isUndefined(event.eventName))
+        return false;
+
+      if (event.eventName !== eventName)
+        return false;
+
+      Event.extend(event, element);
+      handler.call(element, event);
+    };
+  }
+
+  function createMouseEnterLeaveResponder(uid, eventName, handler) {
+    return function(event) {
+      var element = Event.cache[uid].element;
+
+      Event.extend(event, element);
+      var parent = event.relatedTarget;
+
+      while (parent && parent !== element) {
+        try { parent = parent.parentNode; }
+        catch(e) { parent = element; }
+      }
+
+      if (parent === element) return;
+      handler.call(element, event);
+    }
+  }
+
+  GLOBAL.Event._createResponder = createResponder;
+  docEl = null;
+})(this);
+
+(function(GLOBAL) {
   /* Support for the DOMContentLoaded event is based on work by Dan Webb,
      Matthias Miller, Dean Edwards, John Resig, and Diego Perini. */
 
-  var timer;
+  var TIMER;
 
   function fireContentLoadedEvent() {
     if (document.loaded) return;
-    if (timer) window.clearTimeout(timer);
+    if (TIMER) window.clearTimeout(TIMER);
     document.loaded = true;
     document.fire('dom:loaded');
   }
 
   function checkReadyState() {
     if (document.readyState === 'complete') {
-      document.stopObserving('readystatechange', checkReadyState);
+      document.detachEvent('onreadystatechange', checkReadyState);
       fireContentLoadedEvent();
     }
   }
 
   function pollDoScroll() {
-    try { document.documentElement.doScroll('left'); }
-    catch(e) {
-      timer = pollDoScroll.defer();
+    try {
+      document.documentElement.doScroll('left');
+    } catch (e) {
+      TIMER = pollDoScroll.defer();
       return;
     }
+
     fireContentLoadedEvent();
+  }
+
+
+  if (document.readyState === 'complete') {
+    fireContentLoadedEvent();
+    return;
   }
 
   if (document.addEventListener) {
     document.addEventListener('DOMContentLoaded', fireContentLoadedEvent, false);
   } else {
-    document.observe('readystatechange', checkReadyState);
-    if (window == top)
-      timer = pollDoScroll.defer();
+    document.attachEvent('onreadystatechange', checkReadyState);
+    if (window == top) TIMER = pollDoScroll.defer();
   }
 
   Event.observe(window, 'load', fireContentLoadedEvent);
-})();
+})(this);
+
 
 Element.addMethods();
-
 /*------------------------------- DEPRECATED -------------------------------*/
 
 Hash.toQueryString = Object.toQueryString;
 
 var Toggle = { display: Element.toggle };
 
-Element.Methods.childOf = Element.Methods.descendantOf;
+Element.addMethods({
+  childOf: Element.Methods.descendantOf
+});
 
 var Insertion = {
   Before: function(element, content) {
@@ -5997,10 +7503,10 @@ Element.ClassNames.prototype = {
     this.element = $(element);
   },
 
-  _each: function(iterator) {
+  _each: function(iterator, context) {
     this.element.className.split(/\s+/).select(function(name) {
       return name.length > 0;
-    })._each(iterator);
+    })._each(iterator, context);
   },
 
   set: function(className) {
