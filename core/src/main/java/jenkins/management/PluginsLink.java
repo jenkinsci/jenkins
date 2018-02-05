@@ -54,4 +54,9 @@ public class PluginsLink extends ManagementLink {
     public String getUrlName() {
         return "pluginManager";
     }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.EXTENDED_READ;
+    }
 }

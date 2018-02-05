@@ -56,6 +56,8 @@ import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+import static jenkins.model.Jenkins.ADMINISTER;
+
 /**
  * Records a selected set of logs so that the system administrator
  * can diagnose a specific aspect of the system.
@@ -281,6 +283,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doConfigSubmit( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        Jenkins.get().checkPermission(ADMINISTER);
         JSONObject src = req.getSubmittedForm();
 
         String newName = src.getString("name"), redirect = ".";
@@ -307,6 +310,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
 
     @RequirePOST
     public HttpResponse doClear() throws IOException {
+        Jenkins.get().checkPermission(ADMINISTER);
         handler.clear();
         return HttpResponses.redirectToDot();
     }
@@ -334,6 +338,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+        Jenkins.get().checkPermission(ADMINISTER);
+
         getConfigFile().delete();
         getParent().logRecorders.remove(name);
         // Disable logging for all our targets,

@@ -3,6 +3,7 @@ package hudson;
 import hudson.model.ManagementLink;
 import java.net.URL;
 
+import hudson.security.Permission;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -38,4 +39,11 @@ public class AboutJenkins extends ManagementLink {
         return AboutJenkins.class.getResource("/META-INF/licenses.xml");
     }
 
+    /**
+     * Nothing sensitive about this information.
+     */
+    @Override
+    public Permission getRequiredPermission() {
+        return null;
+    }
 }

@@ -26,6 +26,8 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 /**
@@ -51,5 +53,10 @@ public class StatisticsLink extends ManagementLink {
     @Override
     public String getUrlName() {
         return "load-statistics";
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.EXTENDED_READ;
     }
 }

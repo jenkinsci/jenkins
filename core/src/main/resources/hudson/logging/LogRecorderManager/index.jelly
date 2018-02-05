@@ -58,15 +58,19 @@ THE SOFTWARE.
       <local:row href="all" name="${%All Jenkins Logs}" />
       <j:forEach var="lr" items="${it.logRecorders.values()}">
         <local:row name="${lr.name}" href="${lr.searchUrl}/">
-          <a href="${lr.searchUrl}/configure">
-            <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
-          </a>
+          <l:hasPermission permission="${app.ADMINISTER}">
+            <a href="${lr.searchUrl}/configure">
+              <l:icon class="icon-gear2 icon-lg" tooltip="Configure"/>
+            </a>
+          </l:hasPermission>
         </local:row>
       </j:forEach>
     </table>
-    <form method="get" action="new">
-      <f:submit value="${%Add new log recorder}" />
-    </form>
+    <l:hasPermission permission="${app.ADMINISTER}">
+      <form method="get" action="new">
+        <f:submit value="${%Add new log recorder}" />
+      </form>
+    </l:hasPermission>
   </l:main-panel>
 </l:layout>
 </j:jelly>
