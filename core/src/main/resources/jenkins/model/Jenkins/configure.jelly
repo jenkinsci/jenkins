@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout norefresh="true" permission="${it.ADMINISTER}" title="${%Configure System}">
+<l:layout norefresh="true" permission="${it.EXTENDED_READ}" title="${%Configure System}">
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline />
   <l:main-panel>
@@ -60,10 +60,12 @@ THE SOFTWARE.
         </f:rowSet>
       </j:forEach>
 
-      <f:bottomButtonBar>
-        <f:submit value="${%Save}" />
-        <f:apply value="${%Apply}"/>
-      </f:bottomButtonBar>
+      <j:if test="${h.hasPermission(it,it.ADMINISTER)}">
+        <f:bottomButtonBar>
+          <f:submit value="${%Save}" />
+          <f:apply value="${%Apply}"/>
+        </f:bottomButtonBar>
+      </j:if>
     </f:form>
     <st:adjunct includes="lib.form.confirm" />
   </l:main-panel>

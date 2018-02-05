@@ -26,6 +26,8 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 /**

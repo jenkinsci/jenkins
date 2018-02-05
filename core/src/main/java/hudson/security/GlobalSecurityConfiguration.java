@@ -109,7 +109,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
 
     public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
         if (json.has("useSecurity")) {
             JSONObject security = json.getJSONObject("useSecurity");
@@ -186,7 +186,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
     
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.EXTENDED_READ;
     }
 
     public static Predicate<GlobalConfigurationCategory> FILTER = new Predicate<GlobalConfigurationCategory>() {

@@ -71,7 +71,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public Permission getRequiredPermission() {
-        return Jenkins.ADMINISTER;
+        return Jenkins.EXTENDED_READ;
     }
 
     @RequirePOST
@@ -82,7 +82,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     }
 
     private boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException, IOException {
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         j.checkPermission(Jenkins.ADMINISTER);
 
         boolean result = true;

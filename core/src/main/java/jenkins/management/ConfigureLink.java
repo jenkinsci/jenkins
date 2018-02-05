@@ -26,6 +26,8 @@ package jenkins.management;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
 /**
@@ -46,6 +48,11 @@ public class ConfigureLink extends ManagementLink {
     @Override
     public String getDescription() {
         return Messages.ConfigureLink_Description();
+    }
+
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.EXTENDED_READ;
     }
 
     @Override
