@@ -110,6 +110,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     
     private String testUrl;
 
+    private transient Authenticator authenticator;
+
+    private transient boolean authCacheSeeded;
+
     public ProxyConfiguration(String name, int port) {
         this(name,port,null,null);
     }
@@ -129,7 +133,17 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         this.userName = Util.fixEmptyAndTrim(userName);
         this.secretPassword = Secret.fromString(password);
         this.noProxyHost = Util.fixEmptyAndTrim(noProxyHost);
-        this.testUrl =Util.fixEmptyAndTrim(testUrl);
+        this.testUrl = Util.fixEmptyAndTrim(testUrl);
+        authenticator = new Authenticator() {
+            @Override
+            public PasswordAuthentication getPasswordAuthentication() {
+                String userName = getUserName();
+                if (getRequestorType() == RequestorType.PROXY && userName != null) {
+                    return new PasswordAuthentication(userName, getPassword().toCharArray());
+                }
+                return null;
+            }
+        };
     }
 
     public String getUserName() {
@@ -234,17 +248,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         if(p==null) {
             con = url.openConnection();
         } else {
-            con = url.openConnection(p.createProxy(url.getHost()));
+            Proxy proxy = p.createProxy(url.getHost());
+            con = url.openConnection(proxy);
             if(p.getUserName()!=null) {
                 // Add an authenticator which provides the credentials for proxy authentication
-                Authenticator.setDefault(new Authenticator() {
-                    @Override
-                    public PasswordAuthentication getPasswordAuthentication() {
-                        if (getRequestorType()!=RequestorType.PROXY)    return null;
-                        return new PasswordAuthentication(p.getUserName(),
-                                p.getPassword().toCharArray());
-                    }
-                });
+                Authenticator.setDefault(p.authenticator);
+                p.jenkins48775workaround(proxy, url);
             }
         }
         
@@ -261,25 +270,46 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
-        if (p == null) 
+        if (p == null)
             return new RetryableHttpStream(url);
 
-        InputStream is = new RetryableHttpStream(url, p.createProxy(url.getHost()));
+        Proxy proxy = p.createProxy(url.getHost());
+        InputStream is = new RetryableHttpStream(url, proxy);
         if (p.getUserName() != null) {
             // Add an authenticator which provides the credentials for proxy authentication
-            Authenticator.setDefault(new Authenticator() {
-
-                @Override
-                public PasswordAuthentication getPasswordAuthentication() {
-                    if (getRequestorType() != RequestorType.PROXY) {
-                        return null;
-                    }
-                    return new PasswordAuthentication(p.getUserName(), p.getPassword().toCharArray());
-                }
-            });
+            Authenticator.setDefault(p.authenticator);
+            p.jenkins48775workaround(proxy, url);
         }
 
         return is;
+    }
+
+    /**
+     * If the first URL we try to access with a HTTP proxy is HTTPS then the authentication cache will not have been
+     * pre-populated, so we try to access at least one HTTP URL before the very first HTTPS url.
+     * @param proxy
+     * @param url the actual URL being opened.
+     */
+    private void jenkins48775workaround(Proxy proxy, URL url) {
+        if ("https".equals(url.getProtocol()) && !authCacheSeeded && proxy != Proxy.NO_PROXY) {
+            HttpURLConnection preAuth = null;
+            try {
+                // We do not care if there is anything at this URL, all we care is that it is using the proxy
+                preAuth = (HttpURLConnection) new URL("http", url.getHost(), -1, "/").openConnection(proxy);
+                preAuth.setRequestMethod("HEAD");
+                preAuth.connect();
+            } catch (IOException e) {
+                // ignore, this is just a probe we don't care at all
+            } finally {
+                if (preAuth != null) {
+                    preAuth.disconnect();
+                }
+            }
+            authCacheSeeded = true;
+        } else if ("https".equals(url.getProtocol())){
+            // if we access any http url using a proxy then the auth cache will have been seeded
+            authCacheSeeded = authCacheSeeded || proxy != Proxy.NO_PROXY;
+        }
     }
 
     @CheckForNull
