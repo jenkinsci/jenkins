@@ -63,7 +63,7 @@ public class DefaultFilePathFilterTest {
         try {
             s.getChannel().call(new ReverseCallable(reverse));
             fail("should have failed");
-        } catch (SecurityException x) {
+        } catch (Exception x) {
             // good
 
             // make sure that the stack trace contains the call site info to help assist diagnosis
