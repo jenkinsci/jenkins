@@ -44,6 +44,7 @@ import com.thoughtworks.xstream.XStream;
 import hudson.init.Initializer;
 import hudson.init.Terminator;
 import java.net.URL;
+import java.util.Locale;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
 
@@ -226,7 +227,8 @@ public abstract class Plugin implements Saveable {
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String path = req.getRestOfPath();
 
-        if (path.isEmpty() || path.contains("..") || path.contains("%") || path.contains("META-INF") || path.contains("WEB-INF")) {
+        String pathUC = path.toUpperCase(Locale.ENGLISH);
+        if (path.isEmpty() || path.contains("..") || path.contains("%") || pathUC.contains("META-INF") || pathUC.contains("WEB-INF")) {
             LOGGER.warning("rejecting possibly malicious " + req.getRequestURIWithQueryString());
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
