@@ -23,14 +23,17 @@
  */
 package hudson.model;
 
+import hudson.ExtensionList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class QueueRestartTest {
 
@@ -60,6 +63,11 @@ public class QueueRestartTest {
                 Queue.Saver.DELAY_SECONDS = 0; // Call Queue#save() on every queue modification simulating time has passed before crash
                 scheduleSomeBuild();
                 assertBuildIsScheduled();
+
+                // Save have no delay though is not synchronous
+                ExtensionList.lookup(Queue.Saver.class).get(0).getNextSave().get(3, TimeUnit.SECONDS);
+
+                assertTrue("queue.xml does not exist", j.j.jenkins.getQueue().getXMLQueueFile().exists());
             }
         });
         j.addStep(new Statement() {

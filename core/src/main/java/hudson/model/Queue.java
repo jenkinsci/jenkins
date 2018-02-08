@@ -66,6 +66,8 @@ import hudson.model.queue.WorkUnitContext;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import java.nio.file.Files;
+
+import hudson.util.Futures;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -3064,6 +3066,13 @@ public class Queue extends ResourceController implements Saveable {
             } finally {
                 nextSave = null;
             }
+        }
+
+        @VisibleForTesting @Restricted(NoExternalUse.class)
+        /*package*/ @Nonnull Future<?> getNextSave() {
+            Future<?> ns = nextSave;
+            if (ns == null) return Futures.precomputed(null);
+            return ns;
         }
     }
 }
