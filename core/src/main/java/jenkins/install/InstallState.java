@@ -49,7 +49,12 @@ public class InstallState implements ExtensionPoint {
      * Need InstallState != NEW for tests by default
      */
     @Extension
-    public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true);
+    public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true) {
+        @Override
+        public void initializeState() {
+            InstallUtil.proceedToNextStateFrom(this);
+        }
+    };
     
     /**
      * After any setup / restart / etc. hooks are done, states should be running
@@ -94,7 +99,7 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState INITIAL_PLUGINS_INSTALLING = new InstallState("INITIAL_PLUGINS_INSTALLING", false);
-    
+
     /**
      * Security setup for a new Jenkins install.
      */
@@ -106,7 +111,7 @@ public class InstallState implements ExtensionPoint {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
+
             InstallUtil.proceedToNextStateFrom(INITIAL_SECURITY_SETUP);
         }
     };
@@ -116,7 +121,7 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState NEW = new InstallState("NEW", false);
-    
+
     /**
      * Restart of an existing Jenkins install.
      */
