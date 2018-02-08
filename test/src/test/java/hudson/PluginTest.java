@@ -53,6 +53,8 @@ public class PluginTest {
         // SECURITY-155:
         r.createWebClient().assertFails("plugin/credentials/WEB-INF/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
         r.createWebClient().assertFails("plugin/credentials/META-INF/MANIFEST.MF", HttpServletResponse.SC_BAD_REQUEST);
+        r.createWebClient().assertFails("plugin/credentials/web-inf/licenses.xml", HttpServletResponse.SC_BAD_REQUEST);
+        r.createWebClient().assertFails("plugin/credentials/meta-inf/manifest.mf", HttpServletResponse.SC_BAD_REQUEST);
     }
 
 }
