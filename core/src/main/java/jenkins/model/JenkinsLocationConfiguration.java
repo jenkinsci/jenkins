@@ -50,6 +50,17 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     public static @CheckForNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
     }
+    
+    /**
+     * Gets local configuration. For explanation when it could die, see {@link #get()}
+     */
+    public static @Nonnull JenkinsLocationConfiguration getOrDie(){
+        JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
+        if (config == null) {
+            throw new IllegalStateException("JenkinsLocationConfiguration instance is missing. Probably the Jenkins instance is fully loaded at that time.");
+        }
+        return config;
+    }
 
     public JenkinsLocationConfiguration() {
         load();
@@ -63,7 +74,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         if(!file.exists()) {
             XStream2 xs = new XStream2();
             xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
+            file = new XmlFile(xs,new File(Jenkins.get().getRootDir(),"hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);
@@ -125,7 +136,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
      */
     private void updateSecureSessionFlag() {
         try {
-            ServletContext context = Jenkins.getInstance().servletContext;
+            ServletContext context = Jenkins.get().servletContext;
             Method m;
             try {
                 m = context.getClass().getMethod("getSessionCookieConfig");

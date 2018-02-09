@@ -114,6 +114,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	var setupCompletePanel = require('./templates/setupCompletePanel.hbs');
 	var proxyConfigPanel = require('./templates/proxyConfigPanel.hbs');
 	var firstUserPanel = require('./templates/firstUserPanel.hbs');
+	var configureInstancePanel = require('./templates/configureInstance.hbs');
 	var offlinePanel = require('./templates/offlinePanel.hbs');
 	var pluginSetupWizard = require('./templates/pluginSetupWizard.hbs');
 	var incompleteInstallationPanel = require('./templates/incompleteInstallationPanel.hbs');
@@ -421,6 +422,10 @@ var createPluginSetupWizard = function(appendTarget) {
 	var setupFirstUser = function() {
 		setPanel(firstUserPanel, {}, enableButtonsAfterFrameLoad);
 	};
+	
+	var showConfigureInstance = function(messages) {
+		setPanel(configureInstancePanel, messages, enableButtonsAfterFrameLoad);
+	};
 
 	var showSetupCompletePanel = function(messages) {
 		pluginManager.getRestartStatus(function(restartStatus) {
@@ -436,6 +441,7 @@ var createPluginSetupWizard = function(appendTarget) {
 			$('.install-recommended').focus();
 		},
 		CREATE_ADMIN_USER: function() { setupFirstUser(); },
+		CONFIGURE_INSTANCE: function() { showConfigureInstance(); },
 		RUNNING: function() { showSetupCompletePanel(); },
 		INITIAL_SETUP_COMPLETED: function() { showSetupCompletePanel(); },
 		INITIAL_PLUGINS_INSTALLING: function() { showInstallProgress(); }
@@ -907,24 +913,34 @@ var createPluginSetupWizard = function(appendTarget) {
 		}
 	};
 
-	var saveJenkinsUrl = function(callback){
-		$('button').prop({disabled:true});
-
-		var rootUrl = $('iframe[src]').contents().find('form.root-url');
-		securityConfig.saveRootUrl(rootUrl, callback);
-	};
-
-	// call to submit the firstuser
+	// call to submit the first user
 	var saveFirstUser = function() {
-		saveJenkinsUrl(function(){
-			securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
-		});
+		$('button').prop({disabled:true});
+		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
 	};
 
+    var firstUserSkipped = false;
 	var skipFirstUser = function() {
-		saveJenkinsUrl(function(){
-			showSetupCompletePanel({message: translations.installWizard_firstUserSkippedMessage});
-		});
+		$('button').prop({disabled:true});
+		firstUserSkipped = true;
+		showConfigureInstance();
+	};
+	
+	var saveConfigureInstance = function() {
+		$('button').prop({disabled:true});
+		securityConfig.saveConfigureInstance($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+	};
+
+	var skipConfigureInstance = function() {
+		$('button').prop({disabled:true});
+		
+		var message = '';
+		if(firstUserSkipped){
+			message += translations.installWizard_firstUserSkippedMessage;
+		}
+		message += translations.installWizard_configureInstanceSkippedMessage;
+		
+		showSetupCompletePanel({message: message});
 	};
 	
 	// call to setup the proxy
@@ -1037,6 +1053,8 @@ var createPluginSetupWizard = function(appendTarget) {
 		'.install-done-restart': restartJenkins,
 		'.save-first-user:not([disabled])': saveFirstUser,
 		'.skip-first-user': skipFirstUser,
+		'.save-configure-instance:not([disabled])': saveConfigureInstance,
+		'.skip-configure-instance': skipConfigureInstance,
 		'.show-proxy-config': setupProxy,
 		'.save-proxy-config': saveProxyConfig,
 		'.skip-plugin-installs': function() { installPlugins([]); },

@@ -1,0 +1,70 @@
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+
+  <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
+    <l:main-panel>
+      <link rel="stylesheet" href="${resURL}/css/google-fonts/roboto/css/roboto.css" type="text/css" />
+      <style type="text/css">
+        #configure-instance {
+          padding: 20px 20px 20px 100px;
+          margin: 8px;
+        }
+
+        #configure-instance form > div {
+          margin: 0 !important;
+        }
+
+        #configure-instance h1 {
+          font-family: 'roboto', sans-serif;
+          font-size: 48px;
+          margin-top: 30px;
+          font-weight: 500;
+        }
+
+        #configure-instance tr td {
+          padding-bottom: 2px;
+        }
+
+        #configure-instance tr td, #configure-instance input {
+          line-height: 25px;
+          margin-bottom: 6px;
+        }
+
+        #configure-instance input[type=text], input[type=password] {
+          border: 1px solid #ddd;
+          border-radius: 2px;
+          padding: 1px 8px;
+        }
+      </style>
+
+     <div id="configure-instance">
+       <form action="${rootURL}/setupWizard/configureRootUrl" method="post">
+          <h1>${%Instance configuration}</h1>
+          <div style="margin: 2em;">
+            <table>
+            <tr>
+              <td><label for="root-url">${%Jenkins URL}:</label></td>
+              <td><input type="text" name="rootUrl" id="root-url" class="root-url" value="" /></td>
+            </tr>
+            </table>
+          </div>
+         <script>
+            $('root-url').focus();
+            (function setInitialRootUrlFieldValue(){
+              var iframeUrl = window.location.href;
+              var iframeRelativeUrl = '/setupWizard/setupWizardConfigureInstance';
+              var rootUrl = iframeUrl.substr(0, iframeUrl.length - iframeRelativeUrl.length);
+              // to keep only the root url
+              var rootUrlField = $('root-url');
+              rootUrlField.value = rootUrl
+              // to adjust the width of the input,
+              rootUrlField.size = Math.min(50, rootUrl.length);
+            })();
+          </script>
+        </form>
+     </div>
+    </l:main-panel>
+  </l:layout>
+
+</j:jelly>

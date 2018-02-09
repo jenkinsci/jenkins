@@ -32,6 +32,7 @@ import hudson.ExtensionPoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.JenkinsLocationConfiguration;
 import org.apache.commons.lang.StringUtils;
 /**
  * Jenkins install state.
@@ -88,6 +89,18 @@ public class InstallState implements ExtensionPoint {
             // Skip this state if not using the security defaults
             // e.g. in an init script set up security already
             if (!j.getSetupWizard().isUsingSecurityDefaults()) {
+                InstallUtil.proceedToNextStateFrom(this);
+            }
+        }
+    };
+    
+    @Extension
+    public static final InstallState CONFIGURE_INSTANCE = new InstallState("CONFIGURE_INSTANCE", false){
+        @Override 
+        public void initializeState() {
+            // Skip this state if a boot script already configured the root URL
+            // in case we add more fields in this page, this should be adapted
+            if (StringUtils.isNotBlank(JenkinsLocationConfiguration.getOrDie().getUrl())) {
                 InstallUtil.proceedToNextStateFrom(this);
             }
         }
@@ -162,6 +175,10 @@ public class InstallState implements ExtensionPoint {
     public static final InstallState DEVELOPMENT = new InstallState("DEVELOPMENT", true);
 
     private final boolean isSetupComplete;
+
+    /**
+     * Link with the pluginSetupWizardGui.js map: "statsHandlers"
+     */
     private final String name;
 
     public InstallState(@Nonnull String name, boolean isSetupComplete) {
