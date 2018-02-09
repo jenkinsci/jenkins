@@ -60,11 +60,12 @@ public abstract class ArtifactManager {
      * @param launcher a launcher to use if external processes need to be forked
      * @param listener a way to print messages about progress or problems
      * @param artifacts map from paths in the archive area to paths relative to {@code workspace} (all paths {@code /}-separated)
+     * @param targetDirectory the target parent directory
      * @throws IOException if transfer or copying failed in any way
      * @throws InterruptedException if transfer was interrupted
      * @see ArtifactArchiver#perform(Run, FilePath, Launcher, TaskListener)
      */
-    public abstract void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException;
+    public abstract void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts, String targetDirectory) throws IOException, InterruptedException;
 
     /**
      * Delete all artifacts associated with an earlier build (if any).

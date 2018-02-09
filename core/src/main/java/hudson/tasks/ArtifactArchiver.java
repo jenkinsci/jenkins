@@ -110,6 +110,11 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @Nonnull
     private Boolean caseSensitive = true;
 
+    /**
+     * The target parent directory.
+     */
+    private String targetDirectory;
+
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
         allowEmptyArchive = false;
@@ -214,6 +219,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         this.caseSensitive = caseSensitive;
     }
 
+    public @CheckForNull String getTargetDirectory() {
+        return targetDirectory;
+    }
+
+    @DataBoundSetter public final void setTargetDirectory(@CheckForNull String targetDirectory) {
+        this.targetDirectory = Util.fixEmptyAndTrim(targetDirectory);
+    }
+
     private void listenerWarnOrError(TaskListener listener, String message) {
     	if (allowEmptyArchive) {
     		listener.getLogger().println(String.format("WARN: %s", message));
@@ -242,7 +255,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
             Map<String,String> files = ws.act(new ListFiles(artifacts, excludes, defaultExcludes, caseSensitive));
             if (!files.isEmpty()) {
-                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files);
+                build.pickArtifactManager().archive(ws, launcher, BuildListenerAdapter.wrap(listener), files, targetDirectory);
                 if (fingerprint) {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }

@@ -55,8 +55,8 @@ public class StandardArtifactManager extends ArtifactManager {
         this.build = build;
     }
 
-    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
-        File dir = getArtifactsDir();
+    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts, String targetDirectory) throws IOException, InterruptedException {
+        File dir = buildTarget(targetDirectory);
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
         workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description);
     }
@@ -81,4 +81,11 @@ public class StandardArtifactManager extends ArtifactManager {
         return build.getArtifactsDir();
     }
 
+    private File buildTarget(String prefix) {
+        if (prefix != null) {
+            return new File(getArtifactsDir(), prefix);
+        } else {
+            return getArtifactsDir();
+        }
+    }
 }

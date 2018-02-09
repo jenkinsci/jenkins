@@ -31,6 +31,9 @@ THE SOFTWARE.
     <f:entry title="${%Excludes}" field="excludes">
       <f:textbox />
     </f:entry>
+    <f:entry title="${%targetDirectory}" field="targetDirectory">
+      <f:textbox />
+    </f:entry>
     <f:entry field="allowEmptyArchive" >
       <f:checkbox title="${%allowEmptyArchive}"/>
     </f:entry>
