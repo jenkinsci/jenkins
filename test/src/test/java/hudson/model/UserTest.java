@@ -128,9 +128,9 @@ public class UserTest {
         
         User user = User.get("user-test-case");
         user.addProperty(property);
-        
+
         HtmlPage page = j.createWebClient().goTo("user/user-test-case");
-        
+
         WebAssert.assertTextPresentInElement(page, "NeedleInPage", "main-panel");
         WebAssert.assertTextPresentInElement(page, ((Action) property).getDisplayName(), "side-panel");
         

@@ -3,6 +3,7 @@ package jenkins.security;
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.trilead.ssh2.crypto.Base64;
@@ -132,7 +133,7 @@ public class RekeySecretAdminMonitorTest extends HudsonTestCase {
     }
 
     private HtmlButton getButton(HtmlForm form, int index) {
-        return form.<HtmlButton>getHtmlElementsByTagName("button").get(index);
+        return (HtmlButton) form.getElementsByTagName("button").get(index);
     }
 
     public void testScanOnBoot() throws Exception {
