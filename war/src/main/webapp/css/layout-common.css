@@ -36,37 +36,65 @@ body {
 
 #header {
   background-color: #000000;
-  height: 40px;
+  height: 48px;
+  margin: 0 auto;
+  position: relative;
 }
 
-#header div {
-  display: inline-block;
-  height: inherit;
+#header a.jenkins-home-link {
+    position: absolute;
+    display: block;
+    line-height: 48px;
+    margin-left: 16px;
 }
 
-#header .logo {
-  margin-left: 16px;
+#header a.jenkins-home-link img#logo {
+    height: 46px;
+    margin-right: 16px;
 }
 
-#jenkins-home-link {
-  position: absolute;
-  height: 40px;
+#header a.jenkins-home-link img#name {
+    height: 30px;
 }
 
-#jenkins-head-icon {
-  position: absolute;
-  bottom: 0px;
+#header ul#toolbar {
+  list-style: none;
+  margin: 0 10px 0 0;
+  padding: 0;
 }
 
-#jenkins-name-icon {
-  position: absolute;
-  bottom: 3px;
-  left: 32px;
-}
-
-#header .searchbox, #header .login {
+#header ul#toolbar li {
+  display: inline;
   float: right;
-  padding: 6px 11px;
+  line-height: 48px;
+  position: relative;
+  margin-left: 20px;
+}
+
+#header ul#toolbar li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+#header ul#toolbar li a i {
+  font-size: 20px;
+  margin: 0 5px;
+  vertical-align: baseline;
+}
+
+#header ul#toolbar li.searchbox input {
+  width: 15em;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 2px 8px 1px 8px;
+  border: none;
+  background-color: #fff;
+  margin: 11px 0 10px 0;
+  outline: none;
+}
+
+#header ul#toolbar li.login {
+  font-size: 16px;
 }
 
 #breadcrumbBar, #footer-container, .top-sticker-inner {

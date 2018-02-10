@@ -103,6 +103,7 @@ ${h.initPageVariables(context)}
     <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
     <link rel="stylesheet" href="${resURL}/css/responsive-grid.css" type="text/css" />
+    <link rel="stylesheet" href="${resURL}/css/font-awesome/css/font-awesome.min.css" />
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
@@ -182,16 +183,13 @@ ${h.initPageVariables(context)}
 
     <div id="page-head">
       <div id="header">
-        <div class="logo">
-          <a id="jenkins-home-link" href="${rootURL}/">
-            <img id="jenkins-head-icon" src="${imagesURL}/headshot.png" alt="title" />
-            <img id="jenkins-name-icon" src="${imagesURL}/title.png" alt="title" width="139" height="34" />
-          </a>
-        </div>
-        <div class="login">
-          <!-- login field -->
+        <a class="jenkins-home-link" href="${rootURL}/">
+          <img id="logo" src="${imagesURL}/headshot.svg" alt="Logo" />
+          <img id="name" src="${imagesURL}/title.svg" alt="Jenkins" />
+        </a>
+        <ul id="toolbar">
+          <li class="login">
           <j:if test="${app.useSecurity}">
-            <st:nbsp/>
             <j:choose>
               <j:when test="${!h.isAnonymous()}">
                 <j:invokeStatic var="user" className="hudson.model.User" method="current" />
@@ -203,37 +201,26 @@ ${h.initPageVariables(context)}
                     <j:set var="userName" value="${user.fullName}"/>
                   </j:otherwise>
                 </j:choose>
-                <span style="white-space:nowrap">
-                  <a href="${rootURL}/${user.url}" class="model-link inside inverse"><b>${userName}</b></a>
-                  <j:if test="${app.securityRealm.canLogOut()}">
-                    |
-                    <a href="${rootURL}/logout"><b>${%logout}</b></a>
-                  </j:if>
-                </span>
+                <a href="${rootURL}/${user.url}" class="model-link inside inverse">${userName}</a>
+                <j:if test="${app.securityRealm.canLogOut()}">
+                  <a href="${rootURL}/logout"><i class="fa fa-sign-out"></i></a>
+                </j:if>
               </j:when>
               <j:otherwise>
                 <st:include it="${app.securityRealm}" page="loginLink.jelly" />
               </j:otherwise>
             </j:choose>
           </j:if>
-        </div>
-        <div class="searchbox hidden-xs">
-          <!-- search box -->
-          <j:set var="searchURL" value="${h.searchURL}"/>
-          <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search">
-            <!-- this div determines the minimum width -->
-            <div id="search-box-minWidth"/>
-            <!-- this div is used to calculate the width of the text box -->
-            <div id="search-box-sizer"/>
-            <div id="searchform">
-              <input name="q" placeholder="${%search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
-              <st:nbsp />
-              <a href="${%searchBox.url}"><l:icon class="icon-help icon-sm" /></a>
-              <div id="search-box-completion" />
-              <script>createSearchBox("${searchURL}");</script>
-            </div>
-          </form>
-        </div>
+          </li>
+          <li class="searchbox">
+            <j:set var="searchURL" value="${h.searchURL}"/>
+            <form action="${searchURL}" method="get" class="no-json" name="search">
+              <input name="q" placeholder="${%Search}" id="search-box" class="has-default-text" value="${request.getParameter('q')}" />
+              <!-- <div id="search-box-completion" /> -->
+              <a href="${%searchBox.url}"><i class="fa fa-question-circle"></i></a>
+            </form>
+          </li>
+        </ul>
       </div>
       <div id="breadcrumbBar">
         <l:breadcrumbBar>

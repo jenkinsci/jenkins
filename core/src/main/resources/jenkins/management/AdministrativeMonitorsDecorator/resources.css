@@ -1,5 +1,6 @@
 #visible-am-container {
     float: right;
+    padding-top: 4px;
 }
 #visible-am-button {
     text-align: center;
