@@ -231,7 +231,7 @@ public class ViewTest {
         ListView view = listView("v");
         view.description = "one";
         WebClient wc = j.createWebClient();
-        String xml = wc.goToXml("view/v/config.xml").asXml();
+        String xml = wc.goToXml("view/v/config.xml").getWebResponse().getContentAsString();
         assertTrue(xml, xml.contains("<description>one</description>"));
         xml = xml.replace("<description>one</description>", "<description>two</description>");
         WebRequest req = new WebRequest(wc.createCrumbedUrl("view/v/config.xml"), HttpMethod.POST);
