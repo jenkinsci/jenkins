@@ -142,7 +142,6 @@ public class ApiTokenPropertyTest {
 
         WebClient wc = createClientForUser("foo");
         WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
-        wc.addCrumb(wr);
 
         assertEquals(201, wc.getPage(wr).getWebResponse().getStatusCode());
 
