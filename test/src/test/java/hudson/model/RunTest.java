@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import java.util.List;
+
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -134,7 +136,7 @@ public class RunTest  {
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
         p.scheduleBuild2(0).get();
-        assertThat(capture.getEnvVars().get(key), equalTo(value));
+        assertThat(capture.getEnvVars(), hasEntry(key, value));
     }
 
     private DumbSlave slaveContributing(String key, String value) throws Exception {
