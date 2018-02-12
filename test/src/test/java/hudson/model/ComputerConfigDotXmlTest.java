@@ -27,6 +27,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import hudson.security.ACL;
@@ -49,6 +51,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -118,7 +121,7 @@ public class ComputerConfigDotXmlTest {
         computer.doConfigDotXml(req, rsp);
 
         final String out = outputStream.toString();
-        assertThat(out, startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
         assertThat(out, containsString("<description>dummy</description>"));
     }
@@ -140,6 +143,26 @@ public class ComputerConfigDotXmlTest {
         assertThat(updatedSlave.getNodeName(), equalTo("SlaveFromXML"));
         assertThat(updatedSlave.getNumExecutors(), equalTo(42));
     }
+
+    @Test
+    @Issue("SECURITY-343")
+    public void emptyNodeMonitorDataWithoutConnect() throws Exception {
+        rule.jenkins.setAuthorizationStrategy(new GlobalMatrixAuthorizationStrategy());
+
+        assertTrue(computer.getMonitorData().isEmpty());
+    }
+
+    @Test
+    @Issue("SECURITY-343")
+    public void populatedNodeMonitorDataWithConnect() throws Exception {
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        rule.jenkins.setAuthorizationStrategy(auth);
+        auth.add(Computer.CONNECT, "user");
+
+        assertFalse(computer.getMonitorData().isEmpty());
+    }
+
+
 
     private OutputStream captureOutput() throws IOException {
 

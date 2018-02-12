@@ -29,6 +29,7 @@ import hudson.init.Initializer;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,8 +47,13 @@ import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
  * @author Kohsuke Kawaguchi
  * @since 1.402
  */
-@Extension
+@Extension @Symbol("nullId")
 public class NullIdDescriptorMonitor extends AdministrativeMonitor {
+
+    @Override
+    public String getDisplayName() {
+        return Messages.NullIdDescriptorMonitor_DisplayName();
+    }
 
     private final List<Descriptor> problems = new ArrayList<Descriptor>();
 

@@ -52,9 +52,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
+
 import jenkins.model.Jenkins;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
@@ -70,7 +72,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  *
  * @author Alan.Harder@Sun.Com
  */
-@Extension
+@Extension @Symbol("oldData")
 public class OldDataMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
 
@@ -267,12 +269,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
         /**
          * Does this version range contain a version more than the given number of releases ago?
          * @param threshold Number of releases
-         * @return True if the major version# differs or the minor# differs by >= threshold
+         * @return True if the major version# differs or the minor# differs by ≥ threshold
          */
         public boolean isOld(int threshold) {
-            return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
-                    || (currentVersion.digit(0) == min.digit(0)
-                    && currentVersion.digit(1) - min.digit(1) >= threshold));
+            return currentVersion != null && min != null && (currentVersion.getDigitAt(0) > min.getDigitAt(0)
+                    || (currentVersion.getDigitAt(0) == min.getDigitAt(0)
+                    && currentVersion.getDigitAt(1) - min.getDigitAt(1) >= threshold));
         }
 
     }
@@ -430,7 +432,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         }
     }
 
-    @Extension
+    @Extension @Symbol("oldData")
     public static class ManagementLinkImpl extends ManagementLink {
         @Override
         public String getIconFileName() {

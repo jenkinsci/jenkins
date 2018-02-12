@@ -35,7 +35,7 @@ import java.util.List;
  * Participates in the rendering of HTML pages for all pages of Hudson.
  *
  * <p>
- * This class provides a few hooks to augument the HTML generation process of Hudson, across
+ * This class provides a few hooks to augment the HTML generation process of Hudson, across
  * all the HTML pages that Hudson delivers.
  *
  * <p>
@@ -48,24 +48,20 @@ import java.util.List;
  * should implement a new decorator and put {@link Extension} on the class.
  *
  * <h2>Associated Views</h2>
- * <h4>global.jelly</h4>
- * <p>
+ * <h3>global.jelly</h3>
  * If this extension point needs to expose a global configuration, write this jelly page.
  * See {@link Descriptor} for more about this. Optional.
  *
- * <h4>footer.jelly</h4>
- * <p>
- * This page is added right before the &lt;/body> tag. Convenient place for adding tracking beacons, etc.
+ * <h3>footer.jelly</h3>
+ * This page is added right before the {@code </body>} tag. Convenient place for adding tracking beacons, etc.
  *
- * <h4>header.jelly</h4>
- * <p>
- * This page is added right before the &lt;/head> tag. Convenient place for additional stylesheet,
- * &lt;meta> tags, etc.
+ * <h3>header.jelly</h3>
+ * This page is added right before the {@code </head>} tag. Convenient place for additional stylesheet,
+ * {@code <meta>} tags, etc.
  *
- * <h4>httpHeaders.jelly</h4>
- * <p>
- * This is a generalization of the X-Jenkins header that aids auto-discovery.
- * This fragment can write additional &lt;st:header name="..." value="..." /> tags that go along with it.
+ * <h3>httpHeaders.jelly</h3>
+ * This is a generalization of the {@code X-Jenkins} header that aids auto-discovery.
+ * This fragment can write additional {@code <st:header name="…" value="…"/>} tags that go along with it.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.235

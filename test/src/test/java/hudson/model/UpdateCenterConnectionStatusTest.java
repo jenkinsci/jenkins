@@ -67,7 +67,7 @@ public class UpdateCenterConnectionStatusTest {
         JSONObject response = jenkinsRule.getJSON("updateCenter/connectionStatus?siteId=blahblah").getJSONObject();
 
         Assert.assertEquals("error", response.getString("status"));
-        Assert.assertEquals("Unknown site 'blahblah'.", response.getString("message"));
+        Assert.assertEquals("Cannot check connection status of the update site with ID='blahblah'. This update center cannot be resolved", response.getString("message"));
     }
 
     private UpdateSite updateSite = new UpdateSite(UpdateCenter.ID_DEFAULT, "http://xyz") {

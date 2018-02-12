@@ -23,17 +23,18 @@
  */
 package hudson.model;
 
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.cli.CLICommand;
-import org.apache.commons.fileupload.FileItem;
-
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import javax.servlet.ServletException;
+import net.sf.json.JSONObject;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FileUtils;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link ParameterDefinition} for doing file upload.
@@ -56,7 +57,7 @@ public class FileParameterDefinition extends ParameterDefinition {
         return p;
     }
 
-    @Extension
+    @Extension @Symbol({"file","fileParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
@@ -98,14 +99,22 @@ public class FileParameterDefinition extends ParameterDefinition {
         return possiblyPathName;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         // capture the file to the server
-        FilePath src = new FilePath(command.checkChannel(),value);
         File local = File.createTempFile("jenkins","parameter");
-        src.copyTo(new FilePath(local));
+        String name;
+        if (value.isEmpty()) {
+            FileUtils.copyInputStreamToFile(command.stdin, local);
+            name = "stdin";
+        } else {
+            FilePath src = new FilePath(command.checkChannel(), value);
+            src.copyTo(new FilePath(local));
+            name = src.getName();
+        }
 
-        FileParameterValue p = new FileParameterValue(getName(), local, src.getName());
+        FileParameterValue p = new FileParameterValue(getName(), local, name);
         p.setDescription(getDescription());
         p.setLocation(getName());
         return p;

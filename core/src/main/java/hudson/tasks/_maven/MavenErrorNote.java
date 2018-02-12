@@ -28,6 +28,7 @@ import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
 import hudson.console.ConsoleAnnotator;
 import hudson.console.ConsoleNote;
+import org.jenkinsci.Symbol;
 
 import java.util.regex.Pattern;
 
@@ -44,7 +45,7 @@ public class MavenErrorNote extends ConsoleNote {
         return null;
     }
 
-    @Extension
+    @Extension @Symbol("mavenErrors")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
         public String getDisplayName() {
             return "Maven Errors";

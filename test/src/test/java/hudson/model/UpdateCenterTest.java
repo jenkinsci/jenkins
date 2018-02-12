@@ -24,7 +24,7 @@
 package hudson.model;
 
 import com.trilead.ssh2.crypto.Base64;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
@@ -44,8 +44,8 @@ import org.junit.Test;
 public class UpdateCenterTest {
     @Test public void data() throws Exception {
         try {
-            doData("http://updates.jenkins-ci.org/update-center.json?version=build");
-            doData("http://updates.jenkins-ci.org/stable/update-center.json?version=build");
+            doData("https://updates.jenkins.io/update-center.json?version=build");
+            doData("https://updates.jenkins.io/stable/update-center.json?version=build");
         } catch (Exception x) {
             // TODO this should not be in core at all; should be in repo built by a separate job somewhere
             assumeNoException("Might be no Internet connectivity, or might start failing due to expiring certificate through no fault of code changes", x);
@@ -67,7 +67,7 @@ public class UpdateCenterTest {
         JSONObject signature = json.getJSONObject("signature");
         for (Object cert : signature.getJSONArray("certificates")) {
             X509Certificate c = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert.toString().toCharArray())));
-            c.checkValidity(new Date(System.currentTimeMillis() + TimeUnit2.DAYS.toMillis(30)));
+            c.checkValidity(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)));
         }
     }
 }

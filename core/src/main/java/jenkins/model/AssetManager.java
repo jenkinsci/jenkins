@@ -2,7 +2,8 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
-import hudson.util.TimeUnit2;
+import java.util.concurrent.TimeUnit;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -23,7 +24,7 @@ import java.util.Enumeration;
  *
  * @since 2.0
  */
-@Extension
+@Extension @Symbol("assetManager")
 public class AssetManager implements UnprotectedRootAction {
 
     // not shown in the UI
@@ -59,7 +60,7 @@ public class AssetManager implements UnprotectedRootAction {
         // to create unique URLs. Recognize that and set a long expiration header.
         String requestPath = req.getRequestURI().substring(req.getContextPath().length());
         boolean staticLink = requestPath.startsWith("/static/");
-        long expires = staticLink ? TimeUnit2.DAYS.toMillis(365) : -1;
+        long expires = staticLink ? TimeUnit.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
         rsp.serveLocalizedFile(req, resource, expires);

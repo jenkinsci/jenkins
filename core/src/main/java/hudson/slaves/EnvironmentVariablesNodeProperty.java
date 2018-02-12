@@ -32,6 +32,7 @@ import hudson.model.ComputerSet;
 import hudson.model.Environment;
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.Stapler;
 
@@ -75,7 +76,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
         env.putAll(envVars);
     }
 
-    @Extension
+    @Extension @Symbol("envVars")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         @Override

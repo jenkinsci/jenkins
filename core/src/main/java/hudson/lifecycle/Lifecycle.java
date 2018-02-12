@@ -25,6 +25,7 @@ package hudson.lifecycle;
 
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import jenkins.model.Jenkins;
 
@@ -57,7 +58,7 @@ public abstract class Lifecycle implements ExtensionPoint {
     public synchronized static Lifecycle get() {
         if(INSTANCE==null) {
             Lifecycle instance;
-            String p = System.getProperty("hudson.lifecycle");
+            String p = SystemProperties.getString("hudson.lifecycle");
             if(p!=null) {
                 try {
                     ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
@@ -119,7 +120,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * to a newer version.
      */
     public File getHudsonWar() {
-        String war = System.getProperty("executable-war");
+        String war = SystemProperties.getString("executable-war");
         if(war!=null && new File(war).exists())
             return new File(war);
         return null;

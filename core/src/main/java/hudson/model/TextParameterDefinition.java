@@ -25,6 +25,7 @@ package hudson.model;
 
 import hudson.Extension;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -37,7 +38,7 @@ public class TextParameterDefinition extends StringParameterDefinition {
         super(name, defaultValue, description);
     }
 
-    @Extension
+    @Extension @Symbol({"text","textParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

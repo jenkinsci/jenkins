@@ -52,7 +52,7 @@ public class QueryParameterMap {
 
     /**
      * @param queryString
-     *      String that looks like "abc=def&ghi=jkl"
+     *      String that looks like {@code abc=def&ghi=jkl}
      */
     public QueryParameterMap(String queryString) {
         if (queryString==null || queryString.length()==0)   return;

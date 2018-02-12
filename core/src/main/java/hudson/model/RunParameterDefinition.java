@@ -26,6 +26,7 @@ package hudson.model;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -133,7 +134,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
         }
     }
 
-    @Extension
+    @Extension @Symbol({"run","runParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {

@@ -27,7 +27,7 @@
 # Perl script to generate missing translation keys and missing properties files,
 # to remove unused keys, and to convert utf8 properties files to iso or ascii.
 #
-# 1.- It recursively looks for files in a folder, and analizes them to extract the
+# 1.- It recursively looks for files in a folder, and analyzes them to extract the
 #     keys being used in the application.
 # 2.- If --add=true, it generates the appropriate file for the desired language and adds
 #     these keys to it, adding the english text as a reference.
@@ -44,8 +44,8 @@
 use strict;
 use File::Find;
 
-my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse) = (undef, undef, "./", undef, undef, undef, undef, undef);
-my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins) = (0, 0, 0, 0, 0, 0, 0);
+my ($lang, $editor, $dir, $toiso, $toascii, $add, $remove, $reuse, $counter) = (undef, undef, "./", undef, undef, undef, undef, undef, undef);
+my ($tfiles, $tkeys, $tmissing, $tunused, $tempty, $tsame, $tnojenkins, $countervalue) = (0, 0, 0, 0, 0, 0, 0, 1);
 ## read arguments
 foreach (@ARGV) {
   if (/^--lang=(.*)$/) {
@@ -62,6 +62,8 @@ foreach (@ARGV) {
     $remove = 1;
   } elsif (/^--reuse=(.*)$/) {
     $reuse = $1;
+  } elsif (/^--counter$/ || /^--counter=true$/) {
+     $counter = 1;
   } else {
     $dir=$_;
   }
@@ -74,7 +76,7 @@ if (!$lang || $lang eq "en") {
   exit();
 }
 
-print STDERR "\rWait ...";
+print STDERR "\rFinding files ...";
 ## look for Message.properties and *.jelly files in the provided folder
 my @files = findTranslatableFiles($dir);
 
@@ -189,9 +191,18 @@ sub processFile {
       open(F, ">>$ofile");
       foreach (keys %keys) {
          if (!$okeys{$_}) {
-           if (!defined($okeys{$_})) {
-             print F "# $ekeys{$_}\n" if ($ekeys{$_} && $ekeys{$_} ne "");
-             print F "$_=" . (defined($cache{$_}) ? $cache{$_} : "") . "\n";
+            if (!defined($okeys{$_})) {
+               print F "# $ekeys{$_}\n" if ($ekeys{$_} && $ekeys{$_} ne "");
+               print F "$_=\n";
+               if (defined($cache{$_})) {
+                  print F $cache{$_}."\n";
+               } else {
+                  if ($counter) {
+                     # add unique value for each added translation
+                     print F "---TranslateMe ".$countervalue."--- ".($ekeys{$_} ? $ekeys{$_} : $_)."\n";
+                  }
+               }
+               $countervalue++;
            }
          }
       }
@@ -400,6 +411,8 @@ Usage: $0 --lang=xx [options] [dir]
      --editor=command     -> command to run over each updated file, implies add=true (default none)
      --reuse=folder       -> load a cache with keys already translated in the folder provided in
                              order to utilize them when the same key appears
+     --counter=true       -> to each translated key, unique value is added to easily identify match missing translation
+                             with value in source code (default false)
 
    Examples:
      - Look for Spanish files with incomplete keys in the 'main' folder,

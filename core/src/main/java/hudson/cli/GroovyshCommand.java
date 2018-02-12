@@ -96,7 +96,7 @@ public class GroovyshCommand extends CLICommand {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) {
                 assert(args.length == 1);
                 assert(args[0] instanceof Shell);
@@ -119,7 +119,7 @@ public class GroovyshCommand extends CLICommand {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
             public Object doCall(Object[] args) throws ChannelClosedException {
                 if (args.length == 1 && args[0] instanceof ChannelClosedException) {
                     throw (ChannelClosedException)args[0];

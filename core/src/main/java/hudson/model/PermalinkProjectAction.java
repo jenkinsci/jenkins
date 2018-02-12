@@ -49,7 +49,7 @@ public interface PermalinkProjectAction extends Action {
      *
      * <p>
      * Because {@link Permalink} is a strategy-pattern object,
-     * this method should normally return a pre-initialzied
+     * this method should normally return a pre-initialized
      * read-only static list object.  
      *
      * @return

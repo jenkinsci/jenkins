@@ -32,12 +32,14 @@ import hudson.util.DescriptorList;
 import java.util.Collections;
 import java.util.HashMap;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 
 /**
  * Controls when to take {@link Computer} offline, bring it back online, or even to destroy it.
@@ -56,7 +58,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      *         rechecked earlier or later that this!
      */
     @GuardedBy("hudson.model.Queue.lock")
-    public abstract long check(T c);
+    public abstract long check(@Nonnull T c);
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
@@ -91,9 +93,10 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
      * The default implementation of this method delegates to {@link #check(Computer)},
      * but this allows {@link RetentionStrategy} to distinguish the first time invocation from the rest.
      *
+     * @param c Computer instance
      * @since 1.275
      */
-    public void start(final T c) {
+    public void start(final @Nonnull T c) {
         Queue.withLock(new Runnable() {
             @Override
             public void run() {
@@ -164,7 +167,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension(ordinal=100)
+        @Extension(ordinal=100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
@@ -180,7 +183,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
         private static final Logger logger = Logger.getLogger(Demand.class.getName());
 
         /**
-         * The delay (in minutes) for which the agent must be in demand before tring to launch it.
+         * The delay (in minutes) for which the agent must be in demand before trying to launch it.
          */
         private final long inDemandDelay;
 
@@ -276,7 +279,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
             return 1;
         }
 
-        @Extension
+        @Extension @Symbol("demand")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
             @Override
             public String getDisplayName() {

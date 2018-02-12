@@ -1,5 +1,9 @@
 package jenkins.util.xml;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -83,7 +87,7 @@ public final class XMLUtils {
             // for some reason we could not convert source
             // this applies to DOMSource and StAXSource - and possibly 3rd party implementations...
             // a DOMSource can already be compromised as it is parsed by the time it gets to us.
-            if (Boolean.getBoolean(DISABLED_PROPERTY_NAME)) {
+            if (SystemProperties.getBoolean(DISABLED_PROPERTY_NAME)) {
                 LOGGER.log(Level.WARNING,  "XML external entity (XXE) prevention has been disabled by the system " +
                         "property {0}=true Your system may be vulnerable to XXE attacks.", DISABLED_PROPERTY_NAME);
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -136,16 +140,11 @@ public final class XMLUtils {
             throw new IllegalArgumentException(String.format("File %s does not exist or is not a 'normal' file.", file.getAbsolutePath()));
         }
 
-        FileInputStream fileInputStream = new FileInputStream(file);
-        try {
-            InputStreamReader fileReader = new InputStreamReader(fileInputStream, encoding);
-            try {
-                return parse(fileReader);
-            } finally {
-                IOUtils.closeQuietly(fileReader);
-            }
-        } finally {
-            IOUtils.closeQuietly(fileInputStream);
+        try (InputStream fileInputStream = Files.newInputStream(file.toPath());
+            InputStreamReader fileReader = new InputStreamReader(fileInputStream, encoding)) {
+            return parse(fileReader);
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -232,6 +231,8 @@ public final class XMLUtils {
     private static void setDocumentBuilderFactoryFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean state) {
         try {
             documentBuilderFactory.setFeature(feature, state);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to set the XML Document Builder factory feature %s to %s", feature, state), e);
+        }
     }
 }

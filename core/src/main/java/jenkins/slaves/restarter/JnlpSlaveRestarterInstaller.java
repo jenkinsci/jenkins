@@ -1,6 +1,7 @@
 package jenkins.slaves.restarter;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
 import hudson.remoting.Engine;
@@ -93,7 +94,7 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
 
             LOGGER.log(FINE, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
         } catch (Throwable e) {
-            e.printStackTrace(listener.error("Failed to install restarter"));
+            Functions.printStackTrace(e, listener.error("Failed to install restarter"));
         }
     }
 

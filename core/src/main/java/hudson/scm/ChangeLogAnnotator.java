@@ -33,6 +33,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.CopyOnWriteList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -81,7 +82,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
         if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, Entry.class, MarkupText.class)) {
             annotate((AbstractBuild) build, change, text);
         } else {
-            throw new AbstractMethodError("You must override the newer overload of annotate");
+            Logger.getLogger(ChangeLogAnnotator.class.getName()).log(Level.WARNING, "You must override the newer overload of annotate from {0}", getClass().getName());
         }
     }
 

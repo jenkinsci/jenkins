@@ -11,7 +11,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
     l.side_panel {
         l.tasks {
             l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-setting icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
+            l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
         }
     }
     l.main_panel {
@@ -35,7 +35,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
 
             f.bottomButtonBar {
                 f.submit(value:_("Save"))
-                f.apply()
+                f.apply(value:_("Apply"))
             }
         }
 

@@ -26,12 +26,14 @@ package hudson.tasks;
 
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Label;
 import hudson.model.Result;
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
@@ -39,7 +41,15 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
+
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.DumbSlave;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.util.VirtualFile;
+import org.hamcrest.Matchers;
+import org.jenkinsci.plugins.structs.describable.DescribableModel;
+
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
@@ -155,19 +165,7 @@ public class ArtifactArchiverTest {
         assertFalse(kids[0].exists());
         j.createWebClient().assertFails(b.getUrl() + "artifact/hack", HttpURLConnection.HTTP_NOT_FOUND);
     }
-    
-    private void runNewBuildAndStartUnitlIsCreated(AbstractProject project) throws InterruptedException{
-        int buildNumber = project.getNextBuildNumber();
-        project.scheduleBuild2(0);
-        int count = 0;
-        while(project.getBuildByNumber(buildNumber)==null && count<50){
-            Thread.sleep(100);
-            count ++;
-        }
-        if(project.getBuildByNumber(buildNumber)==null)
-            fail("Build " + buildNumber + " did not created.");
-    }
-    
+
     static class CreateArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
@@ -197,8 +195,22 @@ public class ArtifactArchiverTest {
         assertFalse(project.getBuildByNumber(2).getHasArtifacts());
     }
 
-
-
+    @Issue("JENKINS-29922")
+    @Test
+    public void configRoundTrip() throws Exception {
+        ArtifactArchiver aa = new ArtifactArchiver("*.txt");
+        assertNull(Util.fixEmpty(aa.getExcludes())); // null and "" behave the same, we do not care which it is
+        assertEquals("{artifacts=*.txt}", DescribableModel.uninstantiate_(aa).toString()); // but we do care that excludes is considered to be at the default
+        aa = j.configRoundtrip(aa);
+        assertEquals("*.txt", aa.getArtifacts());
+        assertNull(Util.fixEmpty(aa.getExcludes()));
+        assertEquals("{artifacts=*.txt}", DescribableModel.uninstantiate_(aa).toString());
+        aa.setExcludes("README.txt");
+        aa = j.configRoundtrip(aa);
+        assertEquals("*.txt", aa.getArtifacts());
+        assertEquals("README.txt", aa.getExcludes());
+        assertEquals("{artifacts=*.txt, excludes=README.txt}", DescribableModel.uninstantiate_(aa).toString()); // TreeMap, so attributes will be sorted
+    }
 
     static class CreateDefaultExcludesArtifact extends TestBuilder {
         public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -263,7 +275,7 @@ public class ArtifactArchiverTest {
 
     @LocalData
     @Test public void fingerprintMigration() throws Exception {
-        FreeStyleProject p = j.jenkins.getItemByFullName("sample", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
         assertNotNull(p);
         String xml = p.getConfigFile().asString();
         assertFalse(xml, xml.contains("<recordBuildArtifacts>"));
@@ -278,4 +290,38 @@ public class ArtifactArchiverTest {
         assertEquals("[stuff]", a.getFingerprints().keySet().toString());
     }
 
+    @Test @Issue("JENKINS-21905")
+    public void archiveNotReadable() throws Exception {
+        assumeFalse(Functions.isWindows()); // No permission support
+
+        final String FILENAME = "myfile";
+        DumbSlave slave = j.createOnlineSlave(Label.get("target"));
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath file = build.getWorkspace().child(FILENAME);
+                file.act(new RemoveReadPermission());
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver(FILENAME));
+        p.setAssignedNode(slave);
+
+        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        j.assertBuildStatus(Result.FAILURE, build);
+        String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
+        j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
+        assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
+    }
+
+    private static class RemoveReadPermission extends MasterToSlaveFileCallable<Object> {
+        @Override
+        public Object invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            assertTrue(f.createNewFile());
+            assertTrue(f.setReadable(false));
+            return null;
+        }
+    }
 }

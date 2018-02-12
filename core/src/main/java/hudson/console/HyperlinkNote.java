@@ -26,6 +26,7 @@ package hudson.console;
 import hudson.Extension;
 import hudson.MarkupText;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -83,7 +84,7 @@ public class HyperlinkNote extends ConsoleNote {
         }
     }
 
-    @Extension
+    @Extension @Symbol("hyperlink")
     public static class DescriptorImpl extends ConsoleAnnotationDescriptor {
         public String getDisplayName() {
             return "Hyperlinks";

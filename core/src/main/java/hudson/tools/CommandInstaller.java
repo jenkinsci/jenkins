@@ -27,6 +27,7 @@ package hudson.tools;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.LineEndingConversion;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.ObjectStreamException;
 
@@ -56,7 +57,7 @@ public class CommandInstaller extends AbstractCommandInstaller {
         return new CommandInstaller(getLabel(), getCommand(), getToolHome());
     }
 
-    @Extension
+    @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<CommandInstaller> {
 
         @Override

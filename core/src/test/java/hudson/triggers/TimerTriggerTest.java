@@ -24,8 +24,13 @@
 package hudson.triggers;
 
 import antlr.ANTLRException;
+import hudson.scheduler.CronTabList;
+import hudson.scheduler.Hash;
+import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+
+import java.util.TimeZone;
 
 /**
  * @author Kanstantsin Shautsou
@@ -35,5 +40,23 @@ public class TimerTriggerTest {
     @Test
     public void testNoNPE() throws ANTLRException {
         new TimerTrigger("").run();
+    }
+
+    @Issue("JENKINS-43328")
+    @Test
+    public void testTimeZoneOffset() throws Exception {
+        TimeZone defaultTz = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Berlin"));
+        try {
+            String cron = "TZ=GMT\nH 0 * * *";
+            CronTabList ctl = CronTabList.create(cron, Hash.from("whatever"));
+            Assert.assertEquals("previous occurrence is in GMT", "GMT", ctl.previous().getTimeZone().getID());
+
+            cron = "TZ=America/Denver\nH 0 * * *";
+            ctl = CronTabList.create(cron, Hash.from("whatever"));
+            Assert.assertEquals("next occurrence is in America/Denver", "America/Denver", ctl.next().getTimeZone().getID());
+        } finally {
+            TimeZone.setDefault(defaultTz);
+        }
     }
 }

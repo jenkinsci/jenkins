@@ -25,14 +25,21 @@ package hudson.model;
 
 import hudson.console.ConsoleNote;
 import hudson.console.HyperlinkNote;
-import hudson.util.AbstractTaskListener;
 import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Formatter;
+import javax.annotation.Nonnull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
 
 /**
  * Receives events that happen during some lengthy operation
@@ -54,24 +61,46 @@ import java.io.Serializable;
  * {@link StreamTaskListener} is the most typical implementation of this interface.
  * All the {@link TaskListener} implementations passed to plugins from Hudson core are remotable.
  *
- * @see AbstractTaskListener
  * @author Kohsuke Kawaguchi
  */
 public interface TaskListener extends Serializable {
     /**
      * This writer will receive the output of the build
-     *
-     * @return
-     *      must be non-null.
      */
+    @Nonnull
     PrintStream getLogger();
+
+    /**
+     * A charset to use for methods returning {@link PrintWriter}.
+     * Should match that used to construct {@link #getLogger}.
+     * @return by default, UTF-8
+     */
+    @Restricted(ProtectedExternally.class)
+    @Nonnull
+    default Charset getCharset() {
+        return StandardCharsets.UTF_8;
+    }
+
+    @Restricted(NoExternalUse.class) // TODO Java 9 make private
+    default PrintWriter _error(String prefix, String msg) {
+        PrintStream out = getLogger();
+        out.print(prefix);
+        out.println(msg);
+
+        // annotate(new HudsonExceptionNote()) if and when this is made to do something
+        Charset charset = getCharset();
+        return new PrintWriter(charset != null ? new OutputStreamWriter(out, charset) : new OutputStreamWriter(out), true);
+    }
 
     /**
      * Annotates the current position in the output log by using the given annotation.
      * If the implementation doesn't support annotated output log, this method might be no-op.
      * @since 1.349
      */
-    void annotate(ConsoleNote ann) throws IOException;
+    @SuppressWarnings("rawtypes")
+    default void annotate(ConsoleNote ann) throws IOException {
+        ann.encodeTo(getLogger());
+    }
 
     /**
      * Places a {@link HyperlinkNote} on the given text.
@@ -79,33 +108,48 @@ public interface TaskListener extends Serializable {
      * @param url
      *      If this starts with '/', it's interpreted as a path within the context path.
      */
-    void hyperlink(String url, String text) throws IOException;
+    default void hyperlink(String url, String text) throws IOException {
+        annotate(new HyperlinkNote(url, text.length()));
+        getLogger().print(text);
+    }
 
     /**
      * An error in the build.
      *
      * @return
-     *      A writer to receive details of the error. Not null.
+     *      A writer to receive details of the error.
      */
-    PrintWriter error(String msg);
+    @Nonnull
+    default PrintWriter error(String msg) {
+        return _error("ERROR: ", msg);
+    }
 
     /**
      * {@link Formatter#format(String, Object[])} version of {@link #error(String)}.
      */
-    PrintWriter error(String format, Object... args);
+    @Nonnull
+    default PrintWriter error(String format, Object... args) {
+        return error(String.format(format,args));
+    }
 
     /**
      * A fatal error in the build.
      *
      * @return
-     *      A writer to receive details of the error. Not null.
+     *      A writer to receive details of the error.
      */
-    PrintWriter fatalError(String msg);
+    @Nonnull
+    default PrintWriter fatalError(String msg) {
+        return _error("FATAL: ", msg);
+    }
 
     /**
      * {@link Formatter#format(String, Object[])} version of {@link #fatalError(String)}.
      */
-    PrintWriter fatalError(String format, Object... args);
+    @Nonnull
+    default PrintWriter fatalError(String format, Object... args) {
+        return fatalError(String.format(format, args));
+    }
 
     /**
      * {@link TaskListener} that discards the output.

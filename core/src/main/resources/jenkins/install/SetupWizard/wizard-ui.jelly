@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+  <script type="text/javascript">
+    <j:getStatic var="defaultUpdateSiteId" className="hudson.model.UpdateCenter" field="ID_DEFAULT"/>
+    var defaultUpdateSiteId = '${defaultUpdateSiteId ? defaultUpdateSiteId.replace("'", "") : "default"}';
+    var setupWizardExtensions = [];
+    var onSetupWizardInitialized = function(extension) {
+      setupWizardExtensions.push(extension);
+    };
+  </script>
+  <j:forEach var="setupExtension" items="${app.setupWizard.installStates}">
+    <st:include it="${setupExtension}" page="client-scripts" optional="true" />
+  </j:forEach>
+  <st:include page="client-scripts" />
+</j:jelly>

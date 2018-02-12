@@ -29,6 +29,10 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.cli.declarative.CLIMethod;
 import hudson.ExtensionPoint.LegacyInstancesAreScopedToHudson;
+import hudson.Functions;
+import hudson.security.ACL;
+import jenkins.security.SecurityListener;
+import jenkins.util.SystemProperties;
 import hudson.cli.declarative.OptionHandlerExtension;
 import jenkins.model.Jenkins;
 import hudson.remoting.Callable;
@@ -42,6 +46,8 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.BadCredentialsException;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.User;
+import org.acegisecurity.userdetails.UserDetails;
 import org.apache.commons.discovery.ResourceClassIterator;
 import org.apache.commons.discovery.ResourceNameIterator;
 import org.apache.commons.discovery.resource.ClassLoaders;
@@ -69,6 +75,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Base class for Hudson CLI.
@@ -124,6 +132,13 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     public transient PrintStream stdout,stderr;
 
     /**
+     * Shared text, which is reported back to CLI if an error happens in commands 
+     * taking lists of parameters.
+     * @since 2.26
+     */
+    static final String CLI_LISTPARAM_SUMMARY_ERROR_TEXT = "Error occurred while performing this command, see previous stderr output.";
+    
+    /**
      * Connected to stdin of the CLI agent.
      *
      * <p>
@@ -142,13 +157,20 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * <p>
      * See {@link #checkChannel()} to get a channel and throw an user-friendly
      * exception
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     public transient Channel channel;
 
     /**
      * The locale of the client. Messages should be formatted with this resource.
      */
     public transient Locale locale;
+
+    /**
+     * The encoding of the client, if defined.
+     */
+    private transient @CheckForNull Charset encoding;
 
     /**
      * Set by the caller of the CLI system if the transport already provides
@@ -290,7 +312,7 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
             stderr.println("");
             stderr.println("ERROR: " + errorMsg);
             LOGGER.log(Level.WARNING, errorMsg, e);
-            e.printStackTrace(stderr);
+            Functions.printStackTrace(e, stderr);
             return 1;
         } finally {
             if(sc != null)
@@ -307,24 +329,38 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
     protected CmdLineParser getCmdLineParser() {
         return new CmdLineParser(this);
     }
-    
+
+    /**
+     * @deprecated Specific to Remoting-based protocol.
+     */
+    @Deprecated
     public Channel checkChannel() throws AbortException {
         if (channel==null)
-            throw new AbortException("This command can only run with Jenkins CLI. See https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI");
+            throw new AbortException("This command is requesting the deprecated -remoting mode. See https://jenkins.io/redirect/cli-command-requires-channel");
         return channel;
     }
 
     /**
      * Loads the persisted authentication information from {@link ClientAuthenticationCache}
      * if the current transport provides {@link Channel}.
+     * @deprecated Assumes Remoting, and vulnerable to JENKINS-12543.
      */
+    @Deprecated
     protected Authentication loadStoredAuthentication() throws InterruptedException {
         try {
-            if (channel!=null)
-                return new ClientAuthenticationCache(channel).get();
+            if (channel!=null){
+                Authentication authLoadedFromCache = new ClientAuthenticationCache(channel).get();
+
+                if(!ACL.isAnonymous(authLoadedFromCache)){
+                    UserDetails userDetails = new CLIUserDetails(authLoadedFromCache);
+                    SecurityListener.fireAuthenticated(userDetails);
+                }
+
+                return authLoadedFromCache;
+            }
         } catch (IOException e) {
             stderr.println("Failed to access the stored credential");
-            e.printStackTrace(stderr);  // recover
+            Functions.printStackTrace(e, stderr);  // recover
         }
         return Jenkins.ANONYMOUS;
     }
@@ -344,7 +380,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      *      Always non-null.
      *      If the underlying transport had already performed authentication, this object is something other than
      *      {@link jenkins.model.Jenkins#ANONYMOUS}.
+     * @deprecated Unused.
      */
+    @Deprecated
     protected boolean shouldPerformAuthentication(Authentication auth) {
         return auth== Jenkins.ANONYMOUS;
     }
@@ -392,11 +430,11 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
      * @throws IllegalArgumentException
      *      If the execution can't continue due to wrong input parameter (job doesn't exist etc.)
      * @throws IllegalStateException
-     *      If the execution can't continue due to an incorect state of Jenkins, job, build etc.
+     *      If the execution can't continue due to an incorrect state of Jenkins, job, build etc.
      * @throws AbortException
      *      If the execution can't continue due to an other (rare, but foreseeable) issue
      * @throws AccessDeniedException
-     *      If the caller doesn't have sufficent rights for requested action
+     *      If the caller doesn't have sufficient rights for requested action
      * @throws BadCredentialsException
      *      If bad credentials were provided to CLI
      */
@@ -454,7 +492,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Convenience method for subtypes to obtain the system property of the client.
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     protected String getClientSystemProperty(String name) throws IOException, InterruptedException {
         return checkChannel().call(new GetSystemProperty(name));
     }
@@ -467,13 +507,24 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
         }
 
         public String call() throws IOException {
-            return System.getProperty(name);
+            return SystemProperties.getString(name);
         }
 
         private static final long serialVersionUID = 1L;
     }
 
-    protected Charset getClientCharset() throws IOException, InterruptedException {
+    /**
+     * Define the encoding for the command.
+     * @since 2.54
+     */
+    public void setClientCharset(@Nonnull Charset encoding) {
+        this.encoding = encoding;
+    }
+
+    protected @Nonnull Charset getClientCharset() throws IOException, InterruptedException {
+        if (encoding != null) {
+            return encoding;
+        }
         if (channel==null)
             // for SSH, assume the platform default encoding
             // this is in-line with the standard SSH behavior
@@ -498,7 +549,9 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
 
     /**
      * Convenience method for subtypes to obtain environment variables of the client.
+     * @deprecated Specific to Remoting-based protocol.
      */
+    @Deprecated
     protected String getClientEnvironmentVariable(String name) throws IOException, InterruptedException {
         return checkChannel().call(new GetEnvironmentVariable(name));
     }
@@ -599,6 +652,18 @@ public abstract class CLICommand implements ExtensionPoint, Cloneable {
                 Class c = Types.erasure(Types.getTypeArgument(Types.getBaseClass(h, OptionHandler.class), 0));
                 CmdLineParser.registerHandler(c,h);
             }
+        }
+    }
+
+    /**
+     * User details loaded from the CLI {@link ClientAuthenticationCache}
+     * The user is never anonymous since it must be authenticated to be stored in the cache
+     */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    private static class CLIUserDetails extends User {
+        private CLIUserDetails(Authentication auth) {
+            super(auth.getName(), "", true, true, true, true, auth.getAuthorities());
         }
     }
 }

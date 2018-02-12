@@ -24,6 +24,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
@@ -34,6 +35,7 @@ import hudson.util.HttpResponses;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -48,6 +50,7 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Remembers the API token for this user, that can be used like a password to login.
@@ -64,10 +67,10 @@ public class ApiTokenProperty extends UserProperty {
      * If enabled, shows API tokens to users with {@link Jenkins#ADMINISTER) permissions.
      * Disabled by default due to the security reasons.
      * If enabled, it restores the original Jenkins behavior (SECURITY-200).
-     * @since TODO
+     * @since 1.638
      */
     private static final boolean SHOW_TOKEN_TO_ADMINS = 
-            Boolean.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
+            SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
     
     
     @DataBoundConstructor
@@ -85,12 +88,12 @@ public class ApiTokenProperty extends UserProperty {
 
     /**
      * Gets the API token.
-     * The method performs security checks. Only the current user and SYSTEM may see it.
+     * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
      * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_TOKEN_TO_ADMINS}.
      * 
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
-     * @since TODO: the method performs security checks
+     * @since 1.426, and since 1.638 the method performs security checks
      */
     @Nonnull
     public String getApiToken() {
@@ -158,7 +161,7 @@ public class ApiTokenProperty extends UserProperty {
         return this;
     }
 
-    @Extension
+    @Extension @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();
@@ -176,6 +179,7 @@ public class ApiTokenProperty extends UserProperty {
             return new ApiTokenProperty(API_KEY_SEED.mac(user.getId()));
         }
 
+        @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p==null) {

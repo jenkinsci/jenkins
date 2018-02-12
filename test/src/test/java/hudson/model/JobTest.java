@@ -31,23 +31,37 @@ import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.TextPage;
 
+import hudson.FilePath;
 import hudson.Functions;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Shell;
 import hudson.util.TextFile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import jenkins.model.ProjectNamingStrategy;
 
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.RunLoadCounter;
+import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import static org.hamcrest.Matchers.endsWith;
@@ -188,7 +202,7 @@ public class JobTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.assertFails("job/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
         wc.assertFails("jobCaseInsensitive/testJob/", HttpURLConnection.HTTP_NOT_FOUND);
-        wc.login("joe");  // Has Item.READ permission
+        wc.withBasicCredentials("joe");  // Has Item.READ permission
         // Verify we can access both URLs:
         wc.goTo("job/testJob/");
         wc.goTo("jobCaseInsensitive/TESTJOB/");
@@ -202,11 +216,14 @@ public class JobTest {
         Item.EXTENDED_READ.setEnabled(true);
         try {
             wc.assertFails("job/testJob/config.xml", HttpURLConnection.HTTP_FORBIDDEN);
-            wc.login("alice");  // Has CONFIGURE and EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("alice", true));  // Has CONFIGURE and EXTENDED_READ permission
             tryConfigDotXml(wc, 500, "Both perms; should get 500");
-            wc.login("bob");  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
+
+            wc.withBasicApiToken(User.getById("bob", true));  // Has only CONFIGURE permission (this should imply EXTENDED_READ)
             tryConfigDotXml(wc, 500, "Config perm should imply EXTENDED_READ");
-            wc.login("charlie");  // Has only EXTENDED_READ permission
+
+            wc.withBasicApiToken(User.getById("charlie", true));  // Has only EXTENDED_READ permission
             tryConfigDotXml(wc, 403, "No permission, should get 403");
         } finally {
             Item.EXTENDED_READ.setEnabled(saveEnabled);
@@ -294,6 +311,107 @@ public class JobTest {
         p.renameTo("different-name");
     }
 
+    @Issue("JENKINS-44657")
+    @Test public void testRenameWithCustomBuildsDirWithBuildsIntact() throws Exception {
+        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        final FreeStyleProject p = j.createFreeStyleProject();
+        final File oldBuildsDir = p.getBuildDir();
+        j.buildAndAssertSuccess(p);
+        String oldDirContent = dirContent(oldBuildsDir);
+        p.renameTo("different-name");
+        final File newBuildDir = p.getBuildDir();
+        assertNotNull(newBuildDir);
+        assertNotEquals(oldBuildsDir.getAbsolutePath(), newBuildDir.getAbsolutePath());
+        String newDirContent = dirContent(newBuildDir);
+        assertEquals(oldDirContent, newDirContent);
+    }
+
+    @Issue("JENKINS-44657")
+    @Test public void testRenameWithCustomBuildsDirWithBuildsIntactInFolder() throws Exception {
+        j.jenkins.setRawBuildsDir("${JENKINS_HOME}/builds/${ITEM_FULL_NAME}/builds");
+        final MockFolder f = j.createFolder("F");
+
+        final FreeStyleProject p1 = f.createProject(FreeStyleProject.class, "P1");
+        j.buildAndAssertSuccess(p1);
+        File oldP1BuildsDir = p1.getBuildDir();
+        final String oldP1DirContent = dirContent(oldP1BuildsDir);
+        f.renameTo("different-name");
+
+        File newP1BuildDir = p1.getBuildDir();
+        assertNotNull(newP1BuildDir);
+        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
+        String newP1DirContent = dirContent(newP1BuildDir);
+        assertEquals(oldP1DirContent, newP1DirContent);
+
+        final FreeStyleProject p2 = f.createProject(FreeStyleProject.class, "P2");
+        if (Functions.isWindows()) {
+            p2.getBuildersList().add(new BatchFile("echo hello > hello.txt"));
+        } else {
+            p2.getBuildersList().add(new Shell("echo hello > hello.txt"));
+        }
+        p2.getPublishersList().add(new ArtifactArchiver("*.txt"));
+        j.buildAndAssertSuccess(p2);
+
+        File oldP2BuildsDir = p2.getBuildDir();
+        final String oldP2DirContent = dirContent(oldP2BuildsDir);
+        FreeStyleBuild b2 = p2.getBuilds().getLastBuild();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        b2.getLogText().writeRawLogTo(0, out);
+        final String oldB2Log = new String(out.toByteArray());
+        assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
+        f.renameTo("something-else");
+
+        //P1 check again
+        newP1BuildDir = p1.getBuildDir();
+        assertNotNull(newP1BuildDir);
+        assertNotEquals(oldP1BuildsDir.getAbsolutePath(), newP1BuildDir.getAbsolutePath());
+        newP1DirContent = dirContent(newP1BuildDir);
+        assertEquals(oldP1DirContent, newP1DirContent);
+
+        //P2 check
+
+        b2 = p2.getBuilds().getLastBuild();
+        assertNotNull(b2);
+        out = new ByteArrayOutputStream();
+        b2.getLogText().writeRawLogTo(0, out);
+        final String newB2Log = new String(out.toByteArray());
+        assertEquals(oldB2Log, newB2Log);
+        assertTrue(b2.getArtifactManager().root().child("hello.txt").exists());
+
+        File newP2BuildDir = p2.getBuildDir();
+        assertNotNull(newP2BuildDir);
+        assertNotEquals(oldP2BuildsDir.getAbsolutePath(), newP2BuildDir.getAbsolutePath());
+        String newP2DirContent = dirContent(newP2BuildDir);
+        assertEquals(oldP2DirContent, newP2DirContent);
+    }
+
+    private String dirContent(File dir) throws IOException, InterruptedException {
+        if (dir == null || !dir.isDirectory()) {
+            return null;
+        }
+        StringBuilder str = new StringBuilder("");
+        final FilePath[] list = new FilePath(dir).list("**/*");
+        Arrays.sort(list, Comparator.comparing(FilePath::getRemote));
+        for (FilePath path : list) {
+            str.append(relativePath(dir, path));
+            str.append(' ').append(path.length()).append('\n');
+        }
+        return str.toString();
+    }
+
+    private String relativePath(File base, FilePath path) throws IOException, InterruptedException {
+        if (path.absolutize().getRemote().equals(base.getAbsolutePath())) {
+            return "";
+        } else {
+            final String s = relativePath(base, path.getParent());
+            if (s.isEmpty()) {
+                return path.getName();
+            } else {
+                return s + "/" + path.getName();
+            }
+        }
+    }
+
     @Issue("JENKINS-30502")
     @Test
     public void testRenameTrimsLeadingSpace() throws Exception {
@@ -349,6 +467,28 @@ public class JobTest {
     public void testDoNotAutoTrimExistingUntrimmedNames() throws Exception {
         assumeFalse("Unix-only test.", Functions.isWindows());
         tryRename("myJob8 ", "myJob8 ", null, true);
+    }
+
+    @Issue("JENKINS-35160")
+    @Test
+    public void interruptOnDelete() throws Exception {
+        j.jenkins.setNumExecutors(2);
+        Queue.getInstance().maintain();
+        final FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(
+                new StringParameterDefinition("dummy", "0")));
+        p.setConcurrentBuild(true);
+        p.getBuildersList().add(new SleepBuilder(30000));  // we want the uninterrupted job to run for long time
+        FreeStyleBuild build1 = p.scheduleBuild2(0).getStartCondition().get();
+        FreeStyleBuild build2 = p.scheduleBuild2(0).getStartCondition().get();
+        QueueTaskFuture<FreeStyleBuild> build3 = p.scheduleBuild2(0);
+        long start = System.nanoTime();
+        p.delete();
+        long end = System.nanoTime();
+        assertThat(end - start, Matchers.lessThan(TimeUnit.SECONDS.toNanos(1)));
+        assertThat(build1.getResult(), Matchers.is(Result.ABORTED));
+        assertThat(build2.getResult(), Matchers.is(Result.ABORTED));
+        assertThat(build3.isCancelled(), Matchers.is(true));
     }
 
     private void tryRename(String initialName, String submittedName,

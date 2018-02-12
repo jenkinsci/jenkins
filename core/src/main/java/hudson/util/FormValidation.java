@@ -394,6 +394,30 @@ public abstract class FormValidation extends IOException implements HttpResponse
     }
 
     /**
+     * Make sure that the given string is an integer in the range specified by the lower and upper bounds (both inclusive)
+     *
+     * @param value the value to check
+     * @param lower the lower bound (inclusive)
+     * @param upper the upper bound (inclusive)
+     *
+     * @since TODO
+     */
+    public static FormValidation validateIntegerInRange(String value, int lower, int upper) {
+        try {
+            int intValue = Integer.parseInt(value);
+            if (intValue < lower) {
+                return error(hudson.model.Messages.Hudson_MustBeAtLeast(lower));
+            }
+            if (intValue > upper) {
+                return error(hudson.model.Messages.Hudson_MustBeAtMost(upper));
+            }
+            return ok();
+        } catch (NumberFormatException e) {
+            return error(hudson.model.Messages.Hudson_NotANumber());
+        }
+    }
+
+    /**
      * Makes sure that the given string is a positive integer.
      */
     public static FormValidation validatePositiveInteger(String value) {
@@ -511,7 +535,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
-         * Implement the actual form validation logic, by using other convenience methosd defined in this class.
+         * Implement the actual form validation logic, by using other convenience methods defined in this class.
          * If you are not using any of those, you don't need to extend from this class.
          */
         protected abstract FormValidation check() throws IOException, ServletException;
@@ -638,7 +662,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          */
         public String toStemUrl() {
             if (names==null)    return null;
-            return jsStringEscape(Descriptor.getCurrentDescriptorByNameUrl()) + '/' + relativePath();
+            return Descriptor.getCurrentDescriptorByNameUrl() + '/' + relativePath();
         }
 
         public String getDependsOn() {

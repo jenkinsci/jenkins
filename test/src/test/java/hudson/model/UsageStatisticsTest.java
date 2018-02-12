@@ -28,7 +28,9 @@ import com.trilead.ssh2.crypto.Base64;
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
+import java.util.Set;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
@@ -50,8 +52,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -66,6 +71,7 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
+        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
 
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
@@ -95,10 +101,29 @@ public class UsageStatisticsTest {
         assertTrue(o.has("jobs"));
         assertTrue(o.has("nodes"));
 
+        // Validate the plugins format
+        List<JSONObject> plugins = sortPlugins((List<JSONObject>) o.get("plugins"));
+        Set<String> keys = new TreeSet<>();
+        keys.add("name");
+        keys.add("version");
+        Set<String> reported = new TreeSet<>();
+        for (JSONObject plugin: plugins) {
+            assertThat(plugin.keySet(), is((Set)keys));
+            assertThat(plugin.get("name"), instanceOf(String.class));
+            assertThat(plugin.get("version"), instanceOf(String.class));
+            String name = plugin.getString("name");
+            assertThat("No duplicates", reported.contains(name), is(false));
+            reported.add(name);
+        }
+        assertThat(reported, containsInAnyOrder("credentials"));
+
         // Compare content to watch out for backwards compatibility
-        compareWithFile("plugins.json", sortPlugins((List<JSONObject>) o.get("plugins")));
         compareWithFile("jobs.json", sortJobTypes((JSONObject) o.get("jobs")));
-        compareWithFile("nodes.json", o.get("nodes"));
+        JSONArray nodes = o.getJSONArray("nodes");
+        for (Object node : nodes) {
+            ((JSONObject) node).remove("os"); // depends on timing of AbstractNodeMonitorDescriptor.get whether or not this will be present
+        }
+        compareWithFile("nodes.json", nodes);
     }
 
     /**
@@ -123,7 +148,7 @@ public class UsageStatisticsTest {
     }
 
     // Plugins can be retrieved in any order, so sorting them so that the test is stable
-    private Object sortPlugins(List<JSONObject> list) {
+    private List<JSONObject> sortPlugins(List<JSONObject> list) {
         List<JSONObject> sorted = new ArrayList<>(list);
         Collections.sort(sorted, new Comparator<JSONObject>() {
             public int compare(JSONObject j1, JSONObject j2) {
@@ -149,9 +174,6 @@ public class UsageStatisticsTest {
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));
-        String os = System.getProperty("os.name");
-        String arch = System.getProperty("os.arch");
-        fileContent = fileContent.replace("OSSPEC", os + " (" + arch + ')');
         assertEquals(fileContent, object.toString());
     }
 }

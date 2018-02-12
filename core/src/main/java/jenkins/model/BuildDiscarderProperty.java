@@ -29,6 +29,7 @@ import hudson.model.Descriptor;
 import hudson.model.DescriptorVisibilityFilter;
 import hudson.model.Items;
 import hudson.model.Job;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -49,6 +50,7 @@ public class BuildDiscarderProperty extends OptionalJobProperty<Job<?,?>> {
     }
 
     @Extension
+    @Symbol("buildDiscarder")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
 
         @Override

@@ -23,16 +23,16 @@
  */
 package hudson.model.queue;
 
+import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import hudson.security.ACL;
+import javax.annotation.CheckForNull;
 import org.acegisecurity.Authentication;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.annotation.Nonnull;
 import jenkins.security.QueueItemAuthenticator;
-import jenkins.security.QueueItemAuthenticatorConfiguration;
+import jenkins.security.QueueItemAuthenticatorProvider;
 
 /**
  * Convenience methods around {@link Task} and {@link SubTask}.
@@ -42,64 +42,56 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
  */
 public class Tasks {
 
+    /** @deprecated call {@link Task#getSubTasks} directly */
+    @Deprecated
     public static Collection<? extends SubTask> getSubTasksOf(Task task) {
-        try {
-            return task.getSubTasks();
-        } catch (AbstractMethodError e) {
-            return Collections.singleton(task);
-        }
+        return task.getSubTasks();
     }
 
+    /** @deprecated call {@link SubTask#getSameNodeConstraint} directly */
+    @Deprecated
     public static Object getSameNodeConstraintOf(SubTask t) {
-        try {
-            return t.getSameNodeConstraint();
-        } catch (AbstractMethodError e) {
-            return null;
-        }
+        return t.getSameNodeConstraint();
     }
 
+    /** deprecated call {@link SubTask#getOwnerTask} directly */
+    @Deprecated
     public static @Nonnull Task getOwnerTaskOf(@Nonnull SubTask t) {
-        try {
-            return t.getOwnerTask();
-        } catch (AbstractMethodError e) {
-            return (Task)t;
-        }
+        return t.getOwnerTask();
     }
 
     /**
-     * Helper method to safely invoke {@link Task#getDefaultAuthentication()} on classes that may come
-     * from plugins compiled against an earlier version of Jenkins.
-     *
-     * @param t the task
-     * @return {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
-     * @since 1.520
+     * Gets the {@link hudson.model.Item} most closely associated with the supplied {@link SubTask}.
+     * @param t the {@link SubTask}.
+     * @return the {@link hudson.model.Item} associated with the {@link SubTask} or {@code null} if this
+     * {@link SubTask} is not associated with an {@link hudson.model.Item}
+     * @since 2.55
      */
+    @CheckForNull
+    public static hudson.model.Item getItemOf(@Nonnull SubTask t) {
+        Queue.Task p = t.getOwnerTask();
+        while (!(p instanceof hudson.model.Item)) {
+            Queue.Task o = p.getOwnerTask();
+            if (o == p) {
+                break;
+            }
+            p = o;
+        }
+        return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
+    }
+
+    /** @deprecated call {@link Task#getDefaultAuthentication()} directly */
+    @Deprecated
     @Nonnull
     public static Authentication getDefaultAuthenticationOf(Task t) {
-        try {
-            return t.getDefaultAuthentication();
-        } catch (AbstractMethodError e) {
-            return ACL.SYSTEM;
-        }
+        return t.getDefaultAuthentication();
     }
 
-    /**
-     * Helper method to safely invoke {@link Task#getDefaultAuthentication(Item)} on classes that may come
-     * from plugins compiled against an earlier version of Jenkins.
-     *
-     * @param t    the task
-     * @param item the item
-     * @return {@link Task#getDefaultAuthentication(hudson.model.Queue.Item)},
-     * or {@link Task#getDefaultAuthentication()}, or {@link ACL#SYSTEM}
-     * @since 1.592
-     */
+    /** @deprecated call {@link Task#getDefaultAuthentication(Item)} directly */
+    @Deprecated
     @Nonnull
     public static Authentication getDefaultAuthenticationOf(Task t, Item item) {
-        try {
-            return t.getDefaultAuthentication(item);
-        } catch (AbstractMethodError e) {
-            return getDefaultAuthenticationOf(t);
-        }
+        return t.getDefaultAuthentication(item);
     }
 
     /**
@@ -107,17 +99,17 @@ public class Tasks {
      * The actual authentication after scheduling ({@link hudson.model.Queue.Item#authenticate}) might differ,
      * in case some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Item)} takes (for example) actions into consideration.
      * @param t a task
-     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link #getDefaultAuthenticationOf}
+     * @return an authentication as specified by some {@link QueueItemAuthenticator#authenticate(hudson.model.Queue.Task)}; else {@link Task#getDefaultAuthentication()}
      * @since 1.560
      */
     public static @Nonnull Authentication getAuthenticationOf(@Nonnull Task t) {
-        for (QueueItemAuthenticator qia : QueueItemAuthenticatorConfiguration.get().getAuthenticators()) {
+        for (QueueItemAuthenticator qia : QueueItemAuthenticatorProvider.authenticators()) {
             Authentication a = qia.authenticate(t);
             if (a != null) {
                 return a;
             }
         }
-        return getDefaultAuthenticationOf(t);
+        return t.getDefaultAuthentication();
     }
 
 }

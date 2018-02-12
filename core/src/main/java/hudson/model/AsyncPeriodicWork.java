@@ -1,5 +1,6 @@
 package hudson.model;
 
+import hudson.Functions;
 import hudson.security.ACL;
 import hudson.util.StreamTaskListener;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 
 /**
  * {@link PeriodicWork} that takes a long time to run.
@@ -29,7 +31,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.651
      */
-    private static final long LOG_ROTATE_MINUTES = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateMinutes",
+    private static final long LOG_ROTATE_MINUTES = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateMinutes",
             TimeUnit.DAYS.toMinutes(1));
     /**
      * The default file size after which to try and rotate the log file used by {@link #createListener()}.
@@ -40,7 +42,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.651
      */
-    private static final long LOG_ROTATE_SIZE = Long.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
@@ -71,8 +73,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected AsyncPeriodicWork(String name) {
         this.name = name;
         this.logRotateMillis = TimeUnit.MINUTES.toMillis(
-                Long.getLong(getClass().getName() + ".logRotateMinutes", LOG_ROTATE_MINUTES));
-        this.logRotateSize = Long.getLong(getClass().getName() + ".logRotateSize", LOG_ROTATE_SIZE);
+                SystemProperties.getLong(getClass().getName() + ".logRotateMinutes", LOG_ROTATE_MINUTES));
+        this.logRotateSize = SystemProperties.getLong(getClass().getName() + ".logRotateSize", LOG_ROTATE_SIZE);
     }
 
     /**
@@ -98,9 +100,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
                         execute(l);
                     } catch (IOException e) {
-                        e.printStackTrace(l.fatalError(e.getMessage()));
+                        Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                     } catch (InterruptedException e) {
-                        e.printStackTrace(l.fatalError("aborted"));
+                        Functions.printStackTrace(e, l.fatalError("aborted"));
                     } finally {
                         stopTime = System.currentTimeMillis();
                         try {

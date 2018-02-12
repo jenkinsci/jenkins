@@ -15,6 +15,7 @@
 package jenkins.security;
 
 import hudson.Extension;
+import jenkins.util.SystemProperties;
 import jenkins.ExtensionFilter;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -69,5 +70,5 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
      * Legacy property to disable the real password support.
      * Now that this is an extension, {@link ExtensionFilter} is a better way to control this.
      */
-    public static boolean DISABLE = Boolean.getBoolean("jenkins.security.ignoreBasicAuth");
+    public static boolean DISABLE = SystemProperties.getBoolean("jenkins.security.ignoreBasicAuth");
 }

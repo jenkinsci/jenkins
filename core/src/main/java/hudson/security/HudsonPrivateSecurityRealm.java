@@ -41,6 +41,7 @@ import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import jenkins.security.SecurityListener;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -52,6 +53,7 @@ import org.acegisecurity.providers.encoding.PasswordEncoder;
 import org.acegisecurity.providers.encoding.ShaPasswordEncoder;
 import org.acegisecurity.userdetails.UserDetails;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.HttpResponse;
@@ -59,6 +61,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
@@ -168,7 +171,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     @Override
     public Details loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
-        User u = User.get(username,false);
+        User u = User.getById(username, false);
         Details p = u!=null ? u.getProperty(Details.class) : null;
         if(p==null)
             throw new UsernameNotFoundException("Password is not set: "+username);
@@ -214,6 +217,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an account and associates that with the given identity. Used in conjunction
      * with {@link #commenceSignup}.
      */
+    @RequirePOST
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
         if (u!=null)
@@ -226,6 +230,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates an user account. Used for self-registration.
      */
+    @RequirePOST
     public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return _doCreateAccount(req, rsp, "signup.jelly");
     }
@@ -254,6 +259,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         a = this.getSecurityComponents().manager.authenticate(a);
         SecurityContextHolder.getContext().setAuthentication(a);
 
+        SecurityListener.fireLoggedIn(u.getId());
+
         // then back to top
         req.getView(this,"success.jelly").forward(req,rsp);
     }
@@ -264,6 +271,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
      * this is someone creating another user.
      */
+    @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
     }
@@ -275,7 +283,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         User u = createAccount(req, rsp, false, addUserView);
-        if(u != null) {
+        if (u != null && successView != null) {
             rsp.sendRedirect(successView);
         }
         return u;
@@ -287,6 +295,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * <p>
      * This can be run by anyone, but only to create the very first user account.
      */
+    @RequirePOST
     public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED,"First user was already created");
@@ -333,7 +342,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         if(si.username==null || si.username.length()==0)
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
         else {
-            User user = User.get(si.username, false);
+            // do not create the user - we just want to check if the user already exists but is not a "login" user.
+            User user = User.getById(si.username, false); 
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
@@ -393,7 +403,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates a new user account by registering a password to the user.
      */
     public User createAccount(String userName, String password) throws IOException {
-        User user = User.get(userName);
+        User user = User.getById(userName, true);
         user.addProperty(Details.fromPlainPassword(password));
         return user;
     }
@@ -436,7 +446,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This in turn helps us set up the right navigation breadcrumb.
      */
     public User getUser(String id) {
-        return User.get(id);
+        return User.getById(id, true);
     }
 
     // TODO
@@ -559,7 +569,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
         }
 
-        @Extension
+        @Extension @Symbol("password")
         public static final class DescriptorImpl extends UserPropertyDescriptor {
             @Override
             public String getDisplayName() {
@@ -568,6 +578,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             @Override
             public Details newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                if (req == null) {
+                    // Should never happen, see newInstance() Javadoc
+                    throw new FormException("Stapler request is missing in the call", "staplerRequest");
+                }
                 String pwd = Util.fixEmpty(req.getParameter("user.password"));
                 String pwd2= Util.fixEmpty(req.getParameter("user.password2"));
 
@@ -599,7 +613,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Displays "manage users" link in the system config if {@link HudsonPrivateSecurityRealm}
      * is in effect.
      */
-    @Extension
+    @Extension @Symbol("localUsers")
     public static final class ManageUserLinks extends ManagementLink {
         public String getIconFileName() {
             if(Jenkins.getInstance().getSecurityRealm() instanceof HudsonPrivateSecurityRealm)
@@ -710,7 +724,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final String JBCRYPT_HEADER = "#jbcrypt:";
     };
 
-    @Extension
+    @Extension @Symbol("local")
     public static final class DescriptorImpl extends Descriptor<SecurityRealm> {
         public String getDisplayName() {
             return Messages.HudsonPrivateSecurityRealm_DisplayName();

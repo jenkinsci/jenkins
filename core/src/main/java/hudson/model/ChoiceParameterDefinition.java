@@ -1,6 +1,7 @@
 package hudson.model;
 
 import hudson.util.FormValidation;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -91,7 +92,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         return checkValue(new StringParameterValue(getName(), value, getDescription()));
     }
 
-    @Extension
+    @Extension @Symbol({"choice","choiceParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
         @Override
         public String getDisplayName() {
@@ -104,7 +105,7 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
         }
 
         /**
-         * Checks if parameterised build choices are valid.
+         * Checks if parameterized build choices are valid.
          */
         public FormValidation doCheckChoices(@QueryParameter String value) {
             if (ChoiceParameterDefinition.areValidChoices(value)) {

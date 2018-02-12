@@ -23,20 +23,27 @@
  */
 package hudson;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import hudson.Launcher.DecoratedLauncher;
+import hudson.Launcher.ProcStarter;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
 import hudson.model.Run;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
-import java.io.IOException;
-import org.jvnet.hudson.test.Issue;
-import hudson.Launcher.DecoratedLauncher;
-import hudson.Launcher.ProcStarter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
+import hudson.tasks.Builder;
 
 /**
  * Contains tests for {@link ProcStarter} class.
@@ -52,7 +59,7 @@ public class ProcStarterTest {
     @Issue("JENKINS-20559")
     public void testNonInitializedEnvsNPE() throws Exception {
         // Create nodes and other test stuff
-        rule.hudson.setNumExecutors(0);
+        rule.jenkins.setNumExecutors(0);
         rule.createSlave();
 
         // Create a job with test build wrappers
@@ -62,6 +69,20 @@ public class ProcStarterTest {
 
         // Run the build. If NPE occurs, the test will fail
         rule.buildAndAssertSuccess(project);
+    }
+    
+    @Test
+    @Issue("JENKINS-36277")
+    public void testNonExistingPwd() throws Exception {
+        rule.jenkins.setNumExecutors(0);
+        rule.createSlave();
+
+        FreeStyleProject project = rule.createFreeStyleProject();
+        project.getBuildersList().add(new EchoBuilder());
+        FreeStyleBuild run = project.scheduleBuild2(0).get();
+        
+        rule.assertBuildStatus(Result.FAILURE, run);
+        rule.assertLogContains("java.io.IOException: Process working directory", run);
     }
 
     /**
@@ -82,7 +103,8 @@ public class ProcStarterTest {
 
         @Override
         public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-            Launcher.ProcStarter starter = launcher.launch().cmds("echo", "Hello");
+            String[] cmds = Functions.isWindows() ? new String[] { "cmd.exe", "/C", "echo", "Hello" } : new String[] { "echo", "Hello" };
+            Launcher.ProcStarter starter = launcher.launch().cmds(cmds);
             starter.start();
             starter.join();
             return new Environment() {
@@ -120,6 +142,27 @@ public class ProcStarterTest {
 
         @Extension
         public static class DescriptorImpl extends TestWrapperDescriptor {
+        }
+    };
+    
+    public static class EchoBuilder extends Builder {
+
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            String[] cmds = Functions.isWindows() ? new String[] { "cmd.exe", "/C", "echo", "Hello" } : new String[] { "echo", "Hello" };
+            String path = Functions.isWindows() ? "C:\\this\\path\\doesn't\\exist" : "/this/path/doesnt/exist";
+            Launcher.ProcStarter starter = launcher.launch().cmds(cmds).pwd(new File(path));
+            starter.start();
+            starter.join();
+            return true;
+        }
+
+        @Extension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+                return true;
+            }
         }
     };
 }

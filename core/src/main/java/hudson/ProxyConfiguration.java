@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.URL;
@@ -50,14 +51,18 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 import jenkins.util.JenkinsJVM;
+import jenkins.util.SystemProperties;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * HTTP proxy configuration.
@@ -78,7 +83,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * Holds a default TCP connect timeout set on all connections returned from this class,
      * note this is value is in milliseconds, it's passed directly to {@link URLConnection#setConnectTimeout(int)}
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = Integer.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
+    private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = SystemProperties.getInteger("hudson.ProxyConfiguration.DEFAULT_CONNECT_TIMEOUT_MILLIS", 20 * 1000);
     
     public final String name;
     public final int port;
@@ -201,7 +206,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     public Object readResolve() {
         if (secretPassword == null)
-            // backward compatibility : get crambled password and store it encrypted
+            // backward compatibility : get scrambled password and store it encrypted
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
         return this;
@@ -306,7 +311,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         XSTREAM.alias("proxy", ProxyConfiguration.class);
     }
 
-    @Extension
+    @Extension @Symbol("proxy")
     public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
         @Override
         public String getDisplayName() {
@@ -330,6 +335,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             return FormValidation.ok();
         }
 
+        @RequirePOST
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
                 @QueryParameter("userName") String userName, @QueryParameter("password") String password,
@@ -338,17 +344,24 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             if (Util.fixEmptyAndTrim(testUrl) == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
-            
+
+            String host = testUrl;
+            try {
+                URL url = new URL(testUrl);
+                host = url.getHost();
+            } catch (MalformedURLException e) {
+                return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
+            }
+
             GetMethod method = null;
             try {
                 method = new GetMethod(testUrl);
                 method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : new Integer(30 * 1000));
                 
                 HttpClient client = new HttpClient();
-                if (Util.fixEmptyAndTrim(name) != null) {
+                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
                     client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = 
-                            new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+                    Credentials credentials = createCredentials(userName, password);
                     AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
                     client.getState().setProxyCredentials(scope, credentials);
                 }
@@ -366,6 +379,27 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
             
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
+        }
+
+        private boolean isNoProxyHost(String host, String noProxyHost) {
+            if (host!=null && noProxyHost!=null) {
+                for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
+                    if (p.matcher(host).matches()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private Credentials createCredentials(String userName, String password) {
+            if (userName.indexOf('\\') >= 0){
+                final String domain = userName.substring(0, userName.indexOf('\\'));
+                final String user = userName.substring(userName.indexOf('\\') + 1);
+                return new NTCredentials(user, Secret.fromString(password).getPlainText(), "", domain);
+            } else {
+                return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
+            }
         }
     }
 }

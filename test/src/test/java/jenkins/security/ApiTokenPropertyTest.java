@@ -5,46 +5,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.DownloadedContent;
-import com.gargoylesoftware.htmlunit.HttpWebConnection;
-import com.gargoylesoftware.htmlunit.WebConnection;
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.WebResponseData;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
 import hudson.Util;
 import hudson.model.User;
 import hudson.security.ACL;
+import hudson.security.ACLContext;
+import hudson.util.Scrambler;
+import java.net.URL;
 import jenkins.model.Jenkins;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.Issue;
@@ -68,12 +44,9 @@ public class ApiTokenPropertyTest {
         final String token = t.getApiToken();
 
         // Make sure that user is able to get the token via the interface
-        ACL.impersonate(u.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("User is unable to get its own token", token, t.getApiToken());
-            }
-        });
+        try (ACLContext _ = ACL.as(u)) {
+            assertEquals("User is unable to get its own token", token, t.getApiToken());
+        }
 
         // test the authentication via Token
         WebClient wc = createClientForUser("foo");
@@ -142,7 +115,16 @@ public class ApiTokenPropertyTest {
         
         // Make sure that Admin can reset a token of another user
         WebClient wc = createClientForUser("bar");
-        HtmlPage res = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage requirePOST = wc.goTo(foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken");
+        assertEquals("method should not be allowed", 405, requirePOST.getWebResponse().getStatusCode());
+
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(true);
+        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl()+ "/changeToken"), HttpMethod.POST);
+        HtmlPage res = wc.getPage(request);
+
+        // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
+//        HtmlPage res = requirePOST.getPage().getForms().get(0).getElementsByAttribute("input", "type", "submit").get(0).click();
         assertEquals("Update token response is incorrect", 
                 Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
     }
@@ -155,96 +137,8 @@ public class ApiTokenPropertyTest {
         final String token = t.getApiTokenInsecure();
         
         WebClient wc = j.createWebClient();
-        wc.setCredentialsProvider(new CredentialsProvider() {
-            @Override
-            public void clear() {
-                // Do nothing
-            }
-
-            @Override
-            public Credentials getCredentials(AuthScope as) {
-                return new UsernamePasswordCredentials(username, token);    
-            }   
-
-            @Override
-            public void setCredentials(AuthScope as, Credentials c) {
-                // Ignore
-            }
-        });
-        
-        
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM),
-                                new UsernamePasswordCredentials(username, token));
-        wc.setCredentialsProvider(provider);
-        wc.login(username);
+        wc.addRequestHeader("Authorization", "Basic " + Scrambler.scramble(username + ":" + token));
         return wc;
     }
 
-    private void configureWebConnection(final WebClient wc, final String username, final String token) throws IOException {
-        // See https://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html
-        final UsernamePasswordCredentials fooCreds = new UsernamePasswordCredentials(username, token);
-
-        URL hostUrl = j.getURL();
-        final HttpHost targetHost = new HttpHost(hostUrl.getHost(), hostUrl.getPort(), hostUrl.getProtocol());
-        CredentialsProvider credsProvider = new BasicCredentialsProvider() {
-            @Override
-            public Credentials getCredentials(AuthScope authscope) {
-                return fooCreds;
-            }
-        };
-        credsProvider.setCredentials(
-                new AuthScope("localhost", AuthScope.ANY_PORT, AuthScope.ANY_REALM),
-                fooCreds);
-
-        // Create AuthCache instance
-        AuthCache authCache = new BasicAuthCache();
-        // Generate BASIC scheme object and add it to the local auth cache
-        AuthScheme authScheme = new BasicScheme();
-        authCache.put(targetHost, authScheme);
-
-        // Add AuthCache to the execution context
-        final HttpClientContext context = HttpClientContext.create();
-        context.setCredentialsProvider(credsProvider);
-        context.setAuthCache(authCache);
-
-        wc.setCredentialsProvider(credsProvider);
-
-        // Need to create our own WebConnection that gives us control of HttpClient execution,
-        // allowing us to pass our own HttpClientContext etc. HttpWebConnection has its own
-        // private HttpClientContext instance, which means we can't authenticate properly.
-        wc.setWebConnection(new WebConnection() {
-            @Override
-            public WebResponse getResponse(WebRequest request) throws IOException {
-                try {
-                    long startTime = System.currentTimeMillis();
-
-                    HttpClientBuilder builder = HttpClientBuilder.create();
-                    CloseableHttpClient httpClient = builder.build();
-                    URL url = UrlUtils.encodeUrl(request.getUrl(), false, request.getCharset());
-                    HttpGet method = new HttpGet(url.toURI());
-
-                    CloseableHttpResponse response = httpClient.execute(targetHost, method, context);
-
-                    HttpEntity httpEntity = response.getEntity();
-                    DownloadedContent responseBody = HttpWebConnection.downloadContent(httpEntity.getContent(), wc.getOptions().getMaxInMemory());
-
-                    String statusMessage = response.getStatusLine().getReasonPhrase();
-                    if (statusMessage == null) {
-                        statusMessage = "Unknown status message";
-                    }
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    List<NameValuePair> headers = new ArrayList<>();
-                    for (final Header header : response.getAllHeaders()) {
-                        headers.add(new NameValuePair(header.getName(), header.getValue()));
-                    }
-
-                    WebResponseData responseData = new WebResponseData(responseBody, statusCode, statusMessage, headers);
-                    return new WebResponse(responseData, request, (System.currentTimeMillis() - startTime));
-                } catch (Exception e) {
-                    throw new AssertionError("Failed to execute WebRequest.", e);
-                }
-            }
-        });
-    }
 }

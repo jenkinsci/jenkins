@@ -2,7 +2,7 @@
 <slave>
   <name>SlaveFromXML</name>
   <description>XML slave description</description>
-  <remoteFS>/user/hudson/wokspace</remoteFS>
+  <remoteFS>/user/hudson/workspace</remoteFS>
   <numExecutors>42</numExecutors>
   <mode>NORMAL</mode>
   <retentionStrategy class="hudson.slaves.RetentionStrategy$1">
@@ -10,9 +10,7 @@
       <outer-class reference="../.."/>
     </DESCRIPTOR>
   </retentionStrategy>
-  <launcher class="hudson.slaves.CommandLauncher">
-    <agentCommand>&quot;/opt/java6/jre/bin/java&quot;  -jar &quot;slave.jar&quot;</agentCommand>
-  </launcher>
+  <launcher class="hudson.slaves.JNLPLauncher"/>
   <label></label>
   <nodeProperties/>
   <userId>SYSTEM</userId>

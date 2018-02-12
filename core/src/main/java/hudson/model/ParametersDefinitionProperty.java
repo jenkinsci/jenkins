@@ -44,6 +44,7 @@ import jenkins.model.ParameterizedJobMixIn;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -69,12 +70,22 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
-    public ParametersDefinitionProperty(List<ParameterDefinition> parameterDefinitions) {
+    public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    public ParametersDefinitionProperty(ParameterDefinition... parameterDefinitions) {
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions);
+    public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
+        if (parameterDefinitions == null) {
+            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
+        }
+        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+    }
+
+    private Object readResolve() {
+        return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
     }
 
     @Deprecated
@@ -160,10 +171,10 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
-            if (url==null || Util.isAbsoluteUri(url))   // avoid open redirect
+            if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
                 url = req.getContextPath()+'/'+item.getUrl();
             rsp.sendRedirect(formData.optInt("statusCode",SC_CREATED), url);
         } else
@@ -188,7 +199,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
-                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
@@ -208,7 +219,17 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     }
 
     @Extension
+    @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
+        @Override
+        public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            if (prop != null && prop.parameterDefinitions.isEmpty()) {
+                return null;
+            }
+            return prop;
+        }
+
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);

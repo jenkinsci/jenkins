@@ -31,6 +31,7 @@ import hudson.model.Descriptor;
 import hudson.model.Queue;
 import hudson.scheduler.CronTabList;
 import hudson.util.FormValidation;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -242,7 +243,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
     }
 
-    @Extension
+    @Extension @Symbol("schedule")
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();

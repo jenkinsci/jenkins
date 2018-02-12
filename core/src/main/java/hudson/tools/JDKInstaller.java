@@ -32,13 +32,15 @@ import hudson.ProxyConfiguration;
 import hudson.Util;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
-import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.Secret;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
@@ -46,12 +48,14 @@ import net.sf.json.JsonConfig;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -61,7 +65,6 @@ import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -79,6 +82,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static hudson.tools.JDKInstaller.Preference.*;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Install JDKs from java.sun.com.
@@ -181,11 +185,9 @@ public class JDKInstaller extends ToolInstaller {
             // so check if the file is gzipped, and if so, treat it accordingly
             byte[] header = new byte[2];
             {
-                DataInputStream in = new DataInputStream(fs.read(jdkBundle));
-                try {
+                try (InputStream is = fs.read(jdkBundle);
+                     DataInputStream in = new DataInputStream(is)) {
                     in.readFully(header);
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
             }
 
@@ -272,11 +274,8 @@ public class JDKInstaller extends ToolInstaller {
             if (r != 0) {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
-                InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16");
-                try {
-                    IOUtils.copy(in,new OutputStreamWriter(out));
-                } finally {
-                    in.close();
+                try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
+                    IOUtils.copy(in, new OutputStreamWriter(out));
                 }
                 throw new AbortException();
             }
@@ -478,16 +477,45 @@ public class JDKInstaller extends ToolInstaller {
                     throw new IOException("Failed to request " + m.getURI() +" exit code="+r);
 
                 if (m.getURI().getHost().equals("login.oracle.com")) {
+                    /* Oracle switched from old to new, and then back to old. This code should work for either.
+                     * Old Login flow:
+                     * 1. /mysso/signon.jsp: Form for username + password: Submit actions is:
+                     * 2. /oam/server/sso/auth_cred_submit: Returns a 302 to:
+                     * 3. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
+                     * New Login flow:
+                     * 1. /oaam_server/oamLoginPage.jsp: Form for username + password. Submit action is:
+                     * 2. /oaam_server/login.do: Returns a 302 to:
+                     * 3. /oaam_server/loginAuth.do: After 2 seconds, JS sets window.location to:
+                     * 4. /oaam_server/authJump.do: Contains a single form with hidden inputs and JS that submits the form to:
+                     * 5. /oam/server/dap/cred_submit: Returns a 302 to:
+                     * 6. https://edelivery.oracle.com/osso_login_success: Returns a 302 to the download.
+                     */
+                    if (m.getURI().getPath().contains("/loginAuth.do")) {
+                        try {
+                            Thread.sleep(2000);
+                            m.releaseConnection();
+                            m = new GetMethod(new URI(m.getURI(), "/oaam_server/authJump.do?jump=false", true).toString());
+                            continue;
+                        } catch (InterruptedException x) {
+                            throw new IOException("Interrupted while logging in", x);
+                        }
+                    }
+
                     LOGGER.fine("Appears to be a login page");
                     String resp = IOUtils.toString(m.getResponseBodyAsStream(), m.getResponseCharSet());
                     m.releaseConnection();
-                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\" .*?</form>", Pattern.DOTALL).matcher(resp);
+                    Matcher pm = Pattern.compile("<form .*?action=\"([^\"]*)\".*?</form>", Pattern.DOTALL).matcher(resp);
                     if (!pm.find())
                         throw new IllegalStateException("Unable to find a form in the response:\n"+resp);
 
                     String form = pm.group();
                     PostMethod post = new PostMethod(
                             new URL(new URL(m.getURI().getURI()),pm.group(1)).toExternalForm());
+
+                    if (m.getURI().getPath().contains("/authJump.do")) {
+                        m = post;
+                        continue;
+                    }
 
                     String u = getDescriptor().getUsername();
                     Secret p = getDescriptor().getPassword();
@@ -500,9 +528,9 @@ public class JDKInstaller extends ToolInstaller {
                         String n = extractAttribute(fragment,"name");
                         String v = extractAttribute(fragment,"value");
                         if (n==null || v==null)     continue;
-                        if (n.equals("ssousername"))
+                        if (n.equals("userid") || n.equals("ssousername"))
                             v = u;
-                        if (n.equals("password")) {
+                        if (n.equals("pass") || n.equals("password")) {
                             v = p.getPlainText();
                             if (authCount++ > 3) {
                                 log.hyperlink(getCredentialPageUrl(),"Your Oracle account doesn't appear valid. Please specify a valid username/password\n");
@@ -520,11 +548,10 @@ public class JDKInstaller extends ToolInstaller {
                     File tmp = new File(cache.getPath()+".tmp");
                     try {
                         tmp.getParentFile().mkdirs();
-                        FileOutputStream out = new FileOutputStream(tmp);
-                        try {
+                        try (OutputStream out = Files.newOutputStream(tmp.toPath())) {
                             IOUtils.copy(m.getResponseBodyAsStream(), out);
-                        } finally {
-                            out.close();
+                        } catch (InvalidPathException e) {
+                            throw new IOException(e);
                         }
 
                         tmp.renameTo(cache);
@@ -700,7 +727,7 @@ public class JDKInstaller extends ToolInstaller {
 
     public static final class JDKRelease {
         /**
-         * the list of {@Link JDKFile}s
+         * the list of {@link JDKFile}s
          */
         public JDKFile[] files;
         /**
@@ -740,7 +767,7 @@ public class JDKInstaller extends ToolInstaller {
         return (DescriptorImpl)super.getDescriptor();
     }
 
-    @Extension
+    @Extension @Symbol("jdkInstaller")
     public static final class DescriptorImpl extends ToolInstallerDescriptor<JDKInstaller> {
         private String username;
         private Secret password;
@@ -793,7 +820,9 @@ public class JDKInstaller extends ToolInstaller {
         /**
          * Submits the Oracle account username/password.
          */
+        @RequirePOST
         public HttpResponse doPostCredential(@QueryParameter String username, @QueryParameter String password) throws IOException, ServletException {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             this.username = username;
             this.password = Secret.fromString(password);
             save();
@@ -804,7 +833,7 @@ public class JDKInstaller extends ToolInstaller {
     /**
      * JDK list.
      */
-    @Extension
+    @Extension @Symbol("jdk")
     public static final class JDKList extends Downloadable {
         public JDKList() {
             super(JDKInstaller.class);
@@ -817,7 +846,7 @@ public class JDKInstaller extends ToolInstaller {
         }
 
         /**
-         * @{inheritDoc}
+         * {@inheritDoc}
          */
         @Override
         public JSONObject reduce (List<JSONObject> jsonObjectList) {

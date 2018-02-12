@@ -40,6 +40,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import java.util.List;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -238,5 +240,17 @@ public class RunTest  {
                 envs.put(key, value);
             }
         }
+    }
+
+    @Issue("JENKINS-40281")
+    @Test public void getBadgeActions() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
+        assertEquals(0, b.getBadgeActions().size());
+        assertTrue(b.canToggleLogKeep());
+        b.keepLog();
+        List<BuildBadgeAction> badgeActions = b.getBadgeActions();
+        assertEquals(1, badgeActions.size());
+        assertEquals(Run.KeepLogBuildBadge.class, badgeActions.get(0).getClass());
     }
 }

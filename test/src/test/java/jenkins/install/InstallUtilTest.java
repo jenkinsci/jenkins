@@ -23,7 +23,6 @@
  */
 package jenkins.install;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mockito;
 
@@ -82,8 +80,14 @@ public class InstallUtilTest {
      */
     @Test
     public void test_typeTransitions() {
-        // A new test instance
-        Assert.assertEquals(InstallState.NEW, InstallUtil.getInstallState());
+        InstallUtil.getLastExecVersionFile().delete();
+        InstallUtil.getConfigFile().delete();
+        
+        // A new test instance sets up security first
+        Assert.assertEquals(InstallState.INITIAL_SECURITY_SETUP, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
+
+        // And proceeds to the new state
+        Assert.assertEquals(InstallState.NEW, InstallUtil.getNextInstallState(InstallState.INITIAL_SECURITY_SETUP));
 
         // Save the last exec version. This will only be done by Jenkins after one of:
         //   1. A successful run of the install wizard.
@@ -96,15 +100,15 @@ public class InstallUtilTest {
         // Now if we ask what is the InstallState, we should be told it's a RESTART because
         // the install wizard is complete and the version matches the currently executing
         // Jenkins version.
-        Assert.assertEquals(InstallState.RESTART, InstallUtil.getInstallState());
+        Assert.assertEquals(InstallState.RESTART, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
         // Fudge things again, changing the stored version to something old, faking an upgrade...
         InstallUtil.saveLastExecVersion("1.584");
-        Assert.assertEquals(InstallState.UPGRADE, InstallUtil.getInstallState());
+        Assert.assertEquals(InstallState.UPGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
         // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
         InstallUtil.saveLastExecVersion("1000.0");
-        Assert.assertEquals(InstallState.DOWNGRADE, InstallUtil.getInstallState());
+        Assert.assertEquals(InstallState.DOWNGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
     }
 
 
@@ -113,6 +117,8 @@ public class InstallUtilTest {
      */
     @Test
     public void test_getLastExecVersion() throws Exception {
+        Main.isUnitTest = true;
+
         // Delete the config file, forcing getLastExecVersion to return
         // the default/unset version value.
         InstallUtil.getConfigFile().delete();
@@ -125,12 +131,10 @@ public class InstallUtilTest {
     }
 
     private void setStoredVersion(String version) throws Exception {
-        Field versionField = Jenkins.class.getDeclaredField("version");
-        versionField.setAccessible(true);
-        versionField.set(jenkinsRule.jenkins, version);
-        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
+        Jenkins.VERSION = version;
         // Force a save of the config.xml
         jenkinsRule.jenkins.save();
+        Assert.assertEquals(version, Jenkins.getStoredVersion().toString());
     }
 
     /**

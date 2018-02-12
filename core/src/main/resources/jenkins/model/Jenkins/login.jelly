@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:choose>
-  <j:when test="${it.setupWizard != null and it.setupWizard.useGeneratedPassword()}">
+  <j:when test="${it.setupWizard.isUsingSecurityToken()}">
     <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
   </j:when>
   <j:otherwise>
