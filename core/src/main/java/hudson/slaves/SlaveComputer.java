@@ -88,6 +88,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
 /**
@@ -520,7 +521,7 @@ public class SlaveComputer extends Computer {
 
         channel.setProperty(SlaveComputer.class, this);
 
-        channel.addListener(new Channel.Listener() {
+        channel.addListener(new LoggingChannelListener(logger, Level.FINEST) {
             @Override
             public void onClosed(Channel c, IOException cause) {
                 // Orderly shutdown will have null exception

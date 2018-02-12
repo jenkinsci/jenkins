@@ -144,7 +144,7 @@ public class Main {
             int ret;
             try (OutputStream os = Files.newOutputStream(tmpFile.toPath());
                  Writer w = new OutputStreamWriter(os,"UTF-8")) {
-                w.write("<?xml version='1.0' encoding='UTF-8'?>");
+                w.write("<?xml version='1.1' encoding='UTF-8'?>");
                 w.write("<run><log encoding='hexBinary' content-encoding='"+Charset.defaultCharset().name()+"'>");
                 w.flush();
 

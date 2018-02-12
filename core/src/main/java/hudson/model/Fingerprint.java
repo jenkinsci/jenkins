@@ -1256,7 +1256,7 @@ public class Fingerprint implements ModelObject, Saveable {
             AtomicFileWriter afw = new AtomicFileWriter(file);
             try {
                 PrintWriter w = new PrintWriter(afw);
-                w.println("<?xml version='1.0' encoding='UTF-8'?>");
+                w.println("<?xml version='1.1' encoding='UTF-8'?>");
                 w.println("<fingerprint>");
                 w.print("  <timestamp>");
                 w.print(DATE_CONVERTER.toString(timestamp));

@@ -977,14 +977,10 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     }
 
     public ACL getACL() {
-        final ACL base = Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
+        ACL base = Jenkins.getInstance().getAuthorizationStrategy().getACL(this);
         // always allow a non-anonymous user full control of himself.
-        return new ACL() {
-            public boolean hasPermission(Authentication a, Permission permission) {
-                return (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
-                        || base.hasPermission(a, permission);
-            }
-        };
+        return ACL.lambda((a, permission) -> (idStrategy().equals(a.getName(), id) && !(a instanceof AnonymousAuthenticationToken))
+                        || base.hasPermission(a, permission));
     }
 
     /**
