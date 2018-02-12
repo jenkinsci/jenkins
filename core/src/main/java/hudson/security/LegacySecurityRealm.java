@@ -29,13 +29,12 @@ import org.acegisecurity.AuthenticationException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.web.context.WebApplicationContext;
-import org.kohsuke.stapler.StaplerRequest;
 import groovy.lang.Binding;
 import hudson.model.Descriptor;
 import hudson.util.spring.BeanBuilder;
 import hudson.Extension;
-import net.sf.json.JSONObject;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -48,6 +47,10 @@ import javax.servlet.FilterConfig;
  * @author Kohsuke Kawaguchi
  */
 public final class LegacySecurityRealm extends SecurityRealm implements AuthenticationManager {
+    @DataBoundConstructor
+    public LegacySecurityRealm() {
+    }
+
     public SecurityComponents createSecurityComponents() {
         return new SecurityComponents(this);
     }
@@ -102,10 +105,6 @@ public final class LegacySecurityRealm extends SecurityRealm implements Authenti
     public static class DescriptorImpl extends  Descriptor<SecurityRealm> {
         public DescriptorImpl() {
             DESCRIPTOR = this;
-        }
-
-        public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new LegacySecurityRealm();
         }
 
         public String getDisplayName() {

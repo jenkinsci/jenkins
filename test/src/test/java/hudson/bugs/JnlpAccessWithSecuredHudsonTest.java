@@ -139,7 +139,7 @@ public class JnlpAccessWithSecuredHudsonTest {
             assertTrue(f.exists());
             try {
                 fail("SECURITY-206: " + channel.call(new Attack(f.getAbsolutePath())));
-            } catch (SecurityException x) {
+            } catch (Exception x) {
                 assertThat(Functions.printThrowable(x), containsString("https://jenkins.io/redirect/security-144"));
             }
         } finally {

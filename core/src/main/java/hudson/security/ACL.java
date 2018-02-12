@@ -34,6 +34,7 @@ import hudson.model.Item;
 import hudson.remoting.Callable;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItemDescriptor;
+import java.util.function.BiFunction;
 import jenkins.security.NonSerializableSecurityContext;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -94,6 +95,21 @@ public abstract class ACL {
      * in which case you should probably just assume it has every permission.
      */
     public abstract boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission);
+
+    /**
+     * Creates a simple {@link ACL} implementation based on a “single-abstract-method” easily implemented via lambda syntax.
+     * @param impl the implementation of {@link ACL#hasPermission(Authentication, Permission)}
+     * @return an adapter to that lambda
+     * @since FIXME
+     */
+    public static ACL lambda(final BiFunction<Authentication, Permission, Boolean> impl) {
+        return new ACL() {
+            @Override
+            public boolean hasPermission(Authentication a, Permission permission) {
+                return impl.apply(a, permission);
+            }
+        };
+    }
 
     /**
      * Checks if the current security principal has the permission to create top level items within the specified

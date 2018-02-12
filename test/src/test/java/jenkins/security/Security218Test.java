@@ -75,7 +75,7 @@ public class Security218Test implements Serializable {
         try {
             Object o = s.getComputer().getChannel().call(new EvilReturnValue());
             fail("Expected the connection to die: " + o);
-        } catch (SecurityException e) {
+        } catch (Exception e) {
             assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
         }
     }
