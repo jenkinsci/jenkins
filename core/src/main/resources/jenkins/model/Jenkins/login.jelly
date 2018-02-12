@@ -44,7 +44,7 @@ THE SOFTWARE.
             </tr>
             <tr>
               <td>${%Password}:</td>
-              <td><input type="password" name="j_password" /></td>
+              <td><input type="password" name="j_password" autocomplete="off"/></td>
             </tr>
             <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
               <!-- remember me service only available for Acegi -->
