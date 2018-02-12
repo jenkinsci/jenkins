@@ -23,7 +23,6 @@
  */
 package hudson.node_monitors;
 
-import hudson.Util;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -49,6 +48,9 @@ public class ResponseTimeMonitor extends NodeMonitor {
     public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
         @Override
         protected Callable<Data,IOException> createCallable(Computer c) {
+            if (c.getChannel() == null) {
+                return null;
+            }
             return new Step1(get(c));
         }
 

@@ -28,8 +28,8 @@ def f = namespace(lib.FormTagLib)
 
 def listWarnings(warnings) {
     warnings.each { warning ->
-        li {
-            a(warning.message, href: warning.url)
+        dd {
+            a(warning.message, href: warning.url, target: "_blank")
         }
     }
 }
@@ -37,41 +37,37 @@ def listWarnings(warnings) {
 def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
-div(class: "error") {
-    text(_("blurb"))
-    ul {
-        if (!coreWarnings.isEmpty()) {
-            li {
-                text(_("coreTitle", jenkins.model.Jenkins.version))
-                ul {
-                    listWarnings(coreWarnings)
-                }
-            }
-        }
+div(class: "alert alert-danger", role: "alert") {
 
+    form(method: "post", action: "${rootURL}/${my.url}/forward") {
         if (!pluginWarnings.isEmpty()) {
-            li {
-                pluginWarnings.each { plugin, warnings ->
-                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url)
+            f.submit(name: 'fix', value: _("pluginManager.link"))
+        }
+        f.submit(name: 'configure', value: _("configureSecurity.link"))
+    }
 
-                    ul {
-                        listWarnings(warnings)
-                    }
+    text(_("blurb"))
+
+    if (!coreWarnings.isEmpty()) {
+        dl {
+            dt {
+                text(_("coreTitle", jenkins.model.Jenkins.version))
+            }
+            listWarnings(coreWarnings)
+        }
+    }
+    if (!pluginWarnings.isEmpty()) {
+        dl {
+            pluginWarnings.each { plugin, warnings ->
+                dt {
+                    a(_("pluginTitle", plugin.displayName, plugin.version), href: plugin.url, target: "_blank")
                 }
+                listWarnings(warnings)
             }
         }
     }
 
     if (my.hasApplicableHiddenWarnings()) {
         text(_("more"))
-    }
-}
-
-form(method: "post", action: "${rootURL}/${it.url}/forward") {
-    div {
-        if (!pluginWarnings.isEmpty()) {
-            f.submit(name: 'fix', value: _("pluginManager.link"))
-        }
-        f.submit(name: 'configure', value: _("configureSecurity.link"))
     }
 }

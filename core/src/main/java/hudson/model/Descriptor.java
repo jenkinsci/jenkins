@@ -78,6 +78,7 @@ import java.beans.Introspector;
 import java.util.IdentityHashMap;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Metadata about a configurable instance.
@@ -563,7 +564,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      Signals a problem in the submitted form.
      * @since 1.145
      */
-    public T newInstance(@CheckForNull StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
+    public T newInstance(@Nullable StaplerRequest req, @Nonnull JSONObject formData) throws FormException {
         try {
             Method m = getClass().getMethod("newInstance", StaplerRequest.class);
 
@@ -937,12 +938,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             if(url!=null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
-                InputStream in = url.openStream();
-                try {
+                try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in,"UTF-8");
                     rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL",req.getContextPath())));
-                } finally {
-                    IOUtils.closeQuietly(in);
                 }
                 return;
             }
@@ -986,13 +984,20 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     Map<Descriptor<T>,T> toMap(Iterable<T> describables) {
         Map<Descriptor<T>,T> m = new LinkedHashMap<Descriptor<T>,T>();
         for (T d : describables) {
-            m.put(d.getDescriptor(),d);
+            Descriptor<T> descriptor;
+            try {
+                descriptor = d.getDescriptor();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                continue;
+            }
+            m.put(descriptor, d);
         }
         return m;
     }
 
     /**
-     * Used to build {@link Describable} instance list from &lt;f:hetero-list> tag.
+     * Used to build {@link Describable} instance list from {@code <f:hetero-list>} tag.
      *
      * @param req
      *      Request that represents the form submission.

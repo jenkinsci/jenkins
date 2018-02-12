@@ -38,15 +38,16 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChannelClosedException;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
-import hudson.util.IOUtils;
 import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
+import hudson.util.VersionNumber;
 import hudson.util.io.RewindableFileOutputStream;
 import hudson.util.io.RewindableRotatingFileOutputStream;
 import jenkins.model.Jenkins;
@@ -54,6 +55,7 @@ import jenkins.security.ChannelConfigurator;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.EncryptedSlaveAgentJnlpFile;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.context.SecurityContext;
@@ -86,6 +88,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static hudson.slaves.SlaveComputer.LogHolder.SLAVE_LOG_HANDLER;
+import org.jenkinsci.remoting.util.LoggingChannelListener;
 
 
 /**
@@ -234,8 +237,31 @@ public class SlaveComputer extends Computer {
         return launcher.isLaunchSupported();
     }
 
+    /**
+     * Return the {@code ComputerLauncher} for this SlaveComputer.
+     * @since 1.312
+     */
     public ComputerLauncher getLauncher() {
         return launcher;
+    }
+
+    /**
+     * Return the {@code ComputerLauncher} for this SlaveComputer, strips off
+     * any {@code DelegatingComputerLauncher}s or {@code ComputerLauncherFilter}s.
+     * @since 2.83
+     */
+    public ComputerLauncher getDelegatedLauncher() {
+        ComputerLauncher l = launcher;
+        while (true) {
+            if (l instanceof DelegatingComputerLauncher) {
+                l = ((DelegatingComputerLauncher) l).getLauncher();
+            } else if (l instanceof ComputerLauncherFilter) {
+                l = ((ComputerLauncherFilter) l).getCore();
+            } else {
+                break;
+            }
+        }
+        return l;
     }
 
     protected Future<?> _connect(boolean forceReconnect) {
@@ -362,7 +388,7 @@ public class SlaveComputer extends Computer {
      * Creates a {@link Channel} from the given stream and sets that to this agent.
      *
      * @param in
-     *      Stream connected to the remote "slave.jar". It's the caller's responsibility to do
+     *      Stream connected to the remote agent. It's the caller's responsibility to do
      *      buffering on this stream, if that's necessary.
      * @param out
      *      Stream connected to the remote peer. It's the caller's responsibility to do
@@ -454,6 +480,9 @@ public class SlaveComputer extends Computer {
         }
         @Override public Integer call() {
             Channel c = Channel.current();
+            if (c == null) {
+                return -1;
+            }
             return resource ? c.resourceLoadingCount.get() : c.classLoadingCount.get();
         }
     }
@@ -471,6 +500,9 @@ public class SlaveComputer extends Computer {
         }
         @Override public Long call() {
             Channel c = Channel.current();
+            if (c == null) {
+                return Long.valueOf(-1);
+            }
             return resource ? c.resourceLoadingTime.get() : c.classLoadingTime.get();
         }
     }
@@ -489,7 +521,7 @@ public class SlaveComputer extends Computer {
 
         channel.setProperty(SlaveComputer.class, this);
 
-        channel.addListener(new Channel.Listener() {
+        channel.addListener(new LoggingChannelListener(logger, Level.FINEST) {
             @Override
             public void onClosed(Channel c, IOException cause) {
                 // Orderly shutdown will have null exception
@@ -515,7 +547,13 @@ public class SlaveComputer extends Computer {
             channel.addListener(listener);
 
         String slaveVersion = channel.call(new SlaveVersion());
-        log.println("Slave.jar version: " + slaveVersion);
+        log.println("Remoting version: " + slaveVersion);
+        VersionNumber agentVersion = new VersionNumber(slaveVersion);
+        if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
+            log.println(String.format("WARNING: Remoting version is older than a minimum required one (%s). " +
+                    "Connection will not be rejected, but the compatibility is NOT guaranteed",
+                    RemotingVersionInfo.getMinimumSupportedVersion()));
+        }
 
         boolean _isUnix = channel.call(new DetectOS());
         log.println(_isUnix? hudson.model.Messages.Slave_UnixSlave():hudson.model.Messages.Slave_WindowsSlave());
@@ -673,7 +711,11 @@ public class SlaveComputer extends Computer {
     protected void kill() {
         super.kill();
         closeChannel();
-        IOUtils.closeQuietly(log);
+        try {
+            log.close();
+        } catch (IOException x) {
+            LOGGER.log(Level.WARNING, "Failed to close agent log", x);
+        }
 
         try {
             Util.deleteRecursive(getLogDir());
@@ -834,7 +876,11 @@ public class SlaveComputer extends Computer {
                 // ignore this error.
             }
 
-            Channel.current().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            try {
+                getChannelOrFail().setProperty("slave",Boolean.TRUE); // indicate that this side of the channel is the slave side.
+            } catch (ChannelClosedException e) {
+                throw new IllegalStateException(e);
+            }
 
             return null;
         }

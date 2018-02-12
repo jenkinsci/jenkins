@@ -23,6 +23,8 @@
  */
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
 import hudson.FilePath;
 import jenkins.MasterToSlaveFileCallable;
 import hudson.Launcher;
@@ -139,6 +141,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     // Backwards compatibility for older builds
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", 
+            justification = "Null checks in readResolve are valid since we deserialize and upgrade objects")
     public Object readResolve() {
         if (allowEmptyArchive == null) {
             this.allowEmptyArchive = SystemProperties.getBoolean(ArtifactArchiver.class.getName()+".warnOnEmpty");
@@ -219,14 +223,15 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException {
+    public void perform(Run<?,?> build, FilePath ws, Launcher launcher, TaskListener listener) throws InterruptedException, AbortException {
         if(artifacts.length()==0) {
             listener.error(Messages.ArtifactArchiver_NoIncludes());
             build.setResult(Result.FAILURE);
             return;
         }
 
-        if (onlyIfSuccessful && build.getResult() != null && build.getResult().isWorseThan(Result.UNSTABLE)) {
+        Result result = build.getResult();
+        if (onlyIfSuccessful && result != null && result.isWorseThan(Result.UNSTABLE)) {
             listener.getLogger().println(Messages.ArtifactArchiver_SkipBecauseOnlyIfSuccessful());
             return;
         }
@@ -242,8 +247,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                     new Fingerprinter(artifacts).perform(build, ws, launcher, listener);
                 }
             } else {
-                Result result = build.getResult();
-                if (result != null && result.isBetterOrEqualTo(Result.UNSTABLE)) {
+                result = build.getResult();
+                if (result == null || result.isBetterOrEqualTo(Result.UNSTABLE)) {
                     // If the build failed, don't complain that there was no matching artifact.
                     // The build probably didn't even get to the point where it produces artifacts. 
                     listenerWarnOrError(listener, Messages.ArtifactArchiver_NoMatchFound(artifacts));
@@ -259,13 +264,14 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                 if (!allowEmptyArchive) {
                 	build.setResult(Result.FAILURE);
                 }
-                return;
             }
+        } catch (java.nio.file.AccessDeniedException e) {
+            LOG.log(Level.FINE, "Diagnosing anticipated Exception", e);
+            throw new AbortException(e.toString()); // Message is not enough as that is the filename only
         } catch (IOException e) {
             Util.displayIOException(e,listener);
             Functions.printStackTrace(e, listener.error(Messages.ArtifactArchiver_FailedToArchive(artifacts)));
             build.setResult(Result.FAILURE);
-            return;
         }
     }
 

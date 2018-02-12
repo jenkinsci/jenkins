@@ -31,8 +31,11 @@ import hudson.Util;
 import hudson.Functions;
 import hudson.BulkChange;
 import hudson.cli.declarative.CLIResolver;
+import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.queue.Tasks;
+import hudson.model.queue.WorkUnit;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
@@ -41,8 +44,13 @@ import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.xml.XMLUtils;
 
@@ -79,6 +87,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import static hudson.model.queue.Executables.getParentOf;
+import hudson.model.queue.SubTask;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
@@ -116,10 +126,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         doSetName(name);
     }
 
-    public void onCreatedFromScratch() {
-        // noop
-    }
-
     @Exported(visibility=999)
     public String getName() {
         return name;
@@ -136,7 +142,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     /**
      * Gets the term used in the UI to represent the kind of {@link Queue.Task} associated with this kind of
      * {@link Item}. Must start with a capital letter. Defaults to "Build".
-     * @since2.50 
+     * @since 2.50
      */
     public String getTaskNoun() {
         return AlternativeUiTextProvider.get(TASK_NOUN, this, Messages.AbstractItem_TaskNoun());
@@ -315,11 +321,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         doSetName(oldName);
                 }
 
-                try {
-                    parent.onRenamed(this, oldName, newName);
-                } catch (AbstractMethodError _) {
-                    // ignore
-                }
+                parent.onRenamed(this, oldName, newName);
             }
         }
         ItemListener.fireLocationChange(this, oldFullName);
@@ -380,21 +382,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * @param p
-     *  The ItemGroup instance used as context to evaluate the relative name of this AbstractItem
-     * @return
-     *  The name of the current item, relative to p.
-     *  Nested ItemGroups are separated by / character.
-     */
-    public String getRelativeNameFrom(ItemGroup p) {
-        return Functions.getRelativeNameFrom(this, p);
-    }
-
-    public String getRelativeNameFrom(Item item) {
-        return getRelativeNameFrom(item.getParent());
-    }
-
-    /**
      * Called right after when a {@link Item} is loaded from disk.
      * This is an opportunity to do a post load processing.
      */
@@ -435,7 +422,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 Ancestor last = ancestors.get(ancestors.size() - 1);
                 if (last.getObject() instanceof View) {
                     View view = (View) last.getObject();
-                    if (view.getOwnerItemGroup() == getParent() && !view.isDefault()) {
+                    if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
                         String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
                         LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
@@ -468,12 +455,10 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return getShortUrl();
     }
 
+    @Override
     @Exported(visibility=999,name="url")
     public final String getAbsoluteUrl() {
-        String r = Jenkins.getInstance().getRootUrl();
-        if(r==null)
-            throw new IllegalStateException("Root URL isn't configured yet. Cannot compute absolute URL.");
-        return Util.encode(r+getUrl());
+        return Item.super.getAbsoluteUrl();
     }
 
     /**
@@ -491,20 +476,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Short for {@code getACL().checkPermission(p)}
-     */
-    public void checkPermission(Permission p) {
-        getACL().checkPermission(p);
-    }
-
-    /**
-     * Short for {@code getACL().hasPermission(p)}
-     */
-    public boolean hasPermission(Permission p) {
-        return getACL().hasPermission(p);
-    }
-
-    /**
      * Save the settings to a file.
      */
     public synchronized void save() throws IOException {
@@ -517,13 +488,28 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         return Items.getConfigFile(this);
     }
 
-    public Descriptor getDescriptorByName(String className) {
-        return Jenkins.getInstance().getDescriptorByName(className);
+    private Object writeReplace() {
+        return XmlFile.replaceIfNotAtTopLevel(this, () -> new Replacer(this));
+    }
+    private static class Replacer {
+        private final String fullName;
+        Replacer(AbstractItem i) {
+            fullName = i.getFullName();
+        }
+        private Object readResolve() {
+            Jenkins j = Jenkins.getInstanceOrNull();
+            if (j == null) {
+                return null;
+            }
+            // Will generally only work if called after job loading:
+            return j.getItemByFullName(fullName);
+        }
     }
 
     /**
      * Accepts the new description.
      */
+    @RequirePOST
     public synchronized void doSubmitDescription( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         checkPermission(CONFIGURE);
 
@@ -577,9 +563,105 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     public void delete() throws IOException, InterruptedException {
         checkPermission(DELETE);
-        synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
-            performDelete();
-        } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        boolean responsibleForAbortingBuilds = !ItemDeletion.contains(this);
+        boolean ownsRegistration = ItemDeletion.register(this);
+        if (!ownsRegistration && ItemDeletion.isRegistered(this)) {
+            // we are not the owning thread and somebody else is concurrently deleting this exact item
+            throw new Failure(Messages.AbstractItem_BeingDeleted(getPronoun()));
+        }
+        try {
+            // if a build is in progress. Cancel it.
+            if (responsibleForAbortingBuilds || ownsRegistration) {
+                Queue queue = Queue.getInstance();
+                if (this instanceof Queue.Task) {
+                    // clear any items in the queue so they do not get picked up
+                    queue.cancel((Queue.Task) this);
+                }
+                // now cancel any child items - this happens after ItemDeletion registration, so we can use a snapshot
+                for (Queue.Item i : queue.getItems()) {
+                    Item item = Tasks.getItemOf(i.task);
+                    while (item != null) {
+                        if (item == this) {
+                            queue.cancel(i);
+                            break;
+                        }
+                        if (item.getParent() instanceof Item) {
+                            item = (Item) item.getParent();
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                // interrupt any builds in progress (and this should be a recursive test so that folders do not pay
+                // the 15 second delay for every child item). This happens after queue cancellation, so will be
+                // a complete set of builds in flight
+                Map<Executor, Queue.Executable> buildsInProgress = new LinkedHashMap<>();
+                for (Computer c : Jenkins.getInstance().getComputers()) {
+                    for (Executor e : c.getAllExecutors()) {
+                        final WorkUnit workUnit = e.getCurrentWorkUnit();
+                        final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                        final SubTask subtask = executable != null ? getParentOf(executable) : null;
+                                
+                        if (subtask != null) {        
+                            Item item = Tasks.getItemOf(subtask);
+                            if (item != null) {
+                                while (item != null) {
+                                    if (item == this) {
+                                        buildsInProgress.put(e, e.getCurrentExecutable());
+                                        e.interrupt(Result.ABORTED);
+                                        break;
+                                    }
+                                    if (item.getParent() instanceof Item) {
+                                        item = (Item) item.getParent();
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!buildsInProgress.isEmpty()) {
+                    // give them 15 seconds or so to respond to the interrupt
+                    long expiration = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+                    // comparison with executor.getCurrentExecutable() == computation currently should always be true
+                    // as we no longer recycle Executors, but safer to future-proof in case we ever revisit recycling
+                    while (!buildsInProgress.isEmpty() && expiration - System.nanoTime() > 0L) {
+                        // we know that ItemDeletion will prevent any new builds in the queue
+                        // ItemDeletion happens-before Queue.cancel so we know that the Queue will stay clear
+                        // Queue.cancel happens-before collecting the buildsInProgress list
+                        // thus buildsInProgress contains the complete set we need to interrupt and wait for
+                        for (Iterator<Map.Entry<Executor, Queue.Executable>> iterator =
+                             buildsInProgress.entrySet().iterator();
+                             iterator.hasNext(); ) {
+                            Map.Entry<Executor, Queue.Executable> entry = iterator.next();
+                            // comparison with executor.getCurrentExecutable() == executable currently should always be
+                            // true as we no longer recycle Executors, but safer to future-proof in case we ever
+                            // revisit recycling.
+                            if (!entry.getKey().isAlive()
+                                    || entry.getValue() != entry.getKey().getCurrentExecutable()) {
+                                iterator.remove();
+                            }
+                            // I don't know why, but we have to keep interrupting
+                            entry.getKey().interrupt(Result.ABORTED);
+                        }
+                        Thread.sleep(50L);
+                    }
+                    if (!buildsInProgress.isEmpty()) {
+                        throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
+                                buildsInProgress.size(), getFullDisplayName()
+                        ));
+                    }
+                }
+            }
+            synchronized (this) { // could just make performDelete synchronized but overriders might not honor that
+                performDelete();
+            } // JENKINS-19446: leave synch block, but JENKINS-22001: still notify synchronously
+        } finally {
+            if (ownsRegistration) {
+                ItemDeletion.deregister(this);
+            }
+        }
         getParent().onDeleted(AbstractItem.this);
         Jenkins.getInstance().rebuildDependencyGraphAsync();
     }
@@ -670,7 +752,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(this);
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
             if (o!=this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
@@ -742,11 +824,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @CLIResolver
     public static AbstractItem resolveForCLI(
-            @Argument(required=true,metaVar="NAME",usage="Job name") String name) throws CmdLineException {
+            @Argument(required=true,metaVar="NAME",usage="Item name") String name) throws CmdLineException {
         // TODO can this (and its pseudo-override in AbstractProject) share code with GenericItemOptionHandler, used for explicit CLICommand’s rather than CLIMethod’s?
         AbstractItem item = Jenkins.getInstance().getItemByFullName(name, AbstractItem.class);
         if (item==null) {
-            AbstractProject project = AbstractProject.findNearest(name);
+            AbstractItem project = Items.findNearest(AbstractItem.class, name, Jenkins.getInstance());
             throw new CmdLineException(null, project == null ? Messages.AbstractItem_NoSuchJobExistsWithoutSuggestion(name)
                     : Messages.AbstractItem_NoSuchJobExists(name, project.getFullName()));
         }

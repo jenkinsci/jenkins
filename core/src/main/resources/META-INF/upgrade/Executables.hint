@@ -1,0 +1,1 @@
+hudson.model.queue.Executables.getEstimatedDurationFor($e) => $e == null ? -1 : $e.getEstimatedDuration();;

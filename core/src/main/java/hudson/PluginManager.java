@@ -120,7 +120,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -144,12 +143,14 @@ import hudson.util.FormValidation;
 import java.io.ByteArrayInputStream;
 import java.net.JarURLConnection;
 import java.net.URLConnection;
+import java.util.ServiceLoader;
 import java.util.jar.JarEntry;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.CustomClassFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -254,7 +255,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * All discovered plugins.
      */
-    protected final List<PluginWrapper> plugins = new ArrayList<PluginWrapper>();
+    protected final List<PluginWrapper> plugins = new CopyOnWriteArrayList<>();
 
     /**
      * All active plugins, topologically sorted so that when X depends on Y, Y appears in the list before X does.
@@ -463,10 +464,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                         cgd.run(getPlugins());
 
                                         // obtain topologically sorted list and overwrite the list
-                                        ListIterator<PluginWrapper> litr = getPlugins().listIterator();
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            litr.next();
-                                            litr.set(p);
                                             if(p.isActive())
                                                 activePlugins.add(p);
                                         }
@@ -653,7 +651,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     continue;
                 }
 
-                String artifactId = dependencyToken.split(":")[0];
+                String[] artifactIdVersionPair = dependencyToken.split(":");
+                String artifactId = artifactIdVersionPair[0];
+                VersionNumber dependencyVersion = new VersionNumber(artifactIdVersionPair[1]);
+
+                PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
+                VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
+                if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
+                    // Do not downgrade dependencies that are already installed.
+                    continue;
+                }
+
                 URL dependencyURL = context.getResource(fromPath + "/" + artifactId + ".hpi");
 
                 if (dependencyURL == null) {
@@ -682,9 +690,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * </ul>
      */
     protected void loadDetachedPlugins() {
-        InstallState installState = Jenkins.getActiveInstance().getInstallState();
-        if (InstallState.UPGRADE.equals(installState)) {
-            VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        if (lastExecVersion.isNewerThan(InstallUtil.NEW_INSTALL_VERSION) && lastExecVersion.isOlderThan(Jenkins.getVersion())) {
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
@@ -699,13 +706,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
                     if (ClassicPluginStrategy.isDetachedPlugin(name)) {
-                        // If it's already installed and the installed version is older
-                        // than the bundled version, then we upgrade. The bundled version is the min required version
-                        // for "this" version of Jenkins, so we must upgrade.
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
-                            return true;
+                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                        if (installedVersion != null && bundledVersion != null) {
+                            // If the installed version is older than the bundled version, then it MUST be upgraded.
+                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                            // If the versions are equal we just keep the installed version.
+                            return installedVersion.isOlderThan(bundledVersion);
                         }
                     }
 
@@ -727,6 +735,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             InstallUtil.saveLastExecVersion();
         } else {
             final Set<ClassicPluginStrategy.DetachedPlugin> forceUpgrade = new HashSet<>();
+            // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
             for (ClassicPluginStrategy.DetachedPlugin p : ClassicPluginStrategy.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
                 VersionNumber requiredVersion = p.getRequiredVersion();
@@ -860,6 +869,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 ((UberClassLoader) uberClassLoader).loaded.clear();
             }
 
+            // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
+            CustomClassFilter.Contributed.load();
+
             try {
                 p.resolvePluginDependencies();
                 strategy.load(p);
@@ -899,11 +911,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (d.shortName.equals(p.getShortName())) {
                         // this plugin depends on the newly loaded one!
                         // recalculate dependencies!
-                        try {
-                            getPluginStrategy().updateDependency(depender, p);
-                        } catch (AbstractMethodError x) {
-                            LOGGER.log(WARNING, "{0} does not yet implement updateDependency", getPluginStrategy().getClass());
-                        }
+                        getPluginStrategy().updateDependency(depender, p);
                         break;
                     }
                 }
@@ -952,6 +960,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * with a reasonable up-to-date check. A convenience method to be used by the {@link #loadBundledPlugins()}.
      */
     protected void copyBundledPlugin(URL src, String fileName) throws IOException {
+        LOGGER.log(FINE, "Copying {0}", src);
         fileName = fileName.replace(".hpi",".jpi"); // normalize fileNames to have the correct suffix
         String legacyName = fileName.replace(".jpi",".hpi");
         long lastModified = getModificationDate(src);
@@ -1134,9 +1143,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Exported
     public List<PluginWrapper> getPlugins() {
-        List<PluginWrapper> out = new ArrayList<PluginWrapper>(plugins.size());
-        out.addAll(plugins);
-        return out;
+        return Collections.unmodifiableList(plugins);
     }
 
     public List<FailedPlugin> getFailedPlugins() {
@@ -1202,7 +1209,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Discover all the service provider implementations of the given class,
      * via <tt>META-INF/services</tt>.
+     * @deprecated Use {@link ServiceLoader} instead, or (more commonly) {@link ExtensionList}.
      */
+    @Deprecated
     public <T> Collection<Class<? extends T>> discover( Class<T> spi ) {
         Set<Class<? extends T>> result = new HashSet<Class<? extends T>>();
 
@@ -1296,6 +1305,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return hudson.util.HttpResponses.okJSON(response);
     }
 
+    @RequirePOST
     public HttpResponse doUpdateSources(StaplerRequest req) throws IOException {
         Jenkins.getInstance().checkPermission(CONFIGURE_UPDATECENTER);
 
@@ -1330,6 +1340,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Performs the installation of the plugins.
      */
+    @RequirePOST
     public void doInstall(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         Set<String> plugins = new LinkedHashSet<>();
@@ -2000,8 +2011,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
          * Convenience method to ease access to this monitor, this allows other plugins to register required updates.
          * @return this monitor.
          */
-        public static final PluginUpdateMonitor getInstance() {
-            return ExtensionList.lookup(PluginUpdateMonitor.class).get(0);
+        public static PluginUpdateMonitor getInstance() {
+            return ExtensionList.lookupSingleton(PluginUpdateMonitor.class);
         }
 
         /**

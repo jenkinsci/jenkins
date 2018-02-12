@@ -54,6 +54,7 @@ import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
@@ -69,7 +70,8 @@ public class InstallUtil {
     private static final Logger LOGGER = Logger.getLogger(InstallUtil.class.getName());
 
     // tests need this to be 1.0
-    private static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
+    @Restricted(NoExternalUse.class)
+    public static final VersionNumber NEW_INSTALL_VERSION = new VersionNumber("1.0");
     private static final VersionNumber FORCE_NEW_INSTALL_VERSION = new VersionNumber("0.0");
 
     /**
@@ -91,7 +93,6 @@ public class InstallUtil {
      */
     public static void proceedToNextStateFrom(InstallState prior) {
         InstallState next = getNextInstallState(prior);
-        if (Main.isDevelopmentMode) LOGGER.info("Install state transitioning from: " + prior + " to: " + next);
         if (next != null) {
             Jenkins.getInstance().setInstallState(next);
         }
@@ -256,6 +257,7 @@ public class InstallUtil {
                 try {
                     String lastVersion = XMLUtils.getValue("/hudson/version", configFile);
                     if (lastVersion.length() > 0) {
+                        LOGGER.log(Level.FINE, "discovered serialized lastVersion {0}", lastVersion);
                         return lastVersion;
                     }
                 } catch (Exception e) {

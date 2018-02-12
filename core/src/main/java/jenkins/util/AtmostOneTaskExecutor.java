@@ -2,6 +2,7 @@ package jenkins.util;
 
 import com.google.common.util.concurrent.SettableFuture;
 import hudson.remoting.AtmostOneThreadExecutor;
+import hudson.security.ACL;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.NamingThreadFactory;
 
@@ -9,6 +10,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.security.ImpersonatingExecutorService;
 
 /**
  * {@link Executor}-like class that executes a single task repeatedly, in such a way that a single execution
@@ -41,6 +45,9 @@ import java.util.concurrent.Future;
  * @see AtmostOneThreadExecutor
  */
 public class AtmostOneTaskExecutor<V> {
+
+    private static final Logger LOGGER = Logger.getLogger(AtmostOneTaskExecutor.class.getName());
+
     /**
      * The actual executor that executes {@link #task}
      */
@@ -65,10 +72,10 @@ public class AtmostOneTaskExecutor<V> {
     }
 
     public AtmostOneTaskExecutor(Callable<V> task) {
-        this(new AtmostOneThreadExecutor(new NamingThreadFactory(
+        this(new ImpersonatingExecutorService(new AtmostOneThreadExecutor(new NamingThreadFactory(
                         new DaemonThreadFactory(),
                         String.format("AtmostOneTaskExecutor[%s]", task)
-                )),
+                )), ACL.SYSTEM),
                 task
         );
     }
@@ -100,6 +107,7 @@ public class AtmostOneTaskExecutor<V> {
                     try {
                         inprogress.set(task.call());
                     } catch (Throwable t) {
+                        LOGGER.log(Level.WARNING, null, t);
                         inprogress.setException(t);
                     } finally {
                         synchronized (AtmostOneTaskExecutor.this) {

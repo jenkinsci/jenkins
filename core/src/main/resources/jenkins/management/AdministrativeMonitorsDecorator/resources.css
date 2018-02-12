@@ -6,7 +6,7 @@
     font-size: 20px;
     font-weight: bold;
     background-color: #e01716;
-    color: #fff;;
+    color: #fff;
     margin: 0;
     line-height: 40px;
     text-decoration: none;
@@ -25,11 +25,9 @@
     position: absolute;
     top: 35px;
     right: 2%;
-    margin-left:2%;
     height: auto;
     z-index: 0;
     padding: 2em;
-    border: 1px solid #aa;
     text-align: left;
     display: block;
     background-color: #fff;
@@ -67,4 +65,23 @@
     display: block;
     line-height: 1.4em;
     margin-bottom: 1.4em;
+}
+
+#visible-am-container .am-message .alert form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 0 !important;
+
+}
+
+#visible-am-container .am-message .alert form span {
+    margin: 0 0 0 4px !important;
+}
+
+#visible-am-container .am-message .alert {
+    margin-bottom: 0 !important;
+}
+
+#visible-am-container .am-message dl dt::after {
+    content: ": ";
 }

@@ -41,6 +41,7 @@ import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Argument;
 
+@SuppressWarnings("deprecation") // Remoting-based CLI usages intentional
 public class Security218CliTest {
 
     @Rule
@@ -169,6 +170,13 @@ public class Security218CliTest {
         probe(Payload.Ldap, PayloadCaller.EXIT_CODE_REJECTED);
     }
 
+    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
+    @Test
+    @Issue("SECURITY-429")
+    public void jsonLibSignedObject() throws Exception {
+        probe(Payload.JsonLibSignedObject, 1);
+    }
+
     private void probe(Payload payload, int expectedResultCode) throws Exception {
         File file = File.createTempFile("security-218", payload + "-payload");
         File moved = new File(file.getAbsolutePath() + "-moved");
@@ -178,8 +186,8 @@ public class Security218CliTest {
         try (CLI cli = new CLI(r.getURL())) {
             int exitCode = cli.execute("send-payload",
                     payload.toString(), "mv " + file.getAbsolutePath() + " " + moved.getAbsolutePath());
-            assertEquals("Unexpected result code.", expectedResultCode, exitCode);
             assertTrue("Payload should not invoke the move operation " + file, !moved.exists());
+            assertEquals("Unexpected result code.", expectedResultCode, exitCode);
             file.delete();
         }
     }
@@ -197,8 +205,8 @@ public class Security218CliTest {
         
         @Argument(metaVar = "command", usage = "Command to be launched by the payload", required = true, index = 1)
         public String command;
-        
 
+        @Override
         protected int run() throws Exception {
             Payload payloadItem = Payload.valueOf(this.payload);
             PayloadCaller callable = new PayloadCaller(payloadItem, command);
@@ -231,7 +239,7 @@ public class Security218CliTest {
             
             // Invoke backward call
             try {
-                Channel.current().call(new Callable<String, Exception>() {
+                getChannelOrFail().call(new Callable<String, Exception>() {
                     private static final long serialVersionUID = 1L;
 
                     @Override
@@ -246,6 +254,7 @@ public class Security218CliTest {
                     }
                 });
             } catch (Exception ex) {
+                ex.printStackTrace();
                 Throwable cause = ex;
                 while (cause.getCause() != null) {
                     cause = cause.getCause();

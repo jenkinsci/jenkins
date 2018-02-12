@@ -269,12 +269,12 @@ public class OldDataMonitor extends AdministrativeMonitor {
         /**
          * Does this version range contain a version more than the given number of releases ago?
          * @param threshold Number of releases
-         * @return True if the major version# differs or the minor# differs by >= threshold
+         * @return True if the major version# differs or the minor# differs by ≥ threshold
          */
         public boolean isOld(int threshold) {
-            return currentVersion != null && min != null && (currentVersion.digit(0) > min.digit(0)
-                    || (currentVersion.digit(0) == min.digit(0)
-                    && currentVersion.digit(1) - min.digit(1) >= threshold));
+            return currentVersion != null && min != null && (currentVersion.getDigitAt(0) > min.getDigitAt(0)
+                    || (currentVersion.getDigitAt(0) == min.getDigitAt(0)
+                    && currentVersion.getDigitAt(1) - min.getDigitAt(1) >= threshold));
         }
 
     }

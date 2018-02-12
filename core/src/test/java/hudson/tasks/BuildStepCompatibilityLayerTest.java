@@ -19,12 +19,7 @@ public class BuildStepCompatibilityLayerTest {
     public void testPerformExpectAbstractMethodError() throws InterruptedException, IOException {
 
         FreeStyleBuild mock = Mockito.mock(FreeStyleBuild.class, Mockito.CALLS_REAL_METHODS);
-        BuildStepCompatibilityLayer bscl = new BuildStepCompatibilityLayer() {
-            @Override
-            public BuildStepMonitor getRequiredMonitorService() {
-                return null;
-            }
-        };
+        BuildStepCompatibilityLayer bscl = new BuildStepCompatibilityLayer() {};
         bscl.perform(mock, null, null);
 
     }
@@ -40,11 +35,6 @@ public class BuildStepCompatibilityLayerTest {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                     throws InterruptedException, IOException {
                 return true;
-            }
-
-            @Override
-            public BuildStepMonitor getRequiredMonitorService() {
-                return null;
             }
         };
         assertTrue(bscl.perform(mock, null, null));

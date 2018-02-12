@@ -27,7 +27,10 @@ import hudson.model.User;
 import jenkins.model.Jenkins;
 import hudson.util.Scrambler;
 import jenkins.security.ApiTokenProperty;
+import jenkins.security.SecurityListener;
+import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UserDetails;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -69,8 +72,8 @@ import java.net.URLEncoder;
  * redirected back to the original URL, where the request is served.
  *
  * <p>
- * So all in all, the redirection works like <tt>/abc/def</tt> -> <tt>/secured/abc/def</tt>
- * -> <tt>/abc/def</tt>.
+ * So all in all, the redirection works like {@code /abc/def} → {@code /secured/abc/def}
+ * → {@code /abc/def}.
  *
  * <h2>Notes</h2>
  * <ul>
@@ -78,7 +81,7 @@ import java.net.URLEncoder;
  * The technique of getting a request dispatcher for <tt>/j_security_check</tt> may not
  * work for all containers, but so far that seems like the only way to make this work.
  * <li>
- * This A->B->A redirect is a cyclic redirection, so we need to watch out for clients
+ * This A → B → A redirect is a cyclic redirection, so we need to watch out for clients
  * that detect this as an error.
  * </ul> 
  *
@@ -138,7 +141,12 @@ public class BasicAuthenticationFilter implements Filter {
             User u = User.getById(username, true);
             ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
             if (t!=null && t.matchesPassword(password)) {
-                SecurityContextHolder.getContext().setAuthentication(u.impersonate());
+                UserDetails userDetails = u.getUserDetailsForImpersonation();
+                Authentication auth = u.impersonate(userDetails);
+
+                SecurityListener.fireAuthenticated(userDetails);
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 try {
                     chain.doFilter(request,response);
                 } finally {
