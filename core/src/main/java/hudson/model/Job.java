@@ -56,7 +56,6 @@ import hudson.util.DescribableList;
 import hudson.util.FormApply;
 import hudson.util.Graph;
 import hudson.util.ProcessTree;
-import hudson.util.QuotedStringTokenizer;
 import hudson.util.RunList;
 import hudson.util.ShiftedCategoryAxis;
 import hudson.util.StackedAreaRenderer2;
@@ -68,7 +67,6 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -122,9 +120,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
 
 /**
  * A job is an runnable entity under the monitoring of Hudson.
@@ -324,6 +319,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns whether the name of this job can be changed by user.
      */
+    @Override
     public boolean isNameEditable() {
         return true;
     }
@@ -1356,37 +1352,15 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             }
             ItemListener.fireOnUpdated(this);
 
-            String newName = req.getParameter("name");
             final ProjectNamingStrategy namingStrategy = Jenkins.getInstance().getProjectNamingStrategy();
-            if (validRename(name, newName)) {
-                newName = newName.trim();
-                // check this error early to avoid HTTP response splitting.
-                Jenkins.checkGoodName(newName);
-                namingStrategy.checkName(newName);
-                if (FormApply.isApply(req)) {
-                    FormApply.applyResponse("notificationBar.show(" + QuotedStringTokenizer.quote(Messages.Job_you_must_use_the_save_button_if_you_wish()) + ",notificationBar.WARNING)").generateResponse(req, rsp, null);
-                } else {
-                    rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
-                }
-            } else {
                 if(namingStrategy.isForceExistingJobs()){
                     namingStrategy.checkName(name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
-            }
         } catch (JSONException e) {
             LOGGER.log(Level.WARNING, "failed to parse " + json, e);
             sendError(e, req, rsp);
         }
-    }
-
-    private boolean validRename(String oldName, String newName) {
-        if (newName == null) {
-            return false;
-        }
-        boolean noChange = oldName.equals(newName);
-        boolean spaceAdded = oldName.equals(newName.trim());
-        return !noChange && !spaceAdded;
     }
 
     /**
@@ -1585,33 +1559,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * Renames this job.
+     * {@inheritDoc}
      */
-    @RequirePOST
-    public/* not synchronized. see renameTo() */void doDoRename(
-            StaplerRequest req, StaplerResponse rsp) throws IOException,
-            ServletException {
-
-        if (!hasPermission(CONFIGURE)) {
-            // rename is essentially delete followed by a create
-            checkPermission(CREATE);
-            checkPermission(DELETE);
-        }
-
-        String newName = req.getParameter("newName");
-        Jenkins.checkGoodName(newName);
-
+    @Override
+    protected void checkRename(String newName) throws Failure {
+        Jenkins.get().getProjectNamingStrategy().checkName(newName);
         if (isBuilding()) {
-            // redirect to page explaining that we can't rename now
-            rsp.sendRedirect("rename?newName=" + URLEncoder.encode(newName, "UTF-8"));
-            return;
+            throw new Failure(Messages.Job_NoRenameWhileBuilding());
         }
-
-        renameTo(newName);
-        // send to the new job page
-        // note we can't use getUrl() because that would pick up old name in the
-        // Ancestor.getUrl()
-        rsp.sendRedirect2("../" + newName);
     }
 
     public void doRssAll(StaplerRequest req, StaplerResponse rsp)
@@ -1645,58 +1600,4 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private final static HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class,"serverCookie",16);
-    
-    /**
-     * Check new name for job
-     * @param newName - New name for job
-     * @return {@code true} - if newName occupied and user has permissions for this job
-     *         {@code false} - if newName occupied and user hasn't permissions for this job
-     *         {@code null} - if newName didn't occupied
-     * 
-     * @throws Failure if the given name is not good
-     */
-    @CheckForNull
-    @Restricted(NoExternalUse.class)
-    public Boolean checkIfNameIsUsed(@Nonnull String newName) throws Failure{
-        
-        Item item = null;
-        Jenkins.checkGoodName(newName);
-        
-        try {
-            item = getParent().getItem(newName);
-        } catch(AccessDeniedException ex) {  
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
-                        "User {2} has {3} permission, but no {4} for existing job with the same name", 
-                        new Object[] {this.getFullName(), newName, User.current().getFullName(), Item.DISCOVER.name, Item.READ.name} );
-            }
-            return true;
-        }
-        
-        if (item != null) {
-            // User has Read permissions for existing job with the same name
-            return true;
-        } else {
-            SecurityContext initialContext = null;
-            try {
-                initialContext = hudson.security.ACL.impersonate(ACL.SYSTEM);
-                item = getParent().getItem(newName);
-
-                if (item != null) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
-                                "User {2} has no {3} permission for existing job with the same name", 
-                                new Object[] {this.getFullName(), newName, initialContext.getAuthentication().getName(), Item.DISCOVER.name} );
-                    }
-                    return false;
-                }
-
-            } finally {
-                if (initialContext != null) {
-                    SecurityContextHolder.setContext(initialContext);
-                }
-            }
-        }
-        return null;
-    }
 }

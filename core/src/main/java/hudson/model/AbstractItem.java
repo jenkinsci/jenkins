@@ -36,12 +36,14 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.Tasks;
 import hudson.model.queue.WorkUnit;
+import hudson.security.ACLContext;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.ACL;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.AtomicFileWriter;
+import hudson.util.FormValidation;
 import hudson.util.IOUtils;
 import hudson.util.Secret;
 import java.util.Iterator;
@@ -72,15 +74,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
+import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.HttpDeletable;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
+import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -226,6 +231,113 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     protected void doSetName(String name) {
         this.name = name;
+    }
+
+    /**
+     * @return whether {@link #name} can be modified by a user
+     */
+    public boolean isNameEditable() {
+        return false;
+    }
+
+    /**
+     * @deprecated Exists for backwards compatibility. Use {@link #doDoRename2} in new code.
+     */
+    @RequirePOST
+    @Deprecated
+    public/* not synchronized. see renameTo() */void doDoRename(
+            StaplerRequest req, StaplerResponse rsp) throws IOException,
+            ServletException {
+        doDoRename2(req, rsp);
+    }
+
+    /**
+     * Renames this item
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public void doDoRename2(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String newName = req.getParameter("newName");
+        newName = newName == null ? null : newName.trim();
+        FormValidation validationError = doCheckNewName(newName);
+        if (validationError.kind != FormValidation.Kind.OK) {
+            throw new Failure(validationError.getMessage());
+        }
+
+        renameTo(newName);
+        // send to the new job page
+        // note we can't use getUrl() because that would pick up old name in the
+        // Ancestor.getUrl()
+        rsp.sendRedirect2("../" + newName);
+    }
+
+    /**
+     * Called by {@link #doDoRename} and {@code rename.jelly} to validate renames.
+     * @return {@link FormValidation#ok} if this item can be renamed as specified, otherwise
+     * {@link FormValidation#error} with a message explaining the problem.
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
+        // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
+        if (!hasPermission(Item.CONFIGURE)) {
+            checkPermission(Item.CREATE);
+            checkPermission(Item.DELETE);
+        }
+
+        newName = newName == null ? null : newName.trim();
+        try {
+            Jenkins.checkGoodName(newName);
+            assert newName != null; // Would have thrown Failure
+            checkIfNameIsUsed(newName);
+            checkRename(newName);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
+    }
+
+    /**
+     * Check new name for job
+     * @param newName - New name for job.
+     */
+    private void checkIfNameIsUsed(@Nonnull String newName) throws Failure {
+        try {
+            Item item = getParent().getItem(newName);
+            if (item != null) {
+                throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
+            }
+            try (ACLContext ctx = ACL.as(ACL.SYSTEM)) {
+                item = getParent().getItem(newName);
+                if (item != null) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                                "User {2} has no {3} permission for existing job with the same name",
+                                new Object[] {this.getFullName(), newName, ctx.getPreviousContext().getAuthentication().getName(), Item.DISCOVER.name} );
+                    }
+                    // Don't explicitly mention that there is another item with the same name.
+                    throw new Failure(Messages.Jenkins_NotAllowedName(newName));
+                }
+            }
+        } catch(AccessDeniedException ex) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Unable to rename the job {0}: name {1} is already in use. " +
+                        "User {2} has {3} permission, but no {4} for existing job with the same name",
+                        new Object[] {this.getFullName(), newName, User.current(), Item.DISCOVER.name, Item.READ.name} );
+            }
+            throw new Failure(Messages.AbstractItem_NewNameInUse(newName));
+        }
+    }
+
+    /**
+     * Allows subclasses to block renames for domain-specific reasons.
+     *
+     * @param newName the new name for the item
+     * @throws Failure if the rename should be blocked
+     * @see Job#checkRename
+     */
+    @CheckForNull
+    protected void checkRename(String newName) throws Failure {
+
     }
 
     /**
