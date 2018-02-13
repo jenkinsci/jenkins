@@ -132,10 +132,9 @@ public class RunTest  {
 
     @SuppressWarnings("deprecation")
     private void assertEnvVar(FreeStyleProject p, String key, String value) throws Exception {
-        p.getBuildersList().add(new Shell("echo actual=$" + key));
         CaptureEnvironmentBuilder capture = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(capture);
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
         assertThat(capture.getEnvVars(), hasEntry(key, value));
     }
 
