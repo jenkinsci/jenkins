@@ -261,7 +261,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Called by {@link #doDoRename} and {@code rename.jelly} to validate renames.
+     * Called by {@link #doDoRename2} and {@code rename.jelly} to validate renames.
      * @return {@link FormValidation#ok} if this item can be renamed as specified, otherwise
      * {@link FormValidation#error} with a message explaining the problem.
      */
