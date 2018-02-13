@@ -241,17 +241,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * @deprecated Exists for backwards compatibility. Use {@link #doDoRename2} in new code.
-     */
-    @RequirePOST
-    @Deprecated
-    public/* not synchronized. see renameTo() */void doDoRename(
-            StaplerRequest req, StaplerResponse rsp) throws IOException,
-            ServletException {
-        doDoRename2(req, rsp);
-    }
-
-    /**
      * Renames this item
      */
     @RequirePOST

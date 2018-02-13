@@ -1559,6 +1559,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
+     * Renames this job.
+     */
+    @RequirePOST
+    public/* not synchronized. see renameTo() */void doDoRename(
+            StaplerRequest req, StaplerResponse rsp) throws IOException,
+            ServletException {
+        super.doDoRename2(req, rsp);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
