@@ -7,6 +7,7 @@ import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException2;
+import hudson.util.FormValidation;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
@@ -92,7 +93,7 @@ public class AbstractItemTest {
         }
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
             try {
-                p.doDoRename("foo");
+                p.doCheckNewName("foo");
                 fail("Expecting AccessDeniedException");
             } catch (AccessDeniedException2 e) {
                 assertThat(e.permission, equalTo(Item.CREATE));
@@ -128,14 +129,13 @@ public class AbstractItemTest {
         assertThat(p.getName(), equalTo("bar"));
     }
 
-    private String renameAndReturnError(AbstractItem i, String newName) throws Exception {
-        try {
-            i.doDoRename(newName);
-            fail("Expecting Failure");
-        } catch (Failure e) {
-            return e.getMessage();
+    private String renameAndReturnError(AbstractItem i, String newName) {
+        FormValidation fv = i.doCheckNewName(newName);
+        if (FormValidation.Kind.OK.equals(fv.kind)) {
+            throw new AssertionError("Expecting Failure");
+        } else {
+            return fv.getMessage();
         }
-        throw new AssertionError("Unreachable");
     }
 
     private String getPath(URL u) {
