@@ -181,6 +181,8 @@ public abstract class Launcher {
          */
         protected boolean reverseStdin, reverseStdout, reverseStderr;
 
+        protected boolean killWhenInterrupted;
+
         /**
          * Passes a white-space separated single-string command (like "cat abc def") and parse them
          * as a command argument. This method also handles quotes.
@@ -441,6 +443,16 @@ public abstract class Launcher {
             return this;
         }
 
+        /**
+         * Indicates whether the process should be killed on interruption.
+         * 
+         * @return {@code this}
+         * @since 2.107
+         */
+        public ProcStarter killWhenInterrupted(boolean value) {
+            this.killWhenInterrupted = value;
+            return this;
+        }
 
         /**
          * Starts the new process as configured.
@@ -926,7 +938,7 @@ public abstract class Launcher {
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
                     ps.reverseStdout?LocalProc.SELFPUMP_OUTPUT:ps.stdout,
                     ps.reverseStderr?LocalProc.SELFPUMP_OUTPUT:ps.stderr,
-                    toFile(ps.pwd));
+                    toFile(ps.pwd), ps.killWhenInterrupted);
         }
 
         private File toFile(FilePath f) {
@@ -1049,7 +1061,7 @@ public abstract class Launcher {
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
-                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener)));
+                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.killWhenInterrupted)));
             } catch (InterruptedException e) {
                 throw (IOException)new InterruptedIOException().initCause(e);
             }
@@ -1267,12 +1279,14 @@ public abstract class Launcher {
         private final @Nonnull TaskListener listener;
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
+        private final boolean killWhenInterrupted;
 
-        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env, 
-                @CheckForNull InputStream in, boolean reverseStdin, 
-                @CheckForNull OutputStream out, boolean reverseStdout, 
-                @CheckForNull OutputStream err, boolean reverseStderr, 
-                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener) {
+        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
+                @CheckForNull InputStream in, boolean reverseStdin,
+                @CheckForNull OutputStream out, boolean reverseStdout,
+                @CheckForNull OutputStream err, boolean reverseStderr,
+                boolean quiet, @CheckForNull String workDir,
+                @Nonnull TaskListener listener, boolean killWhenInterrupted) {
             this.cmd = new ArrayList<>(cmd);
             this.masks = masks;
             this.env = env;
@@ -1285,12 +1299,13 @@ public abstract class Launcher {
             this.reverseStdout = reverseStdout;
             this.reverseStderr = reverseStderr;
             this.quiet = quiet;
+            this.killWhenInterrupted = killWhenInterrupted;
         }
 
         public RemoteProcess call() throws IOException {
             final Channel channel = getOpenChannelOrFail();
             Launcher.ProcStarter ps = new LocalLauncher(listener).launch();
-            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet);
+            ps.cmds(cmd).masks(masks).envs(env).stdin(in).stdout(out).stderr(err).quiet(quiet).killWhenInterrupted(killWhenInterrupted);
             if(workDir!=null)   ps.pwd(workDir);
             if (reverseStdin)   ps.writeStdin();
             if (reverseStdout)  ps.readStdout();
