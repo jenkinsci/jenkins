@@ -345,6 +345,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     /**
      * Gets the special label that represents this node itself.
      */
+    @Nonnull
     @WithBridgeMethods(Label.class)
     public LabelAtom getSelfLabel() {
         return LabelAtom.get(getNodeName());
