@@ -60,7 +60,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void rename() throws Exception {
+    public void checkRenameValidity() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.getBuildersList().add(new SleepBuilder(10));
 
@@ -77,7 +77,7 @@ public class AbstractItemTest {
     }
 
     @Test
-    public void renamePermissions() throws Exception {
+    public void checkRenamePermissions() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         MockAuthorizationStrategy mas = new MockAuthorizationStrategy();
         mas.grant(Item.CONFIGURE).everywhere().to("alice", "bob");
