@@ -129,7 +129,7 @@ THE SOFTWARE.
       <j:forEach var="c" items="${computers}">
         <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
-          <j:if test="${computersSize gt 1 and !cDisplayExecutors.isEmpty()}">
+          <j:if test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
             <th class="pane" colspan="3">
               <local:computerCaption title="${c.displayName}" />
             </th>
