@@ -122,7 +122,7 @@ public abstract class EnvironmentContributor implements ExtensionPoint {
      * Served from "/env-vars.html"
      */
     @Extension
-    public static class EnvVarsHtml implements RootAction {
+    public static class EnvVarsHtml implements DefaultRootAction {
         public String getUrlName() {
             return "env-vars.html";
         }

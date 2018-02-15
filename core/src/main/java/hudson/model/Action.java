@@ -97,9 +97,7 @@ public interface Action extends ModelObject {
      * @see Functions#isAnonymous()
      * @see Functions#getIconFilePath(Action)
      */
-    default @CheckForNull String getIconFileName() {
-        return null;
-    }
+    @CheckForNull String getIconFileName();
 
     /**
      * Gets the string to be displayed.
@@ -109,9 +107,7 @@ public interface Action extends ModelObject {
      *
      * @return Can be null in case the action is hidden.
      */
-    default @CheckForNull String getDisplayName() {
-        return null;
-    }
+    @CheckForNull String getDisplayName();
 
     /**
      * Gets the URL path name.

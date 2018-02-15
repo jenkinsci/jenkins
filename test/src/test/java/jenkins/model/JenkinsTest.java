@@ -46,6 +46,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.maven.MavenModuleSet;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.model.Computer;
+import hudson.model.DefaultRootAction;
 import hudson.model.Failure;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
@@ -387,7 +388,7 @@ public class JenkinsTest {
     }
 
     @TestExtension("testUnprotectedRootAction")
-    public static class ProtectedRootActionImpl implements RootAction {
+    public static class ProtectedRootActionImpl implements DefaultRootAction {
         public String getUrlName() {
             return "foobar-zot";
         }
