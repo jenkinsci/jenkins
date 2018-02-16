@@ -33,7 +33,9 @@ import java.util.regex.Pattern;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
+import hudson.security.*;
 import hudson.util.StreamTaskListener;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -87,14 +89,26 @@ public class CauseTest {
 
     @Issue("JENKINS-48467")
     @Test public void userIdCausePrintTest() throws Exception {
+//        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
+//        realm.addGroups("administrator", "admins");
+//        realm.addGroups("alice", "users");
+//        realm.addGroups("bob", "users", "lpadmin", "bob");
+//
+//        j.jenkins.setSecurityRealm(realm);
+//        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+//        auth.add(Jenkins.ADMINISTER, "admins");
+//        auth.add(Permission.READ, "users");
+//        j.jenkins.setAuthorizationStrategy(auth);
+
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos);
 
-        //null userId - dont print anything
+        //null userId - print unknown or anonymous
         Cause causeA = new Cause.UserIdCause(null);
         causeA.print(listener);
 
-        assertTrue(baos.toString().isEmpty());
+        assertEquals(baos.toString().trim(),"Started by user unknown or anonymous");
         baos.reset();
 
         //SYSTEM userid  - getDisplayName() should be SYSTEM
@@ -104,16 +118,16 @@ public class CauseTest {
         assertThat(baos.toString(), containsString("SYSTEM"));
         baos.reset();
 
-        //unknown userid - dont print anything
+        //unknown userid - print unknown or anonymous
         Cause causeC = new Cause.UserIdCause("abc123");
         causeC.print(listener);
 
-        assertTrue(baos.toString().isEmpty());
+        assertEquals(baos.toString().trim(),"Started by user unknown or anonymous");
         baos.reset();
 
-        //Standard operation
-        //user userid  - getDisplayName() should be user
-        User user = User.getById("user", true);
+        //More or less standard operation
+        //user userid  - getDisplayName() should be foo
+        User user = User.getById("foo", true);
         Cause causeD = new Cause.UserIdCause(user.getId());
         causeD.print(listener);
 

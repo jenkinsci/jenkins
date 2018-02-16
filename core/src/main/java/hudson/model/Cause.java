@@ -458,6 +458,9 @@ public abstract class Cause {
             {
                 listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
                         ModelHyperlinkNote.encodeTo(user)));
+            } else {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        "unknown or anonymous"));
             }
         }
 
