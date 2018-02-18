@@ -67,6 +67,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -1473,7 +1474,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
-        if (Integer.parseInt(nExecutors)<=0) {
+        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors)<=0) {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
