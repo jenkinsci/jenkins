@@ -694,11 +694,17 @@ var jenkinsRules = {
     "INPUT.required" : function(e) { registerRegexpValidator(e,/./,"Field is required"); },
 
 // validate form values to be an integer
-    "INPUT.number" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
-    "INPUT.non-negative-number" : function(e) {
+    "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
+    "INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
+
+    "INPUT.non-negative-number-required" : function(e) {
         registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
     },
+
     "INPUT.positive-number" : function(e) {
+        registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
+    },
+    "INPUT.positive-number-required" : function(e) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     },
 
