@@ -25,6 +25,7 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
@@ -32,12 +33,9 @@ import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
-import java.io.Closeable;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
-import hudson.util.Scrambler;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
@@ -56,7 +54,6 @@ import jenkins.model.Jenkins;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
 import hudson.model.Cause.LegacyCodeCause;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.Serializable;
@@ -250,7 +247,7 @@ public class ProjectTest {
         assertEquals("Scm retry count should be default.", j.jenkins.getScmCheckoutRetryCount(), p.getScmCheckoutRetryCount());
         j.jenkins.setScmCheckoutRetryCount(6);
         assertEquals("Scm retry count should be the same as global scm retry count.", 6, p.getScmCheckoutRetryCount());
-        HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
+        HtmlForm form = j.createWebClient().goTo(p.getUrl() + "configure").getFormByName("config");
         ((HtmlElement)form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
         form.getInputByName("hasCustomScmCheckoutRetryCount").click();
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
