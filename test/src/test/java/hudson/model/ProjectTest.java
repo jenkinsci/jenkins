@@ -32,9 +32,12 @@ import hudson.tasks.*;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 
+import java.io.Closeable;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
+import hudson.util.Scrambler;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import hudson.scm.SCMRevisionState;
@@ -553,9 +556,8 @@ public class ProjectTest {
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
         j.jenkins.setAuthorizationStrategy(auth);
         j.jenkins.setCrumbIssuer(null);
-        HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
-        j.jenkins.setSecurityRealm(realm); 
-        User user = realm.createAccount("John Smith", "password");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User user = User.getById("john", true);
         try (ACLContext as = ACL.as(user)) {
             project.doDoDelete(null, null);
             fail("User should not have permission to build project");
@@ -568,7 +570,13 @@ public class ProjectTest {
         auth.add(Jenkins.READ, user.getId());
         auth.add(Job.READ, user.getId());
         auth.add(Job.DELETE, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl() + "delete").getForms();
+
+        // use Basic to speedup the test, normally it's pure UI testing
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId());
+        HtmlPage p = wc.goTo(project.getUrl() + "delete");
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("doDelete".equals(form.getAttribute("action"))){
                 j.submit(form);
@@ -605,9 +613,13 @@ public class ProjectTest {
         String cmd = "echo hello > change.log";
         project.getBuildersList().add(Functions.isWindows()? new BatchFile(cmd) : new Shell(cmd));
         j.buildAndAssertSuccess(project);
-        JenkinsRule.WebClient wc = j.createWebClient().login(user.getId(), "password");
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
         WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
+        assertEquals(p.getWebResponse().getStatusCode(), 200);
+
         Thread.sleep(500);
         assertFalse("Workspace should not exist.", project.getSomeWorkspace().exists());
     }
@@ -633,7 +645,12 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
+        HtmlPage p = wc.goTo(project.getUrl());
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("disable".equals(form.getAttribute("action"))){
                 j.submit(form);
@@ -666,7 +683,12 @@ public class ProjectTest {
         auth.add(Job.READ, user.getId());
         auth.add(Job.CONFIGURE, user.getId());
         auth.add(Jenkins.READ, user.getId());
-        List<HtmlForm> forms = j.createWebClient().login(user.getId(), "password").goTo(project.getUrl()).getForms();
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.withBasicCredentials(user.getId(), "password");
+        HtmlPage p = wc.goTo(project.getUrl());
+
+        List<HtmlForm> forms = p.getForms();
         for(HtmlForm form:forms){
             if("enable".equals(form.getAttribute("action"))){
                 j.submit(form);

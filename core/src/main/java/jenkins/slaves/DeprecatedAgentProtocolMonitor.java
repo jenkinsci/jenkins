@@ -41,7 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Monitors enabled protocols and warns if an {@link AgentProtocol} is deprecated. 
  * 
  * @author Oleg Nenashev
- * @since TODO
+ * @since 2.75
  * @see AgentProtocol
  */
 @Extension

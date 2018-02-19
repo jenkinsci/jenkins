@@ -36,6 +36,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -287,12 +290,6 @@ public class UtilTest {
     @Test
     public void testDeleteFile_onWindows() throws Exception {
         Assume.assumeTrue(Functions.isWindows());
-        Class<?> c;
-        try {
-            c = Class.forName("java.nio.file.FileSystemException");
-        } catch (ClassNotFoundException x) {
-            throw new AssumptionViolatedException("prior to JDK 7", x);
-        }
         final int defaultDeletionMax = Util.DELETION_MAX;
         try {
             File f = tmp.newFile();
@@ -304,13 +301,34 @@ public class UtilTest {
                 Util.deleteFile(f);
                 fail("should not have been deletable");
             } catch (IOException x) {
-                assertThat(calcExceptionHierarchy(x), hasItem(c));
+                assertThat(calcExceptionHierarchy(x), hasItem(FileSystemException.class));
                 assertThat(x.getMessage(), containsString(f.getPath()));
             }
         } finally {
             Util.DELETION_MAX = defaultDeletionMax;
             unlockFilesForDeletion();
         }
+    }
+
+    @Test
+    public void testDeleteFileReadOnly() throws Exception {
+        // Removing the calls to Util#makeWritable in Util#tryOnceDeleteFile should cause this test to fail.
+        Path file = tmp.newFolder().toPath().resolve("file.tmp");
+        Files.createDirectories(file.getParent());
+        Files.createFile(file);
+        // Using old IO so the test can run on Windows.
+        file.getParent().toFile().setWritable(false);
+        file.toFile().setWritable(false);
+        Util.deleteFile(file.toFile());
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    public void testDeleteFileDoesNotExist() throws Exception {
+        Path file = tmp.newFolder().toPath().resolve("file.tmp");
+        assertFalse(Files.exists(file));
+        // Should not throw an exception.
+        Util.deleteFile(file.toFile());
     }
 
     @Test

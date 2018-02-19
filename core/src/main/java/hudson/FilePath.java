@@ -77,13 +77,20 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.LinkOption;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +120,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -1159,19 +1167,22 @@ public final class FilePath implements Serializable {
      * Creates this directory.
      */
     public void mkdirs() throws IOException, InterruptedException {
-        if(!act(new SecureFileCallable<Boolean>() {
-            private static final long serialVersionUID = 1L;
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                if(mkdirs(f) || f.exists())
-                    return true;    // OK
+        if (!act(new Mkdirs())) {
+            throw new IOException("Failed to mkdirs: " + remote);
+        }
+    }
+    private class Mkdirs extends SecureFileCallable<Boolean> {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            if(mkdirs(f) || f.exists())
+                return true;    // OK
 
-                // following Ant <mkdir> task to avoid possible race condition.
-                Thread.sleep(10);
+            // following Ant <mkdir> task to avoid possible race condition.
+            Thread.sleep(10);
 
-                return mkdirs(f) || f.exists();
-            }
-        }))
-            throw new IOException("Failed to mkdirs: "+remote);
+            return mkdirs(f) || f.exists();
+        }
     }
 
     /**
@@ -1403,17 +1414,35 @@ public final class FilePath implements Serializable {
      * @return
      *      The new FilePath pointing to the temporary directory
      * @since 1.311
-     * @see File#createTempFile(String, String)
+     * @see Files#createTempDirectory(Path, String, FileAttribute[])
      */
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
+            String[] s;
+            if (StringUtils.isBlank(suffix)) {
+                s = new String[]{prefix, "tmp"}; // see File.createTempFile - tmp is used if suffix is null
+            } else {
+                s = new String[]{prefix, suffix};
+            }
+            String name = StringUtils.join(s, ".");
             return new FilePath(this,act(new SecureFileCallable<String>() {
                 private static final long serialVersionUID = 1L;
                 public String invoke(File dir, VirtualChannel channel) throws IOException {
-                    File f = File.createTempFile(prefix, suffix, dir);
-                    f.delete();
-                    f.mkdir();
-                    return f.getName();
+
+                    Path tempPath;
+                    final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains("posix");
+
+                    if (isPosix) {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name,
+                                PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+                    } else {
+                        tempPath = Files.createTempDirectory(Util.fileToPath(dir), name, new FileAttribute<?>[] {});
+                    }
+
+                    if (tempPath.toFile() == null) {
+                        throw new IOException("Failed to obtain file from path " + dir + " on " + remote);
+                    }
+                    return tempPath.toFile().getName();
                 }
             }));
         } catch (IOException e) {
@@ -2412,7 +2441,7 @@ public final class FilePath implements Serializable {
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
      */
-    public String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
+    public @CheckForNull String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
         return act(new MasterToSlaveFileCallable<String>() {
             private static final long serialVersionUID = 1;
             public String invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
@@ -2800,6 +2829,11 @@ public final class FilePath implements Serializable {
 
         public ClassLoader getClassLoader() {
             return classLoader;
+        }
+
+        @Override
+        public String toString() {
+            return callable.toString();
         }
 
         private static final long serialVersionUID = 1L;

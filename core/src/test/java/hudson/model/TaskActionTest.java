@@ -45,11 +45,7 @@ public class TaskActionTest {
         }
 
         protected ACL getACL() {
-            return new ACL() {
-                public boolean hasPermission(Authentication a, Permission permission) {
-                     return true;
-                }
-            };
+            return ACL.lambda((a, p) -> true);
         }
     }
 

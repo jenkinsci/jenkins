@@ -54,6 +54,15 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
 
     private T[] installations;
 
+    protected ToolDescriptor() { }
+
+    /**
+     * @since FIXME
+     */
+    protected ToolDescriptor(Class<T> clazz) {
+        super(clazz);
+    }
+
     /**
      * Configured instances of {@link ToolInstallation}s.
      *

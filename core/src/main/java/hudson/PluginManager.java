@@ -150,6 +150,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import jenkins.security.CustomClassFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -650,7 +651,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     continue;
                 }
 
-                String artifactId = dependencyToken.split(":")[0];
+                String[] artifactIdVersionPair = dependencyToken.split(":");
+                String artifactId = artifactIdVersionPair[0];
+                VersionNumber dependencyVersion = new VersionNumber(artifactIdVersionPair[1]);
+
+                PluginManager manager = Jenkins.getActiveInstance().getPluginManager();
+                VersionNumber installedVersion = manager.getPluginVersion(manager.rootDir, artifactId);
+                if (installedVersion != null && !installedVersion.isOlderThan(dependencyVersion)) {
+                    // Do not downgrade dependencies that are already installed.
+                    continue;
+                }
+
                 URL dependencyURL = context.getResource(fromPath + "/" + artifactId + ".hpi");
 
                 if (dependencyURL == null) {
@@ -679,9 +690,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      * </ul>
      */
     protected void loadDetachedPlugins() {
-        InstallState installState = Jenkins.getActiveInstance().getInstallState();
-        if (InstallState.UPGRADE.equals(installState)) {
-            VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        VersionNumber lastExecVersion = new VersionNumber(InstallUtil.getLastExecVersion());
+        if (lastExecVersion.isNewerThan(InstallUtil.NEW_INSTALL_VERSION) && lastExecVersion.isOlderThan(Jenkins.getVersion())) {
 
             LOGGER.log(INFO, "Upgrading Jenkins. The last running version was {0}. This Jenkins is version {1}.",
                     new Object[] {lastExecVersion, Jenkins.VERSION});
@@ -696,13 +706,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     // If this was a plugin that was detached some time in the past i.e. not just one of the
                     // plugins that was bundled "for fun".
                     if (ClassicPluginStrategy.isDetachedPlugin(name)) {
-                        // If it's already installed and the installed version is older
-                        // than the bundled version, then we upgrade. The bundled version is the min required version
-                        // for "this" version of Jenkins, so we must upgrade.
                         VersionNumber installedVersion = getPluginVersion(rootDir, name);
                         VersionNumber bundledVersion = getPluginVersion(dir, name);
-                        if (installedVersion != null && bundledVersion != null && installedVersion.isOlderThan(bundledVersion)) {
-                            return true;
+                        // If the plugin is already installed, we need to decide whether to replace it with the bundled version.
+                        if (installedVersion != null && bundledVersion != null) {
+                            // If the installed version is older than the bundled version, then it MUST be upgraded.
+                            // If the installed version is newer than the bundled version, then it MUST NOT be upgraded.
+                            // If the versions are equal we just keep the installed version.
+                            return installedVersion.isOlderThan(bundledVersion);
                         }
                     }
 
@@ -857,6 +868,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             synchronized (((UberClassLoader) uberClassLoader).loaded) {
                 ((UberClassLoader) uberClassLoader).loaded.clear();
             }
+
+            // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
+            CustomClassFilter.Contributed.load();
 
             try {
                 p.resolvePluginDependencies();

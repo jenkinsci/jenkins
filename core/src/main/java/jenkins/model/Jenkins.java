@@ -106,7 +106,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SCMListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.remoting.Callable;
-import hudson.remoting.ClassFilter;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.RepositoryBrowser;
@@ -179,9 +178,9 @@ import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
 import jenkins.install.InstallState;
-import jenkins.install.InstallUtil;
 import jenkins.install.SetupWizard;
 import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
+import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.SecurityListener;
@@ -284,7 +283,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static hudson.Util.*;
@@ -292,6 +290,7 @@ import static hudson.init.InitMilestone.*;
 import hudson.init.Initializer;
 import hudson.util.LogTaskListener;
 import static java.util.logging.Level.*;
+import javax.annotation.Nonnegative;
 import static javax.servlet.http.HttpServletResponse.*;
 import org.kohsuke.stapler.WebMethod;
 
@@ -739,56 +738,57 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getInstanceOrNull()} provides the unchecked versions of the method.
      * @return {@link Jenkins} instance
-     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
-     * @since 1.590
-     * @deprecated use {@link #getInstance()}
+     * @throws IllegalStateException for the reasons that {@link #getInstanceOrNull} might return null
+     * @since 2.98
      */
-    @Deprecated
     @Nonnull
-    public static Jenkins getActiveInstance() throws IllegalStateException {
-        Jenkins instance = HOLDER.getInstance();
+    public static Jenkins get() throws IllegalStateException {
+        Jenkins instance = getInstanceOrNull();
         if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+            throw new IllegalStateException("Jenkins.instance is missing. Read the documentation of Jenkins.getInstanceOrNull to see what you are doing wrong.");
         }
         return instance;
     }
 
     /**
+     * @deprecated This is a verbose historical alias for {@link #get}.
+     * @since 1.590
+     */
+    @Deprecated
+    @Nonnull
+    public static Jenkins getActiveInstance() throws IllegalStateException {
+        return get();
+    }
+
+    /**
      * Gets the {@link Jenkins} singleton.
-     * {@link #getActiveInstance()} provides the checked versions of the method.
-     * @return The instance. Null if the {@link Jenkins} instance has not been started,
-     * or was already shut down
+     * {@link #get} is what you normally want.
+     * <p>In certain rare cases you may have code that is intended to run before Jenkins starts or while Jenkins is being shut down.
+     * For those rare cases use this method.
+     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master.
+     * For those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting channel
+     * it can do whatever it needs without ever referring to {@link Jenkins};
+     * for example, gather any information you need on the master side before constructing the callable.
+     * If you must do a runtime check whether you are in the master or agent, use {@link JenkinsJVM} rather than this method,
+     * as merely loading the {@link Jenkins} class file into an agent JVM can cause linkage errors under some conditions.
+     * @return The instance. Null if the {@link Jenkins} service has not been started, or was already shut down,
+     *         or we are running on an unrelated JVM, typically an agent.
      * @since 1.653
      */
+    @CLIResolver
     @CheckForNull
     public static Jenkins getInstanceOrNull() {
         return HOLDER.getInstance();
     }
 
     /**
-     * Gets the {@link Jenkins} singleton. In certain rare cases you may have code that is intended to run before
-     * Jenkins starts or while Jenkins is being shut-down. For those rare cases use {@link #getInstanceOrNull()}.
-     * In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master,
-     * for those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting
-     * channel it uses a {@code writeReplace} method or similar to ensure that the {@link Jenkins} class is not being
-     * loaded into the remote class loader
-     * @return The instance.
-     * @throws IllegalStateException {@link Jenkins} has not been started, or was already shut down
+     * @deprecated This is a historical alias for {@link #getInstanceOrNull} but with ambiguous nullability. Use {@link #get} in typical cases.
      */
-    @CLIResolver
-    @Nonnull
+    @Nullable
+    @Deprecated
     public static Jenkins getInstance() {
-        Jenkins instance = HOLDER.getInstance();
-        if (instance == null) {
-            if(SystemProperties.getBoolean(Jenkins.class.getName()+".enableExceptionOnNullInstance")) {
-                // TODO: remove that second block around 2.20 (that is: ~20 versions to battle test it)
-                // See https://github.com/jenkinsci/jenkins/pull/2297#issuecomment-216710150
-                throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-            }
-        }
-        return instance;
+        return getInstanceOrNull();
     }
 
     /**
@@ -894,11 +894,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             adjuncts = new AdjunctManager(servletContext, pluginManager.uberClassLoader,"adjuncts/"+SESSION_HASH, TimeUnit.DAYS.toMillis(365));
 
-            try {
-                ClassFilter.appendDefaultFilter(Pattern.compile("java[.]security[.]SignedObject")); // TODO move to standard blacklist
-            } catch (ClassFilter.ClassFilterException ex) {
-                throw new IOException("Remoting library rejected the java[.]security[.]SignedObject blacklist pattern", ex);
-            }
+            ClassFilterImpl.register();
 
             // initialization consists of ...
             executeReactor( is,
@@ -2595,7 +2591,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @SuppressWarnings({"unchecked"})
     public <T> ExtensionList<T> getExtensionList(Class<T> extensionType) {
-        return extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
+        ExtensionList<T> extensionList = extensionLists.get(extensionType);
+        return extensionList != null ? extensionList : extensionLists.computeIfAbsent(extensionType, key -> ExtensionList.create(this, key));
     }
 
     /**
@@ -2717,7 +2714,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return initLevel;
     }
 
-    public void setNumExecutors(int n) throws IOException {
+    /**
+     * Sets a number of executors.
+     * @param n Number of executors
+     * @throws IOException Failed to save the configuration
+     * @throws IllegalArgumentException Negative value has been passed
+     */
+    public void setNumExecutors(@Nonnegative int n) throws IOException, IllegalArgumentException {
+        if (n < 0) {
+            throw new IllegalArgumentException("Incorrect field \"# of executors\": " + n +". It should be a non-negative number.");
+        }
         if (this.numExecutors != n) {
             this.numExecutors = n;
             updateComputerList();
@@ -3058,8 +3064,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             }
         });
 
+        List<Handle> loadJobs = new ArrayList<>();
         for (final File subdir : subdirs) {
-            g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
+            loadJobs.add(g.requires(loadJenkins).attains(JOB_LOADED).notFatal().add("Loading item " + subdir.getName(), new Executable() {
                 public void run(Reactor session) throws Exception {
                     if(!Items.getConfigFile(subdir).exists()) {
                         //Does not have job config file, so it is not a jenkins job hence skip it
@@ -3069,10 +3076,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     items.put(item.getName(), item);
                     loadedNames.add(item.getName());
                 }
-            });
+            }));
         }
 
-        g.requires(JOB_LOADED).attains(COMPLETED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
+        g.requires(loadJobs.toArray(new Handle[loadJobs.size()])).attains(JOB_LOADED).add("Cleaning up obsolete items deleted from the disk", new Executable() {
             public void run(Reactor reactor) throws Exception {
                 // anything we didn't load from disk, throw them away.
                 // doing this after loading from disk allows newly loaded items
@@ -3245,6 +3252,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             if (JenkinsJVM.isJenkinsJVM()) {
                 JenkinsJVMAccess._setJenkinsJVM(oldJenkinsJVM);
             }
+            ClassFilterImpl.unregister();
         }
     }
 
