@@ -4,12 +4,6 @@
   <mode>NORMAL</mode>
   <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
   <securityRealm class="hudson.security.SecurityRealm$None"/>
-  <jdks>
-    <jdk>
-      <name>1.6</name>
-      <javaHome>FOOBAR</javaHome>
-    </jdk>
-  </jdks>
   <clouds/>
   <slaves>
     <slave>
@@ -33,11 +27,6 @@
               <type>hudson.tasks.Maven$DescriptorImpl</type>
               <name>Maven 1</name>
               <home>D:\dev\apache-maven-2.0.9</home>
-            </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
-            <hudson.tools.ToolLocationNodeProperty_-ToolLocation>
-              <type>hudson.model.JDK$DescriptorImpl</type>
-              <name>1.6</name>
-              <home>C:\Program Files\Java\jdk1.6.0_11</home>
             </hudson.tools.ToolLocationNodeProperty_-ToolLocation>
           </locations>
         </hudson.tools.ToolLocationNodeProperty>
