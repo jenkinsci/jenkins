@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -292,6 +294,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } finally {
                 fingerprintInput.close();
             }
+            return;
+        }
+
+        URL external = baseFile.toExternalURL();
+        if (external != null) {
+            // or this URL could be emitted directly from dir.jelly
+            // though we would prefer to delay toExternalURL calls unless and until needed
+            rsp.sendRedirect2(external.toExternalForm());
             return;
         }
 

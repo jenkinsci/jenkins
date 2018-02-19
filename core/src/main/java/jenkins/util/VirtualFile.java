@@ -28,16 +28,17 @@ import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import hudson.remoting.RemoteInputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
@@ -45,9 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-
 import jenkins.MasterToSlaveFileCallable;
+import jenkins.model.ArtifactManager;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
@@ -61,6 +63,26 @@ import jenkins.MasterToSlaveFileCallable;
  * FilePath abstracts away {@link File}s on machines that are connected over {@link Channel}, whereas
  * {@link VirtualFile} makes no assumption about where the actual files are, or whether there really exists
  * {@link File}s somewhere. This makes VirtualFile more abstract.
+ *
+ * <h2>Opening files from other machines</h2>
+ *
+ * While {@link VirtualFile} is marked {@link Serializable},
+ * it is <em>not</em> safe in general to transfer over a Remoting channel.
+ * (For example, an implementation from {@link #forFilePath} could be sent on the <em>same</em> channel,
+ * but an implementation from {@link #forFile} will not.)
+ * Thus callers should assume that methods such as {@link #open} will work
+ * only on the node on which the object was created.
+ *
+ * <p>Since some implementations may in fact use external file storage,
+ * callers may request optional APIs to access those services more efficiently.
+ * Otherwise, for example, a plugin copying a file
+ * previously saved by {@link ArtifactManager} to an external storage servuce
+ * which tunneled a stream from {@link #open} using {@link RemoteInputStream}
+ * would wind up transferring the file from the service to the Jenkins master and then on to an agent.
+ * Similarly, if {@link DirectoryBrowserSupport} rendered a link to an in-Jenkins URL,
+ * a large file could be transferred from the service to the Jenkins master and then on to the browser.
+ * To avoid this overhead, callers may check whether an implementation
+ * supports {@link #asRemotable} and/or {@link #toExternalURL}.
  *
  * @see DirectoryBrowserSupport
  * @see FilePath
@@ -80,6 +102,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     /**
      * Gets a URI.
      * Should at least uniquely identify this virtual file within its root, but not necessarily globally.
+     * <p>When {@link #toExternalURL} is implemented, it is natural but not required to use that same value here.
      * @return a URI (need not be absolute)
      */
     public abstract URI toURI();
@@ -206,6 +229,43 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      */
     public <V> V run(Callable<V,IOException> callable) throws IOException {
         return callable.call();
+    }
+
+    /**
+     * Optionally produces a variant of this handle which may be safely passed over a Remoting {@link Channel}.
+     * This would allow remote nodes such as agents to make calls such as {@link #open}
+     * and be assured of the most efficient possible access.
+     * Otherwise, all calls must be made on the node originally producing this object,
+     * and the caller must arrange for transport of the result.
+     * <p>Note that the result of {@link #forFilePath} does <em>not</em> implement this method,
+     * since a {@link FilePath} may only be transferred over the channel on which it was created.
+     * It cannot, for example, be used to represent a workspace file from one agent on another agent.
+     * @return this object or a variant which may be passed over a {@link Channel}, or null if there is no such support
+     * @since FIXME
+     * @see #toExternalURL
+     */
+    public @CheckForNull VirtualFile asRemotable() {
+        return null;
+    }
+
+    /**
+     * Optionally obtains a URL which may be used to retrieve file contents from any process on any node.
+     * For example, given cloud storage this might produce a permalink to the file.
+     * <p>This is only meaningful for {@link #isFile}:
+     * no ZIP etc. archiving protocol is defined to allow bulk access to directory trees.
+     * <p>Any necessary authentication must be encoded somehow into the URL itself;
+     * do not include any tokens or other authentication which might allow access to unrelated files
+     * (for example {@link ArtifactManager} builds from a different job).
+     * <p>Generally this will be harder to implement than {@link #asRemotable},
+     * which would have the opportunity to perform arbitrary preparation for {@link #open}
+     * such as negotiating session authentication.
+     * @return an externally usable URL like {@code https://gist.githubusercontent.com/ACCT/GISTID/raw/COMMITHASH/FILE}, or null if there is no such support
+     * @since FIXME
+     * @see #toURI
+     * @see #asRemotable
+     */
+    public @CheckForNull URL toExternalURL() throws IOException {
+        return null;
     }
 
     /**
