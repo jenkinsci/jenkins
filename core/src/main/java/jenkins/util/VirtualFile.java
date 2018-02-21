@@ -26,12 +26,14 @@ package jenkins.util;
 
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
+import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
+import hudson.util.IOUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -170,6 +172,15 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if checking the timestamp failed
      */
     public abstract long lastModified() throws IOException;
+
+    /**
+     * Gets the file’s Unix mode, if meaningful.
+     * @return for example, 0644 ~ {@code rw-r--r--}; -1 by default, meaning unknown or inapplicable
+     * @throws IOException if checking the mode failed
+     */
+    public int mode() throws IOException {
+        return -1;
+    }
 
     /**
      * Checks whether this file can be read.
@@ -339,6 +350,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
                 return f.length();
             }
+            @Override public int mode() throws IOException {
+                if (isIllegalSymlink()) {
+                    return -1;
+                }
+                return IOUtils.mode(f);
+            }
             @Override public long lastModified() throws IOException {
                 if (isIllegalSymlink()) {
                     return 0;
@@ -408,7 +425,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     return f.isDirectory();
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public boolean isFile() throws IOException {
@@ -419,7 +436,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     return f.exists();
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public VirtualFile[] list() throws IOException {
@@ -431,14 +448,14 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     }
                     return vfs;
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public String[] list(String glob) throws IOException {
                 try {
                     return f.act(new Scanner(glob));
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public VirtualFile child(String name) {
@@ -448,35 +465,42 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 try {
                     return f.length();
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
+                }
+            }
+            @Override public int mode() throws IOException {
+                try {
+                    return f.mode();
+                } catch (InterruptedException | PosixException x) {
+                    throw new IOException(x);
                 }
             }
             @Override public long lastModified() throws IOException {
                 try {
                     return f.lastModified();
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public boolean canRead() throws IOException {
                 try {
                     return f.act(new Readable());
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public InputStream open() throws IOException {
                 try {
                     return f.read();
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
             @Override public <V> V run(Callable<V,IOException> callable) throws IOException {
                 try {
                     return f.act(callable);
                 } catch (InterruptedException x) {
-                    throw (IOException) new IOException(x.toString()).initCause(x);
+                    throw new IOException(x);
                 }
             }
     }

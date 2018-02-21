@@ -24,12 +24,15 @@
 
 package jenkins.util;
 
+import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.TaskListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.attribute.PosixFilePermissions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -67,6 +70,22 @@ public class VirtualFileTest {
         } catch (FileNotFoundException | NoSuchFileException x) {
             // OK
         }
+    }
+
+    @Issue("JENKINS-26810")
+    @Test public void mode() throws Exception {
+        File f = tmp.newFile();
+        VirtualFile vf = VirtualFile.forFile(f);
+        FilePath fp = new FilePath(f);
+        VirtualFile vfp = VirtualFile.forFilePath(fp);
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
+        fp.chmod(0755);
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
+        assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
+    }
+    private static String modeString(int mode) throws IOException {
+        return mode == -1 ? "N/A" : PosixFilePermissions.toString(Util.modeToPermissions(mode));
     }
 
 }
