@@ -222,6 +222,13 @@ public class FingerprintTest {
                 Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprint.xml").toURI())).toString());
     }
 
+    @Test public void loadFingerprintWithoutUsages() throws Exception {
+        Fingerprint fp = Fingerprint.load(new File(FingerprintTest.class.getResource("fingerprintWithoutUsages.xml").toURI()));
+        assertNotNull(fp);
+        assertEquals("test:jenkinsfile-example-1.0-SNAPSHOT.jar", fp.getFileName());
+        assertNotNull(fp.getUsages());
+    }
+
     @Test public void roundTrip() throws Exception {
         Fingerprint f = new Fingerprint(new Fingerprint.BuildPtr("foo", 13), "stuff&more.jar", SOME_MD5);
         f.addWithoutSaving("some", 1);
