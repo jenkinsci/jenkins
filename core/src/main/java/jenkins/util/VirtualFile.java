@@ -140,7 +140,19 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public abstract boolean isFile() throws IOException;
 
     /**
+     * If this file is a symlink, returns the link target.
+     * <p>The default implementation always returns null.
+     * Some implementations may not support symlinks under any conditions.
+     * @return a target (typically a relative path in some format), or null if this is not a link
+     * @throws IOException if reading the link, or even determining whether this file is a link, failed
+     */
+    public @CheckForNull String readLink() throws IOException {
+        return null;
+    }
+
+    /**
      * Checks whether this file exists.
+     * The behavior is undefined for symlinks; if in doubt, check {@link #readLink} first.
      * @return true if it is a plain file or directory, false if nonexistent
      * @throws IOException in case checking status failed
      */
@@ -378,6 +390,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
                 return f.exists();
             }
+            @Override public String readLink() throws IOException {
+                if (isIllegalSymlink()) {
+                    return null; // best to just ignore link -> ../whatever
+                }
+                return Util.resolveSymlink(f);
+            }
             @Override public VirtualFile[] list() throws IOException {
                 if (isIllegalSymlink()) {
                     return new VirtualFile[0];
@@ -493,6 +511,13 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public boolean exists() throws IOException {
                 try {
                     return f.exists();
+                } catch (InterruptedException x) {
+                    throw new IOException(x);
+                }
+            }
+            @Override public String readLink() throws IOException {
+                try {
+                    return f.readLink();
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }

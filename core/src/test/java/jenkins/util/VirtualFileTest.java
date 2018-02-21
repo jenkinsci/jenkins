@@ -175,4 +175,21 @@ public class VirtualFileTest {
         }
     }
 
+    @Issue("JENKINS-26810")
+    @Test public void readLink() throws Exception {
+        assumeFalse("Symlinks do not work well on Windows", Functions.isWindows());
+        File root = tmp.getRoot();
+        FilePath rootF = new FilePath(root);
+        rootF.child("plain").write("", null);
+        rootF.child("link").symlinkTo("physical", TaskListener.NULL);
+        for (VirtualFile vf : new VirtualFile[] {VirtualFile.forFile(root), VirtualFile.forFilePath(rootF)}) {
+            assertNull(vf.readLink());
+            assertNull(vf.child("plain").readLink());
+            VirtualFile link = vf.child("link");
+            assertEquals("physical", link.readLink());
+            assertFalse(link.isFile());
+            assertFalse(link.isDirectory());
+        }
+    }
+
 }
