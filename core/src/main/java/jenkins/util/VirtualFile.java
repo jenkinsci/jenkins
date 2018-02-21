@@ -145,6 +145,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * Some implementations may not support symlinks under any conditions.
      * @return a target (typically a relative path in some format), or null if this is not a link
      * @throws IOException if reading the link, or even determining whether this file is a link, failed
+     * @since FIXME
      */
     public @CheckForNull String readLink() throws IOException {
         return null;
@@ -183,6 +184,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
      * @return a list of {@code /}-separated relative names of children (files directly inside or in subdirectories)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
+     * @since FIXME
      */
     public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
         List<String> r = new ArrayList<>();
@@ -246,6 +248,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * Gets the file’s Unix mode, if meaningful.
      * @return for example, 0644 ~ {@code rw-r--r--}; -1 by default, meaning unknown or inapplicable
      * @throws IOException if checking the mode failed
+     * @since FIXME
      */
     public int mode() throws IOException {
         return -1;
