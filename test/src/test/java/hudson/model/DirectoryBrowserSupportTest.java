@@ -60,6 +60,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.ArtifactManager;
@@ -329,8 +331,8 @@ public class DirectoryBrowserSupportTest {
                     return new VirtualFile[0];
                 }
                 @Override
-                public String[] list(String glob) throws IOException {
-                    return new String[0];
+                public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
+                    return Collections.emptySet();
                 }
                 @Override
                 public VirtualFile child(String name) {
@@ -387,7 +389,7 @@ public class DirectoryBrowserSupportTest {
                     return new VirtualFile[] {file};
                 }
                 @Override
-                public String[] list(String glob) throws IOException {
+                public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
                     throw new UnsupportedOperationException();
                 }
                 @Override

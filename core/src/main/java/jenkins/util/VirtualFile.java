@@ -25,6 +25,7 @@
 package jenkins.util;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.os.PosixException;
 import hudson.remoting.Callable;
@@ -45,13 +46,20 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
+import org.apache.tools.ant.types.AbstractFileSet;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
@@ -145,12 +153,39 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public abstract @Nonnull VirtualFile[] list() throws IOException;
 
     /**
+     * @deprecated use {@link #list(String, String, boolean)} instead
+     */
+    @Deprecated
+    public @Nonnull String[] list(String glob) throws IOException {
+        return list(glob.replace('\\', '/'), null, true).toArray(new String[0]);
+    }
+
+    /**
      * Lists recursive files of this directory with pattern matching.
-     * @param glob an Ant-style glob
-     * @return a list of relative names of children (files directly inside or in subdirectories)
+     * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
+     *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
+     * @param excludes optional excludes in similar format to {@code includes}
+     * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
+     * @return a list of {@code /}-separated relative names of children (files directly inside or in subdirectories)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      */
-    public abstract @Nonnull String[] list(String glob) throws IOException;
+    public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
+        if (Util.isOverridden(VirtualFile.class, getClass(), "list", String.class)) {
+            String[] included = list(includes.isEmpty() ? "**" : includes);
+            if (excludes != null) {
+                // Do our best to apply excludes and hope defaultexcludes are not relevant (original File/FilePath impls assumed uDE=true).
+                // Or we could use list() recursively and apply includes and excludes without calling list(String) at all.
+                return Stream.of(included).
+                    filter(path -> SelectorUtils.match(excludes.endsWith("/") ? excludes + SelectorUtils.DEEP_TREE_MATCH : excludes, path)).
+                    map(path -> path.replace('\\', '/')).
+                    collect(Collectors.toList());
+            } else {
+                return Arrays.asList(included);
+            }
+        } else {
+            throw new AbstractMethodError("implement " + getClass().getName() + ".list(String, String, boolean)");
+        }
+    }
 
     /**
      * Obtains a child file.
@@ -335,11 +370,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
                 return vfs;
             }
-            @Override public String[] list(String glob) throws IOException {
+            @Override
+            public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
                 if (isIllegalSymlink()) {
-                    return new String[0];
+                    return Collections.emptySet();
                 }
-                return new Scanner(glob).invoke(f, null);
+                return new Scanner(includes, excludes, useDefaultExcludes).invoke(f, null);
             }
             @Override public VirtualFile child(String name) {
                 return new FileVF(new File(f, name), root);
@@ -451,9 +487,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
-            @Override public String[] list(String glob) throws IOException {
+            @Override public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
                 try {
-                    return f.act(new Scanner(glob));
+                    return f.act(new Scanner(includes, excludes, useDefaultExcludes));
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
@@ -504,20 +540,26 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
             }
     }
-    private static final class Scanner extends MasterToSlaveFileCallable<String[]> {
-        private final String glob;
-        Scanner(String glob) {
-            this.glob = glob;
+    private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
+        private final String includes, excludes;
+        private final boolean useDefaultExcludes;
+        Scanner(String includes, String excludes, boolean useDefaultExcludes) {
+            this.includes = includes;
+            this.excludes = excludes;
+            this.useDefaultExcludes = useDefaultExcludes;
         }
-        @Override public String[] invoke(File f, VirtualChannel channel) throws IOException {
+        @Override public List<String> invoke(File f, VirtualChannel channel) throws IOException {
+            if (includes.isEmpty()) { // see Glob class Javadoc, and list(String, String, boolean) note
+                return Collections.emptyList();
+            }
             final List<String> paths = new ArrayList<String>();
-            new DirScanner.Glob(glob, null).scan(f, new FileVisitor() {
+            new DirScanner.Glob(includes, excludes, useDefaultExcludes).scan(f, new FileVisitor() {
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
                     paths.add(relativePath);
                 }
             });
-            return paths.toArray(new String[paths.size()]);
+            return paths;
         }
 
     }

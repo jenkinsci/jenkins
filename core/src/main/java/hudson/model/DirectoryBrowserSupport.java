@@ -33,6 +33,7 @@ import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -365,7 +366,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void zip(OutputStream outputStream, VirtualFile dir, String glob) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
-            for (String n : dir.list(glob.length() == 0 ? "**" : glob)) {
+            for (String n : dir.list(glob, null, /* TODO what is the user expectation? */true)) {
                 String relativePath;
                 if (glob.length() == 0) {
                     // JENKINS-19947: traditional behavior is to prepend the directory name
@@ -545,10 +546,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param baseRef String like "../../../" that cancels the 'rest' portion. Can be "./"
      */
     private static List<List<Path>> patternScan(VirtualFile baseDir, String pattern, String baseRef) throws IOException {
-            String[] files = baseDir.list(pattern);
+            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true);
 
-            if (files.length > 0) {
-                List<List<Path>> r = new ArrayList<List<Path>>(files.length);
+            if (!files.isEmpty()) {
+                List<List<Path>> r = new ArrayList<List<Path>>(files.size());
                 for (String match : files) {
                     List<Path> file = buildPathList(baseDir, baseDir.child(match), baseRef);
                     r.add(file);

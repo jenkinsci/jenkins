@@ -33,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -86,6 +87,30 @@ public class VirtualFileTest {
     }
     private static String modeString(int mode) throws IOException {
         return mode == -1 ? "N/A" : PosixFilePermissions.toString(Util.modeToPermissions(mode));
+    }
+
+    @Issue("JENKINS-26810")
+    @Test public void list() throws Exception {
+        File root = tmp.getRoot();
+        FilePath rootF = new FilePath(root);
+        rootF.child("top.txt").write("", null);
+        rootF.child("sub/mid.txt").write("", null);
+        rootF.child("sub/subsub/lowest.txt").write("", null);
+        rootF.child(".hg/config.txt").write("", null);
+        for (VirtualFile vf : new VirtualFile[] {VirtualFile.forFile(root), VirtualFile.forFilePath(rootF)}) {
+            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**/*.txt", null, true)).toString());
+            assertEquals("[.hg/config.txt, sub/mid.txt, sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**", null, false)).toString());
+            assertEquals("[]", new TreeSet<>(vf.list("", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", null, false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/", false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "sub/subsub/**", false)).toString());
+            assertEquals("[sub/mid.txt]", new TreeSet<>(vf.list("sub/", "**/subsub/", false)).toString());
+            assertEquals("[.hg/config.txt, sub/mid.txt]", new TreeSet<>(vf.list("**/mid*,**/conf*", null, false)).toString());
+            assertEquals("[sub/mid.txt, sub/subsub/lowest.txt]", new TreeSet<>(vf.list("sub/", "**/notthere/", false)).toString());
+            assertEquals("[top.txt]", new TreeSet<>(vf.list("*.txt", null, false)).toString());
+            assertEquals("[sub/subsub/lowest.txt, top.txt]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
+        }
     }
 
 }
