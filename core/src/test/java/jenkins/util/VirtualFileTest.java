@@ -87,7 +87,7 @@ public class VirtualFileTest {
         VirtualFile vfp = VirtualFile.forFilePath(fp);
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
-        fp.chmod(0755);
+        fp.chmod(0755); // no-op on Windows, but harmless
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vf.mode()));
         assertEquals(modeString(hudson.util.IOUtils.mode(f)), modeString(vfp.mode()));
     }
@@ -119,6 +119,7 @@ public class VirtualFileTest {
             assertEquals("[sub/subsub/lowest.txt, top.txt, very/deep/path/here]", new TreeSet<>(vf.list("**", "**/mid*,**/conf*", false)).toString());
         }
     }
+    /** Roughly analogous to {@code org.jenkinsci.plugins.compress_artifacts.ZipStorage}. */
     private static final class Ram extends VirtualFile {
         private final Set<String> paths; // e.g., [/very/deep/path/here]
         private final String path; // e.g., empty string or /very or /very/deep/path/here
@@ -152,7 +153,7 @@ public class VirtualFileTest {
         }
         @Override
         public VirtualFile[] list() throws IOException {
-            return paths.stream().filter(p -> p.startsWith(path + "/")).map(p -> new Ram(paths, p.replaceFirst("(\\Q" + path + "\\E/[^/]+)/.+", "$1"))).collect(Collectors.toSet()).toArray(new VirtualFile[0]);
+            return paths.stream().filter(p -> p.startsWith(path + "/")).map(p -> new Ram(paths, p.replaceFirst("(\\Q" + path + "\\E/[^/]+)/.+", "$1"))).toArray(VirtualFile[]::new);
         }
         @Override
         public VirtualFile child(String name) {
@@ -190,6 +191,7 @@ public class VirtualFileTest {
             assertEquals("physical", link.readLink());
             assertFalse(link.isFile());
             assertFalse(link.isDirectory());
+            // not checking .exists() for now
         }
     }
 

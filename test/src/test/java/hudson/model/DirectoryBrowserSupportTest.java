@@ -251,6 +251,7 @@ public class DirectoryBrowserSupportTest {
             throw x;
         }
     }
+    /** Simulation of a storage service with URLs unrelated to {@link Run#doArtifact}. */
     @TestExtension("externalURLDownload")
     public static final class ContentAddressableStore implements UnprotectedRootAction {
         final List<byte[]> files = new ArrayList<>();
@@ -301,7 +302,7 @@ public class DirectoryBrowserSupportTest {
         }
         @Override
         public VirtualFile root() {
-            final VirtualFile file = new VirtualFile() {
+            final VirtualFile file = new VirtualFile() { // the file inside the root
                 @Override
                 public String getName() {
                     return "f";
@@ -359,7 +360,7 @@ public class DirectoryBrowserSupportTest {
                     return new URL(Jenkins.get().getRootUrl() + "files/" + hash);
                 }
             };
-            return new VirtualFile() {
+            return new VirtualFile() { // the root
                 @Override
                 public String getName() {
                     return "";
