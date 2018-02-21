@@ -193,11 +193,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         List<TokenizedPattern> excludePatterns = patterns(excludes);
         if (useDefaultExcludes) {
             for (String patt : DirectoryScanner.getDefaultExcludes()) {
-                excludePatterns.add(new TokenizedPattern(patt));
+                excludePatterns.add(new TokenizedPattern(patt.replace('/', File.separatorChar)));
             }
         }
         return r.stream().filter(p -> {
-            TokenizedPath path = new TokenizedPath(p);
+            TokenizedPath path = new TokenizedPath(p.replace('/', File.separatorChar));
             return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && !excludePatterns.stream().anyMatch(patt -> patt.matchPath(path, true));
         }).collect(Collectors.toSet());
     }
@@ -217,7 +217,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 if (patt.endsWith("/")) {
                     patt += SelectorUtils.DEEP_TREE_MATCH;
                 }
-                r.add(new TokenizedPattern(patt));
+                r.add(new TokenizedPattern(patt.replace('/', File.separatorChar)));
             }
         }
         return r;
