@@ -606,7 +606,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             new DirScanner.Glob(includes, excludes, useDefaultExcludes).scan(f, new FileVisitor() {
                 @Override
                 public void visit(File f, String relativePath) throws IOException {
-                    paths.add(relativePath);
+                    paths.add(relativePath.replace('\\', '/'));
                 }
             });
             return paths;
