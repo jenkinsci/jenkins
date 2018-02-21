@@ -46,20 +46,21 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
+import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.apache.tools.ant.types.selectors.TokenizedPath;
+import org.apache.tools.ant.types.selectors.TokenizedPattern;
 
 /**
  * Abstraction over {@link File}, {@link FilePath}, or other items such as network resources or ZIP entries.
@@ -162,6 +163,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Lists recursive files of this directory with pattern matching.
+     * <p>The default implementation calls {@link #list()} recursively and applies filtering to the result.
+     * Implementations may wish to override this more efficiently.
      * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
      *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
      * @param excludes optional excludes in similar format to {@code includes}
@@ -170,21 +173,40 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      */
     public @Nonnull Collection<String> list(@Nonnull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
-        if (Util.isOverridden(VirtualFile.class, getClass(), "list", String.class)) {
-            String[] included = list(includes.isEmpty() ? "**" : includes);
-            if (excludes != null) {
-                // Do our best to apply excludes and hope defaultexcludes are not relevant (original File/FilePath impls assumed uDE=true).
-                // Or we could use list() recursively and apply includes and excludes without calling list(String) at all.
-                return Stream.of(included).
-                    filter(path -> SelectorUtils.match(excludes.endsWith("/") ? excludes + SelectorUtils.DEEP_TREE_MATCH : excludes, path)).
-                    map(path -> path.replace('\\', '/')).
-                    collect(Collectors.toList());
-            } else {
-                return Arrays.asList(included);
+        List<String> r = new ArrayList<>();
+        collectFiles(r, "");
+        List<TokenizedPattern> includePatterns = patterns(includes);
+        List<TokenizedPattern> excludePatterns = patterns(excludes);
+        if (useDefaultExcludes) {
+            for (String patt : DirectoryScanner.getDefaultExcludes()) {
+                excludePatterns.add(new TokenizedPattern(patt));
             }
-        } else {
-            throw new AbstractMethodError("implement " + getClass().getName() + ".list(String, String, boolean)");
         }
+        return r.stream().filter(p -> {
+            TokenizedPath path = new TokenizedPath(p);
+            return includePatterns.stream().anyMatch(patt -> patt.matchPath(path, true)) && !excludePatterns.stream().anyMatch(patt -> patt.matchPath(path, true));
+        }).collect(Collectors.toSet());
+    }
+    private void collectFiles(Collection<String> names, String prefix) throws IOException {
+        for (VirtualFile child : list()) {
+            if (child.isFile()) {
+                names.add(prefix + child.getName());
+            } else if (child.isDirectory()) {
+                child.collectFiles(names, prefix + child.getName() + "/");
+            }
+        }
+    }
+    private List<TokenizedPattern> patterns(String patts) {
+        List<TokenizedPattern> r = new ArrayList<>();
+        if (patts != null) {
+            for (String patt : patts.split(",")) {
+                if (patt.endsWith("/")) {
+                    patt += SelectorUtils.DEEP_TREE_MATCH;
+                }
+                r.add(new TokenizedPattern(patt));
+            }
+        }
+        return r;
     }
 
     /**
