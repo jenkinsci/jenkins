@@ -106,6 +106,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
@@ -3036,7 +3037,9 @@ public class Queue extends ResourceController implements Saveable {
         @VisibleForTesting
         /*package*/ static /*final*/ int DELAY_SECONDS = SystemProperties.getInteger("hudson.model.Queue.Saver.DELAY_SECONDS", 60);
 
-        private volatile Future<?> nextSave;
+        private final Object lock = new Object();
+        @GuardedBy("lock")
+        private Future<?> nextSave;
 
         @Override
         public void onEnterWaiting(WaitingItem wi) {
@@ -3051,9 +3054,11 @@ public class Queue extends ResourceController implements Saveable {
         private void push() {
             if (DELAY_SECONDS < 0) return;
 
-            // Can be done or canceled in case of a bug or external intervention - do not allow it to hang there forever
-            if (nextSave != null && !(nextSave.isDone() || nextSave.isCancelled())) return;
-            nextSave = Timer.get().schedule(this, DELAY_SECONDS, TimeUnit.SECONDS);
+            synchronized (lock) {
+                // Can be done or canceled in case of a bug or external intervention - do not allow it to hang there forever
+                if (nextSave != null && !(nextSave.isDone() || nextSave.isCancelled())) return;
+                nextSave = Timer.get().schedule(this, DELAY_SECONDS, TimeUnit.SECONDS);
+            }
         }
 
         @Override
@@ -3064,15 +3069,20 @@ public class Queue extends ResourceController implements Saveable {
                     j.getQueue().save();
                 }
             } finally {
-                nextSave = null;
+                synchronized (lock) {
+                    nextSave = null;
+                }
             }
         }
 
         @VisibleForTesting @Restricted(NoExternalUse.class)
         /*package*/ @Nonnull Future<?> getNextSave() {
-            Future<?> ns = nextSave;
-            if (ns == null) return Futures.precomputed(null);
-            return ns;
+            synchronized (lock) {
+                return nextSave == null
+                        ? Futures.precomputed(null)
+                        : nextSave
+                ;
+            }
         }
     }
 }
