@@ -278,6 +278,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         try {
             Jenkins.checkGoodName(newName);
             assert newName != null; // Would have thrown Failure
+            Jenkins.get().getProjectNamingStrategy().checkName(newName);
             checkIfNameIsUsed(newName);
             checkRename(newName);
         } catch (Failure e) {

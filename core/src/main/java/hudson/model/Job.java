@@ -1573,7 +1573,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     @Override
     protected void checkRename(String newName) throws Failure {
-        Jenkins.get().getProjectNamingStrategy().checkName(newName);
         if (isBuilding()) {
             throw new Failure(Messages.Job_NoRenameWhileBuilding());
         }
