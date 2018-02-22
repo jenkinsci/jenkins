@@ -235,6 +235,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     /**
      * @return whether {@link #name} can be modified by a user
+     * @since FIXME
      */
     public boolean isNameEditable() {
         return false;
@@ -322,6 +323,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      *
      * @param newName the new name for the item
      * @throws Failure if the rename should be blocked
+     * @since FIXME
      * @see Job#checkRename
      */
     @CheckForNull
