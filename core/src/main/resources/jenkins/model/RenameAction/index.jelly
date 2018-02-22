@@ -26,6 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
     <!-- TODO: Should use permission attribute after JENKINS-18649 -->
     <j:if test="it.hasPermission(it.CONFIGURE) or (it.hasPermission(it.CREATE) and it.hasPermission(it.DELETE))">
-      <l:task href="${url}/rename" icon="icon-notepad icon-md" enabled="${it.isNameEditable()}" title="${%Rename}"/>
+      <l:task href="${url}/rename" icon="icon-notepad icon-md" enabled="${it.nameEditable}" title="${%Rename}"/>
     </j:if>
 </j:jelly>
