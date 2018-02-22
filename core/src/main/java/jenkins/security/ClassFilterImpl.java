@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import hudson.ExtensionList;
 import hudson.Main;
@@ -105,7 +106,8 @@ public class ClassFilterImpl extends ClassFilter {
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 
-    private ClassFilterImpl() {}
+    @VisibleForTesting
+    /*package*/ ClassFilterImpl() {}
 
     /** Whether a given class is blacklisted. */
     private final Map<Class<?>, Boolean> cache = Collections.synchronizedMap(new WeakHashMap<>());
