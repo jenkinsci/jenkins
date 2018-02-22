@@ -1560,12 +1560,14 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Renames this job.
+     * @deprecated Exists for backwards compatibility, use {@link #doDoRename2} instead.
      */
+    @Deprecated
     @RequirePOST
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
-        super.doDoRename2(req, rsp);
+        doDoRename2(req, rsp);
     }
 
     /**
