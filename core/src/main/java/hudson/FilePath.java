@@ -1167,19 +1167,22 @@ public final class FilePath implements Serializable {
      * Creates this directory.
      */
     public void mkdirs() throws IOException, InterruptedException {
-        if(!act(new SecureFileCallable<Boolean>() {
-            private static final long serialVersionUID = 1L;
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-                if(mkdirs(f) || f.exists())
-                    return true;    // OK
+        if (!act(new Mkdirs())) {
+            throw new IOException("Failed to mkdirs: " + remote);
+        }
+    }
+    private class Mkdirs extends SecureFileCallable<Boolean> {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            if(mkdirs(f) || f.exists())
+                return true;    // OK
 
-                // following Ant <mkdir> task to avoid possible race condition.
-                Thread.sleep(10);
+            // following Ant <mkdir> task to avoid possible race condition.
+            Thread.sleep(10);
 
-                return mkdirs(f) || f.exists();
-            }
-        }))
-            throw new IOException("Failed to mkdirs: "+remote);
+            return mkdirs(f) || f.exists();
+        }
     }
 
     /**
@@ -2438,7 +2441,7 @@ public final class FilePath implements Serializable {
      * @throws InterruptedException not only in case of a channel failure, but also if too many operations were performed without finding any matches
      * @since 1.484
      */
-    public String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
+    public @CheckForNull String validateAntFileMask(final String fileMasks, final int bound, final boolean caseSensitive) throws IOException, InterruptedException {
         return act(new MasterToSlaveFileCallable<String>() {
             private static final long serialVersionUID = 1;
             public String invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
@@ -2826,6 +2829,11 @@ public final class FilePath implements Serializable {
 
         public ClassLoader getClassLoader() {
             return classLoader;
+        }
+
+        @Override
+        public String toString() {
+            return callable.toString();
         }
 
         private static final long serialVersionUID = 1L;

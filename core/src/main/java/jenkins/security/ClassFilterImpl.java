@@ -24,10 +24,12 @@
 
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import hudson.ExtensionList;
 import hudson.Main;
 import hudson.remoting.ClassFilter;
+import hudson.remoting.Which;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,6 +51,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
@@ -71,11 +75,14 @@ public class ClassFilterImpl extends ClassFilter {
     private static /* not final */ boolean SUPPRESS_WHITELIST = SystemProperties.getBoolean("jenkins.security.ClassFilterImpl.SUPPRESS_WHITELIST");
     private static /* not final */ boolean SUPPRESS_ALL = SystemProperties.getBoolean("jenkins.security.ClassFilterImpl.SUPPRESS_ALL");
 
+    private static final String JENKINS_LOC = codeSource(Jenkins.class);
+    private static final String REMOTING_LOC = codeSource(ClassFilter.class);
+
     /**
      * Register this implementation as the default in the system.
      */
     public static void register() {
-        if (Main.isUnitTest && Jenkins.class.getProtectionDomain().getCodeSource().getLocation() == null) {
+        if (Main.isUnitTest && JENKINS_LOC == null) {
             mockOff();
             return;
         }
@@ -99,7 +106,8 @@ public class ClassFilterImpl extends ClassFilter {
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 
-    private ClassFilterImpl() {}
+    @VisibleForTesting
+    /*package*/ ClassFilterImpl() {}
 
     /** Whether a given class is blacklisted. */
     private final Map<Class<?>, Boolean> cache = Collections.synchronizedMap(new WeakHashMap<>());
@@ -146,10 +154,9 @@ public class ClassFilterImpl extends ClassFilter {
                 LOGGER.log(Level.FINE, "permitting {0} since it is an enum", name);
                 return false;
             }
-            CodeSource codeSource = c.getProtectionDomain().getCodeSource();
-            URL location = codeSource != null ? codeSource.getLocation() : null;
+            String location = codeSource(c);
             if (location != null) {
-                if (isLocationWhitelisted(location.toString())) {
+                if (isLocationWhitelisted(location)) {
                     LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
                     return false;
                 }
@@ -176,11 +183,11 @@ public class ClassFilterImpl extends ClassFilter {
     private static final Pattern CLASSES_JAR = Pattern.compile("(file:/.+/)WEB-INF/lib/classes[.]jar");
     private boolean isLocationWhitelisted(String _loc) {
         return codeSourceCache.computeIfAbsent(_loc, loc -> {
-            if (loc.equals(Jenkins.class.getProtectionDomain().getCodeSource().getLocation().toString())) {
+            if (loc.equals(JENKINS_LOC)) {
                 LOGGER.log(Level.FINE, "{0} seems to be the location of Jenkins core, OK", loc);
                 return true;
             }
-            if (loc.equals(ClassFilter.class.getProtectionDomain().getCodeSource().getLocation().toString())) {
+            if (loc.equals(REMOTING_LOC)) {
                 LOGGER.log(Level.FINE, "{0} seems to be the location of Remoting, OK", loc);
                 return true;
             }
@@ -239,6 +246,34 @@ public class ClassFilterImpl extends ClassFilter {
             LOGGER.log(Level.FINE, "{0} is not recognized; rejecting", loc);
             return false;
         });
+    }
+
+    /**
+     * Tries to determine what JAR file a given class was loaded from.
+     * The location is an opaque string suitable only for comparison to others.
+     * Similar to {@link Which#jarFile(Class)} but potentially faster, and more tolerant of unknown URL formats.
+     * @param c some class
+     * @return something typically like {@code file:/…/plugins/structs/WEB-INF/lib/structs-1.10.jar};
+     *         or null for classes in the Java Platform, some generated classes, etc.
+     */
+    private static @CheckForNull String codeSource(@Nonnull Class<?> c) {
+        CodeSource cs = c.getProtectionDomain().getCodeSource();
+        if (cs == null) {
+            return null;
+        }
+        URL loc = cs.getLocation();
+        if (loc == null) {
+            return null;
+        }
+        String r = loc.toString();
+        if (r.endsWith(".class")) {
+            // JENKINS-49147: Tomcat bug. Now do the more expensive check…
+            String suffix = c.getName().replace('.', '/') + ".class";
+            if (r.endsWith(suffix)) {
+                r = r.substring(0, r.length() - suffix.length());
+            }
+        }
+        return r;
     }
 
     private static boolean isPluginManifest(Manifest mf) {

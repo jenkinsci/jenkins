@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import hudson.model.AperiodicWork;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
+import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import hudson.slaves.OfflineCause;
 import java.io.DataOutputStream;
@@ -300,6 +301,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     o.write("Jenkins-Session: " + Jenkins.SESSION_HASH + "\r\n");
                     o.write("Client: " + s.getInetAddress().getHostAddress() + "\r\n");
                     o.write("Server: " + s.getLocalAddress().getHostAddress() + "\r\n");
+                    o.write("Remoting-Minimum-Version: " + RemotingVersionInfo.getMinimumSupportedVersion() + "\r\n");
                     o.flush();
                     s.shutdownOutput();
                 } else {
