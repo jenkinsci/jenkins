@@ -321,15 +321,16 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
-     * Allows subclasses to block renames for domain-specific reasons.
+     * Allows subclasses to block renames for domain-specific reasons. Generic validation of the new name
+     * (e.g., null checking, checking for illegal characters, and checking that the name is not in use)
+     * always happens prior to calling this method.
      *
      * @param newName the new name for the item
      * @throws Failure if the rename should be blocked
      * @since FIXME
      * @see Job#checkRename
      */
-    @CheckForNull
-    protected void checkRename(String newName) throws Failure {
+    protected void checkRename(@Nonnull String newName) throws Failure {
 
     }
 
