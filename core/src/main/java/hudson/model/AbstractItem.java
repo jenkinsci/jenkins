@@ -75,6 +75,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import org.acegisecurity.AccessDeniedException;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.Stapler;
@@ -246,8 +248,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
-    public void doDoRename2(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        String newName = req.getParameter("newName");
+    public HttpResponse doDoRename2(@QueryParameter String newName) throws IOException {
         newName = newName == null ? null : newName.trim();
         FormValidation validationError = doCheckNewName(newName);
         if (validationError.kind != FormValidation.Kind.OK) {
@@ -258,7 +259,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         // send to the new job page
         // note we can't use getUrl() because that would pick up old name in the
         // Ancestor.getUrl()
-        rsp.sendRedirect2("../" + newName);
+        return HttpResponses.redirectTo("../" + newName);
     }
 
     /**

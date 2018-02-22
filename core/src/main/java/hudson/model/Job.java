@@ -1567,7 +1567,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public/* not synchronized. see renameTo() */void doDoRename(
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
-        doDoRename2(req, rsp);
+        String newName = req.getParameter("newName");
+        doDoRename2(newName).generateResponse(req, rsp, null);
     }
 
     /**
