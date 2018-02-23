@@ -37,8 +37,6 @@ import java.io.IOException;
 
 /**
  * Monitor that the API Token cannot be created for a user without existing legacy token
- *
- * @since TODO
  */
 @Extension
 @Symbol("apiTokenNewLegacyWithoutExisting")
@@ -51,13 +49,13 @@ public class ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor extends Admin
     
     @Override
     public boolean isActivated() {
-        return !ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenDisabled();
+        return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
     }
     
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
         if (no == null) {
-            ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenDisabled(true);
+            ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenEnabled(false);
         } else {
             disable(true);
         }

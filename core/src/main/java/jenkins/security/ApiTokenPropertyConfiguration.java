@@ -38,10 +38,9 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Extension 
 @Symbol("apiToken")
-@Restricted(NoExternalUse.class)
 public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
-    private boolean tokenGenerationOnCreationDisabled = false;
-    private boolean creationOfLegacyTokenDisabled = false;
+    private boolean tokenGenerationOnCreationEnabled = true;
+    private boolean creationOfLegacyTokenEnabled = true;
     
     public static ApiTokenPropertyConfiguration get() {
         return Jenkins.get().getInjector().getInstance(ApiTokenPropertyConfiguration.class);
@@ -51,21 +50,21 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
         load();
     }
 
-    public boolean isTokenGenerationOnCreationDisabled() {
-        return tokenGenerationOnCreationDisabled;
+    public boolean isTokenGenerationOnCreationEnabled() {
+        return tokenGenerationOnCreationEnabled;
     }
 
-    public void setTokenGenerationOnCreationDisabled(boolean tokenGenerationOnCreationDisabled) {
-        this.tokenGenerationOnCreationDisabled = tokenGenerationOnCreationDisabled;
+    public void setTokenGenerationOnCreationEnabled(boolean tokenGenerationOnCreationEnabled) {
+        this.tokenGenerationOnCreationEnabled = tokenGenerationOnCreationEnabled;
         save();
     }
 
-    public boolean isCreationOfLegacyTokenDisabled() {
-        return creationOfLegacyTokenDisabled;
+    public boolean isCreationOfLegacyTokenEnabled() {
+        return creationOfLegacyTokenEnabled;
     }
 
-    public void setCreationOfLegacyTokenDisabled(boolean creationOfLegacyTokenDisabled) {
-        this.creationOfLegacyTokenDisabled = creationOfLegacyTokenDisabled;
+    public void setCreationOfLegacyTokenEnabled(boolean creationOfLegacyTokenEnabled) {
+        this.creationOfLegacyTokenEnabled = creationOfLegacyTokenEnabled;
         save();
     }
 

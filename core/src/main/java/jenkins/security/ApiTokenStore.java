@@ -58,15 +58,14 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ApiTokenStore {
     private static final Logger LOGGER = Logger.getLogger(OldDataMonitor.class.getName());
     private static final SecureRandom RANDOM = new SecureRandom();
     
-//    private static final Comparator<HashedToken> SORT_BY_LOWERCASED_NAME2 =
-//            Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase());
-    private static final Comparator<String> SORT_BY_LOWERCASE =
-            Comparator.comparing(name -> name.toLowerCase(Locale.ENGLISH));
+    private static final Comparator<HashedToken> SORT_BY_LOWERCASED_NAME =
+            Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase(Locale.ENGLISH));
     
     /**
      * Determine the (log of) number of rounds we need to apply when hashing the token
@@ -96,9 +95,7 @@ public class ApiTokenStore {
      */
     private static final HashCache HASH_CACHE = new HashCache();
     
-    @Deprecated
-    private List<HashedToken> tokenList2;
-    private SortedMap<String, HashedToken> tokenMap;
+    private List<HashedToken> tokenList;
     @Deprecated
     private transient Map<String, Node<HashedToken>> prefixToTokenList2;
     private transient Map<String, List<HashedToken>> prefixToTokenList;
@@ -113,11 +110,8 @@ public class ApiTokenStore {
     }
     
     private void init() {
-//        if (this.tokenList2 == null) {
-//            this.tokenList2 = new ArrayList<>();
-//        }
-        if (this.tokenMap == null) {
-            this.tokenMap = new TreeMap<>(SORT_BY_LOWERCASE);
+        if (this.tokenList == null) {
+            this.tokenList = new ArrayList<>();
         }
 //        this.prefixToTokenList2 = new HashMap<>();
         this.prefixToTokenList = new HashMap<>();
@@ -125,13 +119,9 @@ public class ApiTokenStore {
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public synchronized @Nonnull Collection<HashedToken> getTokenListSortedByName() {
-        return tokenMap.values();
-//        
-//        List<ApiTokenStore.HashedToken> sortedTokenList = tokenList2.stream()
-//                .sorted(SORT_BY_LOWERCASED_NAME2)
-//                .collect(Collectors.toList());
-//        
-//        return sortedTokenList;
+        return tokenList.stream()
+                .sorted(SORT_BY_LOWERCASED_NAME)
+                .collect(Collectors.toList());
     }
     
     /**
@@ -140,13 +130,11 @@ public class ApiTokenStore {
     public synchronized void optimize() {
 //        this.prefixToTokenList2.clear();
         this.prefixToTokenList.clear();
-//        tokenList2.forEach(this::addTokenInPrefixMap);
-        tokenMap.values().forEach(this::addTokenInPrefixMap);
+        tokenList.forEach(this::addTokenInPrefixMap);
     }
     
     private void addToken(HashedToken token) {
-//        this.tokenList2.add(token);
-        this.tokenMap.put(token.getUuid(), token);
+        this.tokenList.add(token);
         this.addTokenInPrefixMap(token);
     }
     
@@ -173,9 +161,7 @@ public class ApiTokenStore {
      * and so between restart they change
      */
     public synchronized void reconfigure(@Nonnull Map<String, JSONObject> tokenStoreDataMap) {
-        //TODO check
-        tokenMap.values().forEach(hashedToken -> {
-//        tokenList2.forEach(hashedToken -> {
+        tokenList.forEach(hashedToken -> {
             JSONObject receivedTokenData = tokenStoreDataMap.get(hashedToken.uuid);
             if (receivedTokenData == null) {
                 LOGGER.log(Level.INFO, "No token received for {0}", hashedToken.uuid);
@@ -216,24 +202,14 @@ public class ApiTokenStore {
     
     private void deleteAllLegacyTokens() {
         // normally there is only one, but just in case
-        for (Iterator<HashedToken> iterator = tokenMap.values().iterator(); iterator.hasNext();) {
+        for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext();) {
             HashedToken token = iterator.next();
             if (token.isLegacy()) {
-//                tokenList2.remove(i);
                 iterator.remove();
-                
+
                 removeTokenFromPrefixMap(token);
             }
         }
-        
-//        for (int i = tokenList2.size() - 1; i >= 0; i--) {
-//            HashedToken token = tokenList2.get(i);
-//            if (token.isLegacy()) {
-//                tokenList2.remove(i);
-//                
-//                removeTokenFromPrefixMap(token);
-//            }
-//        }
     }
     
     private void addLegacyToken(@Nonnull Secret legacyToken) {
@@ -351,25 +327,18 @@ public class ApiTokenStore {
         String plainTokenCacheKey = HASH_CACHE.getCorrespondingCacheKey(plainToken);
         String uuidFromCache = HASH_CACHE.getCachedUuid(plainTokenCacheKey);
         if (uuidFromCache != null) {
-            HashedToken token = tokenMap.get(uuidFromCache);
-            if(token != null){
-                LOGGER.log(Level.FINER, "Cache hit for prefix = {0}", prefix);
-                token.incrementUse();
-                HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, token.uuid);
-                return true;
-            }else{
-                LOGGER.log(Level.FINER, "Cache hit false positive, the cached uuid corresponds to a token that was removed, for prefix = {0}", prefix);
+            for (HashedToken token : tokenList) {
+                if (token.uuid.equals(uuidFromCache)) {
+                    LOGGER.log(Level.FINER, "Cache hit for prefix = {0}", prefix);
+                    token.incrementUse();
+                    HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, token.uuid);
+                    return true;
+                }
             }
-////            for (HashedToken token : tokenList2) {
-////                if (token.uuid.equals(uuidFromCache)) {
-//                    LOGGER.log(Level.FINER, "Cache hit for prefix = {0}", prefix);
-//                    token.incrementUse();
-//                    HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, token.uuid);
-//                    return true;
-////                }
-////            }
+            LOGGER.log(Level.FINER, "Cache hit false positive, the cached uuid corresponds to a token that was removed, for prefix = {0}", prefix);
+        }else{
+            LOGGER.log(Level.FINER, "Cache miss for prefix = {0}", prefix);
         }
-        LOGGER.log(Level.FINER, "Cache miss for prefix = {0}", prefix);
     
         List<HashedToken> list = this.prefixToTokenList.get(prefix);
         for (HashedToken hashedToken : list) {
@@ -397,22 +366,16 @@ public class ApiTokenStore {
     }
     
     public synchronized @CheckForNull HashedToken revokeToken(@Nonnull String tokenUuid) {
-        HashedToken token = tokenMap.remove(tokenUuid);
-        if(token != null){
-            removeTokenFromPrefixMap(token);
-            return token;
+        for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext();) {
+            HashedToken token = iterator.next();
+            if (token.uuid.equals(tokenUuid)) {
+                iterator.remove();
+            
+                removeTokenFromPrefixMap(token);
+                return token;
+            }
         }
-        
-//        for (int i = 0; i < tokenList2.size(); i++) {
-//            HashedToken token = tokenList2.get(i);
-//            if (token.uuid.equals(tokenId)) {
-//                tokenList2.remove(i);
-//                
-//                removeTokenFromPrefixMap(token);
-//                return token;
-//            }
-//        }
-        
+
         return null;
     }
     
@@ -468,20 +431,15 @@ public class ApiTokenStore {
     }
     
     public synchronized boolean renameToken(@Nonnull String tokenUuid, @Nonnull String newName) {
-        HashedToken token = tokenMap.get(tokenUuid);
-        if(token == null){
-            LOGGER.log(Level.FINER, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
-            return false;
-        }else{
-            token.rename(newName);
-            return true;
+        for (HashedToken token : tokenList) {
+            if (token.uuid.equals(tokenUuid)) {
+                token.rename(newName);
+                return true;
+            }
         }
-//        for (HashedToken token : tokenList2) {
-//            if (token.uuid.equals(tokenId)) {
-//                token.rename(newName);
-//                return;
-//            }
-//        }
+
+        LOGGER.log(Level.FINER, "The target token for rename does not exist, for uuid = {0}, with desired name = {1}", new Object[]{tokenUuid, newName});
+        return false;
     }
     
     /**

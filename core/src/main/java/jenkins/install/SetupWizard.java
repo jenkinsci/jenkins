@@ -124,8 +124,8 @@ public class SetupWizard extends PageDecorator {
                     jenkins.setAuthorizationStrategy(authStrategy);
     
                     // Disable the legacy system of API Token
-                    ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenDisabled(true);
-                    ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationDisabled(true);
+                    ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenEnabled(false);
+                    ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(false);
 
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));

@@ -53,7 +53,6 @@ import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -209,7 +208,7 @@ public class ApiTokenProperty extends UserProperty {
     // only for Jelly
     @Restricted(NoExternalUse.class)
     public boolean mustDisplayLegacyApiToken() {
-        return apiToken != null || !ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenDisabled();
+        return apiToken != null || ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
     }
     
     @Override
@@ -254,7 +253,7 @@ public class ApiTokenProperty extends UserProperty {
     }
     
     /**
-     * Only usable if the user still has his API token. After the revocation of the legacy token the method will do nothing.
+     * Only usable if the user still has the legacy API token.
      * @deprecated Each token can be revoked now and new tokens can be requested without altering existing ones.
      */
     @Deprecated
@@ -318,7 +317,7 @@ public class ApiTokenProperty extends UserProperty {
          * the initial API token value. So we take the seed by hashing the secret + user ID.
          */
         public ApiTokenProperty newInstance(User user) {
-            if (ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationDisabled()) {
+            if (!ApiTokenPropertyConfiguration.get().isTokenGenerationOnCreationEnabled()) {
                 // recommended way
                 return null;
             }
@@ -361,9 +360,9 @@ public class ApiTokenProperty extends UserProperty {
         @Deprecated
         @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
-            LOGGER.log(Level.WARNING, "Deprecated action /changeToken used, consider using /generateNewToken instead");
-
             u.checkPermission(Jenkins.ADMINISTER);
+
+            LOGGER.log(Level.WARNING, "Deprecated action /changeToken used, consider using /generateNewToken instead");
 
             ApiTokenProperty p = u.getProperty(ApiTokenProperty.class);
             if (p == null) {
@@ -465,7 +464,7 @@ public class ApiTokenProperty extends UserProperty {
      */
     @Deprecated
     private static final SecureRandom RANDOM = new SecureRandom();
-    
+
     /**
      * We don't want an API key that's too long, so cut the length to 16 (which produces 32-letter MAC code in hexdump)
      */
