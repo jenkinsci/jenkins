@@ -47,7 +47,7 @@ public class RenameAction implements Action {
 
     @Override
     public String getUrlName() {
-        return "rename2";
+        return "confirm-rename";
     }
 
     @Extension

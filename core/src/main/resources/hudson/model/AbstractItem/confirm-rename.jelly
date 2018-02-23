@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1><l:icon class="icon-notepad icon-xlg"/> ${%DescribeRename(it.pronoun, it.name)}</h1>
-      <f:form method="post" action="doRename2" name="config" tableClass="config-table scrollspy">
+      <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">
         <f:entry title="${%NewName}">
           <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName"/>
         </f:entry>

@@ -1568,7 +1568,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             StaplerRequest req, StaplerResponse rsp) throws IOException,
             ServletException {
         String newName = req.getParameter("newName");
-        doDoRename2(newName).generateResponse(req, rsp, null);
+        doConfirmRename(newName).generateResponse(req, rsp, null);
     }
 
     /**
