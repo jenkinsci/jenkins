@@ -42,7 +42,7 @@ public abstract class InvisibleAction implements Action {
         return null;
     }
 
-    public final String getUrlName() {
+    public String getUrlName() {
         return null;
     }
 }

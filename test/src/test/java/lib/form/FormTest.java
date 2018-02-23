@@ -3,7 +3,7 @@ package lib.form;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.DefaultRootAction;
+import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +57,7 @@ public class FormTest {
     }
 
     @TestExtension("autocompleteOffByDefault")
-    public static class AutocompleteOffByDefault implements DefaultRootAction {
+    public static class AutocompleteOffByDefault extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "autocompleteOffByDefault";
@@ -65,7 +65,7 @@ public class FormTest {
     }
 
     @TestExtension("autocompleteOnWhenTrue")
-    public static class AutocompleteOnWhenTrue implements DefaultRootAction {
+    public static class AutocompleteOnWhenTrue extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "autocompleteOnWhenTrue";
@@ -73,7 +73,7 @@ public class FormTest {
     }
 
     @TestExtension("inputsCanSetAutocomplete")
-    public static class InputsCanSetAutocomplete implements DefaultRootAction {
+    public static class InputsCanSetAutocomplete extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "inputsCanSetAutocomplete";

@@ -1,7 +1,7 @@
 package lib.form;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.DefaultRootAction;
+import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbIssuer;
 import junit.framework.Assert;
@@ -26,7 +26,7 @@ public class RowSetTest {
     }
 
     @TestExtension
-    public static class Subject implements DefaultRootAction {
+    public static class Subject extends InvisibleAction implements RootAction {
         public void doSubmitTest1(StaplerRequest req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             json.remove(CrumbIssuer.DEFAULT_CRUMB_NAME);
