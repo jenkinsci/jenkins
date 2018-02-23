@@ -87,7 +87,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.xml.sax.SAXException;
 
-import javax.annotation.CheckForNull;
 import javax.servlet.ServletException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -271,7 +270,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     public @Nonnull FormValidation doCheckNewName(@QueryParameter String newName) {
         // TODO: Create an Item.RENAME permission to use here, see JENKINS-18649.
         if (!hasPermission(Item.CONFIGURE)) {
-            checkPermission(Item.CREATE);
+            if (parent instanceof AccessControlled) {
+                ((AccessControlled)parent).checkPermission(Item.CREATE);
+            }
             checkPermission(Item.DELETE);
         }
 
