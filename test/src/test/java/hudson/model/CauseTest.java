@@ -89,18 +89,6 @@ public class CauseTest {
 
     @Issue("JENKINS-48467")
     @Test public void userIdCausePrintTest() throws Exception {
-//        JenkinsRule.DummySecurityRealm realm = j.createDummySecurityRealm();
-//        realm.addGroups("administrator", "admins");
-//        realm.addGroups("alice", "users");
-//        realm.addGroups("bob", "users", "lpadmin", "bob");
-//
-//        j.jenkins.setSecurityRealm(realm);
-//        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
-//        auth.add(Jenkins.ADMINISTER, "admins");
-//        auth.add(Permission.READ, "users");
-//        j.jenkins.setAuthorizationStrategy(auth);
-
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         TaskListener listener = new StreamTaskListener(baos);
 
