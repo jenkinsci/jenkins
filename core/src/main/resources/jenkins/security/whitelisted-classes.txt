@@ -16,6 +16,7 @@ com.google.common.collect.ImmutableMap
 com.google.common.collect.ImmutableSet
 com.google.common.collect.ImmutableSet$SerializedForm
 com.google.common.collect.ImmutableSortedSet
+com.google.common.collect.Lists$TransformingRandomAccessList
 # https://issues.jenkins-ci.org/browse/JENKINS-48989
 com.google.common.collect.Maps$TransformedEntriesMap
 # https://github.com/jenkinsci/sonar-gerrit-plugin
