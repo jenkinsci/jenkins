@@ -64,16 +64,16 @@ public class AbstractItemTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.getBuildersList().add(new SleepBuilder(10));
 
-        assertThat(renameAndReturnError(p, ""), equalTo(Messages.Hudson_NoName()));
-        assertThat(renameAndReturnError(p, ".."), equalTo(Messages.Jenkins_NotAllowedName("..")));
-        assertThat(renameAndReturnError(p, "50%"), equalTo(Messages.Hudson_UnsafeChar('%')));
-        assertThat(renameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
+        assertThat(checkNameAndReturnError(p, ""), equalTo(Messages.Hudson_NoName()));
+        assertThat(checkNameAndReturnError(p, ".."), equalTo(Messages.Jenkins_NotAllowedName("..")));
+        assertThat(checkNameAndReturnError(p, "50%"), equalTo(Messages.Hudson_UnsafeChar('%')));
+        assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
 
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("bar", "", false));
-        assertThat(renameAndReturnError(p, "foo1"), equalTo(jenkins.model.Messages.Hudson_JobNameConventionNotApplyed("foo1", "bar")));
+        assertThat(checkNameAndReturnError(p, "foo1"), equalTo(jenkins.model.Messages.Hudson_JobNameConventionNotApplyed("foo1", "bar")));
 
         p.scheduleBuild2(0).waitForStart();
-        assertThat(renameAndReturnError(p, "bar"), equalTo(Messages.Job_NoRenameWhileBuilding()));
+        assertThat(checkNameAndReturnError(p, "bar"), equalTo(Messages.Job_NoRenameWhileBuilding()));
     }
 
     @Test
@@ -86,10 +86,10 @@ public class AbstractItemTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
 
         try (ACLContext unused = ACL.as(User.getById("alice", true))) {
-            assertThat(renameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
+            assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
         }
         try (ACLContext unused = ACL.as(User.getById("bob", true))) {
-            assertThat(renameAndReturnError(p, "foo"), equalTo(Messages.Jenkins_NotAllowedName("foo")));
+            assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.Jenkins_NotAllowedName("foo")));
         }
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
             try {
@@ -111,13 +111,13 @@ public class AbstractItemTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
 
         WebClient w = j.createWebClient();
-        WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "doRename"), HttpMethod.POST);
+        WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
         wr.setRequestParameters(Arrays.asList(new NameValuePair("newName", "bar")));
         w.login("alice", "alice");
         assertThat(getPath(w.getPage(wr).getUrl()), equalTo(p.getUrl()));
         assertThat(p.getName(), equalTo("bar"));
 
-        wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "doRename"), HttpMethod.POST);
+        wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
         wr.setRequestParameters(Arrays.asList(new NameValuePair("newName", "baz")));
         w.login("bob", "bob");
         try {
@@ -129,7 +129,7 @@ public class AbstractItemTest {
         assertThat(p.getName(), equalTo("bar"));
     }
 
-    private String renameAndReturnError(AbstractItem i, String newName) {
+    private String checkNameAndReturnError(AbstractItem i, String newName) {
         FormValidation fv = i.doCheckNewName(newName);
         if (FormValidation.Kind.OK.equals(fv.kind)) {
             throw new AssertionError("Expecting Failure");
