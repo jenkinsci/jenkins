@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import javax.inject.Provider;
 import javax.servlet.http.HttpSession;
 
+import jenkins.security.ApiTokenPropertyConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -56,6 +57,8 @@ public class UpgradeWizard extends InstallState {
     
     @Override
     public void initializeState() {
+        applyForcedChanges();
+        
         // Initializing this state is directly related to 
         // running the detached plugin checks, these should be consolidated somehow
         updateUpToDate();
@@ -65,6 +68,20 @@ public class UpgradeWizard extends InstallState {
             if (Jenkins.getInstance().getSetupWizard().getPlatformPluginUpdates().isEmpty()) {
                 Jenkins.getInstance().setInstallState(InstallState.RUNNING);
             }
+        }
+    }
+    
+    /**
+     * Put here the different changes that are enforced after an update.
+     */
+    private void applyForcedChanges(){
+        // Disable the legacy system of API Token only if the new system was not installed
+        // in such case it means there was already an upgrade before 
+        // and potentially the admin has re-enabled the features
+        ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ApiTokenPropertyConfiguration.get();
+        if(!apiTokenPropertyConfiguration.hasExistingConfigFile()){
+            apiTokenPropertyConfiguration.setCreationOfLegacyTokenEnabled(false);
+            apiTokenPropertyConfiguration.setTokenGenerationOnCreationEnabled(false);
         }
     }
     

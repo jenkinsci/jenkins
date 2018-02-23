@@ -30,7 +30,6 @@ import hudson.util.Secret;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
-import org.mindrot.jbcrypt.BCrypt;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -40,10 +39,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,8 +50,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,14 +62,6 @@ public class ApiTokenStore {
     private static final Comparator<HashedToken> SORT_BY_LOWERCASED_NAME =
             Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase(Locale.ENGLISH));
     
-    /**
-     * Determine the (log of) number of rounds we need to apply when hashing the token
-     * default value corresponds to 
-     * BCrypt#GENSALT_DEFAULT_LOG2_ROUNDS is 10 which is way too small in 2018
-     */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static int BCRYPT_LOG_ROUND =
-            SystemProperties.getInteger(ApiTokenStore.class.getName() + ".bcryptLogRound", 13);
     /**
      * Determine the number of attempt to generate an unique prefix (over 4096 possibilities) that is not currently used
      */
@@ -89,15 +76,9 @@ public class ApiTokenStore {
     
     private static final String LEGACY_PREFIX = "";
     
-    /**
-     * Cache the computation of hash in order to speed up API call that were already verified some times ago
-     * Does not keep deleted data alive, just optimize the computation of the hashes.
-     */
-    private static final HashCache HASH_CACHE = new HashCache();
+    private static final String HASH_ALGORITHM = "SHA-256";
     
     private List<HashedToken> tokenList;
-    @Deprecated
-    private transient Map<String, Node<HashedToken>> prefixToTokenList2;
     private transient Map<String, List<HashedToken>> prefixToTokenList;
     
     public ApiTokenStore() {
@@ -113,7 +94,6 @@ public class ApiTokenStore {
         if (this.tokenList == null) {
             this.tokenList = new ArrayList<>();
         }
-//        this.prefixToTokenList2 = new HashMap<>();
         this.prefixToTokenList = new HashMap<>();
     }
     
@@ -128,7 +108,6 @@ public class ApiTokenStore {
      * After a load from the disk, we need to re-populate the prefix map
      */
     public synchronized void optimize() {
-//        this.prefixToTokenList2.clear();
         this.prefixToTokenList.clear();
         tokenList.forEach(this::addTokenInPrefixMap);
     }
@@ -148,12 +127,6 @@ public class ApiTokenStore {
             newList.add(token);
             prefixToTokenList.put(prefix, newList);
         }
-//        if (prefixToTokenList2.containsKey(prefix)) {
-//            Node<HashedToken> existingNode = prefixToTokenList2.get(prefix);
-//            existingNode.addNode(newNode);
-//        } else {
-//            prefixToTokenList2.put(prefix, newNode);
-//        }
     }
     
     /**
@@ -178,23 +151,6 @@ public class ApiTokenStore {
         });
     }
     
-    private static class Node<T> {
-        private T value;
-        private Node<T> next;
-        
-        Node(T value) {
-            this.value = value;
-        }
-        
-        public void addNode(@Nonnull Node<T> other) {
-            if (next == null) {
-                this.next = other;
-            } else {
-                this.next.addNode(other);
-            }
-        }
-    }
-    
     public synchronized void generateTokenFromLegacy(@Nonnull Secret newLegacyApiToken) {
         deleteAllLegacyTokens();
         addLegacyToken(newLegacyApiToken);
@@ -215,7 +171,7 @@ public class ApiTokenStore {
     private void addLegacyToken(@Nonnull Secret legacyToken) {
         String tokenUserUseNormally = Util.getDigestOf(legacyToken.getPlainText());
         
-        String secretValueHashed = this.hashSecret(tokenUserUseNormally);
+        String secretValueHashed = this.plainSecretToHashInHex(tokenUserUseNormally);
         
         HashValue hashValue = new HashValue(LEGACY_VERSION, LEGACY_PREFIX, secretValueHashed);
         HashedToken token = HashedToken.buildNew(Messages.ApiTokenProperty_LegacyTokenName(), hashValue);
@@ -224,7 +180,7 @@ public class ApiTokenStore {
     }
     
     public synchronized @Nonnull String generateNewTokenAndReturnHiddenValue(@Nonnull String name) {
-        // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries
+        // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
         String secretValue = Util.toHexString(random);
@@ -232,7 +188,7 @@ public class ApiTokenStore {
         String tokenTheUserWillUse = HASH_VERSION + prefix + secretValue;
         assert tokenTheUserWillUse.length() == 1 + 3 + 32;
         
-        String secretValueHashed = this.hashSecret(secretValue);
+        String secretValueHashed = this.plainSecretToHashInHex(secretValue);
         
         HashValue hashValue = new HashValue(HASH_VERSION, prefix, secretValueHashed);
         HashedToken token = HashedToken.buildNew(name, hashValue);
@@ -243,11 +199,26 @@ public class ApiTokenStore {
     }
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-    private @Nonnull String hashSecret(@Nonnull String secretValue) {
-        String salt = BCrypt.gensalt(BCRYPT_LOG_ROUND, RANDOM);
-        return BCrypt.hashpw(secretValue, salt);
+    private @Nonnull String plainSecretToHashInHex(@Nonnull String secretValueInPlainText) {
+        byte[] hashBytes = plainSecretToHashBytes(secretValueInPlainText);
+        return Util.toHexString(hashBytes);
     }
     
+    private @Nonnull byte[] plainSecretToHashBytes(@Nonnull String secretValueInPlainText) {
+        // ascii is sufficient for hex-format
+        return hashedBytes(secretValueInPlainText.getBytes(StandardCharsets.US_ASCII));
+    }
+
+    private @Nonnull byte[] hashedBytes(byte[] tokenBytes) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(HASH_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
+        }
+        return digest.digest(tokenBytes);
+    }
+
     private @Nonnull String generatePrefix() {
         int i = 0;
         boolean unique;
@@ -255,7 +226,6 @@ public class ApiTokenStore {
         
         do {
             currentPrefix = generateRandomPrefix();
-//            unique = !prefixToTokenList2.containsKey(currentPrefix);
             unique = !prefixToTokenList.containsKey(currentPrefix);
             i++;
         } while (i < MAX_ATTEMPTS && !unique);
@@ -324,44 +294,19 @@ public class ApiTokenStore {
     }
     
     private boolean searchMatchUsingPrefix(String prefix, String plainToken) {
-        String plainTokenCacheKey = HASH_CACHE.getCorrespondingCacheKey(plainToken);
-        String uuidFromCache = HASH_CACHE.getCachedUuid(plainTokenCacheKey);
-        if (uuidFromCache != null) {
-            for (HashedToken token : tokenList) {
-                if (token.uuid.equals(uuidFromCache)) {
-                    LOGGER.log(Level.FINER, "Cache hit for prefix = {0}", prefix);
-                    token.incrementUse();
-                    HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, token.uuid);
-                    return true;
-                }
-            }
-            LOGGER.log(Level.FINER, "Cache hit false positive, the cached uuid corresponds to a token that was removed, for prefix = {0}", prefix);
-        }else{
-            LOGGER.log(Level.FINER, "Cache miss for prefix = {0}", prefix);
-        }
-    
         List<HashedToken> list = this.prefixToTokenList.get(prefix);
-        for (HashedToken hashedToken : list) {
-            if(hashedToken.match(plainToken)){
-                hashedToken.incrementUse();
-    
-                HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, hashedToken.uuid);
+        if(list.isEmpty()){
+            return false;
+        }
+        
+        byte[] hashedBytes = plainSecretToHashBytes(plainToken);
+        for (HashedToken token : list) {
+            if(token.match(hashedBytes)){
+                token.incrementUse();
                 return true;
             }
         }
-//        Node<HashedToken> node = this.prefixToTokenList2.get(prefix);
-//        while (node != null) {
-//            boolean matchFound = node.value.match(plainToken);
-//            if (matchFound) {
-//                node.value.incrementUse();
-//            
-//                HASH_CACHE.insertOrRefreshCache(plainTokenCacheKey, node.value.uuid);
-//                return true;
-//            } else {
-//                node = node.next;
-//            }
-//        }
-        
+
         return false;
     }
     
@@ -370,7 +315,7 @@ public class ApiTokenStore {
             HashedToken token = iterator.next();
             if (token.uuid.equals(tokenUuid)) {
                 iterator.remove();
-            
+
                 removeTokenFromPrefixMap(token);
                 return token;
             }
@@ -393,41 +338,6 @@ public class ApiTokenStore {
         if(list.isEmpty()){
             prefixToTokenList.remove(prefix);
         }
-        
-        
-        
-//        Node<HashedToken> node = prefixToTokenList2.get(prefix);
-//        if (node == null) {
-////             normally not the case
-//            return;
-//        }
-//        
-//        // first node, we replace it by the next one or nothing
-//        if (node.value.uuid.equals(token.uuid)) {
-//            if (node.next == null) {
-//                prefixToTokenList2.remove(prefix);
-//            } else {
-//                prefixToTokenList2.put(prefix, node.next);
-//            }
-//        } else {
-//            Node<HashedToken> previousNode = node;
-//            node = node.next;
-//            while (node != null) {
-//                // 2-nth node, we replace the previous.next with new value
-//                // but do not touch the initial node
-//                if (node.value.uuid.equals(token.uuid)) {
-//                    if (node.next == null) {
-//                        previousNode.next = null;
-//                    } else {
-//                        previousNode.next = node.next;
-//                    }
-//                    return;
-//                }
-//                
-//                previousNode = node;
-//                node = node.next;
-//            }
-//        }
     }
     
     public synchronized boolean renameToken(@Nonnull String tokenUuid, @Nonnull String newName) {
@@ -454,7 +364,7 @@ public class ApiTokenStore {
         private final String prefix;
         /** To ease future implementation */
         private final String version;
-        /** The only confidential information. The token is stored only as a BCrypt hash */
+        /** The only confidential information. The token is stored as a SHA-256 hash, in hex format */
         private final String hash;
         
         public HashValue(String version, String prefix, String hash) {
@@ -502,11 +412,18 @@ public class ApiTokenStore {
             this.name = newName;
         }
         
-        /**
-         * This operation should take some time (between 100ms and 1s)
-         */
-        public boolean match(String plainToken) {
-            return BCrypt.checkpw(plainToken, value.hash);
+        public boolean match(byte[] hashedBytes) {
+            byte[] hashFromHex;
+            try{
+                hashFromHex = Util.fromHexString(value.hash);
+            }
+            catch(NumberFormatException e){
+                LOGGER.log(Level.INFO, "The API token with name=[{0}] is not in hex-format and so cannot be used", name);
+                return false;
+            }
+
+            // String.equals() is not constant-time but this method is. No link between correctness and time spent
+            return MessageDigest.isEqual(hashFromHex, hashedBytes);
         }
         
         public String getName() {
@@ -547,134 +464,6 @@ public class ApiTokenStore {
         
         public void setName(String name) {
             this.name = name;
-        }
-    }
-    
-    public static class HashCache {
-        /**
-         * A "session" duration, meaning we do not compute the long hash each time but use a weak hash instead after the first success
-         */
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        public static long HASH_CACHE_TIMEOUT_IN_MS =
-                SystemProperties.getLong(ApiTokenStore.class.getName() + ".hashCacheTimeout", (long) (5 * 60 * 1000));
-        
-        /**
-         * At minimum we compute the long hash every 30 minutes
-         */
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        public static long HASH_CACHE_MAX_LIVETIME_IN_MS =
-                SystemProperties.getLong(ApiTokenStore.class.getName() + ".hashCacheMaxLivetime", (long) (30 * 60 * 1000));
-        
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        public static boolean HASH_CACHE_DISABLED =
-                SystemProperties.getBoolean(ApiTokenStore.class.getName() + ".hashCacheDisabled", false);
-        
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        public static int HASH_CACHE_MIN_SIZE_FOR_CLEANUP =
-                SystemProperties.getInteger(ApiTokenStore.class.getName() + ".hashCacheMinSizeForCleanup", 20);
-        
-        private static final byte[] HASH_CACHE_SALT;
-        
-        static {
-            // no requirement to keep it between restart since the cache is temporary
-            SecureRandom random = new SecureRandom();
-            HASH_CACHE_SALT = new byte[16];
-            random.nextBytes(HASH_CACHE_SALT);
-        }
-        
-        private static final String HASH_ALGORITHM = "SHA-256";
-        
-        private final Map<String, CacheEntry> cache = new HashMap<>();
-        
-        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-        public @Nonnull String getCorrespondingCacheKey(String plainToken) {
-            if (HASH_CACHE_DISABLED) {
-                return "cache-disabled";
-            }
-            byte[] hashedTokenBytes = hashWithSalt(plainToken.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashedTokenBytes);
-        }
-        
-        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-        private @Nonnull byte[] hashWithSalt(byte[] tokenBytes) {
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(HASH_ALGORITHM);
-            } catch (NoSuchAlgorithmException e) {
-                throw new AssertionError("There is no " + HASH_ALGORITHM + " available in this system");
-            }
-            digest.update(HASH_CACHE_SALT);
-            return digest.digest(tokenBytes);
-        }
-        
-        public synchronized @CheckForNull String getCachedUuid(String cacheKey) {
-            if (HASH_CACHE_DISABLED) {
-                return null;
-            }
-            
-            cleanup();
-            
-            if (cache.containsKey(cacheKey)) {
-                CacheEntry entry = cache.get(cacheKey);
-                if (entry != null) {
-                    if (entry.hasExpired()) {
-                        cache.remove(cacheKey);
-                    } else {
-                        return entry.data;
-                    }
-                }
-            }
-            
-            return null;
-        }
-        
-        private void cleanup() {
-            if (cache.size() < HASH_CACHE_MIN_SIZE_FOR_CLEANUP) {
-                return;
-            }
-            
-            cache.entrySet().removeIf(entry -> entry.getValue().hasExpired());
-        }
-        
-        public synchronized void insertOrRefreshCache(String cacheKey, String uuid) {
-            if (HASH_CACHE_DISABLED) {
-                return;
-            }
-            
-            CacheEntry entry = cache.get(cacheKey);
-            if (entry == null) {
-                cache.put(cacheKey, new CacheEntry(uuid));
-            } else {
-                entry.touch();
-            }
-        }
-        
-        private static class CacheEntry {
-            LocalDateTime firstCheck;
-            LocalDateTime lastCheck;
-            String data;
-            
-            CacheEntry(String data) {
-                this.data = data;
-                this.firstCheck = this.lastCheck = LocalDateTime.now();
-            }
-            
-            public void touch() {
-                this.lastCheck = LocalDateTime.now();
-            }
-            
-            public boolean hasExpired() {
-                LocalDateTime now = LocalDateTime.now();
-                if (now.isAfter(lastCheck.plus(HASH_CACHE_TIMEOUT_IN_MS, ChronoUnit.MILLIS))) {
-                    // not recently used
-                    return true;
-                }
-                if (now.isAfter(firstCheck.plus(HASH_CACHE_MAX_LIVETIME_IN_MS, ChronoUnit.MILLIS))) {
-                    // full check required after a certain time
-                    return true;
-                }
-                return false;
-            }
         }
     }
 }

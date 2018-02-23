@@ -39,15 +39,28 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Extension 
 @Symbol("apiToken")
 public class ApiTokenPropertyConfiguration extends GlobalConfiguration {
-    private boolean tokenGenerationOnCreationEnabled = true;
-    private boolean creationOfLegacyTokenEnabled = true;
+    /**
+     * When a user is created, this property determine if we create a legacy token for the user or not
+     * For security reason, we do not recommend to enable this but we let that open to ease upgrade.
+     */
+    private boolean tokenGenerationOnCreationEnabled = false;
+
+    /**
+     * When a user has a legacy token, this property determine if the user can request a new legacy token or not
+     * For security reason, we do not recommend to enable this but we let that open to ease upgrade.
+     */
+    private boolean creationOfLegacyTokenEnabled = false;
     
     public static ApiTokenPropertyConfiguration get() {
-        return Jenkins.get().getInjector().getInstance(ApiTokenPropertyConfiguration.class);
+        return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
     }
 
     public ApiTokenPropertyConfiguration() {
         load();
+    }
+
+    public boolean hasExistingConfigFile(){
+        return getConfigFile().exists();
     }
 
     public boolean isTokenGenerationOnCreationEnabled() {

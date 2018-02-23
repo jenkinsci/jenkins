@@ -116,16 +116,11 @@ public class SetupWizard extends PageDecorator {
                     iapf.touch(System.currentTimeMillis());
                     iapf.chmod(0640);
                     iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
-                    
-    
+
                     // Lock Jenkins down:
                     FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
-    
-                    // Disable the legacy system of API Token
-                    ApiTokenPropertyConfiguration.get().setCreationOfLegacyTokenEnabled(false);
-                    ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(false);
 
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));

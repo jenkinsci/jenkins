@@ -165,6 +165,7 @@ public class ApiTokenProperty extends UserProperty {
         }
         
         // use the new way to find a match in order to trigger the counter / lastUseDate logic
+        // as the legacy token (if existing) are also stored there
         boolean matchFound = tokenStore.doesContainToken(token);
         if (matchFound) {
             try {
