@@ -490,7 +490,7 @@ public class JobTest {
 
         FreeStyleProject job = j.createFreeStyleProject(initialName);
         WebClient wc = j.createWebClient();
-        HtmlForm form = wc.getPage(job, "rename2").getFormByName("config");
+        HtmlForm form = wc.getPage(job, "confirm-rename").getFormByName("config");
         form.getInputByName("newName").setValueAttribute(submittedName);
         HtmlPage resultPage = j.submit(form);
 
