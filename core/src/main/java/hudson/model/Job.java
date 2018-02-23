@@ -1560,7 +1560,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Renames this job.
-     * @deprecated Exists for backwards compatibility, use {@link #doDoRename2} instead.
+     * @deprecated Exists for backwards compatibility, use {@link #doConfirmRename} instead.
      */
     @Deprecated
     @RequirePOST
