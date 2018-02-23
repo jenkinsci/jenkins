@@ -50,6 +50,7 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -201,7 +202,7 @@ public class ApiTokenProperty extends UserProperty {
     
     // only for Jelly
     @Restricted(NoExternalUse.class)
-    public List<ApiTokenStore.HashedToken> getTokenList() {
+    public Collection<ApiTokenStore.HashedToken> getTokenList() {
         return tokenStore.getTokenListSortedByName();
     }
     
@@ -422,7 +423,11 @@ public class ApiTokenProperty extends UserProperty {
                 return HttpResponses.errorWithoutStack(400, "The user does not have any ApiToken yet, try generating one before.");
             }
             
-            p.tokenStore.renameToken(tokenId, newName);
+            boolean renameOk = p.tokenStore.renameToken(tokenId, newName);
+            if(!renameOk){
+                // that could potentially happens between instance restart, the uuid stored in the page are no more valid
+                return HttpResponses.errorJSON("No token found, try refreshing the page");
+            }
             u.save();
             
             return HttpResponses.ok();
