@@ -10,12 +10,15 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Util;
+import hudson.model.Cause;
+import hudson.model.FreeStyleProject;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.net.URL;
 
 import jenkins.model.Jenkins;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -33,6 +36,13 @@ public class ApiTokenPropertyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Before
+    public void setupLegacyConfig(){
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setCreationOfLegacyTokenEnabled(true);
+        config.setTokenGenerationOnCreationEnabled(true);
+    }
+    
     /**
      * Tests the UI interaction and authentication.
      */
@@ -128,7 +138,24 @@ public class ApiTokenPropertyTest {
         assertEquals("Update token response is incorrect", 
                 Messages.ApiTokenProperty_ChangeToken_SuccessHidden(), "<div>" + res.getBody().asText() + "</div>");
     }
-    
+
+    @Test
+    public void postWithUsernameAndTokenInBasicAuthHeader() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("bar");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        User.getById("foo", true);
+
+        WebClient wc = createClientForUser("foo");
+        WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
+
+        assertEquals(201, wc.getPage(wr).getWebResponse().getStatusCode());
+
+        j.waitUntilNoActivity();
+
+        Cause.UserIdCause triggeredBy = p.getBuildByNumber(1).getCause(Cause.UserIdCause.class);
+        assertEquals("foo", triggeredBy.getUserId());
+    }
+
     @Nonnull
     private WebClient createClientForUser(final String id) throws Exception {
         User u = User.getById(id, true);
