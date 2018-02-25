@@ -97,7 +97,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
 
             f.bottomButtonBar {
                 f.submit(value:_("Save"))
-                f.apply(value:_("Apply"))
+                f.apply()
             }
         }
 
