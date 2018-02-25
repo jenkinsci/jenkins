@@ -57,6 +57,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
@@ -67,6 +68,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -567,8 +569,26 @@ public class Util {
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {
+        // The previously used approach of creating a temporary file, deleting
+        // it, and making a new directory having the same name in its place is
+        // potentially  problematic:
         // https://stackoverflow.com/questions/617414/how-to-create-a-temporary-directory-folder-in-java
-        return Files.createTempDirectory("jenkins").toFile();
+        // We can use the Java 7 Files.createTempDirectory() API, but note that
+        // by default, the permissions of the created directory are 0700&(~umask)
+        // whereas the old approach created a temporary directory with permissions
+        // 0777&(~umask).
+        // To avoid permissions problems like https://issues.jenkins-ci.org/browse/JENKINS-48407
+        // we can pass POSIX file permissions as an attribute (see, for example,
+        // https://github.com/jenkinsci/jenkins/pull/3161 )
+        final Path tempPath;
+        final String tempDirNamePrefix = "jenkins";
+        if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+            tempPath = Files.createTempDirectory(tempDirNamePrefix,
+                    PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+        } else {
+            tempPath = Files.createTempDirectory(tempDirNamePrefix);
+        }
+        return tempPath.toFile();
     }
 
     private static final Pattern errorCodeParser = Pattern.compile(".*CreateProcess.*error=([0-9]+).*");
