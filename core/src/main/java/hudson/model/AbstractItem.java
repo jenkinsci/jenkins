@@ -235,7 +235,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     }
 
     /**
+     * Controls whether the default rename action is available for this item.
+     *
      * @return whether {@link #name} can be modified by a user
+     * @see #checkRename
+     * @see #renameTo
      * @since FIXME
      */
     public boolean isNameEditable() {
