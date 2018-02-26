@@ -1598,8 +1598,9 @@ table.progress-bar {
   clear: none;
 }
 
-table.progress-bar tr.unknown {
-    background-image:url(../images/progress-unknown.gif);
+table.progress-bar tr.unknown td {
+	background-image:url(../images/progress-unknown.gif);
+	background-repeat: repeat-x;
 }
 
 td.progress-bar-done {
@@ -1614,8 +1615,8 @@ table.progress-bar.red {
   border: 1px solid #cc0000;
 }
 
-table.progress-bar.red tr.unknown {
-    background-image:url(../images/progress-unknown-red.gif);
+table.progress-bar.red tr.unknown td {
+	background-image:url(../images/progress-unknown-red.gif);
 }
 table.progress-bar.red td.progress-bar-done {
   background-color: #cc0000;
