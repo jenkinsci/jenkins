@@ -296,7 +296,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     public void onAttached(Run<?, ?> r) {
         ParametersDefinitionProperty p = r.getParent().getProperty(ParametersDefinitionProperty.class);
         if (p != null) {
-            this.parameterDefinitionNames = p.getParameterDefinitionNames();
+            this.parameterDefinitionNames = new ArrayList<>(p.getParameterDefinitionNames());
         } else {
             this.parameterDefinitionNames = Collections.emptyList();
         }
