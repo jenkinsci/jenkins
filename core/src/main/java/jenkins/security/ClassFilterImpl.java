@@ -273,6 +273,10 @@ public class ClassFilterImpl extends ClassFilter {
                 r = r.substring(0, r.length() - suffix.length());
             }
         }
+        if (r.startsWith("jar:file:/") && r.endsWith(".jar!/")) {
+            // JENKINS-49543: also an old behavior of Tomcat. Legal enough, but unexpected by isLocationWhitelisted.
+            r = r.substring(4, r.length() - 2);
+        }
         return r;
     }
 
