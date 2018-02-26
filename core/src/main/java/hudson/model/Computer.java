@@ -67,6 +67,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -1470,6 +1471,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if ((!proposedName.equals(nodeName))
                 && Jenkins.getActiveInstance().getNode(proposedName) != null) {
             throw new FormException(Messages.ComputerSet_SlaveAlreadyExists(proposedName), "name");
+        }
+
+        String nExecutors = req.getSubmittedForm().getString("numExecutors");
+        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors)<=0) {
+            throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 
         Node result = node.reconfigure(req, req.getSubmittedForm());

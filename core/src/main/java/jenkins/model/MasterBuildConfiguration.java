@@ -51,6 +51,11 @@ public class MasterBuildConfiguration extends GlobalConfiguration {
         Jenkins j = Jenkins.getInstance();
         try {
             // for compatibility reasons, this value is stored in Jenkins
+            String num = json.getString("numExecutors");
+            if (!num.matches("\\d+")) {
+                throw new FormException(Messages.Hudson_Computer_IncorrectNumberOfExecutors(),"numExecutors");
+            }
+            
             j.setNumExecutors(json.getInt("numExecutors"));
             if (req.hasParameter("master.mode"))
                 j.setMode(Mode.valueOf(req.getParameter("master.mode")));

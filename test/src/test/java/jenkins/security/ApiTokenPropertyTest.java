@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.Util;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -24,6 +25,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import org.jvnet.hudson.test.Issue;
@@ -164,5 +167,4 @@ public class ApiTokenPropertyTest {
         wc.withBasicApiToken(u);
         return wc;
     }
-
 }

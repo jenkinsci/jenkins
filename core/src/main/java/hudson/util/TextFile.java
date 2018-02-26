@@ -75,6 +75,8 @@ public class TextFile {
             String line;
             while ((line = in.readLine()) != null)
                 w.println(line);
+        } catch (Exception e) {
+            throw new IOException("Failed to fully read " + file, e);
         }
         return out.toString();
     }

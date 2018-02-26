@@ -39,5 +39,5 @@ THE SOFTWARE.
   <!-- No escape/encode to avoid double-encoding if used in value attribute below -->
   <j:set var="optionBody" encode="false"><d:invokeBody escapeText="false"/></j:set>
   <option value="${attrs.value!=null?attrs.value:h.xmlUnescape(optionBody)}"
-          selected="${attrs.selected?'true':null}"><j:out value="${optionBody}"/></option>
+          selected="${attrs.selected?'true':null}">${h.xmlUnescape(optionBody)}</option>
 </j:jelly>
