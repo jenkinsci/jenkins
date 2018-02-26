@@ -179,7 +179,7 @@ public class ApiTokenStore {
         this.addToken(token);
     }
     
-    public synchronized @Nonnull String generateNewTokenAndReturnHiddenValue(@Nonnull String name) {
+    public synchronized @Nonnull TokenIdAndPlainValue generateNewToken(@Nonnull String name) {
         // 16x8=128bit worth of randomness, using brute-force you need on average 2^127 tries (~10^37)
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
@@ -194,8 +194,8 @@ public class ApiTokenStore {
         HashedToken token = HashedToken.buildNew(name, hashValue);
         
         this.addToken(token);
-        
-        return tokenTheUserWillUse;
+    
+        return new TokenIdAndPlainValue(token.uuid, tokenTheUserWillUse);
     }
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
@@ -375,6 +375,17 @@ public class ApiTokenStore {
             this.version = version;
             this.prefix = prefix;
             this.hash = hash;
+        }
+    }
+    
+    @Immutable
+    public static class TokenIdAndPlainValue {
+        public final String tokenId;
+        public final String plainValue;
+    
+        public TokenIdAndPlainValue(String tokenId, String plainValue) {
+            this.tokenId = tokenId;
+            this.plainValue = plainValue;
         }
     }
     

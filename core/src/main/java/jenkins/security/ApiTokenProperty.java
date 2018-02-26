@@ -408,11 +408,12 @@ public class ApiTokenProperty extends UserProperty {
                 u.addProperty(p);
             }
             
-            String valueToDisplayOnce = p.tokenStore.generateNewTokenAndReturnHiddenValue(newTokenName);
+            ApiTokenStore.TokenIdAndPlainValue tokenIdAndPlainValue = p.tokenStore.generateNewToken(newTokenName);
             u.save();
             
             return HttpResponses.okJSON(new HashMap<String, String>() {{ 
-                put("tokenValue", valueToDisplayOnce); 
+                put("tokenId", tokenIdAndPlainValue.tokenId); 
+                put("tokenValue", tokenIdAndPlainValue.plainValue); 
             }});
         }
         
