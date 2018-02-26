@@ -1094,8 +1094,8 @@ public class Util {
     /**
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
-    @Nonnull
-    public static String escape(@Nonnull String text) {
+    @Nullable
+    public static String escape(@CheckForNull String text) {
         if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
