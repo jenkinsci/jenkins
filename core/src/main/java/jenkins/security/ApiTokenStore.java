@@ -66,7 +66,7 @@ public class ApiTokenStore {
      * Determine the number of attempt to generate an unique prefix (over 4096 possibilities) that is not currently used
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static final int MAX_ATTEMPTS =
+    public static /* not final */ int MAX_ATTEMPTS =
             SystemProperties.getInteger(ApiTokenStore.class.getName() + ".maxAttempt", 100);
     
     private static final int TOKEN_LENGTH_V2 = 36;
@@ -295,7 +295,7 @@ public class ApiTokenStore {
     
     private boolean searchMatchUsingPrefix(String prefix, String plainToken) {
         List<HashedToken> list = this.prefixToTokenList.get(prefix);
-        if(list.isEmpty()){
+        if(list == null){
             return false;
         }
         
@@ -327,6 +327,10 @@ public class ApiTokenStore {
     private void removeTokenFromPrefixMap(HashedToken token) {
         String prefix = token.value.prefix;
         List<HashedToken> list = prefixToTokenList.get(prefix);
+        if(list == null){
+            return;
+        }
+        
         boolean found = false;
         for (Iterator<HashedToken> iterator = list.iterator(); iterator.hasNext() && !found;) {
             HashedToken currentToken = iterator.next();

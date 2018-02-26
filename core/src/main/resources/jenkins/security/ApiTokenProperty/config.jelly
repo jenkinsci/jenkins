@@ -98,8 +98,7 @@ THE SOFTWARE.
         </f:advanced>
     </j:if>
     
-    <!--TODO add if on apiToken non-nullability -->
-    <j:if test="${instance.mustDisplayLegacyApiToken()}">
+    <j:if test="${descriptor.mustDisplayLegacyApiToken(it)}">
         <f:advanced title="${%Show Legacy API Token}" align="left">
             <f:entry title="${%Legacy API Token}" field="apiToken">
                 <f:readOnlyTextbox id="apiToken" />

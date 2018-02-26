@@ -76,17 +76,28 @@ public class ApiTokenProperty extends UserProperty {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
     
     /**
-     * If enabled, the users with {@link Jenkins#ADMINISTER) permissions can generate new tokens for
-     * other users. Normally only a user can generate tokens for himself.
-     * Disabled by default due to the security reasons.
+     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new legacy tokens for
+     * other users. Normally only a user can generate tokens for himself.<p>
+     * Disabled by default due to the security reasons.<p>
      * If enabled, it restores the original Jenkins behavior (SECURITY-200).
      *
      * @since 1.638
      */
-    private static final boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    private static /* not final */ boolean SHOW_LEGACY_TOKEN_TO_ADMINS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".showTokenToAdmins");
     
-    private static final boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
+    /**
+     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new tokens for
+     * other users. Normally only a user can generate tokens for himself.<p>
+     * Take care that only the creator of a token will have the plain value as it's only stored as an hash in the system.<p>
+     * Disabled by default due to the security reasons.
+     * It's the version of {@link #SHOW_LEGACY_TOKEN_TO_ADMINS} for the new API Token system (SECURITY-200).
+     *
+     * @since TODO
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    private static /* not final */ boolean ADMIN_CAN_GENERATE_NEW_TOKENS =
             SystemProperties.getBoolean(ApiTokenProperty.class.getName() + ".adminCanGenerateNewTokens");
 
     private volatile Secret apiToken;
@@ -204,12 +215,6 @@ public class ApiTokenProperty extends UserProperty {
     @Restricted(NoExternalUse.class)
     public Collection<ApiTokenStore.HashedToken> getTokenList() {
         return tokenStore.getTokenListSortedByName();
-    }
-    
-    // only for Jelly
-    @Restricted(NoExternalUse.class)
-    public boolean mustDisplayLegacyApiToken() {
-        return apiToken != null || ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
     }
     
     @Override
@@ -336,6 +341,16 @@ public class ApiTokenProperty extends UserProperty {
     
         // for Jelly view
         @Restricted(NoExternalUse.class)
+        public boolean mustDisplayLegacyApiToken(User propertyOwner) {
+            ApiTokenProperty property = propertyOwner.getProperty(ApiTokenProperty.class);
+            if(property != null && property.apiToken != null){
+                return true;
+            }
+            return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();
+        }
+    
+        // for Jelly view
+        @Restricted(NoExternalUse.class)
         public boolean hasCurrentUserRightToGenerateNewToken(User propertyOwner){
             if (ADMIN_CAN_GENERATE_NEW_TOKENS && Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return true;
@@ -361,6 +376,7 @@ public class ApiTokenProperty extends UserProperty {
         @Deprecated
         @RequirePOST
         public HttpResponse doChangeToken(@AncestorInPath User u, StaplerResponse rsp) throws IOException {
+            // you are the user or you have ADMINISTER permission
             u.checkPermission(Jenkins.ADMINISTER);
 
             LOGGER.log(Level.WARNING, "Deprecated action /changeToken used, consider using /generateNewToken instead");
