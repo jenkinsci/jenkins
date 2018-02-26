@@ -145,10 +145,6 @@ public class ApiTokenProperty extends UserProperty {
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
     public String getApiToken() {
         LOGGER.log(Level.WARNING, "Deprecated usage of getApiToken");
-        if(this.apiToken == null){
-            return "deprecated";
-        }
-        
         return hasPermissionToSeeToken()
                 ? getApiTokenInsecure()
                 : Messages.ApiTokenProperty_ChangeToken_TokenIsHidden();
