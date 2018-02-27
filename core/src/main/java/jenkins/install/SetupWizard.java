@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
-import jenkins.security.ApiTokenPropertyConfiguration;
 import jenkins.util.SystemProperties;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -116,12 +115,13 @@ public class SetupWizard extends PageDecorator {
                     iapf.touch(System.currentTimeMillis());
                     iapf.chmod(0640);
                     iapf.write(randomUUID + System.lineSeparator(), "UTF-8");
-
+                    
+    
                     // Lock Jenkins down:
                     FullControlOnceLoggedInAuthorizationStrategy authStrategy = new FullControlOnceLoggedInAuthorizationStrategy();
                     authStrategy.setAllowAnonymousRead(false);
                     jenkins.setAuthorizationStrategy(authStrategy);
-
+    
                     // Disable jnlp by default, but honor system properties
                     jenkins.setSlaveAgentPort(SystemProperties.getInteger(Jenkins.class.getName()+".slaveAgentPort",-1));
 
