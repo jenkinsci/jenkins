@@ -74,7 +74,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  */
 public class ApiTokenProperty extends UserProperty {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
-    
+
     /**
      * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can view legacy tokens for
      * other users.<p>
@@ -131,12 +131,12 @@ public class ApiTokenProperty extends UserProperty {
         }
         this.init();
     }
-    
+
     /**
      * Gets the API token.
      * The method performs security checks since 1.638. Only the current user and SYSTEM may see it.
      * Users with {@link Jenkins#ADMINISTER} may be allowed to do it using {@link #SHOW_LEGACY_TOKEN_TO_ADMINS}.
-     *
+     * 
      * @return API Token. Never null, but may be {@link Messages#ApiTokenProperty_ChangeToken_TokenIsHidden()}
      *         if the user has no appropriate permissions.
      * @since 1.426, and since 1.638 the method performs security checks
