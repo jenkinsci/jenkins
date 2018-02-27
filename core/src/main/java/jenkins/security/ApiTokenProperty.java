@@ -76,8 +76,8 @@ public class ApiTokenProperty extends UserProperty {
     private static final Logger LOGGER = Logger.getLogger(ApiTokenProperty.class.getName());
     
     /**
-     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new legacy tokens for
-     * other users. Normally only a user can generate tokens for himself.<p>
+     * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can view legacy tokens for
+     * other users.<p>
      * Disabled by default due to the security reasons.<p>
      * If enabled, it restores the original Jenkins behavior (SECURITY-200).
      *
@@ -89,7 +89,7 @@ public class ApiTokenProperty extends UserProperty {
     
     /**
      * If enabled, the users with {@link Jenkins#ADMINISTER} permissions can generate new tokens for
-     * other users. Normally only a user can generate tokens for himself.<p>
+     * other users. Normally a user can only generate tokens for himself.<p>
      * Take care that only the creator of a token will have the plain value as it's only stored as an hash in the system.<p>
      * Disabled by default due to the security reasons.
      * It's the version of {@link #SHOW_LEGACY_TOKEN_TO_ADMINS} for the new API Token system (SECURITY-200).
@@ -292,8 +292,6 @@ public class ApiTokenProperty extends UserProperty {
                 // addition of a message could be nice in that API to provide more feedback to administrators
                 OldDataMonitor.report(context, "@since TODO");
             }
-            
-            apiTokenProperty.tokenStore.optimize();
         }
     }
 

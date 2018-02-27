@@ -62,24 +62,14 @@ public class ApiTokenStore {
     private static final Comparator<HashedToken> SORT_BY_LOWERCASED_NAME =
             Comparator.comparing(hashedToken -> hashedToken.getName().toLowerCase(Locale.ENGLISH));
     
-    /**
-     * Determine the number of attempt to generate an unique prefix (over 4096 possibilities) that is not currently used
-     */
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static /* not final */ int MAX_ATTEMPTS =
-            SystemProperties.getInteger(ApiTokenStore.class.getName() + ".maxAttempt", 100);
-    
-    private static final int TOKEN_LENGTH_V2 = 36;
-    /** single hex-character */
-    private static final String LEGACY_VERSION = "1";
-    private static final String HASH_VERSION = "2";
-    
-    private static final String LEGACY_PREFIX = "";
+    private static final int TOKEN_LENGTH_V2 = 34;
+    /** two hex-characters */
+    private static final String LEGACY_VERSION = "01";
+    private static final String HASH_VERSION = "02";
     
     private static final String HASH_ALGORITHM = "SHA-256";
     
     private List<HashedToken> tokenList;
-    private transient Map<String, List<HashedToken>> prefixToTokenList;
     
     public ApiTokenStore() {
         this.init();
@@ -94,7 +84,6 @@ public class ApiTokenStore {
         if (this.tokenList == null) {
             this.tokenList = new ArrayList<>();
         }
-        this.prefixToTokenList = new HashMap<>();
     }
     
     @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
@@ -104,29 +93,8 @@ public class ApiTokenStore {
                 .collect(Collectors.toList());
     }
     
-    /**
-     * After a load from the disk, we need to re-populate the prefix map
-     */
-    public synchronized void optimize() {
-        this.prefixToTokenList.clear();
-        tokenList.forEach(this::addTokenInPrefixMap);
-    }
-    
     private void addToken(HashedToken token) {
         this.tokenList.add(token);
-        this.addTokenInPrefixMap(token);
-    }
-    
-    private void addTokenInPrefixMap(HashedToken token) {
-        String prefix = token.value.prefix;
-        if (prefixToTokenList.containsKey(prefix)) {
-            List<HashedToken> existingNode = prefixToTokenList.get(prefix);
-            existingNode.add(token);
-        } else {
-            List<HashedToken> newList = new LinkedList<>();
-            newList.add(token);
-            prefixToTokenList.put(prefix, newList);
-        }
     }
     
     /**
@@ -158,14 +126,7 @@ public class ApiTokenStore {
     
     private void deleteAllLegacyTokens() {
         // normally there is only one, but just in case
-        for (Iterator<HashedToken> iterator = tokenList.iterator(); iterator.hasNext();) {
-            HashedToken token = iterator.next();
-            if (token.isLegacy()) {
-                iterator.remove();
-
-                removeTokenFromPrefixMap(token);
-            }
-        }
+        tokenList.removeIf(HashedToken::isLegacy);
     }
     
     private void addLegacyToken(@Nonnull Secret legacyToken) {
@@ -173,7 +134,7 @@ public class ApiTokenStore {
         
         String secretValueHashed = this.plainSecretToHashInHex(tokenUserUseNormally);
         
-        HashValue hashValue = new HashValue(LEGACY_VERSION, LEGACY_PREFIX, secretValueHashed);
+        HashValue hashValue = new HashValue(LEGACY_VERSION, secretValueHashed);
         HashedToken token = HashedToken.buildNew(Messages.ApiTokenProperty_LegacyTokenName(), hashValue);
         
         this.addToken(token);
@@ -184,13 +145,12 @@ public class ApiTokenStore {
         byte[] random = new byte[16];
         RANDOM.nextBytes(random);
         String secretValue = Util.toHexString(random);
-        String prefix = generatePrefix();
-        String tokenTheUserWillUse = HASH_VERSION + prefix + secretValue;
-        assert tokenTheUserWillUse.length() == 1 + 3 + 32;
+        String tokenTheUserWillUse = HASH_VERSION + secretValue;
+        assert tokenTheUserWillUse.length() == 2 + 32;
         
         String secretValueHashed = this.plainSecretToHashInHex(secretValue);
         
-        HashValue hashValue = new HashValue(HASH_VERSION, prefix, secretValueHashed);
+        HashValue hashValue = new HashValue(HASH_VERSION, secretValueHashed);
         HashedToken token = HashedToken.buildNew(name, hashValue);
         
         this.addToken(token);
@@ -218,51 +178,16 @@ public class ApiTokenStore {
         }
         return digest.digest(tokenBytes);
     }
-
-    private @Nonnull String generatePrefix() {
-        int i = 0;
-        boolean unique;
-        String currentPrefix;
-        
-        do {
-            currentPrefix = generateRandomPrefix();
-            unique = !prefixToTokenList.containsKey(currentPrefix);
-            i++;
-        } while (i < MAX_ATTEMPTS && !unique);
-        
-        Level logLevel = Level.FINE;
-        if (i == MAX_ATTEMPTS) {
-            logLevel = Level.WARNING;
-        }
-        LOGGER.log(logLevel, "Prefix generated after {0}/{1} attempts", new Object[]{i, MAX_ATTEMPTS});
-        
-        return currentPrefix;
-    }
-    
-    /**
-     * Generate random 3-hex-character
-     */
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
-    private @Nonnull String generateRandomPrefix() {
-        int prefixInteger = RANDOM.nextInt(4096);
-        
-        String prefixString = Integer.toHexString(prefixInteger);
-        return StringUtils.leftPad(prefixString, 3, '0');
-    }
     
     public synchronized boolean doesContainToken(@Nonnull String token) {
-        String prefixToSearch;
         String plainToken;
-        
         if (isLegacyToken(token)) {
-            prefixToSearch = LEGACY_PREFIX;
             plainToken = token;
         } else {
-            prefixToSearch = getPrefixOfToken(token);
             plainToken = getHashOfToken(token);
         }
         
-        return searchMatchUsingPrefix(prefixToSearch, plainToken);
+        return searchMatch(plainToken);
     }
     
     private boolean isLegacyToken(String token) {
@@ -270,37 +195,24 @@ public class ApiTokenStore {
     }
     
     /**
-     * [1: version][3: prefix][32: real token]
-     * ^^^^^^^^^^^^---------------------------
+     * [2: version][32: real token]
+     * ^^^^^^^^^^^^----------------
      */
     private String getVersionOfToken(String token) {
-        return String.valueOf(token.charAt(0));
+        return token.substring(0, 1);
     }
     
     /**
-     * [1: version][3: prefix][32: real token]
-     * ------------^^^^^^^^^^^----------------
-     */
-    private String getPrefixOfToken(String token) {
-        return token.substring(1, 4);
-    }
-    
-    /**
-     * [1: version][3: prefix][32: real token]
-     * -----------------------^^^^^^^^^^^^^^^^
+     * [2: version][32: real token]
+     * ------------^^^^^^^^^^^^^^^^
      */
     private String getHashOfToken(String token) {
-        return token.substring(4);
+        return token.substring(2);
     }
     
-    private boolean searchMatchUsingPrefix(String prefix, String plainToken) {
-        List<HashedToken> list = this.prefixToTokenList.get(prefix);
-        if(list == null){
-            return false;
-        }
-        
+    private boolean searchMatch(String plainToken) {
         byte[] hashedBytes = plainSecretToHashBytes(plainToken);
-        for (HashedToken token : list) {
+        for (HashedToken token : tokenList) {
             if(token.match(hashedBytes)){
                 token.incrementUse();
                 return true;
@@ -316,32 +228,11 @@ public class ApiTokenStore {
             if (token.uuid.equals(tokenUuid)) {
                 iterator.remove();
 
-                removeTokenFromPrefixMap(token);
                 return token;
             }
         }
 
         return null;
-    }
-    
-    private void removeTokenFromPrefixMap(HashedToken token) {
-        String prefix = token.value.prefix;
-        List<HashedToken> list = prefixToTokenList.get(prefix);
-        if(list == null){
-            return;
-        }
-        
-        boolean found = false;
-        for (Iterator<HashedToken> iterator = list.iterator(); iterator.hasNext() && !found;) {
-            HashedToken currentToken = iterator.next();
-            if(currentToken.uuid.equals(token.uuid)){
-                iterator.remove();
-                found = true;
-            }
-        }
-        if(list.isEmpty()){
-            prefixToTokenList.remove(prefix);
-        }
     }
     
     public synchronized boolean renameToken(@Nonnull String tokenUuid, @Nonnull String newName) {
@@ -357,23 +248,17 @@ public class ApiTokenStore {
     }
     
     /**
-     * [1: version][3: prefix][32: real token]
+     * [2: version][32: real token]
      */
     @Immutable
     private static class HashValue {
-        /**
-         * Serve as an optimizer to avoid hashing all the tokens for the token-check
-         * not a "confidential" information
-         */
-        private final String prefix;
         /** To ease future implementation */
         private final String version;
         /** The only confidential information. The token is stored as a SHA-256 hash, in hex format */
         private final String hash;
         
-        public HashValue(String version, String prefix, String hash) {
+        public HashValue(String version, String hash) {
             this.version = version;
-            this.prefix = prefix;
             this.hash = hash;
         }
     }

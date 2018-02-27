@@ -84,7 +84,6 @@ THE SOFTWARE.
     </f:entry>
 
     <j:if test="${descriptor.hasCurrentUserRightToGenerateNewToken(it)}">
-    <!--<j:if test="${instance == null || instance.hasCurrentUserPermissionToGenerateTokenForThisUser()}">-->
         <f:advanced title="${%Generate new API Token}" align="left">
             <f:entry title="New Token">
                 <f:textbox name="newTokenName" placeholder="${%Default name}" style="width: 40%; display: inline-block"/>
