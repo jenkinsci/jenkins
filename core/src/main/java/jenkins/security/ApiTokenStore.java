@@ -199,7 +199,7 @@ public class ApiTokenStore {
      * ^^^^^^^^^^^^----------------
      */
     private String getVersionOfToken(String token) {
-        return token.substring(0, 1);
+        return token.substring(0, 2);
     }
     
     /**
