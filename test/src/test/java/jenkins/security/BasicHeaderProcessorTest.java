@@ -115,6 +115,8 @@ public class BasicHeaderProcessorTest {
 
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.get("foo");
         wc = j.createWebClient();

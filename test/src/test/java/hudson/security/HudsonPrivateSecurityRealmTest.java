@@ -50,6 +50,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.*;
 
+import jenkins.security.ApiTokenPropertyConfiguration;
 import jenkins.security.SecurityListener;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
@@ -167,6 +168,8 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         
