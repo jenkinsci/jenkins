@@ -67,6 +67,7 @@ import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 
 import jenkins.AgentProtocol;
+import jenkins.security.ApiTokenPropertyConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -312,6 +313,9 @@ public class JenkinsTest {
 
     @Test
     public void testDoScript() throws Exception {
+        // legacy behavior re-enabled (could be changed when the webclient will be adapted
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").
@@ -340,6 +344,9 @@ public class JenkinsTest {
 
     @Test
     public void testDoEval() throws Exception {
+        // legacy behavior re-enabled (could be changed when the webclient will be adapted
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+        
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("alice").

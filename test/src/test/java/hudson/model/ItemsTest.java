@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
+import jenkins.security.ApiTokenPropertyConfiguration;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.apache.commons.httpclient.HttpStatus;
@@ -62,6 +63,12 @@ public class ItemsTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
+    @Before
+    public void setupLegacyBehavior(){
+        // legacy behavior re-enabled (could be changed when the webclient will be adapted
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+    }
+    
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");

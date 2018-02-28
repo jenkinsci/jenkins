@@ -59,6 +59,9 @@ public class ApiCrumbExclusionTest {
     @Test
     @Issue("JENKINS-22474")
     public void callUsingApiTokenDoesNotRequireCSRFToken() throws Exception {
+        // legacy behavior re-enabled (could be changed when the webclient will be adapted
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setCrumbIssuer(null);
         User foo = User.get("foo");

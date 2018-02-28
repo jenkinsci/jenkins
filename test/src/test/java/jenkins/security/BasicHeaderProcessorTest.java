@@ -45,6 +45,9 @@ public class BasicHeaderProcessorTest {
      */
     @Test
     public void testVariousWaysToCall() throws Exception {
+        // legacy behavior re-enabled (could be changed when the webclient will be adapted
+        ApiTokenPropertyConfiguration.get().setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getById("foo", true);
         User.getById("bar", true);
