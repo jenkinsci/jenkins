@@ -41,14 +41,8 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
-    /**
-     * Gets local configuration.
-     * 
-     * @return {@code null} if the {@link GlobalConfiguration#all()} list does not contain this extension.
-     *         Most likely it means that the Jenkins instance has not been fully loaded yet.
-     */
-    public static @CheckForNull JenkinsLocationConfiguration get() {
-        return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
+    public static @Nonnull JenkinsLocationConfiguration get() {
+        return GlobalConfiguration.all().getInstance(JenkinsLocationConfiguration.class);
     }
 
     public JenkinsLocationConfiguration() {
@@ -63,7 +57,7 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
         if(!file.exists()) {
             XStream2 xs = new XStream2();
             xs.addCompatibilityAlias("hudson.tasks.Mailer$DescriptorImpl",JenkinsLocationConfiguration.class);
-            file = new XmlFile(xs,new File(Jenkins.getInstance().getRootDir(),"hudson.tasks.Mailer.xml"));
+            file = new XmlFile(xs,new File(Jenkins.get().getRootDir(),"hudson.tasks.Mailer.xml"));
             if (file.exists()) {
                 try {
                     file.unmarshal(this);

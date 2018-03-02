@@ -42,6 +42,8 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 
+import javax.annotation.Nonnull;
+
 /**
  * Lets user configure how metadata files should be downloaded.
  * @see UpdateSite
@@ -51,8 +53,8 @@ import org.kohsuke.stapler.HttpResponse;
 @Extension @Symbol("downloadSettings")
 public final class DownloadSettings extends GlobalConfiguration {
 
-    public static DownloadSettings get() {
-        return Jenkins.getInstance().getInjector().getInstance(DownloadSettings.class);
+    public static @Nonnull DownloadSettings get() {
+        return GlobalConfiguration.all().getInstance(DownloadSettings.class);
     }
 
     private boolean useBrowser = false;
@@ -70,19 +72,19 @@ public final class DownloadSettings extends GlobalConfiguration {
         save();
     }
 
-    @Override public GlobalConfigurationCategory getCategory() {
+    @Override public @Nonnull GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
     public static boolean usePostBack() {
-        return get().isUseBrowser() && Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER);
+        return get().isUseBrowser() && Jenkins.get().hasPermission(Jenkins.ADMINISTER);
     }
 
     public static void checkPostBackAccess() throws AccessDeniedException {
         if (!get().isUseBrowser()) {
             throw new AccessDeniedException("browser-based download disabled");
         }
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
     }
 
     @Extension @Symbol("updateCenterCheck")
@@ -106,7 +108,7 @@ public final class DownloadSettings extends GlobalConfiguration {
                 return;
             }
             boolean due = false;
-            for (UpdateSite site : Jenkins.getInstance().getUpdateCenter().getSites()) {
+            for (UpdateSite site : Jenkins.get().getUpdateCenter().getSites()) {
                 if (site.isDue()) {
                     due = true;
                     break;
@@ -128,7 +130,7 @@ public final class DownloadSettings extends GlobalConfiguration {
                 return;
             }
             // This checks updates of the update sites and downloadables.
-            HttpResponse rsp = Jenkins.getInstance().getPluginManager().doCheckUpdatesServer();
+            HttpResponse rsp = Jenkins.get().getPluginManager().doCheckUpdatesServer();
             if (rsp instanceof FormValidation) {
                 listener.error(((FormValidation) rsp).renderHtml());
             }

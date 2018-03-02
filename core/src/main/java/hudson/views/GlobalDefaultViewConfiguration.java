@@ -41,7 +41,7 @@ public class GlobalDefaultViewConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
-        Jenkins j = Jenkins.getInstance();
+        Jenkins j = Jenkins.get();
         if (json.has("primaryView")) {
             final String viewName = json.getString("primaryView");
             final View newPrimaryView = j.getView(viewName);

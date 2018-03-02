@@ -1111,7 +1111,7 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
 
     private int addArtifacts(@Nonnull VirtualFile dir, 
             @Nonnull String path, @Nonnull String pathHref, 
-            @Nonnull ArtifactList r, @Nonnull Artifact parent, int upTo) throws IOException {
+            @Nonnull ArtifactList r, @CheckForNull Artifact parent, int upTo) throws IOException {
         VirtualFile[] kids = dir.list();
         Arrays.sort(kids);
 
