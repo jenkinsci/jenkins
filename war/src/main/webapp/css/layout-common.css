@@ -70,7 +70,7 @@ body {
 #header ul#toolbar li a {
   color: #fff;
   text-decoration: none;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 #header ul#toolbar li a i {
@@ -91,7 +91,6 @@ body {
 }
 
 #header ul#toolbar li.login a {
-  font-size: 16px;
   padding: 0 4px;
   font-weight: bold;
   text-align: center;
@@ -111,12 +110,6 @@ body {
     font-size: 22px;
     margin: 0;
 }
-
-#header ul#toolbar li.username a {
-  font-size: 16px;
-  text-align: center;
-}
-
 
 #header ul#toolbar li.login a:hover {
     background-color: #d24939;
