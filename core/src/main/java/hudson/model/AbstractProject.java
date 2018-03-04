@@ -1209,9 +1209,8 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
         FilePath workspace = build.getWorkspace();
         if(workspace!=null){
             workspace.mkdirs();
-        }
-        else{
-            throw new AbortException(); // workspace is undefined
+        } else {
+            throw new AbortException("Cannot checkout SCM, workspace is not defined");
         }
 
 
