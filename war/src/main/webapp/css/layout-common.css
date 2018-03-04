@@ -49,12 +49,7 @@ body {
 }
 
 #header a.jenkins-home-link img#logo {
-    height: 46px;
     margin-right: 16px;
-}
-
-#header a.jenkins-home-link img#name {
-    height: 30px;
 }
 
 #header ul#toolbar {

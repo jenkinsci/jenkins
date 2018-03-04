@@ -184,8 +184,8 @@ ${h.initPageVariables(context)}
     <div id="page-head">
       <div id="header">
         <a class="jenkins-home-link" href="${rootURL}/">
-          <img id="logo" src="${imagesURL}/headshot.svg" alt="Logo" />
-          <img id="name" src="${imagesURL}/title.svg" alt="Jenkins" />
+          <img id="logo" src="${imagesURL}/headshot.png" alt="Logo" />
+          <img id="name" src="${imagesURL}/title.png" alt="Jenkins" />
         </a>
         <ul id="toolbar">
           <li class="login">
