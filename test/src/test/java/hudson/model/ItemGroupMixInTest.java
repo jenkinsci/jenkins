@@ -207,4 +207,25 @@ public class ItemGroupMixInTest {
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
     }
 
+    @Test
+    @Issue("JENKINS-35638")
+    public void createProjectFromXMLWithSpaces() throws IOException {
+        final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
+                "<project>\n" +
+                "  <actions/>\n" +
+                "  <description>JENKINS-35638</description>\n" +
+                "  <keepDependencies>false</keepDependencies>\n" +
+                "  <properties/>\n" +
+                "  <scm class=\"hudson.scm.NullSCM\"/>\n" +
+                "  <canRoam>true</canRoam>\n" +
+                "  <triggers/>\n" +
+                "  <builders/>\n" +
+                "  <publishers/>\n" +
+                "  <buildWrappers/>\n" +
+                "</project>";
+
+        Item foo = r.jenkins.createProjectFromXML("foo bar", new ByteArrayInputStream(xml.getBytes()));
+        assertNotNull(foo);
+    }
+
 }
