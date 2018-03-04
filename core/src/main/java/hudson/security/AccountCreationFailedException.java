@@ -32,6 +32,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @author Philipp Nowak
  */
+@Restricted(NoExternalUse.class)
 public class AccountCreationFailedException extends Exception {
     public AccountCreationFailedException(String message) {
         super(message);

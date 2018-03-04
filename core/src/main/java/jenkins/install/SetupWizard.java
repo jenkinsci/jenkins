@@ -241,6 +241,7 @@ public class SetupWizard extends PageDecorator {
      * Called during the initial setup to create an admin user
      */
     @RequirePOST
+    @Restricted(NoExternalUse.class)
     public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins j = Jenkins.getInstance();
         j.checkPermission(Jenkins.ADMINISTER);
