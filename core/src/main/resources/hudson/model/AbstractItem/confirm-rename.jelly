@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Seiji Sogabe
+Copyright 2018 CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- Rename project -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout>
+  <l:layout title="${%Rename}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <j:set var="newName" value="${request.getParameter('newName')}" />
-      <j:set var="checkIfNameIsUsed" value="${it.checkIfNameIsUsed(newName)}" />
-      
-      <j:choose> 
-        <j:when test="${it.isBuilding()}">
-          ${%noRenameWhileBuilding}
-          <j:if test="${request.referer.endsWith('/configure')}">
-            <br/> ${%configWasSaved}
-          </j:if>
-        </j:when>
-        
-        <j:when test="${checkIfNameIsUsed != null and !it.name.equalsIgnoreCase(newName)}" >    
-          <j:if test="${checkIfNameIsUsed}" >
-            ${%newNameInUse(newName)}
-          </j:if>  
-          <j:if test="${!checkIfNameIsUsed}" >
-            ${%newNameNotValid(newName)}
-          </j:if>
-          <j:if test="${request.referer.endsWith('/configure')}">
-            <br/> ${%configWasSaved}
-          </j:if>
-        </j:when>
-        
-        <j:otherwise>
-          <form method="post" action="doRename">
-            ${%description(it.name, newName)}
-            <input type="hidden" name="newName" value="${newName}" />
-            <f:submit value="${%Yes}" />
-          </form>
-        </j:otherwise>
-      </j:choose>
+      <h1><l:icon class="icon-notepad icon-xlg"/> ${%DescribeRename(it.pronoun, it.name)}</h1>
+      <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">
+        <f:entry title="${%NewName}">
+          <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName"/>
+        </f:entry>
+        <f:bottomButtonBar>
+          <f:submit value="${%Rename}" />
+        </f:bottomButtonBar>
+      </f:form>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>
