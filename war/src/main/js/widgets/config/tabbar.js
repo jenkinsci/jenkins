@@ -98,18 +98,18 @@ exports.addTabs = function(configTable, options) {
         section.setActivator(tab);
     }
 
-    var tabs = $('<div class="form-config tabBarFrame"></div>');
+    var tabBarFrame = $('<div class="form-config tabBarFrame"></div>');
     var noTabs = $('<div class="noTabs" title="Remove configuration tabs and revert to the &quot;classic&quot; configuration view">Remove tabs</div>');
 
-    configTableMetadata.configWidgets.append(tabs);
+    configTableMetadata.configWidgets.append(tabBarFrame);
     configTableMetadata.configWidgets.prepend(noTabs);
-    tabs.append(tabBar);
+    tabBarFrame.append(tabBar);
 
-    tabs.mouseenter(function() {
-        tabs.addClass('mouse-over');
+    tabBarFrame.mouseenter(function() {
+        tabBarFrame.addClass('mouse-over');
     });
-    tabs.mouseleave(function() {
-        tabs.removeClass('mouse-over');
+    tabBarFrame.mouseleave(function() {
+        tabBarFrame.removeClass('mouse-over');
     });
     configTableMetadata.deactivator = noTabs;
 
@@ -120,7 +120,32 @@ exports.addTabs = function(configTable, options) {
         configTableMetadata.trackSectionVisibility();
     }
 
+    if (configTable.hasClass('nowrap')) {
+        exports.nowrap(configTableMetadata, tabBarFrame);
+    }
+
     return configTableMetadata;
+};
+
+/**
+ * Apply non-wrapping of the tabs in the tabBar.
+ * @param configTableMetadata The ConfigTableMetaData instance containing the tabBar containing the tabs.
+ * @param tabBarFrame The tabBar frame.
+ */
+exports.nowrap = function(configTableMetadata, tabBarFrame) {
+    var configWidgets = configTableMetadata.configWidgets;
+
+    if (!configWidgets.hasClass('nowrap')) {
+        configWidgets.addClass('nowrap');
+        var TabBarOverflow = require('../tabs/TabBarOverflow');
+        var tabs = [];
+
+        for (var i = 0; i < configTableMetadata.sections.length; i++) {
+            tabs.push(configTableMetadata.sections[i].activator);
+        }
+
+        configTableMetadata.tabBarOverflow = new TabBarOverflow(tabBarFrame, tabs);
+    }
 };
 
 exports.addTabsActivator = function(configTable) {

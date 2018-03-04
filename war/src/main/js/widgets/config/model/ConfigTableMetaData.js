@@ -326,16 +326,34 @@ ConfigTableMetaData.prototype.trackSectionVisibility = function() {
     if (isTestEnv()) {
         return;
     }
+    if (this.tabBarOverflow && !this.tabBarOverflow.tabVisibleChecker) {
+        var thisCMD = this;
+        thisCMD.tabBarOverflow.trackTabVisibility(function (tab) {
+            // Look for the section that has this tab and check that the
+            // section is visible.
+            for (var i = 0; i < thisCMD.sections.length; i++) {
+                var section = thisCMD.sections[i];
+                if (section.activator === tab) {
+                    return section.isVisible();
+                }
+            }
+            return false;
+        });
+    }
 
     var thisConfig = this;
     
     try {
         for (var i = 0; i < this.sections.length; i++) {
             var section = this.sections[i];
-            if (section.isVisible()) {
-                section.activator.show();
-            } else {
-                section.activator.hide();
+            var isActivatorVisible = !section.activator.hasClass('hidden');
+            if (section.isVisible() !== isActivatorVisible) {
+                if (section.isVisible()) {
+                    section.activator.removeClass('hidden');
+                } else {
+                    section.activator.addClass('hidden');
+                }
+                this.tabBarOverflow.doRefresh();
             }
         }
     } finally {
