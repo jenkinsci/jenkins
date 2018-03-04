@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import hudson.ExtensionList;
 import hudson.Main;
@@ -105,7 +106,8 @@ public class ClassFilterImpl extends ClassFilter {
         ClassFilter.setDefault(ClassFilter.NONE); // even Method on the standard blacklist is going to explode
     }
 
-    private ClassFilterImpl() {}
+    @VisibleForTesting
+    /*package*/ ClassFilterImpl() {}
 
     /** Whether a given class is blacklisted. */
     private final Map<Class<?>, Boolean> cache = Collections.synchronizedMap(new WeakHashMap<>());
@@ -154,6 +156,13 @@ public class ClassFilterImpl extends ClassFilter {
             }
             String location = codeSource(c);
             if (location != null) {
+                if (c.isAnonymousClass()) { // e.g., pkg.Outer$1
+                    LOGGER.warning("JENKINS-49573: attempt to serialize anonymous " + c + " in " + location);
+                } else if (c.isLocalClass()) { // e.g., pkg.Outer$1Local
+                    LOGGER.warning("JENKINS-49573: attempt to serialize local " + c + " in " + location);
+                } else if (c.isSynthetic()) { // e.g., pkg.Outer$$Lambda$1/12345678
+                    LOGGER.warning("JENKINS-49573: attempt to serialize synthetic " + c + " in " + location);
+                }
                 if (isLocationWhitelisted(location)) {
                     LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
                     return false;
@@ -270,6 +279,10 @@ public class ClassFilterImpl extends ClassFilter {
             if (r.endsWith(suffix)) {
                 r = r.substring(0, r.length() - suffix.length());
             }
+        }
+        if (r.startsWith("jar:file:/") && r.endsWith(".jar!/")) {
+            // JENKINS-49543: also an old behavior of Tomcat. Legal enough, but unexpected by isLocationWhitelisted.
+            r = r.substring(4, r.length() - 2);
         }
         return r;
     }
