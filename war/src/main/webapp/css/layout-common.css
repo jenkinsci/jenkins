@@ -49,7 +49,7 @@ body {
     font-size: 0; /* it will be removed when Bootstrap is 100% applied. */
 }
 
-#header a.jenkins-home-link img#logo {
+#header a.jenkins-home-link img.logo {
     margin-right: 16px;
 }
 
