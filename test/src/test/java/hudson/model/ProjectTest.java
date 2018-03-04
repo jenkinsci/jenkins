@@ -25,7 +25,6 @@ package hudson.model;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import hudson.*;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.AccessDeniedException2;
@@ -54,6 +53,7 @@ import jenkins.model.Jenkins;
 import antlr.ANTLRException;
 import hudson.triggers.SCMTrigger;
 import hudson.model.Cause.LegacyCodeCause;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.Serializable;

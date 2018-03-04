@@ -122,10 +122,10 @@ public class UserTest {
 
     @Issue("JENKINS-2331")
     @Test public void userPropertySummaryAndActionAreShownInUserPage() throws Exception {
-        
+
         UserProperty property = new UserPropertyImpl("NeedleInPage");
         UserProperty.all().add(property.getDescriptor());
-        
+
         User user = User.get("user-test-case");
         user.addProperty(property);
 
