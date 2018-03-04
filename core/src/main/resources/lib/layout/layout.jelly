@@ -188,7 +188,6 @@ ${h.initPageVariables(context)}
           <img id="name" src="${imagesURL}/title.png" alt="Jenkins" />
         </a>
         <ul id="toolbar">
-          <li class="login">
           <j:if test="${app.useSecurity}">
             <j:choose>
               <j:when test="${!h.isAnonymous()}">
@@ -201,17 +200,22 @@ ${h.initPageVariables(context)}
                     <j:set var="userName" value="${user.fullName}"/>
                   </j:otherwise>
                 </j:choose>
-                <a href="${rootURL}/${user.url}" class="model-link inside inverse">${userName}</a>
+                <li class="login authenticated">
                 <j:if test="${app.securityRealm.canLogOut()}">
                   <a href="${rootURL}/logout"><i class="fa fa-sign-out"></i></a>
                 </j:if>
+                </li>
+                <li class="username">
+                <a href="${rootURL}/${user.url}" class="model-link inside inverse">${userName}</a>
+                </li>
               </j:when>
               <j:otherwise>
+                <li class="login">
                 <st:include it="${app.securityRealm}" page="loginLink.jelly" />
+                </li>
               </j:otherwise>
             </j:choose>
           </j:if>
-          </li>
           <li class="searchbox">
             <j:set var="searchURL" value="${h.searchURL}"/>
             <form action="${searchURL}" method="get" class="no-json" name="search">

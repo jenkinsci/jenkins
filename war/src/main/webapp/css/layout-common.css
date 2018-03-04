@@ -55,7 +55,7 @@ body {
 
 #header ul#toolbar {
   list-style: none;
-  margin: 0 10px 0 0;
+  margin: 0 16px 0 0;
   padding: 0;
 }
 
@@ -70,12 +70,13 @@ body {
 #header ul#toolbar li a {
   color: #fff;
   text-decoration: none;
+  font-size: 20px;
 }
 
 #header ul#toolbar li a i {
   font-size: 20px;
-  margin: 0 5px;
-  vertical-align: baseline;
+  margin: 0 0 0 8px;
+  vertical-align: text-bottom;
 }
 
 #header ul#toolbar li.searchbox input {
@@ -89,8 +90,36 @@ body {
   outline: none;
 }
 
-#header ul#toolbar li.login {
+#header ul#toolbar li.login a {
   font-size: 16px;
+  padding: 0 4px;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  min-width: 48px;
+}
+
+#header ul#toolbar li.login.authenticated {
+    margin-left: 0;
+}
+
+#header ul#toolbar li.login.authenticated a {
+  font-size: 20px;
+}
+
+#header ul#toolbar li.login a i {
+    font-size: 22px;
+    margin: 0;
+}
+
+#header ul#toolbar li.username a {
+  font-size: 16px;
+  text-align: center;
+}
+
+
+#header ul#toolbar li.login a:hover {
+    background-color: #d24939;
 }
 
 #breadcrumbBar, #footer-container, .top-sticker-inner {
