@@ -38,6 +38,7 @@ abstract class ConfigFile<T,COL extends Collection<T>> extends TextFile {
      * {@link #load2()} instead.
      * @deprecated use {@link #load2()} instead.
      */
+    @Deprecated
     public void load() {
         try {
             load2();
