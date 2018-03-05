@@ -89,6 +89,9 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+
 /**
  * Various utility methods that don't have more proper home.
  *
@@ -186,8 +189,7 @@ public class Util {
      * decoding. If no such file exists, an empty string is returned.
      * @param logfile The text file to read in its entirety.
      * @return The entire text content of <code>logfile</code>.
-     * @throws IOException If <code>logfile</code> cannot be converted to a
-     * {@link java.nio.file.Path} or if an error occurs while reading the file.
+     * @throws IOException If an error occurs while reading the file.
      * @deprecated call {@link #loadFile(java.io.File, java.nio.charset.Charset)}
      * instead to specify the charset to use for decoding (preferably
      * {@link java.nio.charset.StandardCharsets#UTF_8}).
@@ -205,26 +207,10 @@ public class Util {
      * @param logfile The text file to read in its entirety.
      * @param charset The charset to use for decoding the bytes in <code>logfile</code>.
      * @return The entire text content of <code>logfile</code>.
-     * @throws IOException If <code>logfile</code> cannot be converted to a
-     * {@link java.nio.file.Path} or if an error occurs while reading the file.
+     * @throws IOException If an error occurs while reading the file.
      */
     @Nonnull
     public static String loadFile(@Nonnull File logfile, @Nonnull Charset charset) throws IOException {
-        return loadFile(fileToPath(logfile), charset);
-    }
-
-    /**
-     * Reads the entire contents of the text file at <code>path</code> into a
-     * string using <code>charset</code> for decoding. If no such file exists,
-     * an empty string is returned.
-     * @param path Path to the text file to read in its entirety.
-     * @param charset The charset to use for decoding the bytes in the file.
-     * @return The entire text content of the file.
-     * @throws IOException If an error occurs while reading the file.
-     * @since TODO
-     */
-    @Nonnull
-    public static String loadFile(@Nonnull Path path, @Nonnull Charset charset) throws IOException {
         // Note: Until charset handling is resolved (e.g. by implementing
         // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
         // must be able to handle character encoding errors. As reported at
@@ -239,20 +225,13 @@ public class Util {
         // handle malformed and unmappable byte sequences for the specified
         // encoding; the latter is more picky and will throw an exception.
         // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
-        byte[] bytes;
         try {
-            bytes = Files.readAllBytes(path);
-        } catch (NoSuchFileException ignored) {
+            return FileUtils.readFileToString(logfile, charset);
+        } catch (FileNotFoundException e) {
             return "";
         } catch (Exception e) {
-            throw new IOException("Failed to fully read " + path, e);
+            throw new IOException("Failed to fully read " + logfile, e);
         }
-
-        // Per the documentation of String(byte[], Charset):
-        // "This [constructor] always replaces malformed-input and unmappable-character
-        // sequences with this charset's default replacement string."
-        // https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#String-byte:A-java.nio.charset.Charset-
-        return new String(bytes, charset);
     }
 
     /**
