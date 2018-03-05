@@ -99,7 +99,7 @@ body {
 }
 
 #header ul#toolbar li.login.authenticated {
-    margin-left: 0;
+    margin-left: 6px;
 }
 
 #header ul#toolbar li.login.authenticated a {
