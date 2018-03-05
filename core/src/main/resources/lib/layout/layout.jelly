@@ -201,7 +201,7 @@ ${h.initPageVariables(context)}
                   </j:otherwise>
                 </j:choose>
                 <j:if test="${app.securityRealm.canLogOut()}">
-                <li class="login authenticated">
+                <li class="option icon-action">
                   <a href="${rootURL}/logout"><i class="fa fa-sign-out"></i></a>
                 </li>
                 </j:if>
@@ -210,7 +210,7 @@ ${h.initPageVariables(context)}
                 </li>
               </j:when>
               <j:otherwise>
-                <li class="login">
+                <li class="option">
                 <st:include it="${app.securityRealm}" page="loginLink.jelly" />
                 </li>
               </j:otherwise>

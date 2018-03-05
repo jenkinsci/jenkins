@@ -64,7 +64,6 @@ body {
   float: right;
   line-height: 48px;
   position: relative;
-  margin-left: 20px;
 }
 
 #header ul#toolbar li a {
@@ -79,6 +78,10 @@ body {
   vertical-align: text-bottom;
 }
 
+#header ul#toolbar li.searchbox {
+    margin-right: 16px;
+}
+
 #header ul#toolbar li.searchbox input {
   width: 15em;
   font-size: 16px;
@@ -90,29 +93,35 @@ body {
   outline: none;
 }
 
-#header ul#toolbar li.login a {
-  padding: 0 4px;
+#header ul#toolbar li.option {
+  margin-left: 0;
+}
+
+#header ul#toolbar li.option a {
+  padding: 0 8px;
   font-weight: bold;
   text-align: center;
   display: block;
   min-width: 48px;
+  font-size: 14px;
 }
 
-#header ul#toolbar li.login.authenticated {
-    margin-left: 6px;
+#header ul#toolbar li.option a:hover {
+  background-color: #d24939;
 }
 
-#header ul#toolbar li.login.authenticated a {
+#header ul#toolbar li.option a i {
+  font-size: 22px;
+  margin: 0;
+}
+
+#header ul#toolbar li.option.icon-action {
+  margin-left: 6px;
+}
+
+#header ul#toolbar li.option.icon-action a {
   font-size: 20px;
-}
-
-#header ul#toolbar li.login a i {
-    font-size: 22px;
-    margin: 0;
-}
-
-#header ul#toolbar li.login a:hover {
-    background-color: #d24939;
+  padding: 0 4px;
 }
 
 #breadcrumbBar, #footer-container, .top-sticker-inner {
