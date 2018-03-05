@@ -87,7 +87,7 @@ import org.apache.tools.ant.types.selectors.TokenizedPattern;
  * <p>Since some implementations may in fact use external file storage,
  * callers may request optional APIs to access those services more efficiently.
  * Otherwise, for example, a plugin copying a file
- * previously saved by {@link ArtifactManager} to an external storage servuce
+ * previously saved by {@link ArtifactManager} to an external storage service
  * which tunneled a stream from {@link #open} using {@link RemoteInputStream}
  * would wind up transferring the file from the service to the Jenkins master and then on to an agent.
  * Similarly, if {@link DirectoryBrowserSupport} rendered a link to an in-Jenkins URL,
