@@ -2158,8 +2158,15 @@ public class Queue extends ResourceController implements Saveable {
          */
         public final List<Cause> getCauses() {
             CauseAction ca = getAction(CauseAction.class);
-            if (ca!=null)
-                return Collections.unmodifiableList(ca.getCauses());
+            if (ca!=null) {
+                List<Cause> filtered = new ArrayList<Cause>();
+                for (Cause c : ca.getCauses()) {
+                    if (c != null) {
+                        filtered.add(c);
+                    }
+                }
+                return Collections.unmodifiableList(filtered);
+            }
             return Collections.emptyList();
         }
 
