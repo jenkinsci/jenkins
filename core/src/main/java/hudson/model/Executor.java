@@ -457,9 +457,9 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(SEVERE, getName()+": Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
+            	executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
                 finish2();
             }
-            executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         }
     }
 
