@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.0</version>
+        <version>3.5</version>
         <relativePath />
     </parent>
     <artifactId>jdk-tool</artifactId>

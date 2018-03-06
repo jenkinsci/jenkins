@@ -195,7 +195,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                 return Collections.singletonList(constructor.newInstance(null, false));
             } catch (ClassNotFoundException e) {
                 return Collections.emptyList();
-            } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
+            } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Unable to get default installer", e);
                 return Collections.emptyList();
             }

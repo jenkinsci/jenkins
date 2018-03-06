@@ -78,6 +78,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -208,7 +209,7 @@ public class JDKInstaller extends ToolInstaller {
             }
 
             int exit = starter
-                    .stdin(new ByteArrayInputStream("yes".getBytes(Charset.defaultCharset()))).stdout(out)
+                    .stdin(new ByteArrayInputStream("yes".getBytes(StandardCharsets.US_ASCII))).stdout(out)
                     .pwd(new FilePath(launcher.getChannel(), expectedLocation)).join();
             if (exit != 0)
                 throw new AbortException(Messages.JDKInstaller_FailedToInstallJDK(exit));
