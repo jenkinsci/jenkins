@@ -13,7 +13,7 @@
 def runTests = true
 def failFast = false
 
-properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20'))])
+properties([buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '20')), durabilityHint('PERFORMANCE_OPTIMIZED')])
 
 // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc for information on what node types are available
 def buildTypes = ['Linux', 'Windows']
