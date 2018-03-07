@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.40-20180223.175036-2</version>
+    <version>1.40</version>
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
@@ -92,7 +92,6 @@ THE SOFTWARE.
     <matrix-project.version>1.4.1</matrix-project.version>
     <sorcerer.version>0.11</sorcerer.version>
     <animal.sniffer.skip>${skipTests}</animal.sniffer.skip>
-
     <access-modifier.version>1.12</access-modifier.version>
     <access-modifier-annotation.version>${access-modifier.version}</access-modifier-annotation.version> <!-- differing only where needed for timestamped snapshots -->
     <access-modifier-checker.version>${access-modifier.version}</access-modifier-checker.version>
@@ -107,7 +106,6 @@ THE SOFTWARE.
     <remoting.version>3.17</remoting.version>
     <remoting.minimum.supported.version>2.60</remoting.minimum.supported.version>
 
-    <findbugs.failOnError>true</findbugs.failOnError>
     <findbugs.effort>Max</findbugs.effort>
     <findbugs.threshold>High</findbugs.threshold>
     <findbugs.excludeFilterFile>../src/findbugs/findbugs-excludes.xml</findbugs.excludeFilterFile>
@@ -495,7 +493,6 @@ THE SOFTWARE.
           <artifactId>antlr-maven-plugin</artifactId>
           <version>2.1</version>
         </plugin>
-
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-pmd-plugin</artifactId>
