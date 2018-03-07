@@ -2,28 +2,30 @@ package hudson.model;
 
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.model.queue.QueueTaskFuture;
-import hudson.tasks.BatchFile;
+import hudson.XmlFile;
 import hudson.tasks.Builder;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ParametersAction2Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logs = new LoggerRule().record("", Level.WARNING).capture(100);
 
     @Test
     @Issue("SECURITY-170")
@@ -307,6 +309,16 @@ public class ParametersAction2Test {
         assertEquals(1, p2.getLastBuild().getAction(ParametersAction.class).getParameters().size());
         assertEquals(p1.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p1");
         assertEquals(p2.getLastBuild().getAction(ParametersAction.class).getParameter("foo").getValue(), "for p2");
+    }
+
+    @Issue("JENKINS-49573")
+    @Test
+    public void noInnerClasses() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("key", "sensible-default")));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new ParametersAction(new StringParameterValue("key", "value"))));
+        assertThat(new XmlFile(Run.XSTREAM, new File(b.getRootDir(), "build.xml")).asString(), not(containsString("sensible-default")));
+        assertEquals(Collections.emptyList(), logs.getMessages());
     }
 
     public static boolean hasParameterWithName(Iterable<ParameterValue> values, String name) {
