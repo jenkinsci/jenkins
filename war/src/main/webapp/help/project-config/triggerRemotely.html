@@ -9,4 +9,10 @@
   <p>You'll need to provide an authorization token in the form of
   a string so that only those who know it would be able to remotely
   trigger this project's builds.</p>
+  <p>Your script will not be able to reach the trigger URL if your
+  Jenkins instance is configured without the read permission for
+  anonymous users. To circumvent this limitation please install the
+  <a href="https://wiki.jenkins.io/display/JENKINS/Build+Token+Root+Plugin" target="_blank">
+  Build Token Root Plugin
+  </a></p>
 </div>
