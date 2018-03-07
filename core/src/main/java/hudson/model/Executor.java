@@ -457,7 +457,6 @@ public class Executor extends Thread implements ModelObject {
             LOGGER.log(SEVERE, getName()+": Unexpected executor death", e);
         } finally {
             if (asynchronousExecution == null) {
-            	executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
                 finish2();
             }
         }
@@ -490,6 +489,7 @@ public class Executor extends Thread implements ModelObject {
         if (this instanceof OneOffExecutor) {
             owner.remove((OneOffExecutor) this);
         }
+        executableEstimatedDuration = DEFAULT_ESTIMATED_DURATION;
         queue.scheduleMaintenance();
     }
 
