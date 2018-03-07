@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wls:weblogic-web-app
+xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-web-app"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd
+http://xmlns.oracle.com/weblogic/weblogic-web-app
+http://xmlns.oracle.com/weblogic/weblogic-web-app/1.7/weblogic-web-app.xsd">
+
+     <wls:weblogic-version>12.1.3</wls:weblogic-version>
+    <wls:context-root>jenkins</wls:context-root>
+    <wls:container-descriptor>
+         <prefer-web-inf-classes>true</prefer-web-inf-classes>
+    </wls:container-descriptor>
+</wls:weblogic-web-app>
