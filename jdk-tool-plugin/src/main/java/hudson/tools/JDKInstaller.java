@@ -31,6 +31,7 @@ import hudson.Launcher;
 import hudson.Launcher.ProcStarter;
 import hudson.ProxyConfiguration;
 import hudson.Util;
+import hudson.model.Computer;
 import hudson.model.DownloadService.Downloadable;
 import hudson.model.JDK;
 import hudson.model.Node;
@@ -284,7 +285,9 @@ public class JDKInstaller extends ToolInstaller {
                 out.println(Messages.JDKInstaller_FailedToInstallJDK(r));
                 // log file is in UTF-16
                 try (InputStreamReader in = new InputStreamReader(fs.read(logFile), "UTF-16")) {
-                    IOUtils.copy(in, new OutputStreamWriter(out, Charset.defaultCharset()));
+                    Computer computer = Computer.currentComputer();
+                    Charset charset = computer != null ? computer.getDefaultCharset() : Charset.defaultCharset();
+                    IOUtils.copy(in, new OutputStreamWriter(out, charset));
                 }
                 throw new AbortException();
             }
