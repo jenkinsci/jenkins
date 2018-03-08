@@ -1118,7 +1118,7 @@ public class UpdateSite {
                 // unable to parse version
             }
             for (Plugin p: getAllDependencies()) {
-                VersionNumber v = new VersionNumber(p.version);
+                VersionNumber v = new VersionNumber(p.requiredCore);
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
@@ -1263,15 +1263,7 @@ public class UpdateSite {
 
                 @Override
                 protected List<UpdateSite.Plugin> getEdges(UpdateSite.Plugin p) {
-                    List<UpdateSite.Plugin> next = new ArrayList<>();
-                    addTo(p.getNeededDependencies(), next);
-                    return next;
-                }
-
-                private void addTo(List<UpdateSite.Plugin> dependencies, List<UpdateSite.Plugin> r) {
-                    for (UpdateSite.Plugin d : dependencies) {
-                        r.add(d);
-                    }
+                    return new ArrayList<>(p.getNeededDependencies());
                 }
 
                 @Override
@@ -1284,10 +1276,8 @@ public class UpdateSite {
                     throw new CycleDetectedException(cycleWithNames);
                 }
             };
-            List<UpdateSite.Plugin> pluginsTest = new ArrayList<UpdateSite.Plugin>();
-            pluginsTest.add(this);
             try {
-                cycleDetector.run(pluginsTest);
+                cycleDetector.run(Collections.singleton(this));
             } catch (CyclicGraphDetector.CycleDetectedException ex) {
                 throw new Failure(ex.getMessage());
             }
