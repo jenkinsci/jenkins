@@ -71,7 +71,12 @@ THE SOFTWARE.
                   </td>
                   <j:if test="${!x.folder}">
                     <td class="fileSize">
-                      <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+                      <j:if test="${x.lastModifiedAsCalendar.timeInMillis &gt; 0}">
+                        <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
+                      </j:if>
+                      <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
+                        N/A
+                      </j:if>
                     </td>
                     <td class="fileSize">
                       ${h.humanReadableByteSize(x.getSize())}
