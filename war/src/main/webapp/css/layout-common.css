@@ -42,15 +42,15 @@ body {
 }
 
 #header a.jenkins-home-link {
-    position: absolute;
-    display: block;
-    line-height: 48px;
-    margin-left: 16px;
-    font-size: 0; /* it will be removed when Bootstrap is 100% applied. */
+  position: absolute;
+  display: block;
+  line-height: 48px;
+  margin-left: 16px;
+  font-size: 0; /* it will be removed when Bootstrap is 100% applied. */
 }
 
 #header a.jenkins-home-link img.logo {
-    margin-right: 16px;
+  margin-right: 16px;
 }
 
 #header ul#toolbar {
@@ -78,8 +78,13 @@ body {
   vertical-align: text-bottom;
 }
 
+#header ul#toolbar li.username {
+  text-align: center;
+  margin-right: 6px;
+}
+
 #header ul#toolbar li.searchbox {
-    margin-right: 16px;
+  margin-right: 16px;
 }
 
 #header ul#toolbar li.searchbox input {
@@ -113,10 +118,6 @@ body {
 #header ul#toolbar li.option a i {
   font-size: 22px;
   margin: 0;
-}
-
-#header ul#toolbar li.option.icon-action {
-  margin-left: 6px;
 }
 
 #header ul#toolbar li.option.icon-action a {
