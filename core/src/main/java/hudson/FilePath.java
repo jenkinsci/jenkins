@@ -1490,12 +1490,14 @@ public final class FilePath implements Serializable {
      * Checks if the file exists.
      */
     public boolean exists() throws IOException, InterruptedException {
-        return act(new SecureFileCallable<Boolean>() {
-            private static final long serialVersionUID = 1L;
-            public Boolean invoke(File f, VirtualChannel channel) throws IOException {
-                return stating(f).exists();
-            }
-        });
+        return act(new Exists());
+    }
+    private class Exists extends SecureFileCallable<Boolean> {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Boolean invoke(File f, VirtualChannel channel) throws IOException {
+            return stating(f).exists();
+        }
     }
 
     /**
