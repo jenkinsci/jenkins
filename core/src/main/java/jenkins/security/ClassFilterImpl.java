@@ -157,11 +157,11 @@ public class ClassFilterImpl extends ClassFilter {
             String location = codeSource(c);
             if (location != null) {
                 if (c.isAnonymousClass()) { // e.g., pkg.Outer$1
-                    LOGGER.warning("JENKINS-49573: attempt to (de-)serialize anonymous " + c + " in " + location);
+                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize anonymous " + c + " in " + location);
                 } else if (c.isLocalClass()) { // e.g., pkg.Outer$1Local
-                    LOGGER.warning("JENKINS-49573: attempt to (de-)serialize local " + c + " in " + location);
+                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize local " + c + " in " + location);
                 } else if (c.isSynthetic()) { // e.g., pkg.Outer$$Lambda$1/12345678
-                    LOGGER.warning("JENKINS-49573: attempt to (de-)serialize synthetic " + c + " in " + location);
+                    LOGGER.warning("JENKINS-49795: attempt to (de-)serialize synthetic " + c + " in " + location);
                 }
                 if (isLocationWhitelisted(location)) {
                     LOGGER.log(Level.FINE, "permitting {0} due to its location in {1}", new Object[] {name, location});
