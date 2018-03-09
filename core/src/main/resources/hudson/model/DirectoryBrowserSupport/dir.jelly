@@ -75,7 +75,7 @@ THE SOFTWARE.
                         <i:formatDate value="${x.lastModifiedAsCalendar.time}" type="both" dateStyle="medium" timeStyle="medium"/>
                       </j:if>
                       <j:if test="${x.lastModifiedAsCalendar.timeInMillis &lt;= 0}">
-                        N/A
+                        ${%No available}
                       </j:if>
                     </td>
                     <td class="fileSize">
