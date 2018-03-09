@@ -41,6 +41,7 @@ import hudson.model.PageDecorator;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.User;
+import hudson.security.AccountCreationFailedException;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.SecurityRealm;
@@ -242,49 +243,55 @@ public class SetupWizard extends PageDecorator {
      * Called during the initial setup to create an admin user
      */
     @RequirePOST
-    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        Jenkins j = Jenkins.get();
+    @Restricted(NoExternalUse.class)
+    public HttpResponse doCreateAdminUser(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins j = Jenkins.getInstance();
+
         j.checkPermission(Jenkins.ADMINISTER);
-        
+
         // This will be set up by default. if not, something changed, ok to fail
-        HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm)j.getSecurityRealm();
-        
+        HudsonPrivateSecurityRealm securityRealm = (HudsonPrivateSecurityRealm) j.getSecurityRealm();
+
         User admin = securityRealm.getUser(SetupWizard.initialSetupAdminUserName);
         try {
-            if(admin != null) {
+            if (admin != null) {
                 admin.delete(); // assume the new user may well be 'admin'
             }
-            
-            User u = securityRealm.createAccountByAdmin(req, rsp, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly", null);
-            if (u != null) {
-                if(admin != null) {
-                    admin = null;
-                }
-                
-                // Success! Delete the temporary password file:
-                try {
-                    getInitialAdminPasswordFile().delete();
-                } catch (InterruptedException e) {
-                    throw new IOException(e);
-                }
-                
-                InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
-                
-                // ... and then login
-                Authentication a = new UsernamePasswordAuthenticationToken(u.getId(),req.getParameter("password1"));
-                a = securityRealm.getSecurityComponents().manager.authenticate(a);
-                SecurityContextHolder.getContext().setAuthentication(a);
-                CrumbIssuer crumbIssuer = Jenkins.get().getCrumbIssuer();
-                JSONObject data = new JSONObject();
-                if (crumbIssuer != null) {
-                    data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
-                }
-                return HttpResponses.okJSON(data);
-            } else {
-                return HttpResponses.okJSON();
+
+            User newUser = securityRealm.createAccountFromSetupWizard(req);
+            if (admin != null) {
+                admin = null;
             }
+
+            // Success! Delete the temporary password file:
+            try {
+                getInitialAdminPasswordFile().delete();
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+
+            InstallUtil.proceedToNextStateFrom(InstallState.CREATE_ADMIN_USER);
+
+            // ... and then login
+            Authentication auth = new UsernamePasswordAuthenticationToken(newUser.getId(), req.getParameter("password1"));
+            auth = securityRealm.getSecurityComponents().manager.authenticate(auth);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            CrumbIssuer crumbIssuer = Jenkins.getInstance().getCrumbIssuer();
+            JSONObject data = new JSONObject();
+            if (crumbIssuer != null) {
+                data.accumulate("crumbRequestField", crumbIssuer.getCrumbRequestField()).accumulate("crumb", crumbIssuer.getCrumb(req));
+            }
+            return HttpResponses.okJSON(data);
+        } catch (AccountCreationFailedException e) {
+            /*
+            Return Unprocessable Entity from WebDAV. While this is not technically in the HTTP/1.1 standard, browsers
+            seem to accept this. 400 Bad Request is technically inappropriate because that implies invalid *syntax*,
+            not incorrect data. The client only cares about it being >200 anyways.
+             */
+            rsp.setStatus(422);
+            return HttpResponses.forwardToView(securityRealm, "/jenkins/install/SetupWizard/setupWizardFirstUser.jelly");
         } finally {
-            if(admin != null) {
+            if (admin != null) {
                 admin.save(); // recreate this initial user if something failed
             }
         }
