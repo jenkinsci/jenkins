@@ -66,6 +66,7 @@ public abstract class Proc {
 
     /**
      * Indicates that the process should not be killed on interruption.
+     * @since TODO
      */
     protected boolean dontKillWhenInterrupted;
 
@@ -144,7 +145,7 @@ public abstract class Proc {
     public abstract OutputStream getStdin();
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new ExceptionCatchingThreadFactory(new NamingThreadFactory(new DaemonThreadFactory(), "Proc.executor")));
-
+    
     /**
      * Like {@link #join} but can be given a maximum time to wait.
      * @param timeout number of time units
@@ -177,7 +178,7 @@ public abstract class Proc {
             latch.countDown();
         }
     }
-
+    
     /**
      * Locally launched process.
      */
@@ -513,7 +514,7 @@ public abstract class Proc {
      * Debug switch to have the thread display the process it's waiting for.
      */
     public static boolean SHOW_PID = false;
-
+    
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.
     * It presumes that the instance of the object is guaranteed to be used after the {@link Proc#join()} call.
