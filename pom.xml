@@ -29,10 +29,11 @@ THE SOFTWARE.
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
     <version>1.40</version>
+    <relativePath />
   </parent>
 
   <groupId>org.jenkins-ci.main</groupId>
-  <artifactId>pom</artifactId>
+  <artifactId>jenkins-parent</artifactId>
   <version>2.111-SNAPSHOT</version>
   <packaging>pom</packaging>
 
