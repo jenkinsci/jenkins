@@ -87,7 +87,8 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     private Set<String> safeParameters;
 
-    private final List<ParameterValue> parameters;
+    @Nonnull
+    private List<ParameterValue> parameters;
 
     private List<String> parameterDefinitionNames;
 
@@ -98,9 +99,27 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     private transient AbstractBuild<?, ?> build;
 
     private transient Run<?, ?> run;
+    /**
+     * Just a temporary variable for diagnostics of the root cause of JENKINS-39495.
+     * This field is being used in {@link #onLoad(hudson.model.Run)} and {@link #onAttached(hudson.model.Run)} hooks, which provide info about the run.
+     */
+    private transient boolean wasInitializedWithNullParameters;
 
-    public ParametersAction(List<ParameterValue> parameters) {
-        this.parameters = new ArrayList<>(parameters);
+    /**
+     * Constructs a new action with a specified list of parameter values.
+     * @param parameters Parameter values.               
+     */
+    @SuppressWarnings("null")
+    public ParametersAction(@Nonnull List<ParameterValue> parameters) {
+        wasInitializedWithNullParameters = parameters == null;
+        if (wasInitializedWithNullParameters && LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Parameters action has been initialized with null parameters. "
+                    + "It is a bug in a plugin or script, which created this action (see JENKINS-39495). " 
+                    + "See next system log entries to see for which Run it has been created",
+                    new IllegalStateException("Parameters list is null for the action"));
+        }      
+        this.parameters = parameters != null ? new ArrayList<>(parameters) : Collections.<ParameterValue>emptyList();
+
         String paramNames = SystemProperties.getString(SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME);
         safeParameters = new TreeSet<>();
         if (paramNames != null) {
@@ -119,14 +138,14 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * @param additionalSafeParameters additional safe parameters
      * @since 1.651.2, 2.3
      */
-    public ParametersAction(List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
+    public ParametersAction(@Nonnull List<ParameterValue> parameters, Collection<String> additionalSafeParameters) {
         this(parameters);
         if (additionalSafeParameters != null) {
             safeParameters.addAll(additionalSafeParameters);
         }
     }
     
-    public ParametersAction(ParameterValue... parameters) {
+    public ParametersAction(@Nonnull ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
 
@@ -283,7 +302,12 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return parametersAction;
     }
 
+    @SuppressWarnings("unused")
     private Object readResolve() {
+        wasInitializedWithNullParameters = parameters == null;
+        if (parameters == null) {
+            parameters = Collections.emptyList();
+        }
         if (build != null)
             OldDataMonitor.report(build, "1.283");
         if (safeParameters == null) {
@@ -300,12 +324,18 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         } else {
             this.parameterDefinitionNames = Collections.emptyList();
         }
+        if (wasInitializedWithNullParameters) {
+            LOGGER.log(Level.FINE, "ParametersAction has been initialized with null parameter list for Run {0}. It is a bug in a plugin or script, which created this action (see JENKINS-39495).", r);
+        }
         this.run = r;
     }
 
     @Override
     public void onLoad(Run<?, ?> r) {
         this.run = r;
+        if (wasInitializedWithNullParameters) {
+            LOGGER.log(Level.FINE, "ParametersAction has been loaded from disk with null parameter list for Run {0}. It is a bug in a plugin or script, which created this action (see JENKINS-39495).", r);
+        }
     }
 
     private List<? extends ParameterValue> filter(List<ParameterValue> parameters) {
