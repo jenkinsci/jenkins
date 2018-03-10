@@ -73,7 +73,7 @@ THE SOFTWARE.
                   <f:textbox name="site" value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}" />
                 </f:entry>
                 <f:block>
-                  <f:submit value="${%Submit}" />
+                  <f:submit />
                 </f:block>
               </f:form>
               <j:set var="hasNonDefault" value="${false}"/>
