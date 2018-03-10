@@ -44,7 +44,7 @@ THE SOFTWARE.
                   <st:include from="${descriptor}" page="${descriptor.configPage}" />
                 </j:scope>
                 <f:block>
-                  <f:submit value="${%Submit}" />
+                  <f:submit />
                 </f:block>
               </f:form>
             </l:hasPermission>
