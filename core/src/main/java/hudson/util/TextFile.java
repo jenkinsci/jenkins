@@ -23,6 +23,7 @@
  */
 package hudson.util;
 
+import com.google.common.collect.AbstractIterator;
 import edu.umd.cs.findbugs.annotations.CreatesObligation;
 
 import hudson.Util;
@@ -40,6 +41,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 /**
  * Represents a text file.
@@ -81,15 +83,57 @@ public class TextFile {
     }
 
     /**
+     * @throws RuntimeException in the case of {@link IOException} in {@link #readLines()}
+     * @deprecated This method does not properly propagate errors and may lead to file descriptor leaks
+     *             if the collection is not fully iterated. Use {@link #readLines()} instead.
+     */
+    @Deprecated
+    public @Nonnull Iterable<String> lines() {
+        return new Iterable<String>() {
+            @Override
+            public Iterator<String> iterator() {
+                final LinesStream stream;
+                try {
+                    stream = readLines();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                final Iterator<String> it = stream.iterator();
+
+                return new Iterator<String>() {
+                    @Override
+                    public boolean hasNext() {
+                        boolean res = it.hasNext();
+                        if (!it.hasNext()) {
+                            try {
+                                stream.close();
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                        return res;
+                    }
+
+                    @Override
+                    public String next() {
+                        return it.next();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
      * Creates a new {@link jenkins.util.io.LinesStream} of the file.
      * <p>
      * Note: The caller is responsible for closing the returned
      * <code>LinesStream</code>.
      * @throws IOException if the file cannot be converted to a
      * {@link java.nio.file.Path} or if the file cannot be opened for reading
+     * @since TODO
      */
     @CreatesObligation
-    public @Nonnull LinesStream lines() throws IOException {
+    public @Nonnull LinesStream readLines() throws IOException {
         return new LinesStream(Util.fileToPath(file));
     }
 
