@@ -63,11 +63,13 @@ public class AbstractItemTest {
     public void checkRenameValidity() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         p.getBuildersList().add(new SleepBuilder(10));
+        j.createFreeStyleProject("foo-exists");
 
         assertThat(checkNameAndReturnError(p, ""), equalTo(Messages.Hudson_NoName()));
         assertThat(checkNameAndReturnError(p, ".."), equalTo(Messages.Jenkins_NotAllowedName("..")));
         assertThat(checkNameAndReturnError(p, "50%"), equalTo(Messages.Hudson_UnsafeChar('%')));
-        assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
+        assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameUnchanged()));
+        assertThat(checkNameAndReturnError(p, "foo-exists"), equalTo(Messages.AbstractItem_NewNameInUse("foo-exists")));
 
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("bar", "", false));
         assertThat(checkNameAndReturnError(p, "foo1"), equalTo(jenkins.model.Messages.Hudson_JobNameConventionNotApplyed("foo1", "bar")));
@@ -84,12 +86,13 @@ public class AbstractItemTest {
         mas.grant(Item.READ).everywhere().to("alice");
         j.jenkins.setAuthorizationStrategy(mas);
         FreeStyleProject p = j.createFreeStyleProject("foo");
+        j.createFreeStyleProject("foo-exists");
 
         try (ACLContext unused = ACL.as(User.getById("alice", true))) {
-            assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.AbstractItem_NewNameInUse("foo")));
+            assertThat(checkNameAndReturnError(p, "foo-exists"), equalTo(Messages.AbstractItem_NewNameInUse("foo-exists")));
         }
         try (ACLContext unused = ACL.as(User.getById("bob", true))) {
-            assertThat(checkNameAndReturnError(p, "foo"), equalTo(Messages.Jenkins_NotAllowedName("foo")));
+            assertThat(checkNameAndReturnError(p, "foo-exists"), equalTo(Messages.Jenkins_NotAllowedName("foo-exists")));
         }
         try (ACLContext unused = ACL.as(User.getById("carol", true))) {
             try {
