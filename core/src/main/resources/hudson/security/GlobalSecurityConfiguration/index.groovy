@@ -26,8 +26,35 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
             set("descriptor", my.descriptor);
 
             f.optionalBlock( field:"useSecurity", title:_("Enable security"), checked:app.useSecurity) {
-                f.entry (title:_("TCP port for JNLP agents"), field:"slaveAgentPort") {
-                    f.serverTcpPort()
+                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
+                    f.checkbox()
+                }
+
+                f.entry(title:_("Access Control")) {
+                    table(style:"width:100%") {
+                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:h.filterDescriptors(app, SecurityRealm.all()))
+                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
+                    }
+                }
+            }
+
+            f.section(title: _("Markup Formatter")) {
+                f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
+            }
+
+            f.section(title: _("Agents")) {
+                f.entry(title: _("TCP port for JNLP agents"), field: "slaveAgentPort") {
+                    if (my.slaveAgentPortEnforced) {
+                        if (my.slaveAgentPort == -1) {
+                            text(_("slaveAgentPortEnforcedDisabled"))
+                        } else if (my.slaveAgentPort == 0) {
+                            text(_("slaveAgentPortEnforcedRandom"))
+                        } else {
+                            text(_("slaveAgentPortEnforced", my.slaveAgentPort))
+                        }
+                    } else {
+                        f.serverTcpPort()
+                    }
                 }
                 f.advanced(title: _("Agent protocols"), align:"left") {
                     f.entry(title: _("Agent protocols")) {
@@ -45,6 +72,11 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                                         td(colspan:"2");
                                         td(class:"setting-description"){
                                             st.include(from:p, page: "description", optional:true);
+                                            if (p.deprecated) {
+                                              br()
+                                              text(b(_("Deprecated. ")))
+                                              st.include(from:p, page: "deprecationCause", optional:true);
+                                            }
                                         }
                                         td();
                                     }
@@ -53,20 +85,7 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName, csscla
                         }
                     }
                 }
-
-                f.entry (title:_("Disable remember me"), field: "disableRememberMe") {
-                    f.checkbox()
-                }
-
-                f.entry(title:_("Access Control")) {
-                    table(style:"width:100%") {
-                        f.descriptorRadioList(title:_("Security Realm"),varName:"realm",         instance:app.securityRealm,         descriptors:SecurityRealm.all())
-                        f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:AuthorizationStrategy.all())
-                    }
-                }
             }
-
-            f.dropdownDescriptorSelector(title:_("Markup Formatter"),descriptors: MarkupFormatterDescriptor.all(), field: 'markupFormatter')
 
             Functions.getSortedDescriptorsForGlobalConfig(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)

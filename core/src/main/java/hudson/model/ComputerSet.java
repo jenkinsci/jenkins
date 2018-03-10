@@ -201,6 +201,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return Jenkins.getInstance().getComputer(token);
     }
 
+    @RequirePOST
     public void do_launchAll(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
 
@@ -216,6 +217,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      *
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
+    @RequirePOST
     public void doUpdateNow( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
         
@@ -232,6 +234,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * First check point in creating a new agent.
      */
+    @RequirePOST
     public synchronized void doCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name, @QueryParameter String mode,
                                            @QueryParameter String from ) throws IOException, ServletException {
@@ -281,6 +284,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Really creates a new agent.
      */
+    @RequirePOST
     public synchronized void doDoCreateItem( StaplerRequest req, StaplerResponse rsp,
                                            @QueryParameter String name,
                                            @QueryParameter String type ) throws IOException, ServletException, FormException {
@@ -413,7 +417,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * @return The list of strings of computer names (excluding master)
-     * @since TODO
+     * @since 2.14
      */
     @Nonnull
     public static List<String> getComputerNames() {

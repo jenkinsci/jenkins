@@ -33,6 +33,7 @@ import java.io.IOException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import static org.junit.Assert.*;
 /**
@@ -47,17 +48,18 @@ public class MyViewsPropertyTest {
     @Test
     public void testReadResolve() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.setUser(user);
         user.addProperty(property);
         property.readResolve();
-        assertNotNull("Property should contains " + Messages.Hudson_ViewName() + " defaultly.", property.getView(Messages.Hudson_ViewName()));
+        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME + " by default.", property.getView(AllView.DEFAULT_VIEW_NAME));
     }
-    
+
+    /* TODO unclear what exactly this is purporting to assert
     @Test
     public void testSave() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
@@ -75,39 +77,41 @@ public class MyViewsPropertyTest {
         property = User.get("User").getProperty(property.getClass());
         assertEquals("Property should have primary view " + view.name + " instead of " + property.getPrimaryViewName(), view.name, property.getPrimaryViewName());
     }
+    */
     
     @Test
     public void testGetViews() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        assertTrue("Property should contains " + Messages.Hudson_ViewName(), property.getViews().contains(property.getView(Messages.Hudson_ViewName())));
+        assertTrue("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
         View view = new ListView("foo",property);
         property.addView(view);
-        assertTrue("Property should contains " + view.name, property.getViews().contains(view));
+        assertTrue("Property should contain " + view.name, property.getViews().contains(view));
     }
     
     @Test
     public void testGetView() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
-        assertNotNull("Property should contains " + Messages.Hudson_ViewName(), property.getView(Messages.Hudson_ViewName()));
+        assertNotNull("Property should contain " + AllView.DEFAULT_VIEW_NAME, property.getView(
+                AllView.DEFAULT_VIEW_NAME));
         View view = new ListView("foo",property);
         property.addView(view);
-        assertEquals("Property should contains " + view.name, view, property.getView(view.name));
+        assertEquals("Property should contain " + view.name, view, property.getView(view.name));
     }
     
     @Test
     public void testGetPrimaryView() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
-        assertEquals("Property should have primary view " + Messages.Hudson_ViewName() + " instead of " + property.getPrimaryView(). name,property.getView(Messages.Hudson_ViewName()), property.getPrimaryView());
+        assertEquals("Property should have primary view " + AllView.DEFAULT_VIEW_NAME + " instead of " + property.getPrimaryView(). name,property.getView(AllView.DEFAULT_VIEW_NAME), property.getPrimaryView());
         View view = new ListView("foo", property);
         property.addView(view);
         property.setPrimaryViewName(view.name);
@@ -117,35 +121,35 @@ public class MyViewsPropertyTest {
     @Test
     public void testCanDelete() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
-        assertFalse("Property should not enable to delete view " + Messages.Hudson_ViewName(), property.canDelete(property.getView(Messages.Hudson_ViewName())));
+        assertFalse("Property should not enable to delete view " + AllView.DEFAULT_VIEW_NAME, property.canDelete(property.getView(AllView.DEFAULT_VIEW_NAME)));
         View view = new ListView("foo", property);
         property.addView(view);
         assertTrue("Property should enable to delete view " + view.name , property.canDelete(view));
         property.setPrimaryViewName(view.name);
         assertFalse("Property should not enable to delete view " + view.name , property.canDelete(view));
-        assertTrue("Property should enable to delete view " + Messages.Hudson_ViewName(), property.canDelete(property.getView(Messages.Hudson_ViewName())));
+        assertTrue("Property should enable to delete view " + AllView.DEFAULT_VIEW_NAME, property.canDelete(property.getView(AllView.DEFAULT_VIEW_NAME)));
     }
 
     @Test
     public void testDeleteView() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
         boolean ex = false;
         try{
-            property.deleteView(property.getView(Messages.Hudson_ViewName()));
+            property.deleteView(property.getView(AllView.DEFAULT_VIEW_NAME));
         }
         catch(IllegalStateException e){
             ex = true;
         }
         assertTrue("Property should throw IllegalStateException.", ex);
-        assertTrue("Property should contain view " + Messages.Hudson_ViewName(), property.getViews().contains(property.getView(Messages.Hudson_ViewName())));
+        assertTrue("Property should contain view " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
         View view = new ListView("foo", property);
         property.addView(view);
         ex = false;
@@ -159,14 +163,14 @@ public class MyViewsPropertyTest {
         property.addView(view);
         property.setPrimaryViewName(view.name);
         assertTrue("Property should not contain view " + view.name , property.getViews().contains(view));
-        property.deleteView(property.getView(Messages.Hudson_ViewName()));
-        assertFalse("Property should not contains view " + Messages.Hudson_ViewName(), property.getViews().contains(property.getView(Messages.Hudson_ViewName())));
+        property.deleteView(property.getView(AllView.DEFAULT_VIEW_NAME));
+        assertFalse("Property should not contains view " + AllView.DEFAULT_VIEW_NAME, property.getViews().contains(property.getView(AllView.DEFAULT_VIEW_NAME)));
     }
 
     @Test
     public void testOnViewRenamed() throws IOException, Failure, FormException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
@@ -178,25 +182,30 @@ public class MyViewsPropertyTest {
     }
 
     @Test
-    public void testAddView() throws IOException {
+    public void testAddView() throws Exception {
+        {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
         View view = new ListView("foo", property);
         property.addView(view);
-        assertTrue("Property should contains view " + view.name, property.getViews().contains(view));
-        User.reload();
-        user = User.get("User");
-        property = user.getProperty(property.getClass());
-        assertTrue("Property should save changes.", property.getViews().contains(property.getView(view.name)));
+        assertTrue("Property should contain view " + view.name, property.getViews().contains(view));
+        }
+        rule.jenkins.reload();
+        {
+        User user = User.get("User");
+        MyViewsProperty property = user.getProperty(MyViewsProperty.class);
+        assertTrue("Property should save changes.", property.getViews().contains(property.getView("foo")));
+        }
     }
 
     @Test
     public void testDoCreateView() throws Exception {
+        {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
@@ -205,15 +214,18 @@ public class MyViewsPropertyTest {
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         rule.submit(form);
         assertNotNull("Property should contain view foo", property.getView("foo")); 
-        User.reload();
-        property = User.get("User").getProperty(property.getClass());
+        }
+        rule.jenkins.reload();
+        {
+        MyViewsProperty property = User.get("User").getProperty(MyViewsProperty.class);
         assertNotNull("Property should save changes", property.getView("foo"));
+        }
     }
 
     @Test
     public void testGetACL() throws IOException {
         User user = User.get("User");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         user.addProperty(property);
@@ -227,7 +239,7 @@ public class MyViewsPropertyTest {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         User user = User.get("User");
         User user2 = User.get("User2");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
@@ -264,7 +276,7 @@ public class MyViewsPropertyTest {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
         User user = User.get("User");
         User user2 = User.get("User2");
-        MyViewsProperty property = new MyViewsProperty(Messages.Hudson_ViewName());
+        MyViewsProperty property = new MyViewsProperty(AllView.DEFAULT_VIEW_NAME);
         property.readResolve();
         property.setUser(user);
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
@@ -276,6 +288,21 @@ public class MyViewsPropertyTest {
         assertTrue("User should control of himself.", property.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, "User2");
         assertTrue("User User2 should configure permission for user User",property.hasPermission(Permission.CONFIGURE));
+    }
+
+    @Test
+    @Issue("JENKINS-48157")
+    public void shouldNotFailWhenMigratingLegacyViewsWithoutPrimaryOne() throws IOException {
+        rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
+        User user = User.get("User");
+
+        // Emulates creation of a new object with Reflection in User#load() does.
+        MyViewsProperty property = new MyViewsProperty(null);
+        user.addProperty(property);
+
+        // At AllView with non-default to invoke NPE path in AllView.migrateLegacyPrimaryAllViewLocalizedName()
+        property.addView(new AllView("foobar"));
+        property.readResolve();
     }
     
 }

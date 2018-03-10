@@ -23,34 +23,24 @@
  */
 package hudson;
 
-import jenkins.util.SystemProperties;
-import com.sun.jna.Native;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import hudson.Proc.LocalProc;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
-import hudson.util.jna.WinIOException;
+import jenkins.util.SystemProperties;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Chmod;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import jnr.posix.FileStat;
-import jnr.posix.POSIX;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -64,11 +54,22 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
@@ -77,20 +78,19 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import hudson.util.jna.Kernel32Utils;
-import static hudson.util.jna.GNUCLibrary.LIBC;
-
-import java.security.DigestInputStream;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Various utility methods that don't have more proper home.
@@ -184,31 +184,54 @@ public class Util {
     }
 
     /**
-     * Loads the contents of a file into a string.
+     * Reads the entire contents of the text file at <code>logfile</code> into a
+     * string using the {@link Charset#defaultCharset() default charset} for
+     * decoding. If no such file exists, an empty string is returned.
+     * @param logfile The text file to read in its entirety.
+     * @return The entire text content of <code>logfile</code>.
+     * @throws IOException If an error occurs while reading the file.
+     * @deprecated call {@link #loadFile(java.io.File, java.nio.charset.Charset)}
+     * instead to specify the charset to use for decoding (preferably
+     * {@link java.nio.charset.StandardCharsets#UTF_8}).
      */
     @Nonnull
+    @Deprecated
     public static String loadFile(@Nonnull File logfile) throws IOException {
         return loadFile(logfile, Charset.defaultCharset());
     }
 
+    /**
+     * Reads the entire contents of the text file at <code>logfile</code> into a
+     * string using <code>charset</code> for decoding. If no such file exists,
+     * an empty string is returned.
+     * @param logfile The text file to read in its entirety.
+     * @param charset The charset to use for decoding the bytes in <code>logfile</code>.
+     * @return The entire text content of <code>logfile</code>.
+     * @throws IOException If an error occurs while reading the file.
+     */
     @Nonnull
     public static String loadFile(@Nonnull File logfile, @Nonnull Charset charset) throws IOException {
-        if(!logfile.exists())
-            return "";
-
-        StringBuilder str = new StringBuilder((int)logfile.length());
-
-        BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(logfile),charset));
+        // Note: Until charset handling is resolved (e.g. by implementing
+        // https://issues.jenkins-ci.org/browse/JENKINS-48923 ), this method
+        // must be able to handle character encoding errors. As reported at
+        // https://issues.jenkins-ci.org/browse/JENKINS-49112 Run.getLog() calls
+        // loadFile() to fully read the generated log file. This file might
+        // contain unmappable and/or malformed byte sequences. We need to make
+        // sure that in such cases, no CharacterCodingException is thrown.
+        //
+        // One approach that cannot be used is to call Files.newBufferedReader()
+        // because there is a difference in how an InputStreamReader constructed
+        // from a Charset and the reader returned by Files.newBufferedReader()
+        // handle malformed and unmappable byte sequences for the specified
+        // encoding; the latter is more picky and will throw an exception.
+        // See: https://issues.jenkins-ci.org/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
         try {
-            char[] buf = new char[1024];
-            int len;
-            while((len=r.read(buf,0,buf.length))>0)
-               str.append(buf,0,len);
-        } finally {
-            r.close();
+            return FileUtils.readFileToString(logfile, charset);
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (Exception e) {
+            throw new IOException("Failed to fully read " + logfile, e);
         }
-
-        return str.toString();
     }
 
     /**
@@ -259,16 +282,16 @@ public class Util {
      * 
      * @param f
      *            What to delete. If a directory, it'll need to be empty.
-     * @throws IOException if it exists but could not be successfully deleted
+     * @throws IOException if it exists but could not be successfully deleted,
+     * or if it represents an invalid {@link Path}.
      */
     private static void tryOnceDeleteFile(File f) throws IOException {
-        if (!f.delete()) {
-            if(!f.exists())
-                // we are trying to delete a file that no longer exists, so this is not an error
-                return;
-
+        Path path = fileToPath(f);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
             // perhaps this file is read-only?
-            makeWritable(f);
+            makeWritable(path);
             /*
              on Unix both the file and the directory that contains it has to be writable
              for a file deletion to be successful. (Confirmed on Solaris 9)
@@ -282,52 +305,47 @@ public class Util {
              $ rm x
              rm: x not removed: Permission denied
              */
-
-            makeWritable(f.getParentFile());
-
-            if(!f.delete() && f.exists()) {
-                // trouble-shooting.
-                Files.deleteIfExists(f.toPath());
-
+            Path parent = path.getParent();
+            if (parent != null) {
+                makeWritable(parent);
+            }
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e2) {
                 // see https://java.net/projects/hudson/lists/users/archive/2008-05/message/357
                 // I suspect other processes putting files in this directory
                 File[] files = f.listFiles();
                 if(files!=null && files.length>0)
-                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files));
-                throw new IOException("Unable to delete " + f.getPath());
+                    throw new IOException("Unable to delete " + f.getPath()+" - files in dir: "+Arrays.asList(files), e2);
+                throw e2;
             }
         }
     }
 
     /**
-     * Makes the given file writable by any means possible.
+     * Makes the file at the given path writable by any means possible.
      */
-    private static void makeWritable(@Nonnull File f) {
-        if (f.setWritable(true)) {
-            return;
-        }
-        // TODO do we still need to try anything else?
-
-        // try chmod. this becomes no-op if this is not Unix.
-        try {
-            Chmod chmod = new Chmod();
-            chmod.setProject(new Project());
-            chmod.setFile(f);
-            chmod.setPerm("u+w");
-            chmod.execute();
-        } catch (BuildException e) {
-            LOGGER.log(Level.INFO,"Failed to chmod "+f,e);
+    private static void makeWritable(@Nonnull Path path) throws IOException {
+        if (!Functions.isWindows()) {
+            try {
+                PosixFileAttributes attrs = Files.readAttributes(path, PosixFileAttributes.class);
+                Set<PosixFilePermission> newPermissions = attrs.permissions();
+                newPermissions.add(PosixFilePermission.OWNER_WRITE);
+                Files.setPosixFilePermissions(path, newPermissions);
+                return;
+            } catch (NoSuchFileException e) {
+                return;
+            } catch (UnsupportedOperationException e) {
+                // PosixFileAttributes not supported, fall back to old IO.
+            }
         }
 
-        try {// try libc chmod
-            POSIX posix = PosixAPI.jnr();
-            String path = f.getAbsolutePath();
-            FileStat stat = posix.stat(path);
-            posix.chmod(path, stat.mode()|0200); // u+w
-        } catch (Throwable t) {
-            LOGGER.log(Level.FINE,"Failed to chmod(2) "+f,t);
-        }
-
+        /**
+         * We intentionally do not check the return code of setWritable, because if it
+         * is false we prefer to rethrow the exception thrown by Files.deleteIfExists,
+         * which will have a more useful message than something we make up here.
+         */
+        path.toFile().setWritable(true);
     }
 
     /**
@@ -490,7 +508,6 @@ public class Util {
     /**
      * Checks if the given file represents a symlink.
      */
-    //Taken from http://svn.apache.org/viewvc/maven/shared/trunk/file-management/src/main/java/org/apache/maven/shared/model/fileset/util/FileSetManager.java?view=markup
     public static boolean isSymlink(@Nonnull File file) throws IOException {
         /*
          *  Windows Directory Junctions are effectively the same as Linux symlinks to directories.
@@ -499,44 +516,27 @@ public class Util {
          *  you have to go through BasicFileAttributes and do the following check:
          *     isSymbolicLink() || isOther()
          *  The isOther() call will include Windows reparse points, of which a directory junction is.
-         *
-         *  Since we already have a function that detects Windows junctions or symlinks and treats them
-         *  both as symlinks, let's use that function and always call it before calling down to the
-         *  NIO2 API.
-         *
+         *  It also includes includes devices, but reading the attributes of a device with NIO fails
+         *  or returns false for isOther(). (i.e. named pipes such as \\.\pipe\JenkinsTestPipe return
+         *  false for isOther(), and drives such as \\.\PhysicalDrive0 throw an exception when
+         *  calling readAttributes.
          */
-        if (Functions.isWindows()) {
-            try {
-                return Kernel32Utils.isJunctionOrSymlink(file);
-            } catch (UnsupportedOperationException | LinkageError e) {
-                // fall through
-            }
-        }
-        Boolean r = isSymlinkJava7(file);
-        if (r != null) {
-            return r;
-        }
-        String name = file.getName();
-        if (name.equals(".") || name.equals(".."))
-            return false;
-
-        File fileInCanonicalParent;
-        File parentDir = file.getParentFile();
-        if ( parentDir == null ) {
-            fileInCanonicalParent = file;
-        } else {
-            fileInCanonicalParent = new File( parentDir.getCanonicalPath(), name );
-        }
-        return !fileInCanonicalParent.getCanonicalFile().equals( fileInCanonicalParent.getAbsoluteFile() );
-    }
-
-    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
-    private static Boolean isSymlinkJava7(@Nonnull File file) throws IOException {
         try {
-            Path path = file.toPath();
-            return Files.isSymbolicLink(path);
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            Path path = fileToPath(file);
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (attrs.isSymbolicLink()) {
+                return true;
+            } else if (attrs instanceof DosFileAttributes) {
+                /* Returns true for non-symbolic link reparse points and devices. We could call
+                 * WindowsFileAttributes#isReparsePoint with reflection instead to exclude devices,
+                 * but as mentioned in the above comment this does not appear to be an issue.
+                 */
+                return attrs.isOther();
+            } else {
+                return false;
+            }
+        } catch (NoSuchFileException e) {
+            return false;
         }
     }
 
@@ -565,15 +565,44 @@ public class Util {
     }
 
     /**
+     * A check if a file path is a descendant of a parent path
+     * @param forParent the parent the child should be a descendant of
+     * @param potentialChild the path to check
+     * @return true if so
+     * @throws IOException for invalid paths
+     * @since 2.80
+     * @see InvalidPathException
+     */
+    public static boolean isDescendant(File forParent, File potentialChild) throws IOException {
+        Path child = fileToPath(potentialChild.getAbsoluteFile()).normalize();
+        Path parent = fileToPath(forParent.getAbsoluteFile()).normalize();
+        return child.startsWith(parent);
+    }
+
+    /**
      * Creates a new temporary directory.
      */
     public static File createTempDir() throws IOException {
-        File tmp = File.createTempFile("hudson", "tmp");
-        if(!tmp.delete())
-            throw new IOException("Failed to delete "+tmp);
-        if(!tmp.mkdirs())
-            throw new IOException("Failed to create a new directory "+tmp);
-        return tmp;
+        // The previously used approach of creating a temporary file, deleting
+        // it, and making a new directory having the same name in its place is
+        // potentially  problematic:
+        // https://stackoverflow.com/questions/617414/how-to-create-a-temporary-directory-folder-in-java
+        // We can use the Java 7 Files.createTempDirectory() API, but note that
+        // by default, the permissions of the created directory are 0700&(~umask)
+        // whereas the old approach created a temporary directory with permissions
+        // 0777&(~umask).
+        // To avoid permissions problems like https://issues.jenkins-ci.org/browse/JENKINS-48407
+        // we can pass POSIX file permissions as an attribute (see, for example,
+        // https://github.com/jenkinsci/jenkins/pull/3161 )
+        final Path tempPath;
+        final String tempDirNamePrefix = "jenkins";
+        if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+            tempPath = Files.createTempDirectory(tempDirNamePrefix,
+                    PosixFilePermissions.asFileAttribute(EnumSet.allOf(PosixFilePermission.class)));
+        } else {
+            tempPath = Files.createTempDirectory(tempDirNamePrefix);
+        }
+        return tempPath.toFile();
     }
 
     private static final Pattern errorCodeParser = Pattern.compile(".*CreateProcess.*error=([0-9]+).*");
@@ -608,7 +637,7 @@ public class Util {
                 try {
                     ResourceBundle rb = ResourceBundle.getBundle("/hudson/win32errors");
                     return rb.getString("error"+m.group(1));
-                } catch (Exception _) {
+                } catch (Exception ignored) {
                     // silently recover from resource related failures
                 }
             }
@@ -648,35 +677,39 @@ public class Util {
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull InputStream in,@Nonnull OutputStream out) throws IOException {
-        byte[] buf = new byte[8192];
-        int len;
-        while((len=in.read(buf))>=0)
-            out.write(buf,0,len);
+        IOUtils.copy(in, out);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)}
+     */
+    @Deprecated
     public static void copyStream(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
-        char[] buf = new char[8192];
-        int len;
-        while((len=in.read(buf))>0)
-            out.write(buf,0,len);
+        IOUtils.copy(in, out);
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(InputStream, OutputStream)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull InputStream in, @Nonnull OutputStream out) throws IOException {
-        try {
-            copyStream(in,out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
+        try (InputStream _in = in; OutputStream _out = out) { // make sure both are closed, and use Throwable.addSuppressed
+            IOUtils.copy(_in, _out);
         }
     }
 
+    /**
+     * @deprecated Use {@link IOUtils#copy(Reader, Writer)} in a {@code try}-with-resources block
+     */
+    @Deprecated
     public static void copyStreamAndClose(@Nonnull Reader in, @Nonnull Writer out) throws IOException {
-        try {
-            copyStream(in,out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
+        try (Reader _in = in; Writer _out = out) {
+            IOUtils.copy(_in, _out);
         }
     }
 
@@ -766,18 +799,15 @@ public class Util {
     public static String getDigestOf(@Nonnull InputStream source) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-
-            byte[] buffer = new byte[1024];
-            DigestInputStream in =new DigestInputStream(source,md5);
-            try {
-                while(in.read(buffer)>=0)
-                    ; // simply discard the input
-            } finally {
-                in.close();
-            }
+            DigestInputStream in = new DigestInputStream(source, md5);
+            // Note: IOUtils.copy() buffers the input internally, so there is no
+            // need to use a BufferedInputStream.
+            IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed",e);    // impossible
+        } finally {
+            source.close();
         }
         /* JENKINS-18178: confuses Maven 2 runner
         try {
@@ -791,7 +821,7 @@ public class Util {
     @Nonnull
     public static String getDigestOf(@Nonnull String text) {
         try {
-            return getDigestOf(new ByteArrayInputStream(text.getBytes("UTF-8")));
+            return getDigestOf(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new Error(e);
         }
@@ -806,12 +836,8 @@ public class Util {
      */
     @Nonnull
     public static String getDigestOf(@Nonnull File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
-            return getDigestOf(new BufferedInputStream(is));
-        } finally {
-            is.close();
-        }
+        // Note: getDigestOf() closes the input stream.
+        return getDigestOf(Files.newInputStream(fileToPath(file)));
     }
 
     /**
@@ -824,13 +850,11 @@ public class Util {
             // turn secretKey into 256 bit hash
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.reset();
-            digest.update(s.getBytes("UTF-8"));
+            digest.update(s.getBytes(StandardCharsets.UTF_8));
 
             // Due to the stupid US export restriction JDK only ships 128bit version.
             return new SecretKeySpec(digest.digest(),0,128/8, "AES");
         } catch (NoSuchAlgorithmException e) {
-            throw new Error(e);
-        } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
     }
@@ -853,6 +877,8 @@ public class Util {
 
     @Nonnull
     public static byte[] fromHexString(@Nonnull String data) {
+        if (data.length() % 2 != 0)
+            throw new IllegalArgumentException("data must have an even number of hexadecimal digits");
         byte[] r = new byte[data.length() / 2];
         for (int i = 0; i < data.length(); i += 2)
             r[i / 2] = (byte) Integer.parseInt(data.substring(i, i + 2), 16);
@@ -983,7 +1009,7 @@ public class Util {
             StringBuilder out = new StringBuilder(s.length());
 
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
-            OutputStreamWriter w = new OutputStreamWriter(buf,"UTF-8");
+            OutputStreamWriter w = new OutputStreamWriter(buf, StandardCharsets.UTF_8);
 
             for (int i = 0; i < s.length(); i++) {
                 int c = s.charAt(i);
@@ -1046,7 +1072,7 @@ public class Util {
                 if (!escaped) {
                     out = new StringBuilder(i + (m - i) * 3);
                     out.append(s.substring(0, i));
-                    enc = Charset.forName("UTF-8").newEncoder();
+                    enc = StandardCharsets.UTF_8.newEncoder();
                     buf = CharBuffer.allocate(1);
                     escaped = true;
                 }
@@ -1083,8 +1109,8 @@ public class Util {
     /**
      * Escapes HTML unsafe characters like &lt;, &amp; to the respective character entities.
      */
-    @Nonnull
-    public static String escape(@Nonnull String text) {
+    @Nullable
+    public static String escape(@CheckForNull String text) {
         if (text==null)     return null;
         StringBuilder buf = new StringBuilder(text.length()+64);
         for( int i=0; i<text.length(); i++ ) {
@@ -1140,10 +1166,13 @@ public class Util {
     }
 
     /**
-     * Creates an empty file.
+     * Creates an empty file if nonexistent or truncates the existing file.
+     * Note: The behavior of this method in the case where the file already
+     * exists is unlike the POSIX <code>touch</code> utility which merely
+     * updates the file's access and/or modification time.
      */
     public static void touch(@Nonnull File file) throws IOException {
-        new FileOutputStream(file).close();
+        Files.newOutputStream(fileToPath(file)).close();
     }
 
     /**
@@ -1310,79 +1339,7 @@ public class Util {
     public static void createSymlink(@Nonnull File baseDir, @Nonnull String targetPath,
             @Nonnull String symlinkPath, @Nonnull TaskListener listener) throws InterruptedException {
         try {
-            if (createSymlinkJava7(baseDir, targetPath, symlinkPath)) {
-                return;
-            }
-            if (NO_SYMLINK) {
-                return;
-            }
-
-            File symlinkFile = new File(baseDir, symlinkPath);
-            if (Functions.isWindows()) {
-                if (symlinkFile.exists()) {
-                    symlinkFile.delete();
-                }
-                File dst = new File(symlinkFile,"..\\"+targetPath);
-                try {
-                    Kernel32Utils.createSymbolicLink(symlinkFile,targetPath,dst.isDirectory());
-                } catch (WinIOException e) {
-                    if (e.getErrorCode()==1314) {/* ERROR_PRIVILEGE_NOT_HELD */
-                        warnWindowsSymlink();
-                        return;
-                    }
-                    throw e;
-                } catch (UnsatisfiedLinkError e) {
-                    // not available on this Windows
-                    return;
-                }
-            } else {
-                String errmsg = "";
-                // if a file or a directory exists here, delete it first.
-                // try simple delete first (whether exists() or not, as it may be symlink pointing
-                // to non-existent target), but fallback to "rm -rf" to delete non-empty dir.
-                if (!symlinkFile.delete() && symlinkFile.exists())
-                    // ignore a failure.
-                    new LocalProc(new String[]{"rm","-rf", symlinkPath},new String[0],listener.getLogger(), baseDir).join();
-
-                Integer r=null;
-                if (!SYMLINK_ESCAPEHATCH) {
-                    try {
-                        r = LIBC.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        if (r!=0) {
-                            r = Native.getLastError();
-                            errmsg = LIBC.strerror(r);
-                        }
-                    } catch (LinkageError e) {
-                        // if JNA is unavailable, fall back.
-                        // we still prefer to try JNA first as PosixAPI supports even smaller platforms.
-                        POSIX posix = PosixAPI.jnr();
-                        if (posix.isNative()) {
-                            // TODO should we rethrow PosixException as IOException here?
-                            r = posix.symlink(targetPath,symlinkFile.getAbsolutePath());
-                        }
-                    }
-                }
-                if (r==null) {
-                    // if all else fail, fall back to the most expensive approach of forking a process
-                    // TODO is this really necessary? JavaPOSIX should do this automatically
-                    r = new LocalProc(new String[]{
-                        "ln","-s", targetPath, symlinkPath},
-                        new String[0],listener.getLogger(), baseDir).join();
-                }
-                if (r!=0)
-                    listener.getLogger().println(String.format("ln -s %s %s failed: %d %s",targetPath, symlinkFile, r, errmsg));
-            }
-        } catch (IOException e) {
-            PrintStream log = listener.getLogger();
-            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
-            Util.displayIOException(e,listener);
-            e.printStackTrace( log );
-        }
-    }
-
-    private static boolean createSymlinkJava7(@Nonnull File baseDir, @Nonnull String targetPath, @Nonnull String symlinkPath) throws IOException {
-        try {
-            Path path = new File(baseDir, symlinkPath).toPath();
+            Path path = fileToPath(new File(baseDir, symlinkPath));
             Path target = Paths.get(targetPath, new String[0]);
 
             final int maxNumberOfTries = 4;
@@ -1397,23 +1354,22 @@ public class Util {
                         TimeUnit.MILLISECONDS.sleep(timeInMillis); //trying to defeat likely ongoing race condition
                         continue;
                     }
-                    LOGGER.warning("symlink FileAlreadyExistsException thrown " + maxNumberOfTries + " times => cannot createSymbolicLink");
+                    LOGGER.log(Level.WARNING, "symlink FileAlreadyExistsException thrown {0} times => cannot createSymbolicLink", maxNumberOfTries);
                     throw fileAlreadyExistsException;
                 }
             }
-            return true;
         } catch (UnsupportedOperationException e) {
-                return true; // no symlinks on this platform
-        } catch (FileSystemException e) {
-            if (Functions.isWindows()) {
+            PrintStream log = listener.getLogger();
+            log.print("Symbolic links are not supported on this platform");
+            Functions.printStackTrace(e, log);
+        } catch (IOException e) {
+            if (Functions.isWindows() && e instanceof FileSystemException) {
                 warnWindowsSymlink();
-                return true;
+                return;
             }
-            return false;
-        } catch (IOException x) {
-            throw x;
-        } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            PrintStream log = listener.getLogger();
+            log.printf("ln %s %s failed%n",targetPath, new File(baseDir, symlinkPath));
+            Functions.printStackTrace(e, log);
         }
     }
 
@@ -1463,7 +1419,7 @@ public class Util {
     @CheckForNull
     public static String resolveSymlink(@Nonnull File link) throws InterruptedException, IOException {
         try {
-            Path path =  link.toPath();
+            Path path = fileToPath(link);
             return Files.readSymbolicLink(path).toString();
         } catch (UnsupportedOperationException | FileSystemException x) {
             // no symlinks on this platform (windows?),
@@ -1473,7 +1429,7 @@ public class Util {
         } catch (IOException x) {
             throw x;
         } catch (Exception x) {
-            throw (IOException) new IOException(x.toString()).initCause(x);
+            throw new IOException(x);
         }
     }
 
@@ -1494,7 +1450,7 @@ public class Util {
         try {
             return new URI(null,url,null).toASCIIString();
         } catch (URISyntaxException e) {
-            LOGGER.warning("Failed to encode "+url);    // could this ever happen?
+            LOGGER.log(Level.WARNING, "Failed to encode {0}", url);    // could this ever happen?
             return url;
         }
     }
@@ -1607,6 +1563,7 @@ public class Util {
 
     /**
      * Return true iff the parameter does not denote an absolute URI and not a scheme-relative URI.
+     * @since 2.3 / 1.651.2
      */
     public static boolean isSafeToRedirectTo(@Nonnull String uri) {
         return !isAbsoluteUri(uri) && !uri.startsWith("//");
@@ -1640,7 +1597,7 @@ public class Util {
      * @param logger Logger, which receives the error
      * @param closeableName Name of the closeable item
      * @param closeableOwner String representation of the closeable holder
-     * @since TODO once merged to the master and un-restricted
+     * @since 2.19, but TODO update once un-restricted
      */
     @Restricted(NoExternalUse.class)
     public static void closeAndLogFailures(@CheckForNull Closeable toClose, @Nonnull Logger logger, 
@@ -1651,7 +1608,55 @@ public class Util {
         try {
             toClose.close();
         } catch(IOException ex) {
-            logger.log(Level.WARNING, String.format("Failed to close %s of %s", closeableName, closeableOwner), ex);
+            LogRecord record = new LogRecord(Level.WARNING, "Failed to close {0} of {1}");
+            record.setParameters(new Object[] { closeableName, closeableOwner });
+            record.setThrown(ex);
+            logger.log(record);
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static int permissionsToMode(Set<PosixFilePermission> permissions) {
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        int result = 0;
+        for (int i = 0; i < allPermissions.length; i++) {
+            result <<= 1;
+            result |= permissions.contains(allPermissions[i]) ? 1 : 0;
+        }
+        return result;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
+         // Anything larger is a file type, not a permission.
+        int PERMISSIONS_MASK = 07777;
+        // setgid/setuid/sticky are not supported.
+        int MAX_SUPPORTED_MODE = 0777;
+        mode = mode & PERMISSIONS_MASK;
+        if ((mode & MAX_SUPPORTED_MODE) != mode) {
+            throw new IOException("Invalid mode: " + mode);
+        }
+        PosixFilePermission[] allPermissions = PosixFilePermission.values();
+        Set<PosixFilePermission> result = EnumSet.noneOf(PosixFilePermission.class);
+        for (int i = 0; i < allPermissions.length; i++) {
+            if ((mode & 1) == 1) {
+                result.add(allPermissions[allPermissions.length - i - 1]);
+            }
+            mode >>= 1;
+        }
+        return result;
+    }
+
+    /**
+     * Converts a {@link File} into a {@link Path} and checks runtime exceptions.
+     * @throws IOException if {@code f.toPath()} throws {@link InvalidPathException}.
+     */
+    @Restricted(NoExternalUse.class)
+    public static @Nonnull Path fileToPath(@Nonnull File file) throws IOException {
+        try {
+            return file.toPath();
+        } catch (InvalidPathException e) {
+            throw new IOException(e);
         }
     }
 
@@ -1722,4 +1727,15 @@ public class Util {
      */
     @Restricted(value = NoExternalUse.class)
     static boolean GC_AFTER_FAILED_DELETE = SystemProperties.getBoolean(Util.class.getName() + ".performGCOnFailedDelete");
+
+    /**
+     * If this flag is true, native implementations of {@link FilePath#chmod}
+     * and {@link hudson.util.IOUtils#mode} are used instead of NIO.
+     * <p>
+     * This should only be enabled if the setgid/setuid/sticky bits are
+     * intentionally set on the Jenkins installation and they are being
+     * overwritten by Jenkins erroneously.
+     */
+    @Restricted(value = NoExternalUse.class)
+    public static boolean NATIVE_CHMOD_MODE = SystemProperties.getBoolean(Util.class.getName() + ".useNativeChmodAndMode");
 }

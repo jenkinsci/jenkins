@@ -71,17 +71,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     @DataBoundConstructor
     public ParametersDefinitionProperty(@Nonnull List<ParameterDefinition> parameterDefinitions) {
-        if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
-        }
-        this.parameterDefinitions = parameterDefinitions;
+        this.parameterDefinitions = parameterDefinitions != null ? parameterDefinitions : new ArrayList<>();
     }
 
     public ParametersDefinitionProperty(@Nonnull ParameterDefinition... parameterDefinitions) {
-        if (parameterDefinitions == null) {
-            throw new NullPointerException("ParameterDefinitions is null when this is a not valid value");
-        }
-        this.parameterDefinitions = Arrays.asList(parameterDefinitions) ;
+        this.parameterDefinitions = parameterDefinitions != null ? Arrays.asList(parameterDefinitions) : new ArrayList<>();
     }
 
     private Object readResolve() {
@@ -171,7 +165,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         }
 
     	WaitingItem item = Jenkins.getInstance().getQueue().schedule(
-                getJob(), delay.getTime(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), new CauseAction(new Cause.UserIdCause()));
         if (item!=null) {
             String url = formData.optString("redirectTo");
             if (url==null || !Util.isSafeToRedirectTo(url))   // avoid open redirect
@@ -199,7 +193,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         if (delay==null)    delay=new TimeDuration(getJob().getQuietPeriod());
 
         Queue.Item item = Jenkins.getInstance().getQueue().schedule2(
-                getJob(), delay.getTime(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
+                getJob(), delay.getTimeInSeconds(), new ParametersAction(values), ParameterizedJobMixIn.getBuildCause(getJob(), req)).getItem();
 
         if (item != null) {
             rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
@@ -221,6 +215,15 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @Extension
     @Symbol("parameters")
     public static class DescriptorImpl extends OptionalJobPropertyDescriptor {
+        @Override
+        public ParametersDefinitionProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            ParametersDefinitionProperty prop = (ParametersDefinitionProperty)super.newInstance(req, formData);
+            if (prop != null && prop.parameterDefinitions.isEmpty()) {
+                return null;
+            }
+            return prop;
+        }
+
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
             return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);

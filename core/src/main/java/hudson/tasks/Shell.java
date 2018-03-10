@@ -24,7 +24,6 @@
 package hudson.tasks;
 
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Util;
 import hudson.Extension;
 import hudson.model.AbstractProject;
@@ -35,8 +34,12 @@ import java.io.ObjectStreamException;
 import hudson.util.LineEndingConversion;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -46,16 +49,23 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.CheckForNull;
+
 /**
  * Executes a series of commands by using a shell.
  *
  * @author Kohsuke Kawaguchi
  */
 public class Shell extends CommandInterpreter {
+
     @DataBoundConstructor
     public Shell(String command) {
         super(LineEndingConversion.convertEOL(command, LineEndingConversion.EOLType.Unix));
     }
+
+    private Integer unstableReturn;
+
+
 
     /**
      * Older versions of bash have a bug where non-ASCII on the first line
@@ -82,7 +92,7 @@ public class Shell extends CommandInterpreter {
             args.add(script.getRemote());
             args.set(0,args.get(0).substring(2));   // trim off "#!"
             return args.toArray(new String[args.size()]);
-        } else 
+        } else
             return new String[] { getDescriptor().getShellOrDefault(script.getChannel()), "-xe", script.getRemote()};
     }
 
@@ -94,13 +104,30 @@ public class Shell extends CommandInterpreter {
         return ".sh";
     }
 
+    @CheckForNull
+    public final Integer getUnstableReturn() {
+        return new Integer(0).equals(unstableReturn) ? null : unstableReturn;
+    }
+
+    @DataBoundSetter
+    public void setUnstableReturn(Integer unstableReturn) {
+        this.unstableReturn = unstableReturn;
+    }
+
+    @Override
+    protected boolean isErrorlevelForUnstableBuild(int exitCode) {
+        return this.unstableReturn != null && exitCode != 0 && this.unstableReturn.equals(exitCode);
+    }
+
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
 
     private Object readResolve() throws ObjectStreamException {
-        return new Shell(command);
+        Shell shell = new Shell(command);
+        shell.setUnstableReturn(unstableReturn);
+        return shell;
     }
 
     @Extension @Symbol("shell")
@@ -128,13 +155,14 @@ public class Shell extends CommandInterpreter {
          */
         @Deprecated
         public String getShellOrDefault() {
-            if(shell==null)
-                return Functions.isWindows() ?"sh":"/bin/sh";
+            if (shell == null) {
+                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
+            }
             return shell;
         }
 
         public String getShellOrDefault(VirtualChannel channel) {
-            if (shell != null) 
+            if (shell != null)
                 return shell;
 
             String interpreter = null;
@@ -151,7 +179,7 @@ public class Shell extends CommandInterpreter {
 
             return interpreter;
         }
-        
+
         public void setShell(String shell) {
             this.shell = Util.fixEmptyAndTrim(shell);
             save();
@@ -159,6 +187,30 @@ public class Shell extends CommandInterpreter {
 
         public String getDisplayName() {
             return Messages.Shell_DisplayName();
+        }
+
+        /**
+         * Performs on-the-fly validation of the exit code.
+         */
+        @Restricted(DoNotUse.class)
+        public FormValidation doCheckUnstableReturn(@QueryParameter String value) {
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
+                return FormValidation.ok();
+            }
+            long unstableReturn;
+            try {
+                unstableReturn = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                return FormValidation.error(hudson.model.Messages.Hudson_NotANumber());
+            }
+            if (unstableReturn == 0) {
+                return FormValidation.warning(hudson.tasks.Messages.Shell_invalid_exit_code_zero());
+            }
+            if (unstableReturn < 1 || unstableReturn > 255) {
+                return FormValidation.error(hudson.tasks.Messages.Shell_invalid_exit_code_range(unstableReturn));
+            }
+            return FormValidation.ok();
         }
 
         @Override
@@ -172,19 +224,19 @@ public class Shell extends CommandInterpreter {
          */
         public FormValidation doCheckShell(@QueryParameter String value) {
             // Executable requires admin permission
-            return FormValidation.validateExecutable(value); 
+            return FormValidation.validateExecutable(value);
         }
-        
+
         private static final class Shellinterpreter extends MasterToSlaveCallable<String, IOException> {
 
             private static final long serialVersionUID = 1L;
 
             public String call() throws IOException {
-                return Functions.isWindows() ? "sh" : "/bin/sh";
+                return SystemUtils.IS_OS_WINDOWS ? "sh" : "/bin/sh";
             }
         }
-        
+
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(Shell.class.getName());
 }

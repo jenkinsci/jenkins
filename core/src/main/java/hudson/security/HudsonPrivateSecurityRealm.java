@@ -41,6 +41,7 @@ import hudson.util.PluginServletFilter;
 import hudson.util.Protector;
 import hudson.util.Scrambler;
 import hudson.util.XStream2;
+import jenkins.security.SecurityListener;
 import net.sf.json.JSONObject;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -60,6 +61,7 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.dao.DataAccessException;
 
@@ -215,6 +217,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * Creates an account and associates that with the given identity. Used in conjunction
      * with {@link #commenceSignup}.
      */
+    @RequirePOST
     public User doCreateAccountWithFederatedIdentity(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         User u = _doCreateAccount(req,rsp,"signupWithFederatedIdentity.jelly");
         if (u!=null)
@@ -227,6 +230,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Creates an user account. Used for self-registration.
      */
+    @RequirePOST
     public User doCreateAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         return _doCreateAccount(req, rsp, "signup.jelly");
     }
@@ -255,6 +259,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         a = this.getSecurityComponents().manager.authenticate(a);
         SecurityContextHolder.getContext().setAuthentication(a);
 
+        SecurityListener.fireLoggedIn(u.getId());
+
         // then back to top
         req.getView(this,"success.jelly").forward(req,rsp);
     }
@@ -265,6 +271,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * This version behaves differently from {@link #doCreateAccount(StaplerRequest, StaplerResponse)} in that
      * this is someone creating another user.
      */
+    @RequirePOST
     public void doCreateAccountByAdmin(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         createAccountByAdmin(req, rsp, "addUser.jelly", "."); // send the user back to the listing page on success
     }
@@ -276,10 +283,30 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     public User createAccountByAdmin(StaplerRequest req, StaplerResponse rsp, String addUserView, String successView) throws IOException, ServletException {
         checkPermission(Jenkins.ADMINISTER);
         User u = createAccount(req, rsp, false, addUserView);
-        if(u != null) {
+        if (u != null && successView != null) {
             rsp.sendRedirect(successView);
         }
         return u;
+    }
+
+    /**
+     * Creates a user account. Intended to be called from the setup wizard.
+     * Note that this method does not check whether it is actually called from
+     * the setup wizard. This requires the {@link Jenkins#ADMINISTER} permission.
+     *
+     * @param req the request to retrieve input data from
+     * @return the created user account, never null
+     * @throws AccountCreationFailedException if account creation failed due to invalid form input
+     */
+    @Restricted(NoExternalUse.class)
+    public User createAccountFromSetupWizard(StaplerRequest req) throws IOException, AccountCreationFailedException {
+        checkPermission(Jenkins.ADMINISTER);
+        SignupInfo si = validateAccountCreationForm(req, false);
+        if (si.errorMessage != null) {
+            throw new AccountCreationFailedException(si.errorMessage);
+        } else {
+            return createAccount(si);
+        }
     }
 
     /**
@@ -288,6 +315,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      * <p>
      * This can be run by anyone, but only to create the very first user account.
      */
+    @RequirePOST
     public void doCreateFirstAccount(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         if(hasSomeUser()) {
             rsp.sendError(SC_UNAUTHORIZED,"First user was already created");
@@ -313,65 +341,102 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
+     * @param req the request to get the form data from (is also used for redirection)
+     * @param rsp the response to use for forwarding if the creation fails
+     * @param validateCaptcha whether to attempt to validate a captcha in the request
+     * @param formView the view to redirect to if creation fails
+     *
      * @return
      *      null if failed. The browser is already redirected to retry by the time this method returns.
      *      a valid {@link User} object if the user creation was successful.
      */
-    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean selfRegistration, String formView) throws ServletException, IOException {
+    private User createAccount(StaplerRequest req, StaplerResponse rsp, boolean validateCaptcha, String formView) throws ServletException, IOException {
+        SignupInfo si = validateAccountCreationForm(req, validateCaptcha);
+
+        if (si.errorMessage != null) {
+            // failed. ask the user to try again.
+            req.getView(this, formView).forward(req, rsp);
+            return null;
+        }
+
+        return createAccount(si);
+    }
+
+    /**
+     * @param req              the request to process
+     * @param validateCaptcha  whether to attempt to validate a captcha in the request
+     *
+     * @return a {@link SignupInfo#SignupInfo(StaplerRequest) SignupInfo from given request}, with {@link
+     * SignupInfo#errorMessage} set to a non-null value if any of the supported fields are invalid
+     */
+    private SignupInfo validateAccountCreationForm(StaplerRequest req, boolean validateCaptcha) {
         // form field validation
         // this pattern needs to be generalized and moved to stapler
         SignupInfo si = new SignupInfo(req);
 
-        if(selfRegistration && !validateCaptcha(si.captcha))
+        if (validateCaptcha && !validateCaptcha(si.captcha)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage();
+        }
 
-        if(si.password1 != null && !si.password1.equals(si.password2))
+        if (si.password1 != null && !si.password1.equals(si.password2)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch();
+        }
 
-        if(!(si.password1 != null && si.password1.length() != 0))
+        if (!(si.password1 != null && si.password1.length() != 0)) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired();
+        }
 
-        if(si.username==null || si.username.length()==0)
+        if (si.username == null || si.username.length() == 0) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired();
-        else {
+        } else {
             // do not create the user - we just want to check if the user already exists but is not a "login" user.
-            User user = User.getById(si.username, false); 
+            User user = User.getById(si.username, false);
             if (null != user)
                 // Allow sign up. SCM people has no such property.
                 if (user.getProperty(Details.class) != null)
                     si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameAlreadyTaken();
         }
 
-        if(si.fullname==null || si.fullname.length()==0)
+        if (si.fullname == null || si.fullname.length() == 0) {
             si.fullname = si.username;
+        }
 
-        if(isMailerPluginPresent() && (si.email==null || !si.email.contains("@")))
+        if (isMailerPluginPresent() && (si.email == null || !si.email.contains("@"))) {
             si.errorMessage = Messages.HudsonPrivateSecurityRealm_CreateAccount_InvalidEmailAddress();
+        }
 
-        if (! User.isIdOrFullnameAllowed(si.username)) {
+        if (!User.isIdOrFullnameAllowed(si.username)) {
             si.errorMessage = hudson.model.Messages.User_IllegalUsername(si.username);
         }
 
-        if (! User.isIdOrFullnameAllowed(si.fullname)) {
+        if (!User.isIdOrFullnameAllowed(si.fullname)) {
             si.errorMessage = hudson.model.Messages.User_IllegalFullname(si.fullname);
         }
+        req.setAttribute("data", si); // for error messages in the view
+        return si;
+    }
 
-        if(si.errorMessage!=null) {
-            // failed. ask the user to try again.
-            req.setAttribute("data",si);
-            req.getView(this, formView).forward(req,rsp);
-            return null;
+    /**
+     * Creates a new account from a valid signup info. A signup info is valid if its {@link SignupInfo#errorMessage}
+     * field is null.
+     *
+     * @param si the valid signup info to create an account from
+     * @return a valid {@link User} object created from given signup info
+     * @throws IllegalArgumentException if an invalid signup info is passed
+     */
+    private User createAccount(SignupInfo si) throws IOException {
+        if (si.errorMessage != null) {
+            throw new IllegalArgumentException("invalid signup info passed to createAccount(si): " + si.errorMessage);
         }
-
         // register the user
-        User user = createAccount(si.username,si.password1);
+        User user = createAccount(si.username, si.password1);
         user.setFullName(si.fullname);
-        if(isMailerPluginPresent()) {
+        if (isMailerPluginPresent()) {
             try {
                 // legacy hack. mail support has moved out to a separate plugin
                 Class<?> up = Jenkins.getInstance().pluginManager.uberClassLoader.loadClass("hudson.tasks.Mailer$UserProperty");
                 Constructor<?> c = up.getDeclaredConstructor(String.class);
-                user.addProperty((UserProperty)c.newInstance(si.email));
+                user.addProperty((UserProperty) c.newInstance(si.email));
             } catch (ReflectiveOperationException e) {
                 throw new RuntimeException(e);
             }
@@ -379,7 +444,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         user.save();
         return user;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public boolean isMailerPluginPresent() {
         try {

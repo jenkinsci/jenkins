@@ -35,7 +35,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Performs monitoring of {@link Jenkins} {@link InitMilestone} status.
  *
  * @author Oleg Nenashev
- * @since TODO
+ * @since 2.21
  */
 @Restricted(NoExternalUse.class)
 @Extension @Symbol("completedInitialization")

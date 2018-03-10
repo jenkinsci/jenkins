@@ -41,6 +41,12 @@ public class JenkinsLocationConfiguration extends GlobalConfiguration {
     // just to suppress warnings
     private transient String charset,useSsl;
 
+    /**
+     * Gets local configuration.
+     * 
+     * @return {@code null} if the {@link GlobalConfiguration#all()} list does not contain this extension.
+     *         Most likely it means that the Jenkins instance has not been fully loaded yet.
+     */
     public static @CheckForNull JenkinsLocationConfiguration get() {
         return GlobalConfiguration.all().get(JenkinsLocationConfiguration.class);
     }

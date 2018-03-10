@@ -36,7 +36,7 @@ THE SOFTWARE.
         <t:editableDescription permission="${app.ADMINISTER}"/>
       </j:if>
 
-      <j:forEach var="a" items="${it.actions}">
+      <j:forEach var="a" items="${it.allActions}">
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
 

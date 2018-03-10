@@ -188,7 +188,7 @@ public class LabelLoadStatisticsQueueLengthTest {
     private FreeStyleProject createTestProject() throws IOException {
         FreeStyleProject project = j.createFreeStyleProject(PROJECT_NAME);
         // In order to queue multiple builds of the job it needs to be
-        // parameterised.
+        // parameterized.
         project.addProperty(new ParametersDefinitionProperty(
                 new StringParameterDefinition(PARAMETER_NAME, "0")));
         // Prevent builds from being queued as blocked by allowing concurrent

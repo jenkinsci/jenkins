@@ -45,14 +45,39 @@ import org.apache.commons.lang.StringUtils;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class InstallState implements ExtensionPoint {
+
+    /**
+     * Only here for XStream compatibility.
+     * @see #readResolve
+     */
+    @Deprecated
+    @SuppressWarnings("MismatchedReadAndWriteOfArray")
+    private static final InstallState[] UNUSED_INNER_CLASSES = {
+        new InstallState("UNKNOWN", false) {},
+        new InstallState("INITIAL_SETUP_COMPLETED", false) {},
+        new InstallState("CREATE_ADMIN_USER", false) {},
+        new InstallState("INITIAL_SECURITY_SETUP", false) {},
+        new InstallState("RESTART", false) {},
+        new InstallState("DOWNGRADE", false) {},
+    };
+
     /**
      * Need InstallState != NEW for tests by default
      */
     @Extension
-    public static final InstallState UNKNOWN = new InstallState("UNKNOWN", true);
+    public static final InstallState UNKNOWN = new Unknown();
+    private static class Unknown extends InstallState {
+        Unknown() {
+            super("UNKNOWN", true);
+        }
+        @Override
+        public void initializeState() {
+            InstallUtil.proceedToNextStateFrom(this);
+        }
+    }
     
     /**
-     * After any setup / restart / etc. hooks are done, states hould be running
+     * After any setup / restart / etc. hooks are done, states should be running
      */
     @Extension
     public static final InstallState RUNNING = new InstallState("RUNNING", true);
@@ -61,7 +86,11 @@ public class InstallState implements ExtensionPoint {
      * The initial set up has been completed
      */
     @Extension
-    public static final InstallState INITIAL_SETUP_COMPLETED = new InstallState("INITIAL_SETUP_COMPLETED", true) {
+    public static final InstallState INITIAL_SETUP_COMPLETED = new InitialSetupCompleted();
+    private static final class InitialSetupCompleted extends InstallState {
+        InitialSetupCompleted() {
+            super("INITIAL_SETUP_COMPLETED", true);
+        }
         public void initializeState() {
             Jenkins j = Jenkins.getInstance();
             try {
@@ -77,7 +106,11 @@ public class InstallState implements ExtensionPoint {
      * Creating an admin user for an initial Jenkins install.
      */
     @Extension
-    public static final InstallState CREATE_ADMIN_USER = new InstallState("CREATE_ADMIN_USER", false) {
+    public static final InstallState CREATE_ADMIN_USER = new CreateAdminUser();
+    private static final class CreateAdminUser extends InstallState {
+        CreateAdminUser() {
+            super("CREATE_ADMIN_USER", false);
+        }
         public void initializeState() {
             Jenkins j = Jenkins.getInstance();
             // Skip this state if not using the security defaults
@@ -94,19 +127,23 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState INITIAL_PLUGINS_INSTALLING = new InstallState("INITIAL_PLUGINS_INSTALLING", false);
-    
+
     /**
      * Security setup for a new Jenkins install.
      */
     @Extension
-    public static final InstallState INITIAL_SECURITY_SETUP = new InstallState("INITIAL_SECURITY_SETUP", false) {
+    public static final InstallState INITIAL_SECURITY_SETUP = new InitialSecuritySetup();
+    private static final class InitialSecuritySetup extends InstallState {
+        InitialSecuritySetup() {
+            super("INITIAL_SECURITY_SETUP", false);
+        }
         public void initializeState() {
             try {
                 Jenkins.getInstance().getSetupWizard().init(true);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
+
             InstallUtil.proceedToNextStateFrom(INITIAL_SECURITY_SETUP);
         }
     };
@@ -116,12 +153,16 @@ public class InstallState implements ExtensionPoint {
      */
     @Extension
     public static final InstallState NEW = new InstallState("NEW", false);
-    
+
     /**
      * Restart of an existing Jenkins install.
      */
     @Extension
-    public static final InstallState RESTART = new InstallState("RESTART", true) {
+    public static final InstallState RESTART = new Restart();
+    private static final class Restart extends InstallState {
+        Restart() {
+            super("RESTART", true);
+        }
         public void initializeState() {
             InstallUtil.saveLastExecVersion();
         }
@@ -137,7 +178,11 @@ public class InstallState implements ExtensionPoint {
      * Downgrade of an existing Jenkins install.
      */
     @Extension
-    public static final InstallState DOWNGRADE = new InstallState("DOWNGRADE", true) {
+    public static final InstallState DOWNGRADE = new Downgrade();
+    private static final class Downgrade extends InstallState {
+        Downgrade() {
+            super("DOWNGRADE", true);
+        }
         public void initializeState() {
             InstallUtil.saveLastExecVersion();
         }
@@ -151,12 +196,12 @@ public class InstallState implements ExtensionPoint {
     public static final InstallState TEST = new InstallState("TEST", true);
     
     /**
-     * Jenkins started in development mode: Bolean.getBoolean("hudson.Main.development").
+     * Jenkins started in development mode: Boolean.getBoolean("hudson.Main.development").
      * Can be run normally with the -Djenkins.install.runSetupWizard=true
      */
     public static final InstallState DEVELOPMENT = new InstallState("DEVELOPMENT", true);
 
-    private final boolean isSetupComplete;
+    private final transient boolean isSetupComplete;
     private final String name;
 
     public InstallState(@Nonnull String name, boolean isSetupComplete) {
@@ -169,7 +214,13 @@ public class InstallState implements ExtensionPoint {
      */
     public void initializeState() {
     }
-    
+
+    /**
+     * The actual class name is irrelevant; this is functionally an enum.
+     * <p>Creating a {@code writeReplace} does not help much since XStream then just saves:
+     * {@code <installState class="jenkins.install.InstallState$CreateAdminUser" resolves-to="jenkins.install.InstallState">}
+     * @see #UNUSED_INNER_CLASSES
+     */
     public Object readResolve() {
         // If we get invalid state from the configuration, fallback to unknown
         if (StringUtils.isBlank(name)) {

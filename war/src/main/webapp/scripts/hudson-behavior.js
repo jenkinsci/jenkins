@@ -350,7 +350,14 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
+    return directionF(src,function(e){ 
+        if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
+            var r = 0;
+            while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
+                r = e.name.indexOf('_',r+8)+1;
+            return name == e.name.substring(r);
+        }
+        return (e.tagName=="INPUT" || e.tagName=="TEXTAREA" || e.tagName=="SELECT") && (e.name==name || e.name==name2); });
 }
 
 /**
@@ -688,8 +695,17 @@ var jenkinsRules = {
 
 // validate form values to be an integer
     "INPUT.number" : function(e) { registerRegexpValidator(e,/^(\d+|)$/,"Not an integer"); },
+    "INPUT.number-required" : function(e) { registerRegexpValidator(e,/^\-?(\d+)$/,"Not an integer"); },
+
+    "INPUT.non-negative-number-required" : function(e) {
+        registerRegexpValidator(e,/^\d+$/,"Not a non-negative number");
+    },
+
     "INPUT.positive-number" : function(e) {
         registerRegexpValidator(e,/^(\d*[1-9]\d*|)$/,"Not a positive integer");
+    },
+    "INPUT.positive-number-required" : function(e) {
+        registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     },
 
     "INPUT.auto-complete": function(e) {// form field with auto-completion support 
@@ -712,6 +728,7 @@ var jenkinsRules = {
         };
         ac.prehighlightClassName = "yui-ac-prehighlight";
         ac.animSpeed = 0;
+        ac.formatResult = ac.formatEscapedResult;
         ac.useShadow = true;
         ac.autoSnapContainer = true;
         ac.delimChar = e.getAttribute("autoCompleteDelimChar");
@@ -964,7 +981,7 @@ var jenkinsRules = {
              * Considers the visibility of the row group from the point of view of outside.
              * If you think of a row group like a logical DOM node, this is akin to its .style.display.
              */
-            makeOuterVisisble : function(b) {
+            makeOuterVisible : function(b) {
                 this.outerVisible = b;
                 this.updateVisibility();
             },
@@ -975,7 +992,7 @@ var jenkinsRules = {
              *
              * If you think of a row group like a logical DOM node, this is akin to its children's .style.display.
              */
-            makeInnerVisisble : function(b) {
+            makeInnerVisible : function(b) {
                 this.innerVisible = b;
                 this.updateVisibility();
             },
@@ -987,7 +1004,7 @@ var jenkinsRules = {
                 var display = (this.outerVisible && this.innerVisible) ? "" : "none";
                 for (var e=this.start; e!=this.end; e=$(e).next()) {
                     if (e.rowVisibilityGroup && e!=this.start) {
-                        e.rowVisibilityGroup.makeOuterVisisble(this.innerVisible);
+                        e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
                         e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
                     } else {
                         e.style.display = display;
@@ -1037,7 +1054,7 @@ var jenkinsRules = {
 
     "TR.optional-block-start ": function(e) { // see optionalBlock.jelly
         // this is suffixed by a pointless string so that two processing for optional-block-start
-        // can sandwitch row-set-end
+        // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
         var checkbox = e.down().down();
         updateOptionalBlock(checkbox,false);
@@ -1108,7 +1125,7 @@ var jenkinsRules = {
                 var f = $(subForms[i]);
 
                 if (show)   renderOnDemand(f.next());
-                f.rowVisibilityGroup.makeInnerVisisble(show);
+                f.rowVisibilityGroup.makeInnerVisible(show);
 
                 // TODO: this is actually incorrect in the general case if nested vg uses field-disabled
                 // so far dropdownList doesn't create such a situation.
@@ -1357,7 +1374,7 @@ function updateOptionalBlock(c,scroll) {
 
     var checked = xor(c.checked,Element.hasClassName(c,"negative"));
 
-    vg.rowVisibilityGroup.makeInnerVisisble(checked);
+    vg.rowVisibilityGroup.makeInnerVisible(checked);
 
     if(checked && scroll) {
         var D = YAHOO.util.Dom;
@@ -2355,6 +2372,7 @@ function createSearchBox(searchURL) {
     var ac = new YAHOO.widget.AutoComplete("search-box","search-box-completion",ds);
     ac.typeAhead = false;
     ac.autoHighlight = false;
+    ac.formatResult = ac.formatEscapedResult;
 
     var box   = $("search-box");
     var sizer = $("search-box-sizer");
@@ -2451,7 +2469,7 @@ function shortenName(name) {
 
 //
 // structured form submission handling
-//   see http://wiki.jenkins-ci.org/display/JENKINS/Structured+Form+Submission
+//   see https://jenkins.io/redirect/developer/structured-form-submission
 function buildFormTree(form) {
     try {
         // I initially tried to use an associative array with DOM elements as keys

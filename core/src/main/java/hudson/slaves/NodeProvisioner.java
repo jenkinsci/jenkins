@@ -23,6 +23,7 @@
  */
 package hudson.slaves;
 
+import hudson.AbortException;
 import hudson.ExtensionPoint;
 import hudson.model.*;
 import jenkins.model.Jenkins;
@@ -217,36 +218,48 @@ public class NodeProvisioner {
                         PlannedNode f = itr.next();
                         if (f.future.isDone()) {
                             try {
-                                Node node = f.future.get();
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onComplete(f, node);
+                                Node node = null;
+                                try {
+                                    node = f.future.get();
+                                } catch (InterruptedException e) {
+                                    throw new AssertionError("InterruptedException occurred", e); // since we confirmed that the future is already done
+                                } catch (ExecutionException e) {
+                                    Throwable cause = e.getCause();
+                                    if (!(cause instanceof AbortException)) {
+                                        LOGGER.log(Level.WARNING,
+                                                "Unexpected exception encountered while provisioning agent "
+                                                        + f.displayName,
+                                                cause);
+                                    }
+                                    fireOnFailure(f, cause);
                                 }
-    
-                                jenkins.addNode(node);
-                                LOGGER.log(Level.INFO,
-                                        "{0} provisioning successfully completed. " 
-                                                + "We have now {1,number,integer} computer(s)",
-                                        new Object[]{f.displayName, jenkins.getComputers().length});
-                            } catch (InterruptedException e) {
-                                throw new AssertionError(e); // since we confirmed that the future is already done
-                            } catch (ExecutionException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch",
-                                        e.getCause());
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onFailure(f, e.getCause());
-                                }
-                            } catch (IOException e) {
-                                LOGGER.log(Level.WARNING, "Provisioned agent " + f.displayName + " failed to launch", 
-                                        e);
-                                for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                    cl.onFailure(f, e);
+
+                                if (node != null) {
+                                    fireOnComplete(f, node);
+
+                                    try {
+                                        jenkins.addNode(node);
+                                        LOGGER.log(Level.INFO,
+                                                "{0} provisioning successfully completed. "
+                                                        + "We have now {1,number,integer} computer(s)",
+                                                new Object[]{f.displayName, jenkins.getComputers().length});
+                                        fireOnCommit(f, node);
+                                    } catch (IOException e) {
+                                        LOGGER.log(Level.WARNING,
+                                                "Provisioned agent " + f.displayName + " failed to launch",
+                                                e);
+                                        fireOnRollback(f, node, e);
+                                    }
                                 }
                             } catch (Error e) {
                                 // we are not supposed to try and recover from Errors
                                 throw e;
                             } catch (Throwable e) {
-                                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while " 
-                                        + "processing provisioned agent " + f.displayName, e);
+                                // Just log it
+                                LOGGER.log(Level.SEVERE,
+                                        "Unexpected uncaught exception encountered while processing agent "
+                                                + f.displayName,
+                                        e);
                             } finally {
                                 while (true) {
                                     List<PlannedNode> orig = pendingLaunches.get();
@@ -701,9 +714,7 @@ public class NodeProvisioner {
                             Collection<PlannedNode> additionalCapacities =
                                     c.provision(state.getLabel(), workloadToProvision);
 
-                            for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
-                                cl.onStarted(c, state.getLabel(), additionalCapacities);
-                            }
+                            fireOnStarted(c, state.getLabel(), additionalCapacities);
 
                             for (PlannedNode ac : additionalCapacities) {
                                 excessWorkload -= ac.numExecutors;
@@ -816,5 +827,77 @@ public class NodeProvisioner {
                 LOGGER.warning("Failed to parse a float value from system property "+propName+". value was "+v);
             }
         return defaultValue;
+    }
+
+    private static void fireOnFailure(final NodeProvisioner.PlannedNode plannedNode, final Throwable cause) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onFailure(plannedNode, cause);
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onFailure() listener call in " + cl + " for agent "
+                        + plannedNode.displayName, e);
+            }
+        }
+    }
+
+    private static void fireOnRollback(final NodeProvisioner.PlannedNode plannedNode, final Node newNode,
+                                       final Throwable cause) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onRollback(plannedNode, newNode, cause);
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onRollback() listener call in " + cl + " for agent "
+                        + newNode.getDisplayName(), e);
+            }
+        }
+    }
+
+    private static void fireOnComplete(final NodeProvisioner.PlannedNode plannedNode, final Node newNode) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onComplete(plannedNode, newNode);
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onComplete() listener call in " + cl + " for agent "
+                        + plannedNode.displayName, e);
+            }
+        }
+    }
+
+    private static void fireOnCommit(final NodeProvisioner.PlannedNode plannedNode, final Node newNode) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onCommit(plannedNode, newNode);
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onCommit() listener call in " + cl + " for agent "
+                        + newNode.getDisplayName(), e);
+            }
+        }
+    }
+
+    private static void fireOnStarted(final Cloud cloud, final Label label,
+                                      final Collection<NodeProvisioner.PlannedNode> plannedNodes) {
+        for (CloudProvisioningListener cl : CloudProvisioningListener.all()) {
+            try {
+                cl.onStarted(cloud, label, plannedNodes);
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable e) {
+                LOGGER.log(Level.SEVERE, "Unexpected uncaught exception encountered while "
+                        + "processing onStarted() listener call in " + cl + " for label "
+                        + label.toString(), e);
+            }
+        }
     }
 }

@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:pane title="Pane" width="100%">
+        Sidepanel action box.
+    </l:pane>
+</j:jelly>

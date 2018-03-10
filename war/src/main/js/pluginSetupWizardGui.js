@@ -203,7 +203,7 @@ var createPluginSetupWizard = function(appendTarget) {
 	};
 
 	var getJenkinsVersion = function() {
-		return getJenkinsVersionFull().replace(/(\d[.]\d).*/,'$1');
+		return getJenkinsVersionFull().replace(/(\d[.][\d.]+).*/,'$1');
 	};
 
 	// call this to set the panel in the app, this performs some additional things & adds common transitions
@@ -461,9 +461,34 @@ var createPluginSetupWizard = function(appendTarget) {
 			setPanel(pluginSuccessPanel, { installingPlugins : installingPlugins, failedPlugins: true });
 			return;
 		}
-
+		
+		var attachScrollEvent = function() {
+			var $c = $('.install-console-scroll');
+			if (!$c.length) {
+				setTimeout(attachScrollEvent, 50);
+				return;
+			}
+			var events = $._data($c[0], "events");
+			if (!events || !events.scroll) {
+				$c.on('scroll', function() {
+				    if (!$c.data('wasAutoScrolled')) {
+				    	var top = $c[0].scrollHeight - $c.height();
+				        if ($c.scrollTop() === top) {
+				        	// resume auto-scroll
+				        	$c.data('userScrolled', false);
+				        } else {
+				        	// user scrolled up
+					    	$c.data('userScrolled', true);
+				        }
+				    } else {
+				    	$c.data('wasAutoScrolled', false);
+				    }
+				});
+			}
+		};
+		
 		initInstallingPluginList();
-		setPanel(progressPanel, { installingPlugins : installingPlugins });
+		setPanel(progressPanel, { installingPlugins : installingPlugins }, attachScrollEvent);
 
 		// call to the installStatus, update progress bar & plugin details; transition on complete
 		var updateStatus = function() {
@@ -491,8 +516,8 @@ var createPluginSetupWizard = function(appendTarget) {
 				$('.progress-bar').css({width: ((100.0 * complete)/total) + '%'});
 
 				// update details
-				var $c = $('.install-text');
-				$c.children().remove();
+				var $txt = $('.install-text');
+				$txt.children().remove();
 
 				for(i = 0; i < jobs.length; i++) {
 					j = jobs[i];
@@ -538,7 +563,7 @@ var createPluginSetupWizard = function(appendTarget) {
 						else {
 							$div.addClass('dependent');
 						}
-						$c.append($div);
+						$txt.append($div);
 
 						var $itemProgress = $('.selected-plugin[id="installing-' + jenkins.idIfy(j.name) + '"]');
 						if($itemProgress.length > 0 && !$itemProgress.is('.'+state)) {
@@ -547,13 +572,14 @@ var createPluginSetupWizard = function(appendTarget) {
 					}
 				}
 
-				$c = $('.install-console-scroll');
-				if($c.is(':visible')) {
+				var $c = $('.install-console-scroll');
+				if($c && $c.is(':visible') && !$c.data('userScrolled')) {
+					$c.data('wasAutoScrolled', true);
 					$c.scrollTop($c[0].scrollHeight);
 				}
 
 				// keep polling while install is running
-				if(complete < total || data.state === 'INITIAL_PLUGINS_INSTALLING') {
+				if(complete < total && data.state === 'INITIAL_PLUGINS_INSTALLING') {
 					setPanel(progressPanel, { installingPlugins : installingPlugins });
 					// wait a sec
 					setTimeout(updateStatus, 250);
@@ -846,44 +872,37 @@ var createPluginSetupWizard = function(appendTarget) {
 			$c.slideDown();
 		}
 	};
-	
-	var handleStaplerSubmit = function(data) {
-		if(data.status && data.status > 200) {
-			// Nothing we can really do here
-			setPanel(errorPanel, { errorMessage: data.statusText });
-			return;
-		}
-		
-		try {
-			if(JSON.parse(data).status === 'ok') {
-				showStatePanel();
-				return;
-			}
-		} catch(e) {
-			// ignore JSON parsing issues, this may be HTML
-		}
-		// we get 200 OK
-		var $page = $(data);
-		var $errors = $page.find('.error');
-		if($errors.length > 0) {
-			var $main = $page.find('#main-panel').detach();
-			if($main.length > 0) {
-				data = data.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
-			}
-			var doc = $('iframe[src]').contents()[0];
-			doc.open();
-			doc.write(data);
-			doc.close();
-		}
-		else {
+
+	var handleFirstUserResponseSuccess = function (data) {
+		if (data.status === 'ok') {
 			showStatePanel();
+		} else {
+			setPanel(errorPanel, {errorMessage: 'Error trying to create first user: ' + data.statusText});
 		}
+	};
+
+	var handleFirstUserResponseError = function(res) {
+		// We're expecting a full HTML page to replace the form
+		// We can only replace the _whole_ iframe due to XSS rules
+		// https://stackoverflow.com/a/22913801/1117552
+		var responseText = res.responseText;
+		var $page = $(responseText);
+		var $main = $page.find('#main-panel').detach();
+		if($main.length > 0) {
+			responseText = responseText.replace(/body([^>]*)[>](.|[\r\n])+[<][/]body/,'body$1>'+$main.html()+'</body');
+		}
+		var doc = $('iframe#setup-first-user').contents()[0];
+		doc.open();
+		doc.write(responseText);
+		doc.close();
+		$('button').prop({disabled:false});
 	};
 	
 	// call to submit the firstuser
 	var saveFirstUser = function() {
 		$('button').prop({disabled:true});
-		securityConfig.saveFirstUser($('iframe[src]').contents().find('form:not(.no-json)'), handleStaplerSubmit, handleStaplerSubmit);
+		var $form = $('iframe#setup-first-user').contents().find('form:not(.no-json)');
+		securityConfig.saveFirstUser($form, handleFirstUserResponseSuccess, handleFirstUserResponseError);
 	};
 
 	var skipFirstUser = function() {

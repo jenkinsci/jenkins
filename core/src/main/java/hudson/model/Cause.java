@@ -25,12 +25,15 @@ package hudson.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import hudson.console.ModelHyperlinkNote;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -364,9 +367,15 @@ public abstract class Cause {
             this.authenticationName = Jenkins.getAuthentication().getName();
         }
 
+        /**
+         * Gets user display name when possible.
+         * @return User display name.
+         *         If the User does not exist, returns its ID.
+         */
         @Exported(visibility=3)
         public String getUserName() {
-        	return User.get(authenticationName).getDisplayName();
+        	final User user = User.getById(authenticationName, false);
+        	return user != null ? user.getDisplayName() : authenticationName;
         }
 
         @Override
@@ -393,21 +402,48 @@ public abstract class Cause {
      */
     public static class UserIdCause extends Cause {
 
+        @CheckForNull
         private String userId;
 
+        /**
+         * Constructor, which uses the current {@link User}.
+         */
         public UserIdCause() {
             User user = User.current();
             this.userId = (user == null) ? null : user.getId();
         }
 
+        /**
+         * Constructor.
+         * @param userId User ID. {@code null} if the user is unknown.
+         * @since 2.96
+         */
+        public UserIdCause(@CheckForNull String userId) {
+            this.userId = userId;
+        }
+
         @Exported(visibility = 3)
+        @CheckForNull
         public String getUserId() {
             return userId;
+        }
+        
+        @Nonnull
+        private String getUserIdOrUnknown() {
+            return  userId != null ? userId : User.getUnknown().getId();
         }
 
         @Exported(visibility = 3)
         public String getUserName() {
-            return userId == null ? "anonymous" : User.get(userId).getDisplayName();
+            final User user = userId == null ? null : User.getById(userId, false);
+            return user == null ? "anonymous" : user.getDisplayName();
+        }
+
+        @Restricted(DoNotUse.class) // for Jelly
+        @CheckForNull
+        public String getUserUrl() {
+            final User user = userId == null ? null : User.getById(userId, false);
+            return user != null ? user.getUrl() : null;
         }
 
         @Override
@@ -417,9 +453,14 @@ public abstract class Cause {
 
         @Override
         public void print(TaskListener listener) {
-            listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
-                    // TODO better to use ModelHyperlinkNote.encodeTo(User), or User.getUrl, since it handles URL escaping
-                    ModelHyperlinkNote.encodeTo("/user/"+getUserId(), getUserName())));
+            User user = getUserId() == null ? null : User.getById(getUserId(), false);
+            if (user != null) {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        ModelHyperlinkNote.encodeTo(user)));
+            } else {
+                listener.getLogger().println(Messages.Cause_UserIdCause_ShortDescription(
+                        "unknown or anonymous"));
+            }
         }
 
         @Override

@@ -1,7 +1,7 @@
 package jenkins.security;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.queue.Tasks;
 import hudson.util.DescribableList;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 
@@ -38,6 +39,14 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }
 
+    /**
+     * Provides all user-configured authenticators.
+     * Note that if you are looking to determine all <em>effective</em> authenticators,
+     * including any potentially supplied by plugins rather than user configuration,
+     * you should rather call {@link QueueItemAuthenticatorProvider#authenticators};
+     * or if you are looking for the authentication of an actual project, build, etc., use
+     * {@link hudson.model.Queue.Item#authenticate} or {@link Tasks#getAuthenticationOf}.
+     */
     public DescribableList<QueueItemAuthenticator, QueueItemAuthenticatorDescriptor> getAuthenticators() {
         return authenticators;
     }
@@ -59,7 +68,7 @@ public class QueueItemAuthenticatorConfiguration extends GlobalConfiguration {
     @Extension(ordinal = 100)
     public static class ProviderImpl extends QueueItemAuthenticatorProvider {
 
-        @NonNull
+        @Nonnull
         @Override
         public List<QueueItemAuthenticator> getAuthenticators() {
             return get().getAuthenticators();

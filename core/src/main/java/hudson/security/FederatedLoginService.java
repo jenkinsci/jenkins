@@ -35,6 +35,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -99,12 +101,14 @@ public abstract class FederatedLoginService implements ExtensionPoint {
      * The object is bound to /federatedLoginService/URLNAME/. The url name needs to be unique among all
      * {@link FederatedLoginService}s.
      */
+    @Nonnull
     public abstract String getUrlName();
 
     /**
      * Returns your implementation of {@link FederatedLoginServiceUserProperty} that stores
      * opaque identifiers.
      */
+    @Nonnull
     public abstract Class<? extends FederatedLoginServiceUserProperty> getUserPropertyClass();
 
     /**
@@ -117,6 +121,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return must not be null.
          */
+        @Nonnull
         public abstract String getIdentifier();
 
         /**
@@ -125,6 +130,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return null if this information is not available.
          */
+        @CheckForNull
         public abstract String getNickname();
 
         /**
@@ -132,6 +138,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return null if this information is not available.
          */
+        @CheckForNull
         public abstract String getFullName();
 
         /**
@@ -139,6 +146,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *
          * @return null if this information is not available.
          */
+        @CheckForNull
         public abstract String getEmailAddress();
 
         /**
@@ -150,6 +158,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
         /**
          * Locates the user who owns this identifier.
          */
+        @CheckForNull
         public final User locateUser() {
             Class<? extends FederatedLoginServiceUserProperty> pt = getUserPropertyClass();
             String id = getIdentifier();
@@ -175,6 +184,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
         @SuppressWarnings("ACL.impersonate")
+        @Nonnull
         public User signin() throws UnclaimedIdentityException {
             User u = locateUser();
             if (u!=null) {

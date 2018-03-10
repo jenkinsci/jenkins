@@ -28,4 +28,9 @@ THE SOFTWARE.
            description="${%description(rootURL)}">
     <f:textarea name="command" value="${instance.command}" class="fixed-width" />
   </f:entry>
+  <f:advanced>
+    <f:entry title="${%ERRORLEVEL to set build unstable}" field="unstableReturn" >
+      <f:number value="${instance.unstableReturn}" min="-2147483648" max="2147483647" step="1" />
+    </f:entry>
+  </f:advanced>
 </j:jelly>

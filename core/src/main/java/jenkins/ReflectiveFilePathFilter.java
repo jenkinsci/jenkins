@@ -7,7 +7,7 @@ import java.io.File;
  * operations as a single string argument.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.THU
+ * @since 1.587 / 1.580.1
  */
 public abstract class ReflectiveFilePathFilter extends FilePathFilter {
     /**

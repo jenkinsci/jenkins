@@ -26,6 +26,7 @@ package hudson.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.KXml2Driver;
 import com.thoughtworks.xstream.mapper.AnnotationMapper;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -39,13 +40,16 @@ import com.thoughtworks.xstream.converters.SingleValueConverterWrapper;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.extended.DynamicProxyConverter;
 import com.thoughtworks.xstream.core.JVM;
+import com.thoughtworks.xstream.core.util.Fields;
 import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.ReaderWrapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.remoting.ClassFilter;
 import hudson.util.xstream.ImmutableSetConverter;
@@ -63,19 +67,27 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import javax.annotation.Nonnull;
 
 /**
  * {@link XStream} enhanced for additional Java5 support and improved robustness.
  * @author Kohsuke Kawaguchi
  */
 public class XStream2 extends XStream {
+
+    private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
+
     private RobustReflectionConverter reflectionConverter;
     private final ThreadLocal<Boolean> oldData = new ThreadLocal<Boolean>();
     private final @CheckForNull ClassOwnership classOwnership;
@@ -86,7 +98,18 @@ public class XStream2 extends XStream {
      */
     private MapperInjectionPoint mapperInjectionPoint;
 
+    /**
+     * Convenience method so we only have to change the driver in one place
+     * if we switch to something new in the future
+     *
+     * @return a new instance of the HierarchicalStreamDriver we want to use
+     */
+    public static HierarchicalStreamDriver getDefaultDriver() {
+        return new KXml2Driver();
+    }
+
     public XStream2() {
+        super(getDefaultDriver());
         init();
         classOwnership = null;
     }
@@ -98,12 +121,33 @@ public class XStream2 extends XStream {
     }
 
     XStream2(ClassOwnership classOwnership) {
+        super(getDefaultDriver());
         init();
         this.classOwnership = classOwnership;
     }
 
     @Override
     public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder) {
+        return unmarshal(reader, root, dataHolder, false);
+    }
+
+    /**
+     * Variant of {@link #unmarshal(HierarchicalStreamReader, Object, DataHolder)} that nulls out non-{@code transient} instance fields not defined in the source when unmarshaling into an existing object.
+     * <p>Typically useful when loading user-supplied XML files in place (non-null {@code root})
+     * where some reference-valued fields of the root object may have legitimate reasons for being null.
+     * Without this mode, it is impossible to clear such fields in an existing instance,
+     * since XStream has no notation for a null field value.
+     * Even for primitive-valued fields, it is useful to guarantee
+     * that unmarshaling will produce the same result as creating a new instance.
+     * <p>Do <em>not</em> use in cases where the root objects defines fields (typically {@code final})
+     * which it expects to be {@link Nonnull} unless you are prepared to restore default values for those fields.
+     * @param nullOut whether to perform this special behavior;
+     *                false to use the stock XStream behavior of leaving unmentioned {@code root} fields untouched
+     * @see XmlFile#unmarshalNullingOut
+     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-21017">JENKINS-21017</a>
+     * @since 2.99
+     */
+    public Object unmarshal(HierarchicalStreamReader reader, Object root, DataHolder dataHolder, boolean nullOut) {
         // init() is too early to do this
         // defensive because some use of XStream happens before plugins are initialized.
         Jenkins h = Jenkins.getInstanceOrNull();
@@ -111,7 +155,54 @@ public class XStream2 extends XStream {
             setClassLoader(h.pluginManager.uberClassLoader);
         }
 
-        Object o = super.unmarshal(reader,root,dataHolder);
+        Object o;
+        if (root == null || !nullOut) {
+            o = super.unmarshal(reader, root, dataHolder);
+        } else {
+            Set<String> topLevelFields = new HashSet<>();
+            o = super.unmarshal(new ReaderWrapper(reader) {
+                int depth;
+                @Override
+                public void moveUp() {
+                    if (--depth == 0) {
+                        topLevelFields.add(getNodeName());
+                    }
+                    super.moveUp();
+                }
+                @Override
+                public void moveDown() {
+                    try {
+                        super.moveDown();
+                    } finally {
+                        depth++;
+                    }
+                }
+            }, root, dataHolder);
+            if (o == root && getConverterLookup().lookupConverterForType(o.getClass()) instanceof RobustReflectionConverter) {
+                getReflectionProvider().visitSerializableFields(o, (String name, Class type, Class definedIn, Object value) -> {
+                    if (topLevelFields.contains(name)) {
+                        return;
+                    }
+                    Field f = Fields.find(definedIn, name);
+                    Object v;
+                    if (type.isPrimitive()) {
+                        // oddly not in com.thoughtworks.xstream.core.util.Primitives
+                        v = ReflectionUtils.getVmDefaultValueForPrimitiveType(type);
+                        if (v.equals(value)) {
+                            return;
+                        }
+                    } else {
+                        if (value == null) {
+                            return;
+                        }
+                        v = null;
+                    }
+                    LOGGER.log(Level.FINE, "JENKINS-21017: nulling out {0} in {1}", new Object[] {f, o});
+                    Fields.write(f, o, v);
+                });
+            }
+        }
+
         if (oldData.get()!=null) {
             oldData.remove();
             if (o instanceof Saveable) OldDataMonitor.report((Saveable)o, "1.106");
@@ -130,8 +221,8 @@ public class XStream2 extends XStream {
      * Specifies that a given field of a given class should not be treated with laxity by {@link RobustCollectionConverter}.
      * @param clazz a class which we expect to hold a non-{@code transient} field
      * @param field a field name in that class
+     * @since 2.85 this method can be used from outside core, before then it was restricted since initially added in 1.551 / 1.532.2
      */
-    @Restricted(NoExternalUse.class) // TODO could be opened up later
     public void addCriticalField(Class<?> clazz, String field) {
         reflectionConverter.addCriticalField(clazz, field);
     }
@@ -144,6 +235,9 @@ public class XStream2 extends XStream {
     private void init() {
         // list up types that should be marshalled out like a value, without referential integrity tracking.
         addImmutableType(Result.class);
+
+        // http://www.openwall.com/lists/oss-security/2017/04/03/4
+        denyTypes(new Class[] { void.class, Void.class });
 
         registerConverter(new RobustCollectionConverter(getMapper(),getReflectionProvider()),10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
@@ -212,7 +306,7 @@ public class XStream2 extends XStream {
      */
     public void toXMLUTF8(Object obj, OutputStream out) throws IOException {
         Writer w = new OutputStreamWriter(out, Charset.forName("UTF-8"));
-        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write("<?xml version=\"1.1\" encoding=\"UTF-8\"?>\n");
         toXML(obj, w);
     }
 
@@ -306,15 +400,22 @@ public class XStream2 extends XStream {
             this.xstream = xstream;
         }
 
-        private Converter findConverter(Class<?> t) {
+        @CheckForNull
+        private Converter findConverter(@CheckForNull Class<?> t) {
+            if (t == null) {
+                return null;
+            }
+            
             Converter result = cache.get(t);
             if (result != null)
                 // ConcurrentHashMap does not allow null, so use this object to represent null
                 return result == this ? null : result;
             try {
-                if(t==null || t.getClassLoader()==null)
+                final ClassLoader classLoader = t.getClassLoader();
+                if(classLoader == null) {
                     return null;
-                Class<?> cl = t.getClassLoader().loadClass(t.getName() + "$ConverterImpl");
+                }
+                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -415,7 +516,7 @@ public class XStream2 extends XStream {
 
         private PluginManager pm;
 
-        @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
+        @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // classOwnership checked for null so why does FB complain?
         @Override public String ownerOf(Class<?> clazz) {
             if (classOwnership != null) {
                 return classOwnership.ownerOf(clazz);
@@ -439,27 +540,28 @@ public class XStream2 extends XStream {
     private static class BlacklistedTypesConverter implements Converter {
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons");
+            throw new UnsupportedOperationException("Refusing to marshal " + source.getClass().getName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons");
+            throw new ConversionException("Refusing to unmarshal " + reader.getNodeName() + " for security reasons; see https://jenkins.io/redirect/class-filter/");
         }
+
+        /** TODO see comment in {@code whitelisted-classes.txt} */
+        private static final Pattern JRUBY_PROXY = Pattern.compile("org[.]jruby[.]proxy[.].+[$]Proxy\\d+");
 
         @Override
         public boolean canConvert(Class type) {
             if (type == null) {
                 return false;
             }
-            try {
-                ClassFilter.DEFAULT.check(type);
-                ClassFilter.DEFAULT.check(type.getName());
-            } catch (SecurityException se) {
-                // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
-                return true;
+            String name = type.getName();
+            if (JRUBY_PROXY.matcher(name).matches()) {
+                return false;
             }
-            return false;
+            // claim we can convert all the scary stuff so we can throw exceptions when attempting to do so
+            return ClassFilter.DEFAULT.isBlacklisted(name) || ClassFilter.DEFAULT.isBlacklisted(type);
         }
     }
 }
