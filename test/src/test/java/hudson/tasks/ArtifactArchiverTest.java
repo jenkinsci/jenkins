@@ -66,7 +66,7 @@ import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 public class ArtifactArchiverTest {
-    
+
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test
@@ -209,12 +209,12 @@ public class ArtifactArchiverTest {
         aa = j.configRoundtrip(aa);
         assertEquals("*.txt", aa.getArtifacts());
         assertNull(Util.fixEmpty(aa.getExcludes()));
-        assertEquals("{artifacts=*.txt}", DescribableModel.uninstantiate_(aa).toString());
+        assertEquals("{artifacts=*.txt, basePath=}", DescribableModel.uninstantiate_(aa).toString());
         aa.setExcludes("README.txt");
         aa = j.configRoundtrip(aa);
         assertEquals("*.txt", aa.getArtifacts());
         assertEquals("README.txt", aa.getExcludes());
-        assertEquals("{artifacts=*.txt, excludes=README.txt}", DescribableModel.uninstantiate_(aa).toString()); // TreeMap, so attributes will be sorted
+        assertEquals("{artifacts=*.txt, basePath=, excludes=README.txt}", DescribableModel.uninstantiate_(aa).toString()); // TreeMap, so attributes will be sorted
     }
 
     static class CreateDefaultExcludesArtifact extends TestBuilder {
@@ -285,7 +285,7 @@ public class ArtifactArchiverTest {
         archiver.setBasePath("module/dist");
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
-        assertEquals(Result.SUCCESS, build(p));
+        j.buildAndAssertSuccess(p);
         VirtualFile artifacts = p.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child("target").child("file").exists());
     }
@@ -302,7 +302,7 @@ public class ArtifactArchiverTest {
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
         assertEquals(Result.FAILURE, build(p));
-        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -317,7 +317,7 @@ public class ArtifactArchiverTest {
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
         assertEquals(Result.FAILURE, build(p));
-        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -333,7 +333,7 @@ public class ArtifactArchiverTest {
         p.getPublishersList().replaceBy(Collections.singleton(archiver));
 
         assertEquals(Result.FAILURE, build(p));
-        Assert.assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
+        assertArrayEquals(new VirtualFile[0], p.getBuildByNumber(1).getArtifactManager().root().list());
     }
 
     @Test
@@ -342,21 +342,21 @@ public class ArtifactArchiverTest {
         ArtifactArchiver.DescriptorImpl desc = (ArtifactArchiver.DescriptorImpl)j.jenkins.getDescriptorOrDie(ArtifactArchiver.class);
 
         FreeStyleProject p = j.createFreeStyleProject();
-        Assert.assertEquals("no workspace", FormValidation.Kind.OK, desc.doCheckBasePath(p, "foo").kind);
-        Assert.assertEquals("relative path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
-        Assert.assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
-        Assert.assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "../workfoo").kind);
+        assertEquals("no workspace", FormValidation.Kind.OK, desc.doCheckBasePath(p, "foo").kind);
+        assertEquals("relative path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
+        assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
+        assertEquals("absolute path breakout without workspace", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "../workfoo").kind);
 
         // create workspace for the project
         p.getBuildersList().replaceBy(Collections.singleton(new CreateFilesForBasePathTest()));
         build(p);
 
-        Assert.assertEquals("workspace exists but path does not", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "foo").kind);
-        Assert.assertEquals("workspace exists and path does", FormValidation.Kind.OK, desc.doCheckBasePath(p, "module").kind);
-        Assert.assertEquals("file specified as base path", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "module/dist/target/file").kind);
-        Assert.assertEquals("relative path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
+        assertEquals("workspace exists but path does not", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "foo").kind);
+        assertEquals("workspace exists and path does", FormValidation.Kind.OK, desc.doCheckBasePath(p, "module").kind);
+        assertEquals("file specified as base path", FormValidation.Kind.WARNING, desc.doCheckBasePath(p, "module/dist/target/file").kind);
+        assertEquals("relative path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "..").kind);
 
-        Assert.assertEquals("absolute path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
+        assertEquals("absolute path breakout", FormValidation.Kind.ERROR, desc.doCheckBasePath(p, "/").kind);
     }
 
     @Test
