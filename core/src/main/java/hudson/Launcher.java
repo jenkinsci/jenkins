@@ -182,12 +182,6 @@ public abstract class Launcher {
         protected boolean reverseStdin, reverseStdout, reverseStderr;
 
         /**
-         * True to prevent killing the launched process when it is interrupted
-         * @since TODO
-         */
-        protected boolean dontKillWhenInterrupted;
-
-        /**
          * Passes a white-space separated single-string command (like "cat abc def") and parse them
          * as a command argument. This method also handles quotes.
          */
@@ -447,22 +441,6 @@ public abstract class Launcher {
             return this;
         }
 
-        /**
-         * Indicates that the launched process should not be killed when interrupted.
-         * It allows detecting the interruption on caller's side and do custom (cleanup) action while 
-         * the launched process is still running. 
-         * 
-         * <p>
-         * Note that the process can (and should) be killed
-         * via {@link Proc#kill()} when custom action is done.
-         * 
-         * @return {@code this}
-         * @since TODO
-         */
-        public ProcStarter dontKillWhenInterrupted() {
-            this.dontKillWhenInterrupted = true;
-            return this;
-        }
 
         /**
          * Starts the new process as configured.
@@ -948,7 +926,7 @@ public abstract class Launcher {
                     ps.reverseStdin ?LocalProc.SELFPUMP_INPUT:ps.stdin,
                     ps.reverseStdout?LocalProc.SELFPUMP_OUTPUT:ps.stdout,
                     ps.reverseStderr?LocalProc.SELFPUMP_OUTPUT:ps.stderr,
-                    toFile(ps.pwd), ps.dontKillWhenInterrupted);
+                    toFile(ps.pwd));
         }
 
         private File toFile(FilePath f) {
@@ -1071,8 +1049,7 @@ public abstract class Launcher {
             final String workDir = psPwd==null ? null : psPwd.getRemote();
 
             try {
-                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin,
-                        out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener, ps.dontKillWhenInterrupted)));
+                return new ProcImpl(getChannel().call(new RemoteLaunchCallable(ps.commands, ps.masks, ps.envs, in, ps.reverseStdin, out, ps.reverseStdout, err, ps.reverseStderr, ps.quiet, workDir, listener)));
             } catch (InterruptedException e) {
                 throw (IOException)new InterruptedIOException().initCause(e);
             }
@@ -1290,14 +1267,12 @@ public abstract class Launcher {
         private final @Nonnull TaskListener listener;
         private final boolean reverseStdin, reverseStdout, reverseStderr;
         private final boolean quiet;
-        private final boolean dontKillWhenInterrupted;
 
-        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env,
-                @CheckForNull InputStream in, boolean reverseStdin,
-                @CheckForNull OutputStream out, boolean reverseStdout,
-                @CheckForNull OutputStream err, boolean reverseStderr,
-                boolean quiet, @CheckForNull String workDir,
-                @Nonnull TaskListener listener, boolean dontKillWhenInterrupted) {
+        RemoteLaunchCallable(@Nonnull List<String> cmd, @CheckForNull boolean[] masks, @CheckForNull String[] env, 
+                @CheckForNull InputStream in, boolean reverseStdin, 
+                @CheckForNull OutputStream out, boolean reverseStdout, 
+                @CheckForNull OutputStream err, boolean reverseStderr, 
+                boolean quiet, @CheckForNull String workDir, @Nonnull TaskListener listener) {
             this.cmd = new ArrayList<>(cmd);
             this.masks = masks;
             this.env = env;
@@ -1310,7 +1285,6 @@ public abstract class Launcher {
             this.reverseStdout = reverseStdout;
             this.reverseStderr = reverseStderr;
             this.quiet = quiet;
-            this.dontKillWhenInterrupted = dontKillWhenInterrupted;
         }
 
         public RemoteProcess call() throws IOException {
@@ -1321,7 +1295,6 @@ public abstract class Launcher {
             if (reverseStdin)   ps.writeStdin();
             if (reverseStdout)  ps.readStdout();
             if (reverseStderr)  ps.readStderr();
-            if (dontKillWhenInterrupted) ps.dontKillWhenInterrupted();
 
             final Proc p = ps.start();
 
